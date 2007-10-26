@@ -63,7 +63,7 @@
 
 using System;
 
-namespace ionic.utils.zip
+namespace Ionic.Utils.Zip
 {
 
 
@@ -78,15 +78,15 @@ namespace ionic.utils.zip
 
 
 
-      // when this is set, we trim the volume (eg C:) off any fully-qualified pathname, 
-      // before writing the ZipEntry into the ZipFile. 
-      // We default this to true.  This allows Windows Explorer to read the zip archives properly. 
-      private bool _TrimVolumeFromFullyQualifiedPaths= true;
-      public bool TrimVolumeFromFullyQualifiedPaths
-      {
+        // when this is set, we trim the volume (eg C:) off any fully-qualified pathname, 
+        // before writing the ZipEntry into the ZipFile. 
+        // We default this to true.  This allows Windows Explorer to read the zip archives properly. 
+        private bool _TrimVolumeFromFullyQualifiedPaths = true;
+        public bool TrimVolumeFromFullyQualifiedPaths
+        {
             get { return _TrimVolumeFromFullyQualifiedPaths; }
-            set { _TrimVolumeFromFullyQualifiedPaths= value; }
-      }
+            set { _TrimVolumeFromFullyQualifiedPaths = value; }
+        }
 
         private System.IO.Stream ReadStream
         {
@@ -151,7 +151,7 @@ namespace ionic.utils.zip
         public void AddFile(string FileName, bool WantVerbose)
         {
             ZipEntry ze = ZipEntry.Create(FileName);
-            ze.TrimVolumeFromFullyQualifiedPaths= TrimVolumeFromFullyQualifiedPaths;
+            ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             if (WantVerbose) Console.WriteLine("adding {0}...", FileName);
             _entries.Add(ze);
         }

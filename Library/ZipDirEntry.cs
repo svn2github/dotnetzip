@@ -10,7 +10,7 @@
 
 using System;
 
-namespace ionic.utils.zip
+namespace Ionic.Utils.Zip
 {
 
 
@@ -97,7 +97,7 @@ namespace ionic.utils.zip
         public static ZipDirEntry Read(System.IO.Stream s, bool TurnOnDebug)
         {
 
-            int signature = ionic.utils.zip.Shared.ReadSignature(s);
+            int signature = Ionic.Utils.Zip.Shared.ReadSignature(s);
             // return null if this is not a local file header signature
             if (SignatureIsNotValid(signature))
             {
@@ -123,7 +123,7 @@ namespace ionic.utils.zip
             zde._CompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
             zde._UncompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
 
-            zde._LastModified = ionic.utils.zip.Shared.PackedToDateTime(zde._LastModDateTime);
+            zde._LastModified = Ionic.Utils.Zip.Shared.PackedToDateTime(zde._LastModDateTime);
 
             Int16 filenameLength = (short)(block[i++] + block[i++] * 256);
             Int16 extraFieldLength = (short)(block[i++] + block[i++] * 256);
@@ -135,14 +135,14 @@ namespace ionic.utils.zip
 
             block = new byte[filenameLength];
             n = s.Read(block, 0, block.Length);
-            zde._FileName = ionic.utils.zip.Shared.StringFromBuffer(block, 0, block.Length);
+            zde._FileName = Ionic.Utils.Zip.Shared.StringFromBuffer(block, 0, block.Length);
 
             zde._Extra = new byte[extraFieldLength];
             n = s.Read(zde._Extra, 0, zde._Extra.Length);
 
             block = new byte[commentLength];
             n = s.Read(block, 0, block.Length);
-            zde._Comment = ionic.utils.zip.Shared.StringFromBuffer(block, 0, block.Length);
+            zde._Comment = Ionic.Utils.Zip.Shared.StringFromBuffer(block, 0, block.Length);
 
             return zde;
         }
@@ -153,7 +153,6 @@ namespace ionic.utils.zip
         }
 
     }
-
 
 
 }

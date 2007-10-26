@@ -10,15 +10,15 @@
 
 using System;
 
-namespace ionic.utils.zip
+namespace Ionic.Utils.Zip
 {
 
     public class ZipEntry
     {
 
         private const int ZipEntrySignature = 0x04034b50;
-        private const int ZipEntryDataDescriptorSignature= 0x08074b50;
- 
+        private const int ZipEntryDataDescriptorSignature = 0x08074b50;
+
         private bool _Debug = false;
 
         private DateTime _LastModified;
@@ -27,13 +27,13 @@ namespace ionic.utils.zip
             get { return _LastModified; }
         }
 
-      // when this is set, we trim the volume (eg C:\) off any fully-qualified pathname, 
-      // before writing the ZipEntry into the ZipFile. 
-      private bool _TrimVolumeFromFullyQualifiedPaths= true;  // by default, trim them.
+        // when this is set, we trim the volume (eg C:\) off any fully-qualified pathname, 
+        // before writing the ZipEntry into the ZipFile. 
+        private bool _TrimVolumeFromFullyQualifiedPaths = true;  // by default, trim them.
         public bool TrimVolumeFromFullyQualifiedPaths
         {
             get { return _TrimVolumeFromFullyQualifiedPaths; }
-            set { _TrimVolumeFromFullyQualifiedPaths= value; }
+            set { _TrimVolumeFromFullyQualifiedPaths = value; }
         }
 
         private string _FileName;
@@ -128,7 +128,7 @@ namespace ionic.utils.zip
 
         private static bool ReadHeader(System.IO.Stream s, ZipEntry ze)
         {
-            int signature = ionic.utils.zip.Shared.ReadSignature(s);
+            int signature = Ionic.Utils.Zip.Shared.ReadSignature(s);
 
             // return null if this is not a local file header signature
             if (SignatureIsNotValid(signature))
@@ -170,20 +170,20 @@ namespace ionic.utils.zip
 
             block = new byte[filenameLength];
             n = s.Read(block, 0, block.Length);
-            ze._FileName = ionic.utils.zip.Shared.StringFromBuffer(block, 0, block.Length);
+            ze._FileName = Ionic.Utils.Zip.Shared.StringFromBuffer(block, 0, block.Length);
 
             ze._Extra = new byte[extraFieldLength];
             n = s.Read(ze._Extra, 0, ze._Extra.Length);
 
             // transform the time data into something usable
-            ze._LastModified = ionic.utils.zip.Shared.PackedToDateTime(ze._LastModDateTime);
+            ze._LastModified = Ionic.Utils.Zip.Shared.PackedToDateTime(ze._LastModDateTime);
 
             // actually get the compressed size and CRC if necessary
             if ((ze._BitField & 0x0008) == 0x0008)
             {
                 long posn = s.Position;
-                long SizeOfDataRead = ionic.utils.zip.Shared.FindSignature(s, ZipEntryDataDescriptorSignature);
-                if (SizeOfDataRead == -1) return false; 
+                long SizeOfDataRead = Ionic.Utils.Zip.Shared.FindSignature(s, ZipEntryDataDescriptorSignature);
+                if (SizeOfDataRead == -1) return false;
 
                 // read 3x 4-byte fields (CRC, Compressed Size, Uncompressed Size)
                 block = new byte[12];
@@ -195,8 +195,8 @@ namespace ionic.utils.zip
                 ze._UncompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
 
                 if (SizeOfDataRead != ze._CompressedSize)
-                    throw new Exception("Data format error (bit 3 is set)"); 
-                
+                    throw new Exception("Data format error (bit 3 is set)");
+
                 // seek back to previous position, to read file data
                 s.Seek(posn, System.IO.SeekOrigin.Begin);
             }
@@ -245,15 +245,15 @@ namespace ionic.utils.zip
             entry._FileName = filename;
 
             entry._LastModified = System.IO.File.GetLastWriteTime(filename);
-	    // adjust the time if the .NET BCL thinks it is in DST.  
-	    // see the note elsewhere in this file for more info. 
+            // adjust the time if the .NET BCL thinks it is in DST.  
+            // see the note elsewhere in this file for more info. 
             if (entry._LastModified.IsDaylightSavingTime())
             {
                 System.DateTime AdjustedTime = entry._LastModified - new System.TimeSpan(1, 0, 0);
-                entry._LastModDateTime = ionic.utils.zip.Shared.DateTimeToPacked(AdjustedTime);
+                entry._LastModDateTime = Ionic.Utils.Zip.Shared.DateTimeToPacked(AdjustedTime);
             }
             else
-                entry._LastModDateTime = ionic.utils.zip.Shared.DateTimeToPacked(entry._LastModified);
+                entry._LastModDateTime = Ionic.Utils.Zip.Shared.DateTimeToPacked(entry._LastModified);
 
             // we don't actually slurp in the file until the caller invokes Write on this entry.
 
@@ -391,50 +391,50 @@ namespace ionic.utils.zip
 
                     if (TargetFile != null)
                     {
-                      // We may have to adjust the last modified time to compensate
-                      // for differences in how the .NET Base Class Library deals
-                      // with daylight saving time (DST) versus how the Windows
-                      // filesystem deals with daylight saving time. See 
-		      // http://blogs.msdn.com/oldnewthing/archive/2003/10/24/55413.aspx for some context. 
+                        // We may have to adjust the last modified time to compensate
+                        // for differences in how the .NET Base Class Library deals
+                        // with daylight saving time (DST) versus how the Windows
+                        // filesystem deals with daylight saving time. See 
+                        // http://blogs.msdn.com/oldnewthing/archive/2003/10/24/55413.aspx for some context. 
 
-		      // in a nutshell: Daylight savings time rules change regularly.  In
-		      // 2007, for example, the inception week of DST changed.  In 1977,
-		      // DST was in place all year round. in 1945, likewise.  And so on.
-		      // Win32 does not attempt to guess which time zone rules were in
-		      // effect at the time in question.  It will render a time as
-		      // "standard time" and allow the app to change to DST as necessary.
-		      //  .NET makes a different choice.
+                        // in a nutshell: Daylight savings time rules change regularly.  In
+                        // 2007, for example, the inception week of DST changed.  In 1977,
+                        // DST was in place all year round. in 1945, likewise.  And so on.
+                        // Win32 does not attempt to guess which time zone rules were in
+                        // effect at the time in question.  It will render a time as
+                        // "standard time" and allow the app to change to DST as necessary.
+                        //  .NET makes a different choice.
 
-		      // -------------------------------------------------------
-		      // Compare the output of FileInfo.LastWriteTime.ToString("f") with
-		      // what you see in the property sheet for a file that was last
-		      // written to on the other side of the DST transition. For example,
-		      // suppose the file was last modified on October 17, during DST but
-		      // DST is not currently in effect. Explorer's file properties
-		      // reports Thursday, October 17, 2003, 8:45:38 AM, but .NETs
-		      // FileInfo reports Thursday, October 17, 2003, 9:45 AM.
-		      
-		      // Win32 says, "Thursday, October 17, 2002 8:45:38 AM PST". Note:
-		      // Pacific STANDARD Time. Even though October 17 of that year
-		      // occurred during Pacific Daylight Time, Win32 displays the time as
-		      // standard time because that's what time it is NOW.
+                        // -------------------------------------------------------
+                        // Compare the output of FileInfo.LastWriteTime.ToString("f") with
+                        // what you see in the property sheet for a file that was last
+                        // written to on the other side of the DST transition. For example,
+                        // suppose the file was last modified on October 17, during DST but
+                        // DST is not currently in effect. Explorer's file properties
+                        // reports Thursday, October 17, 2003, 8:45:38 AM, but .NETs
+                        // FileInfo reports Thursday, October 17, 2003, 9:45 AM.
 
-		      // .NET BCL assumes that the current DST rules were in place at the
-		      // time in question.  So, .NET says, "Well, if the rules in effect
-		      // now were also in effect on October 17, 2003, then that would be
-		      // daylight time" so it displays "Thursday, October 17, 2003, 9:45
-		      // AM PDT" - daylight time.
+                        // Win32 says, "Thursday, October 17, 2002 8:45:38 AM PST". Note:
+                        // Pacific STANDARD Time. Even though October 17 of that year
+                        // occurred during Pacific Daylight Time, Win32 displays the time as
+                        // standard time because that's what time it is NOW.
 
-		      // So .NET gives a value which is more intuitively correct, but is
-		      // also potentially incorrect, and which is not invertible. Win32
-		      // gives a value which is intuitively incorrect, but is strictly
-		      // correct.
-		      // -------------------------------------------------------
+                        // .NET BCL assumes that the current DST rules were in place at the
+                        // time in question.  So, .NET says, "Well, if the rules in effect
+                        // now were also in effect on October 17, 2003, then that would be
+                        // daylight time" so it displays "Thursday, October 17, 2003, 9:45
+                        // AM PDT" - daylight time.
 
-		      // With this adjustment, I add one hour to the tweaked .NET time, if
-		      // necessary.  That is to say, if the time in question had occurred
-		      // in what the .NET BCL assumed to be DST (an assumption that may be
-		      // wrong given the constantly changing DST rules).
+                        // So .NET gives a value which is more intuitively correct, but is
+                        // also potentially incorrect, and which is not invertible. Win32
+                        // gives a value which is intuitively incorrect, but is strictly
+                        // correct.
+                        // -------------------------------------------------------
+
+                        // With this adjustment, I add one hour to the tweaked .NET time, if
+                        // necessary.  That is to say, if the time in question had occurred
+                        // in what the .NET BCL assumed to be DST (an assumption that may be
+                        // wrong given the constantly changing DST rules).
 
                         if (LastModified.IsDaylightSavingTime())
                         {
@@ -448,7 +448,7 @@ namespace ionic.utils.zip
                 }
                 finally
                 {
-		  // we only close the output stream if we opened it. 
+                    // we only close the output stream if we opened it. 
                     // we cannot use using() here because in some cases we do not want to Dispose the stream!
                     if ((input != null) && (input != memstream))
                     {
@@ -586,8 +586,8 @@ namespace ionic.utils.zip
 
             // filename length (Int16)
             Int16 length = (Int16)FileName.Length;
-	    // see note below about TrimVolumeFromFullyQualifiedPaths.
-	    if ( (TrimVolumeFromFullyQualifiedPaths) && (FileName[1]==':') && (FileName[2]=='\\')) length-=3;
+            // see note below about TrimVolumeFromFullyQualifiedPaths.
+            if ((TrimVolumeFromFullyQualifiedPaths) && (FileName[1] == ':') && (FileName[2] == '\\')) length -= 3;
             bytes[i++] = (byte)(length & 0x00FF);
             bytes[i++] = (byte)((length & 0xFF00) >> 8);
 
@@ -596,21 +596,21 @@ namespace ionic.utils.zip
             bytes[i++] = (byte)(ExtraFieldLength & 0x00FF);
             bytes[i++] = (byte)((ExtraFieldLength & 0xFF00) >> 8);
 
-	    // Tue, 27 Mar 2007  16:35
+            // Tue, 27 Mar 2007  16:35
 
-	    // Creating a zip that contains entries with "fully qualified" pathnames
-	    // can result in a zip archive that is unreadable by Windows Explorer.
-	    // Such archives are valid according to other tools but not to explorer.
-	    // To avoid this, we can trim off the leading volume name and slash (eg
-	    // c:\) when creating (writing) a zip file.  We do this by default and we
-	    // leave the old behavior available with the
-	    // TrimVolumeFromFullyQualifiedPaths flag - set it to false to get the old
-	    // behavior.  It only affects zip creation.
+            // Creating a zip that contains entries with "fully qualified" pathnames
+            // can result in a zip archive that is unreadable by Windows Explorer.
+            // Such archives are valid according to other tools but not to explorer.
+            // To avoid this, we can trim off the leading volume name and slash (eg
+            // c:\) when creating (writing) a zip file.  We do this by default and we
+            // leave the old behavior available with the
+            // TrimVolumeFromFullyQualifiedPaths flag - set it to false to get the old
+            // behavior.  It only affects zip creation.
 
             // actual filename
-            char[] c =  ( (TrimVolumeFromFullyQualifiedPaths) && (FileName[1]==':') && (FileName[2]=='\\')) ? 
-	      FileName.Substring(3).ToCharArray() :  // trim off volume letter, colon, and slash
-	      FileName.ToCharArray();
+            char[] c = ((TrimVolumeFromFullyQualifiedPaths) && (FileName[1] == ':') && (FileName[2] == '\\')) ?
+          FileName.Substring(3).ToCharArray() :  // trim off volume letter, colon, and slash
+          FileName.ToCharArray();
             int j = 0;
 
             if (_Debug)

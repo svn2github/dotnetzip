@@ -19,7 +19,7 @@
 //
 
 using System;
-using ionic.utils.zip;
+using Ionic.Utils.Zip;
 
 public class ZipDir
 {

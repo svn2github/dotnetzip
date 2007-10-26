@@ -10,7 +10,7 @@
 
 using System;
 
-namespace ionic.utils.zip
+namespace Ionic.Utils.Zip
 {
 
     class Shared
@@ -43,10 +43,10 @@ namespace ionic.utils.zip
 
             int BATCH_SIZE = 1024;
             byte[] targetBytes = new byte[4];
-            targetBytes[0] = (byte) (SignatureToFind >> 24);
-            targetBytes[1] = (byte) ((SignatureToFind & 0x00FF0000) >> 16);
-            targetBytes[2] = (byte) ((SignatureToFind & 0x0000FF00) >> 8);
-            targetBytes[3] = (byte) (SignatureToFind & 0x000000FF);
+            targetBytes[0] = (byte)(SignatureToFind >> 24);
+            targetBytes[1] = (byte)((SignatureToFind & 0x00FF0000) >> 16);
+            targetBytes[2] = (byte)((SignatureToFind & 0x0000FF00) >> 8);
+            targetBytes[3] = (byte)(SignatureToFind & 0x000000FF);
             byte[] batch = new byte[BATCH_SIZE];
             int n = 0;
             bool success = false;
@@ -77,9 +77,9 @@ namespace ionic.utils.zip
             }
 
             // subtract 4 for the signature.
-            long bytesRead = (s.Position - startingPosition) - 4 ;
+            long bytesRead = (s.Position - startingPosition) - 4;
             // number of bytes read, should be the same as compressed size of file            
-            return bytesRead;   
+            return bytesRead;
         }
         protected internal static DateTime PackedToDateTime(Int32 packedDateTime)
         {
