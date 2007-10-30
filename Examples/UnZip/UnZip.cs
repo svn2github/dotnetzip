@@ -117,7 +117,7 @@ public class UnZip
                                      e.CompressionRatio,
                                      e.CompressedSize);
 
-                        e.Extract(args[1]);
+                        e.Extract(e.FileName);
                     }
                 }
             } // end using(), the underlying file is closed.

@@ -12,66 +12,82 @@ using System;
 
 namespace Ionic.Utils.Zip
 {
-
+    /// <summary>
+    /// Represents a single entry in a ZipFile. 
+    /// </summary>
     public class ZipEntry
     {
 
-        private const int ZipEntrySignature = 0x04034b50;
-        private const int ZipEntryDataDescriptorSignature = 0x08074b50;
-
-        private bool _Debug = false;
-
-        private DateTime _LastModified;
+        /// <summary>
+        /// The time and date at which the file indicated by the ZipEntry was last modified. 
+        /// </summary>
         public DateTime LastModified
         {
             get { return _LastModified; }
         }
 
-        // when this is set, we trim the volume (eg C:\) off any fully-qualified pathname, 
-        // before writing the ZipEntry into the ZipFile. 
-        private bool _TrimVolumeFromFullyQualifiedPaths = true;  // by default, trim them.
+        /// <summary>
+        /// When this is set, this class trims the volume (eg C:\) from any 
+        /// fully-qualified pathname on the ZipEntry, 
+        /// before writing the ZipEntry into the ZipFile. 
+        /// </summary>
         public bool TrimVolumeFromFullyQualifiedPaths
         {
             get { return _TrimVolumeFromFullyQualifiedPaths; }
             set { _TrimVolumeFromFullyQualifiedPaths = value; }
         }
 
-        private string _FileName;
+        /// <summary>
+        /// The name of the file contained in the ZipEntry. 
+        /// </summary>
         public string FileName
         {
             get { return _FileName; }
         }
 
-        private Int16 _VersionNeeded;
+        /// <summary>
+        /// The version of the zip engine needed to read the ZipEntry. 
+        /// </summary>
         public Int16 VersionNeeded
         {
             get { return _VersionNeeded; }
         }
 
-        private Int16 _BitField;
+        /// <summary>
+        /// a bitfield as defined in the zip spec. 
+        /// </summary>
         public Int16 BitField
         {
             get { return _BitField; }
         }
 
-        private Int16 _CompressionMethod;
+        /// <summary>
+        /// The compression method employed for this ZipEntry.
+        /// </summary>
         public Int16 CompressionMethod
         {
             get { return _CompressionMethod; }
         }
 
-        private Int32 _CompressedSize;
+        /// <summary>
+        /// The compressed size of the file, within the zip archive.
+        /// </summary>
         public Int32 CompressedSize
         {
             get { return _CompressedSize; }
         }
 
-        private Int32 _UncompressedSize;
+        /// <summary>
+        /// The size of the file, before compression, or after extraction. 
+        /// </summary>
         public Int32 UncompressedSize
         {
             get { return _UncompressedSize; }
         }
 
+        /// <summary>
+        /// The ratio of compressed size to uncompressed size. 
+        /// </summary>
         public Double CompressionRatio
         {
             get
@@ -80,11 +96,6 @@ namespace Ionic.Utils.Zip
             }
         }
 
-        private Int32 _LastModDateTime;
-        private Int32 _Crc32;
-        private byte[] _Extra;
-
-        private byte[] __filedata;
         private byte[] _FileData
         {
             get
@@ -96,8 +107,6 @@ namespace Ionic.Utils.Zip
             }
         }
 
-        private System.IO.MemoryStream _UnderlyingMemoryStream;
-        private System.IO.Compression.DeflateStream _CompressedStream;
         private System.IO.Compression.DeflateStream CompressedStream
         {
             get
@@ -114,7 +123,6 @@ namespace Ionic.Utils.Zip
             }
         }
 
-        private byte[] _header;
         internal byte[] Header
         {
             get
@@ -123,7 +131,6 @@ namespace Ionic.Utils.Zip
             }
         }
 
-        private int _RelativeOffsetOfHeader;
 
 
         private static bool ReadHeader(System.IO.Stream s, ZipEntry ze)
@@ -210,17 +217,26 @@ namespace Ionic.Utils.Zip
             return (signature != ZipEntrySignature);
         }
 
-
+        /// <summary>
+        /// Reads one ZipEntry from the given stream.  
+        /// </summary>
+        /// <param name="s">the stream to read from.</param>
+        /// <returns>the ZipEntry read from the stream.</returns>
         public static ZipEntry Read(System.IO.Stream s)
         {
             return Read(s, false);
         }
 
-
-        public static ZipEntry Read(System.IO.Stream s, bool TurnOnDebug)
+        /// <summary>
+        /// Reads one ZipEntry from the given stream.  
+        /// </summary>
+        /// <param name="s">the stream to read from.</param>
+        /// <param name="WantVerbose">true if you want verbose output.  Currently the verbose output goes to Console.Out.</param>
+        /// <returns>the ZipEntry read from the stream.</returns>
+        public static ZipEntry Read(System.IO.Stream s, bool WantVerbose)
         {
             ZipEntry entry = new ZipEntry();
-            entry._Debug = TurnOnDebug;
+            entry._Debug = WantVerbose;
             if (!ReadHeader(s, entry)) return null;
 
             entry.__filedata = new byte[entry.CompressedSize];
@@ -261,20 +277,84 @@ namespace Ionic.Utils.Zip
         }
 
 
-
+        /// <summary>
+        /// Extract the current entry to the current working directory. 
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The last modified time of the created file may be adjusted 
+        /// during extraction to compensate
+        /// for differences in how the .NET Base Class Library deals
+        /// with daylight saving time (DST) versus how the Windows
+        /// filesystem deals with daylight saving time. 
+        /// See http://blogs.msdn.com/oldnewthing/archive/2003/10/24/55413.aspx for more context.
+        ///</para>
+        /// <para>
+        /// In a nutshell: Daylight savings time rules change regularly.  In
+        /// 2007, for example, the inception week of DST changed.  In 1977,
+        /// DST was in place all year round. in 1945, likewise.  And so on.
+        /// Win32 does not attempt to guess which time zone rules were in
+        /// effect at the time in question.  It will render a time as
+        /// "standard time" and allow the app to change to DST as necessary.
+        ///  .NET makes a different choice.
+        ///</para>
+        /// <para>
+        /// Compare the output of FileInfo.LastWriteTime.ToString("f") with
+        /// what you see in the property sheet for a file that was last
+        /// written to on the other side of the DST transition. For example,
+        /// suppose the file was last modified on October 17, during DST but
+        /// DST is not currently in effect. Explorer's file properties
+        /// reports Thursday, October 17, 2003, 8:45:38 AM, but .NETs
+        /// FileInfo reports Thursday, October 17, 2003, 9:45 AM.
+        ///</para>
+        /// <para>
+        /// Win32 says, "Thursday, October 17, 2002 8:45:38 AM PST". Note:
+        /// Pacific STANDARD Time. Even though October 17 of that year
+        /// occurred during Pacific Daylight Time, Win32 displays the time as
+        /// standard time because that's what time it is NOW.
+        ///</para>
+        /// <para>
+        /// .NET BCL assumes that the current DST rules were in place at the
+        /// time in question.  So, .NET says, "Well, if the rules in effect
+        /// now were also in effect on October 17, 2003, then that would be
+        /// daylight time" so it displays "Thursday, October 17, 2003, 9:45
+        /// AM PDT" - daylight time.
+        ///</para>
+        /// <para>
+        /// So .NET gives a value which is more intuitively correct, but is
+        /// also potentially incorrect, and which is not invertible. Win32
+        /// gives a value which is intuitively incorrect, but is strictly
+        /// correct.
+        ///</para>
+        /// <para>
+        /// With this adjustment, I add one hour to the tweaked .NET time, if
+        /// necessary.  That is to say, if the time in question had occurred
+        /// in what the .NET BCL assumed to be DST (an assumption that may be
+        /// wrong given the constantly changing DST rules).
+        /// </para>
+        /// <overloads>This method has three overloads.</overloads>
+        /// </remarks>
         public void Extract()
         {
             Extract(".");
         }
 
+        /// <summary>
+        /// Extracts the entry to the specified stream. For example, the caller could specify Console.Out.
+        /// </summary>
+        /// <param name="s">the stream to which the entry should be extracted.  </param>
         public void Extract(System.IO.Stream s)
         {
             Extract(null, s);
         }
 
-        public void Extract(string basedir)
+        /// <summary>
+        /// Extract the entry to the filesystem, starting at the specified base directory. 
+        /// </summary>
+        /// <param name="BaseDirectory">the pathname of the base directory</param>
+        public void Extract(string BaseDirectory)
         {
-            Extract(basedir, null);
+            Extract(BaseDirectory, null);
         }
 
 
@@ -306,11 +386,9 @@ namespace Ionic.Utils.Zip
 
             using (System.IO.MemoryStream memstream = new System.IO.MemoryStream(_FileData))
             {
-
                 System.IO.Stream input = null;
                 try
                 {
-
                     if (CompressedSize == UncompressedSize)
                     {
                         // the System.IO.Compression.DeflateStream class does not handle uncompressed data.
@@ -322,7 +400,6 @@ namespace Ionic.Utils.Zip
                         input = new System.IO.Compression.DeflateStream(memstream, System.IO.Compression.CompressionMode.Decompress);
                     }
 
-
                     if (TargetFile != null)
                     {
                         // ensure the target path exists
@@ -332,7 +409,6 @@ namespace Ionic.Utils.Zip
                         }
                     }
 
-
                     System.IO.Stream output = null;
                     try
                     {
@@ -340,7 +416,6 @@ namespace Ionic.Utils.Zip
                             output = new System.IO.FileStream(TargetFile, System.IO.FileMode.CreateNew);
                         else
                             output = s;
-
 
                         byte[] bytes = new byte[4096];
                         int n;
@@ -695,5 +770,30 @@ namespace Ionic.Utils.Zip
             _UnderlyingMemoryStream.Close();
             _UnderlyingMemoryStream = null;
         }
+
+        private const int ZipEntrySignature = 0x04034b50;
+        private const int ZipEntryDataDescriptorSignature = 0x08074b50;
+
+        private bool _Debug = false;
+
+        private DateTime _LastModified;
+        private bool _TrimVolumeFromFullyQualifiedPaths = true;  // by default, trim them.
+        private string _FileName;
+        private Int16 _VersionNeeded;
+        private Int16 _BitField;
+        private Int16 _CompressionMethod;
+        private Int32 _CompressedSize;
+        private Int32 _UncompressedSize;
+        private Int32 _LastModDateTime;
+        private Int32 _Crc32;
+        private byte[] _Extra;
+
+        private byte[] __filedata;
+        private System.IO.MemoryStream _UnderlyingMemoryStream;
+        private System.IO.Compression.DeflateStream _CompressedStream;
+        private byte[] _header;
+        private int _RelativeOffsetOfHeader;
+
     }
+
 }

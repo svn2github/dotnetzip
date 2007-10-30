@@ -24,14 +24,18 @@ namespace Ionic.Utils.Zip
 {
     /// <summary>
     /// Calculates a 32bit Cyclic Redundancy Checksum (CRC) using the
-    /// same polynomial used by Zip.
+    /// same polynomial used by Zip. This type ie generally not used directly
+    /// by applications wishing to create, read, or manipulate zip archive files.
     /// </summary>
     public class CRC32
     {
         private UInt32[] crc32Table;
         private const int BUFFER_SIZE = 8192;
 
-        private Int32 _TotalBytesRead = 0;
+        /// <summary>
+        /// indicates the total number of bytes read on the CRC stream.
+        /// This is used when writing the ZipDirEntry when compressing files.
+        /// </summary>
         public Int32 TotalBytesRead
         {
             get
@@ -120,6 +124,8 @@ namespace Ionic.Utils.Zip
                 }
             }
         }
+
+        private Int32 _TotalBytesRead = 0;
     }
 
 }

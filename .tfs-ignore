@@ -5,5 +5,7 @@
   <add recursive='true'>*.resharper</add>
   <add recursive='true'>*.suo</add>
   <add recursive='true'>*.user</add>
+  <add recursive='true'>#*.*#</add>
+  <add recursive='true'>*.*~</add>
   <!-- add>*.xml</add  -->
 </ignore>
