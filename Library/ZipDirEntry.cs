@@ -20,9 +20,6 @@ namespace Ionic.Utils.Zip
     /// </summary>
     public class ZipDirEntry
     {
-
-        internal const int ZipDirEntrySignature = 0x02014b50;
-
         private bool _Debug = false;
 
         private ZipDirEntry() { }
@@ -130,10 +127,18 @@ namespace Ionic.Utils.Zip
 
             int signature = Ionic.Utils.Zip.Shared.ReadSignature(s);
             // return null if this is not a local file header signature
-            if (SignatureIsNotValid(signature))
+            if (ZipDirEntry.IsNotValidSig(signature))
             {
                 s.Seek(-4, System.IO.SeekOrigin.Current);
-                if (WantVerbose) System.Console.WriteLine("  ZipDirEntry::Read(): Bad signature ({0:X8}) at position {1}", signature, s.Position);
+
+                // Getting "not a ZipDirEntry signature" here is not always wrong or an error. 
+                // This can happen when walking through a zipfile.  After the last ZipDirEntry, 
+                // we expect to read an EndOfCentralDirectorySignature.  When we get this is how we 
+                // know we've reached the end of the central directory. 
+                if (signature != ZipConstants.EndOfCentralDirectorySignature)
+                {
+                    if (WantVerbose) System.Console.WriteLine("  ZipDirEntry::Read(): Bad signature ({0:X8}) at position 0x{1:X8}", signature, s.Position);
+                }
                 return null;
             }
 
@@ -178,9 +183,14 @@ namespace Ionic.Utils.Zip
             return zde;
         }
 
-        private static bool SignatureIsNotValid(int signature)
+        /// <summary>
+        /// Returns true if the passed-in value is a valid signature for a ZipDirEntry. 
+        /// </summary>
+        /// <param name="signature">the candidate 4-byte signature value.</param>
+        /// <returns>true, if the signature is valid according to the PKWare spec.</returns>
+        public static bool IsNotValidSig(int signature)
         {
-            return (signature != ZipDirEntrySignature);
+            return (signature != ZipConstants.ZipDirEntrySignature);
         }
 
         private DateTime _LastModified;

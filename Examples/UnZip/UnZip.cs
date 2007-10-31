@@ -27,10 +27,13 @@ public class UnZip
     private static void Usage()
     {
         Console.WriteLine("usage:\n" +
-                  "  unzip <zipfile> <unpackdirectory>\n" +
-                  "     unzips all files in the archive to the specified directory.\n\n" +
+                  "  unzip <zipfile> [<unpackdirectory>]\n" +
+                  "     unzips all files in the archive to the specified directory. If no \n" +
+                  "     directory is provided, this utility uses the current directory.\n\n" +
                   "  unzip - <zipfile> <entry>\n" +
-                  "     unzip the specified entry from the archive to stdout.\n"
+                  "     unzip the specified entry from the archive to the console.\n\n" +
+                  "  unzip -l <zipfile>\n" +
+                  "     lists the entries in the zip archive.\n"
                   );
         Environment.Exit(1);
     }
@@ -40,27 +43,33 @@ public class UnZip
     {
         int i = 0;
         string zipfile = null;
-        string targdir = null;
+        string targdir = ".";
         string entryToExtract = null;
+        bool WantExtract = true;
 
         if (args.Length == 0) Usage();
 
         if (args[0] == "-")
         {
             i++;
-            if (args.Length > i)
-            {
-                zipfile = args[i];
-                i++;
-                if (args.Length > i)
-                {
-                    entryToExtract = args[i];
-                    i++;
-                }
-            }
+            if (args.Length <= i) Usage();
+
+            zipfile = args[i];
+            i++;
+            if (args.Length <= i) Usage();
+
+            entryToExtract = args[i];
+            i++;
         }
         else
         {
+            if (args[0] == "-l")
+            {
+                i++;
+                WantExtract = false;
+            }
+            if (args.Length <= i) Usage();
+
             zipfile = args[i];
             i++;
             if (args.Length > i)
@@ -94,6 +103,7 @@ public class UnZip
                     // example only extract files of a certain type, or
                     // whose names matched a certain pattern, or whose
                     // lastmodified times fit a certain condition, etc.
+                    // We can also display status for each entry, as here.
 
                     bool header = true;
                     foreach (ZipEntry e in zip)
@@ -117,7 +127,7 @@ public class UnZip
                                      e.CompressionRatio,
                                      e.CompressedSize);
 
-                        e.Extract(e.FileName);
+                        if (WantExtract) e.Extract(targdir);
                     }
                 }
             } // end using(), the underlying file is closed.

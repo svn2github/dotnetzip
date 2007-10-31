@@ -115,8 +115,7 @@ namespace Ionic.Utils.Zip
             UInt16 packedTime = (UInt16)((time.Second & 0x0000001F) | ((time.Minute << 5) & 0x000007E0) | ((time.Hour << 11) & 0x0000F800));
             return (Int32)(((UInt32)(packedDate << 16)) | packedTime);
         }
+
     }
-
-
 
 }

@@ -13,7 +13,8 @@ using System;
 namespace Ionic.Utils.Zip
 {
     /// <summary>
-    /// Represents a single entry in a ZipFile. 
+    /// Represents a single entry in a ZipFile. Typically, applications
+    /// get a ZipEntry by enumerating the entries within a ZipFile. 
     /// </summary>
     public class ZipEntry
     {
@@ -113,8 +114,11 @@ namespace Ionic.Utils.Zip
             {
                 if (_CompressedStream == null)
                 {
+                    // we read from the underlying memory stream after data is written to the compressed stream
                     _UnderlyingMemoryStream = new System.IO.MemoryStream();
                     bool LeaveUnderlyingStreamOpen = true;
+
+                    // we write to the compressed stream, and compression happens as we write.
                     _CompressedStream = new System.IO.Compression.DeflateStream(_UnderlyingMemoryStream,
                                                     System.IO.Compression.CompressionMode.Compress,
                                                     LeaveUnderlyingStreamOpen);
@@ -137,11 +141,18 @@ namespace Ionic.Utils.Zip
         {
             int signature = Ionic.Utils.Zip.Shared.ReadSignature(s);
 
-            // return null if this is not a local file header signature
-            if (SignatureIsNotValid(signature))
+            // Return false if this is not a local file header signature.
+            if (ZipEntry.IsNotValidSig(signature))
             {
-                s.Seek(-4, System.IO.SeekOrigin.Current);
-                if (ze._Debug) System.Console.WriteLine("  ZipEntry::Read(): Bad signature ({0:X8}) at position {1}", signature, s.Position);
+                s.Seek(-4, System.IO.SeekOrigin.Current); // unread the signature
+                // Getting "not a ZipEntry signature" is not always wrong or an error. 
+                // This can happen when walking through a zipfile.  After the last compressed entry, 
+                // we expect to read a ZipDirEntry signature.  When we get this is how we 
+                // know we've reached the end of the compressed entries. 
+                if (ZipDirEntry.IsNotValidSig(signature))
+                {
+                    if (ze._Verbose) System.Console.WriteLine("  ZipEntry::Read(): Bad signature ({0:X8}) at position  0x{1:X8}", signature, s.Position);
+                }
                 return false;
             }
 
@@ -189,7 +200,7 @@ namespace Ionic.Utils.Zip
             if ((ze._BitField & 0x0008) == 0x0008)
             {
                 long posn = s.Position;
-                long SizeOfDataRead = Ionic.Utils.Zip.Shared.FindSignature(s, ZipEntryDataDescriptorSignature);
+                long SizeOfDataRead = Ionic.Utils.Zip.Shared.FindSignature(s, ZipConstants.ZipEntryDataDescriptorSignature);
                 if (SizeOfDataRead == -1) return false;
 
                 // read 3x 4-byte fields (CRC, Compressed Size, Uncompressed Size)
@@ -212,9 +223,9 @@ namespace Ionic.Utils.Zip
         }
 
 
-        private static bool SignatureIsNotValid(int signature)
+        private static bool IsNotValidSig(int signature)
         {
-            return (signature != ZipEntrySignature);
+            return (signature != ZipConstants.ZipEntrySignature);
         }
 
         /// <summary>
@@ -236,7 +247,8 @@ namespace Ionic.Utils.Zip
         public static ZipEntry Read(System.IO.Stream s, bool WantVerbose)
         {
             ZipEntry entry = new ZipEntry();
-            entry._Debug = WantVerbose;
+            entry._Verbose = WantVerbose;
+
             if (!ReadHeader(s, entry)) return null;
 
             entry.__filedata = new byte[entry.CompressedSize];
@@ -540,10 +552,10 @@ namespace Ionic.Utils.Zip
             byte[] bytes = new byte[4096];
             int i = 0;
             // signature
-            bytes[i++] = (byte)(ZipDirEntry.ZipDirEntrySignature & 0x000000FF);
-            bytes[i++] = (byte)((ZipDirEntry.ZipDirEntrySignature & 0x0000FF00) >> 8);
-            bytes[i++] = (byte)((ZipDirEntry.ZipDirEntrySignature & 0x00FF0000) >> 16);
-            bytes[i++] = (byte)((ZipDirEntry.ZipDirEntrySignature & 0xFF000000) >> 24);
+            bytes[i++] = (byte)(ZipConstants.ZipDirEntrySignature & 0x000000FF);
+            bytes[i++] = (byte)((ZipConstants.ZipDirEntrySignature & 0x0000FF00) >> 8);
+            bytes[i++] = (byte)((ZipConstants.ZipDirEntrySignature & 0x00FF0000) >> 16);
+            bytes[i++] = (byte)((ZipConstants.ZipDirEntrySignature & 0xFF000000) >> 24);
 
             // Version Made By
             bytes[i++] = Header[4];
@@ -604,10 +616,10 @@ namespace Ionic.Utils.Zip
 
             int i = 0;
             // signature
-            bytes[i++] = (byte)(ZipEntrySignature & 0x000000FF);
-            bytes[i++] = (byte)((ZipEntrySignature & 0x0000FF00) >> 8);
-            bytes[i++] = (byte)((ZipEntrySignature & 0x00FF0000) >> 16);
-            bytes[i++] = (byte)((ZipEntrySignature & 0xFF000000) >> 24);
+            bytes[i++] = (byte)(ZipConstants.ZipEntrySignature & 0x000000FF);
+            bytes[i++] = (byte)((ZipConstants.ZipEntrySignature & 0x0000FF00) >> 8);
+            bytes[i++] = (byte)((ZipConstants.ZipEntrySignature & 0x00FF0000) >> 16);
+            bytes[i++] = (byte)((ZipConstants.ZipEntrySignature & 0xFF000000) >> 24);
 
             // version needed
             Int16 FixedVersionNeeded = 0x14; // from examining existing zip files
@@ -631,33 +643,47 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)((_LastModDateTime & 0xFF000000) >> 24);
 
             // CRC32 (Int32)
-            CRC32 crc32 = new CRC32();
-            UInt32 crc = 0;
-            using (System.IO.Stream input = System.IO.File.OpenRead(FileName))
+            if (_FileData != null)
             {
-                crc = crc32.GetCrc32AndCopy(input, CompressedStream);
-            }
-            CompressedStream.Close();  // to get the footer bytes written to the underlying stream
+                // if we have FileData, that means we've read this entry from an
+                // existing zip archive. We must just copy the existing file data, 
+                // CRC, compressed size, and uncompressed size 
+                // over to the new (updated) archive.  
 
-            bytes[i++] = (byte)(crc & 0x000000FF);
-            bytes[i++] = (byte)((crc & 0x0000FF00) >> 8);
-            bytes[i++] = (byte)((crc & 0x00FF0000) >> 16);
-            bytes[i++] = (byte)((crc & 0xFF000000) >> 24);
+            }
+            else
+            {
+                // we get the compressed data from the file in the filesystem. 
+
+                CRC32 crc32 = new CRC32();
+                using (System.IO.Stream input = System.IO.File.OpenRead(FileName))
+                {
+                    UInt32 crc= crc32.GetCrc32AndCopy(input, CompressedStream);
+                    _Crc32 = (Int32) crc;
+                }
+                CompressedStream.Close();  // to get the footer bytes written to the underlying stream
+
+                _UncompressedSize = crc32.TotalBytesRead;
+                _CompressedSize = (Int32)_UnderlyingMemoryStream.Length;
+            }
+
+            bytes[i++] = (byte)(_Crc32 & 0x000000FF);
+            bytes[i++] = (byte)((_Crc32 & 0x0000FF00) >> 8);
+            bytes[i++] = (byte)((_Crc32 & 0x00FF0000) >> 16);
+            bytes[i++] = (byte)((_Crc32 & 0xFF000000) >> 24);
 
             // CompressedSize (Int32)
-            Int32 isz = (Int32)_UnderlyingMemoryStream.Length;
-            UInt32 sz = (UInt32)isz;
-            bytes[i++] = (byte)(sz & 0x000000FF);
-            bytes[i++] = (byte)((sz & 0x0000FF00) >> 8);
-            bytes[i++] = (byte)((sz & 0x00FF0000) >> 16);
-            bytes[i++] = (byte)((sz & 0xFF000000) >> 24);
+            bytes[i++] = (byte)(_CompressedSize & 0x000000FF);
+            bytes[i++] = (byte)((_CompressedSize & 0x0000FF00) >> 8);
+            bytes[i++] = (byte)((_CompressedSize & 0x00FF0000) >> 16);
+            bytes[i++] = (byte)((_CompressedSize & 0xFF000000) >> 24);
 
             // UncompressedSize (Int32)
-            if (_Debug) System.Console.WriteLine("Uncompressed Size: {0}", crc32.TotalBytesRead);
-            bytes[i++] = (byte)(crc32.TotalBytesRead & 0x000000FF);
-            bytes[i++] = (byte)((crc32.TotalBytesRead & 0x0000FF00) >> 8);
-            bytes[i++] = (byte)((crc32.TotalBytesRead & 0x00FF0000) >> 16);
-            bytes[i++] = (byte)((crc32.TotalBytesRead & 0xFF000000) >> 24);
+            if (_Debug) System.Console.WriteLine("Uncompressed Size: {0}", _UncompressedSize);
+            bytes[i++] = (byte)(_UncompressedSize & 0x000000FF);
+            bytes[i++] = (byte)((_UncompressedSize & 0x0000FF00) >> 8);
+            bytes[i++] = (byte)((_UncompressedSize & 0x00FF0000) >> 16);
+            bytes[i++] = (byte)((_UncompressedSize & 0xFF000000) >> 24);
 
             // filename length (Int16)
             Int16 length = (Int16)FileName.Length;
@@ -708,7 +734,6 @@ namespace Ionic.Utils.Zip
             // remember the file offset of this header
             _RelativeOffsetOfHeader = (int)s.Length;
 
-
             if (_Debug)
             {
                 System.Console.WriteLine("\nAll header data:");
@@ -736,45 +761,54 @@ namespace Ionic.Utils.Zip
             // write the header:
             WriteHeader(s, bytes);
 
-            // write the actual file data: 
-            _UnderlyingMemoryStream.Position = 0;
-
             if (_Debug)
             {
                 Console.WriteLine("{0}: writing compressed data to zipfile...", FileName);
-                Console.WriteLine("{0}: total data length: {1}", FileName, _UnderlyingMemoryStream.Length);
+                Console.WriteLine("{0}: total data length: {1}", FileName, _CompressedSize);
             }
-            while ((n = _UnderlyingMemoryStream.Read(bytes, 0, bytes.Length)) != 0)
+
+            // write the actual file data: 
+            if (_FileData != null)
             {
+                // use the existing compressed data we read from the extant zip archive
+                s.Write(_FileData, 0, _FileData.Length);
+            }
+            else
+            {
+                // rely on the compressed data we created in WriteHeader
+                _UnderlyingMemoryStream.Position = 0;
 
-                if (_Debug)
+                while ((n = _UnderlyingMemoryStream.Read(bytes, 0, bytes.Length)) != 0)
                 {
-                    Console.WriteLine("{0}: transferring {1} bytes...", FileName, n);
-
-                    for (int j = 0; j < n; j += 2)
+                    if (_Debug)
                     {
-                        if ((j > 0) && (j % 40 == 0))
-                            System.Console.WriteLine();
-                        System.Console.Write(" {0:X2}", bytes[j]);
-                        if (j + 1 < n)
-                            System.Console.Write("{0:X2}", bytes[j + 1]);
+                        Console.WriteLine("{0}: transferring {1} bytes...", FileName, n);
+
+                        for (int j = 0; j < n; j += 2)
+                        {
+                            if ((j > 0) && (j % 40 == 0))
+                                System.Console.WriteLine();
+                            System.Console.Write(" {0:X2}", bytes[j]);
+                            if (j + 1 < n)
+                                System.Console.Write("{0:X2}", bytes[j + 1]);
+                        }
+                        System.Console.WriteLine("\n");
                     }
-                    System.Console.WriteLine("\n");
+
+                    s.Write(bytes, 0, n);
                 }
 
-                s.Write(bytes, 0, n);
+                //_CompressedStream.Close();
+                //_CompressedStream= null;
+                _UnderlyingMemoryStream.Close();
+                _UnderlyingMemoryStream = null;
             }
-
-            //_CompressedStream.Close();
-            //_CompressedStream= null;
-            _UnderlyingMemoryStream.Close();
-            _UnderlyingMemoryStream = null;
         }
 
-        private const int ZipEntrySignature = 0x04034b50;
-        private const int ZipEntryDataDescriptorSignature = 0x08074b50;
+
 
         private bool _Debug = false;
+        private bool _Verbose = false;
 
         private DateTime _LastModified;
         private bool _TrimVolumeFromFullyQualifiedPaths = true;  // by default, trim them.
@@ -787,6 +821,7 @@ namespace Ionic.Utils.Zip
         private Int32 _LastModDateTime;
         private Int32 _Crc32;
         private byte[] _Extra;
+
 
         private byte[] __filedata;
         private System.IO.MemoryStream _UnderlyingMemoryStream;

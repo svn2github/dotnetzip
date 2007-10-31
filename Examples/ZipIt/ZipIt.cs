@@ -13,7 +13,7 @@
 // It is like a generalized ZipDir tool (See ZipDir.cs).
 //
 // compile with:
-//     csc /debug+ /target:exe /r:Zip.dll /out:ZipIt.exe ZipIt.cs 
+//     csc /debug+ /target:exe /r:Ionic.Utils.Zip.dll /out:ZipIt.exe ZipIt.cs 
 //
 // Fri, 23 Feb 2007  11:51
 //
@@ -34,11 +34,6 @@ public class ZipIt
     {
         if (args.Length < 2) Usage();
 
-        if (System.IO.File.Exists(args[0]))
-        {
-            Console.WriteLine("That zipfile already exists!\n");
-            Usage();
-        }
         if (!args[0].EndsWith(".zip"))
         {
             Console.WriteLine("The filename must end with .zip!\n");
@@ -47,6 +42,11 @@ public class ZipIt
 
         try
         {
+            // ZipFile zip = null;
+            if (System.IO.File.Exists(args[0]))
+            {
+                // The zipfile already exists
+            }
             using (ZipFile zip = new ZipFile(args[0]))
             {
                 for (int i = 1; i < args.Length; i++)
@@ -55,6 +55,7 @@ public class ZipIt
                 }
                 zip.Save();
             }
+
         }
         catch (System.Exception ex1)
         {
