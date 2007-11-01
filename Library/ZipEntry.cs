@@ -41,11 +41,18 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// The name of the file contained in the ZipEntry. 
         /// </summary>
-        public string FileName
+        public string LocalFileName
         {
-            get { return _FileName; }
+            get { return _LocalFileName; }
         }
 
+        /// <summary>
+        /// The name of the file contained in the ZipEntry. 
+        /// </summary>
+        public string FileName
+        {
+            get { return _FileNameInArchive; }
+        }
         /// <summary>
         /// The version of the zip engine needed to read the ZipEntry. 
         /// </summary>
@@ -151,7 +158,7 @@ namespace Ionic.Utils.Zip
                 // know we've reached the end of the compressed entries. 
                 if (ZipDirEntry.IsNotValidSig(signature))
                 {
-                    if (ze._Verbose) System.Console.WriteLine("  ZipEntry::Read(): Bad signature ({0:X8}) at position  0x{1:X8}", signature, s.Position);
+                    throw new Exception(String.Format("  ZipEntry::Read(): Bad signature ({0:X8}) at position  0x{1:X8}", signature, s.Position));
                 }
                 return false;
             }
@@ -188,7 +195,10 @@ namespace Ionic.Utils.Zip
 
             block = new byte[filenameLength];
             n = s.Read(block, 0, block.Length);
-            ze._FileName = Ionic.Utils.Zip.Shared.StringFromBuffer(block, 0, block.Length);
+            ze._FileNameInArchive = Ionic.Utils.Zip.Shared.StringFromBuffer(block, 0, block.Length);
+
+            // when creating an entry by reading, the LocalFileName is the same as the FileNameInArchivre
+            ze._LocalFileName = ze._FileNameInArchive;
 
             ze._Extra = new byte[extraFieldLength];
             n = s.Read(ze._Extra, 0, ze._Extra.Length);
@@ -235,19 +245,7 @@ namespace Ionic.Utils.Zip
         /// <returns>the ZipEntry read from the stream.</returns>
         public static ZipEntry Read(System.IO.Stream s)
         {
-            return Read(s, false);
-        }
-
-        /// <summary>
-        /// Reads one ZipEntry from the given stream.  
-        /// </summary>
-        /// <param name="s">the stream to read from.</param>
-        /// <param name="WantVerbose">true if you want verbose output.  Currently the verbose output goes to Console.Out.</param>
-        /// <returns>the ZipEntry read from the stream.</returns>
-        public static ZipEntry Read(System.IO.Stream s, bool WantVerbose)
-        {
             ZipEntry entry = new ZipEntry();
-            entry._Verbose = WantVerbose;
 
             if (!ReadHeader(s, entry)) return null;
 
@@ -269,10 +267,25 @@ namespace Ionic.Utils.Zip
 
         internal static ZipEntry Create(String filename)
         {
+            return ZipEntry.Create(filename, null);
+        }
+
+        internal static ZipEntry Create(String filename, string DirectoryPathInArchive)
+        {
             ZipEntry entry = new ZipEntry();
-            entry._FileName = filename;
+            entry._LocalFileName = filename;
+            if (DirectoryPathInArchive == null)
+                entry._FileNameInArchive = filename;
+            else
+            {
+                // explicitly specify a pathname for this file  
+                entry._FileNameInArchive =
+                    System.IO.Path.Combine(DirectoryPathInArchive, System.IO.Path.GetFileName(filename));
+            }
+
 
             entry._LastModified = System.IO.File.GetLastWriteTime(filename);
+
             // adjust the time if the .NET BCL thinks it is in DST.  
             // see the note elsewhere in this file for more info. 
             if (entry._LastModified.IsDaylightSavingTime())
@@ -394,7 +407,6 @@ namespace Ionic.Utils.Zip
                     return;
             }
             else throw new Exception("Invalid input.");
-
 
             using (System.IO.MemoryStream memstream = new System.IO.MemoryStream(_FileData))
             {
@@ -631,8 +643,52 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)(BitField & 0x00FF);
             bytes[i++] = (byte)((BitField & 0xFF00) >> 8);
 
-            // compression method
-            Int16 CompressionMethod = 0x08; // 0x08 = Deflate
+            Int16 CompressionMethod = 0x08; // 0x08 = Deflate, 0x00 == No Compression
+
+            // CRC32 (Int32)
+            if (_FileData != null)
+            {
+                // if we have FileData, that means we've read this entry from an
+                // existing zip archive. We must just copy the existing file data, 
+                // CRC, compressed size, and uncompressed size 
+                // over to the new (updated) archive.  
+            }
+            else
+            {
+                // Read in the data from the file in the filesystem, comress it, and 
+                // calculate a CRC on it as we read. 
+
+                CRC32 crc32 = new CRC32();
+                using (System.IO.Stream input = System.IO.File.OpenRead(LocalFileName))
+                {
+                    UInt32 crc = crc32.GetCrc32AndCopy(input, CompressedStream);
+                    _Crc32 = (Int32)crc;
+                }
+                CompressedStream.Close();  // to get the footer bytes written to the underlying stream
+                
+                _UncompressedSize = crc32.TotalBytesRead;
+                _CompressedSize = (Int32)_UnderlyingMemoryStream.Length;
+
+                // It is possible that applying this stream compression on a previously compressed
+                // file will actually increase the size of the data.  In that case, we back-off
+                // and just store the uncompressed (really, already compressed) data.
+                // We need to recompute the CRC, and point to the right data.
+                if (_CompressedSize > _UncompressedSize)
+                {
+                    using (System.IO.Stream input = System.IO.File.OpenRead(LocalFileName))
+                    {
+                        _UnderlyingMemoryStream = new System.IO.MemoryStream();
+                        UInt32 crc = crc32.GetCrc32AndCopy(input, _UnderlyingMemoryStream);
+                        _Crc32 = (Int32)crc;
+                    }
+                    _UncompressedSize = crc32.TotalBytesRead;
+                    _CompressedSize = (Int32)_UnderlyingMemoryStream.Length;
+                    if (_CompressedSize != _UncompressedSize) throw new Exception("No compression but unequal stream lengths!");
+                    CompressionMethod = 0x00;
+                }
+            }
+
+            // compression method         
             bytes[i++] = (byte)(CompressionMethod & 0x00FF);
             bytes[i++] = (byte)((CompressionMethod & 0xFF00) >> 8);
 
@@ -642,31 +698,7 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)((_LastModDateTime & 0x00FF0000) >> 16);
             bytes[i++] = (byte)((_LastModDateTime & 0xFF000000) >> 24);
 
-            // CRC32 (Int32)
-            if (_FileData != null)
-            {
-                // if we have FileData, that means we've read this entry from an
-                // existing zip archive. We must just copy the existing file data, 
-                // CRC, compressed size, and uncompressed size 
-                // over to the new (updated) archive.  
-
-            }
-            else
-            {
-                // we get the compressed data from the file in the filesystem. 
-
-                CRC32 crc32 = new CRC32();
-                using (System.IO.Stream input = System.IO.File.OpenRead(FileName))
-                {
-                    UInt32 crc= crc32.GetCrc32AndCopy(input, CompressedStream);
-                    _Crc32 = (Int32) crc;
-                }
-                CompressedStream.Close();  // to get the footer bytes written to the underlying stream
-
-                _UncompressedSize = crc32.TotalBytesRead;
-                _CompressedSize = (Int32)_UnderlyingMemoryStream.Length;
-            }
-
+            // calculated above
             bytes[i++] = (byte)(_Crc32 & 0x000000FF);
             bytes[i++] = (byte)((_Crc32 & 0x0000FF00) >> 8);
             bytes[i++] = (byte)((_Crc32 & 0x00FF0000) >> 16);
@@ -808,11 +840,11 @@ namespace Ionic.Utils.Zip
 
 
         private bool _Debug = false;
-        private bool _Verbose = false;
 
         private DateTime _LastModified;
         private bool _TrimVolumeFromFullyQualifiedPaths = true;  // by default, trim them.
-        private string _FileName;
+        private string _LocalFileName;
+        private string _FileNameInArchive;
         private Int16 _VersionNeeded;
         private Int16 _BitField;
         private Int16 _CompressionMethod;

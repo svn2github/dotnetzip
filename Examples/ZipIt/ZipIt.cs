@@ -49,9 +49,10 @@ public class ZipIt
             }
             using (ZipFile zip = new ZipFile(args[0]))
             {
+                zip.Output = System.Console.Out;
                 for (int i = 1; i < args.Length; i++)
                 {
-                    zip.AddItem(args[i], true); // will add Files or Dirs, recurses subdirectories
+                    zip.AddItem(args[i]); // will add Files or Dirs, recurses subdirectories
                 }
                 zip.Save();
             }

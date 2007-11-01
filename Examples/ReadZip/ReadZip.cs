@@ -44,9 +44,9 @@ public class ReadZip
 
         try
         {
-            using (ZipFile zip = ZipFile.Read(args[0]))
+            using (ZipFile zip = ZipFile.Read(args[0], System.Console.Out))
             {
-                zip.ExtractAll(args[1], true);
+                zip.ExtractAll(args[1]);
             }
         }
         catch (System.Exception ex1)

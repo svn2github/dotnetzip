@@ -20,8 +20,6 @@ namespace Ionic.Utils.Zip
     /// </summary>
     public class ZipDirEntry
     {
-        private bool _Debug = false;
-
         private ZipDirEntry() { }
 
         /// <summary>
@@ -112,19 +110,6 @@ namespace Ionic.Utils.Zip
         /// <returns>the entry read from the archive.</returns>
         public static ZipDirEntry Read(System.IO.Stream s)
         {
-            return Read(s, false);
-        }
-
-
-        /// <summary>
-        /// Reads one entry from the zip directory structure in the zip file. 
-        /// </summary>
-        /// <param name="s">the stream from which to read.</param>
-        /// <param name="WantVerbose">whether to generate verbose output.  If so, the output is currently sent to Console.Out.</param>
-        /// <returns>the entry read from the archive.</returns>
-        public static ZipDirEntry Read(System.IO.Stream s, bool WantVerbose)
-        {
-
             int signature = Ionic.Utils.Zip.Shared.ReadSignature(s);
             // return null if this is not a local file header signature
             if (ZipDirEntry.IsNotValidSig(signature))
@@ -137,7 +122,7 @@ namespace Ionic.Utils.Zip
                 // know we've reached the end of the central directory. 
                 if (signature != ZipConstants.EndOfCentralDirectorySignature)
                 {
-                    if (WantVerbose) System.Console.WriteLine("  ZipDirEntry::Read(): Bad signature ({0:X8}) at position 0x{1:X8}", signature, s.Position);
+                   throw new Exception(String.Format("  ZipDirEntry::Read(): Bad signature ({0:X8}) at position 0x{1:X8}", signature, s.Position));
                 }
                 return null;
             }
@@ -149,7 +134,6 @@ namespace Ionic.Utils.Zip
             int i = 0;
             ZipDirEntry zde = new ZipDirEntry();
 
-            zde._Debug = WantVerbose;
             zde._VersionMadeBy = (short)(block[i++] + block[i++] * 256);
             zde._VersionNeeded = (short)(block[i++] + block[i++] * 256);
             zde._BitField = (short)(block[i++] + block[i++] * 256);
@@ -203,6 +187,7 @@ namespace Ionic.Utils.Zip
         private Int32 _UncompressedSize;
         private Int16 _BitField;
         private Int32 _LastModDateTime;
+        //private bool _Debug = false;
 
         private Int32 _Crc32;
         private byte[] _Extra;

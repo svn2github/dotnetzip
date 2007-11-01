@@ -82,7 +82,6 @@ namespace Ionic.Utils.Zip
                     count = input.Read(buffer, 0, readSize);
                     if (output != null) output.Write(buffer, 0, count);
                     _TotalBytesRead += count;
-
                 }
 
                 return ~crc32Result;

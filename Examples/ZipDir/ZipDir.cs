@@ -24,40 +24,43 @@ using Ionic.Utils.Zip;
 public class ZipDir
 {
 
-  private static void Usage() 
-  {
-    Console.WriteLine("usage:\n  ZipDir <ZipFileToCreate> <directory>");
-    Environment.Exit(1);
-  }
-
-  public static void Main(String[] args) 
-  {
-    if (args.Length != 2) Usage();
-    if (!System.IO.Directory.Exists(args[1])) {
-      Console.WriteLine("The directory does not exist!\n");
-      Usage();
-    }
-    if (System.IO.File.Exists(args[0])) {
-      Console.WriteLine("That zipfile already exists!\n");
-      Usage();
-    }
-    if (!args[0].EndsWith(".zip")) {
-      Console.WriteLine("The filename must end with .zip!\n");
-      Usage();
-    }
-
-    try 
+    private static void Usage()
     {
-      using(ZipFile zip= new ZipFile(args[0])) 
-      {
-	zip.AddDirectory(args[1], true); // recurses subdirectories
-	zip.Save(); 
-      }
-    }
-    catch (System.Exception ex1)
-    {
-      System.Console.Error.WriteLine("exception: " + ex1);
+        Console.WriteLine("usage:\n  ZipDir <ZipFileToCreate> <directory>");
+        Environment.Exit(1);
     }
 
-  }
+    public static void Main(String[] args)
+    {
+        if (args.Length != 2) Usage();
+        if (!System.IO.Directory.Exists(args[1]))
+        {
+            Console.WriteLine("The directory does not exist!\n");
+            Usage();
+        }
+        if (System.IO.File.Exists(args[0]))
+        {
+            Console.WriteLine("That zipfile already exists!\n");
+            Usage();
+        }
+        if (!args[0].EndsWith(".zip"))
+        {
+            Console.WriteLine("The filename must end with .zip!\n");
+            Usage();
+        }
+
+        try
+        {
+            using (ZipFile zip = new ZipFile(args[0], System.Console.Out))
+            {
+                zip.AddDirectory(args[1]); // recurses subdirectories
+                zip.Save();
+            }
+        }
+        catch (System.Exception ex1)
+        {
+            System.Console.Error.WriteLine("exception: " + ex1);
+        }
+
+    }
 }

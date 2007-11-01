@@ -105,6 +105,34 @@ namespace Ionic.Utils.Zip
             set { _TrimVolumeFromFullyQualifiedPaths = value; }
         }
 
+        /// <summary>
+        /// Determines whether verbose output is sent to Output 
+        /// during <c>AddXxx()</c> and <c>ReadXxx()</c> operations. 
+        /// </summary>
+        private bool Verbose
+        {
+            get { return (_Output != null); }
+            //set { _Verbose = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the TextWriter for the instance. If the TextWriter
+        /// is set to a non-null value, then verbose output is sent to the 
+        /// TextWriter during Add and Read operations.  
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// ZipFile zf= new ZipFile(FilePath);
+        /// zf.Output= System.Console.Out;
+        /// zf.ExtractAll();
+        /// </code>
+        /// </example>
+        public System.IO.TextWriter Output
+        {
+            get { return _Output; }
+            set { _Output = value; }
+        }
+
         private System.IO.Stream ReadStream
         {
             get
@@ -195,8 +223,61 @@ namespace Ionic.Utils.Zip
         /// <param name="ZipFileName">The filename to use for the new zip archive.</param>
         public ZipFile(string ZipFileName)
         {
+            Init(ZipFileName, null);
+        }
+
+        /// <summary>
+        /// Creates a new ZipFile instance, using the specified ZipFileName for the filename. 
+        /// The ZipFileName may be fully qualified.
+        /// </summary>
+        /// <remarks>
+        /// <para>Applications can use this constructor to create a new ZipFile for writing, 
+        /// or to slurp in an existing zip archive for read and write purposes.  
+        /// </para>
+        /// <para>Typically an application writing a zip archive will call this constructor, passing
+        /// the name of a file that does not exist, then add 
+        /// directories or files to the ZipFile via AddDirectory or AddFile, and then write the 
+        /// zip archive to the disk by calling <c>Save()</c>. The file is not actually written to the disk 
+        /// until the application calls <c>ZipFile.Save()</c> .
+        /// </para>
+        /// <para>
+        /// An application reading a zip archive can call this constructor, passing the name of a 
+        /// zip file that does exist.  The file is then read into the ZipFile instance.  The app
+        /// can then enumerate the entries or can add a new entry.  An application may wish to 
+        /// explicitly specify that it is reading an existing zip file by using ZipFile.Read(). 
+        /// The parameterized constructor allows applications to use the same code to add items 
+        /// to a zip archive, regardless of whether the zip file exists.  
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// using (ZipFile zip = new ZipFile(args[0]))
+        /// { 
+        ///   // note: this does not recurse directories! 
+        ///   String[] filenames = System.IO.Directory.GetFiles(args[1]);
+        ///   foreach (String filename in filenames)
+        ///   {
+        ///     Console.WriteLine("Adding {0}...", filename);
+        ///     zip.AddFile(filename);
+        ///   }  
+        ///   zip.Save();
+        /// }
+        /// </code>
+        /// </example>
+        /// 
+        /// <param name="ZipFileName">The filename to use for the new zip archive.</param>
+        /// <param name="Output">The output TextWriter to use for verbose messages.</param>
+        public ZipFile(string ZipFileName, System.IO.TextWriter Output)
+        {
+            Init(ZipFileName, Output);
+        }
+
+
+        private void Init(string ZipFileName, System.IO.TextWriter Output)
+        {
             // create a new zipfile
             _name = ZipFileName;
+            _Output = Output;
             if (!_name.EndsWith(".zip"))
                 throw new System.Exception(String.Format("The file name given ({0}) is a bad format.  It must end with a .zip extension.", ZipFileName));
             if (System.IO.File.Exists(_name))
@@ -207,52 +288,74 @@ namespace Ionic.Utils.Zip
             }
             else
                 _entries = new System.Collections.Generic.List<ZipEntry>();
+            return;
         }
 
 
         #region For Writing Zip Files
-        /// <summary>
-        /// Adds an item, either a file or a directory, to a zip file archive.  If 
-        /// adding a directory, the add is recursive on all files and subdirectories 
-        /// contained within it. 
-        /// </summary>
-        /// <remarks>
-        /// The name of the item may be a relative path or a fully-qualified path.
-        /// The item added by this call to the ZipFile is not written to the zip file
-        /// archive until the application calls Save() on the ZipFile. 
-        /// </remarks>
-        /// 
-        /// <param name="FileOrDirectoryName">the name of the file or directory to add.</param>
-        public void AddItem(string FileOrDirectoryName)
-        {
-            AddItem(FileOrDirectoryName, false);
-        }
 
         /// <summary>
-        /// Adds an item, either a file or a directory, to a zip file archive.  If 
-        /// adding a directory, the add is recursive on all files and subdirectories 
-        /// contained within it. 
+        /// Adds an item, either a file or a directory, to a zip file archive.  
         /// </summary>
         /// 
         /// <remarks>
+        /// <para>
+        /// If adding a directory, the add is recursive on all files and subdirectories 
+        /// contained within it. 
+        /// </para>
+        /// <para>
         /// The name of the item may be a relative path or a fully-qualified path.
         /// The item added by this call to the ZipFile is not written to the zip file
         /// archive until the application calls Save() on the ZipFile. 
-        /// This version of the method allows the caller
-        /// to specify that they want verbose output. 
+        /// </para>
+        /// <para>
+        /// The directory name used for the file within the archive is the same as
+        /// the directory name (potentially a relative path) specified in the FileOrDirectoryName.
+        /// </para>
+        /// </remarks>
+        /// <overloads>This method has two overloads.</overloads>
+        /// <param name="FileOrDirectoryName">the name of the file or directory to add.</param>
+        /// 
+        public void AddItem(string FileOrDirectoryName)
+        {
+            AddItem(FileOrDirectoryName, null);
+        }
+
+
+        /// <summary>
+        /// Adds an item, either a file or a directory, to a zip file archive.  
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// If adding a directory, the add is recursive on all files and subdirectories 
+        /// contained within it. 
+        /// </para>
+        /// <para>
+        /// The name of the item may be a relative path or a fully-qualified path.
+        /// The item added by this call to the ZipFile is not written to the zip file
+        /// archive until the application calls Save() on the ZipFile. 
+        /// </para>
+        /// <para>
+        /// 
+        /// </para>
         /// </remarks>
         /// 
         /// <param name="FileOrDirectoryName">the name of the file or directory to add.</param>
-        /// 
-        /// <param name="WantVerbose">true means verbose output.  
-        /// The verbose output current gets sent to Console.Out. 
+        /// <param name="DirectoryPathInArchive">
+        /// The name of the directory path to use within the zip archive. 
+        /// This path may, or may not, correspond to a real directory in the current filesystem.
+        /// If the files within the zip are later extracted, this is the path used for the extracted file. 
+        /// Passing null will use the path on the FileOrDirectoryName.  Passing the empty string ("")
+        /// will insert the item at the root path within the archive.
         /// </param>
-        public void AddItem(string FileOrDirectoryName, bool WantVerbose)
+        /// 
+        public void AddItem(String FileOrDirectoryName, String DirectoryPathInArchive)
         {
             if (System.IO.File.Exists(FileOrDirectoryName))
-                AddFile(FileOrDirectoryName, WantVerbose);
+                AddFile(FileOrDirectoryName, DirectoryPathInArchive);
             else if (System.IO.Directory.Exists(FileOrDirectoryName))
-                AddDirectory(FileOrDirectoryName, WantVerbose);
+                AddDirectory(FileOrDirectoryName, DirectoryPathInArchive);
 
             else
                 throw new Exception(String.Format("That file or directory ({0}) does not exist!", FileOrDirectoryName));
@@ -266,11 +369,11 @@ namespace Ionic.Utils.Zip
         /// The file added by this call to the ZipFile is not written to the zip file
         /// archive until the application calls Save() on the ZipFile. 
         /// </remarks>
-        /// <overloads>This method has three overloads.</overloads>
+        /// <overloads>This method has two overloads.</overloads>
         /// <param name="FileName">the name of the file to add.</param>
         public void AddFile(string FileName)
         {
-            AddFile(FileName, false);
+            AddFile(FileName, null);
         }
 
         /// <summary>
@@ -280,73 +383,98 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// The file added by this call to the ZipFile is not written to the zip file
         /// archive until the application calls Save() on the ZipFile. 
-        /// This version of the method allows the caller
-        /// to specify that they want Verbose output. 
         /// </remarks>
+        /// 
+        /// <example>
+        /// <code>
+        /// </code>
+        /// </example>
+        /// 
         /// <param name="FileName">the name of the file to add.</param>
-        /// <param name="WantVerbose">true means verbose output.  
-        /// The verbose output current gets sent to Console.Out. 
+        /// <param name="DirectoryPathInArchive">
+        /// Specifies a directory path to use to override any path in the FileName.
+        /// This path may, or may not, correspond to a real directory in the current filesystem.
+        /// If the files within the zip are later extracted, this is the path used for the extracted file. 
+        /// Passing null will use the path on the FileName.  Passing the empty string ("")
+        /// will insert the item at the root path within the archive.
         /// </param>
-        public void AddFile(string FileName, bool WantVerbose)
+        public void AddFile(string FileName, String DirectoryPathInArchive)
         {
-            ZipEntry ze = ZipEntry.Create(FileName);
+            ZipEntry ze = ZipEntry.Create(FileName, DirectoryPathInArchive);
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
-            if (WantVerbose) Console.WriteLine("adding {0}...", FileName);
+            if (Verbose) Output.WriteLine("adding {0}...", FileName);
             InsureUniqueEntry(ze);
             _entries.Add(ze);
             _contentsChanged = true;
         }
 
-        private void InsureUniqueEntry(ZipEntry ze)
+
+        private void InsureUniqueEntry(ZipEntry ze1)
         {
-            foreach (ZipEntry e in _entries)
+            foreach (ZipEntry ze2 in _entries)
             {
-                if (_Debug) Console.WriteLine("Comparing {0} to {1}...", ze.FileName, e.FileName);
-                if (ze.FileName == e.FileName)
+                if (_Debug) Console.WriteLine("Comparing {0} to {1}...", ze1.FileName, ze2.FileName);
+                if (ze1.FileName == ze2.FileName)
                     throw new Exception("That entry already exists.");
             }
 
         }
 
         /// <summary>
-        /// Adds a Directory to a Zip file archive. The name of the directory may be 
+        /// Adds a Directory to a Zip file archive. 
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// The name of the directory may be 
         /// a relative path or a fully-qualified path. The add operation is recursive,
         /// so that any files or subdirectories within the name directory are also
         /// added to the archive.
-        /// </summary>
+        /// </remarks>
+        /// 
         /// <param name="DirectoryName">the name of the directory to add.</param>
         public void AddDirectory(string DirectoryName)
         {
-            AddDirectory(DirectoryName, false);
+            AddDirectory(DirectoryName, null);
         }
 
 
         /// <summary>
-        /// Adds a Directory to a Zip file archive. The name of the directory may be 
+        /// Adds a Directory to a Zip file archive. 
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// The name of the directory may be 
         /// a relative path or a fully-qualified path. The add operation is recursive,
         /// so that any files or subdirectories within the name directory are also
-        /// added to the archive.  This version of the method allows the caller
-        /// to specify that they want Verbose output. 
-        /// </summary>
+        /// added to the archive.
+        /// </remarks>
+        /// 
         /// <param name="DirectoryName">the name of the directory to add.</param>
-        /// <param name="WantVerbose">true means verbose output.  
-        /// The verbose output current gets sent to Console.Out. 
+        /// 
+        /// <param name="DirectoryPathInArchive">
+        /// Specifies a directory path to use to override any path in the DirectoryName.
+        /// This path may, or may not, correspond to a real directory in the current filesystem.
+        /// If the zip is later extracted, this is the path used for the extracted file or directory. 
+        /// Passing null will use the path on the DirectoryName.  Passing the empty string ("")
+        /// will insert the item at the root path within the archive.
         /// </param>
-        public void AddDirectory(string DirectoryName, bool WantVerbose)
+        /// 
+        public void AddDirectory(string DirectoryName, String DirectoryPathInArchive)
         {
+            if (Verbose) Output.WriteLine("adding {0}...", DirectoryName);
+
             String[] filenames = System.IO.Directory.GetFiles(DirectoryName);
             foreach (String filename in filenames)
             {
-                if (WantVerbose) Console.WriteLine("adding {0}...", filename);
-                AddFile(filename);
+                AddFile(filename, DirectoryPathInArchive);
             }
 
             String[] dirnames = System.IO.Directory.GetDirectories(DirectoryName);
             foreach (String dir in dirnames)
             {
-                AddDirectory(dir, WantVerbose);
+                AddDirectory(dir, DirectoryPathInArchive);
             }
-            _contentsChanged = true; 
+            _contentsChanged = true;
         }
 
         /// <summary>
@@ -364,6 +492,8 @@ namespace Ionic.Utils.Zip
         {
             // check if modified, before saving. 
             if (!_contentsChanged) return;
+
+            if (Verbose) Output.WriteLine("Saving....");
 
             // an entry for each file
             foreach (ZipEntry e in _entries)
@@ -452,18 +582,12 @@ namespace Ionic.Utils.Zip
         #region For Reading Zip Files
 
         /// <summary>
-        /// Reads a zip file archive and returns the ZipFile instance. 
+        /// Reads a zip file archive and returns the instance.  
         /// </summary>
-        /// 
-        /// <remarks>
-        /// Applications should call this method when it is expected that the zip 
-        /// file exists.  An alternative is to use the parameterized constructor,
-        /// passing in the name of the extant zip file.  
-        /// </remarks>
         /// 
         /// <exception cref="System.Exception">
         /// Thrown if the zipfile does not exist. The implementation of this 
-        /// method relies on <c>System.IO.File.OpenRead()</c>, which can throw
+        /// method relies on System.IO.File.OpenRead(), which can throw
         /// a variety of exceptions, including specific exceptions if a file
         /// is not found, an unauthorized access exception, exceptions for
         /// poorly formatted filenames, and so on. 
@@ -474,14 +598,15 @@ namespace Ionic.Utils.Zip
         /// This can be a fully-qualified or relative pathname.
         /// </param>
         /// 
-        /// <overloads>This method has two overloads.</overloads>
+        /// <overloads>This method has 2 overloads.</overloads>
         /// 
         /// <returns>The instance read from the zip archive.</returns>
         /// 
         public static ZipFile Read(string ZipFileName)
         {
-            return Read(ZipFileName, false);
+            return ZipFile.Read(ZipFileName, null);
         }
+
 
         /// <summary>
         /// Reads a zip file archive and returns the instance.  
@@ -499,25 +624,35 @@ namespace Ionic.Utils.Zip
         /// The name of the zip archive to open.  
         /// This can be a fully-qualified or relative pathname.
         /// </param>
-        /// <param name="WantVerbose">true if the caller wants Verbose output.  Currently the output goes to System.Out.</param>
+        /// 
+        /// <param name="Output">The <c>System.IO.TextWriter</c> to be used for output messages.</param>
+        /// 
         /// <returns>The instance read from the zip archive.</returns>
         /// 
-        public static ZipFile Read(string ZipFileName, bool WantVerbose)
+        public static ZipFile Read(string ZipFileName, System.IO.TextWriter Output)
         {
             ZipFile zf = new ZipFile();
-            zf._Verbose = WantVerbose;
+            zf._Output = Output;
             zf._name = ZipFileName;
             ReadIntoInstance(zf);
             return zf;
         }
 
+
         private static void ReadIntoInstance(ZipFile zf)
         {
             zf._entries = new System.Collections.Generic.List<ZipEntry>();
             ZipEntry e;
-            while ((e = ZipEntry.Read(zf.ReadStream, zf._Debug)) != null)
+            if (zf.Verbose)
+                zf.Output.WriteLine("Reading zip {0}...", zf.Name);
+
+            while ((e = ZipEntry.Read(zf.ReadStream)) != null)
             {
+                if (zf.Verbose)
+                    zf.Output.WriteLine("  {0}", e.FileName);
+
                 if (zf._Debug) System.Console.WriteLine("  ZipFile::Read(): ZipEntry: {0}", e.FileName);
+
                 zf._entries.Add(e);
             }
 
@@ -525,7 +660,7 @@ namespace Ionic.Utils.Zip
             zf._direntries = new System.Collections.Generic.List<ZipDirEntry>();
 
             ZipDirEntry de;
-            while ((de = ZipDirEntry.Read(zf.ReadStream, zf._Debug)) != null)
+            while ((de = ZipDirEntry.Read(zf.ReadStream)) != null)
             {
                 if (zf._Debug) System.Console.WriteLine("  ZipFile::Read(): ZipDirEntry: {0}", de.FileName);
                 zf._direntries.Add(de);
@@ -546,7 +681,6 @@ namespace Ionic.Utils.Zip
         /// <code>
         /// using (ZipFile zip = ZipFile.Read(zipfile))
         /// {
-        ///
         ///   bool header = true;
         ///   foreach (ZipEntry e in zip)
         ///   {
@@ -594,16 +728,10 @@ namespace Ionic.Utils.Zip
         /// Extracts all of the items in the zip archive, to the specified path in the filesystem.  
         /// The path can be relative or fully-qualified. 
         /// </summary>
-        /// <param name="path">the path to which the contents of the zipfile are extracted.</param>
-        public void ExtractAll(string path)
-        {
-            ExtractAll(path, false);
-        }
-
-        /// <summary>
-        /// Extracts all of the items in the zip archive, to the specified path in the filesystem.  
-        /// The path can be relative or fully-qualified. 
-        /// </summary>
+        /// <remarks>
+        /// This method will send output messages to the output stream
+        /// if WantVerbose is set on the ZipFile instance. 
+        /// </remarks>
         /// <example>
         /// This example extracts all the entries in a zip archive file, 
         /// to the specified target directory.  It handles exceptions that
@@ -626,22 +754,21 @@ namespace Ionic.Utils.Zip
         /// </example>
         /// 
         /// <param name="path">the path to which the contents of the zipfile are extracted.</param>
-        /// <param name="WantVerbose">true means generate verbose output.  Currently this is sent to Console.Out.</param>
         /// 
-        public void ExtractAll(string path, bool WantVerbose)
+        public void ExtractAll(string path)
         {
-            bool header = WantVerbose;
+            bool header = Verbose;
             foreach (ZipEntry e in _entries)
             {
                 if (header)
                 {
-                    System.Console.WriteLine("\n{1,-22} {2,-6} {3,4}   {4,-8}  {0}",
+                    Output.WriteLine("\n{1,-22} {2,-6} {3,4}   {4,-8}  {0}",
                                  "Name", "Modified", "Size", "Ratio", "Packed");
-                    System.Console.WriteLine(new System.String('-', 72));
+                    Output.WriteLine(new System.String('-', 72));
                     header = false;
                 }
-                if (WantVerbose)
-                    System.Console.WriteLine("{1,-22} {2,-6} {3,4:F0}%   {4,-8} {0}",
+                if (Verbose)
+                    Output.WriteLine("{1,-22} {2,-6} {3,4:F0}%   {4,-8} {0}",
                                  e.FileName,
                                  e.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
                                  e.UncompressedSize,
@@ -762,10 +889,11 @@ namespace Ionic.Utils.Zip
             }
         }
 
+        private System.IO.TextWriter _Output = null;
         private System.IO.Stream _readstream;
         private System.IO.FileStream _writestream;
         private bool _Debug = false;
-        private bool _Verbose = false;
+        //private bool _Verbose = false;
         private bool _disposed = false;
         private System.Collections.Generic.List<ZipEntry> _entries = null;
         private System.Collections.Generic.List<ZipDirEntry> _direntries = null;
