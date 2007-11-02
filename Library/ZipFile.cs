@@ -380,13 +380,37 @@ namespace Ionic.Utils.Zip
         /// Adds a File to a Zip file archive. The name of the file may be a relative path or 
         /// a fully-qualified path. 
         /// </summary>
+        /// 
         /// <remarks>
+        /// <para>
         /// The file added by this call to the ZipFile is not written to the zip file
         /// archive until the application calls Save() on the ZipFile. 
+        /// </para>
+        /// 
+        /// <para>
+        /// This version of the method allows the caller to explicitly specify the 
+        /// directory path to be used in the archive. 
+        /// </para>
+        /// 
         /// </remarks>
         /// 
         /// <example>
         /// <code>
+        ///    try
+        ///    {
+        ///      using (ZipFile zip = new ZipFile("test2.zip",System.Console.Out))
+        ///      {
+        ///        zip.AddFile("c:\\photos\\personal\\7440-N49th.png", "images");
+        ///        zip.AddFile("c:\\Desktop\\2005_Annual_Report.pdf", "files\\documents");
+        ///        zip.AddFile("test2.cs", "files\\text");
+        ///
+        ///        zip.Save();
+        ///      }
+        ///    }
+        ///    catch (System.Exception ex1)
+        ///    {
+        ///      System.Console.Error.WriteLine("exception: " + ex1);
+        ///    }
         /// </code>
         /// </example>
         /// 
