@@ -22,55 +22,57 @@
 using System;
 using Ionic.Utils.Zip;
 
-public class CreateZip
+namespace Ionic.Utils.Zip.Examples
 {
-
-    private static void Usage()
+    public class CreateZip
     {
-        Console.WriteLine("usage:\n  CreateZip <ZipFileToCreate> <directory>");
-        Environment.Exit(1);
-    }
-
-    public static void Main(String[] args)
-    {
-        if (args.Length != 2) Usage();
-        if (!System.IO.Directory.Exists(args[1]))
+        private static void Usage()
         {
-            Console.WriteLine("The directory does not exist!\n");
-            Usage();
-        }
-        if (System.IO.File.Exists(args[0]))
-        {
-            Console.WriteLine("That zipfile already exists!\n");
-            Usage();
-        }
-        if (!args[0].EndsWith(".zip"))
-        {
-            Console.WriteLine("The filename must end with .zip!\n");
-            Usage();
+            Console.WriteLine("usage:\n  CreateZip <ZipFileToCreate> <directory>");
+            Environment.Exit(1);
         }
 
-        try
+        public static void Main(String[] args)
         {
-            using (ZipFile zip = new ZipFile(args[0]))
+            if (args.Length != 2) Usage();
+            if (!System.IO.Directory.Exists(args[1]))
             {
+                Console.WriteLine("The directory does not exist!\n");
+                Usage();
+            }
+            if (System.IO.File.Exists(args[0]))
+            {
+                Console.WriteLine("That zipfile already exists!\n");
+                Usage();
+            }
+            if (!args[0].EndsWith(".zip"))
+            {
+                Console.WriteLine("The filename must end with .zip!\n");
+                Usage();
+            }
 
-                // note: this does not recurse directories! 
-                String[] filenames = System.IO.Directory.GetFiles(args[1]);
-                foreach (String filename in filenames)
+            try
+            {
+                using (ZipFile zip = new ZipFile(args[0]))
                 {
-                    Console.WriteLine("Adding {0}...", filename);
-                    zip.AddFile(filename);
+
+                    // note: this does not recurse directories! 
+                    String[] filenames = System.IO.Directory.GetFiles(args[1]);
+                    foreach (String filename in filenames)
+                    {
+                        Console.WriteLine("Adding {0}...", filename);
+                        zip.AddFile(filename);
+                    }
+
+                    zip.Save();
                 }
 
-                zip.Save();
+            }
+            catch (System.Exception ex1)
+            {
+                System.Console.Error.WriteLine("exception: " + ex1);
             }
 
         }
-        catch (System.Exception ex1)
-        {
-            System.Console.Error.WriteLine("exception: " + ex1);
-        }
-
     }
 }

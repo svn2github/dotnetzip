@@ -19,6 +19,8 @@ namespace Ionic.Utils.Zip
     public class ZipEntry
     {
 
+        private ZipEntry() { }
+
         /// <summary>
         /// The time and date at which the file indicated by the ZipEntry was last modified. 
         /// </summary>
@@ -54,7 +56,7 @@ namespace Ionic.Utils.Zip
             get { return _FileNameInArchive; }
         }
         /// <summary>
-        /// The version of the zip engine needed to read the ZipEntry. 
+        /// The version of the zip engine needed to read the ZipEntry.  This is usually 0x14. 
         /// </summary>
         public Int16 VersionNeeded
         {
@@ -70,7 +72,7 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// The compression method employed for this ZipEntry.
+        /// The compression method employed for this ZipEntry. 0x08 = Deflate.  0x00 = Store (no compression). 
         /// </summary>
         public Int16 CompressionMethod
         {
@@ -78,7 +80,7 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// The compressed size of the file, within the zip archive.
+        /// The compressed size of the file, in bytes, within the zip archive. 
         /// </summary>
         public Int32 CompressedSize
         {
@@ -86,7 +88,7 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// The size of the file, before compression, or after extraction. 
+        /// The size of the file, in bytes, before compression, or after extraction. 
         /// </summary>
         public Int32 UncompressedSize
         {
@@ -303,7 +305,7 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
-        /// Extract the current entry to the current working directory. 
+        /// Extract the entry to the filesystem, starting at the current working directory. 
         /// </summary>
         /// <remarks>
         /// <para>

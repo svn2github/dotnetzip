@@ -91,14 +91,14 @@ namespace Ionic.Utils.Zip
         /// When this is set, any volume name (eg C:) is trimmed 
         /// from fully-qualified pathnames on any ZipEntry, before writing the 
         /// ZipEntry into the ZipFile. 
-        /// The default value is true.  
+        /// </summary>
         /// <remarks>
-        /// This setting must be true to allow 
+        /// The default value is true. This setting must be true to allow 
         /// Windows Explorer to read the zip archives properly. 
         /// The property is included for backwards compatibility only.  You'll 
         /// almost never need to set this to false.
         /// </remarks>
-        /// </summary>
+        ///
         public bool TrimVolumeFromFullyQualifiedPaths
         {
             get { return _TrimVolumeFromFullyQualifiedPaths; }
@@ -173,7 +173,7 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// The default constructor is private.
         /// Users of the library are expected to create a ZipFile via 
-        /// parameterized constructors , for example, the constructor that
+        /// the parameterized constructor: the constructor that
         /// accepts a filename for the zip archive. 
         /// </summary>
         private ZipFile() { }
@@ -197,9 +197,9 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// <para>
         /// An application reading a zip archive can call this constructor, passing the name of a 
-        /// zip file that does exist.  The file is then read into the ZipFile instance.  The app
+        /// zip file that does exist.  The file is then read into the <c>ZipFile</c> instance.  The app
         /// can then enumerate the entries or can add a new entry.  An application may wish to 
-        /// explicitly specify that it is reading an existing zip file by using ZipFile.Read(). 
+        /// explicitly specify that it is reading an existing zip file by using <c>ZipFile.Read()</c>. 
         /// The parameterized constructor allows applications to use the same code to add items 
         /// to a zip archive, regardless of whether the zip file exists.  
         /// </para>
@@ -242,11 +242,17 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// <para>
         /// An application reading a zip archive can call this constructor, passing the name of a 
-        /// zip file that does exist.  The file is then read into the ZipFile instance.  The app
+        /// zip file that does exist.  The file is then read into the <c>ZipFile</c> instance.  The app
         /// can then enumerate the entries or can add a new entry.  An application may wish to 
-        /// explicitly specify that it is reading an existing zip file by using ZipFile.Read(). 
+        /// explicitly specify that it is reading an existing zip file by using <c>ZipFile.Read()</c>. 
         /// The parameterized constructor allows applications to use the same code to add items 
         /// to a zip archive, regardless of whether the zip file exists.  
+        /// </para>
+        /// <para>
+        /// This version of the constructor allows the caller to pass in a TextWriter, to which verbose 
+        /// messages will be written during extraction or creation of the zip archive.  A console application
+        /// may wish to pass System.Console.Out to get messages on the Console. A graphical or headless application
+        /// may wish to capture the messages in a different TextWriter. 
         /// </para>
         /// </remarks>
         /// <example>
@@ -336,9 +342,12 @@ namespace Ionic.Utils.Zip
         /// The item added by this call to the ZipFile is not written to the zip file
         /// archive until the application calls Save() on the ZipFile. 
         /// </para>
-        /// <para>
         /// 
+        /// <para>
+        /// This version of the method allows the caller to explicitly specify the 
+        /// directory path to be used in the archive. 
         /// </para>
+        /// 
         /// </remarks>
         /// 
         /// <param name="FileOrDirectoryName">the name of the file or directory to add.</param>
@@ -610,8 +619,8 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// 
         /// <exception cref="System.Exception">
-        /// Thrown if the zipfile does not exist. The implementation of this 
-        /// method relies on System.IO.File.OpenRead(), which can throw
+        /// Thrown if the zipfile cannot be read. The implementation of this 
+        /// method relies on <c>System.IO.File.OpenRead()</c>, which can throw
         /// a variety of exceptions, including specific exceptions if a file
         /// is not found, an unauthorized access exception, exceptions for
         /// poorly formatted filenames, and so on. 
@@ -636,9 +645,18 @@ namespace Ionic.Utils.Zip
         /// Reads a zip file archive and returns the instance.  
         /// </summary>
         /// 
+        /// <remarks>
+        /// <para>
+        /// This version of the method allows the caller to pass in a TextWriter, to which verbose 
+        /// messages will be written during extraction or creation of the zip archive.  A console application
+        /// may wish to pass System.Console.Out to get messages on the Console. A graphical or headless application
+        /// may wish to capture the messages in a different TextWriter. 
+        /// </para>
+        /// </remarks>
+        /// 
         /// <exception cref="System.Exception">
-        /// Thrown if the zipfile does not exist. The implementation of this 
-        /// method relies on System.IO.File.OpenRead(), which can throw
+        /// Thrown if the zipfile cannot be read. The implementation of this 
+        /// method relies on <c>System.IO.File.OpenRead()</c>, which can throw
         /// a variety of exceptions, including specific exceptions if a file
         /// is not found, an unauthorized access exception, exceptions for
         /// poorly formatted filenames, and so on. 
@@ -862,6 +880,7 @@ namespace Ionic.Utils.Zip
         /// Handles closing of the read and write streams associated
         /// to the ZipFile, if necessary.  The Dispose() method is generally 
         /// employed implicitly, via a using() {} statement. 
+        /// </summary>
         /// <example>
         /// <code>
         /// using (ZipFile zip = ZipFile.Read(zipfile))
@@ -874,7 +893,6 @@ namespace Ionic.Utils.Zip
         /// } // Dispose() is called implicitly here.
         /// </code>
         /// </example>
-        /// </summary>
         public void Dispose()
         {
             // dispose of the managed and unmanaged resources

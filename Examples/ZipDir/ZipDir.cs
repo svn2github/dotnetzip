@@ -21,46 +21,50 @@
 using System;
 using Ionic.Utils.Zip;
 
-public class ZipDir
+namespace Ionic.Utils.Zip.Examples
 {
 
-    private static void Usage()
+    public class ZipDir
     {
-        Console.WriteLine("usage:\n  ZipDir <ZipFileToCreate> <directory>");
-        Environment.Exit(1);
-    }
 
-    public static void Main(String[] args)
-    {
-        if (args.Length != 2) Usage();
-        if (!System.IO.Directory.Exists(args[1]))
+        private static void Usage()
         {
-            Console.WriteLine("The directory does not exist!\n");
-            Usage();
-        }
-        if (System.IO.File.Exists(args[0]))
-        {
-            Console.WriteLine("That zipfile already exists!\n");
-            Usage();
-        }
-        if (!args[0].EndsWith(".zip"))
-        {
-            Console.WriteLine("The filename must end with .zip!\n");
-            Usage();
+            Console.WriteLine("usage:\n  ZipDir <ZipFileToCreate> <directory>");
+            Environment.Exit(1);
         }
 
-        try
+        public static void Main(String[] args)
         {
-            using (ZipFile zip = new ZipFile(args[0], System.Console.Out))
+            if (args.Length != 2) Usage();
+            if (!System.IO.Directory.Exists(args[1]))
             {
-                zip.AddDirectory(args[1]); // recurses subdirectories
-                zip.Save();
+                Console.WriteLine("The directory does not exist!\n");
+                Usage();
             }
-        }
-        catch (System.Exception ex1)
-        {
-            System.Console.Error.WriteLine("exception: " + ex1);
-        }
+            if (System.IO.File.Exists(args[0]))
+            {
+                Console.WriteLine("That zipfile already exists!\n");
+                Usage();
+            }
+            if (!args[0].EndsWith(".zip"))
+            {
+                Console.WriteLine("The filename must end with .zip!\n");
+                Usage();
+            }
 
+            try
+            {
+                using (ZipFile zip = new ZipFile(args[0], System.Console.Out))
+                {
+                    zip.AddDirectory(args[1]); // recurses subdirectories
+                    zip.Save();
+                }
+            }
+            catch (System.Exception ex1)
+            {
+                System.Console.Error.WriteLine("exception: " + ex1);
+            }
+
+        }
     }
 }

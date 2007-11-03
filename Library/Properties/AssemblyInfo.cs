@@ -5,8 +5,8 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ZipLibrary")]
-[assembly: AssemblyDescription("a library for handling zip archives.")]
+[assembly: AssemblyTitle("Ionic's Zip Library")]
+[assembly: AssemblyDescription("a library for handling zip archives. http://www.codeplex.com/DotNetZip")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Microsoft")]
 [assembly: AssemblyProduct("ZipLibrary")]

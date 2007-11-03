@@ -21,122 +21,125 @@
 using System;
 using Ionic.Utils.Zip;
 
-public class UnZip
+namespace Ionic.Utils.Zip.Examples
 {
-
-    private static void Usage()
+    public class UnZip
     {
-        Console.WriteLine("usage:\n" +
-                  "  unzip <zipfile> [<unpackdirectory>]\n" +
-                  "     unzips all files in the archive to the specified directory. If no \n" +
-                  "     directory is provided, this utility uses the current directory.\n\n" +
-                  "  unzip - <zipfile> <entry>\n" +
-                  "     unzip the specified entry from the archive to the console.\n\n" +
-                  "  unzip -l <zipfile>\n" +
-                  "     lists the entries in the zip archive.\n"
-                  );
-        Environment.Exit(1);
-    }
 
-
-    public static void Main(String[] args)
-    {
-        int i = 0;
-        string zipfile = null;
-        string targdir = ".";
-        string entryToExtract = null;
-        bool WantExtract = true;
-
-        if (args.Length == 0) Usage();
-
-        if (args[0] == "-")
+        private static void Usage()
         {
-            i++;
-            if (args.Length <= i) Usage();
-
-            zipfile = args[i];
-            i++;
-            if (args.Length <= i) Usage();
-
-            entryToExtract = args[i];
-            i++;
+            Console.WriteLine("usage:\n" +
+                      "  unzip <zipfile> [<unpackdirectory>]\n" +
+                      "     unzips all files in the archive to the specified directory. If no \n" +
+                      "     directory is provided, this utility uses the current directory.\n\n" +
+                      "  unzip - <zipfile> <entry>\n" +
+                      "     unzip the specified entry from the archive to the console.\n\n" +
+                      "  unzip -l <zipfile>\n" +
+                      "     lists the entries in the zip archive.\n"
+                      );
+            Environment.Exit(1);
         }
-        else
+
+
+        public static void Main(String[] args)
         {
-            if (args[0] == "-l")
+            int i = 0;
+            string zipfile = null;
+            string targdir = ".";
+            string entryToExtract = null;
+            bool WantExtract = true;
+
+            if (args.Length == 0) Usage();
+
+            if (args[0] == "-")
             {
                 i++;
-                WantExtract = false;
-            }
-            if (args.Length <= i) Usage();
+                if (args.Length <= i) Usage();
 
-            zipfile = args[i];
-            i++;
-            if (args.Length > i)
-            {
-                targdir = args[i];
+                zipfile = args[i];
+                i++;
+                if (args.Length <= i) Usage();
+
+                entryToExtract = args[i];
                 i++;
             }
-        }
-
-        if (!System.IO.File.Exists(zipfile))
-        {
-            Console.WriteLine("That zip file does not exist!\n");
-            Usage();
-        }
-
-        try
-        {
-            using (ZipFile zip = ZipFile.Read(zipfile))
+            else
             {
-                if (entryToExtract != null)
+                if (args[0] == "-l")
                 {
-                    zip.Extract(entryToExtract, Console.OpenStandardOutput());
+                    i++;
+                    WantExtract = false;
                 }
-                else
+                if (args.Length <= i) Usage();
+
+                zipfile = args[i];
+                i++;
+                if (args.Length > i)
                 {
-                    // extract all
+                    targdir = args[i];
+                    i++;
+                }
+            }
 
-                    // The logic here does the same thing as the
-                    // ExtractAll() method on the ZipFile class.  But in
-                    // this case we *could* have control over it, for
-                    // example only extract files of a certain type, or
-                    // whose names matched a certain pattern, or whose
-                    // lastmodified times fit a certain condition, etc.
-                    // We can also display status for each entry, as here.
+            if (!System.IO.File.Exists(zipfile))
+            {
+                Console.WriteLine("That zip file does not exist!\n");
+                Usage();
+            }
 
-                    bool header = true;
-                    foreach (ZipEntry e in zip)
+            try
+            {
+                using (ZipFile zip = ZipFile.Read(zipfile))
+                {
+                    if (entryToExtract != null)
                     {
-                        if (header)
-                        {
-                            System.Console.WriteLine("Zipfile: {0}", zip.Name);
-                            System.Console.WriteLine("Version Needed: 0x{0:X2}", e.VersionNeeded);
-                            System.Console.WriteLine("BitField: 0x{0:X2}", e.BitField);
-                            System.Console.WriteLine("Compression Method: 0x{0:X2}", e.CompressionMethod);
-                            System.Console.WriteLine("\n{1,-22} {2,-6} {3,4}   {4,-8}  {0}",
-                                         "Filename", "Modified", "Size", "Ratio", "Packed");
-                            System.Console.WriteLine(new System.String('-', 72));
-                            header = false;
-                        }
-
-                        System.Console.WriteLine("{1,-22} {2,-6} {3,4:F0}%   {4,-8}  {0}",
-                                     e.FileName,
-                                     e.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
-                                     e.UncompressedSize,
-                                     e.CompressionRatio,
-                                     e.CompressedSize);
-
-                        if (WantExtract) e.Extract(targdir);
+                        zip.Extract(entryToExtract, Console.OpenStandardOutput());
                     }
-                }
-            } // end using(), the underlying file is closed.
-        }
-        catch (System.Exception ex1)
-        {
-            System.Console.Error.WriteLine("exception: " + ex1);
-        }
+                    else
+                    {
+                        // extract all
 
-        Console.WriteLine();
+                        // The logic here does the same thing as the
+                        // ExtractAll() method on the ZipFile class.  But in
+                        // this case we *could* have control over it, for
+                        // example only extract files of a certain type, or
+                        // whose names matched a certain pattern, or whose
+                        // lastmodified times fit a certain condition, etc.
+                        // We can also display status for each entry, as here.
+
+                        bool header = true;
+                        foreach (ZipEntry e in zip)
+                        {
+                            if (header)
+                            {
+                                System.Console.WriteLine("Zipfile: {0}", zip.Name);
+                                System.Console.WriteLine("Version Needed: 0x{0:X2}", e.VersionNeeded);
+                                System.Console.WriteLine("BitField: 0x{0:X2}", e.BitField);
+                                System.Console.WriteLine("Compression Method: 0x{0:X2}", e.CompressionMethod);
+                                System.Console.WriteLine("\n{1,-22} {2,-6} {3,4}   {4,-8}  {0}",
+                                             "Filename", "Modified", "Size", "Ratio", "Packed");
+                                System.Console.WriteLine(new System.String('-', 72));
+                                header = false;
+                            }
+
+                            System.Console.WriteLine("{1,-22} {2,-6} {3,4:F0}%   {4,-8}  {0}",
+                                         e.FileName,
+                                         e.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
+                                         e.UncompressedSize,
+                                         e.CompressionRatio,
+                                         e.CompressedSize);
+
+                            if (WantExtract) e.Extract(targdir);
+                        }
+                    }
+                } // end using(), the underlying file is closed.
+            }
+            catch (System.Exception ex1)
+            {
+                System.Console.Error.WriteLine("exception: " + ex1);
+            }
+
+            Console.WriteLine();
+        }
     }
 }

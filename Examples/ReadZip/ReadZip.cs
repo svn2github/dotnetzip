@@ -22,37 +22,39 @@
 using System;
 using Ionic.Utils.Zip;
 
-public class ReadZip
+namespace Ionic.Utils.Zip.Examples
 {
-
-    private static void Usage()
+    public class ReadZip
     {
-        Console.WriteLine("usage:\n  ReadZip2 <zipfile> <unpackdirectory>");
-        Environment.Exit(1);
-    }
-
-
-    public static void Main(String[] args)
-    {
-
-        if (args.Length != 2) Usage();
-        if (!System.IO.File.Exists(args[0]))
+        private static void Usage()
         {
-            Console.WriteLine("That zip file does not exist!\n");
-            Usage();
+            Console.WriteLine("usage:\n  ReadZip2 <zipfile> <unpackdirectory>");
+            Environment.Exit(1);
         }
 
-        try
+
+        public static void Main(String[] args)
         {
-            using (ZipFile zip = ZipFile.Read(args[0], System.Console.Out))
+
+            if (args.Length != 2) Usage();
+            if (!System.IO.File.Exists(args[0]))
             {
-                zip.ExtractAll(args[1]);
+                Console.WriteLine("That zip file does not exist!\n");
+                Usage();
             }
-        }
-        catch (System.Exception ex1)
-        {
-            System.Console.Error.WriteLine("exception: " + ex1);
-        }
 
+            try
+            {
+                using (ZipFile zip = ZipFile.Read(args[0], System.Console.Out))
+                {
+                    zip.ExtractAll(args[1]);
+                }
+            }
+            catch (System.Exception ex1)
+            {
+                System.Console.Error.WriteLine("exception: " + ex1);
+            }
+
+        }
     }
 }

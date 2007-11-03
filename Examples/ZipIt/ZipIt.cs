@@ -21,47 +21,51 @@
 using System;
 using Ionic.Utils.Zip;
 
-public class ZipIt
+namespace Ionic.Utils.Zip.Examples
 {
 
-    private static void Usage()
+    public class ZipIt
     {
-        Console.WriteLine("usage:\n  ZipIt <ZipFileToCreate> [<directory> | <file> ...]");
-        Environment.Exit(1);
-    }
 
-    public static void Main(String[] args)
-    {
-        if (args.Length < 2) Usage();
-
-        if (!args[0].EndsWith(".zip"))
+        private static void Usage()
         {
-            Console.WriteLine("The filename must end with .zip!\n");
-            Usage();
+            Console.WriteLine("usage:\n  ZipIt <ZipFileToCreate> [<directory> | <file> ...]");
+            Environment.Exit(1);
         }
 
-        try
+        public static void Main(String[] args)
         {
-            // ZipFile zip = null;
-            if (System.IO.File.Exists(args[0]))
+            if (args.Length < 2) Usage();
+
+            if (!args[0].EndsWith(".zip"))
             {
-                // The zipfile already exists
+                Console.WriteLine("The filename must end with .zip!\n");
+                Usage();
             }
-            using (ZipFile zip = new ZipFile(args[0]))
+
+            try
             {
-                zip.Output = System.Console.Out;
-                for (int i = 1; i < args.Length; i++)
+                // ZipFile zip = null;
+                if (System.IO.File.Exists(args[0]))
                 {
-                    zip.AddItem(args[i]); // will add Files or Dirs, recurses subdirectories
+                    // The zipfile already exists
                 }
-                zip.Save();
+                using (ZipFile zip = new ZipFile(args[0]))
+                {
+                    zip.Output = System.Console.Out;
+                    for (int i = 1; i < args.Length; i++)
+                    {
+                        zip.AddItem(args[i]); // will add Files or Dirs, recurses subdirectories
+                    }
+                    zip.Save();
+                }
+
+            }
+            catch (System.Exception ex1)
+            {
+                System.Console.Error.WriteLine("exception: " + ex1);
             }
 
         }
-        catch (System.Exception ex1)
-        {
-            System.Console.Error.WriteLine("exception: " + ex1);
-        }
-
     }
 }
