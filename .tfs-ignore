@@ -1,7 +1,16 @@
 <ignore xmlns='http://www.codeplex.com/schema/IgnoreListSchema-1.0.xsd'>
   <add recursive='true'>bin</add>
   <add recursive='true'>obj</add>
+  <add recursive='true'>_UpgradeReport_Files</add>
+  <add recursive='true'>Backup</add>
+  <add>UpgradeLog.XML</add>
+  <add>CodePlex-Readme.txt</add>
+  <add>DotNetZip.shfb</add>
+  <add>Help</add>
+  <add recursive='true'>LastBuild.log</add>
   <add recursive='true'>_Resharper*</add>
+  <add recursive='true'>Debug</add>
+  <add recursive='true'>Release</add>
   <add recursive='true'>*.resharper</add>
   <add recursive='true'>*.suo</add>
   <add recursive='true'>*.user</add>

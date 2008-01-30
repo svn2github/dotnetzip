@@ -63,14 +63,24 @@ Using the Class Library
 ---------------------------------
 
 Check the examples included in this package for simple apps that
-show how to read and write zip files.  The basic model is as
-simple as: 
+show how to read and write zip files.  The simplest way to
+create a zipfile looks like this: 
 
       using(ZipFile zip= new ZipFile(args[0]))
       {
         zip.AddFile(filename);
 	zip.Save(); 
       }
+
+
+The simplest way to Extract all the entries from a zipfile looks
+like this: 
+      using (ZipFile zip = ZipFile.Read(args[0]))
+      {
+        zip.ExtractAll(args[1]);
+      }
+
+
 
 
 About Directory Paths

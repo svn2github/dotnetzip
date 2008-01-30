@@ -16,6 +16,7 @@
 // compile with:
 //     csc /debug+ /target:exe /out:CreateZip.exe CreateZip.cs Zip.cs Crc32.cs
 //
+//
 // Wed, 29 Mar 2006  14:36
 //
 
@@ -55,14 +56,17 @@ namespace Ionic.Utils.Zip.Examples
             {
                 using (ZipFile zip = new ZipFile(args[0]))
                 {
-
                     // note: this does not recurse directories! 
                     String[] filenames = System.IO.Directory.GetFiles(args[1]);
                     foreach (String filename in filenames)
                     {
                         Console.WriteLine("Adding {0}...", filename);
-                        zip.AddFile(filename);
+                        ZipEntry e= zip.AddFile(filename);
+                        e.Comment = "Added by Cheeso's CreateZip utility."; 
                     }
+
+                    zip.Comment= String.Format("This zip archive was created by the CreateZip utility on machine '{0}'",
+                       System.Net.Dns.GetHostName());  
 
                     zip.Save();
                 }

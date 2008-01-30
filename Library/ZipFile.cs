@@ -88,6 +88,18 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
+        /// This property is read/write for the zipfile. It allows the application to
+        /// specify a comment for the zipfile, or read the comment for the zipfile. 
+        /// </summary>
+        public string Comment
+        {
+            get { return _Comment; }
+            set { _Comment = value;
+            _contentsChanged = true;
+            }
+        }
+
+        /// <summary>
         /// When this is set, any volume name (eg C:) is trimmed 
         /// from fully-qualified pathnames on any ZipEntry, before writing the 
         /// ZipEntry into the ZipFile. 
@@ -324,7 +336,7 @@ namespace Ionic.Utils.Zip
         /// 
         public void AddItem(string FileOrDirectoryName)
         {
-            AddItem(FileOrDirectoryName, null);
+             AddItem(FileOrDirectoryName, null);
         }
 
 
@@ -356,7 +368,8 @@ namespace Ionic.Utils.Zip
         /// This path may, or may not, correspond to a real directory in the current filesystem.
         /// If the files within the zip are later extracted, this is the path used for the extracted file. 
         /// Passing null will use the path on the FileOrDirectoryName.  Passing the empty string ("")
-        /// will insert the item at the root path within the archive.
+        /// will insert the item at the root path within the archive. Passing null (nothing in VB) will
+        /// use the path (if any) on the filename itself. 
         /// </param>
         /// 
         public void AddItem(String FileOrDirectoryName, String DirectoryPathInArchive)
@@ -380,9 +393,10 @@ namespace Ionic.Utils.Zip
         /// </remarks>
         /// <overloads>This method has two overloads.</overloads>
         /// <param name="FileName">the name of the file to add.</param>
-        public void AddFile(string FileName)
+        /// <returns>The ZipEntry corresponding to the File added.</returns>
+        public ZipEntry AddFile(string FileName)
         {
-            AddFile(FileName, null);
+            return AddFile(FileName, null);
         }
 
         /// <summary>
@@ -429,9 +443,11 @@ namespace Ionic.Utils.Zip
         /// This path may, or may not, correspond to a real directory in the current filesystem.
         /// If the files within the zip are later extracted, this is the path used for the extracted file. 
         /// Passing null will use the path on the FileName.  Passing the empty string ("")
-        /// will insert the item at the root path within the archive.
+        /// will insert the item at the root path within the archive.Passing null (nothing in VB) will
+        /// use the path (if any) on the filename itself. 
         /// </param>
-        public void AddFile(string FileName, String DirectoryPathInArchive)
+        /// <returns>The ZipEntry corresponding to the file added.</returns>
+        public ZipEntry AddFile(string FileName, String DirectoryPathInArchive)
         {
             ZipEntry ze = ZipEntry.Create(FileName, DirectoryPathInArchive);
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
@@ -439,6 +455,7 @@ namespace Ionic.Utils.Zip
             InsureUniqueEntry(ze);
             _entries.Add(ze);
             _contentsChanged = true;
+            return ze;
         }
 
 
@@ -488,8 +505,9 @@ namespace Ionic.Utils.Zip
         /// Specifies a directory path to use to override any path in the DirectoryName.
         /// This path may, or may not, correspond to a real directory in the current filesystem.
         /// If the zip is later extracted, this is the path used for the extracted file or directory. 
-        /// Passing null will use the path on the DirectoryName.  Passing the empty string ("")
-        /// will insert the item at the root path within the archive.
+        /// Passing null will use the path on the DirectoryName. Passing the empty string ("")
+        /// will insert the item at the root path within the archive. Passing null (nothing in VB) will
+        /// use the path (if any) on the filename itself. 
         /// </param>
         /// 
         public void AddDirectory(string DirectoryName, String DirectoryPathInArchive)
@@ -554,7 +572,7 @@ namespace Ionic.Utils.Zip
             long Start = WriteStream.Length;
             foreach (ZipEntry e in _entries)
             {
-                e.WriteCentralDirectoryEntry(WriteStream);
+                e.WriteCentralDirectoryEntry(WriteStream);  // this writes a ZipDirEntry corresponding to the ZipEntry
             }
             long Finish = WriteStream.Length;
 
@@ -603,9 +621,29 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)((StartOffset & 0x00FF0000) >> 16);
             bytes[i++] = (byte)((StartOffset & 0xFF000000) >> 24);
 
-            // zip comment length
-            bytes[i++] = 0;
-            bytes[i++] = 0;
+            // zip archive comment 
+            if ((Comment == null) || (Comment.Length == 0))
+            {
+                // no comment!
+                bytes[i++] = (byte)0;
+                bytes[i++] = (byte)0;
+            }
+            else
+            {
+                Int16 commentLength = (Int16) Comment.Length;
+                // the size of our buffer defines the max length of the comment we can write
+                if (commentLength + i +2 > bytes.Length) commentLength = (Int16)(bytes.Length - i -2);
+                bytes[i++] = (byte)(commentLength & 0x00FF);
+                bytes[i++] = (byte)((commentLength & 0xFF00) >> 8);
+                char[] c = Comment.ToCharArray();
+                int j = 0;
+                // now actually write the comment itself into the byte buffer
+                for (j = 0; (j < commentLength) && (i + j < bytes.Length); j++)
+                {
+                    bytes[i + j] = System.BitConverter.GetBytes(c[j])[0];
+                }
+                i += j;
+            }
 
             WriteStream.Write(bytes, 0, i);
         }
@@ -706,12 +744,63 @@ namespace Ionic.Utils.Zip
             {
                 if (zf._Debug) System.Console.WriteLine("  ZipFile::Read(): ZipDirEntry: {0}", de.FileName);
                 zf._direntries.Add(de);
+                // Housekeeping: Since ZipFile exposes ZipEntry elements in the enumerator, 
+                // we need to copy the comment that we grab from the ZipDirEntry
+                // into the ZipEntry, so the application can access the comment. 
+                foreach (ZipEntry e1 in zf._entries)
+                {
+                    if (e1.FileName == de.FileName)
+                    {
+                        e1.Comment = de.Comment;
+                        break;
+                    }
+                }
             }
+
+            ReadCentralDirectoryFooter(zf);
+
+            if ((zf.Verbose) && (zf.Comment!=null) && (zf.Comment!=""))
+                zf.Output.WriteLine("Zip file Comment: {0}", zf.Comment);
 
             // when finished slurping in the zip, close the read stream
             zf.ReadStream.Close();
             zf.ReadStream = null;
+
         }
+
+        private static void ReadCentralDirectoryFooter(ZipFile zf)
+        {
+            System.IO.Stream s = zf.ReadStream;
+            int signature = Ionic.Utils.Zip.Shared.ReadSignature(s);
+
+            // Throw if this is not a signature for "end of central directory record"
+            // This is a sanity check.
+            if (signature != ZipConstants.EndOfCentralDirectorySignature)
+            {
+                s.Seek(-4, System.IO.SeekOrigin.Current);
+                throw new Exception(String.Format("  ZipFile::Read(): Bad signature ({0:X8}) at position 0x{1:X8}", signature, s.Position));
+            }
+
+            // read a bunch of throwaway metadata for supporting multi-disk archives (throwback!)
+            // read the comment here
+            byte[] block = new byte[16];
+            int n = zf.ReadStream.Read(block, 0, block.Length); // discard
+
+            ReadZipFileComment(zf);
+        }
+
+        private static void ReadZipFileComment(ZipFile zf)
+        {
+            // read the comment here
+            byte[] block = new byte[2];
+            int n = zf.ReadStream.Read(block, 0, block.Length);
+
+            Int16 commentLength = (short)(block[0] + block[1] * 256);
+            block = new byte[commentLength];
+            n = zf.ReadStream.Read(block, 0, block.Length);
+            zf.Comment = Ionic.Utils.Zip.Shared.StringFromBuffer(block, 0, block.Length);
+        }
+
 
         /// <summary>
         /// Generic IEnumerator support, for use of a ZipFile in a foreach construct.  
@@ -804,18 +893,22 @@ namespace Ionic.Utils.Zip
             {
                 if (header)
                 {
-                    Output.WriteLine("\n{1,-22} {2,-6} {3,4}   {4,-8}  {0}",
+                    Output.WriteLine("\n{1,-22} {2,-8} {3,4}   {4,-8}  {0}",
                                  "Name", "Modified", "Size", "Ratio", "Packed");
                     Output.WriteLine(new System.String('-', 72));
                     header = false;
                 }
                 if (Verbose)
-                    Output.WriteLine("{1,-22} {2,-6} {3,4:F0}%   {4,-8} {0}",
+                {
+                    Output.WriteLine("{1,-22} {2,-8} {3,4:F0}%   {4,-8} {0}",
                                  e.FileName,
                                  e.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
                                  e.UncompressedSize,
                                  e.CompressionRatio,
                                  e.CompressedSize);
+                    if ((e.Comment != null) && (e.Comment != ""))
+                        Output.WriteLine("  Comment: {0}", e.Comment);
+                }
                 e.Extract(path);
             }
         }
@@ -941,6 +1034,7 @@ namespace Ionic.Utils.Zip
         private System.Collections.Generic.List<ZipDirEntry> _direntries = null;
         private bool _TrimVolumeFromFullyQualifiedPaths = true;
         private string _name;
+        private string _Comment;
         private bool _fileAlreadyExists = false;
         private string _temporaryFileName = null;
         private bool _contentsChanged = false;

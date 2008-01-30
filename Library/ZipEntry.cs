@@ -18,7 +18,6 @@ namespace Ionic.Utils.Zip
     /// </summary>
     public class ZipEntry
     {
-
         private ZipEntry() { }
 
         /// <summary>
@@ -61,6 +60,15 @@ namespace Ionic.Utils.Zip
         public Int16 VersionNeeded
         {
             get { return _VersionNeeded; }
+        }
+
+        /// <summary>
+        /// The comment attached to the ZipEntry. 
+        /// </summary>
+        public string Comment
+        {
+            get { return _Comment; }
+            set { _Comment= value; }
         }
 
         /// <summary>
@@ -284,7 +292,6 @@ namespace Ionic.Utils.Zip
                 entry._FileNameInArchive =
                     System.IO.Path.Combine(DirectoryPathInArchive, System.IO.Path.GetFileName(filename));
             }
-
 
             entry._LastModified = System.IO.File.GetLastWriteTime(filename);
 
@@ -576,7 +583,7 @@ namespace Ionic.Utils.Zip
             bytes[i++] = Header[5];
 
             // Version Needed, Bitfield, compression method, lastmod,
-            // crc, sizes, filename length and extra field length -
+            // crc, compressed and uncompressed sizes, filename length and extra field length -
             // are all the same as the local file header. So just copy them
             int j = 0;
             for (j = 0; j < 26; j++)
@@ -584,9 +591,22 @@ namespace Ionic.Utils.Zip
 
             i += j;  // positioned at next available byte
 
-            // File Comment Length
-            bytes[i++] = 0;
-            bytes[i++] = 0;
+            int commentLength = 0; 
+            // File (entry) Comment Length
+            if ((Comment == null) || (Comment.Length == 0))
+            {
+                // no comment!
+                bytes[i++] = (byte)0;
+                bytes[i++] = (byte)0;
+            }
+            else
+            {
+                commentLength = Comment.Length;
+                // the size of our buffer defines the max length of the comment we can write
+                if (commentLength + i > bytes.Length) commentLength = bytes.Length - i;
+                bytes[i++] = (byte)(commentLength & 0x00FF);
+                bytes[i++] = (byte)((commentLength & 0xFF00) >> 8);
+            }
 
             // Disk number start
             bytes[i++] = 0;
@@ -619,6 +639,21 @@ namespace Ionic.Utils.Zip
             }
             if (_Debug) System.Console.WriteLine();
             i += j;
+
+            // "Extra field"
+            // in this library, it is always nothing
+
+            // file (entry) comment
+            if (commentLength != 0)
+            {
+                char[] c = Comment.ToCharArray();
+                // now actually write the comment itself into the byte buffer
+                for (j = 0; (j < commentLength) && (i + j < bytes.Length); j++)
+                {
+                    bytes[i + j] = System.BitConverter.GetBytes(c[j])[0];
+                }
+                i += j;
+            }
 
             s.Write(bytes, 0, i);
         }
@@ -720,11 +755,13 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)((_UncompressedSize & 0xFF000000) >> 24);
 
             // filename length (Int16)
-            Int16 length = (Int16)FileName.Length;
+            Int16 filenameLength = (Int16)FileName.Length;
             // see note below about TrimVolumeFromFullyQualifiedPaths.
-            if ((TrimVolumeFromFullyQualifiedPaths) && (FileName[1] == ':') && (FileName[2] == '\\')) length -= 3;
-            bytes[i++] = (byte)(length & 0x00FF);
-            bytes[i++] = (byte)((length & 0xFF00) >> 8);
+            if ((TrimVolumeFromFullyQualifiedPaths) && (FileName[1] == ':') && (FileName[2] == '\\')) filenameLength -= 3;
+            // apply upper bound to the length
+            if (filenameLength + i > bytes.Length) filenameLength = (Int16)(bytes.Length - (Int16)i);
+            bytes[i++] = (byte)(filenameLength & 0x00FF);
+            bytes[i++] = (byte)((filenameLength & 0xFF00) >> 8);
 
             // extra field length (short)
             Int16 ExtraFieldLength = 0x00;
@@ -753,6 +790,7 @@ namespace Ionic.Utils.Zip
                 System.Console.WriteLine("local header: writing filename, {0} chars", c.Length);
                 System.Console.WriteLine("starting offset={0}", i);
             }
+
             for (j = 0; (j < c.Length) && (i + j < bytes.Length); j++)
             {
                 bytes[i + j] = System.BitConverter.GetBytes(c[j])[0];
@@ -850,6 +888,7 @@ namespace Ionic.Utils.Zip
         private Int16 _VersionNeeded;
         private Int16 _BitField;
         private Int16 _CompressionMethod;
+        private string _Comment;
         private Int32 _CompressedSize;
         private Int32 _UncompressedSize;
         private Int32 _LastModDateTime;

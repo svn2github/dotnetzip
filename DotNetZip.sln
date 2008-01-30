@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Library", "Library\Library.csproj", "{D3B0AD67-44D8-4B3D-BED9-CE1FD6DE2C5A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZipIt", "Examples\ZipIt\ZipIt.csproj", "{98008721-C4DD-4F34-B3AE-A3453E29BB65}"
@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnZip", "Examples\UnZip\UnZ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadZip", "Examples\ReadZip\ReadZip.csproj", "{F4024C01-1133-4A5A-B421-22EA8CA89EA5}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{F87C0504-13EA-49A5-8C7B-4E635F107758}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Zip Library", "Setup\Setup.vdproj", "{F87C0504-13EA-49A5-8C7B-4E635F107758}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
