@@ -374,7 +374,7 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// Extracts the entry to the specified stream. For example, the caller could specify Console.Out.
+        /// Extracts the entry to the specified stream. For example, the caller could specify Console.Out, or a MemoryStream.
         /// </summary>
         /// <param name="s">the stream to which the entry should be extracted.  </param>
         public void Extract(System.IO.Stream s)

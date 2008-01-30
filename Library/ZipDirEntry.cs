@@ -157,13 +157,17 @@ namespace Ionic.Utils.Zip
             n = s.Read(block, 0, block.Length);
             zde._FileName = Ionic.Utils.Zip.Shared.StringFromBuffer(block, 0, block.Length);
 
-            zde._Extra = new byte[extraFieldLength];
-            n = s.Read(zde._Extra, 0, zde._Extra.Length);
-
-            block = new byte[commentLength];
-            n = s.Read(block, 0, block.Length);
-            zde._Comment = Ionic.Utils.Zip.Shared.StringFromBuffer(block, 0, block.Length);
-
+            if (extraFieldLength > 0)
+            {
+                zde._Extra = new byte[extraFieldLength];
+                n = s.Read(zde._Extra, 0, zde._Extra.Length);
+            }
+            if (commentLength > 0)
+            {
+                block = new byte[commentLength];
+                n = s.Read(block, 0, block.Length);
+                zde._Comment = Ionic.Utils.Zip.Shared.StringFromBuffer(block, 0, block.Length);
+            }
             return zde;
         }
 

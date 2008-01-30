@@ -796,9 +796,12 @@ namespace Ionic.Utils.Zip
             int n = zf.ReadStream.Read(block, 0, block.Length);
 
             Int16 commentLength = (short)(block[0] + block[1] * 256);
-            block = new byte[commentLength];
-            n = zf.ReadStream.Read(block, 0, block.Length);
-            zf.Comment = Ionic.Utils.Zip.Shared.StringFromBuffer(block, 0, block.Length);
+            if (commentLength > 0)
+            {
+                block = new byte[commentLength];
+                n = zf.ReadStream.Read(block, 0, block.Length);
+                zf.Comment = Ionic.Utils.Zip.Shared.StringFromBuffer(block, 0, block.Length);
+            }
         }
 
 
