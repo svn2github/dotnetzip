@@ -513,11 +513,26 @@ namespace Ionic.Utils.Zip
         public void AddDirectory(string DirectoryName, String DirectoryPathInArchive)
         {
             if (Verbose) Output.WriteLine("adding {0}...", DirectoryName);
-
+            int filesAdded = 0;
             String[] filenames = System.IO.Directory.GetFiles(DirectoryName);
             foreach (String filename in filenames)
             {
                 AddFile(filename, DirectoryPathInArchive);
+                filesAdded++;
+            }
+
+            // adding a directory with zero files in it.  We need to add this specially. 
+            if (filesAdded == 0)
+            {
+                String dirName= (!DirectoryName.EndsWith("\\")) ? DirectoryName+"\\" :  DirectoryName;
+
+                ZipEntry ze = ZipEntry.Create(dirName, DirectoryPathInArchive);
+                ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
+                ze.MarkAsDirectory();
+                //if (Verbose) Output.WriteLine("adding {0}...", dirName);
+                InsureUniqueEntry(ze);
+                _entries.Add(ze);
+                _contentsChanged = true;
             }
 
             String[] dirnames = System.IO.Directory.GetDirectories(DirectoryName);
@@ -747,11 +762,14 @@ namespace Ionic.Utils.Zip
                 // Housekeeping: Since ZipFile exposes ZipEntry elements in the enumerator, 
                 // we need to copy the comment that we grab from the ZipDirEntry
                 // into the ZipEntry, so the application can access the comment. 
+                // Also since ZipEntry is used to Write zip files, we need to copy the 
+                // file attributes to the ZipEntry as appropriate. 
                 foreach (ZipEntry e1 in zf._entries)
                 {
                     if (e1.FileName == de.FileName)
                     {
                         e1.Comment = de.Comment;
+                        if (de.IsDirectory) e1.MarkAsDirectory();
                         break;
                     }
                 }
@@ -1176,12 +1194,21 @@ namespace Ionic.Utils.Zip
 //         extra field length              2 bytes
 //         file comment length             2 bytes
 //         disk number start               2 bytes
-//         internal file attributes        2 bytes
-//         external file attributes        4 bytes
+//         internal file attributes **     2 bytes
+//         external file attributes ***    4 bytes
 //         relative offset of local header 4 bytes
 //         file name (variable size)
 //         extra field (variable size)
 //         file comment (variable size)
+//
+// ** The internal file attributes, near as I can tell, 
+// uses 0x01 for a file and a 0x00 for a directory. 
+//
+// ***The external file attributes follows the MS-DOS file attribute byte, described here:
+// at http://support.microsoft.com/kb/q125019/
+// 0x0010 => directory
+// 0x0020 => file 
+//
 //
 // End of central directory record:
 //

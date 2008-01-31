@@ -113,17 +113,17 @@ namespace Ionic.Utils.Zip.Examples
                             if (header)
                             {
                                 System.Console.WriteLine("Zipfile: {0}", zip.Name);
-                                System.Console.WriteLine("Comment: {0}", zip.Comment);
+                                if ((zip.Comment!= null) && (zip.Comment!="") ) System.Console.WriteLine("Comment: {0}", zip.Comment);
                                 //System.Console.WriteLine("BitField: 0x{0:X2}", e.BitField);
                                 //System.Console.WriteLine("Compression Method: 0x{0:X2}", e.CompressionMethod);
                                 //System.Console.WriteLine("Compression Method: 0x{0:X2}", e.CompressionMethod);
-                                System.Console.WriteLine("\n{1,-22} {2,-6} {3,4}   {4,-8}  {0}",
+                                System.Console.WriteLine("\n{1,-22} {2,6} {3,4}   {4,8}  {0}",
                                              "Filename", "Modified", "Size", "Ratio", "Packed");
                                 System.Console.WriteLine(new System.String('-', 72));
                                 header = false;
                             }
 
-                            System.Console.WriteLine("{1,-22} {2,-6} {3,4:F0}%   {4,-8}  {0}",
+                            System.Console.WriteLine("{1,-22} {2,6} {3,4:F0}%   {4,8}  {0}",
                                          e.FileName,
                                          e.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
                                          e.UncompressedSize,

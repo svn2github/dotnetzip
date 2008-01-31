@@ -89,6 +89,15 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
+        /// True if the referenced entry is a directory.  
+        /// </summary>
+        public bool IsDirectory
+        {
+            get { return ((_InternalFileAttrs == 0) && ((_ExternalFileAttrs & 0x0010)==0x0010)); }
+        }
+
+
+        /// <summary>
         /// The calculated compression ratio for the given file. 
         /// </summary>
         public Double CompressionRatio
@@ -149,8 +158,8 @@ namespace Ionic.Utils.Zip
             Int16 extraFieldLength = (short)(block[i++] + block[i++] * 256);
             Int16 commentLength = (short)(block[i++] + block[i++] * 256);
             Int16 diskNumber = (short)(block[i++] + block[i++] * 256);
-            Int16 internalFileAttrs = (short)(block[i++] + block[i++] * 256);
-            Int32 externalFileAttrs = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+            zde._InternalFileAttrs = (short)(block[i++] + block[i++] * 256);
+            zde._ExternalFileAttrs = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
             Int32 Offset = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
 
             block = new byte[filenameLength];
@@ -189,6 +198,8 @@ namespace Ionic.Utils.Zip
         private Int16 _CompressionMethod;
         private Int32 _CompressedSize;
         private Int32 _UncompressedSize;
+        private Int16 _InternalFileAttrs;
+        private Int32 _ExternalFileAttrs;
         private Int16 _BitField;
         private Int32 _LastModDateTime;
         //private bool _Debug = false;
