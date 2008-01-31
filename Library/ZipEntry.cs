@@ -694,10 +694,13 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)(BitField & 0x00FF);
             bytes[i++] = (byte)((BitField & 0xFF00) >> 8);
 
-            Int16 CompressionMethod = 0x08; // 0x08 = Deflate, 0x00 == No Compression
+            Int16 CompressionMethod = 0x00; // 0x08 = Deflate, 0x00 == No Compression
+
+            // compression for directories = 0x00 (No Compression)
 
             if (!IsDirectory)
             {
+                CompressionMethod = 0x08;
                 // CRC32 (Int32)
                 if (_FileData != null)
                 {
@@ -708,36 +711,50 @@ namespace Ionic.Utils.Zip
                 }
                 else
                 {
-                    // Read in the data from the file in the filesystem, comress it, and 
-                    // calculate a CRC on it as we read. 
-
-                    CRC32 crc32 = new CRC32();
-                    using (System.IO.Stream input = System.IO.File.OpenRead(LocalFileName))
+                    // special case zero-length files
+                    System.IO.FileInfo fi = new System.IO.FileInfo(LocalFileName);
+                    if (fi.Length == 0)
                     {
-                        UInt32 crc = crc32.GetCrc32AndCopy(input, CompressedStream);
-                        _Crc32 = (Int32)crc;
+                        CompressionMethod = 0x00;
+                        _UncompressedSize = 0;
+                        _CompressedSize = 0;
+                        _Crc32 = 0;
+
                     }
-                    CompressedStream.Close();  // to get the footer bytes written to the underlying stream
-
-                    _UncompressedSize = crc32.TotalBytesRead;
-                    _CompressedSize = (Int32)_UnderlyingMemoryStream.Length;
-
-                    // It is possible that applying this stream compression on a previously compressed
-                    // file will actually increase the size of the data.  In that case, we back-off
-                    // and just store the uncompressed (really, already compressed) data.
-                    // We need to recompute the CRC, and point to the right data.
-                    if (_CompressedSize > _UncompressedSize)
+                    else
                     {
+
+                        // Read in the data from the file in the filesystem, comress it, and 
+                        // calculate a CRC on it as we read. 
+
+                        CRC32 crc32 = new CRC32();
                         using (System.IO.Stream input = System.IO.File.OpenRead(LocalFileName))
                         {
-                            _UnderlyingMemoryStream = new System.IO.MemoryStream();
-                            UInt32 crc = crc32.GetCrc32AndCopy(input, _UnderlyingMemoryStream);
+                            UInt32 crc = crc32.GetCrc32AndCopy(input, CompressedStream);
                             _Crc32 = (Int32)crc;
                         }
+                        CompressedStream.Close();  // to get the footer bytes written to the underlying stream
+
                         _UncompressedSize = crc32.TotalBytesRead;
                         _CompressedSize = (Int32)_UnderlyingMemoryStream.Length;
-                        if (_CompressedSize != _UncompressedSize) throw new Exception("No compression but unequal stream lengths!");
-                        CompressionMethod = 0x00;
+
+                        // It is possible that applying this stream compression on a previously compressed
+                        // file will actually increase the size of the data.  In that case, we back-off
+                        // and just store the uncompressed (really, already compressed) data.
+                        // We need to recompute the CRC, and point to the right data.
+                        if (_CompressedSize > _UncompressedSize)
+                        {
+                            using (System.IO.Stream input = System.IO.File.OpenRead(LocalFileName))
+                            {
+                                _UnderlyingMemoryStream = new System.IO.MemoryStream();
+                                UInt32 crc = crc32.GetCrc32AndCopy(input, _UnderlyingMemoryStream);
+                                _Crc32 = (Int32)crc;
+                            }
+                            _UncompressedSize = crc32.TotalBytesRead;
+                            _CompressedSize = (Int32)_UnderlyingMemoryStream.Length;
+                            if (_CompressedSize != _UncompressedSize) throw new Exception("No compression but unequal stream lengths!");
+                            CompressionMethod = 0x00;
+                        }
                     }
                 }
             }
@@ -849,12 +866,25 @@ namespace Ionic.Utils.Zip
             // write the header:
             WriteHeader(s, bytes);
 
-            if (IsDirectory) return;  // nothing more to do!
+            if (IsDirectory) return;  // nothing more to do! (need to close memory stream?)
 
+            
             if (_Debug)
             {
                 Console.WriteLine("{0}: writing compressed data to zipfile...", FileName);
                 Console.WriteLine("{0}: total data length: {1}", FileName, _CompressedSize);
+            }
+
+            if (_CompressedSize == 0) 
+            {
+                // nothing more to write. 
+                //(need to close memory stream?)
+                if (_UnderlyingMemoryStream != null)
+                {
+                    _UnderlyingMemoryStream.Close();
+                    _UnderlyingMemoryStream = null;
+                }
+                return; 
             }
 
             // write the actual file data: 
