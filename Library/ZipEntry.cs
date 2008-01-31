@@ -123,7 +123,16 @@ namespace Ionic.Utils.Zip
             get { return _IsDirectory; } 
         }
 
-     
+        /// <summary>
+        /// Specifies that the extraction should overwrite any existing files.
+        /// This applies only when calling an Extract method.
+        /// </summary>
+        public bool OverwriteOnExtract
+        {
+            get { return _OverwriteOnExtract; }
+            set { _OverwriteOnExtract = value; }
+        }
+
         private byte[] _FileData
         {
             get
@@ -383,6 +392,11 @@ namespace Ionic.Utils.Zip
             Extract(".");
         }
 
+        public void Extract(bool WantOverwrite)
+        {
+            Extract(".", WantOverwrite);
+        }
+
         /// <summary>
         /// Extracts the entry to the specified stream. For example, the caller could specify Console.Out, or a MemoryStream.
         /// </summary>
@@ -398,6 +412,17 @@ namespace Ionic.Utils.Zip
         /// <param name="BaseDirectory">the pathname of the base directory</param>
         public void Extract(string BaseDirectory)
         {
+            Extract(BaseDirectory, null);
+        }
+
+        /// <summary>
+        /// Extract the entry to the filesystem, starting at the specified base directory. 
+        /// </summary>
+        /// <param name="BaseDirectory">the pathname of the base directory</param>
+        /// <param name="Overwrite">if true, Overwrite any existing files if necessary upon extraction.</param>
+        public void Extract(string BaseDirectory, bool Overwrite)
+        {
+            OverwriteOnExtract = Overwrite;
             Extract(BaseDirectory, null);
         }
 
@@ -456,7 +481,13 @@ namespace Ionic.Utils.Zip
                     try
                     {
                         if (TargetFile != null)
+                        {
+                            if ((OverwriteOnExtract) && (System.IO.File.Exists(TargetFile)))
+                            {
+                                System.IO.File.Delete(TargetFile);
+                            }
                             output = new System.IO.FileStream(TargetFile, System.IO.FileMode.CreateNew);
+                        }
                         else
                             output = s;
 
@@ -944,6 +975,7 @@ namespace Ionic.Utils.Zip
         private Int32 _Crc32;
         private byte[] _Extra;
 
+        private bool _OverwriteOnExtract = false;
 
         private byte[] __filedata;
         private System.IO.MemoryStream _UnderlyingMemoryStream;

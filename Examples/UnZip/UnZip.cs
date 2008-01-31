@@ -29,9 +29,10 @@ namespace Ionic.Utils.Zip.Examples
         private static void Usage()
         {
             Console.WriteLine("usage:\n" +
-                      "  unzip <zipfile> [<unpackdirectory>]\n" +
+                      "  unzip [-o] <zipfile> [<unpackdirectory>]\n" +
                       "     unzips all files in the archive to the specified directory. If no \n" +
-                      "     directory is provided, this utility uses the current directory.\n\n" +
+                      "     directory is provided, this utility uses the current directory. The\n" +
+                      "     -o option specifies to overwrite existing files if necessary.\n\n" +
                       "  unzip - <zipfile> <entry>\n" +
                       "     unzip the specified entry from the archive to the console.\n\n" +
                       "  unzip -l <zipfile>\n" +
@@ -48,6 +49,7 @@ namespace Ionic.Utils.Zip.Examples
             string targdir = ".";
             string entryToExtract = null;
             bool WantExtract = true;
+            bool WantOverwrite = false;
 
             if (args.Length == 0) Usage();
 
@@ -70,6 +72,11 @@ namespace Ionic.Utils.Zip.Examples
                     i++;
                     WantExtract = false;
                 }
+                else if (args[0] == "-o")
+                {
+                    i++;
+                    WantOverwrite= true;
+                } 
                 if (args.Length <= i) Usage();
 
                 zipfile = args[i];
@@ -133,7 +140,7 @@ namespace Ionic.Utils.Zip.Examples
                             if ((e.Comment != null) && (e.Comment != ""))
                                 System.Console.WriteLine("  Comment: {0}", e.Comment);
 
-                            if (WantExtract) e.Extract(targdir);
+                            if (WantExtract) e.Extract(targdir, WantOverwrite);
                         }
                     }
                 } // end using(), the underlying file is closed.

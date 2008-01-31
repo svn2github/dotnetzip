@@ -127,6 +127,7 @@ namespace Ionic.Utils.Zip
             //set { _Verbose = value; }
         }
 
+
         /// <summary>
         /// Gets or sets the TextWriter for the instance. If the TextWriter
         /// is set to a non-null value, then verbose output is sent to the 
@@ -877,8 +878,17 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// Extracts all of the items in the zip archive, to the specified path in the filesystem.  
+        /// Extracts all of the items in the zip archive, to the specified path in the filesystem.
         /// The path can be relative or fully-qualified. 
+        /// </summary>
+        public void ExtractAll(string path)
+        {
+            ExtractAll(path, false);
+        }
+
+        /// <summary>
+        /// Extracts all of the items in the zip archive, to the specified path in the filesystem,  
+        /// optionally overwriting any existing files. The path can be relative or fully-qualified. 
         /// </summary>
         /// <remarks>
         /// This method will send output messages to the output stream
@@ -906,8 +916,8 @@ namespace Ionic.Utils.Zip
         /// </example>
         /// 
         /// <param name="path">the path to which the contents of the zipfile are extracted.</param>
-        /// 
-        public void ExtractAll(string path)
+        /// <param name="WantOverwrite">true to overwrite any existing files on extraction</param>
+        public void ExtractAll(string path, bool WantOverwrite)
         {
             bool header = Verbose;
             foreach (ZipEntry e in _entries)
@@ -930,7 +940,7 @@ namespace Ionic.Utils.Zip
                     if ((e.Comment != null) && (e.Comment != ""))
                         Output.WriteLine("  Comment: {0}", e.Comment);
                 }
-                e.Extract(path);
+                e.Extract(path, WantOverwrite);
             }
         }
 
@@ -943,6 +953,18 @@ namespace Ionic.Utils.Zip
         {
             this[filename].Extract();
         }
+
+
+        /// <summary>
+        /// Extract a single item from the archive.  The file, including any qualifying path, 
+        /// is created at the current working directory.  
+        /// </summary>
+        /// <param name="filename">the file to extract. It must be the exact filename, including the path contained in the archive, if any. </param>
+        public void Extract(string filename, bool WantOverwrite)
+        {
+            this[filename].Extract(WantOverwrite);
+        }
+
 
         /// <summary>
         /// Extract a single specified file from the archive, to the given stream.  This is 
