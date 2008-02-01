@@ -151,9 +151,10 @@ namespace Ionic.Utils.Zip
             get
             {
                 if (_readstream == null)
-                {
+                
+                if (_name != null)
                     _readstream = System.IO.File.OpenRead(_name);
-                }
+                
                 return _readstream;
             }
             set
@@ -185,9 +186,9 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// The default constructor is private.
-        /// Users of the library are expected to create a ZipFile via 
-        /// the parameterized constructor: the constructor that
-        /// accepts a filename for the zip archive. 
+        /// Users of the library are expected to create an instance of the ZipFile 
+        /// class via the parameterized constructors: passing in a filename for the zip 
+        /// archive, or via the static Read() method. 
         /// </summary>
         private ZipFile() { }
 
@@ -236,7 +237,7 @@ namespace Ionic.Utils.Zip
         /// <param name="ZipFileName">The filename to use for the new zip archive.</param>
         public ZipFile(string ZipFileName)
         {
-            Init(ZipFileName, null);
+            InitFile(ZipFileName, null);
         }
 
         /// <summary>
@@ -288,11 +289,11 @@ namespace Ionic.Utils.Zip
         /// <param name="Output">The output TextWriter to use for verbose messages.</param>
         public ZipFile(string ZipFileName, System.IO.TextWriter Output)
         {
-            Init(ZipFileName, Output);
+            InitFile(ZipFileName, Output);
         }
 
 
-        private void Init(string ZipFileName, System.IO.TextWriter Output)
+        private void InitFile(string ZipFileName, System.IO.TextWriter Output)
         {
             // create a new zipfile
             _name = ZipFileName;
@@ -581,6 +582,23 @@ namespace Ionic.Utils.Zip
             _fileAlreadyExists = true;
         }
 
+        /// <summary>
+        /// Save the file to a new zipfile, with the given name. 
+        /// </summary>
+        /// <remarks>
+        /// This is handy when reading a zip archive from a stream 
+        /// and you want to modify the archive (add a file, change a 
+        /// comment, etc) and then save it to a file. 
+        /// </remarks>
+        /// <param name="ZipFileName">The name of the zip archive to save to. Existing files will be overwritten with great prejudice.</param>
+        public void Save(string ZipFileName)
+        {
+            _name = ZipFileName;
+            _contentsChanged = true;
+            _fileAlreadyExists = (System.IO.File.Exists(_name));
+            Save();
+        }
+
 
         private void WriteCentralDirectoryStructure()
         {
@@ -734,12 +752,87 @@ namespace Ionic.Utils.Zip
             return zf;
         }
 
+        /// <summary>
+        /// Reads a zip archive from a stream.
+        /// </summary>
+        /// <remarks>
+        /// This is useful when the zipfile is contained in a memory buffer (in which
+        /// case you can use a MemoryStream or when the zip archive is embedded into
+        /// an already-existing stream. The stream is closed when the reading is done. 
+        /// </remarks>
+        /// <param name="ZipStream">the stream containing the zip data.</param>
+        /// <returns>an instance of ZipFile</returns>
+        public static ZipFile Read(System.IO.Stream ZipStream)
+        {
+            return Read(ZipStream, null);
+        }
+
+        /// <summary>
+        /// Reads a zip archive from a stream.
+        /// </summary>
+        /// <remarks>
+        /// This is useful when the zipfile is contained in a memory buffer (in which
+        /// case you can use a MemoryStream or when the zip archive is embedded into
+        /// an already-existing stream. The stream is closed when the reading is done. 
+        /// This overload allows the caller to specify a TextWriter to which 
+        /// Verbose messages are sent. For example, in a console application, System.Console.Out 
+        /// works. If the TextWriter is null, no verbose messages are written. 
+        /// </remarks>
+        /// <param name="ZipStream">the stream containing the zip data.</param>
+        /// <param name="Output">The TextWriter to which Verbose messages are written.</param>
+        /// <returns>an instance of ZipFile</returns>
+        public static ZipFile Read(System.IO.Stream ZipStream, System.IO.TextWriter Output)
+        {
+            ZipFile zf = new ZipFile();
+            zf._Output = Output;
+            zf._readstream = ZipStream;
+            ReadIntoInstance(zf);
+            return zf;
+        }
+
+        /// <summary>
+        /// Reads a zip archive from a byte array.
+        /// </summary>
+        /// <remarks>
+        /// This is useful when the zipfile is contained in a byte array.  
+        /// </remarks>
+        /// <param name="buffer">the byte array containing the zip data.</param>
+        /// <returns>an instance of ZipFile. The name is null. </returns>
+        public static ZipFile Read(byte[] buffer)
+        {
+            System.IO.MemoryStream ms = new System.IO.MemoryStream(buffer);
+            return Read(ms, null);
+        }
+
+        /// <summary>
+        /// Reads a zip archive from a byte array.
+        /// </summary>
+        /// <remarks>
+        /// This is useful when the zipfile is contained in a byte array. 
+        /// This overload allows the caller to specify a TextWriter to which 
+        /// Verbose messages are sent. For example, in a console application, System.Console.Out 
+        /// works. If the TextWriter is null, no verbose messages are written. 
+        /// </remarks>
+        /// <param name="buffer">the byte array containing the zip data.</param>
+        /// <param name="Output">The TextWriter to which Verbose messages are written.</param>
+        /// <returns>an instance of ZipFile. The name is set to null.</returns>
+        public static ZipFile Read(byte[] buffer, System.IO.TextWriter Output)
+        {
+            ZipFile zf = new ZipFile();
+            zf._Output = Output;
+            zf._readstream = new System.IO.MemoryStream(buffer);
+            ReadIntoInstance(zf);
+            return zf;
+        }
 
         private static void ReadIntoInstance(ZipFile zf)
         {
             zf._entries = new System.Collections.Generic.List<ZipEntry>();
             ZipEntry e;
             if (zf.Verbose)
+                if (zf.Name==null)
+                    zf.Output.WriteLine("Reading zip from stream...");
+                else
                 zf.Output.WriteLine("Reading zip {0}...", zf.Name);
 
             while ((e = ZipEntry.Read(zf.ReadStream)) != null)
@@ -783,7 +876,7 @@ namespace Ionic.Utils.Zip
 
             // when finished slurping in the zip, close the read stream
             zf.ReadStream.Close();
-            zf.ReadStream = null;
+            //zf.ReadStream = null; // this no worky with streams
 
         }
 
@@ -960,6 +1053,7 @@ namespace Ionic.Utils.Zip
         /// is created at the current working directory.  
         /// </summary>
         /// <param name="filename">the file to extract. It must be the exact filename, including the path contained in the archive, if any. </param>
+        /// <param name="WantOverwrite">True if the caller wants to overwrite any existing files by the given name.</param>
         public void Extract(string filename, bool WantOverwrite)
         {
             this[filename].Extract(WantOverwrite);
@@ -999,6 +1093,7 @@ namespace Ionic.Utils.Zip
 
 
 
+        #region Destructors and Disposers
 
         /// <summary>
         /// This is the class Destructor, which gets called implicitly when the instance is destroyed.  
@@ -1066,6 +1161,8 @@ namespace Ionic.Utils.Zip
                 this._disposed = true;
             }
         }
+#endregion
+
 
         private System.IO.TextWriter _Output = null;
         private System.IO.Stream _readstream;

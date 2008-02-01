@@ -391,7 +391,10 @@ namespace Ionic.Utils.Zip
         {
             Extract(".");
         }
-
+        /// <summary>
+        /// Extract the entry to a file in the filesystem.
+        /// </summary>
+        /// <param name="WantOverwrite">true if the caller wants to overwrite an existing file by the same name in the filesystem.</param>
         public void Extract(bool WantOverwrite)
         {
             Extract(".", WantOverwrite);
