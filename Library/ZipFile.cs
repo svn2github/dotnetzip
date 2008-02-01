@@ -467,7 +467,7 @@ namespace Ionic.Utils.Zip
             {
                 if (_Debug) Console.WriteLine("Comparing {0} to {1}...", ze1.FileName, ze2.FileName);
                 if (ze1.FileName == ze2.FileName)
-                    throw new Exception("That entry already exists.");
+                    throw new Exception(String.Format("The entry '{0}' already exists in the zip archive.", ze1.FileName));
             }
 
         }
@@ -515,6 +515,7 @@ namespace Ionic.Utils.Zip
         public void AddDirectory(string DirectoryName, String DirectoryPathInArchive)
         {
             if (Verbose) Output.WriteLine("adding {0}...", DirectoryName);
+
             int filesAdded = 0;
             String[] filenames = System.IO.Directory.GetFiles(DirectoryName);
             foreach (String filename in filenames)
@@ -540,7 +541,9 @@ namespace Ionic.Utils.Zip
             String[] dirnames = System.IO.Directory.GetDirectories(DirectoryName);
             foreach (String dir in dirnames)
             {
-                AddDirectory(dir, DirectoryPathInArchive);
+                // dir is now fully-qualified, but we need a partially qualified name.
+                string tail= System.IO.Path.GetFileName(dir).ToString();         
+                AddDirectory(dir, System.IO.Path.Combine(DirectoryPathInArchive,tail));
             }
             _contentsChanged = true;
         }
