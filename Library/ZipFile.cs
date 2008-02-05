@@ -298,8 +298,10 @@ namespace Ionic.Utils.Zip
             // create a new zipfile
             _name = ZipFileName;
             _Output = Output;
-            if (!_name.EndsWith(".zip"))
-                throw new System.Exception(String.Format("The file name given ({0}) is a bad format.  It must end with a .zip extension.", ZipFileName));
+
+            //if (!_name.EndsWith(".zip"))
+            //    throw new System.Exception(String.Format("The file name given ({0}) is a bad format.  It must end with a .zip extension.", ZipFileName));
+
             if (System.IO.File.Exists(_name))
             {
                 // throw new System.Exception(String.Format("That file ({0}) already exists.", ZipFileName));
