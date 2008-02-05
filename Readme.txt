@@ -195,6 +195,11 @@ To build this example,
 
 
 
+Building the Help File
+--------------------------------------------
+If you want to build the helpfile, you need the SandCastle
+helpfile builder.  Use the DotNetZip.shfb file with SandCastle.
+
 
 Limitations
 ---------------------------------

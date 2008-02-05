@@ -5,7 +5,6 @@
   <add recursive='true'>Backup</add>
   <add>UpgradeLog.XML</add>
   <add>CodePlex-Readme.txt</add>
-  <add>DotNetZip.shfb</add>
   <add>Help</add>
   <add recursive='true'>LastBuild.log</add>
   <add recursive='true'>_Resharper*</add>
