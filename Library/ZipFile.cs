@@ -176,7 +176,7 @@ namespace Ionic.Utils.Zip
             }
         }
 
-        private System.IO.FileStream WriteStream
+        private System.IO.Stream WriteStream
         {
             get
             {
@@ -299,18 +299,107 @@ namespace Ionic.Utils.Zip
         /// </example>
         /// 
         /// <param name="ZipFileName">The filename to use for the new zip archive.</param>
-        /// <param name="Output">The output TextWriter to use for verbose messages.</param>
-        public ZipFile(string ZipFileName, System.IO.TextWriter Output)
+        /// <param name="StatusMessageWriter">A TextWriter to use for writing verbose status messages.</param>
+        public ZipFile(string ZipFileName, System.IO.TextWriter StatusMessageWriter)
         {
-            InitFile(ZipFileName, Output);
+            InitFile(ZipFileName, StatusMessageWriter);
         }
 
 
-        private void InitFile(string ZipFileName, System.IO.TextWriter Output)
+        /// <summary>
+        /// Constructor to create an instance of ZipFile that writes Zip archives to a stream.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>Applications can use this constructor to create an instance of ZipFile 
+        /// for writing to a stream. This is useful when zipping up content, but for any 
+        /// reason it is not desirable to create a zip file in the filesystem itself. 
+        /// </para>
+        /// <para>Typically an application writing a zip archive in this manner will create and
+        /// open a stream, then call this constructor, passing in the stream.  Then the app will add 
+        /// directories or files to the ZipFile via AddDirectory or AddFile or AddItem.  The app
+        /// will then write the zip archive to the memory stream by calling <c>Save()</c>. The 
+        /// compressed (zipped) data is not actually written to the stream until the application 
+        /// calls <c>ZipFile.Save()</c> .
+        /// </para>
+        /// </remarks>
+        ///
+        /// <example>
+        /// <code>
+        ///    byte[] buffer= new byte[100000]; // 100k max
+        ///    System.IO.MemoryStream ms= new System.IO.MemoryStream(buffer);
+        ///
+        ///    // write to the memory stream:
+        ///    try
+        ///    {
+        ///      using (ZipFile zip = new ZipFile(ms,System.Console.Out))
+        ///      {
+        ///        zip.Comment= "This is the comment attached to the archive.";
+        ///        zip.AddItem(directoryName);  // and recurse
+        ///        zip.Save(); // write all the data to the stream and close it
+        ///      }
+        ///    }
+        ///    catch (System.Exception ex1)
+        ///    {
+        ///      System.Console.Error.WriteLine("exception: " + ex1);
+        ///    }
+        /// </code>
+        /// </example>
+        /// <param name="OutputStream">The <c>System.IO.Stream</c> to write to. It must be writable.</param>
+        public ZipFile(System.IO.Stream OutputStream)
+      {
+            if (!OutputStream.CanWrite)
+                throw new ArgumentException("The OutputStream must be a writable stream.");
+
+            _writestream = OutputStream;
+            _entries = new System.Collections.Generic.List<ZipEntry>();
+            _name = null;
+      }
+
+        /// <summary>
+        /// Constructor to create an instance of ZipFile that writes Zip archives to a stream.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>Applications can use this constructor to create an instance of ZipFile 
+        /// for writing to a stream. This is useful when zipping up content, but for any 
+        /// reason it is not desirable to create a zip file in the filesystem itself. 
+        /// </para>
+        /// <para>Typically an application writing a zip archive in this manner will create and
+        /// open a stream, then call this constructor, passing in the stream.  Then the app will add 
+        /// directories or files to the ZipFile via AddDirectory or AddFile or AddItem.  The app
+        /// will then write the zip archive to the memory stream by calling <c>Save()</c>. The 
+        /// compressed (zipped) data is not actually written to the stream until the application 
+        /// calls <c>ZipFile.Save()</c> .
+        /// </para>
+        /// <para>
+        /// This version of the constructor allows the caller to pass in a TextWriter, to which verbose 
+        /// messages will be written during creation of the zip archive.  A console application
+        /// may wish to pass System.Console.Out to get messages on the Console. A graphical or headless application
+        /// may wish to capture the messages in a different TextWriter. 
+        /// </para>
+        /// </remarks>
+        ///
+        /// <param name="OutputStream">The outputStream to write to. It must be writable.</param>
+        /// <param name="StatusMessageWriter">A TextWriter to use for writing verbose status messages.</param>
+        public ZipFile(System.IO.Stream OutputStream, System.IO.TextWriter StatusMessageWriter)
+      {
+            if (!OutputStream.CanWrite)
+                throw new ArgumentException("The OutputStream must be a writable stream.");
+
+            _writestream = OutputStream;
+            _entries = new System.Collections.Generic.List<ZipEntry>();
+            _name = null;
+            _Output = StatusMessageWriter;
+      }
+
+
+
+        private void InitFile(string ZipFileName, System.IO.TextWriter StatusMessageWriter)
         {
             // create a new zipfile
             _name = ZipFileName;
-            _Output = Output;
+            _Output = StatusMessageWriter;
 
             //if (!_name.EndsWith(".zip"))
             //    throw new System.Exception(String.Format("The file name given ({0}) is a bad format.  It must end with a .zip extension.", ZipFileName));
@@ -557,8 +646,8 @@ namespace Ionic.Utils.Zip
             foreach (String dir in dirnames)
             {
                 // dir is now fully-qualified, but we need a partially qualified name.
-                string tail= System.IO.Path.GetFileName(dir).ToString();         
-                AddDirectory(dir, System.IO.Path.Combine(DirectoryPathInArchive,tail));
+                string tail= System.IO.Path.GetFileName(dir).ToString();
+                AddDirectory(dir, (DirectoryPathInArchive==null) ? null : System.IO.Path.Combine(DirectoryPathInArchive, tail));
             }
             _contentsChanged = true;
         }
@@ -594,10 +683,15 @@ namespace Ionic.Utils.Zip
             WriteStream.Close();
             WriteStream = null;
 
+	    // _temporaryFileName may remain null if we are writing to a stream
+	    if (_temporaryFileName != null) 
+	    {
+
             if (_fileAlreadyExists)
                 System.IO.File.Replace(_temporaryFileName, _name, null);
             else
                 System.IO.File.Move(_temporaryFileName, _name);
+	    }
 
             _fileAlreadyExists = true;
         }
@@ -613,6 +707,14 @@ namespace Ionic.Utils.Zip
         /// <param name="ZipFileName">The name of the zip archive to save to. Existing files will be overwritten with great prejudice.</param>
         public void Save(string ZipFileName)
         {
+            // check for the case where we are re-saving a zip archive 
+            // that was originally instantiated with a stream.  In that case, 
+            // the _name will be null. If so, we set _writestream to null, 
+            // which insures that we'll cons up a new WriteStream (with a filesystem
+            // file backing it) in the Save() method.
+            if (_name == null)
+                _writestream = null;
+
             _name = ZipFileName;
             _contentsChanged = true;
             _fileAlreadyExists = (System.IO.File.Exists(_name));
@@ -759,14 +861,16 @@ namespace Ionic.Utils.Zip
         /// This can be a fully-qualified or relative pathname.
         /// </param>
         /// 
-        /// <param name="Output">The <c>System.IO.TextWriter</c> to be used for output messages.</param>
+        /// <param name="StatusMessageWriter">
+        /// The <c>System.IO.TextWriter</c> to use for writing verbose status messages.
+        /// </param>
         /// 
         /// <returns>The instance read from the zip archive.</returns>
         /// 
-        public static ZipFile Read(string ZipFileName, System.IO.TextWriter Output)
+        public static ZipFile Read(string ZipFileName, System.IO.TextWriter StatusMessageWriter)
         {
             ZipFile zf = new ZipFile();
-            zf._Output = Output;
+            zf._Output = StatusMessageWriter;
             zf._name = ZipFileName;
             ReadIntoInstance(zf);
             return zf;
@@ -799,12 +903,12 @@ namespace Ionic.Utils.Zip
         /// works. If the TextWriter is null, no verbose messages are written. 
         /// </remarks>
         /// <param name="ZipStream">the stream containing the zip data.</param>
-        /// <param name="Output">The TextWriter to which Verbose messages are written.</param>
+        /// <param name="StatusMessageWriter">A TextWriter to use for writing verbose status messages.</param>
         /// <returns>an instance of ZipFile</returns>
-        public static ZipFile Read(System.IO.Stream ZipStream, System.IO.TextWriter Output)
+        public static ZipFile Read(System.IO.Stream ZipStream, System.IO.TextWriter StatusMessageWriter)
         {
             ZipFile zf = new ZipFile();
-            zf._Output = Output;
+            zf._Output = StatusMessageWriter;
             zf._readstream = ZipStream;
             ReadIntoInstance(zf);
             return zf;
@@ -969,7 +1073,7 @@ namespace Ionic.Utils.Zip
         ///                 e.CompressionRatio,
         ///                 e.CompressedSize);
         ///
-        ///     e.Extract(e.FileName);
+        ///     e.Extract();
         ///   }
         /// }
         /// </code>
@@ -1094,7 +1198,7 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// This is a name-based indexer into the Zip archive.  
         /// </summary>
-        /// <param name="filename">the name of the file in the zip to retrieve.</param>
+        /// <param name="filename">the name of the file, including any directory path, to retrieve from the zip.</param>
         /// <returns>The ZipEntry within the Zip archive, given by the specified filename.</returns>
         public ZipEntry this[String filename]
         {
@@ -1103,6 +1207,8 @@ namespace Ionic.Utils.Zip
                 foreach (ZipEntry e in _entries)
                 {
                     if (e.FileName == filename) return e;
+                    // also check for equivalence
+                    if (filename.Replace("\\", "/") == e.FileName) return e;
                 }
                 return null;
             }
@@ -1186,7 +1292,7 @@ namespace Ionic.Utils.Zip
 
         private System.IO.TextWriter _Output = null;
         private System.IO.Stream _readstream;
-        private System.IO.FileStream _writestream;
+        private System.IO.Stream _writestream;
         private bool _Debug = false;
         //private bool _Verbose = false;
         private bool _disposed = false;

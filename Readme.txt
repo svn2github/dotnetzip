@@ -66,7 +66,7 @@ Check the examples included in this package for simple apps that
 show how to read and write zip files.  The simplest way to
 create a zipfile looks like this: 
 
-      using(ZipFile zip= new ZipFile(args[0]))
+      using(ZipFile zip= new ZipFile(NameOfZipFileTocreate))
       {
         zip.AddFile(filename);
 	zip.Save(); 
@@ -75,10 +75,18 @@ create a zipfile looks like this:
 
 The simplest way to Extract all the entries from a zipfile looks
 like this: 
-      using (ZipFile zip = ZipFile.Read(args[0]))
+      using (ZipFile zip = ZipFile.Read(NameOfExistingZipFile))
       {
         zip.ExtractAll(args[1]);
       }
+
+
+There are a number of other options for using the class
+library.  For example, you can read zip archives from streams,
+or you can create (write) zip archives to streams.  Check the
+doc for complete information. 
+
+
 
 
 
@@ -96,9 +104,9 @@ logic like this:
 ...will produce a zip archive that contains a single file, which
 is stored with the relative directory information.  When you
 extract that file from the zip, either using this Zip library or
-winzip or the built-in zip support in Windows, all those
-directories will be created, and the file will be written into
-that directory hierarchy.  
+winzip or the built-in zip support in Windows, or some other
+package, all those directories will be created, and the file
+will be written into that directory hierarchy.  
 
 If you don't want that directory information in your archive,
 then you need to either 

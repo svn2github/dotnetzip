@@ -31,7 +31,8 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// When this is set, this class trims the volume (eg C:\) from any 
         /// fully-qualified pathname on the ZipEntry, 
-        /// before writing the ZipEntry into the ZipFile. 
+        /// before writing the ZipEntry into the ZipFile. This flag affects only 
+        /// zip creation.  
         /// </summary>
         public bool TrimVolumeFromFullyQualifiedPaths
         {
@@ -40,7 +41,8 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// The name of the file contained in the ZipEntry. 
+        /// The name of the filesystem file, referred to by the ZipEntry. 
+        /// This may be different than the path used in the archive itself.
         /// </summary>
         public string LocalFileName
         {
@@ -49,6 +51,9 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// The name of the file contained in the ZipEntry. 
+        /// When writing a zip, this path has backslashes replaced with 
+        /// forward slashes, according to the zip spec, for compatibility
+        /// with Unix and Amiga. 
         /// </summary>
         public string FileName
         {
@@ -117,6 +122,7 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// True if the entry is a directory (not a file). 
+        /// This is a readonly property on the entry.
         /// </summary>
         public bool IsDirectory
         {
@@ -302,7 +308,7 @@ namespace Ionic.Utils.Zip
         internal static ZipEntry Create(String filename, string DirectoryPathInArchive)
         {
             ZipEntry entry = new ZipEntry();
-            entry._LocalFileName = filename;
+            entry._LocalFileName = filename; // may include a path
             if (DirectoryPathInArchive == null)
                 entry._FileNameInArchive = filename;
             else
@@ -757,8 +763,7 @@ namespace Ionic.Utils.Zip
                     }
                     else
                     {
-
-                        // Read in the data from the file in the filesystem, comress it, and 
+                        // Read in the data from the file in the filesystem, compress it, and 
                         // calculate a CRC on it as we read. 
 
                         CRC32 crc32 = new CRC32();
@@ -768,6 +773,7 @@ namespace Ionic.Utils.Zip
                             _Crc32 = (Int32)crc;
                         }
                         CompressedStream.Close();  // to get the footer bytes written to the underlying stream
+                        _CompressedStream = null;
 
                         _UncompressedSize = crc32.TotalBytesRead;
                         _CompressedSize = (Int32)_UnderlyingMemoryStream.Length;
@@ -846,10 +852,13 @@ namespace Ionic.Utils.Zip
             // TrimVolumeFromFullyQualifiedPaths flag - set it to false to get the old
             // behavior.  It only affects zip creation.
 
-            // actual filename
+            // Tue, 05 Feb 2008  12:25
+            // Replace backslashes with forward slashes in the archive
+
+            // the filename written to the archive
             char[] c = ((TrimVolumeFromFullyQualifiedPaths) && (FileName[1] == ':') && (FileName[2] == '\\')) ?
-          FileName.Substring(3).ToCharArray() :  // trim off volume letter, colon, and slash
-          FileName.ToCharArray();
+          FileName.Substring(3).Replace("\\", "/").ToCharArray() :  // trim off volume letter, colon, and slash
+          FileName.Replace("\\", "/").ToCharArray();
             int j = 0;
 
             if (_Debug)
@@ -888,7 +897,6 @@ namespace Ionic.Utils.Zip
             if (_Debug) System.Console.WriteLine("preserving header of {0} bytes", _header.Length);
             for (j = 0; j < i; j++)
                 _header[j] = bytes[j];
-
         }
 
 
