@@ -146,6 +146,17 @@ namespace Ionic.Utils.Zip
             set { _Output = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the name for the folder to store the temporary file
+        /// this library writes when saving the zip archive. The calling application 
+        /// should have write and delete rights on that folder.
+        /// </summary>
+        public String TempFileFolder
+        {
+            get { return _TempFileFolder; }
+            set { _TempFileFolder = value; } 
+        }
+
         private System.IO.Stream ReadStream
         {
             get
@@ -171,7 +182,9 @@ namespace Ionic.Utils.Zip
             {
                 if (_writestream == null)
                 {
-                    _temporaryFileName = System.IO.Path.GetRandomFileName();
+                    _temporaryFileName = (TempFileFolder != ".") ?
+                    System.IO.Path.Combine(TempFileFolder, System.IO.Path.GetRandomFileName())
+                    : System.IO.Path.GetRandomFileName();
                     _writestream = new System.IO.FileStream(_temporaryFileName, System.IO.FileMode.CreateNew);
                 }
                 return _writestream;
@@ -560,6 +573,8 @@ namespace Ionic.Utils.Zip
         /// this method will replace the existing zip file with this temporary file.
         /// If the zip file does not already exist, the temporary file is renamed 
         /// to the desired name.  
+        /// When using the zip library within an ASPNET application, you may wish to set the
+        /// TempFileFolder on the ZipFile instance before calling Save().
         /// </remarks>
         public void Save()
         {
@@ -1183,6 +1198,7 @@ namespace Ionic.Utils.Zip
         private bool _fileAlreadyExists = false;
         private string _temporaryFileName = null;
         private bool _contentsChanged = false;
+        private String _TempFileFolder = ".";
     }
 
 }
