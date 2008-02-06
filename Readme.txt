@@ -50,13 +50,14 @@ The key object in the class library is the ZipFile class.  The key methods on it
       - AddDirectory - adds a directory to a zip archive
       - AddFile - adds a file to a zip archive
       - Extract - extract a single element from a zip file
-      - Read - static method to read in an existing zipfile, for
+      - Read - static methods to read in an existing zipfile, for
                later extraction
       - Save - save a zipfile to disk
 
-There are also supporting classes, called ZipEntry, and
-ZipDirEntry.  Typically apps do not directly interact with these
-classes.
+There is also a supporting class, called ZipEntry.  Applications
+can enumerate the entries in a ZipFile, via ZipEntry.  There are
+other supporting classes as well.  Typically apps do not
+directly interact with these other classes.
 
 
 Using the Class Library
@@ -123,6 +124,20 @@ See the doc:
 http://msdn2.microsoft.com/en-us/library/system.io.directory.setcurrentdirectory.aspx
 
 
+
+About the Help file
+--------------------------------
+
+The .chm file contains help generated from the code.
+
+In some cases, Upon opening the .chm file for DotNetZipLib, the
+help items tree loads, but the contents are empty. You may see
+an Error: This program cannot display the webpage.  If this
+happens, it's probable that you encounter problem with Windows
+protection of files downloaded from less trusted
+location. Within Windows Explorer, right-click on the CHM file,
+select properties, and Unblock it (button in lower part of
+properties window).
 
 
 

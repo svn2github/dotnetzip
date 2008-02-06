@@ -1,7 +1,7 @@
 // UnZip.cs
 // 
 // ----------------------------------------------------------------------
-// Copyright (c) 2006, 2007 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2006, 2007, 2008 Microsoft Corporation.  All rights reserved.
 //
 // This example is released under the Microsoft Public License . 
 // See the license.txt file accompanying this release for 

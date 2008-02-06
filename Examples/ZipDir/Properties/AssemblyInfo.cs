@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("ZipDir")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Example Utility for zipping a directory")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("MSIT")]
+[assembly: AssemblyCompany("Microsoft")]
 [assembly: AssemblyProduct("ZipDir")]
-[assembly: AssemblyCopyright("Copyright © MSIT 2007")]
+[assembly: AssemblyCopyright("Copyright © Dino Chiesa 2007")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -29,5 +29,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.3.0.0")]
+[assembly: AssemblyFileVersion("1.3.0.0")]

@@ -1,7 +1,7 @@
 // CreateZip.cs
 // 
 // ----------------------------------------------------------------------
-// Copyright (c) 2006, 2007 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2006, 2007, 2008 Microsoft Corporation.  All rights reserved.
 //
 // This example is released under the Microsoft Permissive License of
 // October 2006.  See the license.txt file accompanying this release for 

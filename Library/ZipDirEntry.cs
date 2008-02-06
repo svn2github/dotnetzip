@@ -1,9 +1,9 @@
 // ZipDirEntry.cs
 //
-// Copyright (c) 2006, 2007 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2006, 2007, 2008 Microsoft Corporation.  All rights reserved.
 //
 // Part of an implementation of a zipfile class library. 
-// See the file ZipFile.cs for further information.
+// See the file ZipFile.cs for the license and for further information.
 //
 // Tue, 27 Mar 2007  15:30
 

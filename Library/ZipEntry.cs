@@ -1,9 +1,9 @@
 // ZipEntry.cs
 //
-// Copyright (c) 2006, 2007 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2006, 2007, 2008 Microsoft Corporation.  All rights reserved.
 //
 // Part of an implementation of a zipfile class library. 
-// See the file ZipFile.cs for further information.
+// See the file ZipFile.cs for the license and for further information.
 //
 // Tue, 27 Mar 2007  15:30
 
@@ -278,7 +278,7 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// <param name="s">the stream to read from.</param>
         /// <returns>the ZipEntry read from the stream.</returns>
-        public static ZipEntry Read(System.IO.Stream s)
+        internal static ZipEntry Read(System.IO.Stream s)
         {
             ZipEntry entry = new ZipEntry();
 
@@ -339,6 +339,9 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// Extract the entry to the filesystem, starting at the current working directory. 
         /// </summary>
+        /// 
+        /// <overloads>This method has five overloads.</overloads>
+        ///         
         /// <remarks>
         /// <para>
         /// The last modified time of the created file may be adjusted 
@@ -391,15 +394,21 @@ namespace Ionic.Utils.Zip
         /// in what the .NET BCL assumed to be DST (an assumption that may be
         /// wrong given the constantly changing DST rules).
         /// </para>
-        /// <overloads>This method has three overloads.</overloads>
         /// </remarks>
         public void Extract()
         {
             Extract(".");
         }
         /// <summary>
-        /// Extract the entry to a file in the filesystem.
+        /// Extract the entry to a file in the filesystem, potentially overwriting
+        /// any existing file.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// See the remarks on the non-parameterized version of the extract() method, 
+        /// for information on the last modified time of the created file.
+        /// </para>
+        /// </remarks>
         /// <param name="WantOverwrite">true if the caller wants to overwrite an existing file by the same name in the filesystem.</param>
         public void Extract(bool WantOverwrite)
         {
@@ -407,7 +416,8 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// Extracts the entry to the specified stream. For example, the caller could specify Console.Out, or a MemoryStream.
+        /// Extracts the entry to the specified stream. 
+        /// For example, the caller could specify Console.Out, or a MemoryStream.
         /// </summary>
         /// <param name="s">the stream to which the entry should be extracted.  </param>
         public void Extract(System.IO.Stream s)
@@ -418,6 +428,10 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// Extract the entry to the filesystem, starting at the specified base directory. 
         /// </summary>
+        /// <para>
+        /// See the remarks on the non-parameterized version of the extract() method, 
+        /// for information on the last modified time of the created file.
+        /// </para>
         /// <param name="BaseDirectory">the pathname of the base directory</param>
         public void Extract(string BaseDirectory)
         {
@@ -425,10 +439,15 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// Extract the entry to the filesystem, starting at the specified base directory. 
+        /// Extract the entry to the filesystem, starting at the specified base directory, 
+        /// and potentially overwriting existing files in the filesystem. 
         /// </summary>
+        /// <para>
+        /// See the remarks on the non-parameterized version of the extract() method, 
+        /// for information on the last modified time of the created file.
+        /// </para>
         /// <param name="BaseDirectory">the pathname of the base directory</param>
-        /// <param name="Overwrite">if true, Overwrite any existing files if necessary upon extraction.</param>
+        /// <param name="Overwrite">If true, overwrite any existing files if necessary upon extraction.</param>
         public void Extract(string BaseDirectory, bool Overwrite)
         {
             OverwriteOnExtract = Overwrite;
