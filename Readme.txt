@@ -1,4 +1,4 @@
-Mon, 03 Apr 2006  10:26
+Wed, 06 Feb 2008  11:06
 
 Zip Library 
 ---------------------------------
@@ -144,8 +144,8 @@ properties window).
 License
 --------
 
-This software is released under the Microsoft Permissive License
-of OCtober 2006.  See the License.txt file for details. 
+This software is released under the Microsoft Public License
+of October 2006.  See the License.txt file for details. 
 
 
 
@@ -184,16 +184,16 @@ to run:
 to build:
 .NET Framework 2.0 SDK or later
 or
-Visual Studio 2005 or later
+Visual Studio 2008 or later
 
 
 
-Building
----------------------------------
+Building DotNetZip with the .NET SDK
+-------------------------------------
 
-To build this example, 
+To build this example,  using the .NET Framework SDK v2.0,
 
-1. extract the contents of this zip into a new directory. 
+1. extract the contents of the source zip into a new directory. 
 
 2. be sure the .NET 2.0 SDK and .NET 2.0 runtime directories
    are on your path.  These are typically
@@ -204,9 +204,60 @@ To build this example,
 
 3. open a CMD prompt and CD to the zip\Library directory. 
   
-4. nmake
+4. msbuild 
 
-5. To build the examples, cd ..\Examples and type nmake again
+5. To build the examples, cd ..\Examples\{ZipIt,Unzip,etc}  and type msbuild again
+
+6. to clean and rebuild either the library or examples, do: 
+   msbuild /t:clean
+   msbuild
+
+7. There is a setup directory, which contains the project
+   necessary to build the MSI file.  Unfortunately msbuild does
+   not include support for building setup projects (vdproj). 
+
+
+
+Building DotNetZip with Visual Studio
+-------------------------------------
+
+Of course you can also open the DotNetZip Solution within Visual
+Studio 2008 and use it to build the various projects, including
+the setup project for the MSI File.
+
+To do this, just double click on the .sln file.  
+Then right click on the solution, and select Build. 
+
+
+
+
+Signing the assembly
+-------------------------------------------------------
+
+The binary DLL shipped in the codeplex project is signed by me,
+Ionic Shade.  It is done automatically at build time in the
+vs2008 project. There is a .pfx file that holds the crypto stuff
+for signing the assembly, and that pfx file is itself protected
+by a password. 
+
+People opening the project ask me: what's the password?
+
+Here's the problem; if I give everyone the password to the PFX
+file, then anyone can go and build a modified DotNetZip.dll, and
+sign it, and apply the same version number.  This means there
+will be multiple distinct assemblies with the same signature.
+This is obviously not good.  So the signed DLL is from me only,
+and if anyone wants to modify the project and party on it,
+they have a couple options: 
+  - produce a modified, unsigned assembly
+  - sign the assembly themselves, using their own key.
+
+In either case it is not the same as the assembly I am shipping,
+therefore it should not be signed with the same key. 
+
+mmkay? 
+
+
 
 
 
@@ -214,6 +265,8 @@ Building the Help File
 --------------------------------------------
 If you want to build the helpfile, you need the SandCastle
 helpfile builder.  Use the DotNetZip.shfb file with SandCastle.
+You can get the builder tool at http://www.codeplex.com/SHFB
+
 
 
 Limitations
@@ -221,7 +274,7 @@ Limitations
 
 There are numerous limitations to this library:
 
- it does not support encryption, file comments, or double-byte
+ it does not support encryption, or double-byte
  chars in filenames.
 
  it does not support file lengths greater than 0xffffffff.
@@ -230,8 +283,6 @@ There are numerous limitations to this library:
 
  it does not do varying compression levels. 
 
- it can actually expand the size of previously compressed data,
- such as JPG files.
 
  there is no GUI tool
 
@@ -253,5 +304,5 @@ http://www.sharpdevelop.net/OpenSource/SharpZipLib/Default.aspx
 
 This example library is not based on SharpZipLib.  
 
-
-
+There is a Zip library as part of the Mono project.  This
+library is also not based on that.
