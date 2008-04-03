@@ -622,6 +622,26 @@ namespace Ionic.Utils.Zip
             return ze;
         }
 
+        //Daniel Bedarf - 2008 feb
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="FileName">FileName which is shown in the ZIP File</param>
+        /// <param name="DirectoryPathInArchive">in ZIP File</param>
+        /// <param name="stream">InputStream</param>
+        /// <returns></returns>
+        public ZipEntry AddFileStream(string FileName, String DirectoryPathInArchive, System.IO.Stream stream)
+        {
+            ZipEntry ze = ZipEntry.Create(FileName, DirectoryPathInArchive, stream);
+            ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
+            if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", FileName);
+            InsureUniqueEntry(ze);
+            _entries.Add(ze);
+            _contentsChanged = true;
+            return ze;
+        }
+
+
 
         private void InsureUniqueEntry(ZipEntry ze1)
         {
@@ -728,33 +748,37 @@ namespace Ionic.Utils.Zip
         /// </remarks>
         public void Save()
         {
-            // check if modified, before saving. 
-            if (!_contentsChanged) return;
-
-            if (Verbose) StatusMessageTextWriter.WriteLine("Saving....");
-
-            // an entry for each file
-            foreach (ZipEntry e in _entries)
+            if (WriteStream != null)
             {
-                e.Write(WriteStream);
+                // check if modified, before saving. 
+                if (!_contentsChanged) return;
+
+                if (Verbose) StatusMessageTextWriter.WriteLine("Saving....");
+
+                // an entry for each file
+                foreach (ZipEntry e in _entries)
+                {
+                    e.Write(WriteStream);
+                }
+
+                WriteCentralDirectoryStructure();
+
+                // _temporaryFileName may remain null if we are writing to a stream
+                if ((_temporaryFileName != null) && (_name != null))
+                {
+                    // only close the stream if there is a file behind it. 
+                    WriteStream.Close();
+                    WriteStream = null;
+
+                    if (_fileAlreadyExists)
+                        System.IO.File.Replace(_temporaryFileName, _name, null);
+                    else
+                        System.IO.File.Move(_temporaryFileName, _name);
+
+                _fileAlreadyExists = true;
+
+                }
             }
-
-            WriteCentralDirectoryStructure();
-
-            WriteStream.Close();
-            WriteStream = null;
-
-            // _temporaryFileName may remain null if we are writing to a stream
-            if (_temporaryFileName != null)
-            {
-
-                if (_fileAlreadyExists)
-                    System.IO.File.Replace(_temporaryFileName, _name, null);
-                else
-                    System.IO.File.Move(_temporaryFileName, _name);
-            }
-
-            _fileAlreadyExists = true;
         }
 
         /// <summary>
@@ -791,6 +815,8 @@ namespace Ionic.Utils.Zip
 
             _name = ZipFileName;
             _contentsChanged = true;
+            if (System.IO.Directory.Exists(_name))
+                throw new System.Exception("That name specifies an existing directory. Please specify a filename.");
             _fileAlreadyExists = (System.IO.File.Exists(_name));
             Save();
         }

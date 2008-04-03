@@ -307,7 +307,21 @@ namespace Ionic.Utils.Zip
 
         internal static ZipEntry Create(String filename, string DirectoryPathInArchive)
         {
+            return Create(filename, DirectoryPathInArchive, null);
+        }
+
+
+        //Daniel Bedarf
+        private bool _isStream;
+        private System.IO.Stream _inputStream;
+        internal static ZipEntry Create(String filename, string DirectoryPathInArchive, System.IO.Stream stream)
+        {
             ZipEntry entry = new ZipEntry();
+            if (stream != null)
+            {
+                entry._isStream = true;
+                entry._inputStream = stream;
+            }
             entry._LocalFileName = filename; // may include a path
             if (DirectoryPathInArchive == null)
                 entry._FileNameInArchive = filename;
@@ -318,7 +332,7 @@ namespace Ionic.Utils.Zip
                     System.IO.Path.Combine(DirectoryPathInArchive, System.IO.Path.GetFileName(filename));
             }
 
-            entry._LastModified = System.IO.File.GetLastWriteTime(filename);
+            entry._LastModified = DateTime.Now; ;
 
             // adjust the time if the .NET BCL thinks it is in DST.  
             // see the note elsewhere in this file for more info. 
@@ -770,9 +784,19 @@ namespace Ionic.Utils.Zip
                 }
                 else
                 {
-                    // special case zero-length files
-                    System.IO.FileInfo fi = new System.IO.FileInfo(LocalFileName);
-                    if (fi.Length == 0)
+                    //Daniel Bedarf
+                    long fileLenght = 0;
+                    if (_isStream)
+                    {
+                        fileLenght = _inputStream.Length;
+                    }
+                    else
+                    {
+                        // special case zero-length files
+                        System.IO.FileInfo fi = new System.IO.FileInfo(LocalFileName);
+                        fileLenght = fi.Length;
+                    }
+                    if (fileLenght == 0)
                     {
                         CompressionMethod = 0x00;
                         _UncompressedSize = 0;
@@ -786,10 +810,20 @@ namespace Ionic.Utils.Zip
                         // calculate a CRC on it as we read. 
 
                         CRC32 crc32 = new CRC32();
-                        using (System.IO.Stream input = System.IO.File.OpenRead(LocalFileName))
+                                                //Daniel Bedarf
+                        if (_isStream)
                         {
-                            UInt32 crc = crc32.GetCrc32AndCopy(input, CompressedStream);
+                            _inputStream.Position = 0;
+                            UInt32 crc = crc32.GetCrc32AndCopy(_inputStream, CompressedStream);
                             _Crc32 = (Int32)crc;
+                        }
+                        else
+                        {
+                            using (System.IO.Stream input = System.IO.File.OpenRead(LocalFileName))
+                            {
+                                UInt32 crc = crc32.GetCrc32AndCopy(input, CompressedStream);
+                                _Crc32 = (Int32)crc;
+                            }
                         }
                         CompressedStream.Close();  // to get the footer bytes written to the underlying stream
                         _CompressedStream = null;
@@ -803,11 +837,22 @@ namespace Ionic.Utils.Zip
                         // We need to recompute the CRC, and point to the right data.
                         if (_CompressedSize > _UncompressedSize)
                         {
-                            using (System.IO.Stream input = System.IO.File.OpenRead(LocalFileName))
+                                                     //Daniel Bedarf
+                            if (_isStream)
                             {
                                 _UnderlyingMemoryStream = new System.IO.MemoryStream();
-                                UInt32 crc = crc32.GetCrc32AndCopy(input, _UnderlyingMemoryStream);
+                                _inputStream.Position = 0;
+                                UInt32 crc = crc32.GetCrc32AndCopy(_inputStream, _UnderlyingMemoryStream);
                                 _Crc32 = (Int32)crc;
+                            }
+                            else
+                            {
+                                using (System.IO.Stream input = System.IO.File.OpenRead(LocalFileName))
+                                {
+                                    _UnderlyingMemoryStream = new System.IO.MemoryStream();
+                                    UInt32 crc = crc32.GetCrc32AndCopy(input, _UnderlyingMemoryStream);
+                                    _Crc32 = (Int32)crc;
+                                }
                             }
                             _UncompressedSize = crc32.TotalBytesRead;
                             _CompressedSize = (Int32)_UnderlyingMemoryStream.Length;
