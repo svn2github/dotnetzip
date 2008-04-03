@@ -95,8 +95,10 @@ namespace Ionic.Utils.Zip
         public string Comment
         {
             get { return _Comment; }
-            set { _Comment = value;
-            _contentsChanged = true;
+            set
+            {
+                _Comment = value;
+                _contentsChanged = true;
             }
         }
 
@@ -167,7 +169,7 @@ namespace Ionic.Utils.Zip
         public String TempFileFolder
         {
             get { return _TempFileFolder; }
-            set { _TempFileFolder = value; } 
+            set { _TempFileFolder = value; }
         }
 
         private System.IO.Stream ReadStream
@@ -175,10 +177,10 @@ namespace Ionic.Utils.Zip
             get
             {
                 if (_readstream == null)
-                
-                if (_name != null)
-                    _readstream = System.IO.File.OpenRead(_name);
-                
+
+                    if (_name != null)
+                        _readstream = System.IO.File.OpenRead(_name);
+
                 return _readstream;
             }
             set
@@ -365,14 +367,14 @@ namespace Ionic.Utils.Zip
         /// </example>
         /// <param name="OutputStream">The <c>System.IO.Stream</c> to write to. It must be writable.</param>
         public ZipFile(System.IO.Stream OutputStream)
-      {
+        {
             if (!OutputStream.CanWrite)
                 throw new ArgumentException("The OutputStream must be a writable stream.");
 
             _writestream = OutputStream;
             _entries = new System.Collections.Generic.List<ZipEntry>();
             _name = null;
-      }
+        }
 
         /// <summary>
         /// Constructor to create an instance of ZipFile that writes Zip archives to a stream.
@@ -401,7 +403,7 @@ namespace Ionic.Utils.Zip
         /// <param name="OutputStream">The outputStream to write to. It must be writable.</param>
         /// <param name="StatusMessageWriter">A TextWriter to use for writing verbose status messages.</param>
         public ZipFile(System.IO.Stream OutputStream, System.IO.TextWriter StatusMessageWriter)
-      {
+        {
             if (!OutputStream.CanWrite)
                 throw new ArgumentException("The OutputStream must be a writable stream.");
 
@@ -409,7 +411,7 @@ namespace Ionic.Utils.Zip
             _entries = new System.Collections.Generic.List<ZipEntry>();
             _name = null;
             _StatusMessageTextWriter = StatusMessageWriter;
-      }
+        }
 
 
 
@@ -460,7 +462,7 @@ namespace Ionic.Utils.Zip
         /// 
         public void AddItem(string FileOrDirectoryName)
         {
-             AddItem(FileOrDirectoryName, null);
+            AddItem(FileOrDirectoryName, null);
         }
 
 
@@ -712,7 +714,7 @@ namespace Ionic.Utils.Zip
             // adding a directory with zero files in it.  We need to add this specially. 
             if (filesAdded == 0)
             {
-                String dirName= (!DirectoryName.EndsWith("\\")) ? DirectoryName+"\\" :  DirectoryName;
+                String dirName = (!DirectoryName.EndsWith("\\")) ? DirectoryName + "\\" : DirectoryName;
 
                 ZipEntry ze = ZipEntry.Create(dirName, DirectoryPathInArchive);
                 ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
@@ -727,8 +729,8 @@ namespace Ionic.Utils.Zip
             foreach (String dir in dirnames)
             {
                 // dir is now fully-qualified, but we need a partially qualified name.
-                string tail= System.IO.Path.GetFileName(dir).ToString();
-                AddDirectory(dir, (DirectoryPathInArchive==null) ? null : System.IO.Path.Combine(DirectoryPathInArchive, tail));
+                string tail = System.IO.Path.GetFileName(dir).ToString();
+                AddDirectory(dir, (DirectoryPathInArchive == null) ? null : System.IO.Path.Combine(DirectoryPathInArchive, tail));
             }
             _contentsChanged = true;
         }
@@ -775,7 +777,7 @@ namespace Ionic.Utils.Zip
                     else
                         System.IO.File.Move(_temporaryFileName, _name);
 
-                _fileAlreadyExists = true;
+                    _fileAlreadyExists = true;
 
                 }
             }
@@ -886,9 +888,9 @@ namespace Ionic.Utils.Zip
             }
             else
             {
-                Int16 commentLength = (Int16) Comment.Length;
+                Int16 commentLength = (Int16)Comment.Length;
                 // the size of our buffer defines the max length of the comment we can write
-                if (commentLength + i +2 > bytes.Length) commentLength = (Int16)(bytes.Length - i -2);
+                if (commentLength + i + 2 > bytes.Length) commentLength = (Int16)(bytes.Length - i - 2);
                 bytes[i++] = (byte)(commentLength & 0x00FF);
                 bytes[i++] = (byte)((commentLength & 0xFF00) >> 8);
                 char[] c = Comment.ToCharArray();
@@ -1060,10 +1062,10 @@ namespace Ionic.Utils.Zip
             zf._entries = new System.Collections.Generic.List<ZipEntry>();
             ZipEntry e;
             if (zf.Verbose)
-                if (zf.Name==null)
+                if (zf.Name == null)
                     zf.StatusMessageTextWriter.WriteLine("Reading zip from stream...");
                 else
-                zf.StatusMessageTextWriter.WriteLine("Reading zip {0}...", zf.Name);
+                    zf.StatusMessageTextWriter.WriteLine("Reading zip {0}...", zf.Name);
 
             while ((e = ZipEntry.Read(zf.ReadStream)) != null)
             {
@@ -1101,7 +1103,7 @@ namespace Ionic.Utils.Zip
 
             ReadCentralDirectoryFooter(zf);
 
-            if ((zf.Verbose) && (zf.Comment!=null) && (zf.Comment!=""))
+            if ((zf.Verbose) && (zf.Comment != null) && (zf.Comment != ""))
                 zf.StatusMessageTextWriter.WriteLine("Zip file Comment: {0}", zf.Comment);
 
             // when finished slurping in the zip, close the read stream
@@ -1404,16 +1406,19 @@ namespace Ionic.Utils.Zip
                         _readstream.Dispose();
                         _readstream = null;
                     }
-                    if (_writestream != null)
-                    {
-                        _writestream.Dispose();
-                        _writestream = null;
-                    }
+                    // only dispose the writestream if there is a backing file 
+                    //(_temporaryFileName is not null)
+                    if ((_temporaryFileName != null) && (_name != null))
+                        if (_writestream != null)
+                        {
+                            _writestream.Dispose();
+                            _writestream = null;
+                        }
                 }
                 this._disposed = true;
             }
         }
-#endregion
+        #endregion
 
 
         private System.IO.TextWriter _StatusMessageTextWriter = null;

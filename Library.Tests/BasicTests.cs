@@ -11,11 +11,11 @@ namespace Library.Tests
     /// Summary description for UnitTest1
     /// </summary>
     [TestClass]
-    public class UnitTest1
+    public class BasicTests
     {
         private System.Random _rnd;
 
-        public UnitTest1()
+        public BasicTests()
         {
             _rnd = new System.Random();
         }
@@ -208,7 +208,7 @@ namespace Library.Tests
             string[] FilesToZip = new string[fileCount];
             for (i = 0; i < fileCount; i++)
                 FilesToZip[i] =
-                    CreateUniqueFile(".bin", _rnd.Next(10000) + 5000);
+                    CreateUniqueFile("bin", _rnd.Next(10000) + 5000);
 
             _FilesToRemove.AddRange(FilesToZip);
 
@@ -241,13 +241,8 @@ namespace Library.Tests
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
             int fileCount = _rnd.Next(3) + 3;
-            int i;
-            string[] FilesToZip = new string[fileCount];
-            for (i = 0; i < fileCount; i++)
-                FilesToZip[i] =
-                    CreateUniqueFile(".bin", DirToCreate, _rnd.Next(10000) + 5000);
-
-            _FilesToRemove.AddRange(FilesToZip);
+            for (int i = 0; i < fileCount; i++)
+                CreateUniqueFile("bin", DirToCreate, _rnd.Next(10000) + 5000);
 
             System.IO.Directory.SetCurrentDirectory(System.IO.Path.GetDirectoryName(DirToCreate));
             string dirToZip = System.IO.Path.GetFileName(DirToCreate);
@@ -259,18 +254,57 @@ namespace Library.Tests
 
             System.IO.Directory.SetCurrentDirectory(currentDir);
 
-            Assert.IsTrue(CheckZip(ZipFileToCreate, FilesToZip.Length),
+            Assert.IsTrue(CheckZip(ZipFileToCreate, fileCount),
                     "Zip file created seems to be invalid.");
-
         }
+
 
 
         [TestMethod]
-        public void CheckStatusMessagesOnZipUp()
+        public void VerifyThatStreamRemainsOpenAfterSave()
         {
-            Assert.IsTrue(false);
+            string currentDir = System.IO.Directory.GetCurrentDirectory();
+            string DirToCreate = GenerateUniqueFilename("tmp");
+            System.IO.Directory.CreateDirectory(DirToCreate);
+            _FilesToRemove.Add(DirToCreate);
+
+            int filesAdded = _rnd.Next(3) + 3;
+            for (int i = 0; i < filesAdded; i++)
+                CreateUniqueFile("bin", DirToCreate, _rnd.Next(10000) + 5000);
+
+            System.IO.Directory.SetCurrentDirectory(System.IO.Path.GetDirectoryName(DirToCreate));
+            string dirToZip = System.IO.Path.GetFileName(DirToCreate);
+            var ms = new System.IO.MemoryStream();
+            Assert.IsTrue(ms.CanSeek, "The MemoryStream does not do Seek.");
+            using (ZipFile zip = new ZipFile(ms))
+            {
+                zip.AddDirectory(dirToZip);
+                zip.Save();
+            }
+
+            System.IO.Directory.SetCurrentDirectory(currentDir);
+
+            Assert.IsTrue(ms.CanSeek, "After writing, the OutputStream does not do Seek.");
+            Assert.IsTrue(ms.CanRead, "The OutputStream cannot be Read.");
+
+            // seek to the beginning
+            ms.Seek(0, System.IO.SeekOrigin.Begin);
+            int filesFound = 0;
+            using (ZipFile z2 = ZipFile.Read(ms))
+            {
+                foreach (ZipEntry e in z2)
+                {
+                    if (!e.IsDirectory)
+                        filesFound++;
+                }
+            }
+
+            Assert.AreEqual<int>(filesFound, filesAdded, "Found an incorrect number of files.");
         }
 
+        /// <summary>
+        /// Tests whether FileComments can be added and retrieved.
+        /// </summary>
         [TestMethod]
         public void FileComments()
         {
@@ -311,7 +345,7 @@ namespace Library.Tests
                 }
 
             }
-            Assert.AreEqual<int>(entries, FilesToZip.Length, "Unexpected file count. Expected {0}, got {1}.", 
+            Assert.AreEqual<int>(entries, FilesToZip.Length, "Unexpected file count. Expected {0}, got {1}.",
                     FilesToZip.Length, entries);
         }
 
@@ -337,7 +371,7 @@ namespace Library.Tests
                 for (j = 0; j < fileCount; j++)
                 {
                     CreateUniqueFile("bin", Subdir, _rnd.Next(10000) + 5000);
-                    entries++; 
+                    entries++;
                 }
             }
 
