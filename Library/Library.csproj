@@ -61,6 +61,7 @@
     <Compile Include="Crc32.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shared.cs" />
+    <Compile Include="ZipCrypto.cs" />
     <Compile Include="ZipDirEntry.cs" />
     <Compile Include="ZipEntry.cs" />
     <Compile Include="ZipFile.cs" />

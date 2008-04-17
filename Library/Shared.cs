@@ -15,6 +15,13 @@ namespace Ionic.Utils.Zip
 
     class Shared
     {
+
+        protected internal static byte[] AsciiStringToByteArray(string data)
+        {
+            byte[] a = System.Text.Encoding.ASCII.GetBytes(data);
+            return a;
+        }
+
         protected internal static string StringFromBuffer(byte[] buf, int start, int maxlength)
         {
             int i;

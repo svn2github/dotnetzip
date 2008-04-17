@@ -29,63 +29,96 @@ namespace Ionic.Utils.Zip.Examples
         private static void Usage()
         {
             Console.WriteLine("usage:\n" +
-                      "  unzip [-o] <zipfile> [<unpackdirectory>]\n" +
-                      "     unzips all files in the archive to the specified directory. If no \n" +
-                      "     directory is provided, this utility uses the current directory. The\n" +
-                      "     -o option specifies to overwrite existing files if necessary.\n\n" +
-                      "  unzip - <zipfile> <entry>\n" +
-                      "     unzip the specified entry from the archive to the console.\n\n" +
-                      "  unzip -l <zipfile>\n" +
-                      "     lists the entries in the zip archive.\n"
-                      );
+                  "  unzip [-o|-] [-p <password>] <zipfile> [-d <unpackdirectory>] [-e <entry>]\n" +
+                  "     unzips all files in the archive to the specified directory, which should exist.\n" +
+                  "     If no directory is provided, this utility uses the current directory. The\n" +
+                  "     -o option specifies to overwrite existing files if necessary. Specifying\n" +
+                  "     - as the first argument will extract to the console. Specifying -e will\n" +
+                  "     extract a single named entry.\n\n" +
+                  "  unzip -l <zipfile>\n" +
+                  "     lists the entries in the zip archive.\n" +
+                  "  unzip -?\n" +
+                  "     displays this message.\n"
+                  );
             Environment.Exit(1);
         }
 
 
         public static void Main(String[] args)
         {
-            int i = 0;
+            int startArgs = 0;
+            int i;
             string zipfile = null;
-            string targdir = ".";
+            string targdir = null;
+            string password = null;
             string entryToExtract = null;
+            bool extractToConsole = false;
             bool WantExtract = true;
             bool WantOverwrite = false;
+            System.IO.Stream outstream = null;
 
             if (args.Length == 0) Usage();
-
             if (args[0] == "-")
             {
-                i++;
-                if (args.Length <= i) Usage();
-
-                zipfile = args[i];
-                i++;
-                if (args.Length <= i) Usage();
-
-                entryToExtract = args[i];
-                i++;
+                extractToConsole = true;
+                outstream = Console.OpenStandardOutput();
+                startArgs = 1;
             }
-            else
-            {
-                if (args[0] == "-l")
-                {
-                    i++;
-                    WantExtract = false;
-                }
-                else if (args[0] == "-o")
-                {
-                    i++;
-                    WantOverwrite= true;
-                } 
-                if (args.Length <= i) Usage();
 
-                zipfile = args[i];
-                i++;
-                if (args.Length > i)
+            for (i = startArgs; i < args.Length; i++)
+            {
+                switch (args[i])
                 {
-                    targdir = args[i];
-                    i++;
+                    case "-p":
+                        i++;
+                        if (args.Length <= i) Usage();
+                        if (password != null) Usage();
+                        password = args[i];
+                        break;
+
+                    case "-o":
+                        WantOverwrite = true;
+                        break;
+
+                    case "-d":
+                        i++;
+                        if (args.Length <= i) Usage();
+                        if (targdir != null) Usage();
+                        if (extractToConsole) Usage();
+                        targdir = args[i];
+
+                        break;
+
+                    case "-e":
+                        i++;
+                        if (args.Length <= i) Usage();
+                        if (entryToExtract != null) Usage();
+                        entryToExtract = args[i];
+                        break;
+
+                    case "-l":
+                        if (password != null) Usage();
+                        if (targdir != null) Usage();
+                        if (entryToExtract != null) Usage();
+                        if (WantOverwrite) Usage();
+                        WantExtract = false;
+                        break;
+
+                    case "-?":
+                        Usage();
+                        break;
+
+                    default:
+                        if (zipfile != null) Usage();
+                        zipfile = args[i];
+                        break;
                 }
+
+            }
+            if (zipfile == null)
+            {
+                Console.WriteLine("No zipfile specified.\n");
+                Usage();
             }
 
             if (!System.IO.File.Exists(zipfile))
@@ -94,25 +127,55 @@ namespace Ionic.Utils.Zip.Examples
                 Usage();
             }
 
+            if (targdir == null) targdir = ".";
+
             try
             {
                 using (ZipFile zip = ZipFile.Read(zipfile))
                 {
                     if (entryToExtract != null)
                     {
-                        zip.Extract(entryToExtract, Console.OpenStandardOutput());
+                        // find the entry
+                        if (zip[entryToExtract] == null)
+                        {
+                            System.Console.WriteLine("  That entry ({0}) does not exist in the zip archive.", entryToExtract);
+                        }
+                        else
+                        {
+                            if ((password != null) && !(zip[entryToExtract].UsesEncryption))
+                            {
+                                System.Console.WriteLine("  That entry ({0}) does not require a password to extract.", entryToExtract);
+                                password = null;
+                            }
+
+                            if (password == null)
+                            {
+                                if (zip[entryToExtract].UsesEncryption)
+                                    System.Console.WriteLine("  That entry ({0}) requires a password to extract.", entryToExtract);
+                                else if (extractToConsole)
+                                    zip[entryToExtract].Extract(outstream);
+                                else
+                                    zip[entryToExtract].Extract(targdir, WantOverwrite);
+                            }
+                            else
+                            {
+                                if (extractToConsole)
+                                    zip[entryToExtract].ExtractWithPassword(outstream, password);
+                                else
+                                    zip[entryToExtract].ExtractWithPassword(targdir, WantOverwrite, password);
+                            }
+                        }
                     }
                     else
                     {
                         // extract all
 
-                        // The logic here does the same thing as the
-                        // ExtractAll() method on the ZipFile class.  But in
-                        // this case we *could* have control over it, for
-                        // example only extract files of a certain type, or
-                        // whose names matched a certain pattern, or whose
-                        // lastmodified times fit a certain condition, etc.
-                        // We can also display status for each entry, as here.
+                        // The logic here does almost the same thing as the ExtractAll() method
+                        // on the ZipFile class.  But in this case we *could* have control over
+                        // it, for example only extract files of a certain type, or whose names
+                        // matched a certain pattern, or whose lastmodified times fit a certain
+                        // condition, or use a different password for each entry, etc.  We can
+                        // also display status for each entry, as here.
 
                         bool header = true;
                         foreach (ZipEntry e in zip)
@@ -120,27 +183,49 @@ namespace Ionic.Utils.Zip.Examples
                             if (header)
                             {
                                 System.Console.WriteLine("Zipfile: {0}", zip.Name);
-                                if ((zip.Comment!= null) && (zip.Comment!="") ) System.Console.WriteLine("Comment: {0}", zip.Comment);
+                                if ((zip.Comment != null) && (zip.Comment != "")) System.Console.WriteLine("Comment: {0}", zip.Comment);
+
                                 //System.Console.WriteLine("BitField: 0x{0:X2}", e.BitField);
                                 //System.Console.WriteLine("Compression Method: 0x{0:X2}", e.CompressionMethod);
                                 //System.Console.WriteLine("Compression Method: 0x{0:X2}", e.CompressionMethod);
-                                System.Console.WriteLine("\n{1,-22} {2,6} {3,4}   {4,8}  {0}",
-                                             "Filename", "Modified", "Size", "Ratio", "Packed");
+                                System.Console.WriteLine("\n{1,-22} {2,8}  {3,5}   {4,8}  {5,3} {0}",
+                                             "Filename", "Modified", "Size", "Ratio", "Packed", "pw?");
                                 System.Console.WriteLine(new System.String('-', 72));
                                 header = false;
                             }
 
-                            System.Console.WriteLine("{1,-22} {2,6} {3,4:F0}%   {4,8}  {0}",
-                                         e.FileName,
-                                         e.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
-                                         e.UncompressedSize,
-                                         e.CompressionRatio,
-                                         e.CompressedSize);
+                            System.Console.WriteLine("{1,-22} {2,8} {3,5:F0}%   {4,8}  {5,3} {0}",
+                                                             e.FileName,
+                                                             e.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
+                                                             e.UncompressedSize,
+                                                             e.CompressionRatio,
+                                                             e.CompressedSize,
+                                                             (e.UsesEncryption) ? "Y" : "N");
 
                             if ((e.Comment != null) && (e.Comment != ""))
                                 System.Console.WriteLine("  Comment: {0}", e.Comment);
 
-                            if (WantExtract) e.Extract(targdir, WantOverwrite);
+                            if (WantExtract)
+                            {
+                                if (e.UsesEncryption)
+                                {
+                                    if (password == null)
+                                        System.Console.WriteLine("  Cannot extract this entry without a password.");
+                                    else if (extractToConsole)
+                                        e.ExtractWithPassword(outstream, password);
+                                    else
+                                        e.ExtractWithPassword(targdir, WantOverwrite, password);
+
+                                }
+                                else
+                                {
+                                    if (extractToConsole)
+                                        e.Extract(outstream);
+                                    else
+                                        e.Extract(targdir, WantOverwrite);
+
+                                }
+                            }
                         }
                     }
                 } // end using(), the underlying file is closed.

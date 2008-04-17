@@ -66,7 +66,6 @@ using System;
 
 namespace Ionic.Utils.Zip
 {
-
     /// <summary>
     /// The ZipFile type represents a zip archive file.  This is the main type in the 
     /// class library that reads and writes zip files, as defined in the format
@@ -86,7 +85,6 @@ namespace Ionic.Utils.Zip
         {
             get { return _name; }
         }
-
 
         /// <summary>
         /// This property is read/write for the zipfile. It allows the application to
@@ -130,7 +128,6 @@ namespace Ionic.Utils.Zip
             //set { _Verbose = value; }
         }
 
-
         /// <summary>
         /// Gets or sets the TextWriter for the instance. If the TextWriter
         /// is set to a non-null value, then verbose output is sent to the 
@@ -159,18 +156,44 @@ namespace Ionic.Utils.Zip
         /// this library writes when saving the zip archive. 
         /// </summary>
         /// <remarks>
-        /// The calling application 
-        /// should have write and delete rights on that folder.  By default, the temp 
-        /// file folder is just the current working directory.  But for ASP.NET 
-        /// applications, and other scenarios, the application may wish to override
-        /// this, with this public property. This property is used only when calling
-        /// one of the Save() methods.
+        /// The calling application should have write and delete rights on that
+        /// folder.  By default, the temp file folder is just the current working
+        /// directory.  But for ASP.NET applications, and other scenarios, the
+        /// application may wish to override this, with this public property. This
+        /// property is used only when calling one of the Save() methods.
         /// </remarks>
         public String TempFileFolder
         {
             get { return _TempFileFolder; }
             set { _TempFileFolder = value; }
         }
+
+        /// <summary>
+        /// Sets the password to be used for any entry subsequently added 
+        /// to the zip archive.
+        /// </summary>
+        /// <remarks>
+        /// <para>Though the password is set on the ZipFile object, the password actually does 
+        /// not apply to the archive as a whole.  Instead, it applies to individual entries 
+        /// that are added to the archive. The "directory" of the archive - in other words 
+        /// the list of files - is not encrypted with the password. Instead the contents of 
+        /// the individual files are encrypted.
+        /// </para><para>
+        /// If you set the password on the zip archive, and then add a set of files to the 
+        /// archive, then each entry is encrypted with that password.  You may also want 
+        /// to change the password between adding different entries. If you set the 
+        /// password, add an entry, then set the password to null, and add another entry,
+        /// the first entry is encrypted and the second is not.  Furshtay?
+        /// </para>
+        /// </remarks>
+        public String Password
+        {
+            set
+            {
+                _Password = value; 
+            }
+        }
+
 
         private System.IO.Stream ReadStream
         {
@@ -386,17 +409,18 @@ namespace Ionic.Utils.Zip
         /// reason it is not desirable to create a zip file in the filesystem itself. 
         /// </para>
         /// <para>Typically an application writing a zip archive in this manner will create and
-        /// open a stream, then call this constructor, passing in the stream.  Then the app will add 
-        /// directories or files to the ZipFile via AddDirectory or AddFile or AddItem.  The app
-        /// will then write the zip archive to the memory stream by calling <c>Save()</c>. The 
+        /// open a stream, then call this constructor, passing in the stream.  Then the app will 
+        /// add directories or files to the ZipFile via AddDirectory or AddFile or AddItem.  The 
+        /// app will then write the zip archive to the memory stream by calling <c>Save()</c>. The 
         /// compressed (zipped) data is not actually written to the stream until the application 
         /// calls <c>ZipFile.Save()</c> .
         /// </para>
         /// <para>
-        /// This version of the constructor allows the caller to pass in a TextWriter, to which verbose 
-        /// messages will be written during creation of the zip archive.  A console application
-        /// may wish to pass System.Console.Out to get messages on the Console. A graphical or headless application
-        /// may wish to capture the messages in a different TextWriter. 
+        /// This version of the constructor allows the caller to pass in a TextWriter, to which  
+        /// verbose messages will be written during creation of the zip archive.  A console 
+        /// application may wish to pass System.Console.Out to get messages on the Console. 
+        /// A graphical or headless application may wish to capture the messages in a different 
+        /// TextWriter. 
         /// </para>
         /// </remarks>
         ///
@@ -617,6 +641,7 @@ namespace Ionic.Utils.Zip
         {
             ZipEntry ze = ZipEntry.Create(FileName, DirectoryPathInArchive);
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
+            ze.Password = _Password;            
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", FileName);
             InsureUniqueEntry(ze);
             _entries.Add(ze);
@@ -636,6 +661,7 @@ namespace Ionic.Utils.Zip
         {
             ZipEntry ze = ZipEntry.Create(FileName, DirectoryPathInArchive, stream);
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
+            ze.Password = _Password;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", FileName);
             InsureUniqueEntry(ze);
             _entries.Add(ze);
@@ -1281,14 +1307,26 @@ namespace Ionic.Utils.Zip
             }
         }
 
+
         /// <summary>
         /// Extract a single item from the archive.  The file, including any relative
         /// qualifying path, is created at the current working directory.  
         /// </summary>
-        /// <param name="filename">the file to extract. It must be the exact filename, including the path contained in the archive, if any. </param>
-        public void Extract(string filename)
+        /// <param name="FileName">the file to extract. It must be the exact filename, including the path contained in the archive, if any. </param>
+        public void Extract(string FileName)
         {
-            this[filename].Extract();
+            this[FileName].Extract();
+        }
+
+        /// <summary>
+        /// Extract a single item from the archive.  The file, including any relative
+        /// qualifying path, is created at the current working directory.  
+        /// </summary>
+        /// <param name="FileName">the file to extract. It must be the exact filename, including the path contained in the archive, if any. </param>
+        /// <param name="DirectoryName">the directory into which to extract. It should exist.</param>
+        public void Extract(string FileName, string DirectoryName)
+        {
+            this[FileName].Extract(DirectoryName);
         }
 
 
@@ -1306,37 +1344,54 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
+        /// Extract a single item from the archive, into the specified directory, potentially overwriting  
+        /// any existing file in the filesystem by the same name. The file, including any relative 
+        /// qualifying path, is created in the specified directory.  
+        /// </summary>
+        /// <param name="FileName">the file to extract. It must be the exact filename, including the path contained in the archive, if any. The pathname can use forward-slashes or backward slashes.</param>
+        /// <param name="DirectoryName">the directory into which to extract. It should exist.</param>
+        /// <param name="WantOverwrite">True if the caller wants to overwrite any existing files by the given name.</param>
+        public void Extract(string FileName, string DirectoryName, bool WantOverwrite)
+        {
+	  this[FileName].Extract(DirectoryName, WantOverwrite);
+        }
+
+
+
+
+
+        /// <summary>
         /// Extract a single specified file from the archive, to the given stream.  This is 
         /// useful when extracting to Console.Out or to a memory stream, for example. 
         /// </summary>
         /// <exception cref="System.ArgumentException">
         /// Thrown if the stream is not writable.  
         /// </exception>
-        /// <param name="filename">the file to extract. The application can specify pathnames using forward-slashes or backward slashes.</param>
+        /// <param name="FileName">the file to extract. The application can specify pathnames using forward-slashes or backward slashes.</param>
         /// <param name="OutputStream">the stream to which the extacted, decompressed file data is written. The stream must be writable.</param>
-        public void Extract(string filename, System.IO.Stream OutputStream)
+        public void Extract(string FileName, System.IO.Stream OutputStream)
         {
             if (!OutputStream.CanWrite)
                 throw new ArgumentException("The OutputStream must be a writable stream.");
 
-            this[filename].Extract(OutputStream);
+            this[FileName].Extract(OutputStream);
         }
 
         /// <summary>
         /// This is a name-based indexer into the Zip archive.  
         /// </summary>
-        /// <param name="filename">the name of the file, including any directory path, to retrieve from the zip. The pathname can use forward-slashes or backward slashes.</param>
+        /// <param name="FileName">the name of the file, including any directory path, to retrieve from the zip. The pathname can use forward-slashes or backward slashes.</param>
         /// <returns>The ZipEntry within the Zip archive, given by the specified filename.</returns>
-        public ZipEntry this[String filename]
+        public ZipEntry this[String FileName]
         {
             get
             {
                 foreach (ZipEntry e in _entries)
                 {
-                    if (e.FileName == filename) return e;
+                    if (e.FileName == FileName) return e;
                     // also check for equivalence
-                    if (filename.Replace("\\", "/") == e.FileName) return e;
-                    if (e.FileName.Replace("\\", "/") == filename) return e;
+                    if (FileName.Replace("\\", "/") == e.FileName) return e;
+                    if (e.FileName.Replace("\\", "/") == FileName) return e;
                 }
                 return null;
             }
@@ -1432,6 +1487,7 @@ namespace Ionic.Utils.Zip
         private bool _TrimVolumeFromFullyQualifiedPaths = true;
         private string _name;
         private string _Comment;
+        private string _Password;
         private bool _fileAlreadyExists = false;
         private string _temporaryFileName = null;
         private bool _contentsChanged = false;
@@ -1503,7 +1559,7 @@ namespace Ionic.Utils.Zip
 // Information on the ZIP format:
 //
 // From
-// http://www.pkware.com/business_and_developers/developer/popups/appnote.txt
+// http://www.pkware.com/documents/casestudies/APPNOTE.TXT
 //
 //  Overall .ZIP file format:
 //
@@ -1524,17 +1580,17 @@ namespace Ionic.Utils.Zip
 //     [end of central directory record]
 //
 // Local File Header format:
-//         local file header signature     4 bytes  (0x04034b50)
-//         version needed to extract       2 bytes
-//         general purpose bit flag        2 bytes
-//         compression method              2 bytes
-//         last mod file time              2 bytes
-//         last mod file date              2 bytes
-//         crc-32                          4 bytes
-//         compressed size                 4 bytes
-//         uncompressed size               4 bytes
-//         file name length                2 bytes
-//         extra field length              2 bytes
+//         local file header signature ... 4 bytes  (0x04034b50)
+//         version needed to extract ..... 2 bytes
+//         general purpose bit field ..... 2 bytes
+//         compression method ............ 2 bytes
+//         last mod file time ............ 2 bytes
+//         last mod file date............. 2 bytes
+//         crc-32 ........................ 4 bytes
+//         compressed size................ 4 bytes
+//         uncompressed size.............. 4 bytes
+//         file name length............... 2 bytes
+//         extra field length ............ 2 bytes
 //         file name                       varies
 //         extra field                     varies
 //

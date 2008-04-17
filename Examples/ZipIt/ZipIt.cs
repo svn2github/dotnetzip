@@ -26,10 +26,10 @@ namespace Ionic.Utils.Zip.Examples
 
     public class ZipIt
     {
-
         private static void Usage()
         {
-            Console.WriteLine("usage:\n  ZipIt <ZipFileToCreate> [<directory> | <file> ...]");
+            Console.WriteLine("usage: ZipIt.exe <ZipFileToCreate> [-p <password> | <directory> | <file> ...]");
+            Console.WriteLine("zip up a directory, file, or a set of them, into a zipfile.\n");
             Environment.Exit(1);
         }
 
@@ -42,28 +42,32 @@ namespace Ionic.Utils.Zip.Examples
                 Console.WriteLine("The filename must end with .zip!\n");
                 Usage();
             }
+            if (System.IO.File.Exists(args[0]))
+            {
+                System.Console.Error.WriteLine("That zip file ({0}) already exists.", args[0]);
+            }
 
             try
             {
-                // ZipFile zip = null;
-                if (System.IO.File.Exists(args[0]))
-                {
-                    // The zipfile already exists
-                }
                 using (ZipFile zip = new ZipFile(args[0]))
                 {
                     zip.StatusMessageTextWriter = System.Console.Out;
                     for (int i = 1; i < args.Length; i++)
                     {
+                        if (args[i] == "-p")
+                        {
+                            i++;
+                            if (args.Length <= i) Usage();
+                            zip.Password = args[i++];
+                        }
                         zip.AddItem(args[i]); // will add Files or Dirs, recurses subdirectories
                     }
                     zip.Save();
                 }
-
             }
             catch (System.Exception ex1)
             {
-                System.Console.Error.WriteLine("exception: " + ex1);
+                System.Console.Error.WriteLine("Exception: " + ex1);
             }
 
         }
