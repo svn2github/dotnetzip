@@ -92,7 +92,7 @@ namespace Ionic.Utils.Zip
         public byte[] DecryptMessage(byte[] CipherText, int length)
         {
             if (length > CipherText.Length)
-                throw new Exception("bad length during Encryption.");
+                throw new System.ArgumentException("Bad length during Decryption.  The length parameter must be smaller than or equal to the size of the destination array.", "length");
 
             byte[] PlainText = new byte[length];
             for (int i = 0; i < length; i++)
@@ -117,7 +117,7 @@ namespace Ionic.Utils.Zip
         public byte[] EncryptMessage(byte[] PlainText, int length)
         {
             if (length > PlainText.Length)
-                throw new Exception("bad length during Encryption.");
+                throw new System.ArgumentException("Bad length during Decryption.  The length parameter must be smaller than or equal to the size of the destination array.", "length");
 
             byte[] CipherText = new byte[length];
             for (int i = 0; i < length; i++)
@@ -269,7 +269,7 @@ namespace Ionic.Utils.Zip
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new Exception("Not supported.");
+            throw new NotImplementedException();
         }
 
         public override bool CanRead

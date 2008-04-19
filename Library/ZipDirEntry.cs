@@ -131,7 +131,7 @@ namespace Ionic.Utils.Zip
                 // know we've reached the end of the central directory. 
                 if (signature != ZipConstants.EndOfCentralDirectorySignature)
                 {
-                   throw new Exception(String.Format("  ZipDirEntry::Read(): Bad signature ({0:X8}) at position 0x{1:X8}", signature, s.Position));
+                   throw new BadReadException(String.Format("  ZipDirEntry::Read(): Bad signature ({0:X8}) at position 0x{1:X8}", signature, s.Position));
                 }
                 return null;
             }

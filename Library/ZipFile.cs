@@ -255,7 +255,7 @@ namespace Ionic.Utils.Zip
             set
             {
                 if (value != null)
-                    throw new Exception("Cannot set ReadStream explicitly to a non-null value.");
+                    throw new ArgumentException("Cannot set ReadStream explicitly to a non-null value.", "ReadStream");
                 _readstream = null;
             }
         }
@@ -276,7 +276,7 @@ namespace Ionic.Utils.Zip
             set
             {
                 if (value != null)
-                    throw new Exception("Cannot set the stream to a non-null value.");
+                    throw new ArgumentException("Cannot set the stream to a non-null value.", "WriteStream");
                 _writestream = null;
             }
         }
@@ -510,7 +510,6 @@ namespace Ionic.Utils.Zip
 
             if (System.IO.File.Exists(_name))
             {
-                // throw new System.Exception(String.Format("That file ({0}) already exists.", ZipFileName));
                 ReadIntoInstance(this);
                 this._fileAlreadyExists = true;
             }
@@ -596,7 +595,7 @@ namespace Ionic.Utils.Zip
                 AddDirectory(FileOrDirectoryName, DirectoryPathInArchive);
 
             else
-                throw new Exception(String.Format("That file or directory ({0}) does not exist!", FileOrDirectoryName));
+                throw new System.IO.FileNotFoundException(String.Format("That file or directory ({0}) does not exist!", FileOrDirectoryName));
         }
 
         /// <summary>
@@ -750,7 +749,7 @@ namespace Ionic.Utils.Zip
             {
                 if (_Debug) Console.WriteLine("Comparing {0} to {1}...", ze1.FileName, ze2.FileName);
                 if (ze1.FileName == ze2.FileName)
-                    throw new Exception(String.Format("The entry '{0}' already exists in the zip archive.", ze1.FileName));
+                    throw new ArgumentException(String.Format("The entry '{0}' already exists in the zip archive.", ze1.FileName));
             }
 
         }
@@ -875,6 +874,16 @@ namespace Ionic.Utils.Zip
                     WriteStream.Close();
                     WriteStream = null;
 
+                    //  xxx
+                    if ((_fileAlreadyExists) && (this._readstream != null))
+                    {
+                        // This means we opened and read a zip file. 
+                        // If we are now saving to the same file, we need to close the
+                        // orig file, first.
+                        this._readstream.Close();
+                        this._readstream = null;
+                    }
+
                     if (_fileAlreadyExists)
                         System.IO.File.Replace(_temporaryFileName, _name, null);
                     else
@@ -921,7 +930,7 @@ namespace Ionic.Utils.Zip
             _name = ZipFileName;
             _contentsChanged = true;
             if (System.IO.Directory.Exists(_name))
-                throw new System.Exception("That name specifies an existing directory. Please specify a filename.");
+                throw new System.ArgumentException("That name specifies an existing directory. Please specify a filename.", "ZipFileName");
             _fileAlreadyExists = (System.IO.File.Exists(_name));
             Save();
         }
@@ -1244,7 +1253,7 @@ namespace Ionic.Utils.Zip
             if (signature != ZipConstants.EndOfCentralDirectorySignature)
             {
                 s.Seek(-4, System.IO.SeekOrigin.Current);
-                throw new Exception(String.Format("  ZipFile::Read(): Bad signature ({0:X8}) at position 0x{1:X8}", signature, s.Position));
+                throw new BadReadException(String.Format("  ZipFile::Read(): Bad signature ({0:X8}) at position 0x{1:X8}", signature, s.Position));
             }
 
             // read a bunch of throwaway metadata for supporting multi-disk archives (throwback!)

@@ -318,7 +318,7 @@ namespace Ionic.Utils.Zip
                 // we expect to read a ZipDirEntry signature.  Anything else is a surprise.
                 if (ZipDirEntry.IsNotValidSig(signature))
                 {
-                    throw new Exception(String.Format("  ZipEntry::Read(): Bad signature (0x{0:X8}) at position  0x{1:X8}", signature, ze._s.Position));
+                    throw new BadReadException(String.Format("  ZipEntry::Read(): Bad signature (0x{0:X8}) at position  0x{1:X8}", signature, ze._s.Position));
                 }
                 return false;
             }
@@ -395,7 +395,7 @@ namespace Ionic.Utils.Zip
                 ze._UncompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
 
                 if (SizeOfDataRead != ze._CompressedSize)
-                    throw new Exception("Data format error (bit 3 is set)");
+                    throw new BadReadException("Data format error (bit 3 is set)");
 
                 // seek back to previous position, to read file data
                 ze._s.Seek(posn, System.IO.SeekOrigin.Begin);
@@ -453,18 +453,10 @@ namespace Ionic.Utils.Zip
             entry._s = s;
             if (!ReadHeader(entry)) return null;
 
-            //entry.__filedata = new byte[entry.CompressedSize];
-
             // store the position in the stream for this entry
             entry.__FileDataPosition = entry._s.Position;
 
-            //             int n = s.Read(entry._FileData, 0, entry._FileData.Length);
-            //             if (n != entry._FileData.Length)
-            //             {
-            //                 throw new Exception("badly formatted zip file.");
-            //             }
-
-            // seek past the data without reading it. 
+            // seek past the data without reading it. We will read on Extract().
             s.Seek(entry._CompressedFileDataSize, System.IO.SeekOrigin.Current);
 
             // finally, seek past the (already read) Data descriptor if necessary
@@ -768,12 +760,12 @@ namespace Ionic.Utils.Zip
             // Validation
 
             if ((CompressionMethod != 0) && (CompressionMethod != 0x08))  // deflate
-                throw new Exception(String.Format("Unsupported Compression method ({0:X2})",
+                throw new ArgumentException(String.Format("Unsupported Compression method ({0:X2})",
                               CompressionMethod));
 
             if ((Encryption != EncryptionAlgorithm.PkzipWeak) &&
             (Encryption != EncryptionAlgorithm.None))
-                throw new Exception(String.Format("Unsupported Encryption algorithm ({0:X2})",
+                throw new ArgumentException(String.Format("Unsupported Encryption algorithm ({0:X2})",
                               Encryption));
 
             string TargetFile = null;
@@ -796,7 +788,7 @@ namespace Ionic.Utils.Zip
                     // extract a directory to streamwriter?  nothing to do!
                     return;
             }
-            else throw new Exception("Invalid input.");
+            else throw new ArgumentException("Invalid input.","outstream | basedir");
 
 
             ZipCrypto cipher = null;
@@ -804,7 +796,7 @@ namespace Ionic.Utils.Zip
             if (Encryption == EncryptionAlgorithm.PkzipWeak)
             {
                 if (Password == null)
-                    throw new System.Exception("This entry requires a password.");
+                    throw new BadPasswordException("This entry requires a password.");
 
                 cipher = new ZipCrypto();
                 cipher.InitCipher(Password);
@@ -818,7 +810,7 @@ namespace Ionic.Utils.Zip
                 // is the highest-order byte in the CRC. We check it here. 
                 if (DecryptedHeader[11] != (byte)((_Crc32 >> 24) & 0xff))
                 {
-                    throw new Exception("The password did not match.");
+                    throw new BadPasswordException("The password did not match.");
                 }
 
                 // We have a good password. 
@@ -912,7 +904,7 @@ namespace Ionic.Utils.Zip
         private void _CheckRead(int nbytes)
         {
             if (nbytes == 0)
-                throw new Exception(String.Format("bad read of entry {0} from compressed archive.",
+                throw new BadReadException(String.Format("bad read of entry {0} from compressed archive.",
                                   this.FileName));
 
         }
@@ -1111,22 +1103,22 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)(BitField & 0x00FF);
             bytes[i++] = (byte)((BitField & 0xFF00) >> 8);
 
-            Int16 CompressionMethod = 0x00; // 0x08 = Deflate, 0x00 == No Compression
-
             // compression for directories = 0x00 (No Compression)
 
-            if (!IsDirectory)
+            if (IsDirectory)
+                _CompressionMethod = 0x0;
+            else
             {
                 if (__FileDataPosition != 0)
                 {
                     // If at this point, _FileData is non-null, that means we've read this
-                    // entry from an existing zip archive. We must just copy the existing
-                    // file data, CompressionMEthod, CRC, compressed size, uncompressed size, etc over to the
-                    // new (updated) archive.
+                    // entry from an existing zip archive. We must just use the existing
+                    // file data, CompressionMEthod, CRC, compressed size, uncompressed size, 
+                    // etc over to the new (updated) archive.
                 }
                 else
                 {
-                    CompressionMethod = 0x08;
+                    _CompressionMethod = 0x08;
                     // If _FileData is null, then that means we will get the data from a file
                     // or stream.  In that case we need to read the file or stream, and
                     // compute the CRC, and compressed and uncompressed sizes from that
@@ -1146,7 +1138,7 @@ namespace Ionic.Utils.Zip
                     }
                     if (fileLength == 0)
                     {
-                        CompressionMethod = 0x00;
+                        _CompressionMethod = 0x00;
                         _UncompressedSize = 0;
                         _CompressedSize = 0;
                         _Crc32 = 0;
@@ -1206,8 +1198,9 @@ namespace Ionic.Utils.Zip
                             }
                             _UncompressedSize = crc32.TotalBytesRead;
                             _CompressedSize = (Int32)_UnderlyingMemoryStream.Length;
-                            if (_CompressedSize != _UncompressedSize) throw new Exception("No compression but unequal stream lengths!");
-                            CompressionMethod = 0x00;
+                            if (_CompressedSize != _UncompressedSize) 
+                                throw new BadImageFormatException("No compression but unequal stream lengths!");
+                            _CompressionMethod = 0x00;
                         }
                     }
                 }
@@ -1325,9 +1318,14 @@ namespace Ionic.Utils.Zip
             {
                 // use the existing compressed data we read from the extant zip archive
                 this._s.Seek(__FileDataPosition, System.IO.SeekOrigin.Begin);
-                while ((n = this._s.Read(bytes, 0, bytes.Length)) != 0)
+                int LeftToRead = this._CompressedFileDataSize;
+                while (LeftToRead > 0)
                 {
-                        outstream.Write(bytes, 0, n);
+                    int len = (LeftToRead > bytes.Length) ? bytes.Length : LeftToRead;
+                    n = this._s.Read(bytes, 0, len);
+                    _CheckRead(n);
+                    outstream.Write(bytes, 0, n);
+                    LeftToRead -= n;
                 }
             }
             else

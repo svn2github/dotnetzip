@@ -39,11 +39,18 @@ namespace Ionic.Utils.Zip
             int n = 0;
             byte[] sig = new byte[4];
             n = s.Read(sig, 0, sig.Length);
-            if (n != sig.Length) throw new Exception("Could not read signature - no data!");
+            if (n != sig.Length) throw new BadReadException("Could not read signature - no data!");
             int signature = (((sig[3] * 256 + sig[2]) * 256) + sig[1]) * 256 + sig[0];
             return signature;
         }
 
+        /// <summary>
+        /// Finds a signature in the zip stream. This is useful for finding 
+        /// the end of a zip entry, for example. 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="SignatureToFind"></param>
+        /// <returns></returns>
         protected internal static long FindSignature(System.IO.Stream s, int SignatureToFind)
         {
             long startingPosition = s.Position;
