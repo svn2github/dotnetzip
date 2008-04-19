@@ -2,7 +2,6 @@
 //
 // Copyright (c) 2006, 2007, 2008 Microsoft Corporation.  All rights reserved.
 //
-// 
 // This class library reads and writes zip files, according to the format
 // described by pkware, at:
 // http://www.pkware.com/business_and_developers/developer/popups/appnote.txt
@@ -31,12 +30,10 @@
 //
 // Bugs:
 // 1. does not do 0..9 compression levels (not supported by DeflateStream)
-// 2. does not do encryption
+// 2. does only PKZIP encryption, which is weak.  No Strong Encryption (yet?)
 // 3. no support for reading or writing multi-disk zip archives
-// 4. no support for file comments or archive comments
-// 5. does not stream as it compresses; all compressed data is kept in memory.
-// 6. no support for double-byte chars in filenames
-// 7. no support for asynchronous operation
+// 4. no support for double-byte chars in filenames
+// 5. no support for asynchronous operation
 // 
 // But it does read and write basic zip files, and it gets reasonable compression. 
 //
@@ -53,11 +50,6 @@
 // ----------------------
 //    
 // Fri, 31 Mar 2006  14:43
-//
-// update Thu, 22 Feb 2007  19:03
-//  Fixed a problem with archives that had bit-3 (0x0008) set, 
-//  where the CRC, Compressed Size, and Uncompressed size 
-//  actually followed the compressed file data. 
 //
 
 
@@ -289,16 +281,21 @@ namespace Ionic.Utils.Zip
         /// Creates a new ZipFile instance, using the specified ZipFileName for the filename. 
         /// The ZipFileName may be fully qualified.
         /// </summary>
+        /// 
         /// <remarks>
-        /// <para>Applications can use this constructor to create a new ZipFile for writing, 
+        /// <para>
+	/// Applications can use this constructor to create a new ZipFile for writing, 
         /// or to slurp in an existing zip archive for read and write purposes.  
         /// </para>
-        /// <para>Typically an application writing a zip archive will call this constructor, passing
-        /// the name of a file that does not exist, then add 
-        /// directories or files to the ZipFile via AddDirectory or AddFile, and then write the 
-        /// zip archive to the disk by calling <c>Save()</c>. The file is not actually written to the disk 
-        /// until the application calls <c>ZipFile.Save()</c> .
+        /// 
+        /// <para>
+	/// Typically an application writing a zip archive will call this constructor,
+        /// passing the name of a file that does not exist, then add directories or files to
+        /// the ZipFile via AddDirectory or AddFile, and then write the zip archive to the
+        /// disk by calling <c>Save()</c>. The file is not actually written to the disk until
+        /// the application calls <c>ZipFile.Save()</c> .
         /// </para>
+        /// 
         /// <para>
         /// An application reading a zip archive can call this constructor, passing the name of a 
         /// zip file that does exist.  The file is then read into the <c>ZipFile</c> instance.  The app
@@ -358,7 +355,7 @@ namespace Ionic.Utils.Zip
         ///     Console.WriteLine("Adding {0}...", filename);
         ///     zip.AddFile(filename);
         ///   }  
-        ///   zip.Save("Backup.zip);
+        ///   zip.Save("Backup.zip"");
         /// }
         /// </code>
         /// </example>
@@ -374,15 +371,17 @@ namespace Ionic.Utils.Zip
         /// </summary>
         ///
         /// <remarks>
-        /// <para>Applications can use this constructor to create a new ZipFile for writing, 
+        /// <para>
+        /// Applications can use this constructor to create a new ZipFile for writing, 
         /// or to slurp in an existing zip archive for read and write purposes.  
         /// </para>
         ///
-        /// <para>Typically an application writing a zip archive will call this constructor, passing
-        /// the name of a file that does not exist, then add 
-        /// directories or files to the ZipFile via AddDirectory or AddFile, and then write the 
-        /// zip archive to the disk by calling <c>Save()</c>. The file is not actually written to the disk 
-        /// until the application calls <c>ZipFile.Save()</c> .
+        /// <para>
+        /// Typically an application writing a zip archive will call this constructor,
+        /// passing the name of a file that does not exist, then add directories or files to
+        /// the ZipFile via AddDirectory or AddFile, and then write the zip archive to the
+        /// disk by calling <c>Save()</c>. The file is not actually written to the disk until
+        /// the application calls <c>ZipFile.Save()</c> .
         /// </para>
         ///
         /// <para>
@@ -432,17 +431,22 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// 
         /// <remarks>
-        /// <para>Applications can use this constructor to create an instance of ZipFile 
+        /// 
+        /// <para>
+	/// Applications can use this constructor to create an instance of ZipFile 
         /// for writing to a stream. This is useful when zipping up content, but for any 
         /// reason it is not desirable to create a zip file in the filesystem itself. 
         /// </para>
-        /// <para>Typically an application writing a zip archive in this manner will create and
+	///
+        /// <para>
+	/// Typically an application writing a zip archive in this manner will create and
         /// open a stream, then call this constructor, passing in the stream.  Then the app will add 
         /// directories or files to the ZipFile via AddDirectory or AddFile or AddItem.  The app
         /// will then write the zip archive to the memory stream by calling <c>Save()</c>. The 
         /// compressed (zipped) data is not actually written to the stream until the application 
         /// calls <c>ZipFile.Save()</c> .
         /// </para>
+	///
         /// </remarks>
         /// 
         /// <exception cref="System.ArgumentException">
@@ -527,9 +531,6 @@ namespace Ionic.Utils.Zip
             // create a new zipfile
             _name = ZipFileName;
             _StatusMessageTextWriter = StatusMessageWriter;
-
-            //if (!_name.EndsWith(".zip"))
-            //    throw new System.Exception(String.Format("The file name given ({0}) is a bad format.  It must end with a .zip extension.", ZipFileName));
 
             if (System.IO.File.Exists(_name))
             {
@@ -737,6 +738,7 @@ namespace Ionic.Utils.Zip
             return ze;
         }
 
+
         //Daniel Bedarf - 2008 feb
         /// <summary>
         /// Uses the given stream as input to create an entry in the ZipFile, with the 
@@ -916,10 +918,9 @@ namespace Ionic.Utils.Zip
                     System.IO.File.Move(_temporaryFileName, _name);
 
                 _fileAlreadyExists = true;
-
-
             }
         }
+
 
         /// <summary>
         /// Save the file to a new zipfile, with the given name. 
