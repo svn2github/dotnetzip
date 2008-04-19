@@ -266,10 +266,13 @@ namespace Ionic.Utils.Zip
             {
                 if (_writestream == null)
                 {
-                    _temporaryFileName = (TempFileFolder != ".") ?
-                    System.IO.Path.Combine(TempFileFolder, System.IO.Path.GetRandomFileName())
-                    : System.IO.Path.GetRandomFileName();
-                    _writestream = new System.IO.FileStream(_temporaryFileName, System.IO.FileMode.CreateNew);
+                    if (_name != null)
+                    {
+                        _temporaryFileName = (TempFileFolder != ".") ?
+                        System.IO.Path.Combine(TempFileFolder, System.IO.Path.GetRandomFileName())
+                        : System.IO.Path.GetRandomFileName();
+                        _writestream = new System.IO.FileStream(_temporaryFileName, System.IO.FileMode.CreateNew);
+                    }
                 }
                 return _writestream;
             }
@@ -280,16 +283,6 @@ namespace Ionic.Utils.Zip
                 _writestream = null;
             }
         }
-
-        /// <summary>
-        /// The default constructor is private.
-        /// Users of the library are expected to create an instance of the ZipFile 
-        /// class via the parameterized constructors: passing in a filename for the zip 
-        /// archive, or via the static Read() method. 
-        /// </summary>
-        private ZipFile() { }
-
-
 
 
         /// <summary>
@@ -342,6 +335,36 @@ namespace Ionic.Utils.Zip
         public ZipFile(string ZipFileName)
         {
             InitFile(ZipFileName, null);
+        }
+
+        /// <summary>
+        /// Create a zip file, without specifying a target filename to save to. 
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// If you do eventually call <c>Save()</c>, you will need to have specified
+        /// a zip filename at some point. Either as a parameter to <c>Save()</c> or 
+        /// on the ZipFile object itself.
+        /// </remarks>
+        /// 
+        /// <example>
+        /// <code>
+        /// using (ZipFile zip = new ZipFile())
+        /// { 
+        ///   // Store all files found in the top level directory, into the zip archive.
+        ///   String[] filenames = System.IO.Directory.GetFiles(args[1]);
+        ///   foreach (String filename in filenames)
+        ///   {
+        ///     Console.WriteLine("Adding {0}...", filename);
+        ///     zip.AddFile(filename);
+        ///   }  
+        ///   zip.Save("Backup.zip);
+        /// }
+        /// </code>
+        /// </example>
+        public ZipFile()
+        {
+            InitFile(null, null);
         }
 
 
@@ -519,7 +542,7 @@ namespace Ionic.Utils.Zip
         }
 
 
-        #region For Writing Zip Files
+        #region Adding Entries
 
         /// <summary>
         /// Adds an item, either a file or a directory, to a zip file archive.  
@@ -832,6 +855,10 @@ namespace Ionic.Utils.Zip
             _contentsChanged = true;
         }
 
+        #endregion
+
+        #region Saving
+
         /// <summary>
         /// Saves the Zip archive, using the name given when the ZipFile was instantiated. 
         /// </summary>
@@ -852,46 +879,45 @@ namespace Ionic.Utils.Zip
         /// </remarks>
         public void Save()
         {
-            if (WriteStream != null)
+            if (WriteStream == null)
+                throw new BadStateException("You haven't specified where to save the zip.");
+            // check if modified, before saving. 
+            if (!_contentsChanged) return;
+
+            if (Verbose) StatusMessageTextWriter.WriteLine("Saving....");
+
+            // an entry for each file
+            foreach (ZipEntry e in _entries)
             {
-                // check if modified, before saving. 
-                if (!_contentsChanged) return;
+                e.Write(WriteStream);
+            }
 
-                if (Verbose) StatusMessageTextWriter.WriteLine("Saving....");
+            WriteCentralDirectoryStructure();
 
-                // an entry for each file
-                foreach (ZipEntry e in _entries)
+            // _temporaryFileName may remain null if we are writing to a stream
+            if ((_temporaryFileName != null) && (_name != null))
+            {
+                // only close the stream if there is a file behind it. 
+                WriteStream.Close();
+                WriteStream = null;
+
+                if ((_fileAlreadyExists) && (this._readstream != null))
                 {
-                    e.Write(WriteStream);
+                    // This means we opened and read a zip file. 
+                    // If we are now saving to the same file, we need to close the
+                    // orig file, first.
+                    this._readstream.Close();
+                    this._readstream = null;
                 }
 
-                WriteCentralDirectoryStructure();
+                if (_fileAlreadyExists)
+                    System.IO.File.Replace(_temporaryFileName, _name, null);
+                else
+                    System.IO.File.Move(_temporaryFileName, _name);
 
-                // _temporaryFileName may remain null if we are writing to a stream
-                if ((_temporaryFileName != null) && (_name != null))
-                {
-                    // only close the stream if there is a file behind it. 
-                    WriteStream.Close();
-                    WriteStream = null;
+                _fileAlreadyExists = true;
 
-                    //  xxx
-                    if ((_fileAlreadyExists) && (this._readstream != null))
-                    {
-                        // This means we opened and read a zip file. 
-                        // If we are now saving to the same file, we need to close the
-                        // orig file, first.
-                        this._readstream.Close();
-                        this._readstream = null;
-                    }
 
-                    if (_fileAlreadyExists)
-                        System.IO.File.Replace(_temporaryFileName, _name, null);
-                    else
-                        System.IO.File.Move(_temporaryFileName, _name);
-
-                    _fileAlreadyExists = true;
-
-                }
             }
         }
 

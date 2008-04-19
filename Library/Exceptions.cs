@@ -45,4 +45,25 @@ namespace Ionic.Utils.Zip
     }
 
     
+    /// <summary>
+    /// Indicates that an operation was attempted on a ZipFile which was not possible
+    /// given the state of the instance. For example, if you call <c>Save()</c> on a ZipFile 
+    /// which has no filename set, you can get this exception. 
+    /// </summary>
+    public class BadStateException: System.Exception
+    {
+        /// <summary>
+        /// Default ctor.
+        /// </summary>
+        public BadStateException() { }
+
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="message">The message in the exception.</param>
+        public BadStateException(String message)
+            : base(message)
+        { }
+    }
+
 }

@@ -5,7 +5,7 @@ using System.Text;
 using Ionic.Utils.Zip;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Library.Tests
+namespace Library.TestUtilities
 {
     class TestUtilities
     {

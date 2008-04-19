@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Ionic.Utils.Zip;
+using Library.TestUtilities;
 
-namespace Library.Tests
+namespace Ionic.Utils.Zip.Tests.Basic
 {
     /// <summary>
     /// Summary description for UnitTest1

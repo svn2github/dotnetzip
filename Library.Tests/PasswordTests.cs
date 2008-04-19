@@ -5,8 +5,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 
 using Ionic.Utils.Zip;
+using Library.TestUtilities;
 
-namespace Library.Tests
+namespace Ionic.Utils.Zip.Tests.Password
 {
     [TestClass]
     public class PasswordTests
@@ -79,7 +80,7 @@ namespace Library.Tests
 
 
         [TestMethod]
-        public void TestBasicPassword()
+        public void BasicPasswordAddAndExtract()
         {
             int i, j;
             string password = "Password!";
@@ -94,7 +95,7 @@ namespace Library.Tests
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);
 
             int fileCount = _rnd.Next(3) + 3;
-            string[] filenames= new string[fileCount];
+            string[] filenames = new string[fileCount];
             byte[][] checksums = new byte[fileCount][];
             for (j = 0; j < fileCount; j++)
             {
@@ -129,11 +130,184 @@ namespace Library.Tests
                     e.ExtractWithPassword("unpack", true, password);
                     //bool success = Int32.TryParse(e.FileName, out j);
                     byte[] c2 = TestUtilities.ComputeChecksum(Path.Combine("unpack", filenames[j]));
-                    Assert.AreEqual<string>(TestUtilities.CheckSumToString(checksums[j]), TestUtilities.CheckSumToString(c2), "Checksums do not match.");     
+                    Assert.AreEqual<string>(TestUtilities.CheckSumToString(checksums[j]), TestUtilities.CheckSumToString(c2), "Checksums do not match.");
                     j++;
                 }
             }
-            
+
         }
+
+        [TestMethod]
+        public void MultipleEntriesDifferentPasswords()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "MultipleEntriesDifferentPasswords.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            string SourceDir = CurrentDir;
+            for (int i = 0; i < 3; i++)
+                SourceDir = Path.GetDirectoryName(SourceDir);
+
+            Directory.SetCurrentDirectory(TopLevelDir);
+
+            string[] filenames = 
+            {
+                Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
+                Path.Combine(SourceDir, "AppNote.txt")
+            };
+
+            string[] checksums = 
+            {
+                TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filenames[0])),
+                TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filenames[1])),
+            };
+
+            string[] passwords = 
+            {
+                    "12345678",
+                    "0987654321",
+            };
+
+            int j = 0;
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                for (j = 0; j < filenames.Length; j++)
+                {
+                    zip.Password = passwords[j];
+                    zip.AddFile(filenames[j], "");
+                }
+                zip.Save();
+            }
+
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, filenames.Length),
+                    "Zip file created seems to be invalid.");
+
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                for (j = 0; j < filenames.Length; j++)
+                {
+                    zip[Path.GetFileName(filenames[j])].ExtractWithPassword("unpack", true, passwords[j]);
+                    string newpath = Path.Combine(Path.Combine(TopLevelDir, "unpack"), filenames[j]);
+                    string chk = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(newpath));
+                    Assert.AreEqual<string>(chk, checksums[j], "Checksums do not match.");
+                }
+            }
+        }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Utils.Zip.BadPasswordException))]        
+        public void ExtractWithWrongPassword()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "MultipleEntriesDifferentPasswords.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            string SourceDir = CurrentDir;
+            for (int i = 0; i < 3; i++)
+                SourceDir = Path.GetDirectoryName(SourceDir);
+
+            Directory.SetCurrentDirectory(TopLevelDir);
+
+            string[] filenames = 
+            {
+                Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
+                Path.Combine(SourceDir, "AppNote.txt")
+            };
+
+            string[] passwords = 
+            {
+                    "12345678",
+                    "0987654321",
+            };
+
+            int j = 0;
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                for (j = 0; j < filenames.Length; j++)
+                {
+                    zip.Password = passwords[j];
+                    zip.AddFile(filenames[j], "");
+                }
+                zip.Save();
+            }
+
+            // now try to extract
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                for (j = 0; j < filenames.Length; j++)
+                    zip[Path.GetFileName(filenames[j])].ExtractWithPassword("unpack", true, "WrongPassword");
+            }
+
+        }
+
+        [TestMethod]
+        public void AddEntryWithPasswordToExistingZip()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "AddEntriesToExisting.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            string DirToZip = Path.Combine(TopLevelDir, "zipthis");
+            Directory.CreateDirectory(DirToZip);
+
+            string SourceDir = CurrentDir;
+            for (int i = 0; i < 3; i++)
+                SourceDir = Path.GetDirectoryName(SourceDir);
+
+            Directory.SetCurrentDirectory(TopLevelDir);
+
+            string[] filenames = 
+            {
+                Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
+                Path.Combine(SourceDir, "AppNote.txt")
+            };
+
+            string[] checksums = 
+            {
+                TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filenames[0])),
+                TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filenames[1])),
+            };
+
+            int j = 0;
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                for (j = 0; j < filenames.Length; j++)
+                    zip.AddFile(filenames[j], "");
+                zip.Save();
+            }
+
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, 2),
+                    "Zip file created seems to be invalid.");
+
+            string fileX = Path.Combine(SourceDir, "Examples\\Unzip\\bin\\debug\\unzip.exe");
+            string checksumX = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(fileX));
+            string Password = "qw3sjknm!";
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                zip.Password = Password;
+                zip.AddFile(fileX, "");
+                zip.Save();
+            }
+
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, 3),
+                    "Zip file created seems to be invalid.");
+
+            string newpath, chk;
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                for (j = 0; j < filenames.Length; j++)
+                {
+                    zip[Path.GetFileName(filenames[j])].Extract("unpack", true);
+                    newpath = Path.Combine(Path.Combine(TopLevelDir, "unpack"), filenames[j]);
+                    chk = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(newpath));
+                    Assert.AreEqual<string>(chk, checksums[j], "Checksums do not match.");
+                }
+
+                zip[Path.GetFileName(fileX)].ExtractWithPassword("unpack", true, Password);
+                newpath = Path.Combine(Path.Combine(TopLevelDir, "unpack"), fileX);
+                chk = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(newpath));
+                Assert.AreEqual<string>(chk, checksumX, "Checksums for encrypted entry do not match.");
+            }
+        }
+
     }
+
 }
