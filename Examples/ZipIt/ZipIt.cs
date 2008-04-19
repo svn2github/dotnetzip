@@ -58,9 +58,10 @@ namespace Ionic.Utils.Zip.Examples
                         {
                             i++;
                             if (args.Length <= i) Usage();
-                            zip.Password = args[i++];
+                            zip.Password = args[i];
                         }
-                        zip.AddItem(args[i]); // will add Files or Dirs, recurses subdirectories
+                        else
+                            zip.AddItem(args[i]); // will add Files or Dirs, recurses subdirectories
                     }
                     zip.Save();
                 }

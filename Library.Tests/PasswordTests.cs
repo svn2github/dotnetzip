@@ -12,12 +12,9 @@ namespace Library.Tests
     public class PasswordTests
     {
         private System.Random _rnd;
-        System.Security.Cryptography.MD5 _md5;
-
 
         public PasswordTests()
         {
-            _md5 = System.Security.Cryptography.MD5.Create();
             _rnd = new System.Random();
         }
 
@@ -79,23 +76,6 @@ namespace Library.Tests
         #endregion
 
 
-        private string CheckSumToString(byte[] checksum)
-        {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            foreach (byte b in checksum)
-                sb.Append(b.ToString("x2").ToLower());
-            return sb.ToString();
-        }
-
-        private byte[] ComputeChecksum(string filename)
-        {
-            byte[] hash = null;
-            using (FileStream fs = File.Open(filename, FileMode.Open))
-            {
-                hash= _md5.ComputeHash(fs);
-            }
-            return hash;
-        }
 
 
         [TestMethod]
@@ -126,8 +106,8 @@ namespace Library.Tests
                     for (i = 0; i < 1000; i++)
                         sw.Write("{0:X2}", (byte)(_rnd.Next(255) & 0xff));
                 }
-                
-                checksums[j]= ComputeChecksum(filenames[j]);
+
+                checksums[j] = TestUtilities.ComputeChecksum(filenames[j]);
             }
 
 
@@ -148,9 +128,8 @@ namespace Library.Tests
                 {
                     e.ExtractWithPassword("unpack", true, password);
                     //bool success = Int32.TryParse(e.FileName, out j);
-                    byte[] c2 = ComputeChecksum(Path.Combine("unpack", filenames[j]));
-                    Assert.AreEqual<string>(CheckSumToString(checksums[j]), CheckSumToString(c2), "Checksums do not match.");
-                    
+                    byte[] c2 = TestUtilities.ComputeChecksum(Path.Combine("unpack", filenames[j]));
+                    Assert.AreEqual<string>(TestUtilities.CheckSumToString(checksums[j]), TestUtilities.CheckSumToString(c2), "Checksums do not match.");     
                     j++;
                 }
             }

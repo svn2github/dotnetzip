@@ -183,11 +183,9 @@ namespace Ionic.Utils.Zip.Examples
                             if (header)
                             {
                                 System.Console.WriteLine("Zipfile: {0}", zip.Name);
-                                if ((zip.Comment != null) && (zip.Comment != "")) System.Console.WriteLine("Comment: {0}", zip.Comment);
+                                if ((zip.Comment != null) && (zip.Comment != "")) 
+                                    System.Console.WriteLine("Comment: {0}", zip.Comment);
 
-                                //System.Console.WriteLine("BitField: 0x{0:X2}", e.BitField);
-                                //System.Console.WriteLine("Compression Method: 0x{0:X2}", e.CompressionMethod);
-                                //System.Console.WriteLine("Compression Method: 0x{0:X2}", e.CompressionMethod);
                                 System.Console.WriteLine("\n{1,-22} {2,8}  {3,5}   {4,8}  {5,3} {0}",
                                              "Filename", "Modified", "Size", "Ratio", "Packed", "pw?");
                                 System.Console.WriteLine(new System.String('-', 72));
@@ -215,7 +213,6 @@ namespace Ionic.Utils.Zip.Examples
                                         e.ExtractWithPassword(outstream, password);
                                     else
                                         e.ExtractWithPassword(targdir, WantOverwrite, password);
-
                                 }
                                 else
                                 {

@@ -9,10 +9,10 @@
    <PropertyGroup>
       <Optimize>false</Optimize>
       <DebugSymbols>true</DebugSymbols>
-      <!-- <OutputPath>.\bin</OutputPath>  -->
+      <!-- <OutputPath>.\bin\</OutputPath>  -->
       <OutputPath>.\</OutputPath>
       <OutDir>.\</OutDir>
-      <IntermediateOutputPath>.\obj</IntermediateOutputPath>
+      <IntermediateOutputPath>.\obj\</IntermediateOutputPath>
    </PropertyGroup>
 
   <!-- specify reference assemblies for all builds in this project -->

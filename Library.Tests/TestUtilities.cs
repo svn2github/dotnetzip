@@ -157,5 +157,24 @@ namespace Library.Tests
         #endregion
 
 
+        internal static string CheckSumToString(byte[] checksum)
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            foreach (byte b in checksum)
+                sb.Append(b.ToString("x2").ToLower());
+            return sb.ToString();
+        }
+
+        internal static byte[] ComputeChecksum(string filename)
+        {
+            byte[] hash = null;
+            var _md5 = System.Security.Cryptography.MD5.Create();
+
+            using (System.IO.FileStream fs = System.IO.File.Open(filename, System.IO.FileMode.Open))
+            {
+                hash = _md5.ComputeHash(fs);
+            }
+            return hash;
+        }
     }
 }

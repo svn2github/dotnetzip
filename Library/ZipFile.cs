@@ -90,6 +90,11 @@ namespace Ionic.Utils.Zip
         /// This property is read/write for the zipfile. It allows the application to
         /// specify a comment for the zipfile, or read the comment for the zipfile. 
         /// </summary>
+        ///
+        /// <remarks>
+        /// According to the zip spec, the comment is not encrypted, even if there is a password
+        /// set on the zip archive. But you knew that...
+        /// </remarks>
         public string Comment
         {
             get { return _Comment; }
@@ -105,11 +110,18 @@ namespace Ionic.Utils.Zip
         /// from fully-qualified pathnames on any ZipEntry, before writing the 
         /// ZipEntry into the ZipFile. 
         /// </summary>
+        ///
         /// <remarks>
+        /// <para>
         /// The default value is true. This setting must be true to allow 
-        /// Windows Explorer to read the zip archives properly. 
+        /// Windows Explorer to read the zip archives properly. It's also required to be 
+        /// true if you want to read the generated zip files on any other non-Windows OS. 
+        /// </para>
+        /// 
+        /// <para>
         /// The property is included for backwards compatibility only.  You'll 
-        /// almost never need to set this to false.
+        /// almost never need or want to set this to false.
+        /// </para>
         /// </remarks>
         ///
         public bool TrimVolumeFromFullyQualifiedPaths
@@ -136,7 +148,7 @@ namespace Ionic.Utils.Zip
         /// <example>
         /// <para>
         /// In this example, a console application instantiates a ZipFile, then sets
-        /// the StattusMessageTextWriter to Console.Out.  At that point, all verbose
+        /// the StatusMessageTextWriter to Console.Out.  At that point, all verbose
         /// status messages for that ZipFile are sent to the console. 
         /// </para>
         /// <code>
@@ -177,7 +189,8 @@ namespace Ionic.Utils.Zip
         /// not apply to the archive as a whole.  Instead, it applies to individual entries 
         /// that are added to the archive. The "directory" of the archive - in other words 
         /// the list of files - is not encrypted with the password. Instead the contents of 
-        /// the individual files are encrypted.
+        /// the individual files are encrypted.  The list of filenames in the archive is in clear 
+        /// text.
         /// </para><para>
         /// If you set the password on the zip archive, and then add a set of files to the 
         /// archive, then each entry is encrypted with that password.  You may also want 
@@ -186,11 +199,41 @@ namespace Ionic.Utils.Zip
         /// the first entry is encrypted and the second is not.  Furshtay?
         /// </para>
         /// </remarks>
+        ///
+        /// <example>
+        /// <para>
+        /// In this example, three files are added to a Zip archive. The ReadMe.txt file
+        /// will be placed in the root of the archive, and will not be encrypted. 
+        /// The .png file will be included into the zip, encrypted with the "123456!" password.
+        /// The pdf file will be included, encrypted with "!Secret1" as the password.
+        /// </para>
+        /// <code>
+        ///    try
+        ///    {
+        ///      using (ZipFile zip = new ZipFile("test3.zip",System.Console.Out))
+        ///      {
+        ///        zip.AddFile("ReadMe.txt");
+        ///        zip.Password= "123456!";
+        ///        zip.AddFile("7440-N49th.png");
+        ///        zip.Password= "!Secret1";
+        ///        zip.AddFile("2005_Annual_Report.pdf");
+        ///
+        ///        zip.Save();
+        ///      }
+        ///    }
+        ///    catch (System.Exception ex1)
+        ///    {
+        ///      System.Console.Error.WriteLine("exception: " + ex1);
+        ///    }
+        /// </code>
+        /// </example>
+        /// 
+
         public String Password
         {
             set
             {
-                _Password = value; 
+                _Password = value;
             }
         }
 
@@ -202,7 +245,10 @@ namespace Ionic.Utils.Zip
                 if (_readstream == null)
 
                     if (_name != null)
+                    {
                         _readstream = System.IO.File.OpenRead(_name);
+                        _ReadStreamIsOurs = true;
+                    }
 
                 return _readstream;
             }
@@ -268,12 +314,18 @@ namespace Ionic.Utils.Zip
         /// The parameterized constructor allows applications to use the same code to add items 
         /// to a zip archive, regardless of whether the zip file exists.  
         /// </para>
+        /// 
+        /// <para>
+        /// Encryption will be used on the file data if the Password
+        /// has been set on the ZipFile object, prior to calling this method.
+        /// </para>
+        /// 
         /// </remarks>
         /// <example>
         /// <code>
         /// using (ZipFile zip = new ZipFile(args[0]))
         /// { 
-        ///   // note: this does not recurse directories! 
+        ///   // Store all files found in the top level directory, into the zip archive.
         ///   String[] filenames = System.IO.Directory.GetFiles(args[1]);
         ///   foreach (String filename in filenames)
         ///   {
@@ -286,43 +338,51 @@ namespace Ionic.Utils.Zip
         /// </example>
         /// 
         /// <param name="ZipFileName">The filename to use for the new zip archive.</param>
+        ///
         public ZipFile(string ZipFileName)
         {
             InitFile(ZipFileName, null);
         }
 
+
         /// <summary>
         /// Creates a new ZipFile instance, using the specified ZipFileName for the filename. 
         /// The ZipFileName may be fully qualified.
         /// </summary>
+        ///
         /// <remarks>
         /// <para>Applications can use this constructor to create a new ZipFile for writing, 
         /// or to slurp in an existing zip archive for read and write purposes.  
         /// </para>
+        ///
         /// <para>Typically an application writing a zip archive will call this constructor, passing
         /// the name of a file that does not exist, then add 
         /// directories or files to the ZipFile via AddDirectory or AddFile, and then write the 
         /// zip archive to the disk by calling <c>Save()</c>. The file is not actually written to the disk 
         /// until the application calls <c>ZipFile.Save()</c> .
         /// </para>
+        ///
         /// <para>
-        /// An application reading a zip archive can call this constructor, passing the name of a 
-        /// zip file that does exist.  The file is then read into the <c>ZipFile</c> instance.  The app
-        /// can then enumerate the entries or can add a new entry.  An application may wish to 
-        /// explicitly specify that it is reading an existing zip file by using <c>ZipFile.Read()</c>. 
-        /// The parameterized constructor allows applications to use the same code to add items 
-        /// to a zip archive, regardless of whether the zip file exists.  
+        /// An application reading a zip archive can call this constructor, passing the name of
+        /// a zip file that does exist.  The file is then read into the <c>ZipFile</c> instance.
+        /// The app can then enumerate the entries or can add a new entry.  An application may
+        /// wish to explicitly specify that it is reading an existing zip file by using
+        /// <c>ZipFile.Read()</c>.  The parameterized constructor allows applications to use the
+        /// same code to add items to a zip archive, without regard for whether the zip file exists.
         /// </para>
+        ///
         /// <para>
-        /// This version of the constructor allows the caller to pass in a TextWriter, to which verbose 
-        /// messages will be written during extraction or creation of the zip archive.  A console application
-        /// may wish to pass System.Console.Out to get messages on the Console. A graphical or headless application
-        /// may wish to capture the messages in a different TextWriter. 
+        /// This version of the constructor allows the caller to pass in a TextWriter, to which
+        /// verbose messages will be written during extraction or creation of the zip archive.
+        /// A console application may wish to pass System.Console.Out to get messages on the
+        /// Console. A graphical or headless application may wish to capture the messages in a
+        /// different <c>TextWriter</c>, for example, a <c>StringWriter</c>.
         /// </para>
         /// </remarks>
+        ///
         /// <example>
         /// <code>
-        /// using (ZipFile zip = new ZipFile(args[0]))
+        /// using (ZipFile zip = new ZipFile(args[0], System.Console.Out))
         /// { 
         ///   // note: this does not recurse directories! 
         ///   String[] filenames = System.IO.Directory.GetFiles(args[1]);
@@ -512,16 +572,20 @@ namespace Ionic.Utils.Zip
         /// "natural" path of the filesystem file.
         /// </para>
         /// 
+        /// <para>
+        /// Encryption will be used on the file data if the Password
+        /// has been set on the ZipFile object, prior to calling this method.
+        /// </para>
+        /// 
         /// </remarks>
         /// 
         /// <param name="FileOrDirectoryName">the name of the file or directory to add.</param>
         /// <param name="DirectoryPathInArchive">
         /// The name of the directory path to use within the zip archive. 
-        /// This path may, or may not, correspond to a real directory in the current filesystem.
+        /// This path need not refer to an extant directory in the current filesystem.
         /// If the files within the zip are later extracted, this is the path used for the extracted file. 
-        /// Passing null will use the path on the FileOrDirectoryName.  Passing the empty string ("")
-        /// will insert the item at the root path within the archive. Passing null (nothing in VB) will
-        /// use the path (if any) on the filename itself. 
+        /// Passing null (nothing in VB)) will use the path on the FileOrDirectoryName.  Passing the empty string ("")
+        /// will insert the item at the root path within the archive. 
         /// </param>
         /// 
         public void AddItem(String FileOrDirectoryName, String DirectoryPathInArchive)
@@ -604,16 +668,18 @@ namespace Ionic.Utils.Zip
         /// In this example, three files are added to a Zip archive. The ReadMe.txt file
         /// will be placed in the root of the archive. The .png file will be placed in a folder 
         /// within the zip called images.  The pdf file will be included into a
-        /// folder within the zip called files\documents.
+        /// folder within the zip called files\documents, and will be encrypted with the 
+        /// given password.
         /// </para>
         /// <code>
         ///    try
         ///    {
         ///      using (ZipFile zip = new ZipFile("test2.zip",System.Console.Out))
         ///      {
-        ///        zip.AddFile("c:\\photos\\personal\\7440-N49th.png", "images");
-        ///        zip.AddFile("c:\\Desktop\\2005_Annual_Report.pdf", "files\\documents");
         ///        zip.AddFile("c:\datafiles\ReadMe.txt", "");
+        ///        zip.AddFile("c:\\photos\\personal\\7440-N49th.png", "images");
+        ///        zip.Passwprd = "EncryptMe!";
+        ///        zip.AddFile("c:\\Desktop\\2005_Annual_Report.pdf", "files\\documents");
         ///
         ///        zip.Save();
         ///      }
@@ -641,7 +707,7 @@ namespace Ionic.Utils.Zip
         {
             ZipEntry ze = ZipEntry.Create(FileName, DirectoryPathInArchive);
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
-            ze.Password = _Password;            
+            ze.Password = _Password;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", FileName);
             InsureUniqueEntry(ze);
             _entries.Add(ze);
@@ -651,12 +717,19 @@ namespace Ionic.Utils.Zip
 
         //Daniel Bedarf - 2008 feb
         /// <summary>
-        /// 
+        /// Uses the given stream as input to create an entry in the ZipFile, with the 
+        /// given FileName and given Directory Path.  Encryption will be used on the 
+        /// stream data if the Password is set on the ZipFile object, prior to calling
+        /// this method.
         /// </summary>
+        /// <remarks>
+        /// The stream must remain open and readable at least through the call to 
+        /// <c>ZipFile.Save()</c>.
+        /// </remarks>
         /// <param name="FileName">FileName which is shown in the ZIP File</param>
         /// <param name="DirectoryPathInArchive">in ZIP File</param>
         /// <param name="stream">InputStream</param>
-        /// <returns></returns>
+        /// <returns>The ZipEntry added.</returns>
         public ZipEntry AddFileStream(string FileName, String DirectoryPathInArchive, System.IO.Stream stream)
         {
             ZipEntry ze = ZipEntry.Create(FileName, DirectoryPathInArchive, stream);
@@ -720,9 +793,8 @@ namespace Ionic.Utils.Zip
         /// Specifies a directory path to use to override any path in the DirectoryName.
         /// This path may, or may not, correspond to a real directory in the current filesystem.
         /// If the zip is later extracted, this is the path used for the extracted file or directory. 
-        /// Passing null will use the path on the DirectoryName. Passing the empty string ("")
-        /// will insert the item at the root path within the archive. Passing null (nothing in VB) will
-        /// use the path (if any) on the filename itself. 
+        /// Passing null (nothing in VB) will use the path on the DirectoryName. Passing the empty string ("")
+        /// will insert the item at the root path within the archive. 
         /// </param>
         /// 
         public void AddDirectory(string DirectoryName, String DirectoryPathInArchive)
@@ -765,14 +837,19 @@ namespace Ionic.Utils.Zip
         /// Saves the Zip archive, using the name given when the ZipFile was instantiated. 
         /// </summary>
         /// <remarks>
+        /// <para>
         /// The zip file is written to storage only when the caller calls <c>Save()</c>.  
         /// The Save operation writes the zip content to a temporary file. 
         /// Then, if the zip file already exists (for example when adding an item to a zip archive)
         /// this method will replace the existing zip file with this temporary file.
         /// If the zip file does not already exist, the temporary file is renamed 
         /// to the desired name.  
-        /// When using the zip library within an ASPNET application, you may wish to set the
+        /// </para>
+        ///
+        /// <para>
+        /// When using the zip library within an ASP.NET application, you may wish to set the
         /// TempFileFolder on the ZipFile instance before calling Save().
+        /// </para>
         /// </remarks>
         public void Save()
         {
@@ -953,7 +1030,7 @@ namespace Ionic.Utils.Zip
         /// This can be a fully-qualified or relative pathname.
         /// </param>
         /// 
-        /// <overloads>This method has 6 overloads.</overloads>
+        /// <overloads>If I am counting correctly, this method has 6 overloads.</overloads>
         /// 
         /// <returns>The instance read from the zip archive.</returns>
         /// 
@@ -1042,6 +1119,7 @@ namespace Ionic.Utils.Zip
             ZipFile zf = new ZipFile();
             zf._StatusMessageTextWriter = StatusMessageWriter;
             zf._readstream = ZipStream;
+            zf._ReadStreamIsOurs = false;
             ReadIntoInstance(zf);
             return zf;
         }
@@ -1049,13 +1127,20 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// Reads a zip archive from a byte array.
         /// </summary>
+        /// 
         /// <remarks>
         /// This is useful when the data for the zipfile is contained in a byte array, 
         /// for example, downloaded from an FTP server without being saved to a
         /// filesystem. 
         /// </remarks>
-        /// <param name="buffer">The byte array containing the zip data.</param>
-        /// <returns>an instance of ZipFile. The name is null. </returns>
+        /// 
+        /// <param name="buffer">
+        /// The byte array containing the zip data.  
+        /// (I don't know why, but sometimes the compiled helpfuile (.chm) indicates a 2d 
+        /// array when it is just one-dimensional.  This is a one-dimensional array.)
+        /// </param>
+        /// 
+        /// <returns>an instance of ZipFile. The name on the ZipFile will be null (nothing in VB)). </returns>
         public static ZipFile Read(byte[] buffer)
         {
             System.IO.MemoryStream ms = new System.IO.MemoryStream(buffer);
@@ -1063,22 +1148,35 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// Reads a zip archive from a byte array.
+        /// Reads a zip archive from a byte array, using the given StatusMessageWriter.
         /// </summary>
+        /// 
         /// <remarks>
-        /// This is useful when the zipfile is contained in a byte array. 
-        /// This overload allows the caller to specify a TextWriter to which 
-        /// Verbose messages are sent. For example, in a console application, System.Console.Out 
-        /// works. If the TextWriter is null, no verbose messages are written. 
+        /// <para>
+        /// This method is useful when the data for the zipfile is contained in a byte array, for
+        /// example when retrieving the data from a database or other non-filesystem store.
+        /// </para>
+        /// 
+        /// <para>
+        /// This overload allows the caller to specify a <c>TextWriter</c> to which Verbose
+        /// messages are sent. For example, in a console application, <c>System.Console.Out</c>
+        /// works. If the TextWriter is null, no verbose messages are written.
+        /// </para>
         /// </remarks>
+        /// 
         /// <param name="buffer">the byte array containing the zip data.</param>
-        /// <param name="StatusMessageWriter">The <c>System.IO.TextWriter</c> to which verbose status messages are written.</param>
+        /// <param name="StatusMessageWriter">
+        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written.
+        /// </param>
+        /// 
         /// <returns>an instance of ZipFile. The name is set to null.</returns>
+        /// 
         public static ZipFile Read(byte[] buffer, System.IO.TextWriter StatusMessageWriter)
         {
             ZipFile zf = new ZipFile();
             zf._StatusMessageTextWriter = StatusMessageWriter;
             zf._readstream = new System.IO.MemoryStream(buffer);
+            zf._ReadStreamIsOurs = true;
             ReadIntoInstance(zf);
             return zf;
         }
@@ -1133,9 +1231,7 @@ namespace Ionic.Utils.Zip
                 zf.StatusMessageTextWriter.WriteLine("Zip file Comment: {0}", zf.Comment);
 
             // when finished slurping in the zip, close the read stream
-            zf.ReadStream.Close();
-            //zf.ReadStream = null; // this no worky with streams
-
+            //zf.ReadStream.Close();
         }
 
         private static void ReadCentralDirectoryFooter(ZipFile zf)
@@ -1353,7 +1449,7 @@ namespace Ionic.Utils.Zip
         /// <param name="WantOverwrite">True if the caller wants to overwrite any existing files by the given name.</param>
         public void Extract(string FileName, string DirectoryName, bool WantOverwrite)
         {
-	  this[FileName].Extract(DirectoryName, WantOverwrite);
+            this[FileName].Extract(DirectoryName, WantOverwrite);
         }
 
 
@@ -1380,8 +1476,17 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// This is a name-based indexer into the Zip archive.  
         /// </summary>
-        /// <param name="FileName">the name of the file, including any directory path, to retrieve from the zip. The pathname can use forward-slashes or backward slashes.</param>
-        /// <returns>The ZipEntry within the Zip archive, given by the specified filename.</returns>
+        /// 
+        /// <param name="FileName">
+        /// The name of the file, including any directory path, to retrieve from the zip. The
+        /// pathname can use forward-slashes or backward slashes.
+        /// </param>
+        /// 
+        /// <returns>
+        /// The ZipEntry within the Zip archive, given by the specified filename. If the named
+        /// entry does not exist in the archive, this indexer returns null.
+        /// </returns>
+        /// 
         public ZipEntry this[String FileName]
         {
             get
@@ -1456,10 +1561,13 @@ namespace Ionic.Utils.Zip
                 if (disposeManagedResources)
                 {
                     // dispose managed resources
-                    if (_readstream != null)
+                    if (_ReadStreamIsOurs)
                     {
-                        _readstream.Dispose();
-                        _readstream = null;
+                        if (_readstream != null)
+                        {
+                            _readstream.Dispose();
+                            _readstream = null;
+                        }
                     }
                     // only dispose the writestream if there is a backing file 
                     //(_temporaryFileName is not null)
@@ -1492,6 +1600,7 @@ namespace Ionic.Utils.Zip
         private string _temporaryFileName = null;
         private bool _contentsChanged = false;
         private String _TempFileFolder = ".";
+        private bool _ReadStreamIsOurs = true;
     }
 
 }
