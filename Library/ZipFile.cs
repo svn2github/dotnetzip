@@ -166,10 +166,22 @@ namespace Ionic.Utils.Zip
         /// application may wish to override this, with this public property. This
         /// property is used only when calling one of the Save() methods.
         /// </remarks>
+        /// <exception cref="System.IO.FileNotFoundException">
+        /// Thrown upon setting the property if the directory does not exist. 
+        /// </exception>
+        ///
+
         public String TempFileFolder
         {
             get { return _TempFileFolder; }
-            set { _TempFileFolder = value; }
+            set
+	    { 
+	      _TempFileFolder = value; 
+	      if (!System.IO.Directory.Exists(_TempFileFolder))
+	      {
+		throw new System.IO.FileNotFoundException("That direcotory does not exist.");
+	      }
+	    }
         }
 
         /// <summary>
@@ -251,6 +263,7 @@ namespace Ionic.Utils.Zip
                 _readstream = null;
             }
         }
+
 
         private System.IO.Stream WriteStream
         {
@@ -511,6 +524,11 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// </remarks>
         ///
+        /// <exception cref="System.ArgumentException">
+        /// Thrown if the stream is not writable. 
+        /// You need to specify a writable stream if you're going to extract zip content to it. 
+        /// </exception>
+	///
         /// <param name="OutputStream">The outputStream to write to. It must be writable.</param>
         /// <param name="StatusMessageWriter">A TextWriter to use for writing verbose status messages.</param>
         public ZipFile(System.IO.Stream OutputStream, System.IO.TextWriter StatusMessageWriter)
@@ -602,6 +620,10 @@ namespace Ionic.Utils.Zip
         /// 
         /// </remarks>
         /// 
+        /// <exception cref="System.IO.FileNotFoundException">
+        /// Thrown if the file or directory passed in does not exist. 
+        /// </exception>
+        ///
         /// <param name="FileOrDirectoryName">the name of the file or directory to add.</param>
         /// <param name="DirectoryPathInArchive">
         /// The name of the directory path to use within the zip archive. 
@@ -879,6 +901,13 @@ namespace Ionic.Utils.Zip
         /// TempFileFolder on the ZipFile instance before calling Save().
         /// </para>
         /// </remarks>
+        ///
+        /// <exception cref="Ionic.Utils.Zip.BadStateException">
+        /// Thrown if you haven't specified a location or stream for saving the zip,
+        /// either in the constructor or by setting the Name property. 
+        /// </exception>
+        ///
+
         public void Save()
         {
             if (WriteStream == null)
@@ -955,9 +984,9 @@ namespace Ionic.Utils.Zip
                 _writestream = null;
 
             _name = ZipFileName;
-            _contentsChanged = true;
             if (System.IO.Directory.Exists(_name))
                 throw new System.ArgumentException("That name specifies an existing directory. Please specify a filename.", "ZipFileName");
+            _contentsChanged = true;
             _fileAlreadyExists = (System.IO.File.Exists(_name));
             Save();
         }

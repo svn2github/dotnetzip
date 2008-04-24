@@ -35,15 +35,27 @@
     <CSFile Include="*.cs" Exclude="$(OriginalSourceFile)" />
   </ItemGroup>
 
+  <!-- Stuff the OriginalSourceFile property into an ItemGroup.                  -->
+  <!-- We do this so we can get at the metadata, which I Think is available only -->
+  <!-- through an item within an ItemGroup.  We want the root filename, which    -->
+  <!-- we use to name the output netmodule.                                      -->
+  <ItemGroup>
+    <ExcludedCSFile Include="$(OriginalSourceFile)" />
+  </ItemGroup>
+
   <Target Name="CheckSyntax"
           DependsOnTargets="ResolveAssemblyReferences"
           >
+
+      <Message Text="Sources = @(CSFile)" />
+
     <!-- Run the Visual C# compilation on the specified set of .cs files. -->
     <CSC 
        Sources="@(CSFile)"
        References="@(ReferencePath)"
        TargetType="module"
        Toolpath="$(MSBuildToolsPath)"
+       OutputAssembly="%(ExcludedCSFile.Filename)_flymake.netmodule"
        Nologo="true"
        />
   </Target>
