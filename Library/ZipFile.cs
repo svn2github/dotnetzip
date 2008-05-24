@@ -319,7 +319,7 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// 
         /// <para>
-        /// Encryption will be used on the file data if the Password
+        /// NB: Encryption will be used on the file data if the Password
         /// has been set on the ZipFile object, prior to calling this method.
         /// </para>
         /// 
@@ -340,6 +340,24 @@ namespace Ionic.Utils.Zip
         /// </code>
         /// </example>
         /// 
+        /// 
+        /// <example>
+	/// This example shows how to use the ZipFile from VB.NET.
+        /// <code>
+	/// Imports Ionic.Utils.Zip
+	/// ... 
+	/// Using zip As New ZipFile("c:\temp\meuzip.zip")
+	///   'add a few files file to the archive
+	///   zip.AddFile("c:\temp\1028.mst")
+	///   zip.AddFile("c:\temp\Setup.ini")
+	///   'add a directory to the archive
+	///   zip.AddDirectory("c:\temp\temp2")
+	///   zip.Save()
+	/// End Using
+	///
+        /// </code>
+        /// </example>
+        ///
         /// <param name="ZipFileName">The filename to use for the new zip archive.</param>
         ///
         public ZipFile(string ZipFileName)

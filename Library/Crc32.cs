@@ -11,9 +11,8 @@
 //
 // This implementation adds a tweak of that code for use within zip creation.  While
 // computing the CRC we also compress the byte stream, in the same read loop. This
-// avoids the need to read through the uncompressed stream twice - once to computer CRC
+// avoids the need to read through the uncompressed stream twice - once to compute CRC
 // and another time to compress.
-//
 //
 // Thu, 30 Mar 2006  13:58
 // 

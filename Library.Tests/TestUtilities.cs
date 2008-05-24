@@ -64,21 +64,52 @@ namespace Library.TestUtilities
 
         #region Helper methods
 
+        internal static void CreateAndFillFileText(string Filename, int size)
+        {
+            int bytesRemaining = size;
+
+            string[] words = LoremIpsum.Split(" ".ToCharArray(), System.StringSplitOptions.RemoveEmptyEntries);
+            // fill the file with text data
+            using (System.IO.StreamWriter sw = System.IO.File.CreateText(Filename))
+            {
+                do
+                {
+                    // pick a word at random
+                    string selectedWord = words[_rnd.Next(words.Length)];
+                    sw.Write(selectedWord);
+                    sw.Write(" ");
+                    bytesRemaining -= (selectedWord.Length + 1);
+                } while (bytesRemaining > 0);
+                sw.Close();
+            }
+
+        }
+
+        internal static void CreateAndFillFileBinary(string Filename, int size)
+        {
+            int bytesRemaining = size;
+                // fill with binary data
+                byte[] Buffer = new byte[2000];
+                using (System.IO.Stream fileStream = new System.IO.FileStream(Filename, System.IO.FileMode.Create, System.IO.FileAccess.Write))
+                {
+                    while (bytesRemaining > 0)
+                    {
+                        int sizeOfChunkToWrite = (bytesRemaining > Buffer.Length) ? Buffer.Length : bytesRemaining;
+                        _rnd.NextBytes(Buffer);
+                        fileStream.Write(Buffer, 0, sizeOfChunkToWrite);
+                        bytesRemaining -= sizeOfChunkToWrite;
+                    }
+                }
+        }
+
+
         internal static void CreateAndFillFile(string Filename, int size)
         {
             Assert.IsTrue(size > 0, "File size should be greater than zero.");
-            int bytesRemaining = size;
-            byte[] Buffer = new byte[2000];
-            using (System.IO.Stream fileStream = new System.IO.FileStream(Filename, System.IO.FileMode.Create, System.IO.FileAccess.Write))
-            {
-                while (bytesRemaining > 0)
-                {
-                    int sizeOfChunkToWrite = (bytesRemaining > Buffer.Length) ? Buffer.Length : bytesRemaining;
-                    _rnd.NextBytes(Buffer);
-                    fileStream.Write(Buffer, 0, sizeOfChunkToWrite);
-                    bytesRemaining -= sizeOfChunkToWrite;
-                }
-            }
+            if (_rnd.Next(2) == 0)
+                CreateAndFillFileText(Filename, size);
+            else
+                CreateAndFillFileBinary(Filename, size);
         }
 
         internal static string CreateUniqueFile(string extension, string ContainingDirectory)
@@ -176,5 +207,67 @@ namespace Library.TestUtilities
             }
             return hash;
         }
+
+        private static string LoremIpsum =
+"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Integer " +
+"vulputate, nibh non rhoncus euismod, erat odio pellentesque lacus, sit " +
+"amet convallis mi augue et odio. Phasellus cursus urna facilisis " +
+"quam. Suspendisse nec metus et sapien scelerisque euismod. Nullam " +
+"molestie sem quis nisl. Fusce pellentesque, ante sed semper egestas, sem " +
+"nulla vestibulum nulla, quis sollicitudin leo lorem elementum " +
+"wisi. Aliquam vestibulum nonummy orci. Sed in dolor sed enim ullamcorper " +
+"accumsan. Duis vel nibh. Class aptent taciti sociosqu ad litora torquent " +
+"per conubia nostra, per inceptos hymenaeos. Sed faucibus, enim sit amet " +
+"venenatis laoreet, nisl elit posuere est, ut sollicitudin tortor velit " +
+"ut ipsum. Aliquam erat volutpat. Phasellus tincidunt vehicula " +
+"eros. Curabitur vitae erat. " +
+"\n " +
+"Quisque pharetra lacus quis sapien. Duis id est non wisi sagittis " +
+"adipiscing. Nulla facilisi. Etiam quam erat, lobortis eu, facilisis nec, " +
+"blandit hendrerit, metus. Fusce hendrerit. Nunc magna libero, " +
+"sollicitudin non, vulputate non, ornare id, nulla.  Suspendisse " +
+"potenti. Nullam in mauris. Curabitur et nisl vel purus vehicula " +
+"sodales. Class aptent taciti sociosqu ad litora torquent per conubia " +
+"nostra, per inceptos hymenaeos. Cum sociis natoque penatibus et magnis " +
+"dis parturient montes, nascetur ridiculus mus. Donec semper, arcu nec " +
+"dignissim porta, eros odio tempus pede, et laoreet nibh arcu et " +
+"nisl. Morbi pellentesque eleifend ante. Morbi dictum lorem non " +
+"ante. Nullam et augue sit amet sapien varius mollis. " +
+"\n " +
+"Nulla erat lorem, fringilla eget, ultrices nec, dictum sed, " +
+"sapien. Aliquam libero ligula, porttitor scelerisque, lobortis nec, " +
+"dignissim eu, elit. Etiam feugiat, dui vitae laoreet faucibus, tellus " +
+"urna molestie purus, sit amet pretium lorem pede in erat.  Ut non libero " +
+"et sapien porttitor eleifend. Vestibulum ante ipsum primis in faucibus " +
+"orci luctus et ultrices posuere cubilia Curae; In at lorem et lacus " +
+"feugiat iaculis. Nunc tempus eros nec arcu tristique egestas. Quisque " +
+"metus arcu, pretium in, suscipit dictum, bibendum sit amet, " +
+"mauris. Aliquam non urna. Suspendisse eget diam. Aliquam erat " +
+"volutpat. In euismod aliquam lorem. Mauris dolor nisl, consectetuer sit " +
+"amet, suscipit sodales, rutrum in, lorem. Nunc nec nisl. Nulla ante " +
+"libero, aliquam porttitor, aliquet at, imperdiet sed, diam. Pellentesque " +
+"tincidunt nisl et ipsum. Suspendisse purus urna, semper quis, laoreet " +
+"in, vestibulum vel, arcu. Nunc elementum eros nec mauris. " +
+"\n " +
+"Vivamus congue pede at quam. Aliquam aliquam leo vel turpis. Ut " +
+"commodo. Integer tincidunt sem a risus. Cras aliquam libero quis " +
+"arcu. Integer posuere. Nulla malesuada, wisi ac elementum sollicitudin, " +
+"libero libero molestie velit, eu faucibus est ante eu libero. Sed " +
+"vestibulum, dolor ac ultricies consectetuer, tellus risus interdum diam, " +
+"a imperdiet nibh eros eget mauris. Donec faucibus volutpat " +
+"augue. Phasellus vitae arcu quis ipsum ultrices fermentum. Vivamus " +
+"ultricies porta ligula. Nullam malesuada. Ut feugiat urna non " +
+"turpis. Vivamus ipsum. Vivamus eleifend condimentum risus. Curabitur " +
+"pede. Maecenas suscipit pretium tortor. Integer pellentesque. " +
+"\n " +
+"Mauris est. Aenean accumsan purus vitae ligula. Lorem ipsum dolor sit " +
+"amet, consectetuer adipiscing elit. Nullam at mauris id turpis placerat " +
+"accumsan. Sed pharetra metus ut ante. Aenean vel urna sit amet ante " +
+"pretium dapibus. Sed nulla. Sed nonummy, lacus a suscipit semper, erat " +
+"wisi convallis mi, et accumsan magna elit laoreet sem. Nam leo est, " +
+"cursus ut, molestie ac, laoreet id, mauris. Suspendisse auctor nibh. " +
+"\n";
+ 
+
     }
 }
