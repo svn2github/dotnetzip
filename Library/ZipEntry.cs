@@ -73,6 +73,18 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
+        /// When this is set, the entry is not compressed when written to 
+        /// the archive.  For example, the application might want to set flag to True
+        /// this when zipping up JPG or MP3 files, which are already compressed.
+        /// </summary>
+        public bool ForceNoCompression
+        {
+            get { return _ForceNoCompression; }
+            set { _ForceNoCompression = value; }
+        }
+
+
+        /// <summary>
         /// The name of the filesystem file, referred to by the ZipEntry. 
         /// </summary>
         /// 
@@ -164,17 +176,49 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// The compression method employed for this ZipEntry. 0x08 = Deflate.  0x00 =
         /// Store (no compression).  Really, this should be an enum.  But the zip spec
-        /// makes it a byte. So here it is.  This is a read-only property.  The thinking
-        /// is this: if you read zipfile, the compression mechanism on the entry was
-        /// previously set by the original creator of the zip.  On the other hand if you
-        /// are writing a zipfile, then you always want compression, unless it happens
-        /// to expand the size of the data, as could happen with previously compressed
-        /// data like jpg or png files. So... This is a read-only property.
+        /// makes it a byte. So here it is. 
         /// </summary>
+        /// <remarks>
+        /// <para>When reading an entry from an existing zipfile, the value you retrieve here
+        /// indicates the compression method used on the entry by the original creator of the zip.  
+        /// When writing a zipfile, you can specify either 0x08 (Deflate) or 0x00 (None).  If you 
+        /// try setting something else, it will throw an exception.  
+        /// </para>
+        /// <para>
+        /// You may wish to set CompressionMethod to 0 (None) when zipping previously compressed
+        /// data like jpg, png, or mp3 files.  This can save time and cpu cycles.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// In this example, the first entry added to the zip archive uses 
+        /// the default behavior - compression is used where it makes sense.  
+        /// The second entry, the MP3 file, is added to the archive without being compressed.
+        /// <code>
+        /// using (ZipFile zip = new ZipFile(ZipFileToCreate))
+        /// {
+        ///   ZipEntry e1= zip.AddFile(@"c:\temp\Readme.txt");
+        ///   
+        ///   ZipEntry e2= zip.AddFile(@"c:\temp\StopThisTrain.mp3");
+        ///   e2.CompressionMethod = 0;
+        ///   
+        ///   zip.Save();
+        /// }
+        /// </code>
+        /// </example>
+
         public Int16 CompressionMethod
         {
             get { return _CompressionMethod; }
+            set 
+            {
+                if (value == 0x00 || value == 0x08)
+                    _CompressionMethod = value;
+                else throw new InvalidOperationException("Unsupported compression method. Specify 8 or 0.");
+
+                _ForceNoCompression = (_CompressionMethod == 0x0);
+            }
         }
+
 
         /// <summary>
         /// The compressed size of the file, in bytes, within the zip archive. 
@@ -1104,7 +1148,6 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)((BitField & 0xFF00) >> 8);
 
             // compression for directories = 0x00 (No Compression)
-
             if (IsDirectory)
                 _CompressionMethod = 0x0;
             else
@@ -1118,7 +1161,6 @@ namespace Ionic.Utils.Zip
                 }
                 else
                 {
-                    _CompressionMethod = 0x08;
                     // If _FileData is null, then that means we will get the data from a file
                     // or stream.  In that case we need to read the file or stream, and
                     // compute the CRC, and compressed and uncompressed sizes from that
@@ -1145,30 +1187,35 @@ namespace Ionic.Utils.Zip
                     }
                     else
                     {
-                        // Read in the data from the file in the filesystem, compress it, and 
-                        // calculate a CRC on it as we read. 
-
                         CRC32 crc32 = new CRC32();
-                        // Daniel Bedarf
-                        if (_isStream)
+
+                        if (!_ForceNoCompression)
                         {
-                            _inputStream.Position = 0;
-                            UInt32 crc = crc32.GetCrc32AndCopy(_inputStream, CompressedStream);
-                            _Crc32 = (Int32)crc;
-                        }
-                        else
-                        {
-                            using (System.IO.Stream input = System.IO.File.OpenRead(LocalFileName))
+                            _CompressionMethod = 0x08;
+                            // Read in the data from the file in the filesystem, compress it, and 
+                            // calculate a CRC on it as we read. 
+
+                            // Daniel Bedarf
+                            if (_isStream)
                             {
-                                UInt32 crc = crc32.GetCrc32AndCopy(input, CompressedStream);
+                                _inputStream.Position = 0;
+                                UInt32 crc = crc32.GetCrc32AndCopy(_inputStream, CompressedStream);
                                 _Crc32 = (Int32)crc;
                             }
-                        }
-                        CompressedStream.Close();  // to get the footer bytes written to the underlying stream
-                        _CompressedStream = null;
+                            else
+                            {
+                                using (System.IO.Stream input = System.IO.File.OpenRead(LocalFileName))
+                                {
+                                    UInt32 crc = crc32.GetCrc32AndCopy(input, CompressedStream);
+                                    _Crc32 = (Int32)crc;
+                                }
+                            }
+                            CompressedStream.Close();  // to get the footer bytes written to the underlying stream
+                            _CompressedStream = null;
 
-                        _UncompressedSize = crc32.TotalBytesRead;
-                        _CompressedSize = (Int32)_UnderlyingMemoryStream.Length;
+                            _UncompressedSize = crc32.TotalBytesRead;
+                            _CompressedSize = (Int32)_UnderlyingMemoryStream.Length;
+                        }
 
                         // It is possible that applying this stream compression on a previously compressed
                         // file (entry) (like a zip, jpg or png) or a very small file will actually result
@@ -1176,8 +1223,14 @@ namespace Ionic.Utils.Zip
                         // compressed bytes, store the uncompressed data, and mark the CompressionMethod
                         // as 0x00 (uncompressed).  When we do this we need to recompute the CRC, and
                         // fill the _UnderlyingMemoryStream with the right (raw) data.
-
-                        if (_CompressedSize > _UncompressedSize)
+                        //
+                        // In some cases, the application wants to Force that compression is not used.
+                        // This might be when zipping up .mp3 files for example. In that case, the app
+                        // sets the _ForceNoCompression flag to true, and we do the same thing, but 
+                        // we've skipped the "try compression and then compare sizes" step.  
+                        //
+                        if (_ForceNoCompression ||
+                            (_CompressedSize > _UncompressedSize))
                         {
                             _UnderlyingMemoryStream = new System.IO.MemoryStream();
                             //Daniel Bedarf
@@ -1301,6 +1354,8 @@ namespace Ionic.Utils.Zip
         }
 
 
+
+
         internal void Write(System.IO.Stream outstream)
         {
             byte[] bytes = new byte[READBLOCK_SIZE];
@@ -1383,6 +1438,7 @@ namespace Ionic.Utils.Zip
 
         private DateTime _LastModified;
         private bool _TrimVolumeFromFullyQualifiedPaths = true;  // by default, trim them.
+        private bool _ForceNoCompression = false;  // by default, do compression if it makes sense.
         private string _LocalFileName;
         private string _FileNameInArchive;
         private Int16 _VersionNeeded;

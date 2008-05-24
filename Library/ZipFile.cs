@@ -15,7 +15,8 @@
 // But some people don't like to install the extra DLL.  Also, there is
 // a 3rd party LGPL-based (or is it GPL?) library called SharpZipLib,
 // which works, in both .NET 1.1 and .NET 2.0.  But some people don't
-// like the GPL. Finally, there are commercial tools (From ComponentOne,
+// like the GPL, and some people say it's complicated and slow. 
+// Finally, there are commercial tools (From ComponentOne,
 // XCeed, etc).  But some people don't want to incur the cost.
 //
 // This alternative implementation is not GPL licensed, is free of cost,
@@ -132,10 +133,12 @@ namespace Ionic.Utils.Zip
             //set { _Verbose = value; }
         }
 
+
         /// <summary>
-        /// Gets or sets the TextWriter for the instance. If the TextWriter
-        /// is set to a non-null value, then verbose output is sent to the 
-        /// TextWriter during Add, Read, Save and Extract operations.  
+        /// Gets or sets the TextWriter to which status messages are delivered 
+        /// for the instance. If the TextWriter is set to a non-null value, then 
+        /// verbose output is sent to the TextWriter during Add, Read, Save and 
+        /// Extract operations.  
         /// </summary>
         /// <example>
         /// <para>
@@ -156,6 +159,39 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
+        /// Gets or sets the flag that indicates whether the ZipFile should use
+        /// compression for subsequently added entries in the ZipFile instance.
+        /// </summary>
+        /// <remarks>
+        /// There is logic in the DotNetZip library that compares the size of the pre-compressed
+        /// data with the size of the post-compressed data, and uses compression only if the size 
+        /// is smaller. For file types that are known to be compressed, like MP3's or JPGs, this 
+        /// would waste clock cycles. In these cases it would be nice to allow the app to explicitly 
+        /// request that Compression not be used.  That's what this flag does.  The default value 
+        /// is false. You can also set the CompressionMethod property on the ZipEntry, for 
+        /// more granular control of this capability.  
+        /// </remarks>
+        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.CompressionMethod"/>
+        /// <example>
+        /// This example shows how to specify that all files added to the zip archive 
+        /// will not use compression.
+        /// <code>
+        /// using (ZipFile zip = new ZipFile(ZipFileToCreate))
+        /// {
+        ///   zip.ForceNoCompression = true;
+        ///   zip.AddDirectory(@"c:\temp\Foo");
+        ///   zip.Comment = "All files in this archive will be uncompressed.";
+        ///   zip.Save();
+        /// }
+        /// </code>
+        /// </example>
+        public bool ForceNoCompression
+        {
+            get { return _ForceNoCompression; }
+            set { _ForceNoCompression = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the name for the folder to store the temporary file
         /// this library writes when saving the zip archive. 
         /// </summary>
@@ -170,23 +206,23 @@ namespace Ionic.Utils.Zip
         /// Thrown upon setting the property if the directory does not exist. 
         /// </exception>
         ///
-
         public String TempFileFolder
         {
             get { return _TempFileFolder; }
             set
-	    { 
-	      _TempFileFolder = value; 
-	      if (!System.IO.Directory.Exists(_TempFileFolder))
-	      {
-		throw new System.IO.FileNotFoundException("That direcotory does not exist.");
-	      }
-	    }
+            {
+                _TempFileFolder = value;
+                if (!System.IO.Directory.Exists(_TempFileFolder))
+                {
+                    throw new System.IO.FileNotFoundException("That direcotory does not exist.");
+                }
+            }
         }
 
         /// <summary>
         /// Sets the password to be used for any entry subsequently added 
-        /// to the zip archive.
+        /// to the zip archive.  This password is applied to the entries, not
+        /// to the zip archive itself. 
         /// </summary>
         /// <remarks>
         /// <para>Though the password is set on the ZipFile object, the password actually does 
@@ -232,7 +268,6 @@ namespace Ionic.Utils.Zip
         /// </code>
         /// </example>
         /// 
-
         public String Password
         {
             set
@@ -290,6 +325,7 @@ namespace Ionic.Utils.Zip
         }
 
 
+
         /// <summary>
         /// Creates a new ZipFile instance, using the specified ZipFileName for the filename. 
         /// The ZipFileName may be fully qualified.
@@ -297,12 +333,12 @@ namespace Ionic.Utils.Zip
         /// 
         /// <remarks>
         /// <para>
-	/// Applications can use this constructor to create a new ZipFile for writing, 
+        /// Applications can use this constructor to create a new ZipFile for writing, 
         /// or to slurp in an existing zip archive for read and write purposes.  
         /// </para>
         /// 
         /// <para>
-	/// Typically an application writing a zip archive will call this constructor,
+        /// Typically an application writing a zip archive will call this constructor,
         /// passing the name of a file that does not exist, then add directories or files to
         /// the ZipFile via AddDirectory or AddFile, and then write the zip archive to the
         /// disk by calling <c>Save()</c>. The file is not actually written to the disk until
@@ -342,19 +378,19 @@ namespace Ionic.Utils.Zip
         /// 
         /// 
         /// <example>
-	/// This example shows how to use the ZipFile from VB.NET.
+        /// This example shows how to use the ZipFile from VB.NET.
         /// <code>
-	/// Imports Ionic.Utils.Zip
-	/// ... 
-	/// Using zip As New ZipFile("c:\temp\meuzip.zip")
-	///   'add a few files file to the archive
-	///   zip.AddFile("c:\temp\1028.mst")
-	///   zip.AddFile("c:\temp\Setup.ini")
-	///   'add a directory to the archive
-	///   zip.AddDirectory("c:\temp\temp2")
-	///   zip.Save()
-	/// End Using
-	///
+        /// Imports Ionic.Utils.Zip
+        /// ... 
+        /// Using zip As New ZipFile("c:\temp\meuzip.zip")
+        ///   'add a few files file to the archive
+        ///   zip.AddFile("c:\temp\1028.mst")
+        ///   zip.AddFile("c:\temp\Setup.ini")
+        ///   'add a directory to the archive
+        ///   zip.AddDirectory("c:\temp\temp2")
+        ///   zip.Save()
+        /// End Using
+        ///
         /// </code>
         /// </example>
         ///
@@ -364,6 +400,7 @@ namespace Ionic.Utils.Zip
         {
             InitFile(ZipFileName, null);
         }
+
 
         /// <summary>
         /// Create a zip file, without specifying a target filename to save to. 
@@ -464,20 +501,20 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// 
         /// <para>
-	/// Applications can use this constructor to create an instance of ZipFile 
+        /// Applications can use this constructor to create an instance of ZipFile 
         /// for writing to a stream. This is useful when zipping up content, but for any 
         /// reason it is not desirable to create a zip file in the filesystem itself. 
         /// </para>
-	///
+        ///
         /// <para>
-	/// Typically an application writing a zip archive in this manner will create and
+        /// Typically an application writing a zip archive in this manner will create and
         /// open a stream, then call this constructor, passing in the stream.  Then the app will add 
         /// directories or files to the ZipFile via AddDirectory or AddFile or AddItem.  The app
         /// will then write the zip archive to the memory stream by calling <c>Save()</c>. The 
         /// compressed (zipped) data is not actually written to the stream until the application 
         /// calls <c>ZipFile.Save()</c> .
         /// </para>
-	///
+        ///
         /// </remarks>
         /// 
         /// <exception cref="System.ArgumentException">
@@ -546,7 +583,7 @@ namespace Ionic.Utils.Zip
         /// Thrown if the stream is not writable. 
         /// You need to specify a writable stream if you're going to extract zip content to it. 
         /// </exception>
-	///
+        ///
         /// <param name="OutputStream">The outputStream to write to. It must be writable.</param>
         /// <param name="StatusMessageWriter">A TextWriter to use for writing verbose status messages.</param>
         public ZipFile(System.IO.Stream OutputStream, System.IO.TextWriter StatusMessageWriter)
@@ -770,6 +807,7 @@ namespace Ionic.Utils.Zip
         {
             ZipEntry ze = ZipEntry.Create(FileName, DirectoryPathInArchive);
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
+            ze.ForceNoCompression = ForceNoCompression;
             ze.Password = _Password;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", FileName);
             InsureUniqueEntry(ze);
@@ -935,7 +973,7 @@ namespace Ionic.Utils.Zip
 
             if (Verbose) StatusMessageTextWriter.WriteLine("Saving....");
 
-            // an entry for each file
+            // write an entry in the zip for each file
             foreach (ZipEntry e in _entries)
             {
                 e.Write(WriteStream);
@@ -1676,6 +1714,7 @@ namespace Ionic.Utils.Zip
         private System.Collections.Generic.List<ZipEntry> _entries = null;
         private System.Collections.Generic.List<ZipDirEntry> _direntries = null;
         private bool _TrimVolumeFromFullyQualifiedPaths = true;
+        private bool _ForceNoCompression = false;
         private string _name;
         private string _Comment;
         private string _Password;

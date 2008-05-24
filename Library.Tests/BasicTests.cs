@@ -430,7 +430,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
             int subdirCount = _rnd.Next(4) + 4;
             for (i = 0; i < subdirCount; i++)
             {
-                string Subdir = System.IO.Path.Combine(TopLevelDir,"DirectoryToZip.test."+i);
+                string Subdir = System.IO.Path.Combine(TopLevelDir, "DirectoryToZip.test." + i);
                 System.IO.Directory.CreateDirectory(Subdir);
 
                 int fileCount = _rnd.Next(3) + 3;
@@ -470,7 +470,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
             int i, j;
             int entries = 0;
             string Subdir = null;
-            String filename = null; 
+            String filename = null;
             int subdirCount = _rnd.Next(4) + 4;
             for (i = 0; i < subdirCount; i++)
             {
@@ -500,24 +500,22 @@ namespace Ionic.Utils.Zip.Tests.Basic
 
 
             // Now create a new subdirectory and add that one
+            Subdir = System.IO.Path.Combine(TopLevelDir, "NewSubDirectory");
+            System.IO.Directory.CreateDirectory(Subdir);
 
-                            Subdir = System.IO.Path.Combine(TopLevelDir, "NewSubDirectory");
-                System.IO.Directory.CreateDirectory(Subdir);
+            filename = System.IO.Path.Combine(Subdir, "newfile.txt");
+            TestUtilities.CreateAndFillFileText(filename, _rnd.Next(12000) + 5000);
+            entries++;
 
-                    filename= System.IO.Path.Combine(Subdir, "newfile.txt");
-                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(12000) + 5000);
-                    entries++;
-
-
-                    string DirToAdd= System.IO.Path.Combine(RelativeDir,
-                        System.IO.Path.GetFileName(Subdir));
+            string DirToAdd = System.IO.Path.Combine(RelativeDir,
+                System.IO.Path.GetFileName(Subdir));
 
             using (ZipFile zip = new ZipFile(ZipFileToCreate))
             {
                 zip.AddDirectory(DirToAdd);
                 zip.Comment = "OVERWRITTEN";
                 // this will overwrite the existing zip file
-                
+
                 zip.Save();
             }
 
@@ -530,6 +528,160 @@ namespace Ionic.Utils.Zip.Tests.Basic
             }
         }
 
+
+        [TestMethod]
+        public void OneCharOverrideName()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "OneCharOverrideName.zip");
+            //_FilesToRemove.Add(ZipFileToCreate);
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            String CommentOnArchive = "BasicTests::OneCharOverrideName(): This archive override the name of a directory with a one-char name.";
+
+            int entries = 0;
+            String filename = null;
+            int subdirCount = _rnd.Next(4) + 4;
+
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            int fileCount = _rnd.Next(3) + 3;
+            for (int j = 0; j < fileCount; j++)
+            {
+                filename = System.IO.Path.Combine(Subdir, "file" + j + ".txt");
+                TestUtilities.CreateAndFillFileText(filename, _rnd.Next(12000) + 5000);
+                entries++;
+            }
+
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                zip.AddDirectory(Subdir, System.IO.Path.GetFileName(Subdir));
+                zip.Comment = CommentOnArchive;
+                zip.Save();
+            }
+
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entries),
+                    "The created Zip file has an unexpected number of entries.");
+        }
+
+
+        [TestMethod]
+        public void ForceNoCompressionAllEntries()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "ForceNoCompression.zip");
+            //_FilesToRemove.Add(ZipFileToCreate);
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            String CommentOnArchive = "BasicTests::ForceNoCompression(): This archive override the name of a directory with a one-char name.";
+
+            int entriesAdded = 0;
+            String filename = null;
+            int subdirCount = _rnd.Next(4) + 4;
+
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            int fileCount = _rnd.Next(3) + 3;
+            for (int j = 0; j < fileCount; j++)
+            {
+                filename = System.IO.Path.Combine(Subdir, "file" + j + ".txt");
+                TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
+                entriesAdded++;
+            }
+
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                zip.ForceNoCompression = true;
+                zip.AddDirectory(Subdir, System.IO.Path.GetFileName(Subdir));
+                zip.Comment = CommentOnArchive;
+                zip.Save();
+            }
+
+            int entriesFound = 0;
+            using (ZipFile zip = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (ZipEntry e in zip)
+                {
+                    if (!e.IsDirectory) entriesFound++;
+                    Assert.AreEqual<short>(e.CompressionMethod, 0, "Unexpected compression method on zipped entry.");
+                }
+            }
+            Assert.AreEqual<int>(entriesFound, entriesAdded,
+             "The created Zip file has an unexpected number of entries.");
+        }
+
+        [TestMethod]
+        public void ForceNoCompressionSomeEntries()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "ForceNoCompression.zip");
+            //_FilesToRemove.Add(ZipFileToCreate);
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            int entriesAdded = 0;
+            String filename = null;
+            int subdirCount = _rnd.Next(4) + 4;
+
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            int fileCount = _rnd.Next(3) + 3;
+            for (int j = 0; j < fileCount; j++)
+            {
+                if (_rnd.Next(2) == 0)
+                {
+                    filename = System.IO.Path.Combine(Subdir, "file" + j + ".txt");
+                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
+                }
+                else
+                {
+                    filename = System.IO.Path.Combine(Subdir, "file" + j + ".bin");
+                    TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(34000) + 5000);
+                }
+                entriesAdded++;
+            }
+
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                String[] filenames = System.IO.Directory.GetFiles("A");
+                foreach (String f in filenames)
+                {
+                    ZipEntry e= zip.AddFile(f, "");
+                    if (f.EndsWith(".bin"))
+                        e.CompressionMethod = 0x0;
+                }
+                zip.Comment = "Some of these files do not use compression.";
+                zip.Save();
+            }
+
+            int entriesFound = 0;
+            using (ZipFile zip = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (ZipEntry e in zip)
+                {
+                    if (!e.IsDirectory) entriesFound++;
+                    if (e.FileName.EndsWith(".txt"))
+                    Assert.AreEqual<short>(e.CompressionMethod, 0x08, "Unexpected compression method on zipped text file.");
+                    else
+                    Assert.AreEqual<short>(e.CompressionMethod, 0x00, "Unexpected compression method on zipped binary file.");
+                }
+            }
+            Assert.AreEqual<int>(entriesFound, entriesAdded,
+             "The created Zip file has an unexpected number of entries.");
+        }
+
+
+
+        /// using (ZipFile zip = new ZipFile(ZipFileToCreate))
+        /// {
+        ///   ZipEntry e1= zip.AddFile(@"c:\temp\Readme.txt");
+        ///   
+        ///   ZipEntry e2= zip.AddFile(@"c:\temp\StopThisTrain.mp3");
+        ///   e2.CompressionMethod = 0;
+        ///   
+        ///   zip.Save();
+        /// }
 
     }
 }
