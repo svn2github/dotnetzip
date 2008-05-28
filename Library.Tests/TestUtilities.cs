@@ -15,6 +15,7 @@ namespace Library.TestUtilities
         static TestUtilities()
         {
             _rnd = new System.Random();
+            LoremIpsumWords = LoremIpsum.Split(" ".ToCharArray(), System.StringSplitOptions.RemoveEmptyEntries);
         }
 
         #region Test Init and Cleanup
@@ -68,38 +69,51 @@ namespace Library.TestUtilities
         {
             int bytesRemaining = size;
 
-            string[] words = LoremIpsum.Split(" ".ToCharArray(), System.StringSplitOptions.RemoveEmptyEntries);
             // fill the file with text data
             using (System.IO.StreamWriter sw = System.IO.File.CreateText(Filename))
             {
                 do
                 {
                     // pick a word at random
-                    string selectedWord = words[_rnd.Next(words.Length)];
+                    string selectedWord = LoremIpsumWords[_rnd.Next(LoremIpsumWords.Length)];
                     sw.Write(selectedWord);
                     sw.Write(" ");
                     bytesRemaining -= (selectedWord.Length + 1);
                 } while (bytesRemaining > 0);
                 sw.Close();
             }
+        }
 
+        internal static void CreateAndFillFileText(string Filename, string Line, int size)
+        {
+            int bytesRemaining = size;
+            // fill the file by repeatedly writing out the same line
+            using (System.IO.StreamWriter sw = System.IO.File.CreateText(Filename))
+            {
+                do
+                {
+                    sw.WriteLine(Line);
+                    bytesRemaining -= (Line.Length + 1);
+                } while (bytesRemaining > 0);
+                sw.Close();
+            }
         }
 
         internal static void CreateAndFillFileBinary(string Filename, int size)
         {
             int bytesRemaining = size;
-                // fill with binary data
-                byte[] Buffer = new byte[2000];
-                using (System.IO.Stream fileStream = new System.IO.FileStream(Filename, System.IO.FileMode.Create, System.IO.FileAccess.Write))
+            // fill with binary data
+            byte[] Buffer = new byte[2000];
+            using (System.IO.Stream fileStream = new System.IO.FileStream(Filename, System.IO.FileMode.Create, System.IO.FileAccess.Write))
+            {
+                while (bytesRemaining > 0)
                 {
-                    while (bytesRemaining > 0)
-                    {
-                        int sizeOfChunkToWrite = (bytesRemaining > Buffer.Length) ? Buffer.Length : bytesRemaining;
-                        _rnd.NextBytes(Buffer);
-                        fileStream.Write(Buffer, 0, sizeOfChunkToWrite);
-                        bytesRemaining -= sizeOfChunkToWrite;
-                    }
+                    int sizeOfChunkToWrite = (bytesRemaining > Buffer.Length) ? Buffer.Length : bytesRemaining;
+                    _rnd.NextBytes(Buffer);
+                    fileStream.Write(Buffer, 0, sizeOfChunkToWrite);
+                    bytesRemaining -= sizeOfChunkToWrite;
                 }
+            }
         }
 
 
@@ -267,6 +281,10 @@ namespace Library.TestUtilities
 "wisi convallis mi, et accumsan magna elit laoreet sem. Nam leo est, " +
 "cursus ut, molestie ac, laoreet id, mauris. Suspendisse auctor nibh. " +
 "\n";
+
+        static string[] LoremIpsumWords;
+
+
  
 
     }

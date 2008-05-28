@@ -320,7 +320,6 @@ namespace Ionic.Utils.Zip.Tests.Error
 
             try
             {
-
                 // read the corrupted zip- this should fail
                 using (ZipFile zip = new ZipFile(ZipFileToCreate))
                 {
@@ -333,7 +332,6 @@ namespace Ionic.Utils.Zip.Tests.Error
                         e.ExtractWithPassword("unpack", passwords[j]);
                     }
                 }
-
             }
             catch (Exception exc1)
             {
