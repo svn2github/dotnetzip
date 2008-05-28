@@ -188,7 +188,7 @@ namespace Ionic.Utils.Zip.Tests.Password
                     zip[Path.GetFileName(filenames[j])].ExtractWithPassword("unpack", true, passwords[j]);
                     string newpath = Path.Combine(Path.Combine(TopLevelDir, "unpack"), filenames[j]);
                     string chk = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(newpath));
-                    Assert.AreEqual<string>(chk, checksums[j], "Checksums do not match.");
+                    Assert.AreEqual<string>(checksums[j], chk, "Checksums do not match.");
                 }
             }
         }
@@ -298,13 +298,13 @@ namespace Ionic.Utils.Zip.Tests.Password
                     zip[Path.GetFileName(filenames[j])].Extract("unpack", true);
                     newpath = Path.Combine(Path.Combine(TopLevelDir, "unpack"), filenames[j]);
                     chk = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(newpath));
-                    Assert.AreEqual<string>(chk, checksums[j], "Checksums do not match.");
+                    Assert.AreEqual<string>(checksums[j], chk, "Checksums do not match.");
                 }
 
                 zip[Path.GetFileName(fileX)].ExtractWithPassword("unpack", true, Password);
                 newpath = Path.Combine(Path.Combine(TopLevelDir, "unpack"), fileX);
                 chk = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(newpath));
-                Assert.AreEqual<string>(chk, checksumX, "Checksums for encrypted entry do not match.");
+                Assert.AreEqual<string>(checksumX, chk, "Checksums for encrypted entry do not match.");
             }
         }
 

@@ -398,8 +398,9 @@ namespace Ionic.Utils.Zip
                 ze._s.Seek(-4, System.IO.SeekOrigin.Current); // unread the signature
                 // Getting "not a ZipEntry signature" is not always wrong or an error. 
                 // This will happen after the last entry in a zipfile.  In that case, 
-                // we expect to read a ZipDirEntry signature.  Anything else is a surprise.
-                if (ZipDirEntry.IsNotValidSig(signature))
+                // we expect to read a ZipDirEntry signature (if a non-empty zip file) or 
+                // a ZipConstants.EndOfCentralDirectorySignature.  Anything else is a surprise, .
+                if (ZipDirEntry.IsNotValidSig(signature) && (signature != ZipConstants.EndOfCentralDirectorySignature))
                 {
                     throw new BadReadException(String.Format("  ZipEntry::Read(): Bad signature (0x{0:X8}) at position  0x{1:X8}", signature, ze._s.Position));
                 }

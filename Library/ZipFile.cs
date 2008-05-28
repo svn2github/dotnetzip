@@ -192,6 +192,7 @@ namespace Ionic.Utils.Zip
         }
 
 
+#if BRAIN_DEAD
         /// <summary>
         /// Gets or sets the flag that indicates whether the ZipFile should allow 
         /// updates to existing entries in the zip archive.
@@ -218,7 +219,6 @@ namespace Ionic.Utils.Zip
         /// <code>
         /// using (ZipFile zip = new ZipFile(ExistingZipFile))
         /// {
-        ///   zip.AllowUpdates = true;
         ///   zip.UpdateFile(@"c:\temp\Readme.txt", "");
         ///   zip.Comment = "This zip archive has been updated.";
         ///   zip.Save();
@@ -230,7 +230,7 @@ namespace Ionic.Utils.Zip
             get { return _AllowUpdates; }
             set { _AllowUpdates = value; }
         }
-
+#endif
 
         /// <summary>
         /// Gets or sets the name for the folder to store the temporary file
@@ -646,6 +646,7 @@ namespace Ionic.Utils.Zip
             // create a new zipfile
             _name = ZipFileName;
             _StatusMessageTextWriter = StatusMessageWriter;
+            _contentsChanged = true;
 
             if (System.IO.File.Exists(_name))
             {
@@ -870,14 +871,11 @@ namespace Ionic.Utils.Zip
         /// 
         /// <remarks>
         /// <para>
-        /// This method allows an application to update the content for a given filename in the zip archive.
+        /// This method allows an application to update the content for a given filename,
+	/// when that filename already exists in the zip archive.
         /// </para>
         /// </remarks>
         ///
-        /// <exception cref="System.InvalidOperationException">
-        /// Thrown if the  AllowUpdates property is false. 
-        /// </exception>
-        /// 
         /// <exception cref="System.ArgumentException">
         /// Thrown if a ZipEntry by the given filename does not exist in the ZipFile.
         /// </exception>
@@ -903,7 +901,7 @@ namespace Ionic.Utils.Zip
         /// </example>
         ///
         /// <param name="FileName">
-        /// The name of the file to add. It should refer to a file in the filesystem.  
+        /// The name of the file to update. It should refer to a file in the filesystem.  
         /// The name of the file may be a relative path or a fully-qualified path. 
         /// </param>
         ///
@@ -921,7 +919,7 @@ namespace Ionic.Utils.Zip
         /// 
         /// <remarks>
         /// <para>
-        /// This method allows an application to update the content for a given filename in the zip archive.
+        /// Call this method to update the content for a given filename, when the given filename already exists in the zip archive.
         /// </para>
         /// 
         /// <para>
@@ -932,20 +930,16 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// 
         /// <para>
-        /// This method may throw if the caller specifies a filename that does not exist in the archive.
+        /// This method will throw if the caller specifies a filename that does not exist in the archive.
         /// </para>
         /// </remarks>
-        ///
-        /// <exception cref="System.InvalidOperationException">
-        /// Thrown if the  AllowUpdates property is false. 
-        /// </exception>
         /// 
         /// <exception cref="System.ArgumentException">
         /// Thrown if a ZipEntry by the given filename does not exist in the ZipFile.
         /// </exception>
         ///
         /// <param name="FileName">
-        /// The name of the file to add. It should refer to a file in the filesystem.  
+        /// The name of the file to update. It should refer to a file in the filesystem.  
         /// The name of the file may be a relative path or a fully-qualified path. 
         /// </param>
         ///
@@ -960,11 +954,103 @@ namespace Ionic.Utils.Zip
         /// <returns>The ZipEntry corresponding to the File that was updated.</returns>
         public ZipEntry UpdateFile(string FileName, String DirectoryPathInArchive)
         {
-            if (!AllowUpdates)
-                throw new InvalidOperationException("This zip file cannot be updated. Try setting the AllowUpdates property?");
-
             // ideally this would be transactional!
             this.RemoveEntry(ZipEntry.NameInArchive(FileName, DirectoryPathInArchive));
+            return this.AddFile(FileName, DirectoryPathInArchive);
+        }
+
+
+
+        /// <summary>
+        /// Adds or Updates a File in a Zip file archive.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// This method adds a file to a zip archive, or, if the file already exists in the zip archive, 
+	/// this method Updates the content of that given filename in the zip archive.
+        /// </para>
+	///
+        /// <para>
+	/// Upon success, there is no way for the application to learn whether the file was added or updated. 
+        /// </para>
+	///
+        /// </remarks>
+        ///
+        /// <example>
+        /// This example shows how to Update an existing entry in a zipfile. 
+        /// <code>
+        /// using (ZipFile zip = new ZipFile())
+        /// {
+        ///   zip.AddOrUpdateFile(@"c:\temp\Readme.txt", "");
+        ///   zip.Comment = "This zip archive has been created.";
+        ///   zip.Save("Content.zip");
+        /// }
+        /// ...
+        /// using (ZipFile z = ZipFile.OpenForUpdate("Content.zip"))
+        /// {
+        ///   z.AddOrUpdateFile(@"c:\temp\Readme.txt", "");
+        ///   z.Comment = "This zip archive has been updated.";
+        ///   z.Save();
+        /// }
+        ///
+        /// </code>
+        /// </example>
+        ///
+        /// <param name="FileName">
+        /// The name of the file to add or update. It should refer to a file in the filesystem.  
+        /// The name of the file may be a relative path or a fully-qualified path. 
+        /// </param>
+        ///
+        /// <returns>The ZipEntry corresponding to the File that was added or updated.</returns>
+        public ZipEntry AddOrUpdateFile(string FileName)
+        {
+            return AddOrUpdateFile(FileName, null);
+        }
+
+
+
+        /// <summary>
+        /// Adds or Updates a File in a Zip file archive.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// This method adds a file to a zip archive, or, if the file already exists in the zip archive, 
+	/// this method Updates the content of that given filename in the zip archive.
+        /// </para>
+        /// 
+        /// <para>
+        /// This version of the method allows the caller to explicitly specify the 
+        /// directory path to be used in the archive.  The entry to be added or updated is found by 
+        /// using the specified directory path, combined with the basename of the specified 
+        /// filename. 
+        /// </para>
+        /// 
+        /// <para>
+	/// Upon success, there is no way for the application to learn whether the file was added or updated. 
+        /// </para>
+        /// </remarks>
+        /// 
+        /// <param name="FileName">
+        /// The name of the file to add or update. It should refer to a file in the filesystem.  
+        /// The name of the file may be a relative path or a fully-qualified path. 
+        /// </param>
+        ///
+        /// <param name="DirectoryPathInArchive">
+        /// Specifies a directory path to use to override any path in the FileName.
+        /// This path may, or may not, correspond to a real directory in the current filesystem.
+        /// If the files within the zip are later extracted, this is the path used for the extracted file. 
+        /// Passing null (nothing in VB) will use the path on the FileName, if any.  Passing the empty string ("")
+        /// will insert the item at the root path within the archive. 
+        /// </param>
+        ///
+        /// <returns>The ZipEntry corresponding to the File that was added or updated.</returns>
+        public ZipEntry AddOrUpdateFile(string FileName, String DirectoryPathInArchive)
+        {
+            // ideally this would all be transactional!
+   	    if (this[ZipEntry.NameInArchive(FileName, DirectoryPathInArchive)] != null)
+	      this.RemoveEntry(ZipEntry.NameInArchive(FileName, DirectoryPathInArchive));
             return this.AddFile(FileName, DirectoryPathInArchive);
         }
 
@@ -1127,14 +1213,15 @@ namespace Ionic.Utils.Zip
 
             if (Verbose) StatusMessageTextWriter.WriteLine("Saving....");
 
-            // write an entry in the zip for each file
-            foreach (ZipEntry e in _entries)
-            {
-                e.Write(WriteStream);
-            }
 
-            WriteCentralDirectoryStructure();
+                // write an entry in the zip for each file
+                foreach (ZipEntry e in _entries)
+                {
+                    e.Write(WriteStream);
+                }
 
+                WriteCentralDirectoryStructure();
+            
             // _temporaryFileName may remain null if we are writing to a stream
             if ((_temporaryFileName != null) && (_name != null))
             {
@@ -1219,7 +1306,10 @@ namespace Ionic.Utils.Zip
 
         private void WriteCentralDirectoryFooter(long StartOfCentralDirectory, long EndOfCentralDirectory)
         {
-            byte[] bytes = new byte[1024];
+            int bufferLength = 22;
+            if (Comment != null) bufferLength += Comment.Length ;
+            byte[] bytes = new byte[bufferLength];
+
             int i = 0;
             // signature
             bytes[i++] = (byte)(ZipConstants.EndOfCentralDirectorySignature & 0x000000FF);
@@ -1306,8 +1396,6 @@ namespace Ionic.Utils.Zip
         /// </param>
         /// 
         /// <overloads>If I am counting correctly, this method has 6 overloads.</overloads>
-        /// 
-        /// <seealso cref="Ionic.Utils.Zip.ZipFile.OpenForUpdate(string)"/>
         ///
         /// <returns>The instance read from the zip archive.</returns>
         /// 
@@ -1347,8 +1435,6 @@ namespace Ionic.Utils.Zip
         /// The <c>System.IO.TextWriter</c> to use for writing verbose status messages.
         /// </param>
         /// 
-        /// <seealso cref="Ionic.Utils.Zip.ZipFile.OpenForUpdate(string, System.IO.TextWriter)"/>
-        ///
         /// <returns>The instance read from the zip archive.</returns>
         /// 
         public static ZipFile Read(string ZipFileName, System.IO.TextWriter StatusMessageWriter)
@@ -1463,6 +1549,7 @@ namespace Ionic.Utils.Zip
         }
 
 
+#if COMPLICATED
         /// <summary>
         /// Reads an existing zip file archive and returns the instance.  The instance will allow 
         /// updates to existing entries in the zip. 
@@ -1560,7 +1647,7 @@ namespace Ionic.Utils.Zip
             zf._AllowUpdates = true;
             return zf;
         }
-
+#endif
 
         private static void ReadIntoInstance(ZipFile zf)
         {
@@ -1867,9 +1954,8 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// 
         /// <remarks>
-        /// The property is read-only, unless the AllowUpdates property on the ZipFile is true, in 
-        /// which case this property is read-write. When setting the value, the only legal value is null.
-        /// This is the same as calling <c>ZipFile.Remove()</c> with the filename.
+        /// This property is read-write. When setting the value, the only legal value is null.
+        /// Setting the value to null is equivalent to calling <c>ZipFile.Remove()</c> with the filename.
         /// </remarks>
         /// 
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.RemoveEntry(string)"/>
@@ -1901,8 +1987,6 @@ namespace Ionic.Utils.Zip
 
             set
             {
-                if (!AllowUpdates)
-                    throw new InvalidOperationException("This zip file cannot be updated. Try setting the AllowUpdates property?");
                 if (value != null)
                     throw new ArgumentException("You may not set this to a non-null ZipEntry value.");
                 RemoveEntry(FileName);
@@ -1956,17 +2040,9 @@ namespace Ionic.Utils.Zip
         /// 
         /// <remarks>
         /// <para>
-        /// This call will throw if the <c>AllowUpdates</c> property on the ZipFile is false. 
-        /// </para>
-        ///
-        /// <para>
         /// After calling <c>RemoveEntry()</c>, the application must call <c>Save()</c> to make the changes permanent.  
         /// </para>
         /// </remarks>
-        ///
-        /// <exception cref="System.InvalidOperationException">
-        /// Thrown if the ZipFile is not updatable, in other words if the AllowUpdates property is false.
-        /// </exception>
         ///
         /// <exception cref="System.ArgumentException">
         /// Thrown if the specified ZipEntry does not exist in the ZipFile.
@@ -1980,7 +2056,6 @@ namespace Ionic.Utils.Zip
         /// using (ZipFile zip = new ZipFile(ZipFileToRead))
         /// {
         ///   var EntriesToRemove = new List&lt;ZipEntry&gt;();
-        ///   zip.AllowUpdates = true;
         ///   foreach (ZipEntry e in zip)
         ///   {
         ///     if (e.LastModified &lt; Threshold)
@@ -2010,9 +2085,6 @@ namespace Ionic.Utils.Zip
         /// 
         public void RemoveEntry(ZipEntry entry)
         {
-            if (!AllowUpdates)
-                throw new InvalidOperationException("This zip file cannot be updated. Try setting the AllowUpdates property?");
-
             if (!_entries.Contains(entry))
                 throw new ArgumentException("The entry you specified does not exist in the zip archive.");
 
@@ -2082,9 +2154,6 @@ namespace Ionic.Utils.Zip
         /// 
         public void RemoveEntry(String FileName)
         {
-            if (!AllowUpdates)
-                throw new InvalidOperationException("This zip file cannot be updated. Try setting the AllowUpdates property?");
-
             ZipEntry e = this[FileName];
             if (e == null)
                 throw new ArgumentException("The entry you specified was not found in the zip archive.");
@@ -2191,7 +2260,6 @@ namespace Ionic.Utils.Zip
         private string _Password;
         private bool _fileAlreadyExists = false;
         private string _temporaryFileName = null;
-        private bool _AllowUpdates = false;
         private bool _contentsChanged = false;
         private String _TempFileFolder = ".";
         private bool _ReadStreamIsOurs = true;
