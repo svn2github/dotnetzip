@@ -872,7 +872,7 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// <para>
         /// This method allows an application to update the content for a given filename,
-	/// when that filename already exists in the zip archive.
+        /// when that filename already exists in the zip archive.
         /// </para>
         /// </remarks>
         ///
@@ -968,13 +968,13 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// <para>
         /// This method adds a file to a zip archive, or, if the file already exists in the zip archive, 
-	/// this method Updates the content of that given filename in the zip archive.
+        /// this method Updates the content of that given filename in the zip archive.
         /// </para>
-	///
+        ///
         /// <para>
-	/// Upon success, there is no way for the application to learn whether the file was added or updated. 
+        /// Upon success, there is no way for the application to learn whether the file was added or updated. 
         /// </para>
-	///
+        ///
         /// </remarks>
         ///
         /// <example>
@@ -1017,7 +1017,7 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// <para>
         /// This method adds a file to a zip archive, or, if the file already exists in the zip archive, 
-	/// this method Updates the content of that given filename in the zip archive.
+        /// this method Updates the content of that given filename in the zip archive.
         /// </para>
         /// 
         /// <para>
@@ -1028,7 +1028,7 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// 
         /// <para>
-	/// Upon success, there is no way for the application to learn whether the file was added or updated. 
+        /// Upon success, there is no way for the application to learn whether the file was added or updated. 
         /// </para>
         /// </remarks>
         /// 
@@ -1049,8 +1049,8 @@ namespace Ionic.Utils.Zip
         public ZipEntry AddOrUpdateFile(string FileName, String DirectoryPathInArchive)
         {
             // ideally this would all be transactional!
-   	    if (this[ZipEntry.NameInArchive(FileName, DirectoryPathInArchive)] != null)
-	      this.RemoveEntry(ZipEntry.NameInArchive(FileName, DirectoryPathInArchive));
+            if (this[ZipEntry.NameInArchive(FileName, DirectoryPathInArchive)] != null)
+                this.RemoveEntry(ZipEntry.NameInArchive(FileName, DirectoryPathInArchive));
             return this.AddFile(FileName, DirectoryPathInArchive);
         }
 
@@ -1214,14 +1214,14 @@ namespace Ionic.Utils.Zip
             if (Verbose) StatusMessageTextWriter.WriteLine("Saving....");
 
 
-                // write an entry in the zip for each file
-                foreach (ZipEntry e in _entries)
-                {
-                    e.Write(WriteStream);
-                }
+            // write an entry in the zip for each file
+            foreach (ZipEntry e in _entries)
+            {
+                e.Write(WriteStream);
+            }
 
-                WriteCentralDirectoryStructure();
-            
+            WriteCentralDirectoryStructure();
+
             // _temporaryFileName may remain null if we are writing to a stream
             if ((_temporaryFileName != null) && (_name != null))
             {
@@ -1307,7 +1307,7 @@ namespace Ionic.Utils.Zip
         private void WriteCentralDirectoryFooter(long StartOfCentralDirectory, long EndOfCentralDirectory)
         {
             int bufferLength = 22;
-            if (Comment != null) bufferLength += Comment.Length ;
+            if (Comment != null) bufferLength += Comment.Length;
             byte[] bytes = new byte[bufferLength];
 
             int i = 0;

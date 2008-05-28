@@ -151,70 +151,6 @@ namespace Ionic.Utils.Zip.Tests.Update
 
 
         [TestMethod]
-        public void UpdateZip_UpdateFile()
-        {
-            // select the name of the zip file
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "UpdateZip_UpdateFile.zip");
-            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-
-            // create the subdirectory
-            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
-            System.IO.Directory.CreateDirectory(Subdir);
-
-            // create the files
-            int fileCount = _rnd.Next(23) + 24;
-            string filename = null;
-            int entriesAdded = 0;
-            for (int j = 0; j < fileCount; j++)
-            {
-                filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
-                TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
-                entriesAdded++;
-            }
-
-            // create the zip archive
-            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
-            using (ZipFile zip1 = new ZipFile())
-            {
-                String[] filenames = System.IO.Directory.GetFiles("A");
-                foreach (String f in filenames)
-                    zip1.AddFile(f, "");
-                zip1.Comment = "UpdateTests::UpdateZip_UpdateFile(): This archive will be updated.";
-                zip1.Save(ZipFileToCreate);
-            }
-
-            // Verify the files are in the zip
-            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entriesAdded),
-                "Zoiks! The Zip file has the wrong number of entries.");
-
-            // create and file a new file with text data
-            int FileToUpdate = _rnd.Next(fileCount);
-            filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.txt", FileToUpdate));
-            string repeatedLine = String.Format("**UPDATED** This file ({0}) has been updated at {1}.",
-                        System.IO.Path.GetFileName(filename),
-                        System.DateTime.Now.ToString("G"));
-            TestUtilities.CreateAndFillFileText(filename, repeatedLine, _rnd.Next(21567) + 23872);
-
-            // update that file in the zip archive
-            using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
-            {
-                zip2.UpdateFile(filename, "");
-                zip2.Comment = "UpdateTests::UpdateZip_UpdateFile(): This archive has been updated.";
-                zip2.Save();
-            }
-
-            // verify the content of the updated file. 
-            var sr = new System.IO.StreamReader(filename);
-            string sLine = sr.ReadLine();
-            sr.Close();
-
-            Assert.AreEqual<string>(repeatedLine, sLine,
-                    "The content of the Updated file in the zip archive is incorrect.");
-        }
-
-
-
-        [TestMethod]
         public void UpdateZip_RemoveEntry_ByLastModTime()
         {
             // select the name of the zip file
@@ -755,7 +691,7 @@ namespace Ionic.Utils.Zip.Tests.Update
                 foreach (String f in filenames)
                     zip.AddFile(f, "");
 
-                zip.Comment = "UpdateTests::UpdateZip_UpdateFile_NewEntriesWithPassword(): This archive will be updated.";
+                zip.Comment = "UpdateTests::UpdateZip_AddFile_NewEntriesWithPassword(): This archive will be updated.";
                 zip.Save(ZipFileToCreate);
             }
 
@@ -967,6 +903,264 @@ namespace Ionic.Utils.Zip.Tests.Update
 
 
 
+
+        [TestMethod]
+        public void UpdateZip_UpdateFile_NoPasswords()
+        {
+            string filename = null;
+            int entriesAdded = 0;
+            int j = 0;
+            string repeatedLine = null;
+
+            // select the name of the zip file
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "UpdateZip_UpdateFile_NoPasswords.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            // create the subdirectory
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            // create the files
+            int NumFilesToCreate = _rnd.Next(23) + 14;
+            for (j = 0; j < NumFilesToCreate; j++)
+            {
+                filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
+                repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
+                    System.IO.Path.GetFileName(filename));
+                TestUtilities.CreateAndFillFileText(filename, repeatedLine, _rnd.Next(34000) + 5000);
+                entriesAdded++;
+            }
+
+            // create the zip archive
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                String[] filenames = System.IO.Directory.GetFiles("A");
+                foreach (String f in filenames)
+                    zip1.AddFile(f, "");
+                zip1.Comment = "UpdateTests::UpdateZip_UpdateFile_NoPasswords(): This archive will be updated.";
+                zip1.Save(ZipFileToCreate);
+            }
+
+            // Verify the number of files in the zip
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entriesAdded),
+                "Zoiks! The Zip file has the wrong number of entries.");
+
+
+
+            // create another subdirectory
+            Subdir = System.IO.Path.Combine(TopLevelDir, "updates");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            // Create a bunch of new files, in that new subdirectory
+            var UpdatedFiles = new List<string>();
+            int NumToUpdate = _rnd.Next(NumFilesToCreate - 4);
+            for (j = 0; j < NumToUpdate; j++)
+            {
+                // select a new, uniquely named file to create
+                do
+                {
+                    filename = String.Format("file{0:D3}.txt", _rnd.Next(NumFilesToCreate));
+                } while (UpdatedFiles.Contains(filename));
+                // create a new file, and fill that new file with text data
+                repeatedLine = String.Format("**UPDATED** This file ({0}) has been updated on {1}.",
+                    filename, System.DateTime.Now.ToString("yyyy-MM-dd"));
+                TestUtilities.CreateAndFillFileText(System.IO.Path.Combine(Subdir, filename), repeatedLine, _rnd.Next(34000) + 5000);
+                UpdatedFiles.Add(filename);
+            }
+
+            // update those files in the zip archive
+            using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (string s in UpdatedFiles)
+                    zip2.UpdateFile(System.IO.Path.Combine(Subdir, s), "");
+                zip2.Comment = "UpdateTests::UpdateZip_UpdateFile_OldEntriesWithPassword(): This archive has been updated.";
+                zip2.Save();
+            }
+
+            // extract those files and verify their contents
+            using (ZipFile zip3 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (string s in UpdatedFiles)
+                {
+                    repeatedLine = String.Format("**UPDATED** This file ({0}) has been updated on {1}.",
+                        s, System.DateTime.Now.ToString("yyyy-MM-dd"));
+                    zip3[s].Extract("extract");
+
+                    // verify the content of the updated file. 
+                    var sr = new System.IO.StreamReader(System.IO.Path.Combine("extract", s));
+                    string sLine = sr.ReadLine();
+                    sr.Close();
+
+                    Assert.AreEqual<string>(repeatedLine, sLine,
+                            String.Format("The content of the Updated file ({0}) in the zip archive is incorrect.", s));
+                }
+            }
+
+            // extract all the other files and verify their contents
+            using (ZipFile zip4 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (string s1 in zip4.EntryFilenames)
+                {
+                    bool NotUpdated = true;
+                    foreach (string s2 in UpdatedFiles)
+                    {
+                        if (s2 == s1) NotUpdated = false;
+                    }
+                    if (NotUpdated)
+                    {
+                        zip4[s1].Extract("extract");
+                        repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
+                            s1);
+
+                        // verify the content of the updated file. 
+                        var sr = new System.IO.StreamReader(System.IO.Path.Combine("extract", s1));
+                        string sLine = sr.ReadLine();
+                        sr.Close();
+
+                        Assert.AreEqual<string>(repeatedLine, sLine,
+                                String.Format("The content of the originally added file ({0}) in the zip archive is incorrect.", s1));
+                    }
+                }
+            }
+        }
+
+
+        [TestMethod]
+        public void UpdateZip_AddOrUpdateFile_NoPasswords()
+        {
+            string filename = null;
+            int entriesAdded = 0;
+            int j = 0;
+            string repeatedLine = null;
+
+            // select the name of the zip file
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "UpdateZip_AddOrUpdateFile_NoPasswords.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            // create the subdirectory
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            // create the files
+            int NumFilesToCreate = _rnd.Next(23) + 14;
+            for (j = 0; j < NumFilesToCreate; j++)
+            {
+                filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
+                repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
+                    System.IO.Path.GetFileName(filename));
+                TestUtilities.CreateAndFillFileText(filename, repeatedLine, _rnd.Next(34000) + 5000);
+                entriesAdded++;
+            }
+
+            // create the zip archive
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                String[] filenames = System.IO.Directory.GetFiles("A");
+                foreach (String f in filenames)
+                    zip1.AddOrUpdateFile(f, "");
+                zip1.Comment = "UpdateTests::UpdateZip_AddOrUpdateFile_NoPasswords(): This archive will be updated.";
+                zip1.Save(ZipFileToCreate);
+            }
+
+            // Verify the number of files in the zip
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entriesAdded),
+                "Zoiks! The Zip file has the wrong number of entries.");
+
+
+            // create another subdirectory
+            Subdir = System.IO.Path.Combine(TopLevelDir, "updates");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            // Create a bunch of new files, in that new subdirectory
+            var UpdatedFiles = new List<string>();
+            int NumToUpdate = _rnd.Next(NumFilesToCreate - 4);
+            for (j = 0; j < NumToUpdate; j++)
+            {
+                // select a new, uniquely named file to create
+                do
+                {
+                    filename = String.Format("file{0:D3}.txt", _rnd.Next(NumFilesToCreate));
+                } while (UpdatedFiles.Contains(filename));
+                // create a new file, and fill that new file with text data
+                repeatedLine = String.Format("**UPDATED** This file ({0}) has been updated on {1}.",
+                    filename, System.DateTime.Now.ToString("yyyy-MM-dd"));
+                TestUtilities.CreateAndFillFileText(System.IO.Path.Combine(Subdir, filename), repeatedLine, _rnd.Next(34000) + 5000);
+                UpdatedFiles.Add(filename);
+            }
+
+            // update those files in the zip archive
+            using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (string s in UpdatedFiles)
+                    zip2.AddOrUpdateFile(System.IO.Path.Combine(Subdir, s), "");
+                zip2.Comment = "UpdateTests::UpdateZip_AddOrUpdateFile_NoPasswords(): This archive has been updated.";
+                zip2.Save();
+            }
+
+            // Verify the number of files in the zip
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entriesAdded),
+                "Zoiks! The Zip file has the wrong number of entries.");
+
+            // update those files AGAIN in the zip archive
+            using (ZipFile zip3 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (string s in UpdatedFiles)
+                    zip3.AddOrUpdateFile(System.IO.Path.Combine(Subdir, s), "");
+                zip3.Comment = "UpdateTests::UpdateZip_AddOrUpdateFile_NoPasswords(): This archive has been re-updated.";
+                zip3.Save();
+            }
+
+            // extract the updated files and verify their contents
+            using (ZipFile zip4 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (string s in UpdatedFiles)
+                {
+                    repeatedLine = String.Format("**UPDATED** This file ({0}) has been updated on {1}.",
+                        s, System.DateTime.Now.ToString("yyyy-MM-dd"));
+                    zip4[s].Extract("extract");
+
+                    // verify the content of the updated file. 
+                    var sr = new System.IO.StreamReader(System.IO.Path.Combine("extract", s));
+                    string sLine = sr.ReadLine();
+                    sr.Close();
+
+                    Assert.AreEqual<string>(repeatedLine, sLine,
+                            String.Format("The content of the Updated file ({0}) in the zip archive is incorrect.", s));
+                }
+            }
+
+            // extract all the other files and verify their contents
+            using (ZipFile zip5 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (string s1 in zip5.EntryFilenames)
+                {
+                    bool NotUpdated = true;
+                    foreach (string s2 in UpdatedFiles)
+                    {
+                        if (s2 == s1) NotUpdated = false;
+                    }
+                    if (NotUpdated)
+                    {
+                        zip5[s1].Extract("extract");
+                        repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
+                            s1);
+
+                        // verify the content of the updated file. 
+                        var sr = new System.IO.StreamReader(System.IO.Path.Combine("extract", s1));
+                        string sLine = sr.ReadLine();
+                        sr.Close();
+
+                        Assert.AreEqual<string>(repeatedLine, sLine,
+                                String.Format("The content of the originally added file ({0}) in the zip archive is incorrect.", s1));
+                    }
+                }
+            }
+        }
+
+
+
         [TestMethod]
         public void UpdateZip_UpdateFile_OldEntriesWithPassword()
         {
@@ -992,7 +1186,6 @@ namespace Ionic.Utils.Zip.Tests.Update
                 repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                     System.IO.Path.GetFileName(filename));
                 TestUtilities.CreateAndFillFileText(filename, repeatedLine, _rnd.Next(34000) + 5000);
-
                 entriesAdded++;
             }
 
