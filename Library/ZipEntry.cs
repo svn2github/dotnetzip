@@ -425,7 +425,7 @@ namespace Ionic.Utils.Zip
 
             if ((ze._BitField & 0x0008) != 0x0008)
             {
-                ze._Crc32 = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+                ze._Crc32 = (UInt32)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
                 ze._CompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
                 ze._UncompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
             }
@@ -480,7 +480,7 @@ namespace Ionic.Utils.Zip
                 if (n != 12) return false;
                 bytesRead += n;
                 i = 0;
-                ze._Crc32 = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+                ze._Crc32 = (UInt32) (block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
                 ze._CompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
                 ze._UncompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
 
@@ -999,11 +999,19 @@ namespace Ionic.Utils.Zip
             else
                 output = outstream;
 
-            _ExtractOne(output, cipher);
 
-            // somewhere in here we want to compute and validate the CRC. 
+            UInt32 ActualCrc32= _ExtractOne(output, cipher);
 
+	    // Validate CRC32
+	    if (ActualCrc32 != _Crc32)
+	    {
+	      //throw new BadCrcException("CRC error: the file being extracted appears to be corrupted.");
+	      throw new BadCrcException("CRC error: the file being extracted appears to be corrupted. " +
+					String.Format("Expected 0x{0:X8}, actual 0x{1:X8}", _Crc32, ActualCrc32));
+	      //String.Format("CRC error: expected 0x{0:X8}, actual 0x{1:X8}", _Crc32, ActualCrc32);
+	    }
 
+	    
             if (TargetFile != null)
             {
                 output.Close();
@@ -1025,12 +1033,15 @@ namespace Ionic.Utils.Zip
         }
 
 
-        private void _ExtractOne(System.IO.Stream output, ZipCrypto cipher)
+        private UInt32 _ExtractOne(System.IO.Stream output, ZipCrypto cipher)
         {
             System.IO.Stream input = this._s;
 
             // seek to the beginning of the file data in the stream
             input.Seek(this.__FileDataPosition, System.IO.SeekOrigin.Begin);
+
+            // to validate the CRC. 
+	    UInt32 CrcResult = 0;
 
             byte[] bytes = new byte[READBLOCK_SIZE];
 
@@ -1039,9 +1050,9 @@ namespace Ionic.Utils.Zip
             {
                 case 0x08:  // deflate
                     // read, maybe decrypt, decompress, then write
-                    var ins = (Encryption == EncryptionAlgorithm.PkzipWeak) ?
+                    var instream = (Encryption == EncryptionAlgorithm.PkzipWeak) ?
                                   new ZipCipherInputStream(input, cipher) : input;
-                    using (var ds = new DeflateStream(ins, CompressionMode.Decompress, true))
+		  using (var ds = new CrcCalculatorStream(new DeflateStream(instream, CompressionMode.Decompress, true)))
                     {
                         LeftToRead = this.UncompressedSize;
                         while (LeftToRead > 0)
@@ -1052,6 +1063,8 @@ namespace Ionic.Utils.Zip
                             output.Write(bytes, 0, n);
                             LeftToRead -= n;
                         }
+
+			CrcResult= ds.Crc32;
                     }
                     break;
 
@@ -1059,26 +1072,31 @@ namespace Ionic.Utils.Zip
                 case 0x00:
                     // read, maybe decrypt, and then write
 
-                    var ins2 = (Encryption == EncryptionAlgorithm.PkzipWeak) ?
+                    var temp= (Encryption == EncryptionAlgorithm.PkzipWeak) ?
                         new ZipCipherInputStream(input, cipher) : input;
 
+		  var instream2= new CrcCalculatorStream(temp);
                     LeftToRead = this._CompressedFileDataSize;
                     while (LeftToRead > 0)
                     {
                         int len = (LeftToRead > bytes.Length) ? bytes.Length : LeftToRead;
 
                         // read
-                        int n = ins2.Read(bytes, 0, len);
+                        int n = instream2.Read(bytes, 0, len);
                         _CheckRead(n);
 
                         // write
                         output.Write(bytes, 0, n);
                         LeftToRead -= n;
                     }
-                    break;
+			CrcResult= instream2.Crc32;
 
+                    break;
             }
+
+	    return CrcResult;
         }
+
 
         internal void MarkAsDirectory()
         {
@@ -1225,7 +1243,7 @@ namespace Ionic.Utils.Zip
                 {
                     // If at this point, _FileData is non-null, that means we've read this
                     // entry from an existing zip archive. We must just use the existing
-                    // file data, CompressionMEthod, CRC, compressed size, uncompressed size, 
+                    // file data, CompressionMethod, CRC, compressed size, uncompressed size, 
                     // etc over to the new (updated) archive.
                 }
                 else
@@ -1269,14 +1287,14 @@ namespace Ionic.Utils.Zip
                             {
                                 _inputStream.Position = 0;
                                 UInt32 crc = crc32.GetCrc32AndCopy(_inputStream, CompressedStream);
-                                _Crc32 = (Int32)crc;
+                                _Crc32 = crc;
                             }
                             else
                             {
                                 using (System.IO.Stream input = System.IO.File.OpenRead(LocalFileName))
                                 {
                                     UInt32 crc = crc32.GetCrc32AndCopy(input, CompressedStream);
-                                    _Crc32 = (Int32)crc;
+                                    _Crc32 = crc;
                                 }
                             }
                             CompressedStream.Close();  // to get the footer bytes written to the underlying stream
@@ -1307,7 +1325,7 @@ namespace Ionic.Utils.Zip
                             {
                                 _inputStream.Position = 0;
                                 UInt32 crc = crc32.GetCrc32AndCopy(_inputStream, _UnderlyingMemoryStream);
-                                _Crc32 = (Int32)crc;
+                                _Crc32 = crc;
                             }
                             else
                             {
@@ -1315,7 +1333,7 @@ namespace Ionic.Utils.Zip
                                 using (System.IO.Stream input = System.IO.File.OpenRead(LocalFileName))
                                 {
                                     UInt32 crc = crc32.GetCrc32AndCopy(input, _UnderlyingMemoryStream);
-                                    _Crc32 = (Int32)crc;
+                                    _Crc32 = crc;
                                 }
                             }
                             _UncompressedSize = crc32.TotalBytesRead;
@@ -1554,7 +1572,7 @@ namespace Ionic.Utils.Zip
         private Int32 _CompressedFileDataSize; // CompressedSize less 12 bytes for the encryption header, if any
         private Int32 _UncompressedSize;
         private Int32 _LastModDateTime;
-        private Int32 _Crc32;
+        private UInt32 _Crc32;
         private byte[] _Extra;
 
         private bool _OverwriteOnExtract = false;

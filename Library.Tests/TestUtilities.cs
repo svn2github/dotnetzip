@@ -9,7 +9,6 @@ namespace Library.TestUtilities
 {
     class TestUtilities
     {
-
         static System.Random _rnd;
 
         static TestUtilities()

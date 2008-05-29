@@ -978,20 +978,22 @@ namespace Ionic.Utils.Zip
         /// </remarks>
         ///
         /// <example>
-        /// This example shows how to Update an existing entry in a zipfile. 
+        /// This example shows how to Update an existing entry in a zipfile. The first call to 
+	/// AddOrUpdateFile adds the file to the newly-created zip archive.  The second 
+	/// call to AddOrUpdateFile updates the content for that file in the zip archive.
         /// <code>
-        /// using (ZipFile zip = new ZipFile())
+        /// using (ZipFile zip1 = new ZipFile())
         /// {
-        ///   zip.AddOrUpdateFile(@"c:\temp\Readme.txt", "");
-        ///   zip.Comment = "This zip archive has been created.";
-        ///   zip.Save("Content.zip");
+        ///   zip1.AddOrUpdateFile(@"c:\temp\Readme.txt", "");
+        ///   zip1.Comment = "This zip archive has been created.";
+        ///   zip1.Save("Content.zip");
         /// }
         /// ...
-        /// using (ZipFile z = ZipFile.OpenForUpdate("Content.zip"))
+        /// using (ZipFile zip2 = ZipFile.OpenForUpdate("Content.zip"))
         /// {
-        ///   z.AddOrUpdateFile(@"c:\temp\Readme.txt", "");
-        ///   z.Comment = "This zip archive has been updated.";
-        ///   z.Save();
+        ///   zip2.AddOrUpdateFile(@"c:\temp\Readme.txt", "");
+        ///   zip2.Comment = "This zip archive has been updated.";
+        ///   zip2.Save();
         /// }
         ///
         /// </code>

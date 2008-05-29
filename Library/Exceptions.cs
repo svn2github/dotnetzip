@@ -44,6 +44,25 @@ namespace Ionic.Utils.Zip
         { }
     }
 
+    /// <summary>
+    /// Issued when an CRC check fails upon extracting an entry from a zip archive.
+    /// </summary>
+    public class BadCrcException : System.Exception
+    {
+        /// <summary>
+        /// Default ctor.
+        /// </summary>
+        public BadCrcException() { }
+
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="message">The message in the exception.</param>
+        public BadCrcException(String message)
+            : base(message)
+        { }
+    }
+
     
     /// <summary>
     /// Indicates that an operation was attempted on a ZipFile which was not possible

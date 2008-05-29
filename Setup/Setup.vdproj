@@ -149,7 +149,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Utils.Zip, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Utils.Zip, Version=1.5.0.3, Culture=neutral, PublicKeyToken=c551e179877da246, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_C060BD63BAE174847120EBBA72BFED6E"
@@ -226,19 +226,20 @@
         "MsiBootstrapper"
         {
         "LangId" = "3:1033"
+        "RequiresElevation" = "11:FALSE"
         }
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:.NET Zip Library & Utilities"
-        "ProductCode" = "8:{5BB7761F-51AE-4E8D-B658-1FD92CAE5032}"
-        "PackageCode" = "8:{CB88BAEC-FC60-402D-BA86-F8E325A5C088}"
+        "ProductCode" = "8:{8D31C2AE-583D-4FD5-946B-290AE189A0E7}"
+        "PackageCode" = "8:{D7464FEF-0682-4F0A-8725-685FDF55CF69}"
         "UpgradeCode" = "8:{BEF05388-A74D-4383-BD87-61940DF83E20}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.0"
+        "ProductVersion" = "8:1.5"
         "Manufacturer" = "8:Microsoft"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -806,9 +807,6 @@
                 {
                 }
             }
-        }
-        "VJSharpPlugin"
-        {
         }
     }
 }
