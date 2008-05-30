@@ -35,6 +35,17 @@ namespace Ionic.Utils.Zip
           return dtRounded;
       }
 
+      /// <summary>
+      /// Utility routine for transforming path names. 
+      /// </summary>
+      /// <param name="pathname">source path.</param>
+      /// <returns>transformed path</returns>
+      public static string TrimVolumeAndSwapSlashes(string pathname)
+      {
+          return (((pathname[1] == ':') && (pathname[2] == '\\')) ? pathname.Substring(3) : pathname)
+              .Replace('\\', '/');
+      }
+
         internal static byte[] AsciiStringToByteArray(string data)
         {
             byte[] a = System.Text.Encoding.ASCII.GetBytes(data);

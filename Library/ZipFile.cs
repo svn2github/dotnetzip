@@ -488,7 +488,7 @@ namespace Ionic.Utils.Zip
         ///
         /// <para>
         /// Typically an application writing a zip archive will call this constructor,
-        /// passing the name of a file that does not exist, then add directories or files to
+        /// passing the name of a file that does not (yet) exist, then add directories or files to
         /// the ZipFile via AddDirectory or AddFile, and then write the zip archive to the
         /// disk by calling <c>Save()</c>. The file is not actually written to the disk until
         /// the application calls <c>ZipFile.Save()</c> .
@@ -979,8 +979,8 @@ namespace Ionic.Utils.Zip
         ///
         /// <example>
         /// This example shows how to Update an existing entry in a zipfile. The first call to 
-	/// AddOrUpdateFile adds the file to the newly-created zip archive.  The second 
-	/// call to AddOrUpdateFile updates the content for that file in the zip archive.
+        /// AddOrUpdateFile adds the file to the newly-created zip archive.  The second 
+        /// call to AddOrUpdateFile updates the content for that file in the zip archive.
         /// <code>
         /// using (ZipFile zip1 = new ZipFile())
         /// {
@@ -1010,6 +1010,118 @@ namespace Ionic.Utils.Zip
             return AddOrUpdateFile(FileName, null);
         }
 
+
+        /// <summary>
+        /// Add or Update a File or Directory.  This is useful when the application is not sure or does not 
+        /// care if the entries in the existing zip archive already exist.  
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This version of the method allows the caller to explicitly specify the 
+        /// directory path to be used for the item being added to the archive.  The entry or entries 
+        /// that are added or updated will use the specified <c>DirectoryPathInArchive</c>. Extracting
+        /// the entry from the archive will result in a file stored in that directory path. 
+        /// </para>
+        /// </remarks>
+        /// <param name="ItemName">The path for the File or Directory to be added or updated.</param>
+        /// <param name="DirectoryPathInArchive">
+        /// Specifies a directory path to use to override any path in the ItemName.
+        /// This path may, or may not, correspond to a real directory in the current filesystem.
+        /// If the files within the zip are later extracted, this is the path used for the extracted file. 
+        /// Passing null (nothing in VB) will use the path on the FileName, if any.  Passing the empty string ("")
+        /// will insert the item at the root path within the archive. 
+        /// </param>
+        public void AddOrUpdateItem(string ItemName, string DirectoryPathInArchive)
+        {
+            if (System.IO.File.Exists(ItemName))
+                AddOrUpdateFile(ItemName, DirectoryPathInArchive);
+
+            else if (System.IO.Directory.Exists(ItemName))
+                AddOrUpdateDirectory(ItemName, DirectoryPathInArchive);
+
+            else
+                throw new System.IO.FileNotFoundException(String.Format("That file or directory ({0}) does not exist!", ItemName));
+        }
+
+
+        /// <summary>
+        /// Add or Update a File or Directory in the zip archive. This is useful when the application is not sure or does not 
+        /// care if the entries in the existing zip archive already exist.  
+        /// </summary>
+        /// <param name="ItemName">the path to the file or directory to be added or updated.</param>
+        public void AddOrUpdateItem(string ItemName)
+        {
+            AddOrUpdateItem(ItemName, null);
+        }
+
+
+        /// <summary>
+        /// Update a directory in the Zip archive.  
+        /// </summary>
+        /// <param name="DirectoryName">The directory to be updated</param>
+        public void UpdateDirectory(string DirectoryName)
+        {
+            UpdateDirectory(DirectoryName, null);
+        }
+
+
+
+        /// <summary>
+        /// Update a directory in the Zip archive.  
+        /// </summary>
+        /// <param name="DirectoryName">The directory to be updated</param>
+        /// <param name="DirectoryPathInArchive">the path in the zip archive to insert the entries.</param>
+        public void UpdateDirectory(string DirectoryName, String DirectoryPathInArchive)
+        {
+            // ideally this would be transactional!
+            var key = ZipEntry.NameInArchive(DirectoryName, DirectoryPathInArchive);
+            if (this[key] != null)
+                this.RemoveEntry(key);
+            //this.AddDirectory(DirectoryName, DirectoryPathInArchive);
+            this.AddOrUpdateDirectoryImpl(DirectoryName, DirectoryPathInArchive, AddOrUpdateAction.AddOrUpdate);
+        }
+
+
+
+        /// <summary>
+        /// Add or Update a Directory in a zip archive.
+        /// </summary>
+        /// <remarks>
+        /// If the specified directory does not exist in the archive, then this method is equivalent to
+        /// calling AddDirectory().  If the specified directory already exists in the archive, then this 
+        /// method updates any existing entries, and adds any new entries. Any entries that are in the 
+        /// zip archive but not in the specified directory, are left alone.  In other words, the contents of 
+        /// the zip file is a union of the previous contents and the new files.
+        /// </remarks>
+        /// <param name="DirectoryName"></param>
+        public void AddOrUpdateDirectory(string DirectoryName)
+        {
+            AddOrUpdateDirectoryImpl(DirectoryName, null, AddOrUpdateAction.AddOrUpdate);
+        }
+
+        /// <summary>
+        /// Add or Update a directory in the zip archive.  If the directory has already been added to the archive,
+        /// its contents are updated.  If not, then the directory is added.
+        /// </summary>
+        /// <remarks>
+        /// If the specified directory does not exist in the archive, then this method is equivalent to
+        /// calling AddDirectory().  If the specified directory already exists in the archive, then this 
+        /// method updates any existing entries, and adds any new entries. Any entries that are in the 
+        /// zip archive but not in the specified directory, are left alone.  In other words, the contents of 
+        /// the zip file is a union of the previous contents and the new files.
+        /// </remarks>
+        /// <param name="DirectoryName">The directory to be added or updated.</param>
+        /// <param name="DirectoryPathInArchive">
+        /// Specifies a directory path to use to override any path in the ItemName.
+        /// This path may, or may not, correspond to a real directory in the current filesystem.
+        /// If the files within the zip are later extracted, this is the path used for the extracted file. 
+        /// Passing null (nothing in VB) will use the path on the FileName, if any.  Passing the empty string ("")
+        /// will insert the item at the root path within the archive. 
+        /// </param>
+        public void AddOrUpdateDirectory(string DirectoryName, string DirectoryPathInArchive)
+        {
+            AddOrUpdateDirectoryImpl(DirectoryName, DirectoryPathInArchive, AddOrUpdateAction.AddOrUpdate);
+        }
 
 
         /// <summary>
@@ -1051,8 +1163,9 @@ namespace Ionic.Utils.Zip
         public ZipEntry AddOrUpdateFile(string FileName, String DirectoryPathInArchive)
         {
             // ideally this would all be transactional!
-            if (this[ZipEntry.NameInArchive(FileName, DirectoryPathInArchive)] != null)
-                this.RemoveEntry(ZipEntry.NameInArchive(FileName, DirectoryPathInArchive));
+            var key = ZipEntry.NameInArchive(FileName, DirectoryPathInArchive);
+            if (this[key] != null)
+                this.RemoveEntry(key);
             return this.AddFile(FileName, DirectoryPathInArchive);
         }
 
@@ -1092,10 +1205,10 @@ namespace Ionic.Utils.Zip
             foreach (ZipEntry ze2 in _entries)
             {
                 if (_Debug) Console.WriteLine("Comparing {0} to {1}...", ze1.FileName, ze2.FileName);
-                if (ze1.FileName == ze2.FileName)
+
+                if (Shared.TrimVolumeAndSwapSlashes(ze1.FileName) == ze2.FileName)
                     throw new ArgumentException(String.Format("The entry '{0}' already exists in the zip archive.", ze1.FileName));
             }
-
         }
 
         /// <summary>
@@ -1140,15 +1253,26 @@ namespace Ionic.Utils.Zip
         /// will insert the item at the root path within the archive. 
         /// </param>
         /// 
-        public void AddDirectory(string DirectoryName, String DirectoryPathInArchive)
+        public void AddDirectory(string DirectoryName, string DirectoryPathInArchive)
         {
-            if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", DirectoryName);
+            AddOrUpdateDirectoryImpl(DirectoryName, DirectoryPathInArchive, AddOrUpdateAction.AddOnly);
+        }
+
+
+
+        private void AddOrUpdateDirectoryImpl(string DirectoryName, string DirectoryPathInArchive, AddOrUpdateAction Action)
+        {
+            if (Verbose) StatusMessageTextWriter.WriteLine("{0} {1}...",
+                    (Action == AddOrUpdateAction.AddOnly) ? "adding" : "Adding or updating", DirectoryName);
 
             int filesAdded = 0;
             String[] filenames = System.IO.Directory.GetFiles(DirectoryName);
             foreach (String filename in filenames)
             {
-                AddFile(filename, DirectoryPathInArchive);
+                if (Action == AddOrUpdateAction.AddOnly)
+                    AddFile(filename, DirectoryPathInArchive);
+                else
+                    AddOrUpdateFile(filename, DirectoryPathInArchive);
                 filesAdded++;
             }
 
@@ -1162,7 +1286,15 @@ namespace Ionic.Utils.Zip
                 ze._Source = EntrySource.Filesystem;
                 ze.MarkAsDirectory();
                 //if (Verbose) Output.WriteLine("adding {0}...", dirName);
-                InsureUniqueEntry(ze);
+
+                if (Action == AddOrUpdateAction.AddOnly)
+                    InsureUniqueEntry(ze);
+                else
+                {
+                    ZipEntry e = this[ze.FileName];
+                    if (e != null)
+                        RemoveEntry(e);
+                }
                 _entries.Add(ze);
                 _contentsChanged = true;
             }
@@ -1172,7 +1304,11 @@ namespace Ionic.Utils.Zip
             {
                 // dir is now fully-qualified, but we need a partially qualified name.
                 string tail = System.IO.Path.GetFileName(dir).ToString();
-                AddDirectory(dir, (DirectoryPathInArchive == null) ? null : System.IO.Path.Combine(DirectoryPathInArchive, tail));
+                string pathToUse = (DirectoryPathInArchive == null) ? null : System.IO.Path.Combine(DirectoryPathInArchive, tail);
+                if (Action == AddOrUpdateAction.AddOnly)
+                    AddDirectory(dir, pathToUse);
+                else
+                    AddOrUpdateDirectory(dir, pathToUse);
             }
             _contentsChanged = true;
         }
@@ -2267,6 +2403,12 @@ namespace Ionic.Utils.Zip
         private bool _ReadStreamIsOurs = true;
     }
 
+
+    enum AddOrUpdateAction
+    {
+        AddOnly = 0,
+        AddOrUpdate
+    }
 }
 
 

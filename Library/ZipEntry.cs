@@ -586,7 +586,7 @@ namespace Ionic.Utils.Zip
                 // explicitly specify a pathname for this file  
               System.IO.Path.Combine(DirectoryPathInArchive, System.IO.Path.GetFileName(filename));
 
-            return result;
+            return Shared.TrimVolumeAndSwapSlashes(result);
         }
 
 

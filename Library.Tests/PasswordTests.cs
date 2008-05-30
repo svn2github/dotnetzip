@@ -100,7 +100,7 @@ namespace Ionic.Utils.Zip.Tests.Password
             {
                 filenames[i] = Path.Combine("zipthis", String.Format("file{0:D3}.txt", i));
                 TestUtilities.CreateAndFillFileText(filenames[i], _rnd.Next(12000) + 3000);
-                checksums.Add(TestUtilities.TrimVolumeAndSwapSlashes(filenames[i]), TestUtilities.ComputeChecksum(filenames[i]));
+                checksums.Add(Shared.TrimVolumeAndSwapSlashes(filenames[i]), TestUtilities.ComputeChecksum(filenames[i]));
             }
 
             using (ZipFile zip = new ZipFile(ZipFileToCreate))

@@ -656,6 +656,101 @@ namespace Ionic.Utils.Zip.Tests.Update
 
 
         [TestMethod]
+        public void UpdateZip_AddOrUpdateItem()
+        {
+            string filename = null;
+            int entriesAdded = 0;
+            string repeatedLine = null;
+            int j;
+
+            // select the name of the zip file
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "UpdateZip_AddOrUpdateItem.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            // create the subdirectory
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            // create a bunch of files
+            int NumFilesToCreate = _rnd.Next(10) + 8;
+            for (j = 0; j < NumFilesToCreate; j++)
+            {
+                filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
+                repeatedLine = String.Format("Content for Original file {0}",
+                    System.IO.Path.GetFileName(filename));
+                TestUtilities.CreateAndFillFileText(filename, repeatedLine, _rnd.Next(34000) + 5000);
+                entriesAdded++;
+            }
+
+            // Create the zip file
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                String[] filenames = System.IO.Directory.GetFiles("A");
+                foreach (String f in filenames)
+                    zip1.AddFile(f, "");
+                zip1.Comment = "UpdateTests::UpdateZip_AddOrUpdateItem(): This archive will be updated.";
+                zip1.Save(ZipFileToCreate);
+            }
+
+            // Verify the files are in the zip
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entriesAdded),
+                "The Zip file has the wrong number of entries.");
+
+            // create another subdirectory
+            Subdir = System.IO.Path.Combine(TopLevelDir, "B");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            // create a bunch more files
+            int NewFileCount = NumFilesToCreate + _rnd.Next(3) + 3;
+            for (j = 0; j < NewFileCount; j++)
+            {
+                filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
+                repeatedLine = String.Format("Content for the updated file {0} {1}",
+                    System.IO.Path.GetFileName(filename),
+                    System.DateTime.Now.ToString("yyyy-MM-dd"));
+                TestUtilities.CreateAndFillFileText(filename, repeatedLine, _rnd.Next(1000) + 2000);
+                entriesAdded++;
+            }
+
+            // Update those files in the zip file
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                String[] filenames = System.IO.Directory.GetFiles("B");
+                foreach (String f in filenames)
+                    zip1.AddOrUpdateItem(f, "");
+                zip1.Comment = "UpdateTests::UpdateZip_AddOrUpdateItem(): This archive has been updated.";
+                zip1.Save(ZipFileToCreate);
+            }
+
+            // Verify the number of files in the zip
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, NewFileCount),
+                "The Zip file has the wrong number of entries.");
+
+            // now extract the files and verify their contents
+            using (ZipFile zip3 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (string s in zip3.EntryFilenames)
+                {
+                    repeatedLine = String.Format("Content for the updated file {0} {1}",
+                        s,
+                        System.DateTime.Now.ToString("yyyy-MM-dd"));
+                    zip3[s].Extract("extract");
+
+                    // verify the content of the updated file. 
+                    var sr = new System.IO.StreamReader(System.IO.Path.Combine("extract", s));
+                    string sLine = sr.ReadLine();
+                    sr.Close();
+
+                    Assert.AreEqual<string>(repeatedLine, sLine,
+                            String.Format("The content of the Updated file ({0}) in the zip archive is incorrect.", s));
+                }
+            }       
+        }
+
+
+        [TestMethod]
         public void UpdateZip_AddFile_NewEntriesWithPassword()
         {
             string Password = "Secret!";

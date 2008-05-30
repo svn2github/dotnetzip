@@ -64,13 +64,6 @@ namespace Library.TestUtilities
 
         #region Helper methods
 
-        internal static string TrimVolumeAndSwapSlashes(string pathname)
-        {
-            return (((pathname[1] == ':') && (pathname[2] == '\\')) ? pathname.Substring(3) : pathname)
-                .Replace('\\', '/');
-        }
-
-
         internal static void CreateAndFillFileText(string Filename, int size)
         {
             int bytesRemaining = size;
