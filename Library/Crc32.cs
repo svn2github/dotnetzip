@@ -109,7 +109,13 @@ namespace Ionic.Utils.Zip
             return (UInt32)(crc32Table[(W ^ B) & 0xFF] ^ (W >> 8));
         }
 
-
+        /// <summary>
+        /// Update the value for the running CRC32 using the given block of bytes.
+        /// This is useful when using the CRC32() class in a Stream.
+        /// </summary>
+        /// <param name="block">block of bytes to slurp</param>
+        /// <param name="offset">starting point in the block</param>
+        /// <param name="count">how many bytes within the block to slurp</param>
         public void SlurpBlock(byte[] block, int offset, int count)
         {
             for (int i = 0; i < count; i++)

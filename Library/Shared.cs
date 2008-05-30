@@ -12,17 +12,36 @@ using System;
 
 namespace Ionic.Utils.Zip
 {
-
-    class Shared
+    /// <summary>
+    /// Collects general purpose utility methods.
+    /// </summary>
+  public class Shared
     {
+      /// <summary>
+      /// Round the given DateTime value to an even second value.  Round up in the case of odd seconds. 
+      /// This is most nautrally an extension method for the DateTime class but this library is 
+      /// built for .NET 2.0, not for .NET 3.5;  This means extension methods are a no-no.  
+      /// </summary>
+      /// <param name="source">The DateTime value to round</param>
+      /// <returns>The ruonded DateTime value</returns>
+      public static DateTime RoundToEvenSecond(DateTime source)
+      {
+          // round to nearest second:
+          if ((source.Second % 2) == 1)
+              source += new TimeSpan(0, 0, 1);
 
-        protected internal static byte[] AsciiStringToByteArray(string data)
+          DateTime dtRounded = new DateTime(source.Year, source.Month, source.Day, source.Hour, source.Minute, source.Second);
+          //if (source.Millisecond >= 500) dtRounded = dtRounded.AddSeconds(1);
+          return dtRounded;
+      }
+
+        internal static byte[] AsciiStringToByteArray(string data)
         {
             byte[] a = System.Text.Encoding.ASCII.GetBytes(data);
             return a;
         }
 
-        protected internal static string StringFromBuffer(byte[] buf, int start, int maxlength)
+        internal static string StringFromBuffer(byte[] buf, int start, int maxlength)
         {
             int i;
             char[] c = new char[maxlength];
@@ -34,7 +53,7 @@ namespace Ionic.Utils.Zip
             return s;
         }
 
-        protected internal static int ReadSignature(System.IO.Stream s)
+        internal static int ReadSignature(System.IO.Stream s)
         {
             int n = 0;
             byte[] sig = new byte[4];
@@ -95,19 +114,22 @@ namespace Ionic.Utils.Zip
             // number of bytes read, should be the same as compressed size of file            
             return bytesRead;
         }
-        protected internal static DateTime PackedToDateTime(Int32 packedDateTime)
+
+
+      internal 
+       static DateTime PackedToDateTime(Int32 packedDateTime)
         {
             Int16 packedTime = (Int16)(packedDateTime & 0x0000ffff);
             Int16 packedDate = (Int16)((packedDateTime & 0xffff0000) >> 16);
 
             int year = 1980 + ((packedDate & 0xFE00) >> 9);
             int month = (packedDate & 0x01E0) >> 5;
-            int day = packedDate & 0x001F;
-
+	    int day = packedDate & 0x001F;
 
             int hour = (packedTime & 0xF800) >> 11;
             int minute = (packedTime & 0x07E0) >> 5;
-            int second = packedTime & 0x001F;
+            //int second = packedTime & 0x001F;
+            int second = (packedTime & 0x001F) * 2;
 
             DateTime d = System.DateTime.Now;
             try { d = new System.DateTime(year, month, day, hour, minute, second, 0); }
@@ -122,12 +144,25 @@ namespace Ionic.Utils.Zip
             return d;
         }
 
-
-        protected internal static Int32 DateTimeToPacked(DateTime time)
+      
+      internal 
+       static Int32 DateTimeToPacked(DateTime time)
         {
             UInt16 packedDate = (UInt16)((time.Day & 0x0000001F) | ((time.Month << 5) & 0x000001E0) | (((time.Year - 1980) << 9) & 0x0000FE00));
-            UInt16 packedTime = (UInt16)((time.Second & 0x0000001F) | ((time.Minute << 5) & 0x000007E0) | ((time.Hour << 11) & 0x0000F800));
-            return (Int32)(((UInt32)(packedDate << 16)) | packedTime);
+            UInt16 packedTime = (UInt16)((time.Second/2 & 0x0000001F) | ((time.Minute << 5) & 0x000007E0) | ((time.Hour << 11) & 0x0000F800));
+
+	    // for debugging only
+//             int hour = (packedTime & 0xF800) >> 11;
+//             int minute = (packedTime & 0x07E0) >> 5;
+//             int second = (packedTime & 0x001F)*2;
+
+// 	    Console.WriteLine("regly      = {0:D2}:{1:d2}:{2:D2}", time.Hour, time.Minute, time.Second);
+// 	    Console.WriteLine("msdos-ized = {0:D2}:{1:d2}:{2:D2}", hour, minute, second);
+// 	    // end debugging stuff
+
+
+	    Int32 result=  (Int32)(((UInt32)(packedDate << 16)) | packedTime);
+	    return  result;
         }
 
     }

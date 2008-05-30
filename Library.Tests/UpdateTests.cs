@@ -562,14 +562,14 @@ namespace Ionic.Utils.Zip.Tests.Update
 
             // Create the zip file
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);
-            using (ZipFile zip = new ZipFile())
+            using (ZipFile zip1 = new ZipFile())
             {
-                zip.Password = Password;
+                zip1.Password = Password;
                 String[] filenames = System.IO.Directory.GetFiles("A");
                 foreach (String f in filenames)
-                    zip.AddFile(f, "");
-                zip.Comment = "UpdateTests::UpdateZip_AddFile_OldEntriesWithPassword(): This archive will be updated.";
-                zip.Save(ZipFileToCreate);
+                    zip1.AddFile(f, "");
+                zip1.Comment = "UpdateTests::UpdateZip_AddFile_OldEntriesWithPassword(): This archive will be updated.";
+                zip1.Save(ZipFileToCreate);
             }
 
             // Verify the files are in the zip

@@ -2434,12 +2434,12 @@ namespace Ionic.Utils.Zip
 //         .ZIP file comment       (variable size)
 //
 // date and time are packed values, as MSDOS did them
-// time: bits 0-4 : second
+// time: bits 0-4 : seconds (divided by 2)
 //            5-10: minute
 //            11-15: hour
 // date  bits 0-4 : day
 //            5-8: month
 //            9-15 year (since 1980)
 //
-// see http://www.vsft.com/hal/dostime.htm
+// see http://msdn.microsoft.com/en-us/library/ms724274(VS.85).aspx
 

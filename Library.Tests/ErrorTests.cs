@@ -185,7 +185,7 @@ namespace Ionic.Utils.Zip.Tests.Error
             // add an entry to the zipfile, then try saving to a directory. this should fail
             using (ZipFile zip = new ZipFile(ZipFileToCreate))
             {
-                zip.AddFile(filename,"");
+                zip.AddFile(filename, "");
                 zip.Save("c:\\Windows\\");
             }
 
@@ -266,33 +266,25 @@ namespace Ionic.Utils.Zip.Tests.Error
             {
                 byte[] corruption = new byte[_rnd.Next(100) + 12];
                 int min = 5;
-                int max = (int) fs.Length - 20;
+                int max = (int)fs.Length - 20;
                 int OffsetForCorruption, LengthOfCorruption;
 
-                int NumCorruptions = _rnd.Next(3) + 2;
+                int NumCorruptions = _rnd.Next(2) + 2;
                 for (int i = 0; i < NumCorruptions; i++)
                 {
                     _rnd.NextBytes(corruption);
                     OffsetForCorruption = _rnd.Next(min, max);
-                    LengthOfCorruption = _rnd.Next(8) + 3;
+                    LengthOfCorruption = _rnd.Next(2) + 3;
                     fs.Seek(OffsetForCorruption, SeekOrigin.Begin);
                     fs.Write(corruption, 0, LengthOfCorruption);
-
-                    //// a second corruption
-                    //_rnd.NextBytes(corruption);
-                    //max = (int)fs.Length - 100; // before the end
-                    //offsetForCorruption = _rnd.Next(min, max);
-                    //fs.Seek(offsetForCorruption, SeekOrigin.Begin);
-                    //length = _rnd.Next(8) + 3;
-                    //fs.Write(corruption, 0, length); // corruption.Length
                 }
             }
         }
-        
+
 
         [TestMethod]
         [ExpectedException(typeof(System.SystemException))] // not sure which exception - could be one of several.
-        public void Read_CorruptedZipFile_Passwords()
+        public void Error_ReadCorruptedZipFile_Passwords()
         {
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Read_CorruptedZipFile_Passwords.zip");
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
@@ -355,7 +347,7 @@ namespace Ionic.Utils.Zip.Tests.Error
 
         [TestMethod]
         [ExpectedException(typeof(System.SystemException))] // not sure which exception - could be one of several.
-        public void Read_CorruptedZipFile()
+        public void Error_ReadCorruptedZipFile()
         {
             int i;
 
@@ -377,7 +369,6 @@ namespace Ionic.Utils.Zip.Tests.Error
             };
 
             // create the zipfile, adding the files
-
             using (ZipFile zip = new ZipFile(ZipFileToCreate))
             {
                 for (i = 0; i < filenames.Length; i++)
@@ -408,8 +399,5 @@ namespace Ionic.Utils.Zip.Tests.Error
                 throw new SystemException("expected", exc1);
             }
         }
-
-
-
     }
 }

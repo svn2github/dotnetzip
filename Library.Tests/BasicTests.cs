@@ -536,7 +536,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
             {
                 foreach (string s in zip2.EntryFilenames)
                 {
-                    repeatedLine = String.Format("This line is repeated over and over and over in file {0}",s);
+                    repeatedLine = String.Format("This line is repeated over and over and over in file {0}", s);
                     zip2[s].Extract("extract");
 
                     // verify the content of the updated file. 
@@ -602,7 +602,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_SetFileLastModified()
         {
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "FileLastModified.zip");
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_SetFileLastModified.zip");
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
             int fileCount = _rnd.Next(13) + 23;
@@ -634,10 +634,121 @@ namespace Ionic.Utils.Zip.Tests.Basic
                 {
                     Assert.AreEqual<DateTime>(Timestamp, e.LastModified, "Unexpected timestamp on ZipEntry.");
                     entries++;
+                    // now verify that the LastMod time on the filesystem file is set correctly
+                    e.Extract("unpack");
+                    DateTime ActualFilesystemLastMod = System.IO.File.GetLastWriteTime(System.IO.Path.Combine("unpack", e.FileName));
+                    Assert.AreEqual<DateTime>(Timestamp, ActualFilesystemLastMod, "Unexpected timestamp on extracted filesystem file.");
+
                 }
             }
             Assert.AreEqual<int>(entries, FilesToZip.Length, "Unexpected file count. Expected {0}, got {1}.",
                     FilesToZip.Length, entries);
+        }
+
+
+        [TestMethod]
+        public void CreateZip_VerifyFileLastModified()
+        {
+
+            //  Remove all this crap
+            //            int i;
+            //             string[] Times = {
+            // "5/17/2008 11:08:38 PM",
+            // "5/17/2008 11:08:37 PM",
+            // "5/17/2008 11:08:06 PM",
+            // "5/17/2008 11:08:05 PM",
+            //                             };
+
+            //             // test reflexivity
+            //             for (i = 0; i < Times.Length; i++)
+            //             {
+            //                 System.DateTime dt1 = System.DateTime.Parse(Times[i]);
+            //                 Int32 packedTime = Ionic.Utils.Zip.Shared.DateTimeToPacked(Shared.RoundToEvenSecond(dt1));
+            //                 System.DateTime dt2=  Ionic.Utils.Zip.Shared.PackedToDateTime(packedTime);
+            //                 Console.WriteLine("Time: string({0})  parsed({1}) msdos-ized({2})", Times[i], dt1.ToString("R"), dt2.ToString("R"));
+            //             }
+            //             Console.WriteLine();
+
+
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_VerifyFileLastModified.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            String[] PotentialFilenames = System.IO.Directory.GetFiles(System.Environment.GetEnvironmentVariable("TEMP"));
+            var checksums = new Dictionary<string, byte[]>();
+            var timestamps = new Dictionary<string, DateTime>();
+            var ActualFilenames = new List<string>();
+            var ExcludedFilenames = new List<string>();
+            int maxFiles = 5; // _rnd.Next(12) + 10;
+            do
+            {
+                string filename = null;
+                bool foundOne = false;
+                while (!foundOne)
+                {
+                    filename = PotentialFilenames[_rnd.Next(PotentialFilenames.Length)];
+                    if (ExcludedFilenames.Contains(filename)) continue;
+                    if ((System.IO.Path.GetFileName(filename)[0] == '~') || (ActualFilenames.Contains(filename)))
+                    {
+                        ExcludedFilenames.Add(filename);
+                    }
+                    else
+                    {
+                        foundOne = true;
+                    }
+                }
+
+                var key = System.IO.Path.GetFileName(filename);
+
+                // surround this in a try...catch so as to avoid zipping up files open by someone else
+                try
+                {
+                    var tm = Shared.RoundToEvenSecond(System.IO.File.GetLastWriteTime(filename));
+                    // hop out of the try block if the file is from TODAY.  (heuristic to avoid currently open files)
+                    if ((tm.Year == DateTime.Now.Year) && (tm.Month == DateTime.Now.Month) && (tm.Day == DateTime.Now.Day))
+                        throw new Exception();
+                    var chk = TestUtilities.ComputeChecksum(filename);
+                    checksums.Add(key, chk);
+                    timestamps.Add(key, tm);
+                    ActualFilenames.Add(filename);
+                }
+                catch
+                {
+                    ExcludedFilenames.Add(filename);
+                }
+            } while ((ActualFilenames.Count < maxFiles) && (ActualFilenames.Count < PotentialFilenames.Length));
+
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            // create the zip file
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                foreach (string s in ActualFilenames)
+                    zip.AddFile(s, "");
+                zip.Comment = "The files in this archive will be checked for LastMod timestamp and checksum.";
+                zip.Save();
+            }
+
+            // unpack the zip, and verify contents
+            int entries = 0;
+            using (ZipFile z2 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (ZipEntry e in z2)
+                {
+                    entries++;
+                    // verify that the LastMod time on the filesystem file is set correctly
+                    e.Extract("unpack");
+                    string PathToExtractedFile = System.IO.Path.Combine("unpack", e.FileName);
+                    DateTime ActualFilesystemLastMod = System.IO.File.GetLastWriteTime(PathToExtractedFile);
+                    Assert.AreEqual<DateTime>(timestamps[e.FileName], ActualFilesystemLastMod,
+                        "Unexpected timestamp on extracted filesystem file ({0}).", PathToExtractedFile);
+
+                    // verify the checksum of the file is correct
+                    string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
+                    string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
+                    Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", PathToExtractedFile);
+                }
+            }
+            Assert.AreEqual<int>(entries, ActualFilenames.Count, "Unexpected file count.");
         }
 
 

@@ -480,7 +480,7 @@ namespace Ionic.Utils.Zip
                 if (n != 12) return false;
                 bytesRead += n;
                 i = 0;
-                ze._Crc32 = (UInt32) (block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
+                ze._Crc32 = (UInt32)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
                 ze._CompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
                 ze._UncompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
 
@@ -600,15 +600,13 @@ namespace Ionic.Utils.Zip
             {
                 entry._isStream = true;
                 entry._inputStream = stream;
+                entry._LastModified = DateTime.Now;
             }
+            else
+                entry._LastModified = Shared.RoundToEvenSecond(System.IO.File.GetLastWriteTime(filename));
+
             entry._LocalFileName = filename; // may include a path
             entry._FileNameInArchive = NameInArchive(filename, DirectoryPathInArchive);
-
-            // FIXME? - we set the last modified time of the entry in the zip to NOW. 
-            // I'm thinking this should more accurately be, the lastmod time of the 
-            // file in the filesystem.  I may be wrong though.   What does WinZip do? 
-
-            entry._LastModified = DateTime.Now;
 
             SetLastModDateTimeWithAdjustment(entry);
 
@@ -1000,18 +998,18 @@ namespace Ionic.Utils.Zip
                 output = outstream;
 
 
-            UInt32 ActualCrc32= _ExtractOne(output, cipher);
+            UInt32 ActualCrc32 = _ExtractOne(output, cipher);
 
-	    // Validate CRC32
-	    if (ActualCrc32 != _Crc32)
-	    {
-	      //throw new BadCrcException("CRC error: the file being extracted appears to be corrupted.");
-	      throw new BadCrcException("CRC error: the file being extracted appears to be corrupted. " +
-					String.Format("Expected 0x{0:X8}, actual 0x{1:X8}", _Crc32, ActualCrc32));
-	      //String.Format("CRC error: expected 0x{0:X8}, actual 0x{1:X8}", _Crc32, ActualCrc32);
-	    }
+            // Validate CRC32
+            if (ActualCrc32 != _Crc32)
+            {
+                //throw new BadCrcException("CRC error: the file being extracted appears to be corrupted.");
+                throw new BadCrcException("CRC error: the file being extracted appears to be corrupted. " +
+                          String.Format("Expected 0x{0:X8}, actual 0x{1:X8}", _Crc32, ActualCrc32));
+                //String.Format("CRC error: expected 0x{0:X8}, actual 0x{1:X8}", _Crc32, ActualCrc32);
+            }
 
-	    
+
             if (TargetFile != null)
             {
                 output.Close();
@@ -1041,7 +1039,7 @@ namespace Ionic.Utils.Zip
             input.Seek(this.__FileDataPosition, System.IO.SeekOrigin.Begin);
 
             // to validate the CRC. 
-	    UInt32 CrcResult = 0;
+            UInt32 CrcResult = 0;
 
             byte[] bytes = new byte[READBLOCK_SIZE];
 
@@ -1052,7 +1050,7 @@ namespace Ionic.Utils.Zip
                     // read, maybe decrypt, decompress, then write
                     var instream = (Encryption == EncryptionAlgorithm.PkzipWeak) ?
                                   new ZipCipherInputStream(input, cipher) : input;
-		  using (var ds = new CrcCalculatorStream(new DeflateStream(instream, CompressionMode.Decompress, true)))
+                    using (var ds = new CrcCalculatorStream(new DeflateStream(instream, CompressionMode.Decompress, true)))
                     {
                         LeftToRead = this.UncompressedSize;
                         while (LeftToRead > 0)
@@ -1064,7 +1062,7 @@ namespace Ionic.Utils.Zip
                             LeftToRead -= n;
                         }
 
-			CrcResult= ds.Crc32;
+                        CrcResult = ds.Crc32;
                     }
                     break;
 
@@ -1072,10 +1070,10 @@ namespace Ionic.Utils.Zip
                 case 0x00:
                     // read, maybe decrypt, and then write
 
-                    var temp= (Encryption == EncryptionAlgorithm.PkzipWeak) ?
+                    var temp = (Encryption == EncryptionAlgorithm.PkzipWeak) ?
                         new ZipCipherInputStream(input, cipher) : input;
 
-		  var instream2= new CrcCalculatorStream(temp);
+                    var instream2 = new CrcCalculatorStream(temp);
                     LeftToRead = this._CompressedFileDataSize;
                     while (LeftToRead > 0)
                     {
@@ -1089,12 +1087,12 @@ namespace Ionic.Utils.Zip
                         output.Write(bytes, 0, n);
                         LeftToRead -= n;
                     }
-			CrcResult= instream2.Crc32;
+                    CrcResult = instream2.Crc32;
 
                     break;
             }
 
-	    return CrcResult;
+            return CrcResult;
         }
 
 
@@ -1120,7 +1118,7 @@ namespace Ionic.Utils.Zip
 
             // Version Needed, Bitfield, compression method, lastmod,
             // crc, compressed and uncompressed sizes, filename length and extra field length -
-            // are all the same as the local file header. So just copy them
+            // are all the same as the local file header. So just copy them.
             int j = 0;
             for (j = 0; j < 26; j++)
                 bytes[i + j] = _EntryHeader[4 + j];
@@ -1165,7 +1163,9 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)((_RelativeOffsetOfHeader & 0xFF000000) >> 24);
 
             // actual filename (starts at offset 30 in header) 
-            for (j = 0; j < FileName.Length; j++)
+
+            Int16 filenameLength = (short)(_EntryHeader[26] + _EntryHeader[27] * 256);
+            for (j = 0; j < filenameLength; j++)
                 bytes[i + j] = _EntryHeader[30 + j];
             i += j;
 
@@ -1203,7 +1203,12 @@ namespace Ionic.Utils.Zip
             return null;
         }
 
-
+        private char[] GetFileNameCharacters()
+        {
+            return ((TrimVolumeFromFullyQualifiedPaths) && (FileName[1] == ':') && (FileName[2] == '\\')) ?
+           FileName.Substring(3).Replace("\\", "/").ToCharArray() :  // trim off volume letter, colon, and slash
+           FileName.Replace("\\", "/").ToCharArray();
+        }
 
         private void WriteHeader(System.IO.Stream s, byte[] bytes)
         {
@@ -1379,13 +1384,20 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)((_UncompressedSize & 0xFF000000) >> 24);
 
             // filename length (Int16)
-            Int16 filenameLength = (Int16)FileName.Length;
-            // see note below about TrimVolumeFromFullyQualifiedPaths.
-            if ((TrimVolumeFromFullyQualifiedPaths) && (FileName[1] == ':') && (FileName[2] == '\\')) filenameLength -= 3;
-            // apply upper bound to the length
-            if (filenameLength + i > bytes.Length) filenameLength = (Int16)(bytes.Length - (Int16)i);
+            char[] FileNameCharacters = GetFileNameCharacters();
+
+            Int16 filenameLength = (Int16)FileNameCharacters.Length;
             bytes[i++] = (byte)(filenameLength & 0x00FF);
             bytes[i++] = (byte)((filenameLength & 0xFF00) >> 8);
+
+            //Int16 filenameLength = (Int16)FileName.Length;
+            //// see note elsewhere about TrimVolumeFromFullyQualifiedPaths.
+            //if ((TrimVolumeFromFullyQualifiedPaths) && (FileName[1] == ':') && (FileName[2] == '\\')) filenameLength -= 3;
+            //// apply upper bound to the length????
+            //if (filenameLength + i > bytes.Length) filenameLength = (Int16)(bytes.Length - (Int16)i);
+            //bytes[i++] = (byte)(filenameLength & 0x00FF);
+            //bytes[i++] = (byte)((filenameLength & 0xFF00) >> 8);
+
 
             byte[] extra = GetExtraField();
 
@@ -1409,14 +1421,9 @@ namespace Ionic.Utils.Zip
             // Replace backslashes with forward slashes in the archive
 
             // the filename written to the archive
-            char[] c = ((TrimVolumeFromFullyQualifiedPaths) && (FileName[1] == ':') && (FileName[2] == '\\')) ?
-          FileName.Substring(3).Replace("\\", "/").ToCharArray() :  // trim off volume letter, colon, and slash
-          FileName.Replace("\\", "/").ToCharArray();
-
             int j = 0;
-
-            for (j = 0; (j < c.Length) && (i + j < bytes.Length); j++)
-                bytes[i + j] = System.BitConverter.GetBytes(c[j])[0];
+            for (j = 0; (j < FileNameCharacters.Length) && (i + j < bytes.Length); j++)
+                bytes[i + j] = System.BitConverter.GetBytes(FileNameCharacters[j])[0];
             i += j;
 
             // extra field (at this time, this includes only the Strong Encryption Block, as necessary)
