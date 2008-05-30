@@ -656,7 +656,7 @@ namespace Ionic.Utils.Zip.Tests.Update
 
 
         [TestMethod]
-        public void UpdateZip_AddOrUpdateItem()
+        public void UpdateZip_UpdateItem()
         {
             string filename = null;
             int entriesAdded = 0;
@@ -664,7 +664,7 @@ namespace Ionic.Utils.Zip.Tests.Update
             int j;
 
             // select the name of the zip file
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "UpdateZip_AddOrUpdateItem.zip");
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "UpdateZip_UpdateItem.zip");
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
             // create the subdirectory
@@ -689,7 +689,7 @@ namespace Ionic.Utils.Zip.Tests.Update
                 String[] filenames = System.IO.Directory.GetFiles("A");
                 foreach (String f in filenames)
                     zip1.AddFile(f, "");
-                zip1.Comment = "UpdateTests::UpdateZip_AddOrUpdateItem(): This archive will be updated.";
+                zip1.Comment = "UpdateTests::UpdateZip_UpdateItem(): This archive will be updated.";
                 zip1.Save(ZipFileToCreate);
             }
 
@@ -719,8 +719,8 @@ namespace Ionic.Utils.Zip.Tests.Update
             {
                 String[] filenames = System.IO.Directory.GetFiles("B");
                 foreach (String f in filenames)
-                    zip1.AddOrUpdateItem(f, "");
-                zip1.Comment = "UpdateTests::UpdateZip_AddOrUpdateItem(): This archive has been updated.";
+                    zip1.UpdateItem(f, "");
+                zip1.Comment = "UpdateTests::UpdateZip_UpdateItem(): This archive has been updated.";
                 zip1.Save(ZipFileToCreate);
             }
 
@@ -1122,7 +1122,7 @@ namespace Ionic.Utils.Zip.Tests.Update
 
 
         [TestMethod]
-        public void UpdateZip_AddOrUpdateFile_NoPasswords()
+        public void UpdateZip_UpdateFile_2_NoPasswords()
         {
             string filename = null;
             int entriesAdded = 0;
@@ -1130,7 +1130,7 @@ namespace Ionic.Utils.Zip.Tests.Update
             string repeatedLine = null;
 
             // select the name of the zip file
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "UpdateZip_AddOrUpdateFile_NoPasswords.zip");
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "UpdateZip_UpdateFile_NoPasswords.zip");
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
             // create the subdirectory
@@ -1154,8 +1154,8 @@ namespace Ionic.Utils.Zip.Tests.Update
             {
                 String[] filenames = System.IO.Directory.GetFiles("A");
                 foreach (String f in filenames)
-                    zip1.AddOrUpdateFile(f, "");
-                zip1.Comment = "UpdateTests::UpdateZip_AddOrUpdateFile_NoPasswords(): This archive will be updated.";
+                    zip1.UpdateFile(f, "");
+                zip1.Comment = "UpdateTests::UpdateZip_UpdateFile_NoPasswords(): This archive will be updated.";
                 zip1.Save(ZipFileToCreate);
             }
 
@@ -1189,8 +1189,8 @@ namespace Ionic.Utils.Zip.Tests.Update
             using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
             {
                 foreach (string s in UpdatedFiles)
-                    zip2.AddOrUpdateFile(System.IO.Path.Combine(Subdir, s), "");
-                zip2.Comment = "UpdateTests::UpdateZip_AddOrUpdateFile_NoPasswords(): This archive has been updated.";
+                    zip2.UpdateFile(System.IO.Path.Combine(Subdir, s), "");
+                zip2.Comment = "UpdateTests::UpdateZip_UpdateFile_NoPasswords(): This archive has been updated.";
                 zip2.Save();
             }
 
@@ -1202,8 +1202,8 @@ namespace Ionic.Utils.Zip.Tests.Update
             using (ZipFile zip3 = ZipFile.Read(ZipFileToCreate))
             {
                 foreach (string s in UpdatedFiles)
-                    zip3.AddOrUpdateFile(System.IO.Path.Combine(Subdir, s), "");
-                zip3.Comment = "UpdateTests::UpdateZip_AddOrUpdateFile_NoPasswords(): This archive has been re-updated.";
+                    zip3.UpdateFile(System.IO.Path.Combine(Subdir, s), "");
+                zip3.Comment = "UpdateTests::UpdateZip_UpdateFile_NoPasswords(): This archive has been re-updated.";
                 zip3.Save();
             }
 
