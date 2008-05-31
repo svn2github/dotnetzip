@@ -66,20 +66,71 @@ namespace Ionic.Utils.Zip
         /// 
         /// <remarks>
         /// <para>
-        /// The DotNetZip library uses System.DateTime.Now for this value, in
-        /// ZipFiles that it creates. Suppose that on January 25th, 2008, at noon, you used the
-        /// library to programmatically zip up some files that you had created in December 2007. 
-        /// In this case, all of the entries in the archive will have
-        /// a LastModified value of noon, January 25th. When you extract the files using this
-        /// library or some other tool or utility, the LastModified time in the filesystem
-        /// will be January 25th, noon.
+        /// The DotNetZip library sets the LastModified value for an entry, equal to the 
+        /// Last Modified time of the file in the filesystem.  If an entry is added from a stream, 
+        /// in which case no Last Modified attribute is available, the library uses 
+        /// <c>System.DateTime.Now</c> for this value, for the given entry. 
         /// </para>
         ///
         /// <para>
-        /// It is also possible to set the LastModified value on an entry, to an arbitrary value.
-        /// Keep in mind that the PKZip spec does not allow the LastModified time to be stored
-        /// to the full precision of the <c>System.DateTime</c> datatype.  For more information see the 
-        /// PKZip specification.
+        /// It is also possible to set the LastModified value on an entry, to an arbitrary
+        /// value.  Be aware that because of the way the PKZip specification describes how
+        /// times are stored in the zip file, the full precision of the
+        /// <c>System.DateTime</c> datatype is not stored in LastModified when saving zip
+        /// files.  For more information on how times are formatted, see the PKZip
+        /// specification.
+        /// </para>
+        ///
+        /// <para>
+        /// The last modified time of the file created upon a call to <c>ZipEntry.Extract()</c> 
+        /// may be adjusted during extraction to compensate
+        /// for differences in how the .NET Base Class Library deals
+        /// with daylight saving time (DST) versus how the Windows
+        /// filesystem deals with daylight saving time. 
+        /// See http://blogs.msdn.com/oldnewthing/archive/2003/10/24/55413.aspx for more context.
+        /// </para>
+        /// <para>
+        /// In a nutshell: Daylight savings time rules change regularly.  In
+        /// 2007, for example, the inception week of DST changed.  In 1977,
+        /// DST was in place all year round. In 1945, likewise.  And so on.
+        /// Win32 does not attempt to guess which time zone rules were in
+        /// effect at the time in question.  It will render a time as
+        /// "standard time" and allow the app to change to DST as necessary.
+        ///  .NET makes a different choice.
+        /// </para>
+        /// <para>
+        /// Compare the output of FileInfo.LastWriteTime.ToString("f") with
+        /// what you see in the property sheet for a file that was last
+        /// written to on the other side of the DST transition. For example,
+        /// suppose the file was last modified on October 17, during DST but
+        /// DST is not currently in effect. Explorer's file properties
+        /// reports Thursday, October 17, 2003, 8:45:38 AM, but .NETs
+        /// FileInfo reports Thursday, October 17, 2003, 9:45 AM.
+        /// </para>
+        /// <para>
+        /// Win32 says, "Thursday, October 17, 2002 8:45:38 AM PST". Note:
+        /// Pacific STANDARD Time. Even though October 17 of that year
+        /// occurred during Pacific Daylight Time, Win32 displays the time as
+        /// standard time because that's what time it is NOW.
+        /// </para>
+        /// <para>
+        /// .NET BCL assumes that the current DST rules were in place at the
+        /// time in question.  So, .NET says, "Well, if the rules in effect
+        /// now were also in effect on October 17, 2003, then that would be
+        /// daylight time" so it displays "Thursday, October 17, 2003, 9:45
+        /// AM PDT" - daylight time.
+        /// </para>
+        /// <para>
+        /// So .NET gives a value which is more intuitively correct, but is
+        /// also potentially incorrect, and which is not invertible. Win32
+        /// gives a value which is intuitively incorrect, but is strictly
+        /// correct.
+        /// </para>
+        /// <para>
+        /// Because of this funkiness, this library adds one hour to the LastModified time
+        /// on the extracted file, if necessary.  That is to say, if the time in question
+        /// had occurred in what the .NET Base Class Librrary assumed to be DST (an
+        /// assumption that may be wrong given the constantly changing DST rules).
         /// </para>
         /// </remarks>
         ///
@@ -98,7 +149,7 @@ namespace Ionic.Utils.Zip
         /// fully-qualified pathname on the ZipEntry, before writing the ZipEntry into
         /// the ZipFile. This flag affects only zip creation. By default, this flag is TRUE,
         /// which means volume names will not be included in the filenames on entries in
-        /// the archive.
+        /// the archive.  Your best bet is to just leave this alone.
         /// </summary>
         public bool TrimVolumeFromFullyQualifiedPaths
         {
@@ -170,8 +221,8 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// The bitfield as defined in the zip spec. In the current implementation, the
-        /// only thing this library // potentially writes to the general purpose
-        /// Bitfield is encryption indicators.
+        /// only thing this library potentially writes to the general purpose
+        /// Bitfield is an encryption indicators.
         /// </summary>
         /// <code>
         /// bit  0 - set if encryption is used.
@@ -212,6 +263,7 @@ namespace Ionic.Utils.Zip
         /// Store (no compression).  Really, this should be an enum.  But the zip spec
         /// makes it a byte. So here it is. 
         /// </summary>
+        /// 
         /// <remarks>
         /// <para>When reading an entry from an existing zipfile, the value you retrieve here
         /// indicates the compression method used on the entry by the original creator of the zip.  
@@ -223,6 +275,7 @@ namespace Ionic.Utils.Zip
         /// data like jpg, png, or mp3 files.  This can save time and cpu cycles.
         /// </para>
         /// </remarks>
+        /// 
         /// <example>
         /// In this example, the first entry added to the zip archive uses 
         /// the default behavior - compression is used where it makes sense.  
@@ -231,15 +284,21 @@ namespace Ionic.Utils.Zip
         /// using (ZipFile zip = new ZipFile(ZipFileToCreate))
         /// {
         ///   ZipEntry e1= zip.AddFile(@"c:\temp\Readme.txt");
-        ///   
         ///   ZipEntry e2= zip.AddFile(@"c:\temp\StopThisTrain.mp3");
         ///   e2.CompressionMethod = 0;
-        ///   
         ///   zip.Save();
         /// }
         /// </code>
+        /// 
+        /// <code lang="VB">
+        /// Using zip as new ZipFile(ZipFileToCreate)
+        ///   zip.AddFile("c:\temp\Readme.txt")
+        ///   Dim e2 as ZipEntry = zip.AddFile("c:\temp\StopThisTrain.mp3")
+        ///   e2.CompressionMethod = 0
+        ///   zip.Save
+        /// End Using
+        /// </code>
         /// </example>
-
         public Int16 CompressionMethod
         {
             get { return _CompressionMethod; }
@@ -257,6 +316,11 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// The compressed size of the file, in bytes, within the zip archive. 
         /// </summary>
+        /// <remarks>
+        /// The compressed size is computed during compression. This means that it is only
+        /// valid to read this AFTER reading in an existing zip file, or AFTER saving a
+        /// zipfile you are creating.
+        /// </remarks>
         public Int32 CompressedSize
         {
             get { return _CompressedSize; }
@@ -265,11 +329,6 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// The size of the file, in bytes, before compression, or after extraction. 
         /// </summary>
-        /// <remarks>
-        /// The compressed size is computed during compression. This means that it is only
-        /// valid to read this AFTER reading in an existing zip file, or AFTER saving a
-        /// zipfile you are creating.
-        /// </remarks>
         public Int32 UncompressedSize
         {
             get { return _UncompressedSize; }
@@ -698,55 +757,8 @@ namespace Ionic.Utils.Zip
         ///         
         /// <remarks>
         /// <para>
-        /// The last modified time of the created file may be adjusted 
-        /// during extraction to compensate
-        /// for differences in how the .NET Base Class Library deals
-        /// with daylight saving time (DST) versus how the Windows
-        /// filesystem deals with daylight saving time. 
-        /// See http://blogs.msdn.com/oldnewthing/archive/2003/10/24/55413.aspx for more context.
-        ///</para>
-        /// <para>
-        /// In a nutshell: Daylight savings time rules change regularly.  In
-        /// 2007, for example, the inception week of DST changed.  In 1977,
-        /// DST was in place all year round. in 1945, likewise.  And so on.
-        /// Win32 does not attempt to guess which time zone rules were in
-        /// effect at the time in question.  It will render a time as
-        /// "standard time" and allow the app to change to DST as necessary.
-        ///  .NET makes a different choice.
-        ///</para>
-        /// <para>
-        /// Compare the output of FileInfo.LastWriteTime.ToString("f") with
-        /// what you see in the property sheet for a file that was last
-        /// written to on the other side of the DST transition. For example,
-        /// suppose the file was last modified on October 17, during DST but
-        /// DST is not currently in effect. Explorer's file properties
-        /// reports Thursday, October 17, 2003, 8:45:38 AM, but .NETs
-        /// FileInfo reports Thursday, October 17, 2003, 9:45 AM.
-        ///</para>
-        /// <para>
-        /// Win32 says, "Thursday, October 17, 2002 8:45:38 AM PST". Note:
-        /// Pacific STANDARD Time. Even though October 17 of that year
-        /// occurred during Pacific Daylight Time, Win32 displays the time as
-        /// standard time because that's what time it is NOW.
-        ///</para>
-        /// <para>
-        /// .NET BCL assumes that the current DST rules were in place at the
-        /// time in question.  So, .NET says, "Well, if the rules in effect
-        /// now were also in effect on October 17, 2003, then that would be
-        /// daylight time" so it displays "Thursday, October 17, 2003, 9:45
-        /// AM PDT" - daylight time.
-        ///</para>
-        /// <para>
-        /// So .NET gives a value which is more intuitively correct, but is
-        /// also potentially incorrect, and which is not invertible. Win32
-        /// gives a value which is intuitively incorrect, but is strictly
-        /// correct.
-        ///</para>
-        /// <para>
-        /// With this adjustment, I add one hour to the tweaked .NET time, if
-        /// necessary.  That is to say, if the time in question had occurred
-        /// in what the .NET BCL assumed to be DST (an assumption that may be
-        /// wrong given the constantly changing DST rules).
+        /// See the remarks on the LastModified property, for some details 
+        /// about how the last modified time of the created file is set.
         /// </para>
         /// </remarks>
         public void Extract()
@@ -760,8 +772,8 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// <remarks>
         /// <para>
-        /// See the remarks on the non-parameterized version of the Extract() method, 
-        /// for information on the last modified time of the created file.
+        /// See the remarks on the LastModified property, for some details 
+        /// about how the last modified time of the created file is set.
         /// </para>
         /// </remarks>
         /// <param name="Overwrite">true if the caller wants to overwrite an existing file by the same name in the filesystem.</param>
@@ -779,8 +791,10 @@ namespace Ionic.Utils.Zip
         /// <param name="s">the stream to which the entry should be extracted.  </param>
         /// 
         /// <remarks>
-        /// See the remarks on the non-parameterized version of the Extract() method, 
-        /// for information on the last modified time of the created file.
+        /// <para>
+        /// See the remarks on the LastModified property, for some details 
+        /// about how the last modified time of the created file is set.
+        /// </para>
         /// </remarks>
         public void Extract(System.IO.Stream s)
         {
@@ -794,8 +808,10 @@ namespace Ionic.Utils.Zip
         /// <param name="BaseDirectory">the pathname of the base directory</param>
         /// 
         /// <remarks>
-        /// See the remarks on the non-parameterized version of the Extract() method, 
-        /// for information on the last modified time of the created file.
+        /// <para>
+        /// See the remarks on the LastModified property, for some details 
+        /// about how the last modified time of the created file is set.
+        /// </para>
         /// </remarks>
         public void Extract(string BaseDirectory)
         {
@@ -808,8 +824,10 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// 
         /// <remarks>
-        /// See the remarks on the non-parameterized version of the Extract() method, 
-        /// for information on the last modified time of the created file.
+        /// <para>
+        /// See the remarks on the LastModified property, for some details 
+        /// about how the last modified time of the created file is set.
+        /// </para>
         /// </remarks>
         /// 
         /// <param name="BaseDirectory">the pathname of the base directory</param>
@@ -830,11 +848,14 @@ namespace Ionic.Utils.Zip
         /// the right one for you...
         /// </overloads>
         ///         
+        /// <remarks>
         /// <para>
-        /// See the remarks on the non-parameterized version of the Extract() method, 
-        /// for information on the last modified time of the created file.
+        /// See the remarks on the LastModified property, for some details 
+        /// about how the last modified time of the created file is set.
         /// </para>
-        /// <param name="Password">the Password to use for decrypting the entry.</param>
+        /// </remarks>
+        ///
+        /// <param name="Password">The Password to use for decrypting the entry.</param>
         public void ExtractWithPassword(string Password)
         {
             InternalExtract(".", null, Password);
@@ -846,12 +867,14 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// 
         /// <remarks>
-        /// See the remarks on the non-parameterized version of the Extract() method, 
-        /// for information on the last modified time of the created file.
+        /// <para>
+        /// See the remarks on the LastModified property, for some details 
+        /// about how the last modified time of the created file is set.
+        /// </para>
         /// </remarks>
         /// 
-        /// <param name="BaseDirectory">the pathname of the base directory.</param>
-        /// <param name="Password">the Password to use for decrypting the entry.</param>
+        /// <param name="BaseDirectory">The pathname of the base directory.</param>
+        /// <param name="Password">The Password to use for decrypting the entry.</param>
         public void ExtractWithPassword(string BaseDirectory, string Password)
         {
             InternalExtract(BaseDirectory, null, Password);
@@ -864,13 +887,13 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// 
         /// <remarks>
-        /// See the remarks on the non-parameterized version of the Extract() method, 
-        /// for information on the last modified time of the created file.
+        /// See the remarks on the LastModified property, for some details 
+        /// about how the last modified time of the created file is set.
         /// </remarks>
         /// 
         /// </remarks>
         /// <param name="Overwrite">true if the caller wants to overwrite an existing file by the same name in the filesystem.</param>
-        /// <param name="Password">the Password to use for decrypting the entry.</param>
+        /// <param name="Password">The Password to use for decrypting the entry.</param>
         public void ExtractWithPassword(bool Overwrite, string Password)
         {
             OverwriteOnExtract = Overwrite;
@@ -883,13 +906,13 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// 
         /// <remarks>
-        /// See the remarks on the non-parameterized version of the Extract() method, 
-        /// for information on the last modified time of the created file.
+        /// See the remarks on the LastModified property, for some details 
+        /// about how the last modified time of the created file is set.
         /// </remarks>
         /// 
         /// <param name="BaseDirectory">the pathname of the base directory</param>
         /// <param name="Overwrite">If true, overwrite any existing files if necessary upon extraction.</param>
-        /// <param name="Password">the Password to use for decrypting the entry.</param>
+        /// <param name="Password">The Password to use for decrypting the entry.</param>
         public void ExtractWithPassword(string BaseDirectory, bool Overwrite, string Password)
         {
             OverwriteOnExtract = Overwrite;
@@ -902,12 +925,12 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// 
         /// <remarks>
-        /// See the remarks on the non-parameterized version of the Extract() method, 
-        /// for information on the last modified time of the created file.
+        /// See the remarks on the LastModified property, for some details 
+        /// about how the last modified time of the created file is set.
         /// </remarks>
         /// 
         /// <param name="s">the stream to which the entry should be extracted.  </param>
-        /// <param name="Password">the Password to use for decrypting the entry.</param>
+        /// <param name="Password">The Password to use for decrypting the entry.</param>
         public void ExtractWithPassword(System.IO.Stream s, string Password)
         {
             InternalExtract(null, s, Password);

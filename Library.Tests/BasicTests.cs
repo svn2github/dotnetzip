@@ -416,163 +416,6 @@ namespace Ionic.Utils.Zip.Tests.Basic
         }
 
 
-#if NOT_NEEDED
-        [TestMethod]
-        public void CreateZip_UpdateDirectory()
-        {
-            int i, j;
-
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_AddOrUpdateDirectory.zip");
-            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-
-            string DirToZip = System.IO.Path.Combine(TopLevelDir, "zipthis");
-            System.IO.Directory.CreateDirectory(DirToZip);
-
-            int entries = 0;
-            int subdirCount = _rnd.Next(17) + 34;
-            var checksums = new Dictionary<string, byte[]>();
-
-            //TestContext.WriteLine("CreateZip_AddOrUpdateDirectory: Creating {0} subdirs.", subdirCount);
-            for (i = 0; i < subdirCount; i++)
-            {
-                string SubdirShort = String.Format("dir{0:D4}", i);
-                string Subdir = System.IO.Path.Combine(DirToZip, SubdirShort);
-                System.IO.Directory.CreateDirectory(Subdir);
-
-                int filecount = _rnd.Next(31) + 17;
-                //TestContext.WriteLine("CreateZip_AddOrUpdateDirectory: Subdir {0}, Creating {1} files.", i, filecount);
-                for (j = 0; j < filecount; j++)
-                {
-                    string filename = String.Format("file{0:D4}.x", j);
-                    string fqFilename = System.IO.Path.Combine(Subdir, filename);
-                    TestUtilities.CreateAndFillFile(fqFilename, _rnd.Next(1000) + 100);
-
-                    var chk = TestUtilities.ComputeChecksum(fqFilename);
-                    var t1 = System.IO.Path.GetFileName(DirToZip);
-                    var t2 = System.IO.Path.Combine(t1, SubdirShort);
-                    var key = System.IO.Path.Combine(t2, filename);
-                    key = Shared.TrimVolumeAndSwapSlashes(key);
-                    checksums.Add(key, chk);
-                    entries++;
-                }
-            }
-
-            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
-
-            // add all the sibdirectories
-            using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
-            {
-                String[] dirs = System.IO.Directory.GetDirectories(DirToZip);
-                foreach (String d in dirs)
-                {
-                    string dir = System.IO.Path.Combine(System.IO.Path.GetFileName(DirToZip), System.IO.Path.GetFileName(d));
-                    zip1.UpdateDirectory(dir);
-                }
-                zip1.Save();
-            }
-
-            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entries),
-              "The Zip file has an unexpected number of entries.");
-
-            // add all the same content again
-            using (ZipFile zip2 = new ZipFile(ZipFileToCreate))
-            {
-                String[] dirs = System.IO.Directory.GetDirectories(DirToZip);
-                foreach (String d in dirs)
-                {
-                    string dir = System.IO.Path.Combine(System.IO.Path.GetFileName(DirToZip), System.IO.Path.GetFileName(d));
-                    zip2.UpdateDirectory(dir);
-                }
-                zip2.Save();
-            }
-
-            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entries),
-              "The Zip file has an unexpected number of entries.");
-
-
-            // validate all the checksums
-            using (ZipFile zip3 = new ZipFile(ZipFileToCreate))
-            {
-                foreach (ZipEntry e in zip3)
-                {
-                    e.Extract("unpack");
-                    string PathToExtractedFile = System.IO.Path.Combine("unpack", e.FileName);
-
-                    // verify the checksum of the file is correct
-                    string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
-                    string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
-                    Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", PathToExtractedFile);
-                }
-            }
-
-
-            DirToZip = System.IO.Path.Combine(TopLevelDir, "updates");
-            System.IO.Directory.CreateDirectory(DirToZip);
-
-            subdirCount = subdirCount + _rnd.Next(7) + 8;
-            //TestContext.WriteLine("CreateZip_AddOrUpdateDirectory: Creating {0} subdirs.", subdirCount);
-            for (i = 0; i < subdirCount; i++)
-            {
-                string SubdirShort = String.Format("dir{0:D4}", i);
-                string Subdir = System.IO.Path.Combine(DirToZip, SubdirShort);
-                System.IO.Directory.CreateDirectory(Subdir);
-
-                int filecount = _rnd.Next(31) + 17;
-                //TestContext.WriteLine("CreateZip_AddOrUpdateDirectory: Subdir {0}, Creating {1} files.", i, filecount);
-                for (j = 0; j < filecount; j++)
-                {
-                    string filename = String.Format("file{0:D4}.x", j);
-                    TestUtilities.CreateAndFillFile(System.IO.Path.Combine(Subdir, filename),
-                        _rnd.Next(1000) + 100);
-                    string fqFilename = System.IO.Path.Combine(Subdir, filename);
-
-                    var chk = TestUtilities.ComputeChecksum(fqFilename);
-                    //var t1 = System.IO.Path.GetFileName(DirToZip);
-                    var t2 = System.IO.Path.Combine("zipthis", SubdirShort);
-                    var key = System.IO.Path.Combine(t2, filename);
-                    key = Shared.TrimVolumeAndSwapSlashes(key);
-
-                    if (checksums.ContainsKey(key))
-                        checksums.Remove(key);
-                    checksums.Add(key, chk);
-                    entries++;
-                }
-            }
-
-
-            // add the new content
-            using (ZipFile zip4 = new ZipFile(ZipFileToCreate))
-            {
-                String[] dirs = System.IO.Directory.GetDirectories(DirToZip);
-                foreach (String d in dirs)
-                {
-                    string dir = System.IO.Path.Combine(System.IO.Path.GetFileName(DirToZip), System.IO.Path.GetFileName(d));
-                    string root = System.IO.Path.Combine("zipthis", System.IO.Path.GetFileName(d));
-                    zip4.UpdateDirectory(dir, root);
-                }
-                zip4.Save();
-            }
-
-
-            // validate all the checksums
-            using (ZipFile zip5 = new ZipFile(ZipFileToCreate))
-            {
-                foreach (ZipEntry e in zip5)
-                {
-                    e.Extract("unpack2");
-                    string PathToExtractedFile = System.IO.Path.Combine("unpack2", e.FileName);
-
-                    // verify the checksum of the file is correct
-                    string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
-                    string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
-                    Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", PathToExtractedFile);
-
-                }
-            }
-
-        }
-#endif
-
 
         [TestMethod]
         public void CreateZip_AddDirectory_LargeNumberOfSmallFiles()
@@ -612,6 +455,8 @@ namespace Ionic.Utils.Zip.Tests.Basic
 
             Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entries),
                     "Zip file created seems to be invalid.");
+
+
         }
 
 
@@ -650,10 +495,12 @@ namespace Ionic.Utils.Zip.Tests.Basic
                     "Zip file created seems to be invalid.");
         }
 
+
+
         [TestMethod]
         public void CreateZip_AddDirectory_OnlyEmptyDirectories()
         {
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "EmptyDirectories.zip");
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_AddDirectory_OnlyEmptyDirectories.zip");
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
             string DirToZip = System.IO.Path.Combine(TopLevelDir, "zipthis");
@@ -682,7 +529,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_AddDirectory_CheckStatusTextWriter()
         {
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Test.zip");
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_AddDirectory_CheckStatusTextWriter.zip");
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
             string DirToZip = System.IO.Path.Combine(TopLevelDir, "zipthis");
@@ -725,6 +572,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
         }
 
 
+
         [TestMethod]
         public void CreateZip_AddDirectory()
         {
@@ -747,6 +595,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
             Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, fileCount),
                     "Zip file created seems to be invalid.");
         }
+
 
         [TestMethod]
         public void CreateZip_VerifyThatStreamRemainsOpenAfterSave()

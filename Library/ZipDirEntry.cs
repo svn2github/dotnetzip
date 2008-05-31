@@ -18,7 +18,7 @@ namespace Ionic.Utils.Zip
     /// The class is generally not used from within application code, though it is
     /// used by the ZipFile class.
     /// </summary>
-    public class ZipDirEntry
+internal class ZipDirEntry
     {
         private ZipDirEntry() { }
 
@@ -185,7 +185,7 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// <param name="signature">the candidate 4-byte signature value.</param>
         /// <returns>true, if the signature is valid according to the PKWare spec.</returns>
-        public static bool IsNotValidSig(int signature)
+      internal static bool IsNotValidSig(int signature)
         {
             return (signature != ZipConstants.ZipDirEntrySignature);
         }

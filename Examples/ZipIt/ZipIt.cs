@@ -28,8 +28,10 @@ namespace Ionic.Utils.Zip.Examples
     {
         private static void Usage()
         {
-            Console.WriteLine("usage: ZipIt.exe <ZipFileToCreate> [-p <password> | <directory> | <file> ...]");
-            Console.WriteLine("zip up a directory, file, or a set of them, into a zipfile.\n");
+            Console.WriteLine("Zipit.exe:  zip up a directory, file, or a set of them, into a zipfile.");
+            Console.WriteLine("            Depends on Ionic's DotNetZip. This is version {0} of the utility.", 
+			      System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            Console.WriteLine("usage:\n   ZipIt.exe <ZipFileToCreate> [-p <password> | <directory> | <file> ...]\n");
             Environment.Exit(1);
         }
 
@@ -61,7 +63,7 @@ namespace Ionic.Utils.Zip.Examples
                             zip.Password = args[i];
                         }
                         else
-                            zip.AddItem(args[i]); // will add Files or Dirs, recurses subdirectories
+                            zip.UpdateItem(args[i]); // will add Files or Dirs, recurses subdirectories
                     }
                     zip.Save();
                 }

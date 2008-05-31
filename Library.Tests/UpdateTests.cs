@@ -274,7 +274,7 @@ namespace Ionic.Utils.Zip.Tests.Update
                 foreach (String f in filenames)
                     zip1.AddFile(f, "");
 
-                zip1.Comment = "UpdateTests::UpdateZip_OpenForUpdate_Password_RemoveByFilename(): This archive will be updated.";
+                zip1.Comment = "UpdateTests::UpdateZip_RemoveEntry_ByFilename_WithPassword(): This archive will be updated.";
                 zip1.Save(ZipFileToCreate);
             }
 
