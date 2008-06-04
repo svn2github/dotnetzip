@@ -1459,7 +1459,9 @@ namespace Ionic.Utils.Zip
             }
 
             // remember the offset, within the stream, of this particular entry header
-            _RelativeOffsetOfHeader = (int)s.Position;  // Length
+	    var counter = s as CountingOutputStream;
+	    _RelativeOffsetOfHeader = (int)((counter!=null) ? counter.BytesWritten : s.Position);
+
             _LengthOfHeader = i;
 
             // finally, write the header to the stream

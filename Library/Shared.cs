@@ -176,6 +176,98 @@ namespace Ionic.Utils.Zip
 	    return  result;
         }
 
+
+public static System.IO.MemoryStream StringToMemoryStream(string s)
+{
+  System.IO.MemoryStream m = new   System.IO.MemoryStream();
+  System.IO.StreamWriter sw = new   System.IO.StreamWriter(m);
+  sw.Write(s);
+  sw.Flush();
+  return m;
+}
+
+
     }
+
+
+    /// <summary>
+    /// A write-only Stream, used for bookkeeping on ASP.NET output streams.
+    /// </summary>
+    internal class CountingOutputStream : System.IO.Stream
+    {
+        private System.IO.Stream _s;
+	private int _bytesWritten;
+        /// <summary>
+        /// The  constructor.
+        /// </summary>
+        /// <param name="s">The underlying stream</param>
+        public CountingOutputStream(System.IO.Stream s)
+            : base()
+        {
+            _s = s;
+	    _bytesWritten= 0;
+        }
+
+	public int BytesWritten
+	{
+	  get {return _bytesWritten;}
+	}
+
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+	  _s.Write( buffer,  offset,  count);
+	  _bytesWritten += count;
+        }
+
+        public override bool CanRead
+        {
+            get { return false; }
+        }
+        public override bool CanSeek
+        {
+            get { return false; }
+        }
+
+        public override bool CanWrite
+        {
+            get { return true; }
+        }
+
+        public override void Flush()
+        {
+	  _s.Flush();
+        }
+
+        public override long Length
+        {
+            get { return _bytesWritten; }
+        }
+
+        public override long Position
+        {
+	  get { return _bytesWritten; }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public override long Seek(long offset, System.IO.SeekOrigin origin)
+        {
+	  return _s.Seek(offset, origin);
+        }
+
+        public override void SetLength(long value)
+        {
+	  _s.SetLength(value);
+        }
+    }
+
 
 }
