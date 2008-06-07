@@ -404,7 +404,8 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Specifies that the extraction should overwrite any existing files.
-        /// This applies only when calling an Extract method.
+        /// This applies only when calling an Extract method. By default this 
+        /// property is false. 
         /// </summary>
         public bool OverwriteOnExtract
         {
@@ -755,7 +756,16 @@ namespace Ionic.Utils.Zip
         /// <c>ExtractWithPassword()</c> methods.
         /// </overloads>
         ///         
+        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.OverwriteOnExtract"/>
+        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.Extract(bool)"/>
+	///
         /// <remarks>
+        /// <para>
+        /// Existing entries in the filesystem will not be overwritten. If you would like to 
+        /// force the overwrite of existing files, see the <c>OverwriteOnExtract</c> property, 
+        /// or try one of the overloads of the Extract method that accept a boolean flag
+	/// to indicate explicitly whether you want overwrite.
+        /// </para>
         /// <para>
         /// See the remarks on the LastModified property, for some details 
         /// about how the last modified time of the created file is set.
@@ -807,7 +817,16 @@ namespace Ionic.Utils.Zip
         /// 
         /// <param name="BaseDirectory">the pathname of the base directory</param>
         /// 
+        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.OverwriteOnExtract"/>
+        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.Extract(string, bool)"/>
+	///
         /// <remarks>
+        /// <para>
+        /// Existing entries in the filesystem will not be overwritten. If you would like to 
+        /// force the overwrite of existing files, see the <c>OverwriteOnExtract</c> property, 
+        /// or try one of the overloads of the Extract method that accept a boolean flag
+	/// to indicate explicitly whether you want overwrite.
+        /// </para>
         /// <para>
         /// See the remarks on the LastModified property, for some details 
         /// about how the last modified time of the created file is set.
@@ -848,7 +867,16 @@ namespace Ionic.Utils.Zip
         /// the right one for you...
         /// </overloads>
         ///         
+        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.OverwriteOnExtract"/>
+        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.ExtractWithPassword(bool, string)"/>
+	///
         /// <remarks>
+        /// <para>
+        /// Existing entries in the filesystem will not be overwritten. If you would like to 
+        /// force the overwrite of existing files, see the <c>OverwriteOnExtract</c> property, 
+        /// or try one of the overloads of the ExtractWithPassword method that accept a boolean flag
+	/// to indicate explicitly whether you want overwrite.
+        /// </para>
         /// <para>
         /// See the remarks on the LastModified property, for some details 
         /// about how the last modified time of the created file is set.
@@ -866,7 +894,16 @@ namespace Ionic.Utils.Zip
         /// and using the specified password. 
         /// </summary>
         /// 
+        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.OverwriteOnExtract"/>
+        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.ExtractWithPassword(string, bool, string)"/>
+	///
         /// <remarks>
+        /// <para>
+        /// Existing entries in the filesystem will not be overwritten. If you would like to 
+        /// force the overwrite of existing files, see the <c>OverwriteOnExtract</c> property, 
+        /// or try one of the overloads of the ExtractWithPassword method that accept a boolean flag
+	/// to indicate explicitly whether you want overwrite.
+        /// </para>
         /// <para>
         /// See the remarks on the LastModified property, for some details 
         /// about how the last modified time of the created file is set.
@@ -884,15 +921,16 @@ namespace Ionic.Utils.Zip
         /// Extract the entry to a file in the filesystem, potentially overwriting
         /// any existing file.
         /// </summary>
-        /// <remarks>
         /// 
         /// <remarks>
+        /// <para>
         /// See the remarks on the LastModified property, for some details 
         /// about how the last modified time of the created file is set.
+        /// </para>
         /// </remarks>
         /// 
-        /// </remarks>
-        /// <param name="Overwrite">true if the caller wants to overwrite an existing file by the same name in the filesystem.</param>
+        /// <param name="Overwrite">true if the caller wants to overwrite an existing 
+        /// file by the same name in the filesystem.</param>
         /// <param name="Password">The Password to use for decrypting the entry.</param>
         public void ExtractWithPassword(bool Overwrite, string Password)
         {

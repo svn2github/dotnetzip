@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Library.Tests", "Library.Tests\Library.Tests.csproj", "{549466CE-5CA6-4904-BA44-58141544BE70}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfExtracting", "Examples\SelfExtracting\SelfExtracting.csproj", "{276B8174-A24E-4257-9969-42D692F8CAC2}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = DotNetZip.vsmdi
@@ -62,6 +64,10 @@ Global
 		{549466CE-5CA6-4904-BA44-58141544BE70}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{549466CE-5CA6-4904-BA44-58141544BE70}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{549466CE-5CA6-4904-BA44-58141544BE70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{276B8174-A24E-4257-9969-42D692F8CAC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{276B8174-A24E-4257-9969-42D692F8CAC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{276B8174-A24E-4257-9969-42D692F8CAC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{276B8174-A24E-4257-9969-42D692F8CAC2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
