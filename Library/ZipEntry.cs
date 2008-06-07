@@ -1266,7 +1266,7 @@ namespace Ionic.Utils.Zip
 
         private char[] GetFileNameCharacters()
         {
-            return ((TrimVolumeFromFullyQualifiedPaths) && (FileName[1] == ':') && (FileName[2] == '\\')) ?
+            return ((TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3) && (FileName[1] == ':') && (FileName[2] == '\\')) ?
            FileName.Substring(3).Replace("\\", "/").ToCharArray() :  // trim off volume letter, colon, and slash
            FileName.Replace("\\", "/").ToCharArray();
         }

@@ -28,7 +28,19 @@
         "Entry"
         {
         "MsmKey" = "8:_C060BD63BAE174847120EBBA72BFED6E"
+        "OwnerKey" = "8:_CB8DB966CAC04B37B66694A2F4A5443F"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_C060BD63BAE174847120EBBA72BFED6E"
         "OwnerKey" = "8:_F7DA600A0D264B64822406B06AD1BFDE"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_CB8DB966CAC04B37B66694A2F4A5443F"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -41,6 +53,12 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_F7DA600A0D264B64822406B06AD1BFDE"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_CB8DB966CAC04B37B66694A2F4A5443F"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -149,7 +167,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Utils.Zip, Version=1.5.0.3, Culture=neutral, PublicKeyToken=c551e179877da246, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Utils.Zip, Version=1.5.0.7, Culture=neutral, PublicKeyToken=c551e179877da246, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_C060BD63BAE174847120EBBA72BFED6E"
@@ -233,7 +251,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:.NET Zip Library & Utilities"
         "ProductCode" = "8:{8D31C2AE-583D-4FD5-946B-290AE189A0E7}"
-        "PackageCode" = "8:{D7464FEF-0682-4F0A-8725-685FDF55CF69}"
+        "PackageCode" = "8:{3979D11A-32D8-4625-A83D-FBC58B7D3528}"
         "UpgradeCode" = "8:{BEF05388-A74D-4383-BD87-61940DF83E20}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
@@ -774,6 +792,34 @@
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{98008721-C4DD-4F34-B3AE-A3453E29BB65}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_CB8DB966CAC04B37B66694A2F4A5443F"
+            {
+            "SourcePath" = "8:..\\Examples\\SelfExtracting\\obj\\Debug\\CreateSelfExtractor.exe"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_23BCB24D0FEF491DB38964CE9740634B"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{276B8174-A24E-4257-9969-42D692F8CAC2}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {
