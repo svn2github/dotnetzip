@@ -47,7 +47,7 @@
   <ItemGroup>
     <Compile Include="CreateSelfExtractor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <None Include="SelfExtractorStub.cs" />
+    <EmbeddedResource Include="SelfExtractorStub.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Library\Library.csproj">

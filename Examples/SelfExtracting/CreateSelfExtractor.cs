@@ -24,25 +24,18 @@ using System.IO;
 
 
 
-
 namespace Ionic.Utils.Zip
 {
 
     public class CreateSelfExtractor
     {
 
-        private const string SelfExtractorStubSource = "SelfExtractor.cs";
-
-
-        // ctor
         public CreateSelfExtractor() { }
 
         public void Run(string ZipFileToWrap)
         {
-
             try
             {
-
                 if (!File.Exists(ZipFileToWrap))
                 {
                     Console.WriteLine("The zip file {0} does not exist.", ZipFileToWrap);
@@ -50,6 +43,7 @@ namespace Ionic.Utils.Zip
                 }
 
                 Assembly a1 = typeof(ZipFile).Assembly;
+                //Console.WriteLine("DotNetZip assembly loc: {0}", a1.Location);
 
                 Microsoft.CSharp.CSharpCodeProvider csharp = new Microsoft.CSharp.CSharpCodeProvider();
 
@@ -66,7 +60,17 @@ namespace Ionic.Utils.Zip
                 // add the Ionic.Utils.Zip DLL as an embedded resource
                 cp.EmbeddedResources.Add(a1.Location);
 
-                string LiteralSource = File.ReadAllText(SelfExtractorStubSource);
+                Assembly a2 = Assembly.GetExecutingAssembly();
+                Stream s = a2.GetManifestResourceStream("Ionic.Utils.Zip.SelfExtractorStub.cs");
+                var sb = new System.Text.StringBuilder();
+                using (StreamReader sr = new StreamReader(s))
+                {
+                    while (sr.Peek() >= 0)                    
+                        sb.Append(sr.ReadLine()).Append("\n");                    
+                }
+                string LiteralSource = sb.ToString();
+
+                //Console.WriteLine("compiling source:\n{0}", LiteralSource);
 
                 System.CodeDom.Compiler.CompilerResults cr = csharp.CompileAssemblyFromSource(cp, LiteralSource);
                 if (cr == null)
@@ -75,8 +79,8 @@ namespace Ionic.Utils.Zip
                     return;
                 }
 
-                foreach (string s in cr.Output)
-                    System.Console.WriteLine(s);
+                foreach (string output in cr.Output)
+                    System.Console.WriteLine(output);
 
                 if (cr.Errors.Count != 0)
                 {
