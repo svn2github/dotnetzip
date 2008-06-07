@@ -22,7 +22,7 @@ namespace Library.TestUtilities
         internal static void Initialize(ref string CurrentDir, ref string TopLevelDir)
         {
             CurrentDir = System.IO.Directory.GetCurrentDirectory();
-            TopLevelDir = TestUtilities.GenerateUniqueFilename("tmp");
+            TopLevelDir = TestUtilities.GenerateUniquePathname("tmp");
             System.IO.Directory.CreateDirectory(TopLevelDir);
 
             System.IO.Directory.SetCurrentDirectory(System.IO.Path.GetDirectoryName(TopLevelDir));
@@ -127,7 +127,7 @@ namespace Library.TestUtilities
 
         internal static string CreateUniqueFile(string extension, string ContainingDirectory)
         {
-            string fileToCreate = GenerateUniqueFilename(extension, ContainingDirectory);
+            string fileToCreate = GenerateUniquePathname(extension, ContainingDirectory);
             System.IO.File.Create(fileToCreate);
             return fileToCreate;
         }
@@ -143,7 +143,7 @@ namespace Library.TestUtilities
 
         internal static string CreateUniqueFile(string extension, string ContainingDirectory, int size)
         {
-            string fileToCreate = GenerateUniqueFilename(extension, ContainingDirectory);
+            string fileToCreate = GenerateUniquePathname(extension, ContainingDirectory);
             CreateAndFillFile(fileToCreate, size);
             return fileToCreate;
         }
@@ -161,11 +161,11 @@ namespace Library.TestUtilities
             }
         }
 
-        internal static string GenerateUniqueFilename(string extension)
+        internal static string GenerateUniquePathname(string extension)
         {
-            return GenerateUniqueFilename(extension, null);
+            return GenerateUniquePathname(extension, null);
         }
-        internal static string GenerateUniqueFilename(string extension, string ContainingDirectory)
+        internal static string GenerateUniquePathname(string extension, string ContainingDirectory)
         {
             string candidate = null;
             String AppName = _MyAssembly.GetName().Name;

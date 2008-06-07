@@ -576,7 +576,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_AddDirectory()
         {
-            string ZipFileToCreate = TestUtilities.GenerateUniqueFilename("zip");
+            string ZipFileToCreate = TestUtilities.GenerateUniquePathname("zip");
             _FilesToRemove.Add(ZipFileToCreate);
 
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
@@ -916,7 +916,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
                 }
             }
 
-            string ZipFileToCreate = TestUtilities.GenerateUniqueFilename("zip");
+            string ZipFileToCreate = TestUtilities.GenerateUniquePathname("zip");
             _FilesToRemove.Add(ZipFileToCreate);
 
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
