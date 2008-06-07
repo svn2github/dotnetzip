@@ -63,6 +63,26 @@ namespace Ionic.Utils.Zip
         { }
     }
 
+
+    /// <summary>
+    /// Issued when errors occur saving a self-extracting archive.
+    /// </summary>
+    public class SfxGenerationException : System.Exception
+    {
+        /// <summary>
+        /// Default ctor.
+        /// </summary>
+        public SfxGenerationException() { }
+
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="message">The message in the exception.</param>
+        public SfxGenerationException(String message)
+            : base(message)
+        { }
+    }
+
     
     /// <summary>
     /// Indicates that an operation was attempted on a ZipFile which was not possible

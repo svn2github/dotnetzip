@@ -1,4 +1,4 @@
-﻿// SelfExtractor.cs
+﻿// CommandLineSelfExtractorStub.cs
 // ------------------------------------------------------------------
 //
 // Description goes here....

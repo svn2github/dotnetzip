@@ -61,11 +61,29 @@
     <Compile Include="Crc32.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Resources\CommandLineSelfExtractorStub.cs" />
+    <EmbeddedResource Include="Resources\PasswordDialog.cs" />
+    <EmbeddedResource Include="Resources\PasswordDialog.resx">
+      <DependentUpon>PasswordDialog.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\WinFormsSelfExtractorStub.resx">
+      <DependentUpon>WinFormsSelfExtractorStub.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\PasswordDialog.designer.cs">
+      <DependentUpon>PasswordDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\WinFormsSelfExtractorStub.cs" />
+    <EmbeddedResource Include="Resources\WinFormsSelfExtractorStub.designer.cs">
+      <DependentUpon>WinFormsSelfExtractorStub.cs</DependentUpon>
+    </EmbeddedResource>
     <Compile Include="Shared.cs" />
     <Compile Include="ZipCrypto.cs" />
     <Compile Include="ZipDirEntry.cs" />
     <Compile Include="ZipEntry.cs" />
     <Compile Include="ZipFile.cs" />
+    <Compile Include="ZipFile.SaveSelfExtractor.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
@@ -95,4 +113,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <PreBuildEvent>..\..\GetResources.cmd</PreBuildEvent>
+  </PropertyGroup>
 </Project>

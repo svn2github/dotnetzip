@@ -40,6 +40,7 @@
 
 
 using System;
+using System.IO;
 
 
 namespace Ionic.Utils.Zip
@@ -51,7 +52,7 @@ namespace Ionic.Utils.Zip
     /// System.IO.Compression.DeflateStream base class in the .NET Framework
     /// base class library, for v2.0 and later.
     /// </summary>
-    public class ZipFile : System.Collections.Generic.IEnumerable<ZipEntry>,
+    public partial class ZipFile : System.Collections.Generic.IEnumerable<ZipEntry>,
       IDisposable
     {
         /// <summary>
@@ -219,14 +220,28 @@ namespace Ionic.Utils.Zip
         ///
         public String TempFileFolder
         {
-            get { return _TempFileFolder; }
+            get 
+	    {
+	      // first time through only (default value)
+	      if (_TempFileFolder == null)
+	      {
+		if (Environment.GetEnvironmentVariable("TEMP")!=null)
+		  _TempFileFolder= Environment.GetEnvironmentVariable("TEMP");
+		else 
+		  _TempFileFolder = ".";
+	      }
+	      return _TempFileFolder; 
+	    }
+
             set
             {
-                _TempFileFolder = value;
+		if (value == null)
+		  throw new ArgumentException("You may not set the TempFileFolder to a null value.");
+
                 if (!System.IO.Directory.Exists(_TempFileFolder))
-                {
                     throw new System.IO.FileNotFoundException("That direcotory does not exist.");
-                }
+
+                _TempFileFolder = value;
             }
         }
 
@@ -623,7 +638,11 @@ namespace Ionic.Utils.Zip
             if (!OutputStream.CanWrite)
                 throw new ArgumentException("The OutputStream must be a writable stream.");
 
-            //_writestream = OutputStream;
+	    // At various times during writing of the archive, we retrieve the position in the 
+	    // stream.  But, the Response.OutputStream in an ASP.NET page doesn't allow this.
+	    // So, we wrap the stream with a counting stream, so that we can retrieve the count
+	    // of bytes written at any particular moment. 
+
             _writestream = new CountingOutputStream(OutputStream);
             _entries = new System.Collections.Generic.List<ZipEntry>();
             _name = null;
@@ -663,10 +682,15 @@ namespace Ionic.Utils.Zip
         /// <param name="StatusMessageWriter">A TextWriter to use for writing verbose status messages.</param>
         public ZipFile(System.IO.Stream OutputStream, System.IO.TextWriter StatusMessageWriter)
         {
+	  
             if (!OutputStream.CanWrite)
                 throw new ArgumentException("The OutputStream must be a writable stream.");
 
-            //_writestream = OutputStream;
+	    // At various times during writing of the archive, we retrieve the position in the 
+	    // stream.  But, the Response.OutputStream in an ASP.NET page doesn't allow this.
+	    // So, we wrap the stream with a counting stream, so that we can retrieve the count
+	    // of bytes written at any particular moment. 
+
             _writestream = new CountingOutputStream(OutputStream);
             _entries = new System.Collections.Generic.List<ZipEntry>();
             _name = null;
@@ -1511,7 +1535,7 @@ namespace Ionic.Utils.Zip
                 e.Write(WriteStream);
             }
 
-            WriteCentralDirectoryStructure();
+            WriteCentralDirectoryStructure(WriteStream);
 
             // _temporaryFileName may remain null if we are writing to a stream
             if ((_temporaryFileName != null) && (_name != null))
@@ -1576,37 +1600,34 @@ namespace Ionic.Utils.Zip
                 _writestream = null;
 
             _name = ZipFileName;
-            if (System.IO.Directory.Exists(_name))
+            if (Directory.Exists(_name))
                 throw new System.ArgumentException("That name specifies an existing directory. Please specify a filename.", "ZipFileName");
             _contentsChanged = true;
-            _fileAlreadyExists = (System.IO.File.Exists(_name));
+            _fileAlreadyExists = File.Exists(_name);
             Save();
         }
 
 
-        private void WriteCentralDirectoryStructure()
+        private void WriteCentralDirectoryStructure(Stream s)
         {
-            // the central directory structure
-            // long Start = WriteStream.Position;  // this is no good with ASP.NET Response.OutputStream
-            // really we want the position
-            var output = WriteStream as CountingOutputStream;
-            long Start = (output != null) ? output.BytesWritten
-              : WriteStream.Position;
+            // The Central Directory Structure.
+            // We need to keep track of the start and Finish of the Central Directory Structure. 
+            var output = s as CountingOutputStream;
+            long Start = (output != null) ? output.BytesWritten : s.Position;
 
             foreach (ZipEntry e in _entries)
             {
-                e.WriteCentralDirectoryEntry(WriteStream);  // this writes a ZipDirEntry corresponding to the ZipEntry
+                e.WriteCentralDirectoryEntry(s);  // this writes a ZipDirEntry corresponding to the ZipEntry
             }
             //long Finish = WriteStream.Length; // Position;  ditto - for ASP.NET
-            long Finish = (output != null) ? output.BytesWritten
-              : WriteStream.Position;
+            long Finish = (output != null) ? output.BytesWritten : s.Position;
 
             // now, the footer
-            WriteCentralDirectoryFooter(Start, Finish);
+            WriteCentralDirectoryFooter(s, Start, Finish);
         }
 
 
-        private void WriteCentralDirectoryFooter(long StartOfCentralDirectory, long EndOfCentralDirectory)
+        private void WriteCentralDirectoryFooter(Stream s, long StartOfCentralDirectory, long EndOfCentralDirectory)
         {
             int bufferLength = 22;
             if (Comment != null) bufferLength += Comment.Length;
@@ -1673,7 +1694,7 @@ namespace Ionic.Utils.Zip
                 i += j;
             }
 
-            WriteStream.Write(bytes, 0, i);
+            s.Write(bytes, 0, i);
         }
 
         #endregion
@@ -2599,7 +2620,8 @@ namespace Ionic.Utils.Zip
         private bool _fileAlreadyExists = false;
         private string _temporaryFileName = null;
         private bool _contentsChanged = false;
-        private String _TempFileFolder = ".";
+        //private String _TempFileFolder = ".";
+        private String _TempFileFolder;
         private bool _ReadStreamIsOurs = true;
     }
 

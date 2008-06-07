@@ -1006,12 +1006,11 @@ namespace Ionic.Utils.Zip.Tests.Basic
 
             int entriesAdded = 0;
             String filename = null;
-            int subdirCount = _rnd.Next(4) + 4;
 
             string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
             System.IO.Directory.CreateDirectory(Subdir);
 
-            int fileCount = _rnd.Next(3) + 3;
+            int fileCount = _rnd.Next(10) + 10;
             for (int j = 0; j < fileCount; j++)
             {
                 filename = System.IO.Path.Combine(Subdir, "file" + j + ".txt");
@@ -1048,12 +1047,11 @@ namespace Ionic.Utils.Zip.Tests.Basic
 
             int entriesAdded = 0;
             String filename = null;
-            //int subdirCount = _rnd.Next(4) + 4;
 
             string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
             System.IO.Directory.CreateDirectory(Subdir);
 
-            int fileCount = _rnd.Next(3) + 3;
+            int fileCount = _rnd.Next(13) + 13;
             for (int j = 0; j < fileCount; j++)
             {
                 if (_rnd.Next(2) == 0)
