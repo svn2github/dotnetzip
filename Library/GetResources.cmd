@@ -15,15 +15,28 @@ goto START
 
 :START
 setlocal
-cd ..\..\
-copy /y ..\Examples\SelfExtracting\CommandLineSelfExtractorStub.cs        Resources
-copy /y ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.cs           Resources
-copy /y ..\Examples\SelfExtracting\PasswordDialog.cs                      Resources
-copy /y ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.Designer.cs  Resources
-copy /y ..\Examples\SelfExtracting\PasswordDialog.Designer.cs             Resources
 
-copy /y ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.resx         Resources
-copy /y ..\Examples\SelfExtracting\PasswordDialog.resx                    Resources
+set ResourceDirectory=Resources
+cd ..\..\
+mkdir %ResourceDirectory%
+copy /y ..\Examples\SelfExtracting\CommandLineSelfExtractorStub.cs        %ResourceDirectory%
+copy /y ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.cs           %ResourceDirectory%
+copy /y ..\Examples\SelfExtracting\PasswordDialog.cs                      %ResourceDirectory%
+copy /y ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.Designer.cs  %ResourceDirectory%
+copy /y ..\Examples\SelfExtracting\PasswordDialog.Designer.cs             %ResourceDirectory%
+
+
+copy /y ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.resx     %ResourceDirectory%
+copy /y  ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.resx     %ResourceDirectory%
+
+
+@REM c:\netsdk3.0\bin\resgen.exe ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.resx     %ResourceDirectory%\WinFormsSelfExtractorStub.resources
+@REM c:\netsdk3.0\bin\resgen.exe ..\Examples\SelfExtracting\PasswordDialog.resx                %ResourceDirectory%\PasswordDialog.resources
+@REM 
+@REM del %ResourceDirectory%.zip
+@REM c:\dinoch\bin\zipit.exe %ResourceDirectory%.zip %ResourceDirectory%
+@REM rd /s /q %ResourceDirectory%
+
 
 endlocal
 :END

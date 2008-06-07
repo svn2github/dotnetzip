@@ -248,19 +248,19 @@ namespace Ionic.Utils.Zip
             // add the Ionic.Utils.Zip DLL as an embedded resource
             cp.EmbeddedResources.Add(a1.Location);
 
-            Console.WriteLine("Resources in this assembly:");
-            foreach (string rsrc in a2.GetManifestResourceNames())
-            {
-                Console.WriteLine(rsrc);
-            }
-            Console.WriteLine();
+            //Console.WriteLine("Resources in this assembly:");
+            //foreach (string rsrc in a2.GetManifestResourceNames())
+            //{
+            //    Console.WriteLine(rsrc);
+            //}
+            //Console.WriteLine();
 
-            Console.WriteLine("reading source code resources:");
+            //Console.WriteLine("reading source code resources:");
             // concatenate all the source code resources into a single module
             var sb = new System.Text.StringBuilder();
             foreach (string rc in settings.ResourcesToCompile)
             {
-                Console.WriteLine("  trying to read stream: ({0})", rc);
+                //Console.WriteLine("  trying to read stream: ({0})", rc);
                 Stream s = a2.GetManifestResourceStream(rc);
                 using (StreamReader sr = new StreamReader(s))
                 {

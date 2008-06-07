@@ -1,9 +1,9 @@
 ﻿namespace Ionic.Utils.Zip
 {
     using System;
-using System.Reflection;
-using System.IO;
-using System.Windows.Forms;
+    using System.Reflection;
+    using System.IO;
+    using System.Windows.Forms;
 
 
     public partial class WinFormsSelfExtractorStub : Form
@@ -71,6 +71,7 @@ using System.Windows.Forms;
         {
             string targetDirectory = textBox1.Text;
             bool WantOverwrite = checkBox1.Checked;
+            bool extractCancelled = false;
 
             // There are only two embedded resources.
             // One of them is the zip dll.  The other is the zip archive.
@@ -94,52 +95,69 @@ using System.Windows.Forms;
                        "Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
                 Application.Exit();
             }
-            
-                try
-                {
-                    using (global::Ionic.Utils.Zip.ZipFile zip = global::Ionic.Utils.Zip.ZipFile.Read(s))
-                    {
-                        foreach (global::Ionic.Utils.Zip.ZipEntry entry in zip)
-                        {
-                            if (entry.Encryption == global::Ionic.Utils.Zip.EncryptionAlgorithm.None)
-                                try
-                                {
-                                    entry.Extract(targetDirectory, WantOverwrite);
-                                }
-                                catch (Exception ex1)
-                                {
-                                    MessageBox.Show(String.Format("Failed to extract entry {0} -- {1}", entry.FileName, ex1.ToString()),
-                                        "Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-                                }
-                            else
-                            {
-                                while ((currentPassword == null) || (currentPassword == ""))
-                                {
-                                    currentPassword = PromptForPassword(entry.FileName);
-                                }
 
-                                try
+            try
+            {
+                using (global::Ionic.Utils.Zip.ZipFile zip = global::Ionic.Utils.Zip.ZipFile.Read(s))
+                {
+                    foreach (global::Ionic.Utils.Zip.ZipEntry entry in zip)
+                    {
+                        if (entry.Encryption == global::Ionic.Utils.Zip.EncryptionAlgorithm.None)
+                            try
+                            {
+                                entry.Extract(targetDirectory, WantOverwrite);
+                            }
+                            catch (Exception ex1)
+                            {
+                                DialogResult result = MessageBox.Show(String.Format("Failed to extract entry {0} -- {1}", entry.FileName, ex1.Message.ToString()),
+                                     String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+
+                                if (result == DialogResult.Cancel)
                                 {
-                                    entry.ExtractWithPassword(currentPassword, WantOverwrite, targetDirectory);
+                                    extractCancelled = true;
+                                    break;
                                 }
-                                catch (Exception ex2)
+                            }
+                        else
+                        {
+                            while ((currentPassword == null) || (currentPassword == ""))
+                            {
+                                currentPassword = PromptForPassword(entry.FileName);
+                            }
+
+                            try
+                            {
+                                entry.ExtractWithPassword(currentPassword, WantOverwrite, targetDirectory);
+                            }
+                            catch (Exception ex2)
+                            {
+                                // TODO: probably want a retry here in the case of bad password.
+                                DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
+                                    String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+
+                                if (result == DialogResult.Cancel)
                                 {
-                                    // probably want a retry here in the case of bad password.
-                                    MessageBox.Show(String.Format("Failed to extract entry {0} -- {1}", entry.FileName, ex2.ToString()),
-                                        "Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+                                    extractCancelled = true;
+                                    break;
                                 }
                             }
                         }
                     }
                 }
-                catch (Exception)
-                {
-                    MessageBox.Show("The self-extracting zip file is corrupted.",
-                        "Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-                    Application.Exit();
-                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("The self-extracting zip file is corrupted.",
+                    "Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+                Application.Exit();
+            }
 
+            if (extractCancelled) return;
+
+                btnExtract.Text = "Extracted.";
                 btnExtract.Enabled = false;
+                btnCancel.Text = "Quit";
+
                 if (checkBox2.Checked)
                 {
                     string w = System.Environment.GetEnvironmentVariable("WINDIR");
@@ -149,9 +167,10 @@ using System.Windows.Forms;
                         System.Diagnostics.Process.Start(Path.Combine(w, "explorer.exe"), targetDirectory);
                     }
                     catch { }
-                    Application.Exit();
                 }
-         }
+                //Application.Exit();
+            
+        }
 
         private string PromptForPassword(string entryName)
         {
