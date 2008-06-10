@@ -17,11 +17,27 @@ namespace Ionic.Utils.Zip
     /// </summary>
     public class Shared
     {
+      /// private null constructor
+      private Shared(){}
+
         /// <summary>
-        /// Round the given DateTime value to an even second value.  Round up in the case of odd seconds. 
+        /// Round the given DateTime value to an even second value.  
+        /// </summary>
+      ///
+      /// <remarks>
+      /// <para>
+      /// Round up in the case of an odd second value.  The rounding does not consider fractional seconds.
+      /// </para>
+      /// <para>
+      /// This is useful because the Zip spec allows storage of time only to the nearest even second.
+      /// So if you want to compare the time of an entry in the archive with it's actual time in the filesystem, you 
+      /// need to round the actual filesystem time, or use a 2-second threshold for the  comparison. 
+      /// </para>
+      /// <para>
         /// This is most nautrally an extension method for the DateTime class but this library is 
         /// built for .NET 2.0, not for .NET 3.5;  This means extension methods are a no-no.  
-        /// </summary>
+      /// </para>
+      /// </remarks>
         /// <param name="source">The DateTime value to round</param>
         /// <returns>The ruonded DateTime value</returns>
         public static DateTime RoundToEvenSecond(DateTime source)

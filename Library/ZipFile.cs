@@ -58,7 +58,7 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// This read-only property specifies the name of the zipfile to read or write. It is 
         /// set when the instance of the ZipFile type is created. When instantiating a ZipFile 
-        /// to write to a stream, the Name property remains null.
+        /// to read from or write to a stream, the Name property remains null.
         /// </summary>
         public string Name
         {
@@ -66,13 +66,20 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// This property is read/write for the zipfile. It allows the application to
-        /// specify a comment for the zipfile, or read the comment for the zipfile. 
+        /// A comment attached to the zip archive.
         /// </summary>
         ///
         /// <remarks>
+	/// <para>
+	/// This property is read/write for the zipfile. It allows the application to
+        /// specify a comment for the zipfile, or read the comment for the zipfile. 
+	/// If setting the comment, changes are only made permanent when you call a
+	/// <c>Save()</c> method.
+	/// </para>
+	/// <para>
         /// According to the zip spec, the comment is not encrypted, even if there is a password
         /// set on the zip archive. But you knew that...
+	/// </para>
         /// </remarks>
         public string Comment
         {
@@ -121,10 +128,10 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
-        /// Gets or sets the TextWriter to which status messages are delivered 
+        /// Gets or sets the <c>TextWriter</c> to which status messages are delivered 
         /// for the instance. If the TextWriter is set to a non-null value, then 
-        /// verbose output is sent to the TextWriter during Add, Read, Save and 
-        /// Extract operations.  
+        /// verbose output is sent to the <c>TextWriter</c> during <c>Add</c><c>, Read</c><c>, Save</c> and
+        /// <c>Extract</c> operations.  
         /// </summary>
         ///
         /// <example>
@@ -161,6 +168,7 @@ namespace Ionic.Utils.Zip
         /// Gets or sets the flag that indicates whether the ZipFile should use
         /// compression for subsequently added entries in the ZipFile instance.
         /// </summary>
+        ///
         /// <remarks>
         /// There is logic in the DotNetZip library that compares the size of the pre-compressed
         /// data with the size of the post-compressed data, and uses compression only if the size 
@@ -170,7 +178,9 @@ namespace Ionic.Utils.Zip
         /// is false. You can also set the CompressionMethod property on the ZipEntry, for 
         /// more granular control of this capability.  
         /// </remarks>
+        ///
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.CompressionMethod"/>
+        ///
         /// <example>
         /// This example shows how to specify that Compression will not be used when adding files 
         /// to the zip archive. None of the files added to the archive in this way will use
@@ -206,12 +216,15 @@ namespace Ionic.Utils.Zip
         /// Gets or sets the name for the folder to store the temporary file
         /// this library writes when saving the zip archive. 
         /// </summary>
+        ///
         /// <remarks>
-        /// The calling application should have write and delete rights on that
-        /// folder.  By default, the temp file folder is just the current working
-        /// directory.  But for ASP.NET applications, and other scenarios, the
-        /// application may wish to override this, with this public property. This
-        /// property is used only when calling one of the Save() methods.
+        /// The calling application should have write and delete rights on that folder.  By
+        /// default, the temp file folder is the directory referred to by the TEMP
+        /// environment variable.  If that variable is not set, this value defaults to the
+        /// current working directory.  But for some scenarios, such as ASP.NET
+        /// applications, the application may wish to explicitly override this,
+        /// with this public property. This property is used only when calling one of the
+        /// <c>Save()</c> methods, or the <c>SaveSelfExtractor()</c> method.
         /// </remarks>
         ///
         /// <exception cref="System.IO.FileNotFoundException">
@@ -297,8 +310,9 @@ namespace Ionic.Utils.Zip
         ///  Try 
         ///    Using zip As New ZipFile("test2.zip", System.Console.Out)
         ///      zip.AddFile("c:\datafiles\ReadMe.txt", "")
+        ///      zip.Password = "123456!"
         ///      zip.AddFile("c:\photos\personal\7440-N49th.png", "images")
-        ///      zip.Passwprd = "EncryptMe!"
+        ///      zip.Password= "!Secret1";
         ///      zip.AddFile("c:\Desktop\2005_Annual_Report.pdf", "files\documents")
         ///      zip.Save
         ///    End Using
@@ -1741,6 +1755,57 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// </remarks>
         /// 
+	/// <example>
+	/// <code>
+        /// var sw = new System.IO.StringWriter();
+        /// using (ZipFile zip =  ZipFile.Read("PackedDocuments.zip", sw))
+        /// {
+        ///   var Threshold = new DateTime(2007,7,4);
+        ///   // We cannot remove the entry from the list, within the context of 
+        ///   // an enumeration of said list.
+        ///   // So we add the doomed entry to a list to be removed later.
+        ///   // pass 1: mark the entries for removal
+        ///   var MarkedEntries = new System.Collections.Generic.List&lt;ZipEntry&gt;();
+        ///   foreach (ZipEntry e in zip)
+        ///   {
+        ///     if (e.LastModified &lt; Threshold)
+        ///       MarkedEntries.Add(e);
+        ///   }
+        ///   // pass 2: actually remove the entry. 
+        ///   foreach (ZipEntry zombie in MarkedEntries)
+        ///      zip.RemoveEntry(zombie);
+        ///   zip.Comment = "This archive has been updated.";
+        ///   zip.Save();
+        /// }
+        /// // can now use contents of sw, eg store in the audit log
+	/// </code>
+	///
+	/// <code lang="VB">
+        ///   Dim sw As New System.IO.StringWriter
+        ///   Using zip As ZipFile = ZipFile.Read("PackedDocuments.zip", sw)
+        ///       Dim Threshold As New DateTime(2007, 7, 4)
+        ///       ' We cannot remove the entry from the list, within the context of 
+        ///       ' an enumeration of said list.
+        ///       ' So we add the doomed entry to a list to be removed later.
+        ///       ' pass 1: mark the entries for removal
+        ///       Dim MarkedEntries As New System.Collections.Generic.List(Of ZipEntry)
+        ///       Dim e As ZipEntry
+        ///       For Each e In zip
+        ///           If (e.LastModified &lt; Threshold) Then
+        ///               MarkedEntries.Add(e)
+        ///           End If
+        ///       Next
+        ///       ' pass 2: actually remove the entry. 
+        ///       Dim zombie As ZipEntry
+        ///       For Each zombie In MarkedEntries
+        ///           zip.RemoveEntry(zombie)
+        ///       Next
+        ///       zip.Comment = "This archive has been updated."
+        ///       zip.Save
+        ///   End Using
+        ///   ' can now use contents of sw, eg store in the audit log
+	/// </code>
+	/// </example>
         /// <exception cref="System.Exception">
         /// Thrown if the zipfile cannot be read. The implementation of this 
         /// method relies on <c>System.IO.File.OpenRead()</c>, which can throw
@@ -2259,6 +2324,29 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// </remarks>
         /// 
+	/// <example>
+	/// This example extracts only the entries in a zip file that are .txt files.
+	/// <code>
+        /// using (ZipFile zip = ZipFile.Read("PackedDocuments.zip"))
+        /// {
+        ///   foreach (string s1 in zip.EntryFilenames)
+        ///   {
+        ///     if (s1.EndsWith(".txt"))
+        ///       zip[s1].Extract("textfiles");
+        ///   }
+        /// }
+	/// </code>
+	/// <code lang="VB">
+        ///   Using zip As ZipFile = ZipFile.Read("PackedDocuments.zip")
+        ///       Dim s1 As String
+        ///       For Each s1 In zip.EntryFilenames
+        ///           If s1.EndsWith(".txt") Then
+        ///               zip(s1).Extract("textfiles")
+        ///           End If
+        ///       Next
+        ///   End Using
+	/// </code>
+	/// </example>
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.RemoveEntry(string)"/>
         ///
         /// <exception cref="System.ArgumentException">
@@ -2328,7 +2416,7 @@ namespace Ionic.Utils.Zip
         /// <code lang="VB">
         ///   Dim ZipFileToRead As String = "PackedDocuments.zip"
         ///   Dim Candidate As String = "DatedMaterial.xps"
-        ///   Using zip As ZipFile = New ZipFile(ZipFileToRead)
+        ///   Using zip As New ZipFile(ZipFileToRead)
         ///       If zip.EntryFilenames.Contains(Candidate) Then
         ///           Console.WriteLine("The file '{0}' exists in the zip archive '{1}'", _
         ///                       Candidate, _

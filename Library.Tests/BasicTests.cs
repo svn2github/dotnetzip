@@ -527,6 +527,28 @@ namespace Ionic.Utils.Zip.Tests.Basic
         }
 
         [TestMethod]
+        public void CreateZip_AddDirectory_OneEmptyDirectory()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_AddDirectory_OneEmptyDirectory.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            string DirToZip = System.IO.Path.Combine(TopLevelDir, "zipthis");
+            System.IO.Directory.CreateDirectory(DirToZip);
+          
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                zip.AddDirectory(System.IO.Path.GetFileName(DirToZip));
+                zip.Save();
+            }
+
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, 0),
+                    "Zip file created seems to be invalid.");
+        }
+
+
+        [TestMethod]
         public void CreateZip_AddDirectory_CheckStatusTextWriter()
         {
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_AddDirectory_CheckStatusTextWriter.zip");

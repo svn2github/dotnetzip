@@ -154,12 +154,21 @@ namespace Ionic.Utils.Zip
         /// 
         /// <example>
         /// <code>
+        /// string DirectoryPath = "c:\\Documents\\Project7";
         /// using (ZipFile zip = new ZipFile())
         /// {
         ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath));
-        ///     zip.Comment = "This will be embedded into a self-extracting exe";
-        ///     zip.SaveSelfExtractor(ExeFileToCreate, SelfExtractorFlavor.ConsoleApplication);
+        ///     zip.Comment = "This will be embedded into a self-extracting console-based exe";
+        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication);
         /// }
+        /// </code>
+        /// <code lang="VB">
+        /// Dim DirectoryPath As String = "c:\Documents\Project7"
+        /// Using zip As New ZipFile()
+        ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath))
+        ///     zip.Comment = "This will be embedded into a self-extracting console-based exe"
+        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication)
+        /// End Using
         /// </code>
         /// </example>
         /// 

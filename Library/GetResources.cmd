@@ -27,7 +27,7 @@ copy /y ..\Examples\SelfExtracting\PasswordDialog.Designer.cs             %Resou
 
 
 copy /y ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.resx     %ResourceDirectory%
-copy /y  ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.resx     %ResourceDirectory%
+copy /y ..\Examples\SelfExtracting\PasswordDialog.resx     %ResourceDirectory%
 
 
 @REM c:\netsdk3.0\bin\resgen.exe ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.resx     %ResourceDirectory%\WinFormsSelfExtractorStub.resources
