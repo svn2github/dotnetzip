@@ -1568,7 +1568,22 @@ namespace Ionic.Utils.Zip
                 }
 
                 if (_fileAlreadyExists)
-                    System.IO.File.Replace(_temporaryFileName, _name, null);
+		{
+		  // We do not just call File.Replace() here because 
+		  // there is a possibility that the TEMP volume is different 
+		  // that the volume for the final file (c:\ vs d:\).
+		  // So we need to do a Delete+Move pair. 
+		  //
+		  // Ideally this would be transactional. 
+		  // It's possible that the delete succeeds and the move fails.  
+		  // in that case, we're hosed.
+		  // Could make this more complicated by moving (renaming) the first file, then
+		  // moving the second, then deleting the first file. But the
+		  // error handling and unwrap logic gets complicated.
+		  // Better to just keep it simple. 
+                    System.IO.File.Delete(_name);
+                    System.IO.File.Move(_temporaryFileName, _name);
+		}
                 else
                     System.IO.File.Move(_temporaryFileName, _name);
 
