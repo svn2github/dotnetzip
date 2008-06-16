@@ -1742,6 +1742,24 @@ namespace Ionic.Utils.Zip
 	/// <summary>
 	/// Fired after each entry has been written to the archive.
 	/// </summary>
+	/// <example>
+	/// <code>
+	/// public static void SaveProgress(object sender, SaveProgressEventArgs e)
+	/// {
+	///   Console.WriteLine("{0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal);
+	/// }
+	/// 
+	/// public static ZipUp(string targetZip, string directory)
+	/// {
+	///   using (var zip = new ZipFile()) {
+	///     zip.SaveProgress += SaveProgress; 
+	///     zip.AddDirectory(directory);
+	///     zip.Save(targetZip);
+	///   }
+	/// }
+	///
+	/// </code>
+	/// </example>
 	public event SaveProgressEventHandler SaveProgress;
 
 	/// <summary>
