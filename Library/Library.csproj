@@ -82,6 +82,7 @@
     <Compile Include="ZipCrypto.cs" />
     <Compile Include="ZipDirEntry.cs" />
     <Compile Include="ZipEntry.cs" />
+    <Compile Include="Events.cs" />
     <Compile Include="ZipFile.cs" />
     <Compile Include="ZipFile.SaveSelfExtractor.cs" />
   </ItemGroup>

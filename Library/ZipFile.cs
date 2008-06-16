@@ -1535,6 +1535,9 @@ namespace Ionic.Utils.Zip
         ///
         public void Save()
         {
+	  
+	  OnSaveStarted(new SaveEventArgs((_name!=null)?_name:"(stream)"));
+
             if (WriteStream == null)
                 throw new BadStateException("You haven't specified where to save the zip.");
             // check if modified, before saving. 
@@ -1544,9 +1547,12 @@ namespace Ionic.Utils.Zip
 
 
             // write an entry in the zip for each file
+	    int n=0;
             foreach (ZipEntry e in _entries)
             {
                 e.Write(WriteStream);
+		n++;
+		OnSaveProgress(new SaveProgressEventArgs(_entries.Count, n, e.FileName));
             }
 
             WriteCentralDirectoryStructure(WriteStream);
@@ -1556,6 +1562,7 @@ namespace Ionic.Utils.Zip
             {
                 // only close the stream if there is a file behind it. 
                 WriteStream.Close();
+		WriteStream.Dispose();
                 WriteStream = null;
 
                 if ((_fileAlreadyExists) && (this._readstream != null))
@@ -1589,7 +1596,10 @@ namespace Ionic.Utils.Zip
 
                 _fileAlreadyExists = true;
             }
+
+	  OnSaveCompleted(new SaveEventArgs((_name!=null)?_name:"(stream)"));
         }
+
 
 
         /// <summary>
@@ -1725,6 +1735,69 @@ namespace Ionic.Utils.Zip
 
             s.Write(bytes, 0, i);
         }
+
+#endregion
+#region Events
+
+	/// <summary>
+	/// Fired after each entry has been written to the archive.
+	/// </summary>
+	public event SaveProgressEventHandler SaveProgress;
+
+	/// <summary>
+	/// Fired when the save starts.
+	/// </summary>
+	public event SaveStartedEventHandler SaveStarted;
+
+	/// <summary>
+	/// Fired after the save completes.
+	/// </summary>
+	public event SaveCompletedEventHandler SaveCompleted;
+
+
+        /// <summary>
+        /// Fires the <see cref="SaveProgress"/> method.
+        /// </summary>
+        private void OnSaveProgress(SaveProgressEventArgs e)
+        {
+            lock (LOCK)
+            {
+                if (SaveProgress != null)
+                {
+                    SaveProgress(this, e);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fires the <see cref="SaveCompleted"/> method.
+        /// </summary>
+        private void OnSaveCompleted(SaveEventArgs e)
+        {
+            lock (LOCK)
+{
+            if (SaveCompleted != null)
+            {
+                SaveCompleted(this, e);
+            }
+}
+        }
+
+
+        /// <summary>
+        /// Fires the <see cref="SaveStarted"/> method.
+        /// </summary>
+        private void OnSaveStarted(SaveEventArgs e)
+        {
+            lock (LOCK)
+	    {
+            if (SaveStarted != null)
+            {
+                SaveStarted(this, e);
+            }
+            }
+        }
+
 
         #endregion
 
@@ -2726,6 +2799,7 @@ namespace Ionic.Utils.Zip
         //private String _TempFileFolder = ".";
         private String _TempFileFolder;
         private bool _ReadStreamIsOurs = true;
+	private object LOCK = new object();
     }
 
 
