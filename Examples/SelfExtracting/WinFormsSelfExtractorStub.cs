@@ -14,6 +14,28 @@
         {
             InitializeComponent();
             textBox1.Text = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+
+            Stream s = GetZipStream();
+            try
+            {
+                using (global::Ionic.Utils.Zip.ZipFile zip = global::Ionic.Utils.Zip.ZipFile.Read(s))
+                {
+                    if ((zip.Comment != null) && (zip.Comment != ""))
+                    {
+                        label3.Text = zip.Comment;
+                    }
+                    else
+                    {
+                        label2.Text = "";
+                        label3.Text = "";
+                    }
+                }
+            }
+            catch
+            {
+                label2.Text = "";
+                label3.Text = "";
+            }
         }
 
         static WinFormsSelfExtractorStub()
@@ -66,35 +88,14 @@
             }
         }
 
-
         private void btnExtract_Click(object sender, EventArgs e)
         {
             string targetDirectory = textBox1.Text;
             bool WantOverwrite = checkBox1.Checked;
             bool extractCancelled = false;
-
-            // There are only two embedded resources.
-            // One of them is the zip dll.  The other is the zip archive.
-            // We load the resouce that is NOT the DLL, as the zip archive.
-            Assembly a = Assembly.GetExecutingAssembly();
-            string[] x = a.GetManifestResourceNames();
-            Stream s = null;
-            foreach (string name in x)
-            {
-                if ((name != DllResourceName) && (name.EndsWith(".zip")))
-                {
-                    s = a.GetManifestResourceStream(name);
-                    break;
-                }
-            }
-
             string currentPassword = null;
-            if (s == null)
-            {
-                MessageBox.Show("No Zip archive found.",
-                       "Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-                Application.Exit();
-            }
+
+            Stream s = GetZipStream();
 
             try
             {
@@ -154,23 +155,50 @@
 
             if (extractCancelled) return;
 
-                btnExtract.Text = "Extracted.";
-                btnExtract.Enabled = false;
-                btnCancel.Text = "Quit";
+            btnExtract.Text = "Extracted.";
+            btnExtract.Enabled = false;
+            btnCancel.Text = "Quit";
 
-                if (checkBox2.Checked)
+            if (checkBox2.Checked)
+            {
+                string w = System.Environment.GetEnvironmentVariable("WINDIR");
+                if (w == null) w = "c:\\windows";
+                try
                 {
-                    string w = System.Environment.GetEnvironmentVariable("WINDIR");
-                    if (w == null) w = "c:\\windows";
-                    try
-                    {
-                        System.Diagnostics.Process.Start(Path.Combine(w, "explorer.exe"), targetDirectory);
-                    }
-                    catch { }
+                    System.Diagnostics.Process.Start(Path.Combine(w, "explorer.exe"), targetDirectory);
                 }
-                //Application.Exit();
-            
+                catch { }
+            }
+            //Application.Exit();
+
         }
+
+        private static Stream GetZipStream()
+        {
+            // There are only two embedded resources.
+            // One of them is the zip dll.  The other is the zip archive.
+            // We load the resouce that is NOT the DLL, as the zip archive.
+            Assembly a = Assembly.GetExecutingAssembly();
+            string[] x = a.GetManifestResourceNames();
+            Stream s = null;
+            foreach (string name in x)
+            {
+                if ((name != DllResourceName) && (name.EndsWith(".zip")))
+                {
+                    s = a.GetManifestResourceStream(name);
+                    break;
+                }
+            }
+
+            if (s == null)
+            {
+                MessageBox.Show("No Zip archive found.",
+                       "Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+                Application.Exit();
+            }
+            return s;
+        }
+
 
         private string PromptForPassword(string entryName)
         {
