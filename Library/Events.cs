@@ -31,7 +31,7 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// The total bytes to be transferred.
+        /// The total number of entries to be saved.
         /// </summary>
         public int EntriesTotal
         {
@@ -39,7 +39,7 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// Number of bytes that have been transferred.
+        /// Number of entries saved so far.
         /// </summary>
         public int EntriesSaved
         {
@@ -48,7 +48,7 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
-        /// Number of bytes that have been transferred.
+        /// the name of the last entry saved.
         /// </summary>
         public string NameOfLatestEntry
         {

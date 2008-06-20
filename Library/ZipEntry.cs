@@ -455,11 +455,15 @@ namespace Ionic.Utils.Zip
             // Return false if this is not a local file header signature.
             if (ZipEntry.IsNotValidSig(signature))
             {
-                ze._s.Seek(-4, System.IO.SeekOrigin.Current); // unread the signature
                 // Getting "not a ZipEntry signature" is not always wrong or an error. 
-                // This will happen after the last entry in a zipfile.  In that case, 
-                // we expect to read a ZipDirEntry signature (if a non-empty zip file) or 
-                // a ZipConstants.EndOfCentralDirectorySignature.  Anything else is a surprise, .
+                // This will happen after the last entry in a zipfile.  In that case, we 
+                // expect to read : 
+                //    a ZipDirEntry signature (if a non-empty zip file) or 
+                //    a ZipConstants.EndOfCentralDirectorySignature.  
+                //
+                // Anything else is a surprise.
+
+                ze._s.Seek(-4, System.IO.SeekOrigin.Current); // unread the signature
                 if (ZipDirEntry.IsNotValidSig(signature) && (signature != ZipConstants.EndOfCentralDirectorySignature))
                 {
                     throw new BadReadException(String.Format("  ZipEntry::Read(): Bad signature (0x{0:X8}) at position  0x{1:X8}", signature, ze._s.Position));
@@ -622,7 +626,42 @@ namespace Ionic.Utils.Zip
             {
                 s.Seek(16, System.IO.SeekOrigin.Current);
             }
+
+            // workitem 5306
+            // http://www.codeplex.com/DotNetZip/WorkItem/View.aspx?WorkItemId=5306
+            HandleUnexpectedDataDescriptor(entry);
+
             return entry;
+        }
+
+        private static void HandleUnexpectedDataDescriptor(ZipEntry entry)
+        {
+            System.IO.Stream s = entry._s;
+            // In some cases, the "data descriptor" is present, without a signature, even when bit 3 of the BitField is not set.  
+            // This is the CRC, followed
+            //    by the compressed length and the uncompressed length (4 bytes for each 
+            //    of those three elements).  Need to check that here.             
+            //
+            uint datum = (uint)Ionic.Utils.Zip.Shared.ReadInt(s);
+            if (datum == entry._Crc32)
+            {
+                int sz = Ionic.Utils.Zip.Shared.ReadInt(s);
+                if (sz == entry._CompressedSize)
+                {
+                    sz = Ionic.Utils.Zip.Shared.ReadInt(s);
+                    if (sz == entry._UncompressedSize)
+                    {
+                        // ignore everything and discard it.
+                    }
+                    else
+                        s.Seek(-12, System.IO.SeekOrigin.Current); // unread the three blocks
+                }
+                else
+                    s.Seek(-8, System.IO.SeekOrigin.Current); // unread the two blocks
+            }
+            else
+                s.Seek(-4, System.IO.SeekOrigin.Current); // unread the block
+
         }
 
 
@@ -758,13 +797,13 @@ namespace Ionic.Utils.Zip
         ///         
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.OverwriteOnExtract"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.Extract(bool)"/>
-	///
+        ///
         /// <remarks>
         /// <para>
         /// Existing entries in the filesystem will not be overwritten. If you would like to 
         /// force the overwrite of existing files, see the <c>OverwriteOnExtract</c> property, 
         /// or try one of the overloads of the Extract method that accept a boolean flag
-	/// to indicate explicitly whether you want overwrite.
+        /// to indicate explicitly whether you want overwrite.
         /// </para>
         /// <para>
         /// See the remarks on the LastModified property, for some details 
@@ -819,13 +858,13 @@ namespace Ionic.Utils.Zip
         /// 
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.OverwriteOnExtract"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.Extract(string, bool)"/>
-	///
+        ///
         /// <remarks>
         /// <para>
         /// Existing entries in the filesystem will not be overwritten. If you would like to 
         /// force the overwrite of existing files, see the <c>OverwriteOnExtract</c> property, 
         /// or try one of the overloads of the Extract method that accept a boolean flag
-	/// to indicate explicitly whether you want overwrite.
+        /// to indicate explicitly whether you want overwrite.
         /// </para>
         /// <para>
         /// See the remarks on the LastModified property, for some details 
@@ -869,13 +908,13 @@ namespace Ionic.Utils.Zip
         ///         
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.OverwriteOnExtract"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.ExtractWithPassword(bool, string)"/>
-	///
+        ///
         /// <remarks>
         /// <para>
         /// Existing entries in the filesystem will not be overwritten. If you would like to 
         /// force the overwrite of existing files, see the <c>OverwriteOnExtract</c> property, 
         /// or try one of the overloads of the ExtractWithPassword method that accept a boolean flag
-	/// to indicate explicitly whether you want overwrite.
+        /// to indicate explicitly whether you want overwrite.
         /// </para>
         /// <para>
         /// See the remarks on the LastModified property, for some details 
@@ -896,13 +935,13 @@ namespace Ionic.Utils.Zip
         /// 
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.OverwriteOnExtract"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.ExtractWithPassword(string, bool, string)"/>
-	///
+        ///
         /// <remarks>
         /// <para>
         /// Existing entries in the filesystem will not be overwritten. If you would like to 
         /// force the overwrite of existing files, see the <c>OverwriteOnExtract</c> property, 
         /// or try one of the overloads of the ExtractWithPassword method that accept a boolean flag
-	/// to indicate explicitly whether you want overwrite.
+        /// to indicate explicitly whether you want overwrite.
         /// </para>
         /// <para>
         /// See the remarks on the LastModified property, for some details 
@@ -1497,8 +1536,8 @@ namespace Ionic.Utils.Zip
             }
 
             // remember the offset, within the stream, of this particular entry header
-	    var counter = s as CountingOutputStream;
-	    _RelativeOffsetOfHeader = (int)((counter!=null) ? counter.BytesWritten : s.Position);
+            var counter = s as CountingOutputStream;
+            _RelativeOffsetOfHeader = (int)((counter != null) ? counter.BytesWritten : s.Position);
 
             _LengthOfHeader = i;
 

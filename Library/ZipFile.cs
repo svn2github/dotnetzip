@@ -2928,7 +2928,8 @@ namespace Ionic.Utils.Zip
 //
 //
 // Data descriptor:  (used only when bit 3 of the general purpose bitfield is set)
-//         local file header signature     4 bytes  (0x08074b50)
+//         (although, I have found zip files where bit 3 is not set, yet this descriptor is present!)
+//         local file header signature     4 bytes  (0x08074b50)  ** sometimes!!! Not always
 //         crc-32                          4 bytes
 //         compressed size                 4 bytes
 //         uncompressed size               4 bytes

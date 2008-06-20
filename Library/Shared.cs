@@ -82,13 +82,25 @@ namespace Ionic.Utils.Zip
 
         internal static int ReadSignature(System.IO.Stream s)
         {
-            int n = 0;
-            byte[] sig = new byte[4];
-            n = s.Read(sig, 0, sig.Length);
-            if (n != sig.Length) throw new BadReadException("Could not read signature - no data!");
-            int signature = (((sig[3] * 256 + sig[2]) * 256) + sig[1]) * 256 + sig[0];
-            return signature;
+            return _ReadFourBytes(s, "Could not read signature - no data!");
         }
+
+        internal static int ReadInt(System.IO.Stream s)
+        {
+            return  _ReadFourBytes(s, "Could not read block - no data!");
+        }
+
+        private static int _ReadFourBytes(System.IO.Stream s, string message)
+        {
+            int n = 0;
+            byte[] block = new byte[4];
+            n = s.Read(block, 0, block.Length);
+            if (n != block.Length) throw new BadReadException(message);
+            int data = (((block[3] * 256 + block[2]) * 256) + block[1]) * 256 + block[0];
+            return data ;
+        }
+
+
 
         /// <summary>
         /// Finds a signature in the zip stream. This is useful for finding 
