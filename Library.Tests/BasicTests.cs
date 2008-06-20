@@ -257,10 +257,21 @@ namespace Ionic.Utils.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_AddFile_OnlyZeroLengthFiles()
         {
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "ZeroLengthFiles.zip");
+            _Internal_ZeroLengthFiles(_rnd.Next(3) + 3, "CreateZip_AddFile_OnlyZeroLengthFiles");
+        }
+
+        [TestMethod]
+        public void CreateZip_AddFile_OneZeroLengthFile()
+        {
+            _Internal_ZeroLengthFiles(1, "CreateZip_AddFile_OneZeroLengthFile");
+        }
+
+
+        private void _Internal_ZeroLengthFiles(int fileCount, string nameStub)
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, nameStub + ".zip");
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
-            int fileCount = _rnd.Next(3) + 3;
             int i;
             string[] FilesToZip = new string[fileCount];
             for (i = 0; i < fileCount; i++)
@@ -280,7 +291,6 @@ namespace Ionic.Utils.Zip.Tests.Basic
 
             Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, FilesToZip.Length),
                     "Zip file created seems to be invalid.");
-
         }
 
         [TestMethod]

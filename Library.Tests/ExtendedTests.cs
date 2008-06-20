@@ -133,7 +133,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
         public void CreateZip_SelfExtractor_WinForms()
         {
             string ExeFileToCreate = System.IO.Path.Combine(TopLevelDir, "TestSelfExtractor-Winforms.exe");
-            string TargetDirectory = System.IO.Path.Combine(TopLevelDir, "unpack");
+            string TargetUnpackDirectory = System.IO.Path.Combine(TopLevelDir, "unpack");
 
             int entriesAdded = 0;
             String filename = null;
@@ -155,12 +155,12 @@ namespace Ionic.Utils.Zip.Tests.Extended
             using (ZipFile zip = new ZipFile())
             {
                 zip.AddDirectory(Subdir, System.IO.Path.GetFileName(Subdir));
-                zip.Comment = "This will be embedded into a self-extracting exe";
+                zip.Comment = "Please extract to:  " + TargetUnpackDirectory;
                 zip.SaveSelfExtractor(ExeFileToCreate, Ionic.Utils.Zip.SelfExtractorFlavor.WinFormsApplication);
             }
 
             System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo(ExeFileToCreate);
-            psi.Arguments = TargetDirectory;
+            psi.Arguments = TargetUnpackDirectory;
             psi.WorkingDirectory = TopLevelDir;
             psi.UseShellExecute = false;
             psi.CreateNoWindow = true;
@@ -168,7 +168,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
             process.WaitForExit();
 
             // now, compare the output in TargetDirectory with the original
-            string DirToCheck = System.IO.Path.Combine(TargetDirectory, "A");
+            string DirToCheck = System.IO.Path.Combine(TargetUnpackDirectory, "A");
             // verify the checksum of each file matches with its brother
             foreach (string fname in System.IO.Directory.GetFiles(DirToCheck))
             {
