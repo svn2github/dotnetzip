@@ -1303,12 +1303,43 @@ namespace Ionic.Utils.Zip
             return null;
         }
 
+
         private char[] GetFileNameCharacters()
         {
-            return ((TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3) && (FileName[1] == ':') && (FileName[2] == '\\')) ?
-           FileName.Substring(3).Replace("\\", "/").ToCharArray() :  // trim off volume letter, colon, and slash
-           FileName.Replace("\\", "/").ToCharArray();
+	  // here, we need to flip the backslashes to forward-slashes, 
+	  System.Console.WriteLine("GetFileNameCharacters: '{0}'", FileName);
+
+	  string SlashFixed = FileName.Replace("\\", "/");
+	  if ((TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3) && (FileName[1] == ':') && ((FileName[2] == '\\') && (FileName[2] == '/')))
+	  {
+	    return 
+	      SlashFixed.Substring(3).ToCharArray() ;  // trim off volume letter, colon, and slash
+	  }
+	  else
+	  {
+	  System.Console.WriteLine("GetFileNameCharacters: not a letter-colon pair");
+	    // also, we need to trim the \\server\share syntax from any UNC path
+	  if ((FileName.Length >= 4) && ((FileName[0] == '\\') && (FileName[1] == '\\'))
+	      || ((FileName[0] == '/') && (FileName[1] == '/')))
+	    {
+	      int n = SlashFixed.IndexOf('/', 2);
+	      System.Console.WriteLine("input Path '{0}'", FileName);
+	      System.Console.WriteLine("xformed: '{0}'", SlashFixed);
+	      System.Console.WriteLine("third slash: {0}\n", n);
+	      if (n == -1)
+		throw new ArgumentException("The path for that entry appears to be badly formatted");
+	      return SlashFixed.Substring(n+1).ToCharArray();
+	    }
+	    else {
+	  System.Console.WriteLine("GetFileNameCharacters: not a UNC not a letter-colon pair");
+	      return 
+		   SlashFixed.ToCharArray();
+	    }
+
+	  }
         }
+
+
 
         private void WriteHeader(System.IO.Stream s, byte[] bytes)
         {
