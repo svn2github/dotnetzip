@@ -148,6 +148,49 @@ namespace Ionic.Utils.Zip.Tests.Extended
 
 
         [TestMethod]
+        public void TestZip_IsZipFile()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "TestZip_IsZipFile.zip");
+
+            int entriesAdded = 0;
+            String filename = null;
+
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+            var checksums = new Dictionary<string, string>();
+
+            int fileCount = _rnd.Next(10) + 10;
+            for (int j = 0; j < fileCount; j++)
+            {
+                filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D2}.txt", j));
+                TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
+                entriesAdded++;
+                var chk = TestUtilities.ComputeChecksum(filename);
+                checksums.Add(filename, TestUtilities.CheckSumToString(chk));
+            }
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddDirectory(Subdir, System.IO.Path.GetFileName(Subdir));
+                zip1.Save(ZipFileToCreate);
+            }
+
+            // Verify the files are in the zip
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entriesAdded),
+                      "The Zip file has the wrong number of entries.");
+
+            Assert.IsTrue(ZipFile.IsZipFile(ZipFileToCreate),
+                "The IsZipFile() method returned an unexpected result for an existing zip file.");
+
+            Assert.IsTrue(!ZipFile.IsZipFile(filename),
+                "The IsZipFile() method returned an unexpected result for a extant file that is not a zip.");
+
+            filename = System.IO.Path.Combine(Subdir, String.Format("ThisFileDoesNotExist.{0:D2}.txt", _rnd.Next(2000)));
+            Assert.IsTrue(!ZipFile.IsZipFile(filename),
+                "The IsZipFile() method returned an unexpected result for a non-existent file.");
+        }
+
+        [TestMethod]
         public void CreateZip_SelfExtractor_Console()
         {
             string ExeFileToCreate = System.IO.Path.Combine(TopLevelDir, "TestSelfExtractor.exe");

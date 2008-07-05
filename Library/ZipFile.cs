@@ -70,16 +70,16 @@ namespace Ionic.Utils.Zip
         /// </summary>
         ///
         /// <remarks>
-	/// <para>
-	/// This property is read/write for the zipfile. It allows the application to
+        /// <para>
+        /// This property is read/write for the zipfile. It allows the application to
         /// specify a comment for the zipfile, or read the comment for the zipfile. 
-	/// If setting the comment, changes are only made permanent when you call a
-	/// <c>Save()</c> method.
-	/// </para>
-	/// <para>
+        /// If setting the comment, changes are only made permanent when you call a
+        /// <c>Save()</c> method.
+        /// </para>
+        /// <para>
         /// According to the zip spec, the comment is not encrypted, even if there is a password
         /// set on the zip archive. But you knew that...
-	/// </para>
+        /// </para>
         /// </remarks>
         public string Comment
         {
@@ -233,23 +233,23 @@ namespace Ionic.Utils.Zip
         ///
         public String TempFileFolder
         {
-            get 
-	    {
-	      // first time through only (default value)
-	      if (_TempFileFolder == null)
-	      {
-		if (Environment.GetEnvironmentVariable("TEMP")!=null)
-		  _TempFileFolder= Environment.GetEnvironmentVariable("TEMP");
-		else 
-		  _TempFileFolder = ".";
-	      }
-	      return _TempFileFolder; 
-	    }
+            get
+            {
+                // first time through only (default value)
+                if (_TempFileFolder == null)
+                {
+                    if (Environment.GetEnvironmentVariable("TEMP") != null)
+                        _TempFileFolder = Environment.GetEnvironmentVariable("TEMP");
+                    else
+                        _TempFileFolder = ".";
+                }
+                return _TempFileFolder;
+            }
 
             set
             {
-		if (value == null)
-		  throw new ArgumentException("You may not set the TempFileFolder to a null value.");
+                if (value == null)
+                    throw new ArgumentException("You may not set the TempFileFolder to a null value.");
 
                 if (!System.IO.Directory.Exists(_TempFileFolder))
                     throw new System.IO.FileNotFoundException("That direcotory does not exist.");
@@ -652,10 +652,10 @@ namespace Ionic.Utils.Zip
             if (!OutputStream.CanWrite)
                 throw new ArgumentException("The OutputStream must be a writable stream.");
 
-	    // At various times during writing of the archive, we retrieve the position in the 
-	    // stream.  But, the Response.OutputStream in an ASP.NET page doesn't allow this.
-	    // So, we wrap the stream with a counting stream, so that we can retrieve the count
-	    // of bytes written at any particular moment. 
+            // At various times during writing of the archive, we retrieve the position in the 
+            // stream.  But, the Response.OutputStream in an ASP.NET page doesn't allow this.
+            // So, we wrap the stream with a counting stream, so that we can retrieve the count
+            // of bytes written at any particular moment. 
 
             _writestream = new CountingOutputStream(OutputStream);
             _entries = new System.Collections.Generic.List<ZipEntry>();
@@ -696,14 +696,14 @@ namespace Ionic.Utils.Zip
         /// <param name="StatusMessageWriter">A TextWriter to use for writing verbose status messages.</param>
         public ZipFile(System.IO.Stream OutputStream, System.IO.TextWriter StatusMessageWriter)
         {
-	  
+
             if (!OutputStream.CanWrite)
                 throw new ArgumentException("The OutputStream must be a writable stream.");
 
-	    // At various times during writing of the archive, we retrieve the position in the 
-	    // stream.  But, the Response.OutputStream in an ASP.NET page doesn't allow this.
-	    // So, we wrap the stream with a counting stream, so that we can retrieve the count
-	    // of bytes written at any particular moment. 
+            // At various times during writing of the archive, we retrieve the position in the 
+            // stream.  But, the Response.OutputStream in an ASP.NET page doesn't allow this.
+            // So, we wrap the stream with a counting stream, so that we can retrieve the count
+            // of bytes written at any particular moment. 
 
             _writestream = new CountingOutputStream(OutputStream);
             _entries = new System.Collections.Generic.List<ZipEntry>();
@@ -1535,8 +1535,8 @@ namespace Ionic.Utils.Zip
         ///
         public void Save()
         {
-	  
-	  OnSaveStarted(new SaveEventArgs((_name!=null)?_name:"(stream)"));
+
+            OnSaveStarted(new SaveEventArgs((_name != null) ? _name : "(stream)"));
 
             if (WriteStream == null)
                 throw new BadStateException("You haven't specified where to save the zip.");
@@ -1547,12 +1547,12 @@ namespace Ionic.Utils.Zip
 
 
             // write an entry in the zip for each file
-	    int n=0;
+            int n = 0;
             foreach (ZipEntry e in _entries)
             {
                 e.Write(WriteStream);
-		n++;
-		OnSaveProgress(new SaveProgressEventArgs(_entries.Count, n, e.FileName));
+                n++;
+                OnSaveProgress(new SaveProgressEventArgs(_entries.Count, n, e.FileName));
             }
 
             WriteCentralDirectoryStructure(WriteStream);
@@ -1562,7 +1562,7 @@ namespace Ionic.Utils.Zip
             {
                 // only close the stream if there is a file behind it. 
                 WriteStream.Close();
-		WriteStream.Dispose();
+                WriteStream.Dispose();
                 WriteStream = null;
 
                 if ((_fileAlreadyExists) && (this._readstream != null))
@@ -1575,29 +1575,29 @@ namespace Ionic.Utils.Zip
                 }
 
                 if (_fileAlreadyExists)
-		{
-		  // We do not just call File.Replace() here because 
-		  // there is a possibility that the TEMP volume is different 
-		  // that the volume for the final file (c:\ vs d:\).
-		  // So we need to do a Delete+Move pair. 
-		  //
-		  // Ideally this would be transactional. 
-		  // It's possible that the delete succeeds and the move fails.  
-		  // in that case, we're hosed.
-		  // Could make this more complicated by moving (renaming) the first file, then
-		  // moving the second, then deleting the first file. But the
-		  // error handling and unwrap logic gets complicated.
-		  // Better to just keep it simple. 
+                {
+                    // We do not just call File.Replace() here because 
+                    // there is a possibility that the TEMP volume is different 
+                    // that the volume for the final file (c:\ vs d:\).
+                    // So we need to do a Delete+Move pair. 
+                    //
+                    // Ideally this would be transactional. 
+                    // It's possible that the delete succeeds and the move fails.  
+                    // in that case, we're hosed.
+                    // Could make this more complicated by moving (renaming) the first file, then
+                    // moving the second, then deleting the first file. But the
+                    // error handling and unwrap logic gets complicated.
+                    // Better to just keep it simple. 
                     System.IO.File.Delete(_name);
                     System.IO.File.Move(_temporaryFileName, _name);
-		}
+                }
                 else
                     System.IO.File.Move(_temporaryFileName, _name);
 
                 _fileAlreadyExists = true;
             }
 
-	  OnSaveCompleted(new SaveEventArgs((_name!=null)?_name:"(stream)"));
+            OnSaveCompleted(new SaveEventArgs((_name != null) ? _name : "(stream)"));
         }
 
 
@@ -1736,41 +1736,43 @@ namespace Ionic.Utils.Zip
             s.Write(bytes, 0, i);
         }
 
-#endregion
-#region Events
+        #endregion
 
-	/// <summary>
-	/// Fired after each entry has been written to the archive.
-	/// </summary>
-	/// <example>
-	/// <code>
-	/// public static void SaveProgress(object sender, SaveProgressEventArgs e)
-	/// {
-	///   Console.WriteLine("{0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal);
-	/// }
-	/// 
-	/// public static ZipUp(string targetZip, string directory)
-	/// {
-	///   using (var zip = new ZipFile()) {
-	///     zip.SaveProgress += SaveProgress; 
-	///     zip.AddDirectory(directory);
-	///     zip.Save(targetZip);
-	///   }
-	/// }
-	///
-	/// </code>
-	/// </example>
-	public event SaveProgressEventHandler SaveProgress;
 
-	/// <summary>
-	/// Fired when the save starts.
-	/// </summary>
-	public event SaveStartedEventHandler SaveStarted;
+        #region Events
 
-	/// <summary>
-	/// Fired after the save completes.
-	/// </summary>
-	public event SaveCompletedEventHandler SaveCompleted;
+        /// <summary>
+        /// Fired after each entry has been written to the archive.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// public static void SaveProgress(object sender, SaveProgressEventArgs e)
+        /// {
+        ///   Console.WriteLine("{0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal);
+        /// }
+        /// 
+        /// public static ZipUp(string targetZip, string directory)
+        /// {
+        ///   using (var zip = new ZipFile()) {
+        ///     zip.SaveProgress += SaveProgress; 
+        ///     zip.AddDirectory(directory);
+        ///     zip.Save(targetZip);
+        ///   }
+        /// }
+        ///
+        /// </code>
+        /// </example>
+        public event SaveProgressEventHandler SaveProgress;
+
+        /// <summary>
+        /// Fired when the save starts.
+        /// </summary>
+        public event SaveStartedEventHandler SaveStarted;
+
+        /// <summary>
+        /// Fired after the save completes.
+        /// </summary>
+        public event SaveCompletedEventHandler SaveCompleted;
 
 
         /// <summary>
@@ -1793,12 +1795,12 @@ namespace Ionic.Utils.Zip
         private void OnSaveCompleted(SaveEventArgs e)
         {
             lock (LOCK)
-{
-            if (SaveCompleted != null)
             {
-                SaveCompleted(this, e);
+                if (SaveCompleted != null)
+                {
+                    SaveCompleted(this, e);
+                }
             }
-}
         }
 
 
@@ -1808,11 +1810,11 @@ namespace Ionic.Utils.Zip
         private void OnSaveStarted(SaveEventArgs e)
         {
             lock (LOCK)
-	    {
-            if (SaveStarted != null)
             {
-                SaveStarted(this, e);
-            }
+                if (SaveStarted != null)
+                {
+                    SaveStarted(this, e);
+                }
             }
         }
 
@@ -1820,6 +1822,35 @@ namespace Ionic.Utils.Zip
         #endregion
 
         #region For Reading Zip Files
+
+        /// <summary>
+        /// Checks the given file to see if it appears to be a valid zip file.
+        /// </summary>
+        /// <remarks>
+        /// This method opens the file, and reads in the zip header, as well as the
+        /// zip directory structure.  If everything succeeds, then the method
+        /// returns true.  If anything fails - for example if an incorrect signature
+        /// is found, the the method returns false.  This method also returns false
+        /// (no exception) for a file that does not exist.  Because this method does
+        /// not actually read in the zip content, decrypt, and check CRCs, it is
+        /// possible for this method to return true in the case the zip file is
+        /// corrupted.
+        /// </remarks>
+        /// <param name="FileName">The file to check.</param>
+        /// <returns>true if the file appears to be a zip file.</returns>
+        public static bool IsZipFile(string FileName)
+        {
+            bool result = false;
+            try
+            {
+                // if no exception, then ... it is a zip file.
+                using (ZipFile zf = ZipFile.Read(FileName, null)) { }
+                result = true;
+            }
+            catch { }
+            return result;
+        }
+
 
         /// <summary>
         /// Reads a zip file archive and returns the instance.  
@@ -1861,8 +1892,8 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// </remarks>
         /// 
-	/// <example>
-	/// <code>
+        /// <example>
+        /// <code>
         /// var sw = new System.IO.StringWriter();
         /// using (ZipFile zip =  ZipFile.Read("PackedDocuments.zip", sw))
         /// {
@@ -1884,9 +1915,9 @@ namespace Ionic.Utils.Zip
         ///   zip.Save();
         /// }
         /// // can now use contents of sw, eg store in the audit log
-	/// </code>
-	///
-	/// <code lang="VB">
+        /// </code>
+        ///
+        /// <code lang="VB">
         ///   Dim sw As New System.IO.StringWriter
         ///   Using zip As ZipFile = ZipFile.Read("PackedDocuments.zip", sw)
         ///       Dim Threshold As New DateTime(2007, 7, 4)
@@ -1910,8 +1941,8 @@ namespace Ionic.Utils.Zip
         ///       zip.Save
         ///   End Using
         ///   ' can now use contents of sw, eg store in the audit log
-	/// </code>
-	/// </example>
+        /// </code>
+        /// </example>
         /// <exception cref="System.Exception">
         /// Thrown if the zipfile cannot be read. The implementation of this 
         /// method relies on <c>System.IO.File.OpenRead()</c>, which can throw
@@ -2118,6 +2149,7 @@ namespace Ionic.Utils.Zip
             // when finished slurping in the zip, close the read stream
             //zf.ReadStream.Close();
         }
+
 
         private static void ReadCentralDirectoryFooter(ZipFile zf)
         {
@@ -2430,9 +2462,9 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// </remarks>
         /// 
-	/// <example>
-	/// This example extracts only the entries in a zip file that are .txt files.
-	/// <code>
+        /// <example>
+        /// This example extracts only the entries in a zip file that are .txt files.
+        /// <code>
         /// using (ZipFile zip = ZipFile.Read("PackedDocuments.zip"))
         /// {
         ///   foreach (string s1 in zip.EntryFilenames)
@@ -2441,8 +2473,8 @@ namespace Ionic.Utils.Zip
         ///       zip[s1].Extract("textfiles");
         ///   }
         /// }
-	/// </code>
-	/// <code lang="VB">
+        /// </code>
+        /// <code lang="VB">
         ///   Using zip As ZipFile = ZipFile.Read("PackedDocuments.zip")
         ///       Dim s1 As String
         ///       For Each s1 In zip.EntryFilenames
@@ -2451,8 +2483,8 @@ namespace Ionic.Utils.Zip
         ///           End If
         ///       Next
         ///   End Using
-	/// </code>
-	/// </example>
+        /// </code>
+        /// </example>
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.RemoveEntry(string)"/>
         ///
         /// <exception cref="System.ArgumentException">
@@ -2817,7 +2849,7 @@ namespace Ionic.Utils.Zip
         //private String _TempFileFolder = ".";
         private String _TempFileFolder;
         private bool _ReadStreamIsOurs = true;
-	private object LOCK = new object();
+        private object LOCK = new object();
     }
 
 
