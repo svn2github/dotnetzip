@@ -175,15 +175,16 @@ namespace Ionic.Utils.Zip
 
 
     /// <summary>
-    /// A read-only Stream for reading and concurrently calculating a CRC.
+    /// A read-only, forward-only Stream that calculates a CRC, a checksum, on all bytes read.
+    /// This class can be used to verify the CRC of a ZipEntry when reading from a stream.
     /// </summary>
-    internal class CrcCalculatorStream : System.IO.Stream
+    public class CrcCalculatorStream : System.IO.Stream
     {
         private System.IO.Stream _InnerStream;
         private CRC32 _Crc32;
 
         /// <summary>
-        /// The  constructor.
+        /// The constructor.
         /// </summary>
         /// <param name="s">The underlying stream</param>
         public CrcCalculatorStream(System.IO.Stream s)
@@ -195,76 +196,103 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// Indicates the current CRC for all blocks slurped in.
+        /// Provides the current CRC for all blocks slurped in.
         /// </summary>
         public UInt32 Crc32
         {
-            get
-            {
-                return _Crc32.Crc32Result;
-            }
+            get { return _Crc32.Crc32Result; }
         }
 
 
+        /// <summary>
+        /// Read from the stream
+        /// </summary>
+        /// <param name="buffer">the buffer to read</param>
+        /// <param name="offset">the offset at which to start</param>
+        /// <param name="count">the number of bytes to read</param>
+        /// <returns>the number of bytes actually read</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
             int n = _InnerStream.Read(buffer, offset, count);
-            _Crc32.SlurpBlock(buffer, offset, count);
+            if (n>0) _Crc32.SlurpBlock(buffer, offset, n);
             return n;
         }
 
+        /// <summary>
+        /// This method is not implemented and will throw if called.
+        /// </summary>
+        /// <param name="buffer">N/A</param>
+        /// <param name="offset">N/A</param>
+        /// <param name="count">N/A</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Indicates whether the stream supports reading. Always returns true.
+        /// </summary>
         public override bool CanRead
         {
             get { return true; }
         }
+
+        /// <summary>
+        /// Indicates whether the stream supports seeking. Always returns false.
+        /// </summary>
         public override bool CanSeek
         {
-            get
-            {
-                return false;
-            }
+            get { return false; }
         }
 
+        /// <summary>
+        /// Indicates whether the stream supports writing. Always returns false.
+        /// </summary>
         public override bool CanWrite
         {
-            get
-            {
-                return false;
-            }
+            get { return false; }
         }
 
+        /// <summary>
+        /// Not implemented.
+        /// </summary>
         public override void Flush()
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Not implemented.
+        /// </summary>
         public override long Length
         {
             get { throw new NotImplementedException(); }
         }
 
+        /// <summary>
+        /// Not implemented.
+        /// </summary>
         public override long Position
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
+        /// <summary>
+        /// Not implemented.
+        /// </summary>
+        /// <param name="offset">N/A</param>
+        /// <param name="origin">N/A</param>
+        /// <returns>N/A</returns>
         public override long Seek(long offset, System.IO.SeekOrigin origin)
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Not implemented.
+        /// </summary>
+        /// <param name="value">N/A</param>
         public override void SetLength(long value)
         {
             throw new NotImplementedException();

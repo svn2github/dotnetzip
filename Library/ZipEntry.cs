@@ -10,6 +10,7 @@
 
 using System;
 using System.IO.Compression;
+using System.IO;
 
 namespace Ionic.Utils.Zip
 {
@@ -347,6 +348,14 @@ namespace Ionic.Utils.Zip
                 if (UncompressedSize == 0) return 0;
                 return 100 * (1.0 - (1.0 * CompressedSize) / (1.0 * UncompressedSize));
             }
+        }
+
+        /// <summary>
+        /// The CRC (Cyclic Redundancy Check) on the contents of the ZipEntry.
+        /// </summary>
+        public UInt32 Crc32
+        {
+            get { return _Crc32; }
         }
 
         /// <summary>
@@ -1012,6 +1021,104 @@ namespace Ionic.Utils.Zip
         {
             InternalExtract(null, s, Password);
         }
+
+
+        /// <summary>
+        /// Opens the backing stream for the zip entry in the archive, for reading. 
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The ZipEntry has methods that extract the entry to an already-opened stream.
+        /// This is an alternative method for those applications that wish to control the stream directly.
+        /// </para>
+        /// <para>
+        /// The CrcCalculatorStream that is returned calculates a CRC32 on the bytes of the stream as it is read.
+        /// This CRC should be used by the application to validate the content of the ZipEntry, when the read is complete.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// In this example, we open a zipfile, then read in a named entry via a stream, scanning
+        /// the bytes in the entry as we go.  Finally, the CRC and the size of the entry are verified.
+        /// <code>
+        /// using (ZipFile zip = new ZipFile(ZipFileToRead))
+        /// {
+        ///   ZipEntry e1= zip["Download.mp3"];
+        ///   using (CrcCalculatorStream s = e1.OpenReader())
+        ///   {
+        ///     byte[] buffer = new byte[4096];
+        ///     int n, totalBytesRead= 0;
+        ///     do {
+        ///       n = s.Read(buffer,0, buffer.Length);
+        ///       totalBytesRead+=n; 
+        ///     } while (n&gt;0);
+        ///      if (s.Crc32 != e1.Crc32)
+        ///       throw new Exception(string.Format("The Zip Entry failed the CRC Check. (0x{0:X8}!=0x{1:X8})", s.Crc32, e1.Crc32));
+        ///      if (totalBytesRead != e1.UncompressedSize)
+        ///       throw new Exception(string.Format("We read an unexpected number of bytes. ({0}!={1})", totalBytesRead, e1.UncompressedSize));
+        ///   }
+        /// }
+        /// </code>
+        /// <code lang="VB">
+        ///   Using zip As New ZipFile(ZipFileToRead)
+        ///       Dim e1 As ZipEntry = zip.Item("Download.mp3")
+        ///       Using s As CrcCalculatorStream = e1.OpenReader
+        ///           Dim n As Integer
+        ///           Dim buffer As Byte() = New Byte(4096) {}
+        ///           Dim totalBytesRead As Integer = 0
+        ///           Do
+        ///               n = s.Read(buffer, 0, buffer.Length)
+        ///               totalBytesRead = (totalBytesRead + n)
+        ///           Loop While (n &gt; 0)
+        ///           If (s.Crc32 &lt;&gt; e1.Crc32) Then
+        ///               Throw New Exception(String.Format("The Zip Entry failed the CRC Check. (0x{0:X8}!=0x{1:X8})", s.Crc32, e1.Crc32))
+        ///           End If
+        ///           If (totalBytesRead &lt;&gt; e1.UncompressedSize) Then
+        ///               Throw New Exception(String.Format("We read an unexpected number of bytes. ({0}!={1})", totalBytesRead, e1.UncompressedSize))
+        ///           End If
+        ///       End Using
+        ///   End Using
+        /// </code>
+        /// </example>
+        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.Extract(System.IO.Stream)"/>
+        /// <returns>The Stream for reading.</returns>
+        public CrcCalculatorStream OpenReader()
+        {
+            return InternalOpenReader(null);
+        }
+
+        /// <summary>
+        /// Opens the backing stream for an encrypted zip entry in the archive, for reading. 
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// See the documentation on the OpenReader() method for full details.  This overload allows the 
+        /// application to specify a password for the ZipEntry to be read. 
+        /// </para>
+        /// </remarks>
+        /// <returns>The Stream for reading.</returns>
+        public CrcCalculatorStream OpenReader(string Password)
+        {
+            return InternalOpenReader(Password);
+        }
+
+
+        private CrcCalculatorStream InternalOpenReader(string Password)
+        {
+            ValidateCompression();
+            ValidateEncryption();
+            ZipCrypto cipher = SetupCipher(Password);
+
+            // seek to the beginning of the file data in the stream
+            this._s.Seek(this.__FileDataPosition, System.IO.SeekOrigin.Begin);
+
+            var instream = (Encryption == EncryptionAlgorithm.PkzipWeak) ?
+                          new ZipCipherInputStream(this._s, cipher) : this._s;
+
+            return new CrcCalculatorStream((CompressionMethod == 0x08) ?
+                new DeflateStream(instream, CompressionMode.Decompress, true) :
+                instream);
+
+        }
         #endregion
 
 
@@ -1020,40 +1127,57 @@ namespace Ionic.Utils.Zip
         // The Password param is required for encrypted entries.
         private void InternalExtract(string basedir, System.IO.Stream outstream, string Password)
         {
-            // Validation
+            ValidateCompression();
 
-            if ((CompressionMethod != 0) && (CompressionMethod != 0x08))  // deflate
-                throw new ArgumentException(String.Format("Unsupported Compression method ({0:X2})",
-                              CompressionMethod));
+            ValidateEncryption();
 
-            if ((Encryption != EncryptionAlgorithm.PkzipWeak) &&
-            (Encryption != EncryptionAlgorithm.None))
-                throw new ArgumentException(String.Format("Unsupported Encryption algorithm ({0:X2})",
-                              Encryption));
+            string TargetFile;
+            if (ValidateOutput(basedir, outstream, out TargetFile)) return;
 
-            string TargetFile = null;
-            if (basedir != null)
+            ZipCrypto cipher = SetupCipher(Password);
+
+            System.IO.Stream output = null;
+            if (TargetFile != null)
             {
-                TargetFile = System.IO.Path.Combine(basedir, FileName);
+                // ensure the target path exists
+                if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(TargetFile)))
+                    System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(TargetFile));
 
-                // check if a directory
-                if ((IsDirectory) || (FileName.EndsWith("/")))
-                {
-                    if (!System.IO.Directory.Exists(TargetFile))
-                        System.IO.Directory.CreateDirectory(TargetFile);
-                    // all done
-                    return;
-                }
+                // and ensure we can create the file
+                if ((OverwriteOnExtract) && (System.IO.File.Exists(TargetFile)))
+                    System.IO.File.Delete(TargetFile);
+
+                output = new System.IO.FileStream(TargetFile, System.IO.FileMode.CreateNew);
+
             }
-            else if (outstream != null)
+            else
+                output = outstream;
+
+
+            UInt32 ActualCrc32 = _ExtractOne(output, cipher);
+
+            // After extracting, Validate the CRC32
+            if (ActualCrc32 != _Crc32)
             {
-                if ((IsDirectory) || (FileName.EndsWith("/")))
-                    // extract a directory to streamwriter?  nothing to do!
-                    return;
+                //throw new BadCrcException("CRC error: the file being extracted appears to be corrupted.");
+                throw new BadCrcException("CRC error: the file being extracted appears to be corrupted. " +
+                          String.Format("Expected 0x{0:X8}, actual 0x{1:X8}", _Crc32, ActualCrc32));
+                //String.Format("CRC error: expected 0x{0:X8}, actual 0x{1:X8}", _Crc32, ActualCrc32);
             }
-            else throw new ArgumentException("Invalid input.", "outstream | basedir");
 
 
+            if (TargetFile != null)
+            {
+                output.Close();
+                output.Dispose();
+
+                System.IO.File.SetLastWriteTime(TargetFile, LastModified);
+            }
+
+        }
+
+        private ZipCrypto SetupCipher(string Password)
+        {
             ZipCrypto cipher = null;
             // decrypt the file header data here if necessary. 
             if (Encryption == EncryptionAlgorithm.PkzipWeak)
@@ -1079,48 +1203,55 @@ namespace Ionic.Utils.Zip
                 // We have a good password. 
             }
 
-
-            System.IO.Stream output = null;
-            if (TargetFile != null)
-            {
-                // ensure the target path exists
-                if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(TargetFile)))
-                    System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(TargetFile));
-
-                // and ensure we can create the file
-                if ((OverwriteOnExtract) && (System.IO.File.Exists(TargetFile)))
-                    System.IO.File.Delete(TargetFile);
-
-                output = new System.IO.FileStream(TargetFile, System.IO.FileMode.CreateNew);
-
-            }
-            else
-                output = outstream;
-
-
-            UInt32 ActualCrc32 = _ExtractOne(output, cipher);
-
-            // Validate CRC32
-            if (ActualCrc32 != _Crc32)
-            {
-                //throw new BadCrcException("CRC error: the file being extracted appears to be corrupted.");
-                throw new BadCrcException("CRC error: the file being extracted appears to be corrupted. " +
-                          String.Format("Expected 0x{0:X8}, actual 0x{1:X8}", _Crc32, ActualCrc32));
-                //String.Format("CRC error: expected 0x{0:X8}, actual 0x{1:X8}", _Crc32, ActualCrc32);
-            }
-
-
-            if (TargetFile != null)
-            {
-                output.Close();
-                output.Dispose();
-
-                System.IO.File.SetLastWriteTime(TargetFile, LastModified);
-
-            }
-
+            return cipher;
         }
 
+
+        private void ValidateEncryption()
+        {
+            if ((Encryption != EncryptionAlgorithm.PkzipWeak) &&
+            (Encryption != EncryptionAlgorithm.None))
+                throw new ArgumentException(String.Format("Unsupported Encryption algorithm ({0:X2})",
+                              Encryption));
+        }
+
+        private void ValidateCompression()
+        {
+            if ((CompressionMethod != 0) && (CompressionMethod != 0x08))  // deflate
+                throw new ArgumentException(String.Format("Unsupported Compression method ({0:X2})",
+                              CompressionMethod));
+        }
+
+
+        private bool ValidateOutput(string basedir, Stream outstream, out string OutputFile)
+        {
+            if (basedir != null)
+            {
+                OutputFile = System.IO.Path.Combine(basedir, this.FileName);
+
+                // check if a directory
+                if ((IsDirectory) || (FileName.EndsWith("/")))
+                {
+                    if (!System.IO.Directory.Exists(OutputFile))
+                        System.IO.Directory.CreateDirectory(OutputFile);
+                    // all done
+                    return true;
+                }
+                return false;
+            }
+
+            if (outstream != null)
+            {
+                if ((IsDirectory) || (FileName.EndsWith("/")))
+                {
+                    // extract a directory to streamwriter?  nothing to do!
+                    OutputFile = null;
+                    return true;
+                }
+            }
+
+            throw new ArgumentException("Invalid input.", "outstream | basedir");
+        }
 
         private void _CheckRead(int nbytes)
         {
@@ -1306,37 +1437,38 @@ namespace Ionic.Utils.Zip
 
         private char[] GetFileNameCharacters()
         {
-	  // here, we need to flip the backslashes to forward-slashes, 
-	  //System.Console.WriteLine("GetFileNameCharacters: '{0}'", FileName);
+            // here, we need to flip the backslashes to forward-slashes, 
+            //System.Console.WriteLine("GetFileNameCharacters: '{0}'", FileName);
 
-	  string SlashFixed = FileName.Replace("\\", "/");
-	  if ((TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3) && (FileName[1] == ':') && ((FileName[2] == '\\') && (FileName[2] == '/')))
-	  {
-	    return 
-	      SlashFixed.Substring(3).ToCharArray() ;  // trim off volume letter, colon, and slash
-	  }
-	  else
-	  {
-	    //System.Console.WriteLine("GetFileNameCharacters: not a letter-colon pair");
-	    // also, we need to trim the \\server\share syntax from any UNC path
-	  if ((FileName.Length >= 4) && ((FileName[0] == '\\') && (FileName[1] == '\\'))
-	      || ((FileName[0] == '/') && (FileName[1] == '/')))
-	    {
-	      int n = SlashFixed.IndexOf('/', 2);
-	      //System.Console.WriteLine("input Path '{0}'", FileName);
-	      //System.Console.WriteLine("xformed: '{0}'", SlashFixed);
-	      //System.Console.WriteLine("third slash: {0}\n", n);
-	      if (n == -1)
-		throw new ArgumentException("The path for that entry appears to be badly formatted");
-	      return SlashFixed.Substring(n+1).ToCharArray();
-	    }
-	    else {
-	      //System.Console.WriteLine("GetFileNameCharacters: not a UNC not a letter-colon pair");
-	      return 
-		   SlashFixed.ToCharArray();
-	    }
+            string SlashFixed = FileName.Replace("\\", "/");
+            if ((TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3) && (FileName[1] == ':') && ((FileName[2] == '\\') && (FileName[2] == '/')))
+            {
+                return
+                  SlashFixed.Substring(3).ToCharArray();  // trim off volume letter, colon, and slash
+            }
+            else
+            {
+                //System.Console.WriteLine("GetFileNameCharacters: not a letter-colon pair");
+                // also, we need to trim the \\server\share syntax from any UNC path
+                if ((FileName.Length >= 4) && ((FileName[0] == '\\') && (FileName[1] == '\\'))
+                    || ((FileName[0] == '/') && (FileName[1] == '/')))
+                {
+                    int n = SlashFixed.IndexOf('/', 2);
+                    //System.Console.WriteLine("input Path '{0}'", FileName);
+                    //System.Console.WriteLine("xformed: '{0}'", SlashFixed);
+                    //System.Console.WriteLine("third slash: {0}\n", n);
+                    if (n == -1)
+                        throw new ArgumentException("The path for that entry appears to be badly formatted");
+                    return SlashFixed.Substring(n + 1).ToCharArray();
+                }
+                else
+                {
+                    //System.Console.WriteLine("GetFileNameCharacters: not a UNC not a letter-colon pair");
+                    return
+                     SlashFixed.ToCharArray();
+                }
 
-	  }
+            }
         }
 
 
