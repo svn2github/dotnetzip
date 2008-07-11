@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Ionic.Utils.Zip;
 using Library.TestUtilities;
+using System.IO;
 
 namespace Ionic.Utils.Zip.Tests.Basic
 {
@@ -724,6 +725,89 @@ namespace Ionic.Utils.Zip.Tests.Basic
                 }
             }
         }
+
+        [TestMethod]
+        public void CreateZip_WithEmptyDirectory()
+        {
+            // select the name of the zip file
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Create_WithEmptyDirectory.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            // create the subdirectory
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "EmptyDirectory");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+             using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                zip.AddDirectory(Subdir, "");
+                zip.Save();
+            }
+
+            // Verify the files are in the zip
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, 0),
+                "The Zip file has the wrong number of entries.");
+
+        }
+
+
+
+        [TestMethod]
+        public void Extract_IntoMemoryStream()
+        {
+            string filename = null;
+            int entriesAdded = 0;
+            string repeatedLine = null;
+            int j;
+
+            // select the name of the zip file
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Extract_IntoMemoryStream.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            // create the subdirectory
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            // create the files
+            int NumFilesToCreate = _rnd.Next(10) + 8;
+            for (j = 0; j < NumFilesToCreate; j++)
+            {
+                filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
+                repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
+                    System.IO.Path.GetFileName(filename));
+                TestUtilities.CreateAndFillFileText(filename, repeatedLine, _rnd.Next(34000) + 5000);
+                entriesAdded++;
+            }
+
+            // Create the zip file
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                String[] filenames = System.IO.Directory.GetFiles("A");
+                foreach (String f in filenames)
+                    zip1.AddFile(f, "");
+                zip1.Comment = "UpdateTests::CreateZip_AddFile_VerifyCrcAndContents(): This archive will be updated.";
+                zip1.Save(ZipFileToCreate);
+            }
+
+            // Verify the files are in the zip
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entriesAdded),
+                "The Zip file has the wrong number of entries.");
+
+            // now extract the files into memory streams (and verify their contents)
+            using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (string s in zip2.EntryFilenames)
+                {
+                    //repeatedLine = String.Format("This line is repeated over and over and over in file {0}", s);
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        zip2[s].Extract(ms);
+                        byte[] a = ms.ToArray();
+                    }
+                }
+            }
+        }
+
 
 
         [TestMethod]

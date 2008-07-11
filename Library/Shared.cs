@@ -58,6 +58,10 @@ namespace Ionic.Utils.Zip
         /// <returns>transformed path</returns>
         public static string TrimVolumeAndSwapSlashes(string pathname)
         {
+            //return (((pathname[1] == ':') && (pathname[2] == '\\')) ? pathname.Substring(3) : pathname)
+            //    .Replace('\\', '/');
+            if (pathname == "") return pathname;
+            if (pathname.Length < 2) return pathname.Replace('\\', '/');
             return (((pathname[1] == ':') && (pathname[2] == '\\')) ? pathname.Substring(3) : pathname)
                 .Replace('\\', '/');
         }

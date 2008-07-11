@@ -1234,20 +1234,20 @@ namespace Ionic.Utils.Zip
                 {
                     if (!System.IO.Directory.Exists(OutputFile))
                         System.IO.Directory.CreateDirectory(OutputFile);
-                    // all done
-                    return true;
+                    return true;  // true == all done, caller will return 
                 }
-                return false;
+                return false;  // false == work to do by caller.
             }
 
             if (outstream != null)
             {
+                OutputFile = null;
                 if ((IsDirectory) || (FileName.EndsWith("/")))
                 {
                     // extract a directory to streamwriter?  nothing to do!
-                    OutputFile = null;
-                    return true;
+                    return true;  // true == all done!  caller can return
                 }
+                return false;
             }
 
             throw new ArgumentException("Invalid input.", "outstream | basedir");
@@ -1419,19 +1419,75 @@ namespace Ionic.Utils.Zip
         }
 
 
+	private bool FileNameIsUtf8(char[] FileNameChars)
+	{
+	    bool isUTF8= false;
+	    bool isUnicode= false;
+	    for (int j = 0; j < FileNameChars.Length; j++) 
+	    {
+	      byte[] b = System.BitConverter.GetBytes(FileNameChars[j]);
+	      isUnicode |= (b.Length != 2);
+	      isUnicode |= (b[1]!=0);
+	      isUTF8 |= ((b[0] & 0x80) !=0);
+	    }
 
-        private byte[] GetExtraField()
+	    return isUTF8;
+	}
+
+
+
+        private byte[] GetExtraField(char[] FileNameChars)
         {
+	    byte[] block= null;
+	    var data = new System.Collections.Generic.List<byte>();
             if ((UsesEncryption) && (IsStrong(Encryption)))
             {
                 // byte[] block= GetStrongEncryptionBlock();
                 // return block;
-                return null;
             }
+
+#if UTF8
+	    if (FileNameIsUtf8(FileNameChars))
+	    {
+		_FilenameIsUtf8= true;
+		int datasize= 2+2+1+4+FileNameChars.Length; 
+		block= new byte[datasize];
+		int i=0, mark=0;
+		uint d= (uint) (datasize -4); 
+		block[i++]= 0x75;
+		block[i++]= 0x70;
+		block[i++]= (byte)(d & 0x00FF); 
+		block[i++]= (byte)(d & 0xFF00); 
+
+		// version
+		block[i++]= 1;
+
+		// skip the CRC on the filenamebytes, for now
+		mark = i;
+		i+= 4;
+
+		// UTF8 filename
+		for (int j = 0; j < FileNameChars.Length; j++) 
+		{
+		    byte[] b = System.BitConverter.GetBytes(FileNameChars[j]);
+		    block[i++]= b[0];
+		}
+
+
+		// filename field Crc32 - for the non-UTF8 filename field
+		CRC32 Crc32= new CRC32();
+		Crc32.SlurpBlock(block, mark+4, FileNameChars.Length);
+		i= mark;
+		block[i++] = (byte)(Crc32.Crc32Result & 0x000000FF);
+		block[i++] = (byte)((Crc32.Crc32Result & 0x0000FF00) >> 8);
+		block[i++] = (byte)((Crc32.Crc32Result & 0x00FF0000) >> 16);
+		block[i++] = (byte)((Crc32.Crc32Result & 0xFF000000) >> 24);
+	    }
+#endif
 
             // could inject other blocks here...
 
-            return null;
+            return block;
         }
 
 
@@ -1450,8 +1506,9 @@ namespace Ionic.Utils.Zip
             {
                 //System.Console.WriteLine("GetFileNameCharacters: not a letter-colon pair");
                 // also, we need to trim the \\server\share syntax from any UNC path
-                if ((FileName.Length >= 4) && ((FileName[0] == '\\') && (FileName[1] == '\\'))
-                    || ((FileName[0] == '/') && (FileName[1] == '/')))
+                if ((FileName.Length >= 4) &&
+                    (((FileName[0] == '\\') && (FileName[1] == '\\'))
+                        || ((FileName[0] == '/') && (FileName[1] == '/'))))
                 {
                     int n = SlashFixed.IndexOf('/', 2);
                     //System.Console.WriteLine("input Path '{0}'", FileName);
@@ -1662,7 +1719,7 @@ namespace Ionic.Utils.Zip
             //bytes[i++] = (byte)((filenameLength & 0xFF00) >> 8);
 
 
-            byte[] extra = GetExtraField();
+            byte[] extra = GetExtraField(FileNameCharacters);
 
             // extra field length (short)
             Int16 ExtraFieldLength = (Int16)((extra == null) ? 0 : extra.Length);
@@ -1683,18 +1740,23 @@ namespace Ionic.Utils.Zip
             // Tue, 05 Feb 2008  12:25
             // Replace backslashes with forward slashes in the archive
 
-            // the filename written to the archive
+            // The filename written to the archive.
+	    // This is where we downcast Unicode to 8-bit encoding.
             int j = 0;
             for (j = 0; (j < FileNameCharacters.Length) && (i + j < bytes.Length); j++)
                 bytes[i + j] = System.BitConverter.GetBytes(FileNameCharacters[j])[0];
             i += j;
 
-            // extra field (at this time, this includes only the Strong Encryption Block, as necessary)
+            // extra field 
             if (extra != null)
             {
+		//Console.WriteLine("Adding {0} extra field bytes.", extra.Length);
                 for (j = 0; j < extra.Length; j++)
+		{
                     bytes[i + j] = extra[j];
-
+		    //Console.Write("{0:X2} ", bytes[i + j]);
+		}
+		//Console.WriteLine();
                 i += j;
             }
 
@@ -1712,6 +1774,8 @@ namespace Ionic.Utils.Zip
             for (j = 0; j < i; j++)
                 _EntryHeader[j] = bytes[j];
         }
+
+
 
 
 
@@ -1840,6 +1904,7 @@ namespace Ionic.Utils.Zip
         private Int16 _CompressionMethod;
         private string _Comment;
         private bool _IsDirectory;
+	private bool _FilenameIsUtf8= false;
         private Int32 _CompressedSize;
         private Int32 _CompressedFileDataSize; // CompressedSize less 12 bytes for the encryption header, if any
         private Int32 _UncompressedSize;
