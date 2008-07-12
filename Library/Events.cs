@@ -27,7 +27,7 @@ namespace Ionic.Utils.Zip
         {
             this._entriesTotal = entriesTotal;
             this._entriesSaved = entriesSaved;
-	    this._nameOfLatestEntry = lastEntry;
+            this._nameOfLatestEntry = lastEntry;
         }
 
         /// <summary>
@@ -73,13 +73,13 @@ namespace Ionic.Utils.Zip
     {
         private String _name;
 
-	/// <summary>
+        /// <summary>
         /// Constructor for a SaveEventArgs.
         /// </summary>
         /// <param name="archiveName">The name of the archive being saved.</param>
         internal SaveEventArgs(string archiveName)
         {
-	  _name = archiveName;
+            _name = archiveName;
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Ionic.Utils.Zip
     }
 
 
-#endregion
+    #endregion
 
 
     #region Save Events

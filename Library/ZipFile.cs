@@ -1535,7 +1535,7 @@ namespace Ionic.Utils.Zip
         ///
         public void Save()
         {
-
+            _operationCanceled = false;
             OnSaveStarted(new SaveEventArgs((_name != null) ? _name : "(stream)"));
 
             if (WriteStream == null)
@@ -1545,7 +1545,6 @@ namespace Ionic.Utils.Zip
 
             if (Verbose) StatusMessageTextWriter.WriteLine("Saving....");
 
-
             // write an entry in the zip for each file
             int n = 0;
             foreach (ZipEntry e in _entries)
@@ -1553,6 +1552,14 @@ namespace Ionic.Utils.Zip
                 e.Write(WriteStream);
                 n++;
                 OnSaveProgress(new SaveProgressEventArgs(_entries.Count, n, e.FileName));
+                if (_operationCanceled)
+                    break;
+            }
+
+            if (_operationCanceled)
+            {
+                CancelSaveOperation();
+                return;
             }
 
             WriteCentralDirectoryStructure(WriteStream);
@@ -1564,6 +1571,12 @@ namespace Ionic.Utils.Zip
                 WriteStream.Close();
                 WriteStream.Dispose();
                 WriteStream = null;
+
+                if (_operationCanceled)
+                {
+                    CancelSaveOperation();
+                    return;
+                }
 
                 if ((_fileAlreadyExists) && (this._readstream != null))
                 {
@@ -1598,8 +1611,24 @@ namespace Ionic.Utils.Zip
             }
 
             OnSaveCompleted(new SaveEventArgs((_name != null) ? _name : "(stream)"));
+            return;
         }
 
+
+        private void CancelSaveOperation()
+        {
+            if ((_temporaryFileName != null) && (_name != null))
+            {
+                // only close the stream if there is a file behind it. 
+                try { WriteStream.Close(); }
+                catch { }
+                try { WriteStream.Dispose(); }
+                catch { }
+                WriteStream = null;
+                try { System.IO.File.Delete(_temporaryFileName); }
+                catch { }
+            }
+        }
 
 
         /// <summary>
@@ -1785,6 +1814,8 @@ namespace Ionic.Utils.Zip
                 if (SaveProgress != null)
                 {
                     SaveProgress(this, e);
+                    if (e.Cancel)
+                        _operationCanceled = true;
                 }
             }
         }
@@ -2850,6 +2881,7 @@ namespace Ionic.Utils.Zip
         private String _TempFileFolder;
         private bool _ReadStreamIsOurs = true;
         private object LOCK = new object();
+        private bool _operationCanceled;
     }
 
 

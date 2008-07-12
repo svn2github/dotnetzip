@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnZip", "Examples\UnZip\UnZ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadZip", "Examples\ReadZip\ReadZip.csproj", "{F4024C01-1133-4A5A-B421-22EA8CA89EA5}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Zip Library", "Setup\Setup.vdproj", "{F87C0504-13EA-49A5-8C7B-4E635F107758}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Zip Utilities MSI", "Setup\Setup.vdproj", "{F87C0504-13EA-49A5-8C7B-4E635F107758}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E1C14695-E75F-4317-919A-5341EA1F9C01}"
 	ProjectSection(SolutionItems) = preProject
@@ -24,6 +24,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Library.Tests", "Library.Tests\Library.Tests.csproj", "{549466CE-5CA6-4904-BA44-58141544BE70}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfExtracting", "Examples\SelfExtracting\SelfExtracting.csproj", "{276B8174-A24E-4257-9969-42D692F8CAC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Win Forms Zip Example", "WinFormsExample\Win Forms Zip Example.csproj", "{6BCCF138-2EFB-464C-B872-E3079F0A4708}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
@@ -68,6 +70,10 @@ Global
 		{276B8174-A24E-4257-9969-42D692F8CAC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{276B8174-A24E-4257-9969-42D692F8CAC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{276B8174-A24E-4257-9969-42D692F8CAC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6BCCF138-2EFB-464C-B872-E3079F0A4708}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BCCF138-2EFB-464C-B872-E3079F0A4708}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BCCF138-2EFB-464C-B872-E3079F0A4708}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BCCF138-2EFB-464C-B872-E3079F0A4708}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
