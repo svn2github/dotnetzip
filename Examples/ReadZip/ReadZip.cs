@@ -9,7 +9,7 @@
 //
 // ----------------------------------------------------------------------
 //
-// This example utility simply reads a zip archive and extracts
+// This simple example utility simply reads a zip archive and extracts
 // all elements in it, to the specified target directory.
 // 
 // compile with:

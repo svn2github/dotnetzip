@@ -10,7 +10,6 @@
 // ----------------------------------------------------------------------
 //
 // This utility zips up a set of files and directories specified on the command line.
-// It is like a generalized ZipDir tool (See ZipDir.cs).
 //
 // compile with:
 //     csc /debug+ /target:exe /r:Ionic.Utils.Zip.dll /out:ZipIt.exe ZipIt.cs 
@@ -28,12 +27,27 @@ namespace Ionic.Utils.Zip.Examples
     {
 	private static void Usage()
 	{
-	    Console.WriteLine("Zipit.exe:  zip up a directory, file, or a set of them, into a zipfile.");
-	    Console.WriteLine("            Depends on Ionic's DotNetZip. This is version {0} of the utility.", 
+	    string UsageMessage= 
+		"Zipit.exe:  zip up a directory, file, or a set of them, into a zipfile.\n" +
+		"            Depends on Ionic's DotNetZip library. This is version {0} of the utility.\n" +
+		"usage:\n   ZipIt.exe <ZipFileToCreate> [arguments]\n" +
+		"\narguments: \n" +
+		"  -p <password>         - apply the specified password for all succeeding files added.\n" +
+		"                          use \"\" to reset the password to nil.\n" +
+		"  -c <comment>          - use the given comment for the archive or, on \n" + 
+		"                          successive occurences, the next file.\n" +
+		"  -s <entry> 'string'   - insert an entry of the given name into the \n" + 
+		"                          archive, with the given string as its content.\n" +
+		"  -flat                 - store the files in a flat dir structure; do not use the \n" + 
+		"                          directory paths from the source files.\n" +
+		"  <directory> | <file>  - add the directory or file to the archive.";
+
+	    Console.WriteLine(UsageMessage,
 			      System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
-	    Console.WriteLine("usage:\n   ZipIt.exe <ZipFileToCreate> [-p <password> | -c <comment> | <directory> | <file> ...]\n");
 	    Environment.Exit(1);
 	}
+
+
 
 	public static void Main(String[] args)
 	{
@@ -51,7 +65,10 @@ namespace Ionic.Utils.Zip.Examples
 
 	    try
 	    {
+		ZipEntry e=null;
 		string entryComment= null;
+		bool StoreFlat= false;
+
 		using (ZipFile zip = new ZipFile(args[0]))
 		{
 		    zip.StatusMessageTextWriter = System.Console.Out;
@@ -62,7 +79,26 @@ namespace Ionic.Utils.Zip.Examples
 			case "-p":
 			    i++;
 			    if (args.Length <= i) Usage();
-			    zip.Password = args[i];
+			    zip.Password= (args[i] == "") ? null : args[i];
+			    break;
+
+			case "-flat":
+			    StoreFlat= true;
+			    break;
+
+			case "-s":
+			    i++;
+			    if (args.Length <= i) Usage();
+			    string entryName = args[i];
+			    i++;
+			    if (args.Length <= i) Usage();
+			    string content = args[i];
+			    e= zip.AddStringAsFile(content, entryName, "");
+			    if (entryComment != null)
+			    {
+				e.Comment = entryComment;
+				entryComment= null;
+			    }
 			    break;
 
 			case "-c":
@@ -72,16 +108,24 @@ namespace Ionic.Utils.Zip.Examples
 			    else entryComment = args[i];
 			    break;
 
+
 			default: 
-			    
-			    zip.UpdateItem(args[i]); // will add Files or Dirs, recurses subdirectories
-			    if (zip.EntryFilenames.Contains(args[i]))
+			    // UpdateItem will add Files or Dirs, recurses subdirectories
+			    if (StoreFlat)
+				zip.UpdateItem(args[i],""); 
+			    else
+				zip.UpdateItem(args[i]);
+
+			    // can only add a comment if the thing was a file. 
+			    if (entryComment != null)
 			    {
-				ZipEntry e = zip[args[i]];
-				e.Comment = entryComment;
-				entryComment= null;
+				if (zip.EntryFilenames.Contains(args[i]))
+				{
+				    e = zip[args[i]];
+				    e.Comment = entryComment;
+				    entryComment= null;
+				}
 			    }
-			    
 			    break;
 			}
 		    }
@@ -92,7 +136,6 @@ namespace Ionic.Utils.Zip.Examples
 	    {
 		System.Console.Error.WriteLine("Exception: " + ex1);
 	    }
-
 	}
     }
 }

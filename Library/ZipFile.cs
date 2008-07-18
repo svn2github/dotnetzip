@@ -251,8 +251,8 @@ namespace Ionic.Utils.Zip
                 if (value == null)
                     throw new ArgumentException("You may not set the TempFileFolder to a null value.");
 
-                if (!System.IO.Directory.Exists(_TempFileFolder))
-                    throw new System.IO.FileNotFoundException("That direcotory does not exist.");
+                if (!System.IO.Directory.Exists(value))
+		  throw new System.IO.FileNotFoundException(String.Format("That direcotory ({0}) does not exist.", value));
 
                 _TempFileFolder = value;
             }

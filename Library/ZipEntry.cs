@@ -688,11 +688,13 @@ namespace Ionic.Utils.Zip
 
         internal static string NameInArchive(String filename, string DirectoryPathInArchive)
         {
-            string result = (DirectoryPathInArchive == null) ?
-              filename
-              :
+            string result = 
+		(DirectoryPathInArchive == null) ?
+		filename :
+		(DirectoryPathInArchive == "") ?
+		System.IO.Path.GetFileName(filename) : 
                 // explicitly specify a pathname for this file  
-              System.IO.Path.Combine(DirectoryPathInArchive, System.IO.Path.GetFileName(filename));
+		System.IO.Path.Combine(DirectoryPathInArchive, System.IO.Path.GetFileName(filename));
 
             return Shared.TrimVolumeAndSwapSlashes(result);
         }
@@ -1128,7 +1130,6 @@ namespace Ionic.Utils.Zip
         private void InternalExtract(string basedir, System.IO.Stream outstream, string Password)
         {
             ValidateCompression();
-
             ValidateEncryption();
 
             string TargetFile;
@@ -1173,8 +1174,8 @@ namespace Ionic.Utils.Zip
 
                 System.IO.File.SetLastWriteTime(TargetFile, LastModified);
             }
-
         }
+
 
         private ZipCrypto SetupCipher(string Password)
         {
@@ -1253,6 +1254,8 @@ namespace Ionic.Utils.Zip
             throw new ArgumentException("Invalid input.", "outstream | basedir");
         }
 
+
+
         private void _CheckRead(int nbytes)
         {
             if (nbytes == 0)
@@ -1274,63 +1277,45 @@ namespace Ionic.Utils.Zip
 
             byte[] bytes = new byte[READBLOCK_SIZE];
 
-            int LeftToRead = 0;
-            switch (CompressionMethod)
-            {
-                case 0x08:  // deflate
-                    // read, maybe decrypt, decompress, then write
-                    var instream = (Encryption == EncryptionAlgorithm.PkzipWeak) ?
-                                  new ZipCipherInputStream(input, cipher) : input;
-                    using (var ds = new CrcCalculatorStream(new DeflateStream(instream, CompressionMode.Decompress, true)))
-                    {
-                        LeftToRead = this.UncompressedSize;
-                        while (LeftToRead > 0)
-                        {
-                            int len = (LeftToRead > bytes.Length) ? bytes.Length : LeftToRead;
-                            int n = ds.Read(bytes, 0, len);
-                            _CheckRead(n);
-                            output.Write(bytes, 0, n);
-                            LeftToRead -= n;
-                        }
+	    // The extraction process varies depending on how the entry was stored.
+	    // It could have been encrypted, and it coould have been compressed, or both, or
+	    // neither. So we need to check both the encryption flag and the compression flag,
+	    // and take the proper action in all cases.  
 
-                        CrcResult = ds.Crc32;
-                    }
-                    break;
+            int LeftToRead = (CompressionMethod == 0x08) ? this.UncompressedSize : this._CompressedFileDataSize;
 
+	    // get a stream that either decrypts or not.
+	    Stream input2 = (Encryption == EncryptionAlgorithm.PkzipWeak) ?
+		new ZipCipherInputStream(input, cipher) : input;
 
-                case 0x00:
-                    // read, maybe decrypt, and then write
+	    // using the above, now we get a stream that either decompresses or not.
+	    Stream input3 = (CompressionMethod == 0x08) ? new DeflateStream(input2, CompressionMode.Decompress, true) : input2;
 
-                    var temp = (Encryption == EncryptionAlgorithm.PkzipWeak) ?
-                        new ZipCipherInputStream(input, cipher) : input;
+	    // as we read, we maybe decrypt, and then we maybe decompress. Then we write.
+	    using (var s1 = new CrcCalculatorStream(input3))
+	    {
+		while (LeftToRead > 0)
+		{
+		    int len = (LeftToRead > bytes.Length) ? bytes.Length : LeftToRead;
+		    int n = s1.Read(bytes, 0, len);
+		    _CheckRead(n);
+		    output.Write(bytes, 0, n);
+		    LeftToRead -= n;
+		}
 
-                    var instream2 = new CrcCalculatorStream(temp);
-                    LeftToRead = this._CompressedFileDataSize;
-                    while (LeftToRead > 0)
-                    {
-                        int len = (LeftToRead > bytes.Length) ? bytes.Length : LeftToRead;
-
-                        // read
-                        int n = instream2.Read(bytes, 0, len);
-                        _CheckRead(n);
-
-                        // write
-                        output.Write(bytes, 0, n);
-                        LeftToRead -= n;
-                    }
-                    CrcResult = instream2.Crc32;
-
-                    break;
-            }
-
+		CrcResult = s1.Crc32;
+	    }
             return CrcResult;
         }
+
+
 
 
         internal void MarkAsDirectory()
         {
             _IsDirectory = true;
         }
+
 
 
         internal void WriteCentralDirectoryEntry(System.IO.Stream s)

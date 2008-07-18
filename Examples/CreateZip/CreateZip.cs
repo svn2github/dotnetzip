@@ -9,12 +9,12 @@
 //
 // ----------------------------------------------------------------------
 //
-// This simplistic utility gets a list of all the files in the current directory,
-// and zips them into a single archive.  It is similar to the ZipDir.cs example, 
-// except this one does not follow sub-directories. 
+// This simplistic utility gets a list of all the files in the specified directory,
+// and zips them into a single archive.  This utility does not recurse through
+// the directory tree.
 //
 // compile with:
-//     csc /debug+ /target:exe /out:CreateZip.exe CreateZip.cs Zip.cs Crc32.cs
+//     csc /debug+ /target:exe /R:Ionic.Utils.Zip.dll /out:CreateZip.exe CreateZip.cs 
 //
 //
 // Wed, 29 Mar 2006  14:36
