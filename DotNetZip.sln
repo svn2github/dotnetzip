@@ -25,7 +25,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Library.Tests", "Library.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfExtracting", "Examples\SelfExtracting\SelfExtracting.csproj", "{276B8174-A24E-4257-9969-42D692F8CAC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Win Forms Zip Example", "Examples\WinFormsExample\Win Forms Zip Example.csproj", "{6BCCF138-2EFB-464C-B872-E3079F0A4708}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Win Forms Zip Example", "Examples\WinFormsApp\Win Forms Zip Example.csproj", "{6BCCF138-2EFB-464C-B872-E3079F0A4708}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution

@@ -73,7 +73,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Library\Library.csproj">
+    <ProjectReference Include="..\..\Library\Library.csproj">
       <Project>{D3B0AD67-44D8-4B3D-BED9-CE1FD6DE2C5A}</Project>
       <Name>Library</Name>
     </ProjectReference>
