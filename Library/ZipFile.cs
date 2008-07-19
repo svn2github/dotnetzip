@@ -252,7 +252,7 @@ namespace Ionic.Utils.Zip
                     throw new ArgumentException("You may not set the TempFileFolder to a null value.");
 
                 if (!System.IO.Directory.Exists(value))
-		  throw new System.IO.FileNotFoundException(String.Format("That direcotory ({0}) does not exist.", value));
+                    throw new System.IO.FileNotFoundException(String.Format("That direcotory ({0}) does not exist.", value));
 
                 _TempFileFolder = value;
             }
@@ -1611,6 +1611,7 @@ namespace Ionic.Utils.Zip
             }
 
             OnSaveCompleted(new SaveEventArgs((_name != null) ? _name : "(stream)"));
+            _JustSaved = true;
             return;
         }
 
@@ -2536,6 +2537,14 @@ namespace Ionic.Utils.Zip
         {
             get
             {
+                if (_JustSaved)
+                {
+                    // work item 5593
+                    // read in the just-saved zip archive                    
+                    ReadIntoInstance(this);
+                    _JustSaved = false;
+                }
+
                 foreach (ZipEntry e in _entries)
                 {
                     if (e.FileName == FileName) return e;
@@ -2882,6 +2891,7 @@ namespace Ionic.Utils.Zip
         private bool _ReadStreamIsOurs = true;
         private object LOCK = new object();
         private bool _operationCanceled;
+        private bool _JustSaved = false;
     }
 
 

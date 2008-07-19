@@ -12,6 +12,13 @@ using Library.TestUtilities;
 
 namespace Ionic.Utils.Zip.Tests.Extended
 {
+
+    public class XTWFND : System.Xml.XmlTextWriter
+    {
+        public XTWFND(System.IO.TextWriter w) : base(w) { Formatting = System.Xml.Formatting.Indented; }
+        public override void WriteStartDocument() { }
+    }
+
     /// <summary>
     /// Summary description for ExtendedTests
     /// </summary>
@@ -82,6 +89,17 @@ namespace Ionic.Utils.Zip.Tests.Extended
 
         #endregion
 
+
+
+        static System.IO.MemoryStream StringToMemoryStream(string s)
+        {
+            System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+            int byteCount = enc.GetByteCount(s.ToCharArray(), 0, s.Length);
+            byte[] ByteArray = new byte[byteCount];
+            int bytesEncodedCount = enc.GetBytes(s, 0, s.Length, ByteArray, 0);
+            System.IO.MemoryStream ms = new System.IO.MemoryStream(ByteArray);
+            return ms;
+        }
 
 
         [TestMethod]
@@ -190,8 +208,46 @@ namespace Ionic.Utils.Zip.Tests.Extended
                 "The IsZipFile() method returned an unexpected result for a non-existent file.");
         }
 
+
         [TestMethod]
-        public void CreateZip_SelfExtractor_Console()
+        public void Extract_AfterSaveNoDispose()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Extract_AfterSaveNoDispose.zip");
+            string InputString = "<bob />";
+
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            using (ZipFile zip1 = new ZipFile("TestZip_ExtractBeforeDispose.zip"))
+            {
+                System.IO.MemoryStream ms1 = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes(InputString));
+                zip1.AddFileStream("Test.xml", "Woo", ms1);
+                zip1.Save();
+
+                System.IO.MemoryStream ms2 = new System.IO.MemoryStream();
+                zip1.Extract("Woo/Test.xml", ms2);
+                ms2.Seek(0, System.IO.SeekOrigin.Begin);
+
+                var sw1 = new System.IO.StringWriter();
+                var w1 = new XTWFND(sw1);
+
+                var d1 = new System.Xml.XmlDocument();
+                d1.Load(ms2);
+                d1.Save(w1);
+
+                var sw2 = new System.IO.StringWriter();
+                var w2 = new XTWFND(sw2);
+                var d2 = new System.Xml.XmlDocument();
+                d2.Load(StringToMemoryStream(InputString));
+                d2.Save(w2);
+                
+                Assert.AreEqual<String>(sw2.ToString(), sw1.ToString(), "Unexpected value on extract ({0}).", sw1.ToString());
+            }
+
+        }
+
+
+        [TestMethod]
+        public void Extract_SelfExtractor_Console()
         {
             string ExeFileToCreate = System.IO.Path.Combine(TopLevelDir, "TestSelfExtractor.exe");
             string TargetDirectory = System.IO.Path.Combine(TopLevelDir, "unpack");
@@ -240,7 +296,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
         }
 
         [TestMethod]
-        public void CreateZip_SelfExtractor_WinForms()
+        public void Extract_SelfExtractor_WinForms()
         {
             string ExeFileToCreate = System.IO.Path.Combine(TopLevelDir, "TestSelfExtractor-Winforms.exe");
             string TargetUnpackDirectory = System.IO.Path.Combine(TopLevelDir, "unpack");

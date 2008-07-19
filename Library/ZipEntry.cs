@@ -688,13 +688,13 @@ namespace Ionic.Utils.Zip
 
         internal static string NameInArchive(String filename, string DirectoryPathInArchive)
         {
-            string result = 
-		(DirectoryPathInArchive == null) ?
-		filename :
-		(DirectoryPathInArchive == "") ?
-		System.IO.Path.GetFileName(filename) : 
+            string result =
+        (DirectoryPathInArchive == null) ?
+        filename :
+        (DirectoryPathInArchive == "") ?
+        System.IO.Path.GetFileName(filename) :
                 // explicitly specify a pathname for this file  
-		System.IO.Path.Combine(DirectoryPathInArchive, System.IO.Path.GetFileName(filename));
+        System.IO.Path.Combine(DirectoryPathInArchive, System.IO.Path.GetFileName(filename));
 
             return Shared.TrimVolumeAndSwapSlashes(result);
         }
@@ -1277,34 +1277,34 @@ namespace Ionic.Utils.Zip
 
             byte[] bytes = new byte[READBLOCK_SIZE];
 
-	    // The extraction process varies depending on how the entry was stored.
-	    // It could have been encrypted, and it coould have been compressed, or both, or
-	    // neither. So we need to check both the encryption flag and the compression flag,
-	    // and take the proper action in all cases.  
+            // The extraction process varies depending on how the entry was stored.
+            // It could have been encrypted, and it coould have been compressed, or both, or
+            // neither. So we need to check both the encryption flag and the compression flag,
+            // and take the proper action in all cases.  
 
             int LeftToRead = (CompressionMethod == 0x08) ? this.UncompressedSize : this._CompressedFileDataSize;
 
-	    // get a stream that either decrypts or not.
-	    Stream input2 = (Encryption == EncryptionAlgorithm.PkzipWeak) ?
-		new ZipCipherInputStream(input, cipher) : input;
+            // get a stream that either decrypts or not.
+            Stream input2 = (Encryption == EncryptionAlgorithm.PkzipWeak) ?
+            new ZipCipherInputStream(input, cipher) : input;
 
-	    // using the above, now we get a stream that either decompresses or not.
-	    Stream input3 = (CompressionMethod == 0x08) ? new DeflateStream(input2, CompressionMode.Decompress, true) : input2;
+            // using the above, now we get a stream that either decompresses or not.
+            Stream input3 = (CompressionMethod == 0x08) ? new DeflateStream(input2, CompressionMode.Decompress, true) : input2;
 
-	    // as we read, we maybe decrypt, and then we maybe decompress. Then we write.
-	    using (var s1 = new CrcCalculatorStream(input3))
-	    {
-		while (LeftToRead > 0)
-		{
-		    int len = (LeftToRead > bytes.Length) ? bytes.Length : LeftToRead;
-		    int n = s1.Read(bytes, 0, len);
-		    _CheckRead(n);
-		    output.Write(bytes, 0, n);
-		    LeftToRead -= n;
-		}
+            // as we read, we maybe decrypt, and then we maybe decompress. Then we write.
+            using (var s1 = new CrcCalculatorStream(input3))
+            {
+                while (LeftToRead > 0)
+                {
+                    int len = (LeftToRead > bytes.Length) ? bytes.Length : LeftToRead;
+                    int n = s1.Read(bytes, 0, len);
+                    _CheckRead(n);
+                    output.Write(bytes, 0, n);
+                    LeftToRead -= n;
+                }
 
-		CrcResult = s1.Crc32;
-	    }
+                CrcResult = s1.Crc32;
+            }
             return CrcResult;
         }
 
@@ -1404,27 +1404,27 @@ namespace Ionic.Utils.Zip
         }
 
 
-	private bool FileNameIsUtf8(char[] FileNameChars)
-	{
-	    bool isUTF8= false;
-	    bool isUnicode= false;
-	    for (int j = 0; j < FileNameChars.Length; j++) 
-	    {
-	      byte[] b = System.BitConverter.GetBytes(FileNameChars[j]);
-	      isUnicode |= (b.Length != 2);
-	      isUnicode |= (b[1]!=0);
-	      isUTF8 |= ((b[0] & 0x80) !=0);
-	    }
+        private bool FileNameIsUtf8(char[] FileNameChars)
+        {
+            bool isUTF8 = false;
+            bool isUnicode = false;
+            for (int j = 0; j < FileNameChars.Length; j++)
+            {
+                byte[] b = System.BitConverter.GetBytes(FileNameChars[j]);
+                isUnicode |= (b.Length != 2);
+                isUnicode |= (b[1] != 0);
+                isUTF8 |= ((b[0] & 0x80) != 0);
+            }
 
-	    return isUTF8;
-	}
+            return isUTF8;
+        }
 
 
 
         private byte[] GetExtraField(char[] FileNameChars)
         {
-	    byte[] block= null;
-	    var data = new System.Collections.Generic.List<byte>();
+            byte[] block = null;
+            var data = new System.Collections.Generic.List<byte>();
             if ((UsesEncryption) && (IsStrong(Encryption)))
             {
                 // byte[] block= GetStrongEncryptionBlock();
@@ -1477,42 +1477,42 @@ namespace Ionic.Utils.Zip
 
 
         private char[] GetFileNameCharacters()
-	{
-	    // here, we need to flip the backslashes to forward-slashes, 
-	    // also, we need to trim the \\server\share syntax from any UNC path.
-	    // and finally, we need to remove any leading .\
+        {
+            // here, we need to flip the backslashes to forward-slashes, 
+            // also, we need to trim the \\server\share syntax from any UNC path.
+            // and finally, we need to remove any leading .\
 
-	    string SlashFixed = FileName.Replace("\\", "/");
-	    if ((TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3) && 
-		(FileName[1] == ':') && (SlashFixed[2] == '/'))
-	    {
-		return
-		    SlashFixed.Substring(3).ToCharArray();  // trim off volume letter, colon, and slash
-	    }
-	    else if ((FileName.Length >= 4) &&
-		     ((SlashFixed[0] == '/') && (SlashFixed[1] == '/')))
-	    {
-		int n = SlashFixed.IndexOf('/', 2);
-		//System.Console.WriteLine("input Path '{0}'", FileName);
-		//System.Console.WriteLine("xformed: '{0}'", SlashFixed);
-		//System.Console.WriteLine("third slash: {0}\n", n);
-		if (n == -1)
-		    throw new ArgumentException("The path for that entry appears to be badly formatted");
-		return SlashFixed.Substring(n + 1).ToCharArray();
-	    }
-	    else if ((FileName.Length >= 3) &&
-		     ((SlashFixed[0] == '.') && (SlashFixed[1] == '/')))
-	    {
-		return 
-		    SlashFixed.Substring(2).ToCharArray();  // trim off dot and slash
-	    }
-	    else
-	    {
-		return
-		    SlashFixed.ToCharArray();
-	    }
+            string SlashFixed = FileName.Replace("\\", "/");
+            if ((TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3) &&
+            (FileName[1] == ':') && (SlashFixed[2] == '/'))
+            {
+                return
+                    SlashFixed.Substring(3).ToCharArray();  // trim off volume letter, colon, and slash
+            }
+            else if ((FileName.Length >= 4) &&
+                 ((SlashFixed[0] == '/') && (SlashFixed[1] == '/')))
+            {
+                int n = SlashFixed.IndexOf('/', 2);
+                //System.Console.WriteLine("input Path '{0}'", FileName);
+                //System.Console.WriteLine("xformed: '{0}'", SlashFixed);
+                //System.Console.WriteLine("third slash: {0}\n", n);
+                if (n == -1)
+                    throw new ArgumentException("The path for that entry appears to be badly formatted");
+                return SlashFixed.Substring(n + 1).ToCharArray();
+            }
+            else if ((FileName.Length >= 3) &&
+                 ((SlashFixed[0] == '.') && (SlashFixed[1] == '/')))
+            {
+                return
+                    SlashFixed.Substring(2).ToCharArray();  // trim off dot and slash
+            }
+            else
+            {
+                return
+                    SlashFixed.ToCharArray();
+            }
 
-	}
+        }
 
 
 
@@ -1728,7 +1728,7 @@ namespace Ionic.Utils.Zip
             // Replace backslashes with forward slashes in the archive
 
             // The filename written to the archive.
-	    // This is where we downcast Unicode to 8-bit encoding.
+            // This is where we downcast Unicode to 8-bit encoding.
             int j = 0;
             for (j = 0; (j < FileNameCharacters.Length) && (i + j < bytes.Length); j++)
                 bytes[i + j] = System.BitConverter.GetBytes(FileNameCharacters[j])[0];
@@ -1737,13 +1737,13 @@ namespace Ionic.Utils.Zip
             // extra field 
             if (extra != null)
             {
-		//Console.WriteLine("Adding {0} extra field bytes.", extra.Length);
+                //Console.WriteLine("Adding {0} extra field bytes.", extra.Length);
                 for (j = 0; j < extra.Length; j++)
-		{
+                {
                     bytes[i + j] = extra[j];
-		    //Console.Write("{0:X2} ", bytes[i + j]);
-		}
-		//Console.WriteLine();
+                    //Console.Write("{0:X2} ", bytes[i + j]);
+                }
+                //Console.WriteLine();
                 i += j;
             }
 
