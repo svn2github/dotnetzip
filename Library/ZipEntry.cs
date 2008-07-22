@@ -1747,7 +1747,7 @@ namespace Ionic.Utils.Zip
                 i += j;
             }
 
-            // remember the offset, within the stream, of this particular entry header
+            // remember the offset, within the output stream, of this particular entry header
             var counter = s as CountingOutputStream;
             _RelativeOffsetOfHeader = (int)((counter != null) ? counter.BytesWritten : s.Position);
 
@@ -1777,7 +1777,7 @@ namespace Ionic.Utils.Zip
                 // just read from the existing input zipfile and write to the output
                 System.IO.Stream input = this._s;
 
-                // seek to the beginning of the file data in the stream
+                // seek to the beginning of the entry data (header + file data) in the stream
                 input.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
 
                 // Here, we need to grab-n-cache the header - it is used later when 
@@ -1786,8 +1786,13 @@ namespace Ionic.Utils.Zip
                 n = input.Read(_EntryHeader, 0, _EntryHeader.Length);
                 _CheckRead(n);
 
-                // once again, seek to the beginning of the file data in the stream
+                // once again, seek to the beginning of the entry data in the stream
                 input.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
+
+                // workitem 5616
+                // remember the offset, within the output stream, of this particular entry header
+                var counter = outstream as CountingOutputStream;
+                _RelativeOffsetOfHeader = (int)((counter != null) ? counter.BytesWritten : outstream.Position);
 
                 int Remaining = this._TotalEntrySize;
                 while (Remaining > 0)
