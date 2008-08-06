@@ -35,7 +35,8 @@ namespace Ionic.Utils.Zip.Examples
 		"  -p <password>         - apply the specified password for all succeeding files added.\n" +
 		"                          use \"\" to reset the password to nil.\n" +
 		"  -c <comment>          - use the given comment for the archive or, on \n" + 
-		"                          successive occurences, the next file.\n" +
+		"  -d <path>             - use the given directory path in the archive for\n" + 
+		"                          succeeding items added to the archive.\n" +
 		"  -s <entry> 'string'   - insert an entry of the given name into the \n" + 
 		"                          archive, with the given string as its content.\n" +
 		"  -flat                 - store the files in a flat dir structure; do not use the \n" + 
@@ -67,7 +68,7 @@ namespace Ionic.Utils.Zip.Examples
 	    {
 		ZipEntry e=null;
 		string entryComment= null;
-		bool StoreFlat= false;
+		string entryDirectoryPathInArchive = null;
 
 		using (ZipFile zip = new ZipFile(args[0]))
 		{
@@ -83,7 +84,7 @@ namespace Ionic.Utils.Zip.Examples
 			    break;
 
 			case "-flat":
-			    StoreFlat= true;
+			    entryDirectoryPathInArchive= "";
 			    break;
 
 			case "-s":
@@ -108,23 +109,31 @@ namespace Ionic.Utils.Zip.Examples
 			    else entryComment = args[i];
 			    break;
 
+			case "-d":
+			    i++;
+			    if (args.Length <= i) Usage();
+			    entryDirectoryPathInArchive = args[i];
+			    break;
+
 
 			default: 
 			    // UpdateItem will add Files or Dirs, recurses subdirectories
-			    if (StoreFlat)
-				zip.UpdateItem(args[i],""); 
-			    else
-				zip.UpdateItem(args[i]);
+			    zip.UpdateItem(args[i],entryDirectoryPathInArchive); 
 
-			    // can only add a comment if the thing was a file. 
+			    // try to add a comment if we have one
 			    if (entryComment != null)
 			    {
+				// can only add a comment if the thing just added was a file. 
 				if (zip.EntryFilenames.Contains(args[i]))
 				{
 				    e = zip[args[i]];
 				    e.Comment = entryComment;
-				    entryComment= null;
 				}
+				else 
+				    Console.WriteLine("Warning: zipit.exe: ignoring comment; cannot add a comment to a directory.");
+
+				// reset the comment
+				entryComment= null;
 			    }
 			    break;
 			}
