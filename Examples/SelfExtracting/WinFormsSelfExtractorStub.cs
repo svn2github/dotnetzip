@@ -13,7 +13,7 @@
         public WinFormsSelfExtractorStub()
         {
             InitializeComponent();
-            textBox1.Text = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            txtExtractDirectory.Text = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
 
             Stream s = GetZipStream();
             try
@@ -22,19 +22,23 @@
                 {
                     if ((zip.Comment != null) && (zip.Comment != ""))
                     {
-                        label3.Text = zip.Comment;
+                        txtComment.Text = zip.Comment;
                     }
                     else
                     {
-                        label2.Text = "";
-                        label3.Text = "";
+                        //label2.Text = "";
+                        //txtComment.Text = "";
+                        label2.Visible= false;
+                        txtComment.Visible = false;
+                        this.Size = new System.Drawing.Size(this.Width, this.Height - 113);
                     }
                 }
             }
             catch
             {
-                label2.Text = "";
-                label3.Text = "";
+                label2.Visible = false;
+                txtComment.Visible= false;
+                this.Size = new System.Drawing.Size(this.Width, this.Height - 113);
             }
         }
 
@@ -75,7 +79,7 @@
             FolderBrowserDialog folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             // Default to the My Documents folder.
             folderBrowserDialog1.RootFolder = Environment.SpecialFolder.Personal;
-            folderBrowserDialog1.SelectedPath = textBox1.Text;
+            folderBrowserDialog1.SelectedPath = txtExtractDirectory.Text;
             folderBrowserDialog1.ShowNewFolderButton = true;
 
             folderBrowserDialog1.Description = "Select the directory for the extracted files.";
@@ -84,14 +88,14 @@
             DialogResult result = folderBrowserDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
-                textBox1.Text = folderBrowserDialog1.SelectedPath;
+                txtExtractDirectory.Text = folderBrowserDialog1.SelectedPath;
             }
         }
 
         private void btnExtract_Click(object sender, EventArgs e)
         {
-            string targetDirectory = textBox1.Text;
-            bool WantOverwrite = checkBox1.Checked;
+            string targetDirectory = txtExtractDirectory.Text;
+            bool WantOverwrite = chk_Overwrite.Checked;
             bool extractCancelled = false;
             string currentPassword = null;
 
@@ -159,7 +163,7 @@
             btnExtract.Enabled = false;
             btnCancel.Text = "Quit";
 
-            if (checkBox2.Checked)
+            if (chk_OpenExplorer.Checked)
             {
                 string w = System.Environment.GetEnvironmentVariable("WINDIR");
                 if (w == null) w = "c:\\windows";

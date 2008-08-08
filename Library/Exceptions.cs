@@ -4,11 +4,19 @@ using System.Text;
 
 namespace Ionic.Utils.Zip
 {
+    ///// <summary>
+    ///// Base exception type for all custom exceptions in the Zip library. It acts as a marker class.
+    ///// </summary>
+    //[AttributeUsage(AttributeTargets.Class)]
+    //public class ZipExceptionAttribute : Attribute { }
+
+
     /// <summary>
     /// Issued when an <c>ZipEntry.ExtractWithPassword()</c> method is invoked
     /// with an incorrect password.
     /// </summary>
-    public class BadPasswordException : System.Exception
+    [Serializable]
+    public class BadPasswordException : ZipException
     {
         /// <summary>
         /// Default ctor.
@@ -22,32 +30,74 @@ namespace Ionic.Utils.Zip
         public BadPasswordException(String message)
             : base(message)
         { }
+
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="message">The message in the exception.</param>
+        /// <param name="innerException">The innerException for this exception.</param>
+        public BadPasswordException(String message, Exception innerException)
+            : base(message, innerException)
+        {
+        } 
+        
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="serializationInfo">The serialization info for the exception.</param>
+        /// <param name="streamingContext">The streaming context from which to deserialize.</param>
+        protected BadPasswordException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext)
+            : base(serializationInfo, streamingContext)
+          {  }
+
     }
 
     /// <summary>
     /// Indicates that a read was attempted on a stream, and bad or incomplete data was
     /// received.  
     /// </summary>
-    public class BadReadException : System.Exception
+    [Serializable]
+    public class BadReadException : ZipException
     {
         /// <summary>
         /// Default ctor.
         /// </summary>
-        public BadReadException () { }
+        public BadReadException() { }
 
         /// <summary>
         /// Come on, you know how exceptions work. Why are you looking at this documentation?
         /// </summary>
         /// <param name="message">The message in the exception.</param>
-        public BadReadException (String message)
+        public BadReadException(String message)
             : base(message)
         { }
+
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="message">The message in the exception.</param>
+        /// <param name="innerException">The innerException for this exception.</param>
+        public BadReadException(String message,
+            Exception innerException)
+            : base(message, innerException)
+        {
+        }
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="serializationInfo">The serialization info for the exception.</param>
+        /// <param name="streamingContext">The streaming context from which to deserialize.</param>
+        protected BadReadException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext)
+            : base(serializationInfo, streamingContext)
+          {  }
+
     }
 
     /// <summary>
     /// Issued when an CRC check fails upon extracting an entry from a zip archive.
     /// </summary>
-    public class BadCrcException : System.Exception
+    [Serializable]
+    public class BadCrcException : ZipException
     {
         /// <summary>
         /// Default ctor.
@@ -61,13 +111,34 @@ namespace Ionic.Utils.Zip
         public BadCrcException(String message)
             : base(message)
         { }
+
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="message">The message in the exception.</param>
+        /// <param name="innerException">The innerException for this exception.</param>
+        public BadCrcException(String message,
+            Exception innerException)
+            : base(message, innerException)
+        {
+        }
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="serializationInfo">The serialization info for the exception.</param>
+        /// <param name="streamingContext">The streaming context from which to deserialize.</param>
+        protected BadCrcException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext)
+            : base(serializationInfo, streamingContext)
+          {  }
+
     }
 
 
     /// <summary>
     /// Issued when errors occur saving a self-extracting archive.
     /// </summary>
-    public class SfxGenerationException : System.Exception
+    [Serializable]
+    public class SfxGenerationException : ZipException
     {
         /// <summary>
         /// Default ctor.
@@ -81,15 +152,36 @@ namespace Ionic.Utils.Zip
         public SfxGenerationException(String message)
             : base(message)
         { }
+
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="message">The message in the exception.</param>
+        /// <param name="innerException">The innerException for this exception.</param>
+        public SfxGenerationException(String message, Exception innerException)
+            : base(message, innerException)
+        { }
+
+        
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="serializationInfo">The serialization info for the exception.</param>
+        /// <param name="streamingContext">The streaming context from which to deserialize.</param>
+        protected SfxGenerationException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext)
+            : base(serializationInfo, streamingContext)
+          {  }
+
     }
 
-    
+
     /// <summary>
     /// Indicates that an operation was attempted on a ZipFile which was not possible
     /// given the state of the instance. For example, if you call <c>Save()</c> on a ZipFile 
     /// which has no filename set, you can get this exception. 
     /// </summary>
-    public class BadStateException: System.Exception
+    [Serializable]
+    public class BadStateException : ZipException
     {
         /// <summary>
         /// Default ctor.
@@ -103,6 +195,64 @@ namespace Ionic.Utils.Zip
         public BadStateException(String message)
             : base(message)
         { }
+
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="message">The message in the exception.</param>
+        /// <param name="innerException">The innerException for this exception.</param>
+        public BadStateException(String message,
+            Exception innerException)
+            : base(message, innerException)
+        {}
+
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="serializationInfo">The serialization info for the exception.</param>
+        /// <param name="streamingContext">The streaming context from which to deserialize.</param>
+        protected BadStateException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext)
+            : base(serializationInfo, streamingContext)
+          {  }
+
+    }
+
+    /// <summary>
+    /// Base class for all exceptions defined by and throw by the Zip library.
+    /// </summary>
+    [Serializable]
+    public class ZipException : Exception
+    {
+        /// <summary>
+        /// Default ctor.
+        /// </summary>
+        public ZipException() { }
+
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="message">The message in the exception.</param>
+        public ZipException(String message) : base(message) { }
+
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="message">The message in the exception.</param>
+        /// <param name="innerException">The innerException for this exception.</param>
+        public ZipException(String message,
+            Exception innerException)
+            : base(message, innerException)
+        { }
+
+        /// <summary>
+        /// Come on, you know how exceptions work. Why are you looking at this documentation?
+        /// </summary>
+        /// <param name="serializationInfo">The serialization info for the exception.</param>
+        /// <param name="streamingContext">The streaming context from which to deserialize.</param>
+        protected ZipException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext)
+            : base(serializationInfo, streamingContext)
+        { }
+
     }
 
 }

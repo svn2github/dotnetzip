@@ -43,12 +43,12 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// Indicates the current CRC for all blocks slurped in.
         /// </summary>
-        public UInt32 Crc32Result
+        public Int32 Crc32Result
         {
             get
             {
                 // return one's complement of the running result
-                return ~_RunningCrc32Result;
+                return (Int32) (~_RunningCrc32Result);
             }
         }
 
@@ -57,7 +57,7 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// <param name="input">The stream over which to calculate the CRC32</param>
         /// <returns>the CRC32 calculation</returns>
-        public UInt32 GetCrc32(System.IO.Stream input)
+        public Int32 GetCrc32(System.IO.Stream input)
         {
             return GetCrc32AndCopy(input, null);
         }
@@ -68,8 +68,11 @@ namespace Ionic.Utils.Zip
         /// <param name="input">The stream over which to calculate the CRC32</param>
         /// <param name="output">The stream into which to deflate the input</param>
         /// <returns>the CRC32 calculation</returns>
-        public UInt32 GetCrc32AndCopy(System.IO.Stream input, System.IO.Stream output)
+        public Int32 GetCrc32AndCopy(System.IO.Stream input, System.IO.Stream output)
         {
+            if (input == null)
+                throw new ZipException("bad input.", new ArgumentException("The input stream must not be null.", "input"));
+
             unchecked
             {
                 UInt32 crc32Result;
@@ -92,7 +95,7 @@ namespace Ionic.Utils.Zip
                     _TotalBytesRead += count;
                 }
 
-                return ~crc32Result;
+                return (Int32) (~crc32Result);
             }
         }
 
@@ -104,9 +107,14 @@ namespace Ionic.Utils.Zip
         /// <param name="W">The word to start with.</param>
         /// <param name="B">The byte to combine it with.</param>
         /// <returns>The CRC-ized result.</returns>
-        public UInt32 ComputeCrc32(UInt32 W, byte B)
+        public Int32 ComputeCrc32(Int32 W, byte B)
         {
-            return (UInt32)(crc32Table[(W ^ B) & 0xFF] ^ (W >> 8));
+            return ComputeCrc32((UInt32)W, B);
+        }
+
+        internal Int32 ComputeCrc32(UInt32 W, byte B)
+        {
+            return (Int32)(crc32Table[(W ^ B) & 0xFF] ^ (W >> 8));
         }
 
         /// <summary>
@@ -118,6 +126,9 @@ namespace Ionic.Utils.Zip
         /// <param name="count">how many bytes within the block to slurp</param>
         public void SlurpBlock(byte[] block, int offset, int count)
         {
+            if (block == null)
+                throw new ZipException("Bad buffer.", new ArgumentException("The data buffer must not be null.", "block"));
+
             for (int i = 0; i < count; i++)
             {
                 int x = offset + i;
@@ -164,7 +175,7 @@ namespace Ionic.Utils.Zip
 
 
         // private member vars
-        private Int32 _TotalBytesRead = 0;
+        private Int32 _TotalBytesRead;
         private UInt32[] crc32Table;
         private const int BUFFER_SIZE = 8192;
         private UInt32 _RunningCrc32Result = 0xFFFFFFFF;
@@ -186,11 +197,11 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// The constructor.
         /// </summary>
-        /// <param name="s">The underlying stream</param>
-        public CrcCalculatorStream(System.IO.Stream s)
+        /// <param name="stream">The underlying stream</param>
+        public CrcCalculatorStream(System.IO.Stream stream)
             : base()
         {
-            _InnerStream = s;
+            _InnerStream = stream;
             _Crc32 = new CRC32();
 
         }
@@ -198,7 +209,7 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// Provides the current CRC for all blocks slurped in.
         /// </summary>
-        public UInt32 Crc32
+        public Int32 Crc32
         {
             get { return _Crc32.Crc32Result; }
         }

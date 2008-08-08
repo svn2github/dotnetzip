@@ -20,6 +20,7 @@ namespace WinFormsExample
                 saveCanceled = false;
                 nFilesCompleted = 0;
                 this.button2.Enabled = false;
+                this.button2.Text = "Zipping...";
                 this.button3.Enabled = true;
 
                 workerThread = new Thread(this.DoSave);
@@ -49,9 +50,9 @@ namespace WinFormsExample
             using (var zip1 = new ZipFile(args[0]))
             {
                 zip1.AddDirectory(args[1]);
-                entriesToZip = zip1.EntryFilenames.Count;
+                entriesToZip = zip1.EntryFileNames.Count;
                 SetProgressBar();
-                zip1.SaveProgress += new SaveProgressEventHandler(this.zip1_SaveProgress);
+                zip1.SaveProgress += this.zip1_SaveProgress;
                 zip1.Save();
             }
         }
@@ -117,6 +118,7 @@ namespace WinFormsExample
             label3.Text = "Canceled...";
             this.button3.Enabled = false;
             this.button2.Enabled = true;
+            this.button2.Text = "Zip it!";
             this.progressBar1.Value = 0;
             if (!workerThread.IsAlive)
                 workerThread.Join();

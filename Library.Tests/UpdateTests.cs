@@ -310,7 +310,7 @@ namespace Ionic.Utils.Zip.Tests.Update
             // and verify the contents of those that remain
             using (ZipFile zip3 = ZipFile.Read(ZipFileToCreate))
             {
-                foreach (string s1 in zip3.EntryFilenames)
+                foreach (string s1 in zip3.EntryFileNames)
                 {
                     Assert.IsFalse(FilesToRemove.Contains(s1), String.Format("File ({0}) was not expected.", s1));
 
@@ -407,7 +407,7 @@ namespace Ionic.Utils.Zip.Tests.Update
             // and verify the contents of those that remain
             using (ZipFile zip3 = ZipFile.Read(ZipFileToCreate))
             {
-                foreach (string s1 in zip3.EntryFilenames)
+                foreach (string s1 in zip3.EntryFileNames)
                 {
                     Assert.IsFalse(FilesToRemove.Contains(s1), String.Format("File ({0}) was not expected.", s1));
 
@@ -506,7 +506,7 @@ namespace Ionic.Utils.Zip.Tests.Update
             // and verify the contents of those that remain
             using (ZipFile zip3 = ZipFile.Read(ZipFileToCreate))
             {
-                foreach (string s1 in zip3.EntryFilenames)
+                foreach (string s1 in zip3.EntryFileNames)
                 {
                     Assert.IsFalse(FilesToRemove.Contains(s1), String.Format("File ({0}) was not expected.", s1));
 
@@ -628,7 +628,7 @@ namespace Ionic.Utils.Zip.Tests.Update
             // extract all the other files and verify their contents
             using (ZipFile zip4 = ZipFile.Read(ZipFileToCreate))
             {
-                foreach (string s1 in zip4.EntryFilenames)
+                foreach (string s1 in zip4.EntryFileNames)
                 {
                     bool AddedLater = false;
                     foreach (string s2 in AddedFiles)
@@ -731,7 +731,7 @@ namespace Ionic.Utils.Zip.Tests.Update
             // now extract the files and verify their contents
             using (ZipFile zip3 = ZipFile.Read(ZipFileToCreate))
             {
-                foreach (string s in zip3.EntryFilenames)
+                foreach (string s in zip3.EntryFileNames)
                 {
                     repeatedLine = String.Format("Content for the updated file {0} {1}",
                         s,
@@ -847,7 +847,7 @@ namespace Ionic.Utils.Zip.Tests.Update
             // extract all the other files and verify their contents
             using (ZipFile zip4 = ZipFile.Read(ZipFileToCreate))
             {
-                foreach (string s1 in zip4.EntryFilenames)
+                foreach (string s1 in zip4.EntryFileNames)
                 {
                     bool AddedLater = false;
                     foreach (string s2 in AddedFiles)
@@ -971,7 +971,7 @@ namespace Ionic.Utils.Zip.Tests.Update
             // extract all the other files and verify their contents
             using (ZipFile zip4 = ZipFile.Read(ZipFileToCreate))
             {
-                foreach (string s1 in zip4.EntryFilenames)
+                foreach (string s1 in zip4.EntryFileNames)
                 {
                     bool AddedLater = false;
                     foreach (string s2 in AddedFiles)
@@ -1095,7 +1095,7 @@ namespace Ionic.Utils.Zip.Tests.Update
             // extract all the other files and verify their contents
             using (ZipFile zip4 = ZipFile.Read(ZipFileToCreate))
             {
-                foreach (string s1 in zip4.EntryFilenames)
+                foreach (string s1 in zip4.EntryFileNames)
                 {
                     bool NotUpdated = true;
                     foreach (string s2 in UpdatedFiles)
@@ -1229,7 +1229,7 @@ namespace Ionic.Utils.Zip.Tests.Update
             // extract all the other files and verify their contents
             using (ZipFile zip5 = ZipFile.Read(ZipFileToCreate))
             {
-                foreach (string s1 in zip5.EntryFilenames)
+                foreach (string s1 in zip5.EntryFileNames)
                 {
                     bool NotUpdated = true;
                     foreach (string s2 in UpdatedFiles)
@@ -1352,7 +1352,7 @@ namespace Ionic.Utils.Zip.Tests.Update
             // extract all the other files and verify their contents
             using (ZipFile zip4 = ZipFile.Read(ZipFileToCreate))
             {
-                foreach (string s1 in zip4.EntryFilenames)
+                foreach (string s1 in zip4.EntryFileNames)
                 {
                     bool NotUpdated = true;
                     foreach (string s2 in UpdatedFiles)
@@ -1475,7 +1475,7 @@ namespace Ionic.Utils.Zip.Tests.Update
             // extract all the other files and verify their contents
             using (ZipFile zip4 = ZipFile.Read(ZipFileToCreate))
             {
-                foreach (string s1 in zip4.EntryFilenames)
+                foreach (string s1 in zip4.EntryFileNames)
                 {
                     bool NotUpdated = true;
                     foreach (string s2 in UpdatedFiles)
@@ -1599,7 +1599,7 @@ namespace Ionic.Utils.Zip.Tests.Update
             // extract all the other files and verify their contents
             using (ZipFile zip4 = ZipFile.Read(ZipFileToCreate))
             {
-                foreach (string s1 in zip4.EntryFilenames)
+                foreach (string s1 in zip4.EntryFileNames)
                 {
                     bool NotUpdated = true;
                     foreach (string s2 in UpdatedFiles)
@@ -1725,7 +1725,7 @@ namespace Ionic.Utils.Zip.Tests.Update
             int numRemoved = 0;
             using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
             {
-                var AllFileNames = zip2.EntryFilenames;
+                var AllFileNames = zip2.EntryFileNames;
                 foreach (String s in AllFileNames)
                 {
                     int fileNum = Int32.Parse(s.Substring(4, 3));

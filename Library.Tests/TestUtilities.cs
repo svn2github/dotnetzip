@@ -28,7 +28,6 @@ namespace Library.TestUtilities
             System.IO.Directory.SetCurrentDirectory(System.IO.Path.GetDirectoryName(TopLevelDir));
         }
 
-
         internal static void Cleanup(string CurrentDir, List<String> FilesToRemove)
         {
             System.IO.Directory.SetCurrentDirectory(CurrentDir);
@@ -63,6 +62,28 @@ namespace Library.TestUtilities
 
 
         #region Helper methods
+
+        internal static string TrimVolumeAndSwapSlashes(string pathName)
+        {
+            //return (((pathname[1] == ':') && (pathname[2] == '\\')) ? pathname.Substring(3) : pathname)
+            //    .Replace('\\', '/');
+            if (String.IsNullOrEmpty(pathName)) return pathName;
+            if (pathName.Length < 2) return pathName.Replace('\\', '/');
+            return (((pathName[1] == ':') && (pathName[2] == '\\')) ? pathName.Substring(3) : pathName)
+                .Replace('\\', '/');
+        }
+
+        internal static DateTime RoundToEvenSecond(DateTime source)
+        {
+            // round to nearest second:
+            if ((source.Second % 2) == 1)
+                source += new TimeSpan(0, 0, 1);
+
+            DateTime dtRounded = new DateTime(source.Year, source.Month, source.Day, source.Hour, source.Minute, source.Second);
+            //if (source.Millisecond >= 500) dtRounded = dtRounded.AddSeconds(1);
+            return dtRounded;
+        }
+
 
         internal static void CreateAndFillFileText(string Filename, int size)
         {

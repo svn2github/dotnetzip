@@ -137,27 +137,30 @@ namespace Ionic.Utils.Zip.Tests.Extended
             // now extract the files and verify their contents
             using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
             {
-                foreach (string eName in zip2.EntryFilenames)
+                foreach (string eName in zip2.EntryFileNames)
                 {
                     ZipEntry e1 = zip2[eName];
 
-                    using (CrcCalculatorStream s = e1.OpenReader())
+                    if (!e1.IsDirectory)
                     {
-                        byte[] buffer = new byte[4096];
-                        int n, totalBytesRead = 0;
-                        do
+                        using (CrcCalculatorStream s = e1.OpenReader())
                         {
-                            n = s.Read(buffer, 0, buffer.Length);
-                            totalBytesRead += n;
-                        } while (n > 0);
+                            byte[] buffer = new byte[4096];
+                            int n, totalBytesRead = 0;
+                            do
+                            {
+                                n = s.Read(buffer, 0, buffer.Length);
+                                totalBytesRead += n;
+                            } while (n > 0);
 
-                        if (s.Crc32 != e1.Crc32)
-                            throw new Exception(string.Format("The Zip Entry {0} failed the CRC Check. (0x{1:X8}!=0x{2:X8})",
-                                              eName, s.Crc32, e1.Crc32));
+                            if (s.Crc32 != e1.Crc32)
+                                throw new Exception(string.Format("The Entry {0} failed the CRC Check. (0x{1:X8}!=0x{2:X8})",
+                                                  eName, s.Crc32, e1.Crc32));
 
-                        if (totalBytesRead != e1.UncompressedSize)
-                            throw new Exception(string.Format("We read an unexpected number of bytes. ({0}, {1}!={2})",
-                                              eName, totalBytesRead, e1.UncompressedSize));
+                            if (totalBytesRead != e1.UncompressedSize)
+                                throw new Exception(string.Format("We read an unexpected number of bytes. ({0}, {1}!={2})",
+                                                  eName, totalBytesRead, e1.UncompressedSize));
+                        }
                     }
                 }
             }
@@ -295,6 +298,59 @@ namespace Ionic.Utils.Zip.Tests.Extended
             }
         }
 
+
+        int _progressEventCalls;
+        public void SaveProgress(object sender, SaveProgressEventArgs e)
+        {
+            _progressEventCalls++;
+            TestContext.WriteLine("{0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal);
+        }
+        
+
+        [TestMethod]
+        public void Create_WithEvents()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Create_WithEvents.zip");
+            string TargetDirectory = System.IO.Path.Combine(TopLevelDir, "unpack");
+
+            string DirToZip = System.IO.Path.Combine(TopLevelDir, "Event Test");
+            System.IO.Directory.CreateDirectory(DirToZip);
+
+            int entriesAdded = 0;
+            String filename = null;
+            int subdirCount = _rnd.Next(7) + 6;
+            TestContext.WriteLine("Create_WithEvents: Creating {0} subdirs.", subdirCount);
+            for (int i = 0; i < subdirCount; i++)
+            {
+                string SubDir = System.IO.Path.Combine(DirToZip, String.Format("dir{0:D4}", i));
+                System.IO.Directory.CreateDirectory(SubDir);
+
+                int filecount = _rnd.Next(17) + 23;
+                TestContext.WriteLine("Create_WithEvents: Subdir {0}, Creating {1} files.", i, filecount);
+                for (int j = 0; j < filecount; j++)
+                {
+                    filename = String.Format("file{0:D4}.x", j);
+                    TestUtilities.CreateAndFillFile(System.IO.Path.Combine(SubDir, filename),
+                        _rnd.Next(2000) + 200);
+                    entriesAdded++;
+                }
+            }
+
+            _progressEventCalls = 0;
+            using (ZipFile zip = new ZipFile())
+            {
+                zip.SaveProgress += SaveProgress;
+                zip.Comment = "This is the comment on the zip archive.";
+                zip.AddDirectory(DirToZip, System.IO.Path.GetFileName(DirToZip));
+                zip.Save(ZipFileToCreate);
+            }
+
+            Assert.AreEqual<Int32>(_progressEventCalls, entriesAdded + subdirCount + 1, 
+                    "The number of Entries added is not equal to the number of progress calls.");
+        }
+
+
+
         [TestMethod]
         public void Extract_SelfExtractor_WinForms()
         {
@@ -321,7 +377,8 @@ namespace Ionic.Utils.Zip.Tests.Extended
             using (ZipFile zip = new ZipFile())
             {
                 zip.AddDirectory(Subdir, System.IO.Path.GetFileName(Subdir));
-                zip.Comment = "Please extract to:  " + TargetUnpackDirectory;
+                //zip.Comment = "Please extract to:  " + TargetUnpackDirectory;
+                //for (int i = 0; i < 44; i++) zip.Comment += "Lorem ipsum absalom hibiscus lasagne ";
                 zip.SaveSelfExtractor(ExeFileToCreate, Ionic.Utils.Zip.SelfExtractorFlavor.WinFormsApplication);
             }
 

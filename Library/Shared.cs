@@ -15,29 +15,29 @@ namespace Ionic.Utils.Zip
     /// <summary>
     /// Collects general purpose utility methods.
     /// </summary>
-    public class Shared
+    internal class SharedUtilities
     {
-      /// private null constructor
-      private Shared(){}
+        /// private null constructor
+        private SharedUtilities() { }
 
         /// <summary>
         /// Round the given DateTime value to an even second value.  
         /// </summary>
-      ///
-      /// <remarks>
-      /// <para>
-      /// Round up in the case of an odd second value.  The rounding does not consider fractional seconds.
-      /// </para>
-      /// <para>
-      /// This is useful because the Zip spec allows storage of time only to the nearest even second.
-      /// So if you want to compare the time of an entry in the archive with it's actual time in the filesystem, you 
-      /// need to round the actual filesystem time, or use a 2-second threshold for the  comparison. 
-      /// </para>
-      /// <para>
+        ///
+        /// <remarks>
+        /// <para>
+        /// Round up in the case of an odd second value.  The rounding does not consider fractional seconds.
+        /// </para>
+        /// <para>
+        /// This is useful because the Zip spec allows storage of time only to the nearest even second.
+        /// So if you want to compare the time of an entry in the archive with it's actual time in the filesystem, you 
+        /// need to round the actual filesystem time, or use a 2-second threshold for the  comparison. 
+        /// </para>
+        /// <para>
         /// This is most nautrally an extension method for the DateTime class but this library is 
         /// built for .NET 2.0, not for .NET 3.5;  This means extension methods are a no-no.  
-      /// </para>
-      /// </remarks>
+        /// </para>
+        /// </remarks>
         /// <param name="source">The DateTime value to round</param>
         /// <returns>The ruonded DateTime value</returns>
         public static DateTime RoundToEvenSecond(DateTime source)
@@ -54,15 +54,15 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// Utility routine for transforming path names. 
         /// </summary>
-        /// <param name="pathname">source path.</param>
+        /// <param name="pathName">source path.</param>
         /// <returns>transformed path</returns>
-        public static string TrimVolumeAndSwapSlashes(string pathname)
+        public static string TrimVolumeAndSwapSlashes(string pathName)
         {
             //return (((pathname[1] == ':') && (pathname[2] == '\\')) ? pathname.Substring(3) : pathname)
             //    .Replace('\\', '/');
-            if (pathname == "") return pathname;
-            if (pathname.Length < 2) return pathname.Replace('\\', '/');
-            return (((pathname[1] == ':') && (pathname[2] == '\\')) ? pathname.Substring(3) : pathname)
+            if (String.IsNullOrEmpty(pathName)) return pathName;
+            if (pathName.Length < 2) return pathName.Replace('\\', '/');
+            return (((pathName[1] == ':') && (pathName[2] == '\\')) ? pathName.Substring(3) : pathName)
                 .Replace('\\', '/');
         }
 
@@ -72,7 +72,7 @@ namespace Ionic.Utils.Zip
             return a;
         }
 
-        internal static string StringFromBuffer(byte[] buf, int start, int maxlength)
+        internal static string StringFromBuffer(byte[] buf, int maxlength)
         {
             int i;
             char[] c = new char[maxlength];
@@ -91,7 +91,7 @@ namespace Ionic.Utils.Zip
 
         internal static int ReadInt(System.IO.Stream s)
         {
-            return  _ReadFourBytes(s, "Could not read block - no data!");
+            return _ReadFourBytes(s, "Could not read block - no data!");
         }
 
         private static int _ReadFourBytes(System.IO.Stream s, string message)
@@ -101,7 +101,7 @@ namespace Ionic.Utils.Zip
             n = s.Read(block, 0, block.Length);
             if (n != block.Length) throw new BadReadException(message);
             int data = (((block[3] * 256 + block[2]) * 256) + block[1]) * 256 + block[0];
-            return data ;
+            return data;
         }
 
 
@@ -110,12 +110,12 @@ namespace Ionic.Utils.Zip
         /// Finds a signature in the zip stream. This is useful for finding 
         /// the end of a zip entry, for example. 
         /// </summary>
-        /// <param name="s"></param>
+        /// <param name="stream"></param>
         /// <param name="SignatureToFind"></param>
         /// <returns></returns>
-        protected internal static long FindSignature(System.IO.Stream s, int SignatureToFind)
+        protected internal static long FindSignature(System.IO.Stream stream, int SignatureToFind)
         {
-            long startingPosition = s.Position;
+            long startingPosition = stream.Position;
 
             int BATCH_SIZE = 1024;
             byte[] targetBytes = new byte[4];
@@ -128,17 +128,17 @@ namespace Ionic.Utils.Zip
             bool success = false;
             do
             {
-                n = s.Read(batch, 0, batch.Length);
+                n = stream.Read(batch, 0, batch.Length);
                 if (n != 0)
                 {
                     for (int i = 0; i < n; i++)
                     {
                         if (batch[i] == targetBytes[3])
                         {
-                            s.Seek(i - n, System.IO.SeekOrigin.Current);
-                            int sig = ReadSignature(s);
+                            stream.Seek(i - n, System.IO.SeekOrigin.Current);
+                            int sig = ReadSignature(stream);
                             success = (sig == SignatureToFind);
-                            if (!success) s.Seek(-3, System.IO.SeekOrigin.Current);
+                            if (!success) stream.Seek(-3, System.IO.SeekOrigin.Current);
                             break; // out of for loop
                         }
                     }
@@ -148,12 +148,12 @@ namespace Ionic.Utils.Zip
             } while (true);
             if (!success)
             {
-                s.Seek(startingPosition, System.IO.SeekOrigin.Begin);
+                stream.Seek(startingPosition, System.IO.SeekOrigin.Begin);
                 return -1;  // or throw?
             }
 
             // subtract 4 for the signature.
-            long bytesRead = (s.Position - startingPosition) - 4;
+            long bytesRead = (stream.Position - startingPosition) - 4;
             // number of bytes read, should be the same as compressed size of file            
             return bytesRead;
         }
@@ -176,12 +176,14 @@ namespace Ionic.Utils.Zip
 
             DateTime d = System.DateTime.Now;
             try { d = new System.DateTime(year, month, day, hour, minute, second, 0); }
-            catch
+            catch (System.ArgumentOutOfRangeException ex1)
             {
-                Console.Write("\nInvalid date/time?:\nyear: {0} ", year);
-                Console.Write("month: {0} ", month);
-                Console.WriteLine("day: {0} ", day);
-                Console.WriteLine("HH:MM:SS= {0}:{1}:{2}", hour, minute, second);
+                throw new ZipException("Bad date/time format in the zip file.", ex1);
+                //Console.WriteLine("exception formatting the date: {0}\n\n", ex1.ToString());
+                //Console.Write("\nInvalid date/time?:\nyear: {0} ", year);
+                //Console.Write("month: {0} ", month);
+                //Console.WriteLine("day: {0} ", day);
+                //Console.WriteLine("HH:MM:SS= {0}:{1}:{2}", hour, minute, second);
             }
 
             return d;
@@ -243,7 +245,6 @@ namespace Ionic.Utils.Zip
             : base()
         {
             _s = s;
-            _bytesWritten = 0;
         }
 
         public int BytesWritten

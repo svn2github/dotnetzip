@@ -124,7 +124,7 @@ namespace Ionic.Utils.Zip.Examples
 			    if (entryComment != null)
 			    {
 				// can only add a comment if the thing just added was a file. 
-				if (zip.EntryFilenames.Contains(args[i]))
+				if (zip.EntryFileNames.Contains(args[i]))
 				{
 				    e = zip[args[i]];
 				    e.Comment = entryComment;

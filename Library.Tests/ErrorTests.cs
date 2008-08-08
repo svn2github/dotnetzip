@@ -168,7 +168,7 @@ namespace Ionic.Utils.Zip.Tests.Error
 
 
         [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
+        [ExpectedException(typeof(ZipException))]
         public void Error_Save_InvalidLocation()
         {
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Error_Save_InvalidLocation.zip");

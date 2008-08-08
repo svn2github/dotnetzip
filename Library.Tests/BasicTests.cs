@@ -362,7 +362,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
                     var t1 = System.IO.Path.GetFileName(DirToZip);
                     var t2 = System.IO.Path.Combine(t1, SubdirShort);
                     var key = System.IO.Path.Combine(t2, filename);
-                    key = Shared.TrimVolumeAndSwapSlashes(key);
+                    key = TestUtilities.TrimVolumeAndSwapSlashes(key);
                     checksums.Add(key, chk);
                     entries++;
                 }
@@ -393,10 +393,14 @@ namespace Ionic.Utils.Zip.Tests.Basic
                     e.Extract("unpack");
                     string PathToExtractedFile = System.IO.Path.Combine("unpack", e.FileName);
 
-                    // verify the checksum of the file is correct
-                    string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
-                    string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
-                    Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", PathToExtractedFile);
+                    // if it is a file.... 
+                    if (checksums.ContainsKey(e.FileName))
+                    {
+                        // verify the checksum of the file is correct
+                        string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
+                        string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
+                        Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", PathToExtractedFile);
+                    }
                 }
             }
 
@@ -423,7 +427,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
                     //var t1 = System.IO.Path.GetFileName(DirToZip);
                     var t2 = System.IO.Path.Combine("zipthis", SubdirShort);
                     var key = System.IO.Path.Combine(t2, filename);
-                    key = Shared.TrimVolumeAndSwapSlashes(key);
+                    key = TestUtilities.TrimVolumeAndSwapSlashes(key);
 
                     if (checksums.ContainsKey(key))
                         checksums.Remove(key);
@@ -452,12 +456,15 @@ namespace Ionic.Utils.Zip.Tests.Basic
                 foreach (ZipEntry e in zip4)
                 {
                     e.Extract("unpack2");
-                    string PathToExtractedFile = System.IO.Path.Combine("unpack2", e.FileName);
+                    if (!e.IsDirectory)
+                    {
+                        string PathToExtractedFile = System.IO.Path.Combine("unpack2", e.FileName);
 
-                    // verify the checksum of the file is correct
-                    string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
-                    string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
-                    Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", PathToExtractedFile);
+                        // verify the checksum of the file is correct
+                        string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
+                        string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
+                        Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", PathToExtractedFile);
+                    }
                 }
             }
         }
@@ -746,7 +753,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
             // now extract the files and verify their contents
             using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
             {
-                foreach (string s in zip2.EntryFilenames)
+                foreach (string s in zip2.EntryFileNames)
                 {
                     repeatedLine = String.Format("This line is repeated over and over and over in file {0}", s);
                     zip2[s].Extract("extract");
@@ -832,7 +839,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
             // now extract the files into memory streams (and verify their contents)
             using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
             {
-                foreach (string s in zip2.EntryFilenames)
+                foreach (string s in zip2.EntryFileNames)
                 {
                     //repeatedLine = String.Format("This line is repeated over and over and over in file {0}", s);
                     using (MemoryStream ms = new MemoryStream())
@@ -997,7 +1004,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
                 // surround this in a try...catch so as to avoid zipping up files open by someone else
                 try
                 {
-                    var tm = Shared.RoundToEvenSecond(System.IO.File.GetLastWriteTime(filename));
+                    var tm = TestUtilities.RoundToEvenSecond(System.IO.File.GetLastWriteTime(filename));
                     // hop out of the try block if the file is from TODAY.  (heuristic to avoid currently open files)
                     if ((tm.Year == DateTime.Now.Year) && (tm.Month == DateTime.Now.Month) && (tm.Day == DateTime.Now.Day))
                         throw new Exception();
@@ -1110,7 +1117,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
 
                 var relativePath = System.IO.Path.Combine(System.IO.Path.GetFileName(Subdir), System.IO.Path.GetFileName(filename));
                 //var key = System.IO.Path.Combine("A", filename);
-                var key = Shared.TrimVolumeAndSwapSlashes(relativePath);
+                var key = TestUtilities.TrimVolumeAndSwapSlashes(relativePath);
                 checksums.Add(key, TestUtilities.CheckSumToString(chk));
 
                 entries++;
@@ -1134,12 +1141,15 @@ namespace Ionic.Utils.Zip.Tests.Basic
                 foreach (ZipEntry e in zip2)
                 {
                     e.Extract("unpack");
-                    string PathToExtractedFile = System.IO.Path.Combine("unpack", e.FileName);
+                    if (checksums.ContainsKey(e.FileName))
+                    {
+                        string PathToExtractedFile = System.IO.Path.Combine("unpack", e.FileName);
 
-                    // verify the checksum of the file is correct
-                    string expectedCheckString = checksums[e.FileName];
-                    string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
-                    Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", PathToExtractedFile);
+                        // verify the checksum of the file is correct
+                        string expectedCheckString = checksums[e.FileName];
+                        string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
+                        Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", PathToExtractedFile);
+                    }
                 }
             }
 

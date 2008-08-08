@@ -172,15 +172,15 @@ namespace Ionic.Utils.Zip
         /// </code>
         /// </example>
         /// 
-        /// <param name="ExeToGenerate">a pathname, possibly fully qualified, to be created. Typically it will end in an .exe extension.</param>
+        /// <param name="exeToGenerate">a pathname, possibly fully qualified, to be created. Typically it will end in an .exe extension.</param>
         /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
-        public void SaveSelfExtractor(string ExeToGenerate, SelfExtractorFlavor flavor)
+        public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor)
         {
-            if (File.Exists(ExeToGenerate))
+            if (File.Exists(exeToGenerate))
             {
-                if (Verbose) StatusMessageTextWriter.WriteLine("The existing file ({0}) will be overwritten.", ExeToGenerate);
+                if (Verbose) StatusMessageTextWriter.WriteLine("The existing file ({0}) will be overwritten.", exeToGenerate);
             }
-            if (!ExeToGenerate.EndsWith(".exe"))
+            if (!exeToGenerate.EndsWith(".exe"))
             {
                 if (Verbose) StatusMessageTextWriter.WriteLine("Warning: The generated self-extracting file will not have an .exe extension.");
             }
@@ -222,7 +222,7 @@ namespace Ionic.Utils.Zip
             cp.GenerateInMemory = false;
             cp.GenerateExecutable = true;
             cp.IncludeDebugInformation = false;
-            cp.OutputAssembly = ExeToGenerate;
+            cp.OutputAssembly = exeToGenerate;
 
             Assembly a2 = Assembly.GetExecutingAssembly();
 

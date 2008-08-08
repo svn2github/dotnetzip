@@ -100,7 +100,7 @@ namespace Ionic.Utils.Zip.Tests.Password
             {
                 filenames[i] = Path.Combine("zipthis", String.Format("file{0:D3}.txt", i));
                 TestUtilities.CreateAndFillFileText(filenames[i], _rnd.Next(12000) + 3000);
-                checksums.Add(Shared.TrimVolumeAndSwapSlashes(filenames[i]), TestUtilities.ComputeChecksum(filenames[i]));
+                checksums.Add(TestUtilities.TrimVolumeAndSwapSlashes(filenames[i]), TestUtilities.ComputeChecksum(filenames[i]));
             }
 
             using (ZipFile zip = new ZipFile(ZipFileToCreate))
@@ -113,17 +113,18 @@ namespace Ionic.Utils.Zip.Tests.Password
             Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, NumFilesToCreate),
                     "The Zip file has an unexpected number of entries.");
 
-            i = 0;
             using (ZipFile zip = ZipFile.Read(ZipFileToCreate))
             {
                 foreach (ZipEntry e in zip)
                 {
                     e.ExtractWithPassword("unpack", true, password);
-                    //bool success = Int32.TryParse(e.FileName, out j);
-                    byte[] c2 = TestUtilities.ComputeChecksum(Path.Combine("unpack", e.FileName));
-                    Assert.AreEqual<string>(TestUtilities.CheckSumToString(checksums[e.FileName]), 
-                            TestUtilities.CheckSumToString(c2), "The checksum of the extracted file is incorrect.");
-                    i++;
+                    if (!e.IsDirectory)
+                    {
+                        //bool success = Int32.TryParse(e.FileName, out j);
+                        byte[] c2 = TestUtilities.ComputeChecksum(Path.Combine("unpack", e.FileName));
+                        Assert.AreEqual<string>(TestUtilities.CheckSumToString(checksums[e.FileName]),
+                                TestUtilities.CheckSumToString(c2), "The checksum of the extracted file is incorrect.");
+                    }
                 }
             }
         }

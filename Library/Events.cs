@@ -14,7 +14,7 @@ namespace Ionic.Utils.Zip
 
         private int _entriesTotal;
         private int _entriesSaved;
-        private bool _cancel = false;
+        private bool _cancel;
         private String _nameOfLatestEntry;
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Ionic.Utils.Zip
 
 
     #region Save Events
-
+#if NOTUSED
     /// <summary>
     /// Delegate for the SaveProgress event.
     /// </summary>
@@ -117,6 +117,7 @@ namespace Ionic.Utils.Zip
     /// <param name="sender">The sender of the event.</param>
     /// <param name="e">The information about the event.</param>
     public delegate void SaveCompletedEventHandler(object sender, SaveEventArgs e);
+#endif
 
     #endregion
 

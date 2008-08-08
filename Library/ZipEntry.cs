@@ -52,12 +52,13 @@ namespace Ionic.Utils.Zip
         Zipfile,
     }
 
+
     /// <summary>
     /// Represents a single entry in a ZipFile. Typically, applications
     /// get a ZipEntry by enumerating the entries within a ZipFile,
     /// or by adding an entry to a ZipFile.  
     /// </summary>
-    public class ZipEntry
+    public class ZipEntry 
     {
         private ZipEntry() { }
 
@@ -353,7 +354,7 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// The CRC (Cyclic Redundancy Check) on the contents of the ZipEntry.
         /// </summary>
-        public UInt32 Crc32
+        public Int32 Crc32
         {
             get { return _Crc32; }
         }
@@ -458,7 +459,7 @@ namespace Ionic.Utils.Zip
 
             ze._RelativeOffsetOfHeader = (int)ze._s.Position;
 
-            int signature = Ionic.Utils.Zip.Shared.ReadSignature(ze._s);
+            int signature = Ionic.Utils.Zip.SharedUtilities.ReadSignature(ze._s);
             bytesRead += 4;
 
             // Return false if this is not a local file header signature.
@@ -498,7 +499,7 @@ namespace Ionic.Utils.Zip
 
             if ((ze._BitField & 0x0008) != 0x0008)
             {
-                ze._Crc32 = (UInt32)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
+                ze._Crc32 = (Int32)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
                 ze._CompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
                 ze._UncompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
             }
@@ -516,7 +517,7 @@ namespace Ionic.Utils.Zip
             n = ze._s.Read(block, 0, block.Length);
             bytesRead += n;
 
-            ze._FileNameInArchive = Ionic.Utils.Zip.Shared.StringFromBuffer(block, 0, block.Length);
+            ze._FileNameInArchive = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length);
 
             // when creating an entry by reading, the LocalFileName is the same as the FileNameInArchivre
             ze._LocalFileName = ze._FileNameInArchive;
@@ -529,7 +530,7 @@ namespace Ionic.Utils.Zip
             }
 
             // transform the time data into something usable
-            ze._LastModified = Ionic.Utils.Zip.Shared.PackedToDateTime(ze._LastModDateTime);
+            ze._LastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(ze._LastModDateTime);
             SetLastModifiedWithAdjustment(ze);
 
             // actually get the compressed size and CRC if necessary
@@ -544,7 +545,7 @@ namespace Ionic.Utils.Zip
                 // archives, the compressed and uncompressed sizes are 8 bytes each.
 
                 long posn = ze._s.Position;
-                long SizeOfDataRead = Ionic.Utils.Zip.Shared.FindSignature(ze._s, ZipConstants.ZipEntryDataDescriptorSignature);
+                long SizeOfDataRead = Ionic.Utils.Zip.SharedUtilities.FindSignature(ze._s, ZipConstants.ZipEntryDataDescriptorSignature);
                 if (SizeOfDataRead == -1) return false;
 
                 // read 3x 4-byte fields (CRC, Compressed Size, Uncompressed Size)
@@ -553,7 +554,7 @@ namespace Ionic.Utils.Zip
                 if (n != 12) return false;
                 bytesRead += n;
                 i = 0;
-                ze._Crc32 = (UInt32)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
+                ze._Crc32 = (Int32)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
                 ze._CompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
                 ze._UncompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
 
@@ -651,13 +652,13 @@ namespace Ionic.Utils.Zip
             //    by the compressed length and the uncompressed length (4 bytes for each 
             //    of those three elements).  Need to check that here.             
             //
-            uint datum = (uint)Ionic.Utils.Zip.Shared.ReadInt(s);
+            uint datum = (uint)Ionic.Utils.Zip.SharedUtilities.ReadInt(s);
             if (datum == entry._Crc32)
             {
-                int sz = Ionic.Utils.Zip.Shared.ReadInt(s);
+                int sz = Ionic.Utils.Zip.SharedUtilities.ReadInt(s);
                 if (sz == entry._CompressedSize)
                 {
-                    sz = Ionic.Utils.Zip.Shared.ReadInt(s);
+                    sz = Ionic.Utils.Zip.SharedUtilities.ReadInt(s);
                     if (sz == entry._UncompressedSize)
                     {
                         // ignore everything and discard it.
@@ -675,35 +676,35 @@ namespace Ionic.Utils.Zip
 
 
 
-        internal static ZipEntry Create(String filename)
+        //internal static ZipEntry Create(String filename)
+        //{
+        //    return ZipEntry.Create(filename, null);
+        //}
+
+        internal static ZipEntry Create(String filename, string directoryPathInArchive)
         {
-            return ZipEntry.Create(filename, null);
+            return Create(filename, directoryPathInArchive, null);
         }
 
-        internal static ZipEntry Create(String filename, string DirectoryPathInArchive)
-        {
-            return Create(filename, DirectoryPathInArchive, null);
-        }
 
-
-        internal static string NameInArchive(String filename, string DirectoryPathInArchive)
+        internal static string NameInArchive(String filename, string directoryPathInArchive)
         {
             string result =
-        (DirectoryPathInArchive == null) ?
+        (directoryPathInArchive == null) ?
         filename :
-        (DirectoryPathInArchive == "") ?
+        (String.IsNullOrEmpty(directoryPathInArchive)) ?
         System.IO.Path.GetFileName(filename) :
                 // explicitly specify a pathname for this file  
-        System.IO.Path.Combine(DirectoryPathInArchive, System.IO.Path.GetFileName(filename));
+        System.IO.Path.Combine(directoryPathInArchive, System.IO.Path.GetFileName(filename));
 
-            return Shared.TrimVolumeAndSwapSlashes(result);
+            return SharedUtilities.TrimVolumeAndSwapSlashes(result);
         }
 
 
         //Daniel Bedarf
         private bool _isStream;
         private System.IO.Stream _inputStream;
-        internal static ZipEntry Create(String filename, string DirectoryPathInArchive, System.IO.Stream stream)
+        internal static ZipEntry Create(String filename, string directoryPathInArchive, System.IO.Stream stream)
         {
             ZipEntry entry = new ZipEntry();
             if (stream != null)
@@ -713,10 +714,10 @@ namespace Ionic.Utils.Zip
                 entry._LastModified = DateTime.Now;
             }
             else
-                entry._LastModified = Shared.RoundToEvenSecond(System.IO.File.GetLastWriteTime(filename));
+                entry._LastModified = SharedUtilities.RoundToEvenSecond(System.IO.File.GetLastWriteTime(filename));
 
             entry._LocalFileName = filename; // may include a path
-            entry._FileNameInArchive = NameInArchive(filename, DirectoryPathInArchive);
+            entry._FileNameInArchive = NameInArchive(filename, directoryPathInArchive);
 
             SetLastModDateTimeWithAdjustment(entry);
 
@@ -788,10 +789,10 @@ namespace Ionic.Utils.Zip
             if (entry._LastModified.IsDaylightSavingTime())
             {
                 System.DateTime AdjustedTime = entry._LastModified - new System.TimeSpan(1, 0, 0);
-                entry._LastModDateTime = Ionic.Utils.Zip.Shared.DateTimeToPacked(AdjustedTime);
+                entry._LastModDateTime = Ionic.Utils.Zip.SharedUtilities.DateTimeToPacked(AdjustedTime);
             }
             else
-                entry._LastModDateTime = Ionic.Utils.Zip.Shared.DateTimeToPacked(entry._LastModified);
+                entry._LastModDateTime = Ionic.Utils.Zip.SharedUtilities.DateTimeToPacked(entry._LastModified);
         }
 
 
@@ -836,10 +837,10 @@ namespace Ionic.Utils.Zip
         /// about how the last modified time of the created file is set.
         /// </para>
         /// </remarks>
-        /// <param name="Overwrite">true if the caller wants to overwrite an existing file by the same name in the filesystem.</param>
-        public void Extract(bool Overwrite)
+        /// <param name="overwrite">true if the caller wants to overwrite an existing file by the same name in the filesystem.</param>
+        public void Extract(bool overwrite)
         {
-            OverwriteOnExtract = Overwrite;
+            OverwriteOnExtract = overwrite;
             InternalExtract(".", null, null);
         }
 
@@ -848,7 +849,7 @@ namespace Ionic.Utils.Zip
         /// For example, the caller could specify Console.Out, or a MemoryStream.
         /// </summary>
         /// 
-        /// <param name="s">the stream to which the entry should be extracted.  </param>
+        /// <param name="stream">the stream to which the entry should be extracted.  </param>
         /// 
         /// <remarks>
         /// <para>
@@ -856,16 +857,16 @@ namespace Ionic.Utils.Zip
         /// about how the last modified time of the created file is set.
         /// </para>
         /// </remarks>
-        public void Extract(System.IO.Stream s)
+        public void Extract(System.IO.Stream stream)
         {
-            InternalExtract(null, s, null);
+            InternalExtract(null, stream, null);
         }
 
         /// <summary>
         /// Extract the entry to the filesystem, starting at the specified base directory. 
         /// </summary>
         /// 
-        /// <param name="BaseDirectory">the pathname of the base directory</param>
+        /// <param name="baseDirectory">the pathname of the base directory</param>
         /// 
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.OverwriteOnExtract"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.Extract(string, bool)"/>
@@ -882,9 +883,9 @@ namespace Ionic.Utils.Zip
         /// about how the last modified time of the created file is set.
         /// </para>
         /// </remarks>
-        public void Extract(string BaseDirectory)
+        public void Extract(string baseDirectory)
         {
-            InternalExtract(BaseDirectory, null, null);
+            InternalExtract(baseDirectory, null, null);
         }
 
         /// <summary>
@@ -899,12 +900,12 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// </remarks>
         /// 
-        /// <param name="BaseDirectory">the pathname of the base directory</param>
-        /// <param name="Overwrite">If true, overwrite any existing files if necessary upon extraction.</param>
-        public void Extract(string BaseDirectory, bool Overwrite)
+        /// <param name="baseDirectory">the pathname of the base directory</param>
+        /// <param name="overwrite">If true, overwrite any existing files if necessary upon extraction.</param>
+        public void Extract(string baseDirectory, bool overwrite)
         {
-            OverwriteOnExtract = Overwrite;
-            InternalExtract(BaseDirectory, null, null);
+            OverwriteOnExtract = overwrite;
+            InternalExtract(baseDirectory, null, null);
         }
 
         /// <summary>
@@ -933,10 +934,10 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// </remarks>
         ///
-        /// <param name="Password">The Password to use for decrypting the entry.</param>
-        public void ExtractWithPassword(string Password)
+        /// <param name="password">The Password to use for decrypting the entry.</param>
+        public void ExtractWithPassword(string password)
         {
-            InternalExtract(".", null, Password);
+            InternalExtract(".", null, password);
         }
 
         /// <summary>
@@ -960,11 +961,11 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// </remarks>
         /// 
-        /// <param name="BaseDirectory">The pathname of the base directory.</param>
-        /// <param name="Password">The Password to use for decrypting the entry.</param>
-        public void ExtractWithPassword(string BaseDirectory, string Password)
+        /// <param name="baseDirectory">The pathname of the base directory.</param>
+        /// <param name="password">The Password to use for decrypting the entry.</param>
+        public void ExtractWithPassword(string baseDirectory, string password)
         {
-            InternalExtract(BaseDirectory, null, Password);
+            InternalExtract(baseDirectory, null, password);
         }
 
         /// <summary>
@@ -979,13 +980,13 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// </remarks>
         /// 
-        /// <param name="Overwrite">true if the caller wants to overwrite an existing 
+        /// <param name="overwrite">true if the caller wants to overwrite an existing 
         /// file by the same name in the filesystem.</param>
-        /// <param name="Password">The Password to use for decrypting the entry.</param>
-        public void ExtractWithPassword(bool Overwrite, string Password)
+        /// <param name="password">The Password to use for decrypting the entry.</param>
+        public void ExtractWithPassword(bool overwrite, string password)
         {
-            OverwriteOnExtract = Overwrite;
-            InternalExtract(".", null, Password);
+            OverwriteOnExtract = overwrite;
+            InternalExtract(".", null, password);
         }
 
         /// <summary>
@@ -997,14 +998,14 @@ namespace Ionic.Utils.Zip
         /// See the remarks on the LastModified property, for some details 
         /// about how the last modified time of the created file is set.
         /// </remarks>
-        /// 
-        /// <param name="BaseDirectory">the pathname of the base directory</param>
-        /// <param name="Overwrite">If true, overwrite any existing files if necessary upon extraction.</param>
-        /// <param name="Password">The Password to use for decrypting the entry.</param>
-        public void ExtractWithPassword(string BaseDirectory, bool Overwrite, string Password)
+        ///
+        /// <param name="baseDirectory">the pathname of the base directory</param>
+        /// <param name="overwrite">If true, overwrite any existing files if necessary upon extraction.</param>
+        /// <param name="password">The Password to use for decrypting the entry.</param>
+        public void ExtractWithPassword(string baseDirectory, bool overwrite, string password)
         {
-            OverwriteOnExtract = Overwrite;
-            InternalExtract(BaseDirectory, null, Password);
+            OverwriteOnExtract = overwrite;
+            InternalExtract(baseDirectory, null, password);
         }
 
         /// <summary>
@@ -1017,11 +1018,11 @@ namespace Ionic.Utils.Zip
         /// about how the last modified time of the created file is set.
         /// </remarks>
         /// 
-        /// <param name="s">the stream to which the entry should be extracted.  </param>
-        /// <param name="Password">The Password to use for decrypting the entry.</param>
-        public void ExtractWithPassword(System.IO.Stream s, string Password)
+        /// <param name="stream">the stream to which the entry should be extracted.  </param>
+        /// <param name="password">The password to use for decrypting the entry.</param>
+        public void ExtractWithPassword(System.IO.Stream stream, string password)
         {
-            InternalExtract(null, s, Password);
+            InternalExtract(null, stream, password);
         }
 
 
@@ -1097,18 +1098,19 @@ namespace Ionic.Utils.Zip
         /// application to specify a password for the ZipEntry to be read. 
         /// </para>
         /// </remarks>
+        /// <param name="password">The password to use for decrypting the entry.</param>
         /// <returns>The Stream for reading.</returns>
-        public CrcCalculatorStream OpenReader(string Password)
+        public CrcCalculatorStream OpenReader(string password)
         {
-            return InternalOpenReader(Password);
+            return InternalOpenReader(password);
         }
 
 
-        private CrcCalculatorStream InternalOpenReader(string Password)
+        private CrcCalculatorStream InternalOpenReader(string password)
         {
             ValidateCompression();
             ValidateEncryption();
-            ZipCrypto cipher = SetupCipher(Password);
+            ZipCrypto cipher = SetupCipher(password);
 
             // seek to the beginning of the file data in the stream
             this._s.Seek(this.__FileDataPosition, System.IO.SeekOrigin.Begin);
@@ -1127,15 +1129,15 @@ namespace Ionic.Utils.Zip
         // Pass in either basedir or s, but not both. 
         // In other words, you can extract to a stream or to a directory (filesystem), but not both!
         // The Password param is required for encrypted entries.
-        private void InternalExtract(string basedir, System.IO.Stream outstream, string Password)
+        private void InternalExtract(string baseDir, System.IO.Stream outstream, string password)
         {
             ValidateCompression();
             ValidateEncryption();
 
             string TargetFile;
-            if (ValidateOutput(basedir, outstream, out TargetFile)) return;
+            if (ValidateOutput(baseDir, outstream, out TargetFile)) return;
 
-            ZipCrypto cipher = SetupCipher(Password);
+            ZipCrypto cipher = SetupCipher(password);
 
             System.IO.Stream output = null;
             if (TargetFile != null)
@@ -1155,7 +1157,7 @@ namespace Ionic.Utils.Zip
                 output = outstream;
 
 
-            UInt32 ActualCrc32 = _ExtractOne(output, cipher);
+            Int32 ActualCrc32 = _ExtractOne(output, cipher);
 
             // After extracting, Validate the CRC32
             if (ActualCrc32 != _Crc32)
@@ -1170,24 +1172,24 @@ namespace Ionic.Utils.Zip
             if (TargetFile != null)
             {
                 output.Close();
-                output.Dispose();
+                //output.Dispose();
 
                 System.IO.File.SetLastWriteTime(TargetFile, LastModified);
             }
         }
 
 
-        private ZipCrypto SetupCipher(string Password)
+        private ZipCrypto SetupCipher(string password)
         {
             ZipCrypto cipher = null;
             // decrypt the file header data here if necessary. 
             if (Encryption == EncryptionAlgorithm.PkzipWeak)
             {
-                if (Password == null)
+                if (password == null)
                     throw new BadPasswordException("This entry requires a password.");
 
                 cipher = new ZipCrypto();
-                cipher.InitCipher(Password);
+                cipher.InitCipher(password);
 
                 // Decrypt the header.  This has a side effect of "further initializing the
                 // encryption keys" in the traditional zip encryption. 
@@ -1251,7 +1253,7 @@ namespace Ionic.Utils.Zip
                 return false;
             }
 
-            throw new ArgumentException("Invalid input.", "outstream | basedir");
+            throw new ZipException("Cannot extract.", new ArgumentException("Invalid input.", "outstream | basedir"));
         }
 
 
@@ -1265,7 +1267,7 @@ namespace Ionic.Utils.Zip
         }
 
 
-        private UInt32 _ExtractOne(System.IO.Stream output, ZipCrypto cipher)
+        private Int32 _ExtractOne(System.IO.Stream output, ZipCrypto cipher)
         {
             System.IO.Stream input = this._s;
 
@@ -1273,7 +1275,7 @@ namespace Ionic.Utils.Zip
             input.Seek(this.__FileDataPosition, System.IO.SeekOrigin.Begin);
 
             // to validate the CRC. 
-            UInt32 CrcResult = 0;
+            Int32 CrcResult = 0;
 
             byte[] bytes = new byte[READBLOCK_SIZE];
 
@@ -1404,7 +1406,8 @@ namespace Ionic.Utils.Zip
         }
 
 
-        private bool FileNameIsUtf8(char[] FileNameChars)
+#if UTF8
+        static private bool FileNameIsUtf8(char[] FileNameChars)
         {
             bool isUTF8 = false;
             bool isUnicode = false;
@@ -1418,13 +1421,13 @@ namespace Ionic.Utils.Zip
 
             return isUTF8;
         }
+#endif
 
 
-
-        private byte[] GetExtraField(char[] FileNameChars)
+        private byte[] GetExtraField()
         {
             byte[] block = null;
-            var data = new System.Collections.Generic.List<byte>();
+            //var data = new System.Collections.Generic.List<byte>();
             if ((UsesEncryption) && (IsStrong(Encryption)))
             {
                 // byte[] block= GetStrongEncryptionBlock();
@@ -1598,15 +1601,13 @@ namespace Ionic.Utils.Zip
                             if (_isStream)
                             {
                                 _inputStream.Position = 0;
-                                UInt32 crc = crc32.GetCrc32AndCopy(_inputStream, CompressedStream);
-                                _Crc32 = crc;
+                                 _Crc32 = crc32.GetCrc32AndCopy(_inputStream, CompressedStream);
                             }
                             else
                             {
                                 using (System.IO.Stream input = System.IO.File.OpenRead(LocalFileName))
                                 {
-                                    UInt32 crc = crc32.GetCrc32AndCopy(input, CompressedStream);
-                                    _Crc32 = crc;
+                                    _Crc32 = crc32.GetCrc32AndCopy(input, CompressedStream);
                                 }
                             }
                             CompressedStream.Close();  // to get the footer bytes written to the underlying stream
@@ -1636,16 +1637,15 @@ namespace Ionic.Utils.Zip
                             if (_isStream)
                             {
                                 _inputStream.Position = 0;
-                                UInt32 crc = crc32.GetCrc32AndCopy(_inputStream, _UnderlyingMemoryStream);
-                                _Crc32 = crc;
+                                _Crc32 = crc32.GetCrc32AndCopy(_inputStream, _UnderlyingMemoryStream);
+
                             }
                             else
                             {
                                 // read the file again
                                 using (System.IO.Stream input = System.IO.File.OpenRead(LocalFileName))
                                 {
-                                    UInt32 crc = crc32.GetCrc32AndCopy(input, _UnderlyingMemoryStream);
-                                    _Crc32 = crc;
+                                    _Crc32 = crc32.GetCrc32AndCopy(input, _UnderlyingMemoryStream);
                                 }
                             }
                             _UncompressedSize = crc32.TotalBytesRead;
@@ -1706,7 +1706,7 @@ namespace Ionic.Utils.Zip
             //bytes[i++] = (byte)((filenameLength & 0xFF00) >> 8);
 
 
-            byte[] extra = GetExtraField(FileNameCharacters);
+            byte[] extra = GetExtraField();
 
             // extra field length (short)
             Int16 ExtraFieldLength = (Int16)((extra == null) ? 0 : extra.Length);
@@ -1879,16 +1879,18 @@ namespace Ionic.Utils.Zip
         }
 
 
-        internal bool IsStrong(EncryptionAlgorithm e)
+        static internal bool IsStrong(EncryptionAlgorithm e)
         {
             return ((e != EncryptionAlgorithm.None)
                 && (e != EncryptionAlgorithm.PkzipWeak));
         }
 
 
+
+
         private DateTime _LastModified;
         private bool _TrimVolumeFromFullyQualifiedPaths = true;  // by default, trim them.
-        private bool _ForceNoCompression = false;  // by default, do compression if it makes sense.
+        private bool _ForceNoCompression;  // by default, false: do compression if it makes sense.
         private string _LocalFileName;
         private string _FileNameInArchive;
         private Int16 _VersionNeeded;
@@ -1897,18 +1899,17 @@ namespace Ionic.Utils.Zip
         private string _Comment;
         private bool _IsDirectory;
 #if UTF8
-	private bool _FilenameIsUtf8= false;
+	private bool _FilenameIsUtf8;
 #endif
         private Int32 _CompressedSize;
         private Int32 _CompressedFileDataSize; // CompressedSize less 12 bytes for the encryption header, if any
         private Int32 _UncompressedSize;
         private Int32 _LastModDateTime;
-        private UInt32 _Crc32;
+        private Int32 _Crc32;
         private byte[] _Extra;
+        private bool _OverwriteOnExtract;
 
-        private bool _OverwriteOnExtract = false;
-
-        private long __FileDataPosition = 0L;
+        private long __FileDataPosition;
         private System.IO.MemoryStream _UnderlyingMemoryStream;
         private System.IO.Compression.DeflateStream _CompressedStream;
         private byte[] _EntryHeader;
@@ -1920,7 +1921,7 @@ namespace Ionic.Utils.Zip
         internal EntrySource _Source = EntrySource.None;
         private EncryptionAlgorithm _Encryption = EncryptionAlgorithm.None;
         private byte[] _WeakEncryptionHeader;
-        private System.IO.Stream _s = null;
+        private System.IO.Stream _s ;
 
         private const int READBLOCK_SIZE = 0x2200;
     }

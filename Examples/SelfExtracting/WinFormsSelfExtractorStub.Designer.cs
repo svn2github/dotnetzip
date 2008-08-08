@@ -31,19 +31,19 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WinFormsSelfExtractorStub));
             this.btnExtract = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.txtExtractDirectory = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnDirBrowse = new System.Windows.Forms.Button();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
+            this.chk_Overwrite = new System.Windows.Forms.CheckBox();
+            this.chk_OpenExplorer = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
+            this.txtComment = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // btnExtract
             // 
             this.btnExtract.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnExtract.Location = new System.Drawing.Point(363, 49);
+            this.btnExtract.Location = new System.Drawing.Point(386, 209);
             this.btnExtract.Name = "btnExtract";
             this.btnExtract.Size = new System.Drawing.Size(60, 23);
             this.btnExtract.TabIndex = 0;
@@ -54,7 +54,7 @@
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCancel.Location = new System.Drawing.Point(363, 77);
+            this.btnCancel.Location = new System.Drawing.Point(452, 209);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(60, 23);
             this.btnCancel.TabIndex = 1;
@@ -62,20 +62,20 @@
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
-            // textBox1
+            // txtExtractDirectory
             // 
-            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+            this.txtExtractDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox1.Location = new System.Drawing.Point(8, 51);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(323, 20);
-            this.textBox1.TabIndex = 2;
+            this.txtExtractDirectory.Location = new System.Drawing.Point(8, 135);
+            this.txtExtractDirectory.Name = "txtExtractDirectory";
+            this.txtExtractDirectory.Size = new System.Drawing.Size(473, 20);
+            this.txtExtractDirectory.TabIndex = 2;
             // 
             // label1
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(8, 32);
+            this.label1.Location = new System.Drawing.Point(5, 119);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(100, 13);
             this.label1.TabIndex = 3;
@@ -84,7 +84,7 @@
             // btnDirBrowse
             // 
             this.btnDirBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDirBrowse.Location = new System.Drawing.Point(331, 49);
+            this.btnDirBrowse.Location = new System.Drawing.Point(487, 132);
             this.btnDirBrowse.Name = "btnDirBrowse";
             this.btnDirBrowse.Size = new System.Drawing.Size(25, 23);
             this.btnDirBrowse.TabIndex = 4;
@@ -92,62 +92,64 @@
             this.btnDirBrowse.UseVisualStyleBackColor = true;
             this.btnDirBrowse.Click += new System.EventHandler(this.btnDirBrowse_Click);
             // 
-            // checkBox1
+            // chk_Overwrite
             // 
-            this.checkBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(15, 77);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(130, 17);
-            this.checkBox1.TabIndex = 6;
-            this.checkBox1.Text = "Overwrite existing files";
-            this.checkBox1.UseVisualStyleBackColor = true;
+            this.chk_Overwrite.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.chk_Overwrite.AutoSize = true;
+            this.chk_Overwrite.Location = new System.Drawing.Point(11, 161);
+            this.chk_Overwrite.Name = "chk_Overwrite";
+            this.chk_Overwrite.Size = new System.Drawing.Size(130, 17);
+            this.chk_Overwrite.TabIndex = 6;
+            this.chk_Overwrite.Text = "Overwrite existing files";
+            this.chk_Overwrite.UseVisualStyleBackColor = true;
             // 
-            // checkBox2
+            // chk_OpenExplorer
             // 
-            this.checkBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.Checked = true;
-            this.checkBox2.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox2.Location = new System.Drawing.Point(171, 77);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(152, 17);
-            this.checkBox2.TabIndex = 7;
-            this.checkBox2.Text = "Open Explorer after extract";
-            this.checkBox2.UseVisualStyleBackColor = true;
+            this.chk_OpenExplorer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.chk_OpenExplorer.AutoSize = true;
+            this.chk_OpenExplorer.Checked = true;
+            this.chk_OpenExplorer.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chk_OpenExplorer.Location = new System.Drawing.Point(11, 180);
+            this.chk_OpenExplorer.Name = "chk_OpenExplorer";
+            this.chk_OpenExplorer.Size = new System.Drawing.Size(152, 17);
+            this.chk_OpenExplorer.TabIndex = 7;
+            this.chk_OpenExplorer.Text = "Open Explorer after extract";
+            this.chk_OpenExplorer.UseVisualStyleBackColor = true;
             // 
             // label2
             // 
-            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(8, 11);
+            this.label2.Location = new System.Drawing.Point(5, 6);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(75, 13);
             this.label2.TabIndex = 8;
             this.label2.Text = "Zip Comment: ";
             // 
-            // label3
+            // txtComment
             // 
-            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(80, 11);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(75, 13);
-            this.label3.TabIndex = 9;
-            this.label3.Text = "Zip Comment: ";
+            this.txtComment.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtComment.Location = new System.Drawing.Point(8, 22);
+            this.txtComment.Multiline = true;
+            this.txtComment.Name = "txtComment";
+            this.txtComment.ReadOnly = true;
+            this.txtComment.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtComment.Size = new System.Drawing.Size(504, 86);
+            this.txtComment.TabIndex = 9;
             // 
             // WinFormsSelfExtractorStub
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(431, 110);
-            this.Controls.Add(this.label3);
+            this.ClientSize = new System.Drawing.Size(524, 244);
+            this.Controls.Add(this.txtComment);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.checkBox2);
-            this.Controls.Add(this.checkBox1);
+            this.Controls.Add(this.chk_OpenExplorer);
+            this.Controls.Add(this.chk_Overwrite);
             this.Controls.Add(this.btnDirBrowse);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.txtExtractDirectory);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnExtract);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -164,12 +166,12 @@
 
         private System.Windows.Forms.Button btnExtract;
         private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox txtExtractDirectory;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnDirBrowse;
-        private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.CheckBox checkBox2;
+        private System.Windows.Forms.CheckBox chk_Overwrite;
+        private System.Windows.Forms.CheckBox chk_OpenExplorer;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox txtComment;
     }
 }

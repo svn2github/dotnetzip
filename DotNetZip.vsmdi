@@ -1,6 +1,20 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <TestLists xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2006">
+  <TestList name="Smoke" id="21f93b48-8053-442f-9ef7-d617198f2082" parentListId="8c43106b-9dc1-4907-a29f-aa66a61bf5b6">
+    <Description>Basic smoke test
+</Description>
+    <TestLinks>
+      <TestLink id="ac0d00d4-3d46-a463-feb5-4aafe3e1fca1" name="CreateZip_AddFile" storage="library.tests\bin\debug\library.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+      <TestLink id="40726d0a-a34d-5ef7-4bb5-2728b497cf39" name="CreateZip_AddItem" storage="library.tests\bin\debug\library.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+    </TestLinks>
+  </TestList>
   <TestList name="Lists of Tests" id="8c43106b-9dc1-4907-a29f-aa66a61bf5b6">
     <RunConfiguration id="0e568622-f541-4955-9150-ac53a0252a21" name="Local Test Run" storage="localtestrun.testrunconfig" type="Microsoft.VisualStudio.TestTools.Common.TestRunConfiguration, Microsoft.VisualStudio.QualityTools.Common,   PublicKeyToken=b03f5f7f11d50a3a" />
+  </TestList>
+  <TestList name="Self Extractor" id="c4e8f6b6-08e3-4cef-af56-d01794dd5ee5" parentListId="8c43106b-9dc1-4907-a29f-aa66a61bf5b6">
+    <TestLinks>
+      <TestLink id="95331ea5-bdbf-0a31-8771-dc0455a2dd3f" name="Extract_SelfExtractor_Console" storage="library.tests\bin\debug\library.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+      <TestLink id="3fec0480-d30f-b15e-9b03-73654e71eb2e" name="Extract_SelfExtractor_WinForms" storage="library.tests\bin\debug\library.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+    </TestLinks>
   </TestList>
 </TestLists>
