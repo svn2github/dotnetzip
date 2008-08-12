@@ -53,7 +53,7 @@ namespace Ionic.Utils.Zip
     /// base class library, for v2.0 and later.
     /// </summary>
     public partial class ZipFile : System.Collections.Generic.IEnumerable<ZipEntry>,
-      IDisposable
+    IDisposable
     {
 
         #region public properties
@@ -129,6 +129,20 @@ namespace Ionic.Utils.Zip
             //set { _Verbose = value; }
         }
 
+
+        /// <summary>
+        /// Indicates whether to perform case-sensitive matching on the
+        /// filename when retrieving entries in the zipfile via the string-based indexer. 
+        /// The default value is false, which means DON'T do case-sensitive matching.
+        /// It really makes sense to set this to TRUE only if you are not running on
+        /// Windows, which has case-insensitive filenames.  In most cases you should just 
+        /// leave this property alone. 
+        /// </summary>
+        public bool CaseSensitiveRetrieval
+        {
+            get { return _CaseSensitiveRetrieval; }
+            set { _CaseSensitiveRetrieval = value; }
+        }
 
         /// <summary>
         /// Gets or sets the <c>TextWriter</c> to which status messages are delivered 
@@ -1437,7 +1451,7 @@ namespace Ionic.Utils.Zip
         private void AddOrUpdateDirectoryImpl(string directoryName, string directoryPathInArchive, AddOrUpdateAction action)
         {
             if (Verbose) StatusMessageTextWriter.WriteLine("{0} {1}...",
-                    (action == AddOrUpdateAction.AddOnly) ? "adding" : "Adding or updating", directoryName);
+                               (action == AddOrUpdateAction.AddOnly) ? "adding" : "Adding or updating", directoryName);
 
             int filesAdded = 0;
             String[] filenames = System.IO.Directory.GetFiles(directoryName);
@@ -2362,18 +2376,18 @@ namespace Ionic.Utils.Zip
                 if (header)
                 {
                     StatusMessageTextWriter.WriteLine("\n{1,-22} {2,-8} {3,4}   {4,-8}  {0}",
-                                 "Name", "Modified", "Size", "Ratio", "Packed");
+                              "Name", "Modified", "Size", "Ratio", "Packed");
                     StatusMessageTextWriter.WriteLine(new System.String('-', 72));
                     header = false;
                 }
                 if (Verbose)
                 {
                     StatusMessageTextWriter.WriteLine("{1,-22} {2,-8} {3,4:F0}%   {4,-8} {0}",
-                                 e.FileName,
-                                 e.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
-                                 e.UncompressedSize,
-                                 e.CompressionRatio,
-                                 e.CompressedSize);
+                              e.FileName,
+                              e.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
+                              e.UncompressedSize,
+                              e.CompressionRatio,
+                              e.CompressedSize);
                     if (!String.IsNullOrEmpty(e.Comment))
                         StatusMessageTextWriter.WriteLine("  Comment: {0}", e.Comment);
                 }
@@ -2466,6 +2480,11 @@ namespace Ionic.Utils.Zip
         /// 
         /// <remarks>
         /// <para>
+        /// Retrieval by the string-based indexer is done on a case-insensitive basis, 
+        /// by default.  Set the <see cref="CaseSensitiveRetrieval"/> property to use case-sensitive 
+        /// comparisons. 
+        /// </para>
+        /// <para>
         /// This property is read-write. When setting the value, the
         /// only legal value is null. If you assign a non-null value
         /// (non Nothing in VB), the setter will throw an exception.
@@ -2528,10 +2547,23 @@ namespace Ionic.Utils.Zip
 
                 foreach (ZipEntry e in _entries)
                 {
-                    if (e.FileName == fileName) return e;
-                    // also check for equivalence
-                    if (fileName.Replace("\\", "/") == e.FileName) return e;
-                    if (e.FileName.Replace("\\", "/") == fileName) return e;
+                    if (this.CaseSensitiveRetrieval)
+                    {
+                        // check for the file match with a case-sensitive comparison.
+                        if (e.FileName == fileName) return e;
+                        // also check for equivalence
+                        if (fileName.Replace("\\", "/") == e.FileName) return e;
+                        if (e.FileName.Replace("\\", "/") == fileName) return e;
+                    }
+                    else
+                    {
+                        // check for the file match in a case-insensitive manner.
+                        if (String.Compare(e.FileName, fileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
+                        // also check for equivalence
+                        if (String.Compare(fileName.Replace("\\", "/"), e.FileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
+                        if (String.Compare(e.FileName.Replace("\\", "/"), fileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
+                    }
+
                 }
                 return null;
             }
@@ -2856,8 +2888,8 @@ namespace Ionic.Utils.Zip
                     if (_name != null)
                     {
                         _temporaryFileName = (TempFileFolder != ".") ?
-                        System.IO.Path.Combine(TempFileFolder, System.IO.Path.GetRandomFileName())
-                        : System.IO.Path.GetRandomFileName();
+                System.IO.Path.Combine(TempFileFolder, System.IO.Path.GetRandomFileName())
+                : System.IO.Path.GetRandomFileName();
                         _writestream = new System.IO.FileStream(_temporaryFileName, System.IO.FileMode.CreateNew);
                     }
                 }
@@ -2874,6 +2906,7 @@ namespace Ionic.Utils.Zip
 
         #region private fields
         private System.IO.TextWriter _StatusMessageTextWriter;
+        private bool _CaseSensitiveRetrieval;
         private System.IO.Stream _readstream;
         private System.IO.Stream _writestream;
         private bool _disposed;

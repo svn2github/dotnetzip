@@ -552,6 +552,31 @@ namespace Ionic.Utils.Zip.Tests.Basic
 
 
         [TestMethod]
+        public void CreateZip_AddDirectory_OneZeroLengthFile()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_AddDirectory_OneZeroLengthFile.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            string DirToZip = System.IO.Path.Combine(TopLevelDir, "zipthis");
+            System.IO.Directory.CreateDirectory(DirToZip);
+
+            // one empty file
+            string file = TestUtilities.CreateUniqueFile("ZeroLengthFile.txt", DirToZip);
+
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                zip.AddDirectory(System.IO.Path.GetFileName(DirToZip));
+                zip.Save();
+            }
+
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, 1),
+                    "Zip file created seems to be invalid.");
+        }
+
+
+        [TestMethod]
         public void CreateZip_AddDirectory_OnlyEmptyDirectories()
         {
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_AddDirectory_OnlyEmptyDirectories.zip");
@@ -828,7 +853,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
                 String[] filenames = System.IO.Directory.GetFiles("A");
                 foreach (String f in filenames)
                     zip1.AddFile(f, "");
-                zip1.Comment = "UpdateTests::CreateZip_AddFile_VerifyCrcAndContents(): This archive will be updated.";
+                zip1.Comment = "BasicTests::Extract_IntoMemoryStream()";
                 zip1.Save(ZipFileToCreate);
             }
 
@@ -836,20 +861,99 @@ namespace Ionic.Utils.Zip.Tests.Basic
             Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entriesAdded),
                 "The Zip file has the wrong number of entries.");
 
-            // now extract the files into memory streams (and verify their contents)
+            // now extract the files into memory streams, checking only the length of the file.
             using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
             {
                 foreach (string s in zip2.EntryFileNames)
                 {
-                    //repeatedLine = String.Format("This line is repeated over and over and over in file {0}", s);
                     using (MemoryStream ms = new MemoryStream())
                     {
                         zip2[s].Extract(ms);
                         byte[] a = ms.ToArray();
+                        string f = System.IO.Path.Combine(Subdir, s);
+                        var fi = new System.IO.FileInfo(f);
+                        Assert.AreEqual<int>((int)(fi.Length), a.Length, "Unequal file lengths.");
                     }
                 }
             }
         }
+
+
+        [TestMethod]
+        public void Retrieve_ViaIndexer()
+        {
+            // select the name of the zip file
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Retrieve_ViaIndexer.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            string filename = null;
+            int entriesAdded = 0;
+            string repeatedLine = null;
+            int j;
+
+            // create the subdirectory
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            // create the files
+            int NumFilesToCreate = _rnd.Next(10) + 8;
+            for (j = 0; j < NumFilesToCreate; j++)
+            {
+                filename = System.IO.Path.Combine(Subdir, String.Format("File{0:D3}.txt", j));
+                repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
+                    System.IO.Path.GetFileName(filename));
+                TestUtilities.CreateAndFillFileText(filename, repeatedLine, _rnd.Next(23000) + 4000);
+                entriesAdded++;
+            }
+
+            // Create the zip file
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                String[] filenames = System.IO.Directory.GetFiles("A");
+                foreach (String f in filenames)
+                    zip1.AddFile(f, "");
+                zip1.Comment = "BasicTests::Retrieve_ViaIndexer()";
+                zip1.Save(ZipFileToCreate);
+            }
+
+            // Verify the files are in the zip
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entriesAdded),
+                "The Zip file has the wrong number of entries.");
+
+            // now extract the files into memory streams, checking only the length of the file.
+            // We do 4 combinations:  case-sensitive on or off, and filename conversion on or off.
+            for (int m = 0; m < 2; m++)
+            {
+                for (int n = 0; n < 2; n++)
+                {
+                    using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+                    {
+                        if (n == 1) zip2.CaseSensitiveRetrieval = true;
+                        foreach (string s in zip2.EntryFileNames)
+                        {
+                            var s2 = (m == 1) ? s.ToUpper() : s;
+                            using (MemoryStream ms = new MemoryStream())
+                            {
+                                try
+                                {
+                                    zip2[s2].Extract(ms);
+                                    byte[] a = ms.ToArray();
+                                    string f = System.IO.Path.Combine(Subdir, s2);
+                                    var fi = new System.IO.FileInfo(f);
+                                    Assert.AreEqual<int>((int)(fi.Length), a.Length, "Unequal file lengths.");
+                                }
+                                catch
+                                {
+                                    Assert.AreEqual<int>(1, n * m, "Indexer retrieval failed unexpectedly.");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
 
 
 
@@ -860,7 +964,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
             string FileCommentFormat = "Comment Added By Test to file '{0}'";
-            String CommentOnArchive = "Comment added by FileComments() method.";
+            string CommentOnArchive = "Comment added by FileComments() method.";
 
 
             int fileCount = _rnd.Next(3) + 3;
