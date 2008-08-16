@@ -1453,52 +1453,45 @@ namespace Ionic.Utils.Zip
             if (Verbose) StatusMessageTextWriter.WriteLine("{0} {1}...",
                                (action == AddOrUpdateAction.AddOnly) ? "adding" : "Adding or updating", directoryName);
 
-            int filesAdded = 0;
             String[] filenames = System.IO.Directory.GetFiles(directoryName);
 
             // add the directory itself.
+            ZipEntry baseDir = ZipEntry.Create(directoryName, directoryPathInArchive);
+            baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
+            baseDir._Source = EntrySource.Filesystem;
+            baseDir.MarkAsDirectory();
+            //if (Verbose) Output.WriteLine("adding {0}...", dirName);
+
+            if (action == AddOrUpdateAction.AddOnly)
+                InsureUniqueEntry(baseDir);
+            else
             {
-                String dirName = (!directoryName.EndsWith("\\")) ? directoryName + "\\" : directoryName;
-
-                ZipEntry ze = ZipEntry.Create(dirName, directoryPathInArchive);
-                ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
-                ze._Source = EntrySource.Filesystem;
-                ze.MarkAsDirectory();
-                //if (Verbose) Output.WriteLine("adding {0}...", dirName);
-
-                if (action == AddOrUpdateAction.AddOnly)
-                    InsureUniqueEntry(ze);
-                else
-                {
-                    ZipEntry e = this[ze.FileName];
-                    if (e != null)
-                        RemoveEntry(e);
-                }
-                _entries.Add(ze);
-                _contentsChanged = true;
+                ZipEntry e = this[baseDir.FileName];
+                if (e != null)
+                    RemoveEntry(e);
             }
+            _entries.Add(baseDir);
+            _contentsChanged = true;
+
 
             // add the files: 
             foreach (String filename in filenames)
             {
                 if (action == AddOrUpdateAction.AddOnly)
-                    AddFile(filename, directoryPathInArchive);
+                    AddFile(filename, baseDir.FileName);
                 else
-                    UpdateFile(filename, directoryPathInArchive);
-                filesAdded++;
+                    UpdateFile(filename, baseDir.FileName);
             }
 
             // add the subdirectories:
             String[] dirnames = System.IO.Directory.GetDirectories(directoryName);
             foreach (String dir in dirnames)
             {
-                // dir is now fully-qualified, but we need a partially qualified name.
-                string tail = System.IO.Path.GetFileName(dir).ToString();
-                string pathToUse = (directoryPathInArchive == null) ? null : System.IO.Path.Combine(directoryPathInArchive, tail);
+                // add directory dir, rooted at baseDir.FileName 
                 if (action == AddOrUpdateAction.AddOnly)
-                    AddDirectory(dir, pathToUse);
+                    AddDirectory(dir, baseDir.FileName);
                 else
-                    UpdateDirectory(dir, pathToUse);
+                    UpdateDirectory(dir, baseDir.FileName);
             }
             _contentsChanged = true;
         }

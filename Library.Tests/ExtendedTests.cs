@@ -377,7 +377,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
             using (ZipFile zip = new ZipFile())
             {
                 zip.AddDirectory(Subdir, System.IO.Path.GetFileName(Subdir));
-                //zip.Comment = "Please extract to:  " + TargetUnpackDirectory;
+                zip.Comment = "Please extract to:  " + TargetUnpackDirectory;
                 //for (int i = 0; i < 44; i++) zip.Comment += "Lorem ipsum absalom hibiscus lasagne ";
                 zip.SaveSelfExtractor(ExeFileToCreate, Ionic.Utils.Zip.SelfExtractorFlavor.WinFormsApplication);
             }

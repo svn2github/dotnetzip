@@ -58,7 +58,7 @@ namespace Ionic.Utils.Zip
     /// get a ZipEntry by enumerating the entries within a ZipFile,
     /// or by adding an entry to a ZipFile.  
     /// </summary>
-    public class ZipEntry 
+    public class ZipEntry
     {
         private ZipEntry() { }
 
@@ -689,14 +689,28 @@ namespace Ionic.Utils.Zip
 
         internal static string NameInArchive(String filename, string directoryPathInArchive)
         {
-            string result =
-        (directoryPathInArchive == null) ?
-        filename :
-        (String.IsNullOrEmpty(directoryPathInArchive)) ?
-        System.IO.Path.GetFileName(filename) :
-                // explicitly specify a pathname for this file  
-        System.IO.Path.Combine(directoryPathInArchive, System.IO.Path.GetFileName(filename));
+            string result = null;
+            if (directoryPathInArchive == null)
+                result = filename;
 
+            else
+            {
+                if (String.IsNullOrEmpty(directoryPathInArchive))
+                {
+                    //if (filename.EndsWith("\\"))
+                    //{
+                    //    result = System.IO.Path.GetFileName(filename.Substring(0, filename.Length - 1));
+                    //}
+                    //else
+                        result = System.IO.Path.GetFileName(filename);
+                }
+                else
+                {
+                    // explicitly specify a pathname for this file  
+                    result = System.IO.Path.Combine(directoryPathInArchive, System.IO.Path.GetFileName(filename));
+                }
+
+            }
             return SharedUtilities.TrimVolumeAndSwapSlashes(result);
         }
 
@@ -1601,7 +1615,7 @@ namespace Ionic.Utils.Zip
                             if (_isStream)
                             {
                                 _inputStream.Position = 0;
-                                 _Crc32 = crc32.GetCrc32AndCopy(_inputStream, CompressedStream);
+                                _Crc32 = crc32.GetCrc32AndCopy(_inputStream, CompressedStream);
                             }
                             else
                             {
@@ -1840,8 +1854,6 @@ namespace Ionic.Utils.Zip
                 // In this case, we rely on the compressed data that was placed 
                 // in the _UnderlyingMemoryStream, in the WriteHeader() method).
 
-                _UnderlyingMemoryStream.Position = 0;
-
                 ZipCrypto cipher = null;
                 if ((_Password != null) && (Encryption == EncryptionAlgorithm.PkzipWeak))
                 {
@@ -1862,19 +1874,28 @@ namespace Ionic.Utils.Zip
                     outstream.Write(EncryptedHeader, 0, EncryptedHeader.Length);
                 }
 
-                while ((n = _UnderlyingMemoryStream.Read(bytes, 0, bytes.Length)) != 0)
+                if (_UnderlyingMemoryStream == null)
                 {
-                    if ((_Password != null) && (Encryption == EncryptionAlgorithm.PkzipWeak))
-                    {
-                        byte[] c = cipher.EncryptMessage(bytes, n);
-                        outstream.Write(c, 0, n);
-                    }
-                    else
-                        outstream.Write(bytes, 0, n);
+                    // we have a password-encrypted, zero-length file.  Nothing to write.
                 }
+                else
+                {
+                    _UnderlyingMemoryStream.Position = 0;
 
-                _UnderlyingMemoryStream.Close();
-                _UnderlyingMemoryStream = null;
+                    while ((n = _UnderlyingMemoryStream.Read(bytes, 0, bytes.Length)) != 0)
+                    {
+                        if ((_Password != null) && (Encryption == EncryptionAlgorithm.PkzipWeak))
+                        {
+                            byte[] c = cipher.EncryptMessage(bytes, n);
+                            outstream.Write(c, 0, n);
+                        }
+                        else
+                            outstream.Write(bytes, 0, n);
+                    }
+
+                    _UnderlyingMemoryStream.Close();
+                    _UnderlyingMemoryStream = null;
+                }
             }
         }
 
@@ -1921,7 +1942,7 @@ namespace Ionic.Utils.Zip
         internal EntrySource _Source = EntrySource.None;
         private EncryptionAlgorithm _Encryption = EncryptionAlgorithm.None;
         private byte[] _WeakEncryptionHeader;
-        private System.IO.Stream _s ;
+        private System.IO.Stream _s;
 
         private const int READBLOCK_SIZE = 0x2200;
     }

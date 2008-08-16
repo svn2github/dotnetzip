@@ -29,15 +29,15 @@ namespace Ionic.Utils.Zip.Examples
         private static void Usage()
         {
             Console.WriteLine("UnZip.exe:  extract or list the entries in a zip file.");
-            Console.WriteLine("            Depends on Ionic's DotNetZip. This is version {0} of the utility.", 
-			      System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            Console.WriteLine("            Depends on Ionic's DotNetZip. This is version {0} of the utility.",
+                  System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
             Console.WriteLine("usage:\n" +
-                  "  unzip [-o|-] [-p <password>] <zipfile> [-d <unpackdirectory>] [<entryToUnzip>]\n" +
+                  "  unzip [-o|-] [-q] [-p <password>] <zipfile> [-d <unpackdirectory>] [<entryToUnzip>]\n" +
                   "     unzips all files in the archive to the specified directory, which should exist.\n" +
                   "     If no directory is provided, this utility uses the current directory. The\n" +
                   "     -o option specifies to overwrite existing files if necessary. Specifying\n" +
-                  "     - as the first argument will extract to the console. Specifying an entry will\n" +
-                  "     extract a single named entry.\n\n" +
+                  "     - as the first argument will extract to the console. Specifying -q will\n" +
+                  "     extract quietly.  Specifying an entry by name will extract a single named entry.\n\n" +
                   "  unzip -l <zipfile>\n" +
                   "     lists the entries in the zip archive.\n" +
                   "  unzip -?\n" +
@@ -58,6 +58,7 @@ namespace Ionic.Utils.Zip.Examples
             bool extractToConsole = false;
             bool WantExtract = true;
             bool WantOverwrite = false;
+            bool WantQuiet = false;
             System.IO.Stream outstream = null;
 
             if (args.Length == 0) Usage();
@@ -78,6 +79,11 @@ namespace Ionic.Utils.Zip.Examples
                         if (password != null) Usage();
                         password = args[i];
                         break;
+
+                    case "-q":
+                        WantQuiet = true;
+                        break;
+
 
                     case "-o":
                         WantOverwrite = true;
@@ -105,14 +111,14 @@ namespace Ionic.Utils.Zip.Examples
                         break;
 
                     default:
-		      // positional args
-                        if (zipfile == null) 
-			  zipfile = args[i];
-			else
-			{
-			  if (entryToExtract != null) Usage();
-			  entryToExtract = args[i];
-			}
+                        // positional args
+                        if (zipfile == null)
+                            zipfile = args[i];
+                        else
+                        {
+                            if (entryToExtract != null) Usage();
+                            entryToExtract = args[i];
+                        }
                         break;
                 }
 
@@ -182,35 +188,38 @@ namespace Ionic.Utils.Zip.Examples
                         bool header = true;
                         foreach (ZipEntry e in zip)
                         {
-                            if (header)
+                            if (!WantQuiet)
                             {
-                                System.Console.WriteLine("Zipfile: {0}", zip.Name);
-                                if ((zip.Comment != null) && (zip.Comment != "")) 
-                                    System.Console.WriteLine("Comment: {0}", zip.Comment);
+                                if (header)
+                                {
+                                    System.Console.WriteLine("Zipfile: {0}", zip.Name);
+                                    if ((zip.Comment != null) && (zip.Comment != ""))
+                                        System.Console.WriteLine("Comment: {0}", zip.Comment);
 
-                                System.Console.WriteLine("\n{1,-22} {2,8}  {3,5}   {4,8}  {5,3} {0}",
-                                             "Filename", "Modified", "Size", "Ratio", "Packed", "pw?");
-                                System.Console.WriteLine(new System.String('-', 72));
-                                header = false;
+                                    System.Console.WriteLine("\n{1,-22} {2,8}  {3,5}   {4,8}  {5,3} {0}",
+                                                 "Filename", "Modified", "Size", "Ratio", "Packed", "pw?");
+                                    System.Console.WriteLine(new System.String('-', 72));
+                                    header = false;
+                                }
+
+                                System.Console.WriteLine("{1,-22} {2,8} {3,5:F0}%   {4,8}  {5,3} {0}",
+                                                                 e.FileName,
+                                                                 e.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
+                                                                 e.UncompressedSize,
+                                                                 e.CompressionRatio,
+                                                                 e.CompressedSize,
+                                                                 (e.UsesEncryption) ? "Y" : "N");
+
+                                if ((e.Comment != null) && (e.Comment != ""))
+                                    System.Console.WriteLine("  Comment: {0}", e.Comment);
                             }
-
-                            System.Console.WriteLine("{1,-22} {2,8} {3,5:F0}%   {4,8}  {5,3} {0}",
-                                                             e.FileName,
-                                                             e.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
-                                                             e.UncompressedSize,
-                                                             e.CompressionRatio,
-                                                             e.CompressedSize,
-                                                             (e.UsesEncryption) ? "Y" : "N");
-
-                            if ((e.Comment != null) && (e.Comment != ""))
-                                System.Console.WriteLine("  Comment: {0}", e.Comment);
 
                             if (WantExtract)
                             {
                                 if (e.UsesEncryption)
                                 {
                                     if (password == null)
-                                        System.Console.WriteLine("  Cannot extract this entry without a password.");
+                                        System.Console.WriteLine("unzip: {0}: Cannot extract this entry without a password.", e.FileName);
                                     else if (extractToConsole)
                                         e.ExtractWithPassword(outstream, password);
                                     else

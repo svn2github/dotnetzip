@@ -342,7 +342,9 @@ namespace Ionic.Utils.Zip.Tests.Basic
             System.IO.Directory.CreateDirectory(DirToZip);
 
             int entries = 0;
-            int subdirCount = _rnd.Next(17) + 34;
+            int subdirCount = _rnd.Next(17) + 14;
+            //int subdirCount = _rnd.Next(3) + 2;
+            var FileCount = new Dictionary<string, int>();
             var checksums = new Dictionary<string, byte[]>();
 
             for (i = 0; i < subdirCount; i++)
@@ -351,7 +353,9 @@ namespace Ionic.Utils.Zip.Tests.Basic
                 string Subdir = System.IO.Path.Combine(DirToZip, SubdirShort);
                 System.IO.Directory.CreateDirectory(Subdir);
 
-                int filecount = _rnd.Next(31) + 17;
+                int filecount = _rnd.Next(11) + 17;
+                //int filecount = _rnd.Next(2) + 2;
+                FileCount[SubdirShort] = filecount;
                 for (j = 0; j < filecount; j++)
                 {
                     string filename = String.Format("file{0:D4}.x", j);
@@ -363,6 +367,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
                     var t2 = System.IO.Path.Combine(t1, SubdirShort);
                     var key = System.IO.Path.Combine(t2, filename);
                     key = TestUtilities.TrimVolumeAndSwapSlashes(key);
+                    TestContext.WriteLine("chk[{0}]= {1}", key, TestUtilities.CheckSumToString(chk));
                     checksums.Add(key, chk);
                     entries++;
                 }
@@ -370,17 +375,19 @@ namespace Ionic.Utils.Zip.Tests.Basic
 
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);
 
-            // add all the sibdirectories
+            // add all the subdirectories into a new zip
             using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
             {
                 String[] dirs = System.IO.Directory.GetDirectories(DirToZip);
                 foreach (String d in dirs)
                 {
                     string dir = System.IO.Path.Combine(System.IO.Path.GetFileName(DirToZip), System.IO.Path.GetFileName(d));
-                    zip1.AddDirectory(dir);
+                    zip1.AddDirectory(dir, "zipthis");
                 }
                 zip1.Save();
             }
+
+            TestContext.WriteLine("\n");
 
             Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entries),
               "The Zip file has an unexpected number of entries.");
@@ -405,34 +412,37 @@ namespace Ionic.Utils.Zip.Tests.Basic
             }
 
 
+            // now, update some of the existing files
             DirToZip = System.IO.Path.Combine(TopLevelDir, "updates");
             System.IO.Directory.CreateDirectory(DirToZip);
-
-            subdirCount = subdirCount + _rnd.Next(7) + 8;
+        
             for (i = 0; i < subdirCount; i++)
             {
                 string SubdirShort = String.Format("dir{0:D4}", i);
                 string Subdir = System.IO.Path.Combine(DirToZip, SubdirShort);
                 System.IO.Directory.CreateDirectory(Subdir);
 
-                int filecount = _rnd.Next(31) + 17;
+                int filecount = FileCount[SubdirShort];
                 for (j = 0; j < filecount; j++)
                 {
-                    string filename = String.Format("file{0:D4}.x", j);
-                    TestUtilities.CreateAndFillFile(System.IO.Path.Combine(Subdir, filename),
-                        _rnd.Next(1000) + 100);
-                    string fqFilename = System.IO.Path.Combine(Subdir, filename);
+                    if (_rnd.Next(2) == 1)
+                    {
+                        string filename = String.Format("file{0:D4}.x", j);
+                        TestUtilities.CreateAndFillFile(System.IO.Path.Combine(Subdir, filename),
+                            _rnd.Next(1000) + 100);
+                        string fqFilename = System.IO.Path.Combine(Subdir, filename);
 
-                    var chk = TestUtilities.ComputeChecksum(fqFilename);
-                    //var t1 = System.IO.Path.GetFileName(DirToZip);
-                    var t2 = System.IO.Path.Combine("zipthis", SubdirShort);
-                    var key = System.IO.Path.Combine(t2, filename);
-                    key = TestUtilities.TrimVolumeAndSwapSlashes(key);
+                        var chk = TestUtilities.ComputeChecksum(fqFilename);
+                        //var t1 = System.IO.Path.GetFileName(DirToZip);
+                        var t2 = System.IO.Path.Combine("zipthis", SubdirShort);
+                        var key = System.IO.Path.Combine(t2, filename);
+                        key = TestUtilities.TrimVolumeAndSwapSlashes(key);
 
-                    if (checksums.ContainsKey(key))
+                        TestContext.WriteLine("chk[{0}]= {1}", key, TestUtilities.CheckSumToString(chk));
+
                         checksums.Remove(key);
-                    checksums.Add(key, chk);
-                    entries++;
+                        checksums.Add(key, chk);
+                    }
                 }
             }
 
@@ -444,8 +454,8 @@ namespace Ionic.Utils.Zip.Tests.Basic
                 foreach (String d in dirs)
                 {
                     string dir = System.IO.Path.Combine(System.IO.Path.GetFileName(DirToZip), System.IO.Path.GetFileName(d));
-                    string root = System.IO.Path.Combine("zipthis", System.IO.Path.GetFileName(d));
-                    zip3.UpdateDirectory(dir, root);
+                    //string root = System.IO.Path.Combine("zipthis", System.IO.Path.GetFileName(d));
+                    zip3.UpdateDirectory(dir, "zipthis");
                 }
                 zip3.Save();
             }
