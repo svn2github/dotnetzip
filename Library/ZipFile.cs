@@ -581,7 +581,7 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
-        /// Constructor to create an instance of ZipFile that writes Zip archives to a stream.
+        /// Constructor to create an instance of ZipFile that writes Zip archives to a <c>System.IO.Stream</c>.
         /// </summary>
         /// 
         /// <remarks>
@@ -595,10 +595,23 @@ namespace Ionic.Utils.Zip
         /// <para>
         /// Typically an application writing a zip archive in this manner will create and
         /// open a stream, then call this constructor, passing in the stream.  Then the app will add 
-        /// directories or files to the ZipFile via AddDirectory or AddFile or AddItem.  The app
-        /// will then write the zip archive to the memory stream by calling <c>Save()</c>. The 
-        /// compressed (zipped) data is not actually written to the stream until the application 
-        /// calls <c>ZipFile.Save()</c> .
+        /// directories or files to the ZipFile via <c>AddDirectory</c> or <c>AddFile</c> or <c>AddItem</c>.  The app
+        /// will then write the zip archive to the memory stream by calling <c>Save()</c>. 
+        /// </para>
+        ///
+        /// <para>
+        /// The compressed (zipped) data is not actually written to the stream until the
+        /// application calls <c>ZipFile.Save</c>.  This means the file data must be
+        /// available at the time the <c>Save</c> method is invoked. 
+        /// </para>
+        ///
+        /// <para>
+        /// When using a filesystem file for the Zip output, it is possible to call
+        /// <c>Save</c> multiple times on the ZipFile instance. With each call the zip content
+        /// is written to the output file. When saving to a <c>Stream</c>, after the initial
+        /// call to <c>Save</c>, additional calls to <c>Save</c> will throw. This is because the
+        /// stream is assumed to be a write-only stream, and after the initial <c>Save</c>, it
+        /// is not possible to seek backwards and "unwrite" the zip file data.
         /// </para>
         ///
         /// </remarks>
@@ -673,9 +686,9 @@ namespace Ionic.Utils.Zip
         /// <para>Typically an application writing a zip archive in this manner will create and
         /// open a stream, then call this constructor, passing in the stream.  Then the app will 
         /// add directories or files to the ZipFile via AddDirectory or AddFile or AddItem.  The 
-        /// app will then write the zip archive to the memory stream by calling <c>Save()</c>. The 
+        /// app will then write the zip archive to the memory stream by calling <c>Save</c>. The 
         /// compressed (zipped) data is not actually written to the stream until the application 
-        /// calls <c>ZipFile.Save()</c> .
+        /// calls <c>ZipFile.Save</c> .
         /// </para>
         /// <para>
         /// This version of the constructor allows the caller to pass in a TextWriter, to which  
@@ -1278,9 +1291,10 @@ namespace Ionic.Utils.Zip
         /// stream data if the Password is set on the ZipFile object, prior to calling
         /// this method.
         /// </summary>
+        ///
         /// <remarks>
         /// The stream must remain open and readable at least through the call to 
-        /// <c>ZipFile.Save()</c>.
+        /// <c>ZipFile.Save</c>.
         /// </remarks>
         ///
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.UpdateFileStream(string, string, System.IO.Stream)"/>
@@ -1361,7 +1375,7 @@ namespace Ionic.Utils.Zip
         ///
         /// <remarks>
         /// The stream must remain open and readable at least through the call to 
-        /// <c>ZipFile.Save()</c>.
+        /// <c>ZipFile.Save</c>.
         /// </remarks>
         ///
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.AddFileStream(string, string, System.IO.Stream)"/>
@@ -1503,9 +1517,10 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// Saves the Zip archive, using the name given when the ZipFile was instantiated. 
         /// </summary>
+        ///
         /// <remarks>
         /// <para>
-        /// The zip file is written to storage only when the caller calls <c>Save()</c>.  
+        /// The zip file is written to storage only when the caller calls <c>Save</c>.  
         /// The Save operation writes the zip content to a temporary file. 
         /// Then, if the zip file already exists (for example when adding an item to a zip archive)
         /// this method will replace the existing zip file with this temporary file.
@@ -1514,10 +1529,30 @@ namespace Ionic.Utils.Zip
         /// </para>
         ///
         /// <para>
+        /// When using a filesystem file for the Zip output, it is possible to call
+        /// <c>Save</c> multiple times on the ZipFile instance. With each call the zip content
+        /// is written to the output file. When saving to a <c>Stream</c>, after the initial
+        /// call to <c>Save</c>, additional calls to <c>Save</c> will throw. This is because the
+        /// stream is assumed to be a write-only stream, and after the initial <c>Save</c>, it
+        /// is not possible to seek backwards and "unwrite" the zip file data.
+        /// </para>
+        ///
+        /// <para>
+        /// Data for entries that have been added to the <c>ZipFile</c> instance is written
+        /// to the output when the <c>Save</c> method is called. This means that the input
+        /// streams for those entries must be available at the time the application
+        /// calls <c>Save</c>.  If, for example, the application adds entries with
+        /// <c>AddFileStream</c> using a dynamically-allocated <c>MemoryStream</c>,
+        /// the memory stream must not have been disposed before the call to <c>Save</c>.
+        /// </para>
+        ///
+        /// <para>
         /// When using the zip library within an ASP.NET application, you may wish to set the
-        /// TempFileFolder on the ZipFile instance before calling Save().
+        /// <c>TempFileFolder</c> property on the <c>ZipFile</c> instance before calling Save().
         /// </para>
         /// </remarks>
+        ///
+        /// <seealso cref="Ionic.Utils.Zip.ZipFile.AddFileStream(String, String, System.IO.Stream)"/>
         ///
         /// <exception cref="Ionic.Utils.Zip.BadStateException">
         /// Thrown if you haven't specified a location or stream for saving the zip,
@@ -1526,99 +1561,127 @@ namespace Ionic.Utils.Zip
         ///
         public void Save()
         {
-            _operationCanceled = false;
-            OnSaveStarted();
-
-            if (WriteStream == null)
-                throw new BadStateException("You haven't specified where to save the zip.");
-            // check if modified, before saving. 
-            if (!_contentsChanged) return;
-
-            if (Verbose) StatusMessageTextWriter.WriteLine("Saving....");
-
-            // write an entry in the zip for each file
-            int n = 0;
-            foreach (ZipEntry e in _entries)
+            try
             {
-                e.Write(WriteStream);
-                n++;
-                OnSaveProgress(n, e.FileName);
-                if (_operationCanceled)
-                    break;
-            }
+                _operationCanceled = false;
+                OnSaveStarted();
 
-            if (_operationCanceled)
-            {
-                CancelSaveOperation();
-                return;
-            }
+                if (WriteStream == null)
+                    throw new BadStateException("You haven't specified where to save the zip.");
+                // check if modified, before saving. 
+                if (!_contentsChanged) return;
 
-            WriteCentralDirectoryStructure(WriteStream);
+                if (Verbose) StatusMessageTextWriter.WriteLine("Saving....");
 
-            // _temporaryFileName may remain null if we are writing to a stream
-            if ((_temporaryFileName != null) && (_name != null))
-            {
-                // only close the stream if there is a file behind it. 
-                WriteStream.Close();
-                WriteStream.Dispose();
-                WriteStream = null;
-
-                if (_operationCanceled)
+                // write an entry in the zip for each file
+                int n = 0;
+                foreach (ZipEntry e in _entries)
                 {
-                    CancelSaveOperation();
+                    e.Write(WriteStream);
+                    n++;
+                    OnSaveProgress(n, e.FileName);
+                    if (_operationCanceled)
+                        break;
+                }
+
+                if (_operationCanceled)
                     return;
-                }
 
-                if ((_fileAlreadyExists) && (this._readstream != null))
+                WriteCentralDirectoryStructure(WriteStream);
+
+                // do the rename as necessary
+                if ((_temporaryFileName != null) && (_name != null))
                 {
-                    // This means we opened and read a zip file. 
-                    // If we are now saving to the same file, we need to close the
-                    // orig file, first.
-                    this._readstream.Close();
-                    this._readstream = null;
+                    // _temporaryFileName may remain null if we are writing to a stream
+                    // only close the stream if there is a file behind it. 
+                    WriteStream.Close();
+                    WriteStream.Dispose();
+                    WriteStream = null;
+
+                    if (_operationCanceled)
+                        return;
+
+                    if ((_fileAlreadyExists) && (this._readstream != null))
+                    {
+                        // This means we opened and read a zip file. 
+                        // If we are now saving to the same file, we need to close the
+                        // orig file, first.
+                        this._readstream.Close();
+                        this._readstream = null;
+                    }
+
+                    if (_fileAlreadyExists)
+                    {
+                        // We do not just call File.Replace() here because 
+                        // there is a possibility that the TEMP volume is different 
+                        // that the volume for the final file (c:\ vs d:\).
+                        // So we need to do a Delete+Move pair. 
+                        //
+                        // Ideally this would be transactional. 
+                        // 
+                        // It's possible that the delete succeeds and the move fails.  
+                        // in that case, we're hosed, and we'll throw.
+                        //
+                        // Could make this more complicated by moving (renaming) the first file, then
+                        // moving the second, then deleting the first file. But the
+                        // error handling and unwrap logic just gets more complicated.
+                        //
+                        // Better to just keep it simple. 
+                        System.IO.File.Delete(_name);
+                        System.IO.File.Move(_temporaryFileName, _name);
+                    }
+                    else
+                        System.IO.File.Move(_temporaryFileName, _name);
+
+                    _fileAlreadyExists = true;
                 }
 
-                if (_fileAlreadyExists)
-                {
-                    // We do not just call File.Replace() here because 
-                    // there is a possibility that the TEMP volume is different 
-                    // that the volume for the final file (c:\ vs d:\).
-                    // So we need to do a Delete+Move pair. 
-                    //
-                    // Ideally this would be transactional. 
-                    // It's possible that the delete succeeds and the move fails.  
-                    // in that case, we're hosed.
-                    // Could make this more complicated by moving (renaming) the first file, then
-                    // moving the second, then deleting the first file. But the
-                    // error handling and unwrap logic gets complicated.
-                    // Better to just keep it simple. 
-                    System.IO.File.Delete(_name);
-                    System.IO.File.Move(_temporaryFileName, _name);
-                }
-                else
-                    System.IO.File.Move(_temporaryFileName, _name);
+                OnSaveCompleted();
+                _JustSaved = true;
 
-                _fileAlreadyExists = true;
             }
 
-            OnSaveCompleted();
-            _JustSaved = true;
+                // workitem 5043
+            finally
+            {
+                CleanupAfterSaveOperation();
+            }
+
             return;
         }
 
 
-        private void CancelSaveOperation()
+        private void RemoveTempFile()
+        {
+            try
+            {
+                if (System.IO.File.Exists(_temporaryFileName))
+                {
+                    System.IO.File.Delete(_temporaryFileName);
+                }
+            }
+            catch (Exception ex1)
+            {
+                StatusMessageTextWriter
+                .WriteLine("ZipFile::Save: could not delete temp file: {0}.", ex1.Message);
+            }
+        }
+
+
+        private void CleanupAfterSaveOperation()
         {
             if ((_temporaryFileName != null) && (_name != null))
             {
                 // only close the stream if there is a file behind it. 
-                try { WriteStream.Close(); }
-                catch { }
-                try { WriteStream.Dispose(); }
-                catch { }
-                WriteStream = null;
-                try { System.IO.File.Delete(_temporaryFileName); }
-                catch { }
+                if (_writestream != null)
+                {
+                    try { _writestream.Close(); }
+                    catch { }
+                    try { _writestream.Dispose(); }
+                    catch { }
+                }
+                _writestream = null;
+                RemoveTempFile();
             }
         }
 
@@ -1877,8 +1940,8 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// 
         /// <exception cref="System.Exception">
-        /// Thrown if the zipfile cannot be read. The implementation of this 
-        /// method relies on <c>System.IO.File.OpenRead()</c>, which can throw
+        /// Thrown if the ZipFile cannot be read. The implementation of this 
+        /// method relies on <c>System.IO.File.OpenRead</c>, which can throw
         /// a variety of exceptions, including specific exceptions if a file
         /// is not found, an unauthorized access exception, exceptions for
         /// poorly formatted filenames, and so on. 
@@ -1905,10 +1968,10 @@ namespace Ionic.Utils.Zip
         /// 
         /// <remarks>
         /// <para>
-        /// This version of the method allows the caller to pass in a TextWriter, to which verbose 
+        /// This version of the method allows the caller to pass in a <c>TextWriter</c>, to which verbose 
         /// messages will be written during extraction or creation of the zip archive.  A console application
-        /// may wish to pass System.Console.Out to get messages on the Console. A graphical or headless application
-        /// may wish to capture the messages in a different TextWriter. 
+        /// may wish to pass <c>System.Console.Out</c> to get messages on the Console. A graphical or headless application
+        /// may wish to capture the messages in a different <c>TextWriter</c>. 
         /// </para>
         /// </remarks>
         /// 
@@ -1965,7 +2028,7 @@ namespace Ionic.Utils.Zip
         /// </example>
         /// <exception cref="System.Exception">
         /// Thrown if the zipfile cannot be read. The implementation of this 
-        /// method relies on <c>System.IO.File.OpenRead()</c>, which can throw
+        /// method relies on <c>System.IO.File.OpenRead</c>, which can throw
         /// a variety of exceptions, including specific exceptions if a file
         /// is not found, an unauthorized access exception, exceptions for
         /// poorly formatted filenames, and so on. 
@@ -2093,7 +2156,7 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// 
         /// <para>
-        /// This overload allows the caller to specify a <c>TextWriter</c> to which Verbose
+        /// This overload allows the caller to specify a <c>TextWriter</c> to which verbose status
         /// messages are sent. For example, in a console application, <c>System.Console.Out</c>
         /// works. If the TextWriter is null, no verbose messages are written.
         /// </para>
@@ -2208,11 +2271,13 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// Generic IEnumerator support, for use of a ZipFile in a foreach construct.  
         /// </summary>
+        ///
         /// <remarks>
         /// You probably do not want to call <c>GetEnumerator</c> explicitly. Instead 
         /// it is implicitly called when you use a <c>foreach</c> loop in C#, or a 
         /// <c>For Each</c> loop in VB.
         /// </remarks>
+        ///
         /// <example>
         /// This example reads a zipfile of a given name, then enumerates the 
         /// entries in that zip file, and displays the information about each 
@@ -2393,7 +2458,12 @@ namespace Ionic.Utils.Zip
         /// Extract a single item from the archive.  The file, including any relative
         /// qualifying path, is created at the current working directory.  
         /// </summary>
-        /// <param name="fileName">the file to extract. It must be the exact filename, including the path contained in the archive, if any. </param>
+        /// <param name="fileName">
+        /// the file to extract. It must be the exact filename, including the path
+        /// contained in the archive, if any. The filename match is not case-sensitive by
+        /// default; you can use the <c>CaseSensitiveRetrieval</c> property to change
+        /// this behavior.
+        /// </param>
         public void Extract(string fileName)
         {
             this[fileName].Extract();
@@ -2403,7 +2473,13 @@ namespace Ionic.Utils.Zip
         /// Extract a single item from the archive.  The file, including any relative
         /// qualifying path, is created at the current working directory.  
         /// </summary>
-        /// <param name="fileName">the file to extract. It must be the exact filename, including the path contained in the archive, if any. </param>
+        ///
+        /// <param name="fileName">
+        /// the file to extract. It must be the exact filename, including the path
+        /// contained in the archive, if any. The filename match is not case-sensitive by
+        /// default; you can use the <c>CaseSensitiveRetrieval</c> property to change
+        /// this behavior.
+        /// </param>
         /// <param name="directoryName">the directory into which to extract. It should exist.</param>
         public void Extract(string fileName, string directoryName)
         {
@@ -2418,8 +2494,13 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// <param name="fileName">
         /// The file to extract. It must be the exact filename, including the path contained in the 
-        /// archive, if any. The pathname can use forward-slashes or backward slashes.
+        /// archive, if any. The filename match is not case-sensitive by default; you can use the <c>CaseSensitiveRetrieval</c> 
+        /// property to change this behavior.
+        /// The pathname can use forward-slashes or backward slashes.
         /// </param>
+        ///
+        /// <seealso cref="Ionic.Utils.Zip.ZipFile.CaseSensitiveRetrieval"/>
+        ///
         /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files by the given name.</param>
         public void Extract(string fileName, bool wantOverwrite)
         {
@@ -2434,7 +2515,8 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// <param name="fileName">
         /// The file to extract. It must be the exact filename, including the path contained in the archive, 
-        /// if any. The pathname can use forward-slashes or backward slashes.
+        /// if any. The filename match is not case-sensitive by default; you can use the <c>CaseSensitiveRetrieval</c> 
+        /// property to change this behavior. The pathname can use forward-slashes or backward slashes.
         /// </param>
         /// <param name="directoryName">the directory into which to extract. It should exist.</param>
         /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files by the given name.</param>
@@ -2451,11 +2533,22 @@ namespace Ionic.Utils.Zip
         /// Extract a single specified file from the archive, to the given stream.  This is 
         /// useful when extracting to Console.Out or to a memory stream, for example. 
         /// </summary>
+        ///
         /// <exception cref="System.ArgumentException">
-        /// Thrown if the stream is not writable.  
+        /// Thrown if the outputStream is not writable.  
         /// </exception>
-        /// <param name="fileName">the file to extract. The application can specify pathnames using forward-slashes or backward slashes.</param>
-        /// <param name="outputStream">the stream to which the extacted, decompressed file data is written. The stream must be writable.</param>
+        ///
+        /// <param name="fileName">
+        /// the file to extract. It should include pathnames used in the archive, if any.
+        /// The filename match is not case-sensitive by default; you can use the
+        /// <c>CaseSensitiveRetrieval</c> property to change this behavior.The
+        /// application can specify pathnames using forward-slashes or backward slashes.
+        /// </param>
+        ///
+        /// <param name="outputStream">
+        /// the stream to which the extacted, decompressed file data is written. 
+        /// The stream must be writable.
+        /// </param>
         public void Extract(string fileName, System.IO.Stream outputStream)
         {
             if (outputStream == null || !outputStream.CanWrite)
@@ -2483,7 +2576,7 @@ namespace Ionic.Utils.Zip
         /// (non Nothing in VB), the setter will throw an exception.
         /// </para>
         /// <para>
-        /// Setting the value to null is equivalent to calling <c>ZipFile.Remove()</c> with the filename.
+        /// Setting the value to null is equivalent to calling <c>ZipFile.Remove</c> with the filename.
         /// </para>
         /// </remarks>
         /// 
@@ -2517,7 +2610,9 @@ namespace Ionic.Utils.Zip
         /// </exception>
         ///
         /// <param name="fileName">
-        /// The name of the file, including any directory path, to retrieve from the zip. The
+        /// The name of the file, including any directory path, to retrieve from the zip. 
+        /// The filename match is not case-sensitive by default; you can use the
+        /// <c>CaseSensitiveRetrieval</c> property to change this behavior. The
         /// pathname can use forward-slashes or backward slashes.
         /// </param>
         /// 
@@ -2634,7 +2729,7 @@ namespace Ionic.Utils.Zip
         /// 
         /// <remarks>
         /// <para>
-        /// After calling <c>RemoveEntry()</c>, the application must call <c>Save()</c> to make the changes permanent.  
+        /// After calling <c>RemoveEntry</c>, the application must call <c>Save</c> to make the changes permanent.  
         /// </para>
         /// </remarks>
         ///
@@ -2734,7 +2829,7 @@ namespace Ionic.Utils.Zip
         /// 
         /// <remarks>
         /// <para>
-        /// After calling <c>RemoveEntry()</c>, the application must call <c>Save()</c> to make the changes permanent.  
+        /// After calling <c>RemoveEntry</c>, the application must call <c>Save</c> to make the changes permanent.  
         /// </para>
         ///
         /// </remarks>
@@ -2778,7 +2873,9 @@ namespace Ionic.Utils.Zip
         /// </example>
         /// 
         /// <param name="fileName">
-        /// The name of the file, including any directory path, to remove from the zip. The
+        /// The name of the file, including any directory path, to remove from the zip. 
+        /// The filename match is not case-sensitive by default; you can use the
+        /// <c>CaseSensitiveRetrieval</c> property to change this behavior. The
         /// pathname can use forward-slashes or backward slashes.
         /// </param>
         /// 

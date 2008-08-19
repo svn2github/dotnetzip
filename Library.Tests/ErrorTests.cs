@@ -188,8 +188,91 @@ namespace Ionic.Utils.Zip.Tests.Error
                 zip.AddFile(filename, "");
                 zip.Save("c:\\Windows\\");
             }
-
         }
+
+        [TestMethod]
+        public void Error_Save_NonExistentFile()
+        {
+            int j;
+            string repeatedLine;
+            string filename;
+
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Error_Save_NonExistentFile.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            // create the subdirectory
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "DirToZip");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            int entriesAdded = 0;
+            // create the files
+            int NumFilesToCreate = _rnd.Next(10) + 8;
+            for (j = 0; j < NumFilesToCreate; j++)
+            {
+                filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
+                repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
+                    System.IO.Path.GetFileName(filename));
+                TestUtilities.CreateAndFillFileText(filename, repeatedLine, _rnd.Next(1800) + 1500);
+                entriesAdded++;
+            }
+
+
+            String TempFileFolder = "Error_Save_NonExistentFile-Temp";
+            System.IO.Directory.CreateDirectory(TempFileFolder);
+            TestContext.WriteLine("Using {0} as the temp file folder....", TempFileFolder);
+            String[] tfiles = System.IO.Directory.GetFiles(TempFileFolder);
+            int nTemp = tfiles.Length;
+            TestContext.WriteLine("There are {0} files in the temp file folder.", nTemp);
+
+
+            String[] filenames = System.IO.Directory.GetFiles(Subdir);
+
+            System.Reflection.Assembly a1 = System.Reflection.Assembly.GetExecutingAssembly();
+            String myName = a1.GetName().ToString();
+            string toDay = System.DateTime.Now.ToString("yyyy-MMM-dd");
+
+            try
+            {
+                using (ZipFile zip = new ZipFile(ZipFileToCreate))
+                {
+                    zip.TempFileFolder = TempFileFolder;
+                    zip.ForceNoCompression = true;
+
+                    Console.WriteLine("Zipping {0} files...", filenames.Length);
+
+                    int count = 0;
+                    foreach (string fn in filenames)
+                    {
+                        count++;
+                        TestContext.WriteLine("  {0}", fn);
+
+                        string file = fn;
+
+                        if (count == filenames.Length - 2)
+                        {
+                            file += "xx";
+                            TestContext.WriteLine("(Injecting a failure...)");
+                        }
+
+                        zip.UpdateFile(file, myName + '-' + toDay + "_done");
+                    }
+                    TestContext.WriteLine("\n");
+                    zip.Save();
+                    TestContext.WriteLine("Zip Completed '{0}'", ZipFileToCreate);
+                }
+            }
+            catch (Exception ex)
+            {
+                TestContext.WriteLine("Zip Failed (EXPECTED): {0}", ex.Message);
+            }
+
+
+            tfiles = System.IO.Directory.GetFiles(TempFileFolder);
+
+            Assert.AreEqual<int>(nTemp, tfiles.Length,
+                    "There are unexpected temp files remaining in the TempFileFolder.");
+        }
+
 
         [TestMethod]
         [ExpectedException(typeof(Ionic.Utils.Zip.BadStateException))]
