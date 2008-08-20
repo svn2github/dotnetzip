@@ -62,12 +62,12 @@ namespace Ionic.Utils.Zip
     public enum SelfExtractorFlavor
     {
         /// <summary>
-        /// runs from the command line
+        /// A self-extracting zip archive that runs from the console or command line. 
         /// </summary>
         ConsoleApplication = 0,
 
         /// <summary>
-        /// graphical app that pops up a GUI
+        /// A self-extracting zip archive that presents a graphical user interface when it is executed.. 
         /// </summary>
         WinFormsApplication,
     }
@@ -132,18 +132,24 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// Saves the ZipFile instance to a self-extracting zip archive.
         /// </summary>
+        /// 
         /// <remarks>
+        /// 
         /// <para>
-        /// The generated exe image will execute on any machine that has the .NET Framework 2.0 installed on it. 
+        /// The generated exe image will execute on any machine that has the .NET Framework 2.0
+        /// installed on it.
         /// </para>
+        /// 
         /// <para>
-        /// There are two "flavors" of self-extracting archive.  The <c>WinFormsApplication</c> version will pop up a 
-        /// GUI and allow the user to select a target directory into which to extract. There's also a checkbox
-        /// allowing the user to specify to overwrite existing files, and another checkbox to allow the user
-        /// to request that Explorer be opened to see the extracted files after extraction.  The other flavor
-        /// is <c>ConsoleApplication</c>.  A self-extractor generated with that flavor setting will run from 
-        /// the command line. It accepts command-line options to set the overwrite behavior, and to specify 
-        /// the target extraction directory. 
+        /// There are two "flavors" of self-extracting archive.  The <c>WinFormsApplication</c>
+        /// version will pop up a GUI and allow the user to select a target directory into which
+        /// to extract. There's also a checkbox allowing the user to specify to overwrite
+        /// existing files, and another checkbox to allow the user to request that Explorer be
+        /// opened to see the extracted files after extraction.  The other flavor is
+        /// <c>ConsoleApplication</c>.  A self-extractor generated with that flavor setting will
+        /// run from the command line. It accepts command-line options to set the overwrite
+        /// behavior, and to specify the target extraction directory.
+        /// 
         /// </para>
         /// <para>
         /// There are a few temporary files created during the saving to a self-extracting zip. 

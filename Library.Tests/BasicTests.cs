@@ -491,14 +491,14 @@ namespace Ionic.Utils.Zip.Tests.Basic
             System.IO.Directory.CreateDirectory(DirToZip);
 
             int entries = 0;
-            int subdirCount = _rnd.Next(117) + 192;
+            int subdirCount = _rnd.Next(71) + 21;
             TestContext.WriteLine("LargeNumberOfFiles: Creating {0} subdirs.", subdirCount);
             for (int i = 0; i < subdirCount; i++)
             {
                 string SubDir = System.IO.Path.Combine(DirToZip, String.Format("dir{0:D4}", i));
                 System.IO.Directory.CreateDirectory(SubDir);
 
-                int filecount = _rnd.Next(317) + 37;
+                int filecount = _rnd.Next(97) + 27;
                 TestContext.WriteLine("LargeNumberOfFiles: Subdir {0}, Creating {1} files.", i, filecount);
                 for (int j = 0; j < filecount; j++)
                 {

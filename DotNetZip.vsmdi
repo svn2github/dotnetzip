@@ -17,4 +17,11 @@
       <TestLink id="3fec0480-d30f-b15e-9b03-73654e71eb2e" name="Extract_SelfExtractor_WinForms" storage="library.tests\bin\debug\library.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
     </TestLinks>
   </TestList>
+  <TestList name="Events" id="cce9856c-dd47-4c48-98d0-114f72519823" parentListId="8c43106b-9dc1-4907-a29f-aa66a61bf5b6">
+    <TestLinks>
+      <TestLink id="14c282e7-1d91-cd99-834d-3b621538250b" name="Create_ExtractCancellation" storage="library.tests\bin\debug\library.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+      <TestLink id="c822aa38-5e99-82bd-2cc6-382f6a4efd2b" name="Create_WithEvents" storage="library.tests\bin\debug\library.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+      <TestLink id="1b1603f3-bccd-2502-bd5e-95940c2487e7" name="Create_SaveCancellation" storage="library.tests\bin\debug\library.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+    </TestLinks>
+  </TestList>
 </TestLists>

@@ -4,38 +4,68 @@ using System.Text;
 
 namespace Ionic.Utils.Zip
 {
-    #region EventArgs classes
 
     /// <summary>
-    /// Base class used to provide information about the download progress.
+    /// Provides information about the progress of a save or extract operation.
     /// </summary>
-    public class SaveProgressEventArgs : EventArgs
+    public class ZipProgressEventArgs : EventArgs
     {
-
         private int _entriesTotal;
+	private bool _cancel;
+	private String _nameOfLatestEntry;
+
+
+        internal ZipProgressEventArgs(int entriesTotal, string lastEntry) 
+	{
+            this._entriesTotal = entriesTotal;
+            this._nameOfLatestEntry = lastEntry;
+	}
+
+        /// <summary>
+        /// The total number of entries to be saved or extracted.
+        /// </summary>
+        public int EntriesTotal
+        {
+            get { return _entriesTotal; }
+        }
+
+        /// <summary>
+        /// The name of the last entry saved or extracted.
+        /// </summary>
+        public string NameOfLatestEntry
+        {
+            get { return _nameOfLatestEntry; }
+        }
+
+        /// <summary>
+        /// In an event handler, set this to cancel the save or extract 
+	/// operation that is in progress.
+        /// </summary>
+        public bool Cancel
+        {
+            get { return _cancel; }
+            set { _cancel = _cancel || value; }
+        }
+    }
+
+
+    /// <summary>
+    /// Provides information about the progress of a save operation.
+    /// </summary>
+    public class SaveProgressEventArgs : ZipProgressEventArgs
+    {
         private int _entriesSaved;
-        private bool _cancel;
-        private String _nameOfLatestEntry;
 
         /// <summary>
         /// Constructor for the SaveProgressEventArgs.
         /// </summary>
         /// <param name="entriesTotal">The total number of entries in the zip archive.</param>
-        /// <param name="entriesSaved">Number of bytes that have been transferred.</param>
+        /// <param name="entriesSaved">Number of entries that have been saved.</param>
         /// <param name="lastEntry">The last entry saved.</param>
-        internal SaveProgressEventArgs(int entriesTotal, int entriesSaved, string lastEntry)
+        internal SaveProgressEventArgs(int entriesTotal, int entriesSaved, string lastEntry) 
+	    : base(entriesTotal,lastEntry)
         {
-            this._entriesTotal = entriesTotal;
             this._entriesSaved = entriesSaved;
-            this._nameOfLatestEntry = lastEntry;
-        }
-
-        /// <summary>
-        /// The total number of entries to be saved.
-        /// </summary>
-        public int EntriesTotal
-        {
-            get { return _entriesTotal; }
         }
 
         /// <summary>
@@ -46,23 +76,60 @@ namespace Ionic.Utils.Zip
             get { return _entriesSaved; }
         }
 
+    }
+
+
+    /// <summary>
+    /// Provides information about the progress of the extract operation.
+    /// </summary>
+    public class ExtractProgressEventArgs : ZipProgressEventArgs
+    {
+        private int _entriesExtracted;
+	private bool _overwrite;
+	private string _target;
 
         /// <summary>
-        /// the name of the last entry saved.
+        /// Constructor for the ExtractProgressEventArgs.
         /// </summary>
-        public string NameOfLatestEntry
+        /// <param name="entriesTotal">The total number of entries in the zip archive.</param>
+        /// <param name="entriesExtracted">Number of entries that have been extracted.</param>
+        /// <param name="lastEntry">The last entry extracted.</param>
+        /// <param name="extractLocation">The location to which entries are extracted.</param>
+        /// <param name="wantOverwrite">indicates whether the extract operation will overwrite existing files.</param>
+        internal ExtractProgressEventArgs(int entriesTotal, int entriesExtracted, string lastEntry, string extractLocation, bool wantOverwrite)
+	    : base(entriesTotal,lastEntry)
+
         {
-            get { return _nameOfLatestEntry; }
+            this._entriesExtracted = entriesExtracted;
+	    this._overwrite= wantOverwrite;
+	    this._target= extractLocation;
         }
 
         /// <summary>
-        /// Indicates whether the operation was cancelled or not.
+        /// Number of entries extracted so far.
         /// </summary>
-        public bool Cancel
+        public int EntriesExtracted
         {
-            get { return _cancel; }
-            set { _cancel = _cancel || value; }
+            get { return _entriesExtracted; }
         }
+
+        /// <summary>
+        /// True if the extract operation overwrites existing files.
+        /// </summary>
+        public bool Overwrite
+        {
+            get { return _overwrite; }
+        }
+
+        /// <summary>
+        /// Returns the extraction target location, a filesystem path. 
+        /// </summary>
+        public String ExtractLocation
+        {
+            get { return _target; }
+        }
+
+
     }
 
 
@@ -92,33 +159,51 @@ namespace Ionic.Utils.Zip
     }
 
 
-    #endregion
-
-
-    #region Save Events
-#if NOTUSED
     /// <summary>
-    /// Delegate for the SaveProgress event.
+    /// Used to provide event information about the Extract operation.
     /// </summary>
-    /// <param name="sender">The sender of the event.</param>
-    /// <param name="e">The information about the event.</param>
-    public delegate void SaveProgressEventHandler(object sender, SaveProgressEventArgs e);
+    public class ExtractEventArgs : EventArgs
+    {
+        private String _name;
+        private String _target;
+        private bool _overwrite;
 
-    /// <summary>
-    /// Delegate for the SaveStarted event.
-    /// </summary>
-    /// <param name="sender">The sender of the event.</param>
-    /// <param name="e">The information about the event.</param>
-    public delegate void SaveStartedEventHandler(object sender, SaveEventArgs e);
+        /// <summary>
+        /// Constructor for a ExtractEventArgs.
+        /// </summary>
+        /// <param name="archiveName">The name of the archive being extracted.</param>
+        /// <param name="extractLocation">The location to which  the archive is being extracted.</param>
+        /// <param name="wantOverwrite">whether the extract operation overwrites existing files.</param>
+        internal ExtractEventArgs(string archiveName, string extractLocation, bool wantOverwrite)
+        {
+            this._name = archiveName;
+            this._target = extractLocation;
+	    this._overwrite= wantOverwrite;
+        }
 
-    /// <summary>
-    /// Delegate for the SaveCompleted event.
-    /// </summary>
-    /// <param name="sender">The sender of the event.</param>
-    /// <param name="e">The information about the event.</param>
-    public delegate void SaveCompletedEventHandler(object sender, SaveEventArgs e);
-#endif
+        /// <summary>
+        /// Returns the archive name.
+        /// </summary>
+        public String ArchiveName
+        {
+            get { return _name; }
+        }
 
-    #endregion
+        /// <summary>
+        /// Returns the extraction target location, or "(stream)" if the target is a stream.
+        /// </summary>
+        public String ExtractLocation
+        {
+            get { return _target; }
+        }
+
+        /// <summary>
+        /// A boolean indicating whether the extract operation overwrites existing files.
+        /// </summary>
+        public bool Overwrite
+        {
+            get { return _overwrite; }
+        }
+    }
 
 }

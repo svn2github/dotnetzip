@@ -300,12 +300,28 @@ namespace Ionic.Utils.Zip.Tests.Extended
 
 
         int _progressEventCalls;
+        int _cancelIndex;
         public void SaveProgress(object sender, SaveProgressEventArgs e)
         {
             _progressEventCalls++;
-            TestContext.WriteLine("{0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal);
+            TestContext.WriteLine("Saved: {0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal);
+            if (_cancelIndex == _progressEventCalls)
+            {
+                e.Cancel = true;
+                TestContext.WriteLine("Cancelling...");
+            }
         }
-        
+
+        public void ExtractProgress(object sender, ExtractProgressEventArgs e)
+        {
+            _progressEventCalls++;
+            TestContext.WriteLine("Extracted: {0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesExtracted, e.EntriesTotal);
+            if (_cancelIndex == _progressEventCalls)
+            {
+                e.Cancel = true;
+                TestContext.WriteLine("Cancelling...");
+            }
+        }
 
         [TestMethod]
         public void Create_WithEvents()
@@ -313,7 +329,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Create_WithEvents.zip");
             string TargetDirectory = System.IO.Path.Combine(TopLevelDir, "unpack");
 
-            string DirToZip = System.IO.Path.Combine(TopLevelDir, "Event Test");
+            string DirToZip = System.IO.Path.Combine(TopLevelDir, "EventTest");
             System.IO.Directory.CreateDirectory(DirToZip);
 
             int entriesAdded = 0;
@@ -337,18 +353,120 @@ namespace Ionic.Utils.Zip.Tests.Extended
             }
 
             _progressEventCalls = 0;
-            using (ZipFile zip = new ZipFile())
+            using (ZipFile zip1 = new ZipFile())
             {
-                zip.SaveProgress += SaveProgress;
-                zip.Comment = "This is the comment on the zip archive.";
-                zip.AddDirectory(DirToZip, System.IO.Path.GetFileName(DirToZip));
-                zip.Save(ZipFileToCreate);
+                zip1.SaveProgress += SaveProgress;
+                zip1.Comment = "This is the comment on the zip archive.";
+                zip1.AddDirectory(DirToZip, System.IO.Path.GetFileName(DirToZip));
+                zip1.Save(ZipFileToCreate);
             }
 
             Assert.AreEqual<Int32>(_progressEventCalls, entriesAdded + subdirCount + 1, 
-                    "The number of Entries added is not equal to the number of progress calls.");
+                    "The number of Entries added is not equal to the number of entries saved.");
+
+            _progressEventCalls = 0;
+            using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+            {
+                zip2.ExtractProgress += ExtractProgress;
+                zip2.ExtractAll(TargetDirectory);
+            }
+
+            Assert.AreEqual<Int32>(_progressEventCalls, entriesAdded + subdirCount + 1,
+                    "The number of Entries added is not equal to the number of entries extracted.");
+
         }
 
+
+
+
+        [TestMethod]
+        public void Create_SaveCancellation()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Create_SaveCancellation.zip");
+       
+            string DirToZip = System.IO.Path.Combine(TopLevelDir, "EventTest");
+            System.IO.Directory.CreateDirectory(DirToZip);
+
+            int entriesAdded = 0;
+            String filename = null;
+            int subdirCount = _rnd.Next(7) + 6;
+            TestContext.WriteLine("Create_SaveCancellation: Creating {0} subdirs.", subdirCount);
+            for (int i = 0; i < subdirCount; i++)
+            {
+                string SubDir = System.IO.Path.Combine(DirToZip, String.Format("dir{0:D4}", i));
+                System.IO.Directory.CreateDirectory(SubDir);
+
+                int filecount = _rnd.Next(17) + 23;
+                TestContext.WriteLine("Create_SaveCancellation: Subdir {0}, Creating {1} files.", i, filecount);
+                for (int j = 0; j < filecount; j++)
+                {
+                    filename = String.Format("file{0:D4}.x", j);
+                    TestUtilities.CreateAndFillFile(System.IO.Path.Combine(SubDir, filename),
+                        _rnd.Next(2000) + 200);
+                    entriesAdded++;
+                }
+            }
+            _cancelIndex = entriesAdded - _rnd.Next(entriesAdded / 2); 
+            _progressEventCalls = 0;
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.SaveProgress += SaveProgress;
+                zip1.Comment = "The save on this zip archive will be canceled.";
+                zip1.AddDirectory(DirToZip, System.IO.Path.GetFileName(DirToZip));
+                zip1.Save(ZipFileToCreate);
+            }
+
+            Assert.AreEqual<Int32>(_progressEventCalls, _cancelIndex);
+
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The zip file save should have been canceled.");
+        }
+
+
+        [TestMethod]
+        public void Create_ExtractCancellation()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Create_ExtractCancellation.zip");
+            string TargetDirectory = System.IO.Path.Combine(TopLevelDir, "unpack");
+
+            string DirToZip = System.IO.Path.Combine(TopLevelDir, "EventTest");
+            System.IO.Directory.CreateDirectory(DirToZip);
+
+            int entriesAdded = 0;
+            String filename = null;
+            int subdirCount = _rnd.Next(7) + 6;
+            TestContext.WriteLine("Create_ExtractCancellation: Creating {0} subdirs.", subdirCount);
+            for (int i = 0; i < subdirCount; i++)
+            {
+                string SubDir = System.IO.Path.Combine(DirToZip, String.Format("dir{0:D4}", i));
+                System.IO.Directory.CreateDirectory(SubDir);
+
+                int filecount = _rnd.Next(17) + 23;
+                TestContext.WriteLine("Create_ExtractCancellation: Subdir {0}, Creating {1} files.", i, filecount);
+                for (int j = 0; j < filecount; j++)
+                {
+                    filename = String.Format("file{0:D4}.x", j);
+                    TestUtilities.CreateAndFillFile(System.IO.Path.Combine(SubDir, filename),
+                        _rnd.Next(2000) + 200);
+                    entriesAdded++;
+                }
+            }
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.Comment = "The extract on this zip archive will be canceled.";
+                zip1.AddDirectory(DirToZip, System.IO.Path.GetFileName(DirToZip));
+                zip1.Save(ZipFileToCreate);
+            }
+
+            _cancelIndex = entriesAdded - _rnd.Next(entriesAdded / 2);
+            _progressEventCalls = 0;
+            using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+            {
+                zip2.ExtractProgress += ExtractProgress;
+                zip2.ExtractAll(TargetDirectory);
+            }
+
+            Assert.AreEqual<Int32>(_progressEventCalls, _cancelIndex);
+        }
 
 
         [TestMethod]
