@@ -36,8 +36,8 @@ namespace Ionic.Utils.Zip.Tests.Extended
         private TestContext testContextInstance;
 
         /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
+        /// Gets or sets the test context which provides
+        /// information about and functionality for the current test run.
         ///</summary>
         public TestContext TestContext
         {
@@ -242,7 +242,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
                 var d2 = new System.Xml.XmlDocument();
                 d2.Load(StringToMemoryStream(InputString));
                 d2.Save(w2);
-                
+
                 Assert.AreEqual<String>(sw2.ToString(), sw1.ToString(), "Unexpected value on extract ({0}).", sw1.ToString());
             }
 
@@ -332,25 +332,8 @@ namespace Ionic.Utils.Zip.Tests.Extended
             string DirToZip = System.IO.Path.Combine(TopLevelDir, "EventTest");
             System.IO.Directory.CreateDirectory(DirToZip);
 
-            int entriesAdded = 0;
-            String filename = null;
-            int subdirCount = _rnd.Next(7) + 6;
-            TestContext.WriteLine("Create_WithEvents: Creating {0} subdirs.", subdirCount);
-            for (int i = 0; i < subdirCount; i++)
-            {
-                string SubDir = System.IO.Path.Combine(DirToZip, String.Format("dir{0:D4}", i));
-                System.IO.Directory.CreateDirectory(SubDir);
-
-                int filecount = _rnd.Next(17) + 23;
-                TestContext.WriteLine("Create_WithEvents: Subdir {0}, Creating {1} files.", i, filecount);
-                for (int j = 0; j < filecount; j++)
-                {
-                    filename = String.Format("file{0:D4}.x", j);
-                    TestUtilities.CreateAndFillFile(System.IO.Path.Combine(SubDir, filename),
-                        _rnd.Next(2000) + 200);
-                    entriesAdded++;
-                }
-            }
+            int subdirCount = 0;
+            int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "Create_SaveCancellation", DirToZip, out subdirCount);
 
             _progressEventCalls = 0;
             using (ZipFile zip1 = new ZipFile())
@@ -361,10 +344,11 @@ namespace Ionic.Utils.Zip.Tests.Extended
                 zip1.Save(ZipFileToCreate);
             }
 
-            Assert.AreEqual<Int32>(_progressEventCalls, entriesAdded + subdirCount + 1, 
+            Assert.AreEqual<Int32>(_progressEventCalls, entriesAdded + subdirCount + 1,
                     "The number of Entries added is not equal to the number of entries saved.");
 
             _progressEventCalls = 0;
+            _cancelIndex = -1; // don't cancel this Extract
             using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
             {
                 zip2.ExtractProgress += ExtractProgress;
@@ -383,30 +367,14 @@ namespace Ionic.Utils.Zip.Tests.Extended
         public void Create_SaveCancellation()
         {
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Create_SaveCancellation.zip");
-       
+
             string DirToZip = System.IO.Path.Combine(TopLevelDir, "EventTest");
             System.IO.Directory.CreateDirectory(DirToZip);
 
-            int entriesAdded = 0;
-            String filename = null;
-            int subdirCount = _rnd.Next(7) + 6;
-            TestContext.WriteLine("Create_SaveCancellation: Creating {0} subdirs.", subdirCount);
-            for (int i = 0; i < subdirCount; i++)
-            {
-                string SubDir = System.IO.Path.Combine(DirToZip, String.Format("dir{0:D4}", i));
-                System.IO.Directory.CreateDirectory(SubDir);
+            int subdirCount= 0;
+            int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "Create_SaveCancellation", DirToZip, out subdirCount);
 
-                int filecount = _rnd.Next(17) + 23;
-                TestContext.WriteLine("Create_SaveCancellation: Subdir {0}, Creating {1} files.", i, filecount);
-                for (int j = 0; j < filecount; j++)
-                {
-                    filename = String.Format("file{0:D4}.x", j);
-                    TestUtilities.CreateAndFillFile(System.IO.Path.Combine(SubDir, filename),
-                        _rnd.Next(2000) + 200);
-                    entriesAdded++;
-                }
-            }
-            _cancelIndex = entriesAdded - _rnd.Next(entriesAdded / 2); 
+            _cancelIndex = entriesAdded - _rnd.Next(entriesAdded / 2);
             _progressEventCalls = 0;
             using (ZipFile zip1 = new ZipFile())
             {
@@ -423,33 +391,17 @@ namespace Ionic.Utils.Zip.Tests.Extended
 
 
         [TestMethod]
-        public void Create_ExtractCancellation()
+        public void ExtractAll_Cancellation()
         {
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Create_ExtractCancellation.zip");
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "ExtractAll_Cancellation.zip");
             string TargetDirectory = System.IO.Path.Combine(TopLevelDir, "unpack");
 
             string DirToZip = System.IO.Path.Combine(TopLevelDir, "EventTest");
             System.IO.Directory.CreateDirectory(DirToZip);
 
-            int entriesAdded = 0;
-            String filename = null;
-            int subdirCount = _rnd.Next(7) + 6;
-            TestContext.WriteLine("Create_ExtractCancellation: Creating {0} subdirs.", subdirCount);
-            for (int i = 0; i < subdirCount; i++)
-            {
-                string SubDir = System.IO.Path.Combine(DirToZip, String.Format("dir{0:D4}", i));
-                System.IO.Directory.CreateDirectory(SubDir);
+            int subdirCount = 0;
+            int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "ExtractAll_Cancellation", DirToZip, out subdirCount);
 
-                int filecount = _rnd.Next(17) + 23;
-                TestContext.WriteLine("Create_ExtractCancellation: Subdir {0}, Creating {1} files.", i, filecount);
-                for (int j = 0; j < filecount; j++)
-                {
-                    filename = String.Format("file{0:D4}.x", j);
-                    TestUtilities.CreateAndFillFile(System.IO.Path.Combine(SubDir, filename),
-                        _rnd.Next(2000) + 200);
-                    entriesAdded++;
-                }
-            }
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.Comment = "The extract on this zip archive will be canceled.";
@@ -467,6 +419,97 @@ namespace Ionic.Utils.Zip.Tests.Extended
 
             Assert.AreEqual<Int32>(_progressEventCalls, _cancelIndex);
         }
+
+
+
+        [TestMethod]
+        public void ExtractAll_WithPassword()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "ExtractAll_WithPassword.zip");
+            string TargetDirectory = System.IO.Path.Combine(TopLevelDir, "unpack");
+
+            string DirToZip = System.IO.Path.Combine(TopLevelDir, "DirToZip");
+            System.IO.Directory.CreateDirectory(DirToZip);
+            int subdirCount = 0;
+
+            int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "ExtractAll_WithPassword", DirToZip, out subdirCount);
+            string password = TestUtilities.GenerateRandomPassword();
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.Password = password;
+                zip1.Comment = "Brick walls are there for a reason: to let you show how badly you want your goal.";
+                zip1.AddDirectory(DirToZip, System.IO.Path.GetFileName(DirToZip));
+                zip1.Save(ZipFileToCreate);
+            }
+
+            _cancelIndex = -1; // don't cancel this Extract
+            _progressEventCalls = 0;
+            using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+            {
+                zip2.Password = password;
+                zip2.ExtractProgress += ExtractProgress;
+                zip2.ExtractAll(TargetDirectory);
+            }
+
+            Assert.AreEqual<Int32>(_progressEventCalls, entriesAdded + subdirCount + 1);
+        }
+
+
+        [TestMethod]
+        public void Extract_ImplicitPassword()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Extract_ImplicitPassword.zip");
+
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            string DirToZip = System.IO.Path.Combine(TopLevelDir, "DirToZip");
+
+            var Files = TestUtilities.GenerateFilesFlat(DirToZip);
+            string[] Passwords = new string[Files.Length];
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.Comment = "Brick walls are there for a reason: to let you show how badly you want your goal.";
+                for (int i = 0; i < Files.Length; i++)
+                {
+                    Passwords[i] = TestUtilities.GenerateRandomPassword();
+                    zip1.Password = Passwords[i];
+                    zip1.AddFile(Files[i], System.IO.Path.GetFileName(DirToZip));
+                }
+                zip1.Save(ZipFileToCreate);
+            }
+
+            // extract using the entry from the enumerator
+            int nExtracted=0; 
+            using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (ZipEntry e in zip2)
+                {
+                    e.Password = Passwords[nExtracted];
+                    e.Extract("unpack1");
+                    nExtracted++;
+                }
+            }
+
+            Assert.AreEqual<Int32>(Files.Length, nExtracted);
+
+            // extract using the filename indexer
+            nExtracted = 0;
+            using (ZipFile zip3 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (var n in zip3.EntryFileNames)
+                {
+                    zip3.Password = Passwords[nExtracted];
+                    zip3.Extract(n, "unpack2");
+                    nExtracted++;
+                }
+            }
+
+            Assert.AreEqual<Int32>(Files.Length, nExtracted);
+
+        }
+
+
 
 
         [TestMethod]

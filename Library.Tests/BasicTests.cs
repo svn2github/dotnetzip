@@ -26,8 +26,8 @@ namespace Ionic.Utils.Zip.Tests.Basic
         private TestContext testContextInstance;
 
         /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
+        /// Gets or sets the test context which provides
+        /// information about and functionality for the current test run.
         ///</summary>
         public TestContext TestContext
         {
@@ -90,14 +90,9 @@ namespace Ionic.Utils.Zip.Tests.Basic
 
             // create the subdirectory
             string Subdir = System.IO.Path.Combine(TopLevelDir, "files");
-            System.IO.Directory.CreateDirectory(Subdir);
 
             // create a bunch of files
-            int NumFilesToCreate = _rnd.Next(23) + 14;
-            string[] FilesToZip = new string[NumFilesToCreate];
-            for (i = 0; i < NumFilesToCreate; i++)
-                FilesToZip[i] =
-                    TestUtilities.CreateUniqueFile("bin", Subdir, _rnd.Next(10000) + 5000);
+            string[] FilesToZip = TestUtilities.GenerateFilesFlat(Subdir);
 
             // Create the zip archive
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);
@@ -127,14 +122,9 @@ namespace Ionic.Utils.Zip.Tests.Basic
 
             // create the subdirectory
             string Subdir = System.IO.Path.Combine(TopLevelDir, "files");
-            System.IO.Directory.CreateDirectory(Subdir);
 
             // create a bunch of files
-            int NumFilesToCreate = _rnd.Next(23) + 14;
-            string[] FilesToZip = new string[NumFilesToCreate];
-            for (i = 0; i < NumFilesToCreate; i++)
-                FilesToZip[i] =
-                    TestUtilities.CreateUniqueFile("bin", Subdir, _rnd.Next(10000) + 5000);
+            string[] FilesToZip = TestUtilities.GenerateFilesFlat(Subdir);
 
             // Create the zip archive
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);
@@ -163,18 +153,12 @@ namespace Ionic.Utils.Zip.Tests.Basic
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);
 
             // create a bunch of files
-            int NumFilesToCreate = _rnd.Next(23) + 14;
-            string[] FilesToZip = new string[NumFilesToCreate];
-            for (i = 0; i < NumFilesToCreate; i++)
-            {
-                FilesToZip[i] = String.Format("file{0:D3}.txt", i);
-                TestUtilities.CreateAndFillFileText(FilesToZip[i], _rnd.Next(34000) + 5000);
-            }
-
+            string[] FilesToZip = TestUtilities.GenerateFilesFlat(".");
+            
             // Create the zip archive
             using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
             {
-                for (i = 0; i < NumFilesToCreate; i++)
+                for (i = 0; i < FilesToZip.Length; i++)
                 {
                     zip1.AddFile(FilesToZip[i]);
                 }
@@ -199,20 +183,14 @@ namespace Ionic.Utils.Zip.Tests.Basic
 
             // create the subdirectory
             string Subdir = System.IO.Path.Combine(TopLevelDir, "files");
-            System.IO.Directory.CreateDirectory(Subdir);
 
             // create a bunch of files
-            int NumFilesToCreate = _rnd.Next(23) + 14;
-            string[] FilesToZip = new string[NumFilesToCreate];
-            for (i = 0; i < NumFilesToCreate; i++)
-                FilesToZip[i] =
-                    TestUtilities.CreateUniqueFile("bin", Subdir, _rnd.Next(10000) + 5000);
+            string[] FilesToZip = TestUtilities.GenerateFilesFlat(Subdir);
 
             // Create the zip archive
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
             {
-                //zip.StatusMessageTextWriter = System.Console.Out;
                 for (i = 0; i < FilesToZip.Length; i++)
                 {
                     if (_rnd.Next(2) == 0)
@@ -415,7 +393,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
             // now, update some of the existing files
             DirToZip = System.IO.Path.Combine(TopLevelDir, "updates");
             System.IO.Directory.CreateDirectory(DirToZip);
-        
+
             for (i = 0; i < subdirCount; i++)
             {
                 string SubdirShort = String.Format("dir{0:D4}", i);
@@ -490,24 +468,9 @@ namespace Ionic.Utils.Zip.Tests.Basic
             string DirToZip = System.IO.Path.Combine(TopLevelDir, "zipthis");
             System.IO.Directory.CreateDirectory(DirToZip);
 
-            int entries = 0;
-            int subdirCount = _rnd.Next(71) + 21;
-            TestContext.WriteLine("LargeNumberOfFiles: Creating {0} subdirs.", subdirCount);
-            for (int i = 0; i < subdirCount; i++)
-            {
-                string SubDir = System.IO.Path.Combine(DirToZip, String.Format("dir{0:D4}", i));
-                System.IO.Directory.CreateDirectory(SubDir);
-
-                int filecount = _rnd.Next(97) + 27;
-                TestContext.WriteLine("LargeNumberOfFiles: Subdir {0}, Creating {1} files.", i, filecount);
-                for (int j = 0; j < filecount; j++)
-                {
-                    string filename = String.Format("file{0:D4}.x", j);
-                    TestUtilities.CreateAndFillFile(System.IO.Path.Combine(SubDir, filename),
-                        _rnd.Next(1000) + 100);
-                    entries++;
-                }
-            }
+            int[] settings = { 71, 21, 97, 27 };
+            int subdirCount = 0;
+            int entries = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "LargeNumberOfFiles", DirToZip, settings, out subdirCount);
 
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);
 
@@ -519,7 +482,6 @@ namespace Ionic.Utils.Zip.Tests.Basic
 
             Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entries),
                     "Zip file created seems to be invalid.");
-
 
         }
 

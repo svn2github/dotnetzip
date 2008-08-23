@@ -187,26 +187,26 @@ namespace Ionic.Utils.Zip
         /// </summary>
         ///
         /// <remarks>
-	/// <para> 
-	/// When saving an entry into a zip archive, the DotNetZip first compresses
+        /// <para> 
+        /// When saving an entry into a zip archive, the DotNetZip first compresses
         /// the file, then compares the size of the pre-compressed data with the size of the
         /// post-compressed data. For files that are already compressed, like MP3's or JPGs,
         /// the deflate algorithm can actually expand the size of the data.  In this case,
         /// the DotNetZip library uses the pre-compressed data and simply stores the file
         /// data into the archive. 
-	/// </para> 
+        /// </para> 
         ///
-	/// <para>
-	/// The DotNetZip library does this optimization automatically.  To avoid the
-	/// unnecessary processing and comparison, the application can explicitly request
-	/// that Compression not be used, by setting this flag.  The default value is false.
-	/// </para> 
+        /// <para>
+        /// The DotNetZip library does this optimization automatically.  To avoid the
+        /// unnecessary processing and comparison, the application can explicitly request
+        /// that Compression not be used, by setting this flag.  The default value is false.
+        /// </para> 
         ///
-	/// <para>
-	/// Changes to this flag apply to all entries subsequently added to the archive. 
-	/// The application can also set the CompressionMethod
-	/// property on each ZipEntry, for more granular control of this capability.
-	/// </para>
+        /// <para>
+        /// Changes to this flag apply to all entries subsequently added to the archive. 
+        /// The application can also set the CompressionMethod
+        /// property on each ZipEntry, for more granular control of this capability.
+        /// </para>
         ///
         /// </remarks>
         ///
@@ -292,23 +292,38 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Sets the password to be used for any entry subsequently added 
-        /// to the zip archive.  This password is applied to the entries, not
+        /// to the ZipFile, using one of the AddFile, AddDiorectory, or AddItem methods; 
+        /// or any entry subsequently extracted from the ZipFile using one of the Extract methods on the ZipFile class.  
+        /// This password is applied to the entries, not
         /// to the zip archive itself. 
         /// </summary>
         /// <remarks>
-        /// <para>Though the password is set on the ZipFile object, the password actually does 
-        /// not apply to the archive as a whole.  Instead, it applies to individual entries 
-        /// that are added to the archive. The "directory" of the archive - in other words 
-        /// the list of files - is not encrypted with the password. Instead the contents of 
-        /// the individual files are encrypted.  The list of filenames in the archive is in clear 
-        /// text.
-        /// </para><para>
+        /// 
+        /// <para>
+        /// Though the password is set on the ZipFile object, the password
+        /// actually does not apply to the archive as a whole.  Instead, it
+        /// applies to individual entries that are added to the archive, from
+        /// that point in time onward.  The "directory" of the archive - in other
+        /// words the list of files - is not encrypted with the password, The
+        /// list of filenames in the archive is in clear text.  but the contents
+        /// of the individual files are encrypted.
+        /// </para>
+        /// 
+        /// <para>
         /// If you set the password on the zip archive, and then add a set of files to the 
         /// archive, then each entry is encrypted with that password.  You may also want 
         /// to change the password between adding different entries. If you set the 
         /// password, add an entry, then set the password to null, and add another entry,
         /// the first entry is encrypted and the second is not.  Furshtay?
         /// </para>
+        /// 
+        /// <para>
+        /// If you read in an existing ZipFile, then set the Password property, then call
+        /// one of the ZipFile.Extract() overloads, the entry is extracted using the Password that is 
+        /// specified on the ZipFile instance. If you have not set the Password property, then
+        /// the password is null, and the entry is extracted with no password.
+        /// </para>
+        /// 
         /// </remarks>
         ///
         /// <example>
@@ -411,7 +426,7 @@ namespace Ionic.Utils.Zip
         /// Typically an application writing a zip archive will call this constructor,
         /// passing the name of a file that does not exist, then add directories or files to
         /// the ZipFile via AddDirectory or AddFile, and then write the zip archive to the
-        /// disk by calling <c>Save()</c>. The file is not actually written to the disk until
+        /// disk by calling <c>Save()</c>. The zip file is not actually written to the disk until
         /// the application calls <c>ZipFile.Save()</c> .
         /// </para>
         /// 
@@ -425,8 +440,8 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// 
         /// <para>
-        /// NB: Encryption will be used on the file data if the Password
-        /// has been set on the ZipFile object, prior to calling this method.
+        /// To encrypt the data for the  files added to the ZipFile instance, set the Password
+        /// property after creating the ZipFile instance.
         /// </para>
         /// 
         /// </remarks>
@@ -1924,7 +1939,7 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Fired after each entry has been extracted from the archive, during the 
-	/// execution of the ExtractAll method.
+        /// execution of the ExtractAll method.
         /// </summary>
         /// <example>
         /// <code>
@@ -1976,8 +1991,8 @@ namespace Ionic.Utils.Zip
                 if (ExtractCompleted != null)
                 {
                     var e = new ExtractEventArgs((_name != null) ? _name : "(stream)",
-						 path,
-						 wantOverwrite);
+                         path,
+                         wantOverwrite);
                     ExtractCompleted(this, e);
                 }
             }
@@ -1991,8 +2006,8 @@ namespace Ionic.Utils.Zip
                 if (ExtractStarted != null)
                 {
                     var e = new ExtractEventArgs((_name != null) ? _name : "(stream)",
-						 path,
-						 wantOverwrite);
+                         path,
+                         wantOverwrite);
                     ExtractStarted(this, e);
                 }
             }
@@ -2535,9 +2550,9 @@ namespace Ionic.Utils.Zip
         {
             bool header = Verbose;
 
-	    OnExtractStarted(path, wantOverwrite);
+            OnExtractStarted(path, wantOverwrite);
 
-	    int n = 0;
+            int n = 0;
             foreach (ZipEntry e in _entries)
             {
                 if (header)
@@ -2558,14 +2573,15 @@ namespace Ionic.Utils.Zip
                     if (!String.IsNullOrEmpty(e.Comment))
                         StatusMessageTextWriter.WriteLine("  Comment: {0}", e.Comment);
                 }
+                e.Password = _Password;  // this may be null
                 e.Extract(path, wantOverwrite);
-		n++;
-		OnExtractProgress(n, e.FileName, path, wantOverwrite);
-		if (_extractOperationCanceled)
-		    break;
-		
+                n++;
+                OnExtractProgress(n, e.FileName, path, wantOverwrite);
+                if (_extractOperationCanceled)
+                    break;
+
             }
-	    OnExtractCompleted(path, wantOverwrite);
+            OnExtractCompleted(path, wantOverwrite);
         }
 
 
@@ -2573,15 +2589,24 @@ namespace Ionic.Utils.Zip
         /// Extract a single item from the archive.  The file, including any relative
         /// qualifying path, is created at the current working directory.  
         /// </summary>
+        /// 
+        /// <remarks>
+        /// Calling this method, the entry is extracted using the Password that is 
+        /// specified on the ZipFile instance. If you have not set the Password property, then
+        /// the password is null, and the entry is extracted with no password.
+        /// </remarks>
+        /// 
         /// <param name="fileName">
-        /// the file to extract. It must be the exact filename, including the path
+        /// The file to extract. It must be the exact filename, including the path
         /// contained in the archive, if any. The filename match is not case-sensitive by
         /// default; you can use the <c>CaseSensitiveRetrieval</c> property to change
         /// this behavior.
         /// </param>
         public void Extract(string fileName)
         {
-            this[fileName].Extract();
+            ZipEntry e = this[fileName];
+            e.Password = _Password; // possibly null
+            e.Extract();
         }
 
         /// <summary>
@@ -2589,6 +2614,12 @@ namespace Ionic.Utils.Zip
         /// qualifying path, is created at the current working directory.  
         /// </summary>
         ///
+        /// <remarks>
+        /// Calling this method, the entry is extracted using the Password that is 
+        /// specified on the ZipFile instance. If you have not set the Password property, then
+        /// the password is null, and the entry is extracted with no password.
+        /// </remarks>
+        /// 
         /// <param name="fileName">
         /// the file to extract. It must be the exact filename, including the path
         /// contained in the archive, if any. The filename match is not case-sensitive by
@@ -2598,7 +2629,9 @@ namespace Ionic.Utils.Zip
         /// <param name="directoryName">the directory into which to extract. It should exist.</param>
         public void Extract(string fileName, string directoryName)
         {
-            this[fileName].Extract(directoryName);
+            ZipEntry e = this[fileName];
+            e.Password = _Password; // possibly null
+            e.Extract(directoryName);
         }
 
 
@@ -2607,6 +2640,13 @@ namespace Ionic.Utils.Zip
         /// any existing file in the filesystem by the same name. The file, including any relative 
         /// qualifying path, is created at the current working directory.  
         /// </summary>
+        /// 
+        /// <remarks>
+        /// Calling this method, the entry is extracted using the Password that is 
+        /// specified on the ZipFile instance. If you have not set the Password property, then
+        /// the password is null, and the entry is extracted with no password.
+        /// </remarks>
+        /// 
         /// <param name="fileName">
         /// The file to extract. It must be the exact filename, including the path contained in the 
         /// archive, if any. The filename match is not case-sensitive by default; you can use the <c>CaseSensitiveRetrieval</c> 
@@ -2619,7 +2659,9 @@ namespace Ionic.Utils.Zip
         /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files by the given name.</param>
         public void Extract(string fileName, bool wantOverwrite)
         {
-            this[fileName].Extract(wantOverwrite);
+            ZipEntry e = this[fileName];
+            e.Password = _Password; // possibly null
+            e.Extract(wantOverwrite);
         }
 
 
@@ -2628,6 +2670,13 @@ namespace Ionic.Utils.Zip
         /// any existing file in the filesystem by the same name. The file, including any relative 
         /// qualifying path, is created in the specified directory.  
         /// </summary>
+        /// 
+        /// <remarks>
+        /// Calling this method, the entry is extracted using the Password that is 
+        /// specified on the ZipFile instance. If you have not set the Password property, then
+        /// the password is null, and the entry is extracted with no password.
+        /// </remarks>
+        /// 
         /// <param name="fileName">
         /// The file to extract. It must be the exact filename, including the path contained in the archive, 
         /// if any. The filename match is not case-sensitive by default; you can use the <c>CaseSensitiveRetrieval</c> 
@@ -2637,7 +2686,9 @@ namespace Ionic.Utils.Zip
         /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files by the given name.</param>
         public void Extract(string fileName, string directoryName, bool wantOverwrite)
         {
-            this[fileName].Extract(directoryName, wantOverwrite);
+            ZipEntry e = this[fileName];
+            e.Password = _Password; // possibly null
+            e.Extract(directoryName, wantOverwrite);
         }
 
 
@@ -2647,7 +2698,13 @@ namespace Ionic.Utils.Zip
         /// Extract a single specified file from the archive, to the given stream.  This is 
         /// useful when extracting to Console.Out or to a memory stream, for example. 
         /// </summary>
-        ///
+        /// 
+        /// <remarks>
+        /// Calling this method, the entry is extracted using the Password that is 
+        /// specified on the ZipFile instance. If you have not set the Password property, then
+        /// the password is null, and the entry is extracted with no password.
+        /// </remarks>
+        /// 
         /// <exception cref="System.ArgumentException">
         /// Thrown if the outputStream is not writable.  
         /// </exception>
@@ -2671,7 +2728,9 @@ namespace Ionic.Utils.Zip
             if (String.IsNullOrEmpty(fileName))
                 throw new ZipException("Cannot extract.", new ArgumentException("The file name must be neither null nor empty.", "fileName"));
 
-            this[fileName].Extract(outputStream);
+            ZipEntry e = this[fileName];
+            e.Password = _Password; // possibly null
+            e.Extract(outputStream);
         }
 
 

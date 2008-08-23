@@ -219,7 +219,6 @@ namespace Library.TestUtilities
             return (entries == fileCount);
         }
 
-        #endregion
 
 
         internal static string CheckSumToString(byte[] checksum)
@@ -241,6 +240,83 @@ namespace Library.TestUtilities
             }
             return hash;
         }
+
+        private static char GetOneRandomPasswordChar()
+        {
+            const int range = 126 - 33;
+            const int start = 33;
+            return (char)(_rnd.Next(range) + start);
+        }
+
+        internal static string GenerateRandomPassword()
+        {
+            int length = _rnd.Next(5) + 5;
+            return GenerateRandomPassword(length);
+        }
+
+        internal static string GenerateRandomPassword(int length)
+        {
+            char[] a = new char[length];
+            for (int i = 0; i < length; i++)
+            {
+                a[i] = GetOneRandomPasswordChar();
+            }
+
+            string result = new System.String(a);
+            return result;
+        }
+
+
+        internal static int GenerateFilesOneLevelDeep(TestContext TC, string TestName, string DirToZip, out int subdirCount)
+        {
+            int[] settings = { 7, 6, 17, 23 };
+            return GenerateFilesOneLevelDeep(TC, TestName, DirToZip, settings, out subdirCount);
+        }
+
+        internal static int GenerateFilesOneLevelDeep(TestContext TC, string TestName, string DirToZip, int[] settings, out int subdirCount)
+        {
+            int entriesAdded = 0;
+            String filename = null;
+
+            subdirCount = _rnd.Next(settings[0]) + settings[1];
+            TC.WriteLine("{0}: Creating {1} subdirs.", TestName, subdirCount);
+            for (int i = 0; i < subdirCount; i++)
+            {
+                string SubDir = System.IO.Path.Combine(DirToZip, String.Format("dir{0:D4}", i));
+                System.IO.Directory.CreateDirectory(SubDir);
+
+                int filecount = _rnd.Next(settings[2]) + settings[3];
+                TC.WriteLine("{0}: Subdir {1}, Creating {2} files.", TestName, i, filecount);
+                for (int j = 0; j < filecount; j++)
+                {
+                    filename = String.Format("file{0:D4}.x", j);
+                    TestUtilities.CreateAndFillFile(System.IO.Path.Combine(SubDir, filename),
+                        _rnd.Next(2000) + 200);
+                    entriesAdded++;
+                }
+            }
+            return entriesAdded;
+        }
+
+
+
+        internal static string[] GenerateFilesFlat(string Subdir)
+        {
+            if (!System.IO.Directory.Exists(Subdir))
+                System.IO.Directory.CreateDirectory(Subdir);
+
+            int NumFilesToCreate = _rnd.Next(23) + 14;
+            string[] FilesToZip = new string[NumFilesToCreate];
+            for (int i = 0; i < NumFilesToCreate; i++)
+            {
+                FilesToZip[i] = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.txt", i));
+                TestUtilities.CreateAndFillFileText(FilesToZip[i], _rnd.Next(34000) + 5000);
+            }
+            return FilesToZip;
+        }
+
+
+        #endregion
 
         private static string LoremIpsum =
 "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Integer " +
@@ -305,7 +381,7 @@ namespace Library.TestUtilities
         static string[] LoremIpsumWords;
 
 
- 
+
 
     }
 }

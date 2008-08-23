@@ -399,7 +399,8 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// Set this to request that the entry be encrypted when writing the zip
         /// archive.  This is a write-only property on the entry. The password 
-        /// is used to encrypt the entry during the Save() operation.
+        /// is used to encrypt the entry during the Save() operation, or decrypt during
+        /// the Extract()) or OpenReader() operation. 
         /// </summary>
         public string Password
         {
@@ -628,7 +629,7 @@ namespace Ionic.Utils.Zip
             // store the position in the stream for this entry
             entry.__FileDataPosition = entry._s.Position;
 
-            // seek past the data without reading it. We will read on Extract().
+            // seek past the data without reading it. We will read on Extract()
             s.Seek(entry._CompressedFileDataSize, System.IO.SeekOrigin.Current);
 
             // finally, seek past the (already read) Data descriptor if necessary
@@ -702,7 +703,7 @@ namespace Ionic.Utils.Zip
                     //    result = System.IO.Path.GetFileName(filename.Substring(0, filename.Length - 1));
                     //}
                     //else
-                        result = System.IO.Path.GetFileName(filename);
+                    result = System.IO.Path.GetFileName(filename);
                 }
                 else
                 {
@@ -1151,6 +1152,9 @@ namespace Ionic.Utils.Zip
             string TargetFile;
             if (ValidateOutput(baseDir, outstream, out TargetFile)) return;
 
+            // if none specified, use the password on the entry itself.
+            if (password == null) password = _Password;
+
             ZipCrypto cipher = SetupCipher(password);
 
             System.IO.Stream output = null;
@@ -1165,7 +1169,6 @@ namespace Ionic.Utils.Zip
                     System.IO.File.Delete(TargetFile);
 
                 output = new System.IO.FileStream(TargetFile, System.IO.FileMode.CreateNew);
-
             }
             else
                 output = outstream;
