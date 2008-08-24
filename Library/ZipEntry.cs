@@ -400,7 +400,7 @@ namespace Ionic.Utils.Zip
         /// Set this to request that the entry be encrypted when writing the zip
         /// archive.  This is a write-only property on the entry. The password 
         /// is used to encrypt the entry during the Save() operation, or decrypt during
-        /// the Extract()) or OpenReader() operation. 
+        /// the Extract() or OpenReader() operation. 
         /// </summary>
         public string Password
         {
@@ -1047,11 +1047,16 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// <para>
         /// The ZipEntry has methods that extract the entry to an already-opened stream.
-        /// This is an alternative method for those applications that wish to control the stream directly.
+        /// This is an alternative method for those applications that wish to manipulate the stream directly.
         /// </para>
         /// <para>
-        /// The CrcCalculatorStream that is returned calculates a CRC32 on the bytes of the stream as it is read.
-        /// This CRC should be used by the application to validate the content of the ZipEntry, when the read is complete.
+        /// The CrcCalculatorStream that is returned is just a regular read-only stream - you can use it as you would
+        /// any stream.  The one additional feature it adds is that it calculates a CRC32 on the bytes of the stream 
+        /// as it is read.  This CRC should be used by the application to validate the content of the ZipEntry, when 
+        /// the read is complete.  Check the example for how to do this. 
+        /// </para>
+        /// <para>
+        /// If the entry is protected with a password, then you need to set the password on the entry prior to calling OpenReader().
         /// </para>
         /// </remarks>
         /// <example>
@@ -1101,7 +1106,7 @@ namespace Ionic.Utils.Zip
         /// <returns>The Stream for reading.</returns>
         public CrcCalculatorStream OpenReader()
         {
-            return InternalOpenReader(null);
+            return InternalOpenReader(this._Password);
         }
 
         /// <summary>
@@ -1135,7 +1140,7 @@ namespace Ionic.Utils.Zip
 
             return new CrcCalculatorStream((CompressionMethod == 0x08) ?
                 new DeflateStream(instream, CompressionMode.Decompress, true) :
-                instream);
+                instream, _UncompressedSize);
 
         }
         #endregion

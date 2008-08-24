@@ -193,6 +193,7 @@ namespace Ionic.Utils.Zip
     {
         private System.IO.Stream _InnerStream;
         private CRC32 _Crc32;
+        private int _length = 0;
 
         /// <summary>
         /// The constructor.
@@ -204,6 +205,19 @@ namespace Ionic.Utils.Zip
             _InnerStream = stream;
             _Crc32 = new CRC32();
 
+        }
+
+        /// <summary>
+        /// The constructor.
+        /// </summary>
+        /// <param name="stream">The underlying stream</param>
+        /// <param name="length">The length of the stream to slurp</param>
+        public CrcCalculatorStream(System.IO.Stream stream, int length)
+            : base()
+        {
+            _InnerStream = stream;
+            _Crc32 = new CRC32();
+            _length = length;
         }
 
         /// <summary>
@@ -224,7 +238,22 @@ namespace Ionic.Utils.Zip
         /// <returns>the number of bytes actually read</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            int n = _InnerStream.Read(buffer, offset, count);
+            int bytesToRead = count;
+
+            // Need to limit the # of bytes returned, if the stream is intended to have a definite length.
+            // This is especially useful when returning a stream for the uncompressed data directly to the 
+            // application.  The app won't necessarily read only the UncompressedSize number of bytes.  
+            // For example wrapping the stream returned from OpenReader() into a StreadReader() and
+            // calling ReadToEnd() on it, We can "over-read" the zip data and geta  corrupt string.  
+            // The length limits that, prevents that problem. 
+            
+            if (_length != 0)
+            {
+                if (_Crc32.TotalBytesRead >= _length) return 0; // EOF
+                int bytesRemaining = _length - _Crc32.TotalBytesRead;
+                if (bytesRemaining < count) bytesToRead = bytesRemaining;
+            }
+            int n = _InnerStream.Read(buffer, offset, bytesToRead);
             if (n>0) _Crc32.SlurpBlock(buffer, offset, n);
             return n;
         }
@@ -277,7 +306,10 @@ namespace Ionic.Utils.Zip
         /// </summary>
         public override long Length
         {
-            get { throw new NotImplementedException(); }
+            get {
+                if (_length == 0) throw new NotImplementedException();
+                else return _length;
+            }
         }
 
         /// <summary>
@@ -285,7 +317,7 @@ namespace Ionic.Utils.Zip
         /// </summary>
         public override long Position
         {
-            get { throw new NotImplementedException(); }
+            get { return _Crc32.TotalBytesRead;  }
             set { throw new NotImplementedException(); }
         }
 

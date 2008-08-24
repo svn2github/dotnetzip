@@ -318,7 +318,7 @@ namespace Library.TestUtilities
 
         #endregion
 
-        private static string LoremIpsum =
+        internal static string LoremIpsum =
 "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Integer " +
 "vulputate, nibh non rhoncus euismod, erat odio pellentesque lacus, sit " +
 "amet convallis mi augue et odio. Phasellus cursus urna facilisis " +

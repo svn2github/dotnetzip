@@ -284,7 +284,7 @@ namespace Ionic.Utils.Zip
 
 
                 if (!System.IO.Directory.Exists(value))
-                    throw new System.IO.FileNotFoundException(String.Format("That direcotory ({0}) does not exist.", value));
+                    throw new System.IO.FileNotFoundException(String.Format("That directory ({0}) does not exist.", value));
 
                 _TempFileFolder = value;
             }
