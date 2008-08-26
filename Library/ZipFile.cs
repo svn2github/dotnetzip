@@ -1374,24 +1374,17 @@ namespace Ionic.Utils.Zip
         /// using (ZipFile zip1 = new ZipFile())
         /// {
         ///   zip1.AddFile("MyDocuments\\Resume.doc", "files");
-        ///   zip1.AddStringAsFile(Content, "Readme.txt", ""); 
+        ///   zip1.AddFileFromString(Content, "Readme.txt", ""); 
         ///   zip1.Comment = "This zip file was created at " + System.DateTime.Now.ToString("G");
         ///   zip1.Save("Content.zip");
         /// }
         /// 
         /// </code>
         /// </example>
-        public ZipEntry AddStringAsFile(string content, string fileName, string directoryPathInArchive)
+        public ZipEntry AddFileFromString(string fileName, string directoryPathInArchive, string content)
         {
             System.IO.MemoryStream ms = SharedUtilities.StringToMemoryStream(content);
-            ZipEntry ze = ZipEntry.Create(fileName, directoryPathInArchive, ms);
-            ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
-            ze.Password = _Password;
-            if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
-            InsureUniqueEntry(ze);
-            _entries.Add(ze);
-            _contentsChanged = true;
-            return ze;
+            return AddFileStream(fileName, directoryPathInArchive, ms);
         }
 
 
@@ -1490,6 +1483,20 @@ namespace Ionic.Utils.Zip
         }
 
 
+        public ZipEntry AddDirectoryByName(string directoryNameInArchive)
+        {
+            // add the directory itself.
+            ZipEntry baseDir = ZipEntry.Create(directoryNameInArchive, null);
+            baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
+            baseDir._Source = EntrySource.Filesystem;
+            baseDir.MarkAsDirectory();
+            InsureUniqueEntry(baseDir);
+            _entries.Add(baseDir);
+            _contentsChanged = true;
+            return baseDir;
+        }
+
+
 
         private void AddOrUpdateDirectoryImpl(string directoryName, string directoryPathInArchive, AddOrUpdateAction action)
         {
@@ -1503,7 +1510,7 @@ namespace Ionic.Utils.Zip
             baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             baseDir._Source = EntrySource.Filesystem;
             baseDir.MarkAsDirectory();
-            //if (Verbose) Output.WriteLine("adding {0}...", dirName);
+            if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", directoryName);
 
             if (action == AddOrUpdateAction.AddOnly)
                 InsureUniqueEntry(baseDir);

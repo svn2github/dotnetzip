@@ -270,7 +270,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
             string[] InputStrings = new string[] { 
                     TestUtilities.LoremIpsum.Substring(0, 90),
                     TestUtilities.LoremIpsum.Substring(240, 80)};
-         
+
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);
             string password = TestUtilities.GenerateRandomPassword();
             using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
@@ -278,14 +278,14 @@ namespace Ionic.Utils.Zip.Tests.Extended
                 zip1.Password = password;
                 for (int i = 0; i < InputStrings.Length; i++)
                 {
-                    var ms1 = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes(InputStrings[i]));
-                    zip1.AddFileStream(String.Format("Lorem{0}.txt", i+1), "", ms1);
+                    //var ms1 = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes(InputStrings[i]));
+                    zip1.AddFileFromString(String.Format("Lorem{0}.txt", i + 1), "", InputStrings[i]);
                 }
                 zip1.Save();
 
                 zip1["Lorem2.txt"].Password = password;
-                string output= StreamToString(zip1["Lorem2.txt"].OpenReader());
-                
+                string output = StreamToString(zip1["Lorem2.txt"].OpenReader());
+
                 Assert.AreEqual<String>(output, InputStrings[1], "Unexpected value on extract.");
 
                 zip1["Lorem1.txt"].Password = password;
@@ -293,7 +293,6 @@ namespace Ionic.Utils.Zip.Tests.Extended
                 output = StreamToString(s);
 
                 Assert.AreEqual<String>(output, InputStrings[0], "Unexpected value on extract.");
-     
             }
 
             string UpdateString = "Nothing to see here.  Move along folks!  Move Along!";
@@ -310,6 +309,129 @@ namespace Ionic.Utils.Zip.Tests.Extended
             }
         }
 
+
+        [TestMethod]
+        public void Test_AddDirectoryByName()
+        {
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            for (int n = 1; n <= 10; n++)
+            {
+                var DirsAdded = new System.Collections.Generic.List<String>();
+                string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("Test_AddDirectoryByName{0:N2}.zip", n));
+                using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
+                {
+                    for (int i = 0; i < n; i++)
+                    {
+                        // create an arbitrary directory name, add it to the zip archive
+                        string DirName = TestUtilities.GenerateRandomName(24);
+                        zip1.AddDirectoryByName(DirName);
+                        DirsAdded.Add(DirName);
+                    }
+                    zip1.Save();
+                }
+
+
+                int dirCount = 0;
+                using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+                {
+                    foreach (var e in zip2)
+                    {
+                        TestContext.WriteLine("dir: {0}", e.FileName);
+                        Assert.IsTrue(DirsAdded.Contains(e.FileName));
+                        Assert.IsTrue(e.IsDirectory);
+                        dirCount++;
+                    }
+                }
+                Assert.AreEqual<int>(n, dirCount);
+            }
+        }
+
+
+
+        [TestMethod]
+        public void Test_AddDirectoryByName_Nested()
+        {
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            var DirsAdded = new System.Collections.Generic.List<String>();
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Test_AddDirectoryByName_Nested.zip");
+            using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
+            {
+                for (int n = 1; n <= 14; n++)
+                {
+                    string DirName = n.ToString();
+                    for (int i = 0; i < n; i++)
+                    {
+                        // create an arbitrary directory name, add it to the zip archive
+                        DirName = System.IO.Path.Combine(DirName, TestUtilities.GenerateRandomAsciiString(11));
+                    }
+                    zip1.AddDirectoryByName(DirName);
+                    DirsAdded.Add(DirName);
+                }
+                zip1.Save();
+            }
+
+            int dirCount = 0;
+            using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (var e in zip2)
+                {
+                    TestContext.WriteLine("dir: {0}", e.FileName);
+                    Assert.IsTrue(DirsAdded.Contains(e.FileName.Replace("/", "\\")));
+                    Assert.IsTrue(e.IsDirectory);
+                    dirCount++;
+                }
+            }
+            Assert.AreEqual<int>(DirsAdded.Count, dirCount);
+        }
+
+
+        [TestMethod]
+        public void Test_AddDirectoryByName_WithFiles()
+        {
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            var DirsAdded = new System.Collections.Generic.List<String>();
+            string password = TestUtilities.GenerateRandomPassword();
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Test_AddDirectoryByName_WithFiles.zip");
+            using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
+            {
+                string DirName = null;
+                int T = 3 + _rnd.Next(4);
+                for (int n = 0; n < T; n++)
+                {
+                    DirName = (n==0) ? "root" : 
+                        System.IO.Path.Combine(DirName, TestUtilities.GenerateRandomAsciiString(8));
+
+                    zip1.AddDirectoryByName(DirName);
+                    DirsAdded.Add(DirName);
+                    if (n % 2 == 0) zip1.Password = password;
+                    zip1.AddFileFromString( new System.String((char)(n + 48), 3) + ".txt", DirName, "Hello, Dolly!");
+                    if (n % 2 == 0) zip1.Password = null;
+                }
+                zip1.Save();
+            }
+
+            int entryCount = 0;
+            using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (var e in zip2)
+                {
+                    TestContext.WriteLine("e: {0}", e.FileName);
+                    if (e.IsDirectory)
+                        Assert.IsTrue(DirsAdded.Contains(e.FileName.Replace("/", "\\")));
+                    else
+                    {
+                        if ((entryCount-1) % 4 == 0) e.Password = password;
+                        string output = StreamToString(e.OpenReader());
+                        Assert.AreEqual<string>("Hello, Dolly!", output);
+                    }
+                    entryCount++;
+                }
+            }
+            Assert.AreEqual<int>(DirsAdded.Count*2, entryCount);
+        }
 
 
 
@@ -386,6 +508,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
             }
         }
 
+
         public void ExtractProgress(object sender, ExtractProgressEventArgs e)
         {
             _progressEventCalls++;
@@ -396,6 +519,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
                 TestContext.WriteLine("Cancelling...");
             }
         }
+
 
         [TestMethod]
         public void Create_WithEvents()
@@ -613,7 +737,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
             using (ZipFile zip = new ZipFile())
             {
                 zip.AddDirectory(Subdir, System.IO.Path.GetFileName(Subdir));
-                zip.Comment = "Please extract to:  " + TargetUnpackDirectory;
+                zip.Comment = "For testing purposes, please extract to:  " + TargetUnpackDirectory;
                 //for (int i = 0; i < 44; i++) zip.Comment += "Lorem ipsum absalom hibiscus lasagne ";
                 zip.SaveSelfExtractor(ExeFileToCreate, Ionic.Utils.Zip.SelfExtractorFlavor.WinFormsApplication);
             }

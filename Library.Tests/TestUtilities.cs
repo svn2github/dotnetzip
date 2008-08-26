@@ -186,6 +186,7 @@ namespace Library.TestUtilities
         {
             return GenerateUniquePathname(extension, null);
         }
+
         internal static string GenerateUniquePathname(string extension, string ContainingDirectory)
         {
             string candidate = null;
@@ -218,7 +219,6 @@ namespace Library.TestUtilities
             }
             return (entries == fileCount);
         }
-
 
 
         internal static string CheckSumToString(byte[] checksum)
@@ -265,6 +265,80 @@ namespace Library.TestUtilities
             string result = new System.String(a);
             return result;
         }
+
+
+        public static string GenerateRandomAsciiString()
+        {
+            return GenerateRandomAsciiString(_rnd.Next(14));
+        }
+
+        public static string GenerateRandomName()
+        {
+            return
+          GenerateRandomUpperString(1) +
+          GenerateRandomLowerString(_rnd.Next(9) + 3);
+        }
+
+        public static string GenerateRandomName(int length)
+        {
+            return
+          GenerateRandomUpperString(1) +
+          GenerateRandomLowerString(length - 1);
+        }
+
+        public static string GenerateRandomAsciiString(int length)
+        {
+            return GenerateRandomAsciiStringImpl(length, 0);
+        }
+
+        public static string GenerateRandomUpperString()
+        {
+            return GenerateRandomAsciiStringImpl(_rnd.Next(10) + 3, 65);
+        }
+
+        public static string GenerateRandomUpperString(int length)
+        {
+            return GenerateRandomAsciiStringImpl(length, 65);
+        }
+
+        public static string GenerateRandomLowerString(int length)
+        {
+            return GenerateRandomAsciiStringImpl(length, 97);
+        }
+
+        public static string GenerateRandomLowerString()
+        {
+            return GenerateRandomAsciiStringImpl(_rnd.Next(9) + 4, 97);
+        }
+
+        private static string GenerateRandomAsciiStringImpl(int length, int delta)
+        {
+            bool WantRandomized = (delta == 0);
+
+            string result = "";
+            char[] a = new char[length];
+
+            for (int i = 0; i < length; i++)
+            {
+                if (WantRandomized)
+                    delta = (_rnd.Next(2) == 0) ? 65 : 97;
+                a[i] = GetOneRandomAsciiChar(delta);
+            }
+
+            result = new System.String(a);
+            return result;
+        }
+
+
+
+        private static char GetOneRandomAsciiChar(int delta)
+        {
+            // delta == 65 means uppercase
+            // delta == 97 means lowercase
+            return (char)(_rnd.Next(26) + delta);
+        }
+
+
 
 
         internal static int GenerateFilesOneLevelDeep(TestContext TC, string TestName, string DirToZip, out int subdirCount)
