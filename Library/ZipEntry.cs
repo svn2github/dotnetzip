@@ -425,6 +425,55 @@ namespace Ionic.Utils.Zip
         }
 
 
+        /// <summary>
+        /// A callback that allows the application to specify whether multiple reads of the
+        /// stream should be performed, in the case that a compression operation actually
+        /// inflates the size of the file data.  
+        /// </summary>
+        ///
+        /// <remarks>
+        /// <para>
+        /// In some cases, applying the Deflate compression algorithm in DeflateStream can
+        /// result an increase in the size of the data.  This "inflation" can happen with
+        /// previously compressed files, such as a zip, jpg, png, mp3, and so on.  In a few
+        /// tests, inflation on zip files can be as large as 60%!  Inflation can also happen
+        /// with very small files.  In these cases, by default, the DotNetZip library
+        /// discards the compressed bytes, and stores the uncompressed file data into the
+        /// zip archive.  This is an optimization where smaller size is preferred over
+        /// longer run times.
+        /// </para>
+        ///
+        /// <para>
+        /// The application can specify that compression is not even tried, by setting the
+        /// ForceNoCompression flag.  In this case, the compress-and-check-sizes process as
+        /// decribed above, is not done.
+        /// </para>
+        ///
+        /// <para>
+        /// In some cases, neither choice is optimal.  The application wants compression,
+        /// but in some cases also wants to avoid reading the stream more than once.  This
+        /// may happen when the stream is very large, or when the read is very expensive, or
+        /// when the difference between the compressed and uncompressed sizes is not
+        /// significant.
+        /// </para>
+        ///
+        /// <para>
+        /// To satisfy these applications, this delegate allows the DotNetZip library to ask
+        /// the application to for approval for re-reading the stream.  As with other
+        /// properties (like Password and ForceNoCompression), setting the corresponding
+        /// delegate on the ZipFile class itself will set it on all ZipEntry items that are
+        /// subsequently added to the ZipFile instance.
+        /// </para>
+        ///
+        /// </remarks>
+        public ReadApprovalCallback WillReadTwiceOnInflation
+        {
+            get;
+            set;
+        }
+
+
+
         private System.IO.Compression.DeflateStream CompressedStream
         {
             get
@@ -1541,7 +1590,16 @@ namespace Ionic.Utils.Zip
 
         }
 
+        private bool WantReadAgain()
+        {
+            if (_CompressedSize < _UncompressedSize) return false;
 
+            // check delegate 
+            if (WillReadTwiceOnInflation != null)
+                return WillReadTwiceOnInflation(_UncompressedSize, _CompressedSize, FileName);
+
+            return true;
+        }
 
 
         private void WriteHeader(System.IO.Stream s, byte[] bytes)
@@ -1641,20 +1699,9 @@ namespace Ionic.Utils.Zip
                             _CompressedSize = (Int32)_UnderlyingMemoryStream.Length;
                         }
 
-                        // It is possible that applying this stream compression on a previously compressed
-                        // file (entry) (like a zip, jpg or png) or a very small file will actually result
-                        // in an increase in the size of the data.  In that case, we discard the
-                        // compressed bytes, store the uncompressed data, and mark the CompressionMethod
-                        // as 0x00 (uncompressed).  When we do this we need to recompute the CRC, and
-                        // fill the _UnderlyingMemoryStream with the right (raw) data.
-                        //
-                        // In some cases, the application wants to Force that compression is not used.
-                        // This might be when zipping up .mp3 files for example. In that case, the app
-                        // sets the _ForceNoCompression flag to true, and we do the same thing, but 
-                        // we've skipped the "try compression and then compare sizes" step.  
-                        //
-                        if (_ForceNoCompression ||
-                            (_CompressedSize > _UncompressedSize))
+
+                        // workitem 5829 - WantReadAgain
+                        if (_ForceNoCompression || WantReadAgain())
                         {
                             _UnderlyingMemoryStream = new System.IO.MemoryStream();
                             //Daniel Bedarf

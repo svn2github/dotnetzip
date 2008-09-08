@@ -6,6 +6,13 @@ namespace Ionic.Utils.Zip
 {
 
     /// <summary>
+    /// Delegate for the callback by which the application gives approval for multiple
+    /// reads of the file stream. This callback is called only when the initial 
+    /// compression operation inflates the size of the file data. 
+    /// </summary>
+    public delegate bool ReadApprovalCallback(Int32 uncompressedSize, Int32 compressedSize, string filename);
+
+    /// <summary>
     /// Provides information about the progress of a save or extract operation.
     /// </summary>
     public class ZipProgressEventArgs : EventArgs

@@ -180,6 +180,78 @@ namespace Ionic.Utils.Zip.Tests.Extended
 
 
 
+        private int _doubleReadCallbacks = 0;
+        public bool ReadTwiceCallback(int u, int c, string filename)
+        {
+            _doubleReadCallbacks++;
+            TestContext.WriteLine("Callback: {0} {1} {2}", u, c, filename);
+            return ((_rnd.Next() % 2) == 0);
+        }
+
+
+
+        [TestMethod]
+        public void Save_DoubleReadCallback()
+        {
+            int j;
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Save_DoubleReadCallback.zip");
+
+            // 1. make the inner zip file
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "DoubleRead");
+            System.IO.Directory.CreateDirectory(Subdir);
+            string InnerZipFile = System.IO.Path.Combine(Subdir, "DoubleReadCallback.zip");
+
+            string InnerSubdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(InnerSubdir);
+            var checksums = new Dictionary<string, string>();
+            string filename = null;
+            int fileCount = _rnd.Next(10) + 10;
+            for (j = 0; j < fileCount; j++)
+            {
+                filename = System.IO.Path.Combine(InnerSubdir, String.Format("file{0:D2}.txt", j));
+                TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
+              
+                var chk = TestUtilities.ComputeChecksum(filename);
+                checksums.Add(filename, TestUtilities.CheckSumToString(chk));
+            }
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddDirectory(InnerSubdir, System.IO.Path.GetFileName(InnerSubdir));
+                zip1.Save(InnerZipFile);
+            }
+
+
+            // 2. make the outer zip file
+            Subdir = System.IO.Path.Combine(TopLevelDir, "DoubleRead");
+            var filename1 = System.IO.Path.Combine(Subdir, "SmallTextFile.txt");
+            TestUtilities.CreateAndFillFileText(filename1, _rnd.Next(34) + 12);
+
+            using (ZipFile zip2 = new ZipFile())
+            {
+                zip2.WillReadTwiceOnInflation = ReadTwiceCallback;
+                zip2.AddFile(filename1, System.IO.Path.GetFileName(Subdir));
+                zip2.AddFile(InnerZipFile, System.IO.Path.GetFileName(Subdir));
+                for (j = 0; j < 5; j++)
+                {
+                    filename = System.IO.Path.Combine(InnerSubdir, String.Format("file{0:D2}.txt", j));
+                    zip2.AddFile(filename, System.IO.Path.GetFileName(Subdir));
+                }
+                zip2.Save(ZipFileToCreate);
+            }
+
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, 7),
+              "The Zip file has the wrong number of entries.");
+
+            Assert.IsTrue(ZipFile.IsZipFile(ZipFileToCreate),
+              "The IsZipFile() method returned an unexpected result for an existing zip file.");
+
+            Assert.AreEqual<int>(_doubleReadCallbacks, 2);
+
+        }
+
+
+
         [TestMethod]
         public void TestZip_IsZipFile()
         {
@@ -401,13 +473,13 @@ namespace Ionic.Utils.Zip.Tests.Extended
                 int T = 3 + _rnd.Next(4);
                 for (int n = 0; n < T; n++)
                 {
-                    DirName = (n==0) ? "root" : 
+                    DirName = (n == 0) ? "root" :
                         System.IO.Path.Combine(DirName, TestUtilities.GenerateRandomAsciiString(8));
 
                     zip1.AddDirectoryByName(DirName);
                     DirsAdded.Add(DirName);
                     if (n % 2 == 0) zip1.Password = password;
-                    zip1.AddFileFromString( new System.String((char)(n + 48), 3) + ".txt", DirName, "Hello, Dolly!");
+                    zip1.AddFileFromString(new System.String((char)(n + 48), 3) + ".txt", DirName, "Hello, Dolly!");
                     if (n % 2 == 0) zip1.Password = null;
                 }
                 zip1.Save();
@@ -423,14 +495,14 @@ namespace Ionic.Utils.Zip.Tests.Extended
                         Assert.IsTrue(DirsAdded.Contains(e.FileName.Replace("/", "\\")));
                     else
                     {
-                        if ((entryCount-1) % 4 == 0) e.Password = password;
+                        if ((entryCount - 1) % 4 == 0) e.Password = password;
                         string output = StreamToString(e.OpenReader());
                         Assert.AreEqual<string>("Hello, Dolly!", output);
                     }
                     entryCount++;
                 }
             }
-            Assert.AreEqual<int>(DirsAdded.Count*2, entryCount);
+            Assert.AreEqual<int>(DirsAdded.Count * 2, entryCount);
         }
 
 

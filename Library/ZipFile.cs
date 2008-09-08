@@ -379,6 +379,58 @@ namespace Ionic.Utils.Zip
         }
 
 
+
+
+
+	/// <summary>
+	/// A callback that allows the application to specify whether multiple reads of the
+	/// stream should be performed, in the case that a compression operation actually
+	/// inflates the size of the file data.  
+	/// </summary>
+	///
+	/// <remarks>
+        /// <para>
+        /// In some cases, applying the Deflate compression algorithm in DeflateStream can
+        /// result an increase in the size of the data.  This "inflation" can happen with
+        /// previously compressed files, such as a zip, jpg, png, mp3, and so on.  In a few
+        /// tests, inflation on zip files can be as large as 60%!  Inflation can also happen
+        /// with very small files.  In these cases, by default, the DotNetZip library
+        /// discards the compressed bytes, and stores the uncompressed file data into the
+        /// zip archive.  This is an optimization where smaller size is preferred over
+        /// longer run times.
+        /// </para>
+	///
+	/// <para>
+	/// The application can specify that compression is not even tried, by setting the
+	/// ForceNoCompression flag.  In this case, the compress-and-check-sizes process as
+	/// decribed above, is not done.
+	/// </para>
+	///
+	/// <para>
+	/// In some cases, neither choice is optimal.  The application wants compression,
+	/// but in some cases also wants to avoid reading the stream more than once.  This
+	/// may happen when the stream is very large, or when the read is very expensive, or
+	/// when the difference between the compressed and uncompressed sizes is not
+	/// significant.
+	/// </para>
+	///
+	/// <para>
+	/// To satisfy these applications, this delegate allows the DotNetZip library to ask
+	/// the application to for approval for re-reading the stream.  As with other
+	/// properties (like Password and ForceNoCompression), setting the corresponding
+	/// delegate on the ZipFile class itself will set it on all ZipEntry items that are
+	/// subsequently added to the ZipFile instance.
+	/// </para>
+	///
+	/// </remarks>
+	public ReadApprovalCallback WillReadTwiceOnInflation
+	{
+	    get ;
+	    set ;
+	}
+	
+
+
         private System.IO.Stream ReadStream
         {
             get
@@ -1057,6 +1109,7 @@ namespace Ionic.Utils.Zip
             ZipEntry ze = ZipEntry.Create(fileName, directoryPathInArchive);
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
+            ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
             ze._Source = EntrySource.Filesystem;
             ze.Password = _Password;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
@@ -1483,6 +1536,14 @@ namespace Ionic.Utils.Zip
         }
 
 
+	/// <summary>
+	/// Creates a directory in the zip archive.  Use this when you
+	/// want to create a directory in the archive but there is no
+	/// corresponding filesystem represenntation for that directory.
+	/// </summary>
+	/// <param name="directoryNameInArchive">
+	/// The name of the directory to create in the archive.
+	/// </param>
         public ZipEntry AddDirectoryByName(string directoryNameInArchive)
         {
             // add the directory itself.
