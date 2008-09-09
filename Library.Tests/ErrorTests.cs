@@ -81,9 +81,9 @@ namespace Ionic.Utils.Zip.Tests.Error
 
         [TestMethod]
         [ExpectedException(typeof(System.IO.FileNotFoundException))]
-        public void Error_AddFile_NonexistentFile()
+        public void Error_AddFile_NonExistentFile()
         {
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "FileNotFound.zip");
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Error_AddFile_NonExistentFile.zip");
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
             using (ZipFile zip = new ZipFile(ZipFileToCreate))
             {
@@ -93,6 +93,21 @@ namespace Ionic.Utils.Zip.Tests.Error
             }
         }
 
+
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Utils.Zip.ZipException))]
+        public void Error_Read_NullStream()
+        {
+            System.IO.Stream s = null;
+            using (var zip = ZipFile.Read(s))
+            {
+                foreach (var e in zip)
+                {
+                    Console.WriteLine("entry: {0}", e.FileName);
+                }
+            }
+        }
 
         [TestMethod]
         [ExpectedException(typeof(System.IO.IOException))]
@@ -486,7 +501,7 @@ namespace Ionic.Utils.Zip.Tests.Error
 
 
         [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))] 
+        [ExpectedException(typeof(System.ArgumentException))]
         public void Error_AddFile_Twice()
         {
             int i;

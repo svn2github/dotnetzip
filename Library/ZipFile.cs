@@ -416,14 +416,49 @@ namespace Ionic.Utils.Zip
 	///
 	/// <para>
 	/// To satisfy these applications, this delegate allows the DotNetZip library to ask
-	/// the application to for approval for re-reading the stream.  As with other
-	/// properties (like Password and ForceNoCompression), setting the corresponding
-	/// delegate on the ZipFile class itself will set it on all ZipEntry items that are
-	/// subsequently added to the ZipFile instance.
+	/// the application to for approval for re-reading the stream, in the case where
+	/// inflation occurs.  The callback is invoked only in the case of inflation; that
+	/// is to say when the uncompressed stream is smaller than the compressed stream.
+	/// </para>
+	///
+	/// <para>
+	/// As with other properties (like Password and ForceNoCompression), setting the
+	/// corresponding delegate on the ZipFile class itself will set it on all ZipEntry
+	/// items that are subsequently added to the ZipFile instance.
 	/// </para>
 	///
 	/// </remarks>
-	public ReadApprovalCallback WillReadTwiceOnInflation
+        /// <example>
+        /// <para>
+        /// In this example, the application callback checks to see if the difference
+	/// between the compressed and uncompressed data is greater than 25%.  If it is,
+	/// then the callback returns true, and the application tells the library to re-read
+	/// the stream.  If not, then the callback returns false, and the library just keeps
+	/// the "inflated" file data.
+        /// </para>
+        ///
+        /// <code>
+	///
+        /// public bool ReadTwiceCallback(int uncompressed, int compressed, string filename)
+        /// {
+        ///     return ((uncompressed * 1.0/compressed) > 1.25);
+        /// }
+	/// 
+	/// public void CreateTheZip()
+        /// {
+	///     using (ZipFile zip = new ZipFile())
+        ///     {
+        ///         zip2.WillReadTwiceOnInflation = ReadTwiceCallback;
+        ///         zip2.AddFile(filename1);
+        ///         zip2.AddFile(filename2);
+        ///         zip2.Save(ZipFileToCreate);
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
+        /// <seealso cref="Ionic.Utils.Zip.ReadApprovalCallback"/>
+        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.WillReadTwiceOnInflation"/>
+	public  ReadApprovalCallback WillReadTwiceOnInflation
 	{
 	    get ;
 	    set ;
@@ -2266,11 +2301,11 @@ namespace Ionic.Utils.Zip
         /// </code>
         /// </example>
         ///
-        /// <param name="inputZipStream">the stream containing the zip data.</param>
+        /// <param name="zipStream">the stream containing the zip data.</param>
         /// <returns>an instance of ZipFile</returns>
-        public static ZipFile Read(System.IO.Stream inputZipStream)
+        public static ZipFile Read(System.IO.Stream zipStream)
         {
-            return Read(inputZipStream, null);
+            return Read(zipStream, null);
         }
 
         /// <summary>
@@ -2288,11 +2323,20 @@ namespace Ionic.Utils.Zip
         /// works. If the TextWriter is null, no verbose messages are written. 
         /// </para>
         /// </remarks>
+	///
+        /// <exception cref="Ionic.Utils.Zip.ZipException">
+        /// Thrown if zipStream is null.
+	/// In this case, the inner exception is an ArgumentException.
+        /// </exception>
+        ///
         /// <param name="zipStream">the stream containing the zip data.</param>
         /// <param name="statusMessageWriter">The <c>System.IO.TextWriter</c> to which verbose status messages are written.</param>
         /// <returns>an instance of ZipFile</returns>
         public static ZipFile Read(System.IO.Stream zipStream, System.IO.TextWriter statusMessageWriter)
         {
+	    if (zipStream == null)
+                throw new ZipException("Cannot read.", new ArgumentException("The stream must be non-null", "zipStream"));
+
             ZipFile zf = new ZipFile();
             zf._StatusMessageTextWriter = statusMessageWriter;
             zf._readstream = zipStream;
@@ -2773,8 +2817,9 @@ namespace Ionic.Utils.Zip
         /// the password is null, and the entry is extracted with no password.
         /// </remarks>
         /// 
-        /// <exception cref="System.ArgumentException">
-        /// Thrown if the outputStream is not writable.  
+        /// <exception cref="Ionic.Utils.Zip.ZipException">
+        /// Thrown if the outputStream is not writable, or if the filename is 
+	/// null or empty. The inner exception is an ArgumentException in each case.
         /// </exception>
         ///
         /// <param name="fileName">
