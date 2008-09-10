@@ -158,7 +158,7 @@ namespace Ionic.Utils.Zip.Tests.Error
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Ionic.Utils.Zip.BadReadException))]
+        [ExpectedException(typeof(Ionic.Utils.Zip.ZipException))]
         public void Error_Read_InvalidZip()
         {
             string SourceDir = CurrentDir;

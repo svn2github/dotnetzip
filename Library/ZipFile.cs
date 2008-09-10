@@ -510,20 +510,25 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// 
         /// <para>
-        /// Typically an application writing a zip archive will call this constructor,
-        /// passing the name of a file that does not exist, then add directories or files to
-        /// the ZipFile via AddDirectory or AddFile, and then write the zip archive to the
-        /// disk by calling <c>Save()</c>. The zip file is not actually written to the disk until
-        /// the application calls <c>ZipFile.Save()</c> .
+        /// To create a new zip archive, an application should call this constructor,
+        /// passing the name of a file that does not exist.  Then the application can
+        /// add directories or files to the ZipFile via <c>AddDirectory()</c>,
+        /// <c>AddFile()</c>, <c>AddItem()</c> and then write the zip archive to the
+        /// disk by calling <c>Save()</c>. The zip file is not actually written to
+        /// the disk until the application calls <c>ZipFile.Save()</c>.  At that point
+	/// the new zip file with the given name is created. 
         /// </para>
         /// 
         /// <para>
-        /// An application reading a zip archive can call this constructor, passing the name of a 
-        /// zip file that does exist.  The file is then read into the <c>ZipFile</c> instance.  The app
-        /// can then enumerate the entries or can add a new entry.  An application may wish to 
-        /// explicitly specify that it is reading an existing zip file by using <c>ZipFile.Read()</c>. 
-        /// The parameterized constructor allows applications to use the same code to add items 
-        /// to a zip archive, regardless of whether the zip file exists.  
+        /// To read an existing zip archive, the application should call this constructor,
+        /// passing the name of a valid zip file that does exist.  The file is then read into
+        /// the <c>ZipFile</c> instance.  The app can then enumerate the entries or can modify
+        /// the zip file, for example adding entries, removing entries, changing comments, and
+        /// so on.  When reading an existing zip archive, the application may wish to
+        /// explicitly specify that it is reading an existing zip file by using
+        /// <c>ZipFile.Read()</c>.  On the other hand, this parameterized constructor allows
+        /// applications to use the same code to add items to a zip archive, regardless of
+        /// whether the zip file exists.
         /// </para>
         /// 
         /// <para>
@@ -532,6 +537,10 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// 
         /// </remarks>
+        ///
+        /// <exception cref="Ionic.Utils.Zip.ZipException">
+        /// Thrown if zipFileName refers to an existing file that is not a valid zip file. 
+        /// </exception>
         ///
         /// <example>
         /// This example shows how to create a zipfile, and add a few files into it. 
@@ -568,7 +577,14 @@ namespace Ionic.Utils.Zip
         ///
         public ZipFile(string zipFileName)
         {
-            InitFile(zipFileName, null);
+	    try 
+	    {
+		InitFile(zipFileName, null);
+	    }
+	    catch (Exception e1)
+	    {
+		throw new ZipException(String.Format("{0} is not a valid zip file", zipFileName), e1);
+	    }
         }
 
 
@@ -632,20 +648,25 @@ namespace Ionic.Utils.Zip
         /// </para>
         ///
         /// <para>
-        /// Typically an application writing a zip archive will call this constructor,
-        /// passing the name of a file that does not (yet) exist, then add directories or files to
-        /// the ZipFile via AddDirectory or AddFile, and then write the zip archive to the
-        /// disk by calling <c>Save()</c>. The file is not actually written to the disk until
-        /// the application calls <c>ZipFile.Save()</c> .
+        /// To create a new zip archive, an application should call this constructor,
+        /// passing the name of a file that does not exist.  Then the application can
+        /// add directories or files to the ZipFile via <c>AddDirectory()</c>,
+        /// <c>AddFile()</c>, <c>AddItem()</c> and then write the zip archive to the
+        /// disk by calling <c>Save()</c>. The zip file is not actually written to
+        /// the disk until the application calls <c>ZipFile.Save()</c>.  At that point
+	/// the new zip file with the given name is created. 
         /// </para>
-        ///
+        /// 
         /// <para>
-        /// An application reading a zip archive can call this constructor, passing the name of
-        /// a zip file that does exist.  The file is then read into the <c>ZipFile</c> instance.
-        /// The app can then enumerate the entries or can add a new entry.  An application may
-        /// wish to explicitly specify that it is reading an existing zip file by using
-        /// <c>ZipFile.Read()</c>.  The parameterized constructor allows applications to use the
-        /// same code to add items to a zip archive, without regard for whether the zip file exists.
+        /// To read an existing zip archive, the application should call this constructor,
+        /// passing the name of a valid zip file that does exist.  The file is then read into
+        /// the <c>ZipFile</c> instance.  The app can then enumerate the entries or can modify
+        /// the zip file, for example adding entries, removing entries, changing comments, and
+        /// so on.  When reading an existing zip archive, the application may wish to
+        /// explicitly specify that it is reading an existing zip file by using
+        /// <c>ZipFile.Read()</c>.  On the other hand, this parameterized constructor allows
+        /// applications to use the same code to add items to a zip archive, regardless of
+        /// whether the zip file exists.
         /// </para>
         ///
         /// <para>
@@ -655,7 +676,17 @@ namespace Ionic.Utils.Zip
         /// Console. A graphical or headless application may wish to capture the messages in a
         /// different <c>TextWriter</c>, for example, a <c>StringWriter</c>.
         /// </para>
+        /// 
+        /// <para>
+        /// To encrypt the data for the  files added to the ZipFile instance, set the Password
+        /// property after creating the ZipFile instance.
+        /// </para>
+        /// 
         /// </remarks>
+        ///
+        /// <exception cref="Ionic.Utils.Zip.ZipException">
+        /// Thrown if zipFileName refers to an existing file that is not a valid zip file. 
+        /// </exception>
         ///
         /// <example>
         /// <code>
@@ -692,7 +723,14 @@ namespace Ionic.Utils.Zip
         /// <param name="statusMessageWriter">A TextWriter to use for writing verbose status messages.</param>
         public ZipFile(string zipFileName, System.IO.TextWriter statusMessageWriter)
         {
-            InitFile(zipFileName, statusMessageWriter);
+	    try 
+	    {
+		InitFile(zipFileName, statusMessageWriter);
+	    }
+	    catch (Exception e1)
+	    {
+		throw new ZipException(String.Format("{0} is not a valid zip file", zipFileName), e1);
+	    }
         }
 
 
