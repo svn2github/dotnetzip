@@ -631,6 +631,72 @@ namespace Ionic.Utils.Zip.Tests.Extended
         }
 
 
+        [TestMethod]
+        public void CreateZip_AddDirectory_NoFilesInRoot_WI5893()
+        {
+            int i, j;
+            int entries = 0;
+
+            int subdirCount = _rnd.Next(4) + 4;
+            for (i = 0; i < subdirCount; i++)
+            {
+                string Subdir = System.IO.Path.Combine(TopLevelDir, "DirectoryToZip.test." + i);
+                System.IO.Directory.CreateDirectory(Subdir);
+
+                int fileCount = _rnd.Next(3) + 3;
+                for (j = 0; j < fileCount; j++)
+                {
+                    String file = System.IO.Path.Combine(Subdir, "file" + j);
+                    TestUtilities.CreateAndFillFile(file, _rnd.Next(100) + 500);
+                    entries++;
+                }
+            }
+
+            string ZipFileToCreate = TestUtilities.GenerateUniquePathname("zip");
+            _FilesToRemove.Add(ZipFileToCreate);
+
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                zip.AddDirectory(TopLevelDir, string.Empty);
+                zip.Save();
+            }
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entries), "Zip file created seems to be invalid.");
+        }
+
+
+        [TestMethod]
+        public void Create_AddDirectory_NoFilesInRoot_WI5893a()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Create_AddDirectory_NoFilesInRoot_WI5893.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            int i, j;
+            int entries = 0;
+
+            int subdirCount = _rnd.Next(4) + 4;
+            for (i = 0; i < subdirCount; i++)
+            {
+                string Subdir = System.IO.Path.Combine(TopLevelDir, "DirectoryToZip.test." + i);
+                System.IO.Directory.CreateDirectory(Subdir);
+
+                int fileCount = _rnd.Next(3) + 3;
+                for (j = 0; j < fileCount; j++)
+                {
+                    String file = System.IO.Path.Combine(Subdir, "file" + j);
+                    TestUtilities.CreateAndFillFile(file, _rnd.Next(100) + 500);
+                    entries++;
+                }
+            }
+      
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                zip.AddDirectory(TopLevelDir, string.Empty);
+                zip.Save();
+            }
+            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, entries), "Zip file created seems to be invalid.");
+        }
 
 
         [TestMethod]

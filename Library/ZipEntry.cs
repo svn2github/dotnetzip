@@ -1409,12 +1409,23 @@ namespace Ionic.Utils.Zip
             bytes[i++] = _EntryHeader[4];
             bytes[i++] = _EntryHeader[5];
 
+
+	    // workitem 6182 - zero out extra field length before writing
+            Int16 extraFieldLengthSave = (short)(_EntryHeader[28] + _EntryHeader[29] * 256);
+	    _EntryHeader[28]= 0;
+	    _EntryHeader[29]= 0;
+
             // Version Needed, Bitfield, compression method, lastmod,
             // crc, compressed and uncompressed sizes, filename length and extra field length -
             // are all the same as the local file header. So just copy them.
             int j = 0;
             for (j = 0; j < 26; j++)
                 bytes[i + j] = _EntryHeader[4 + j];
+
+
+	    // workitem 6182 - restore extra field length after writing
+	    _EntryHeader[28]= (byte)(extraFieldLengthSave & 0x00FF);
+	    _EntryHeader[29]= (byte)((extraFieldLengthSave & 0xFF00) >> 8);
 
             i += j;  // positioned at next available byte
 
