@@ -382,13 +382,13 @@ namespace Ionic.Utils.Zip
 
 
 
-	/// <summary>
-	/// A callback that allows the application to specify whether multiple reads of the
-	/// stream should be performed, in the case that a compression operation actually
-	/// inflates the size of the file data.  
-	/// </summary>
-	///
-	/// <remarks>
+        /// <summary>
+        /// A callback that allows the application to specify whether multiple reads of the
+        /// stream should be performed, in the case that a compression operation actually
+        /// inflates the size of the file data.  
+        /// </summary>
+        ///
+        /// <remarks>
         /// <para>
         /// In some cases, applying the Deflate compression algorithm in DeflateStream can
         /// result an increase in the size of the data.  This "inflation" can happen with
@@ -399,54 +399,54 @@ namespace Ionic.Utils.Zip
         /// zip archive.  This is an optimization where smaller size is preferred over
         /// longer run times.
         /// </para>
-	///
-	/// <para>
-	/// The application can specify that compression is not even tried, by setting the
-	/// ForceNoCompression flag.  In this case, the compress-and-check-sizes process as
-	/// decribed above, is not done.
-	/// </para>
-	///
-	/// <para>
-	/// In some cases, neither choice is optimal.  The application wants compression,
-	/// but in some cases also wants to avoid reading the stream more than once.  This
-	/// may happen when the stream is very large, or when the read is very expensive, or
-	/// when the difference between the compressed and uncompressed sizes is not
-	/// significant.
-	/// </para>
-	///
-	/// <para>
-	/// To satisfy these applications, this delegate allows the DotNetZip library to ask
-	/// the application to for approval for re-reading the stream, in the case where
-	/// inflation occurs.  The callback is invoked only in the case of inflation; that
-	/// is to say when the uncompressed stream is smaller than the compressed stream.
-	/// </para>
-	///
-	/// <para>
-	/// As with other properties (like Password and ForceNoCompression), setting the
-	/// corresponding delegate on the ZipFile class itself will set it on all ZipEntry
-	/// items that are subsequently added to the ZipFile instance.
-	/// </para>
-	///
-	/// </remarks>
+        ///
+        /// <para>
+        /// The application can specify that compression is not even tried, by setting the
+        /// ForceNoCompression flag.  In this case, the compress-and-check-sizes process as
+        /// decribed above, is not done.
+        /// </para>
+        ///
+        /// <para>
+        /// In some cases, neither choice is optimal.  The application wants compression,
+        /// but in some cases also wants to avoid reading the stream more than once.  This
+        /// may happen when the stream is very large, or when the read is very expensive, or
+        /// when the difference between the compressed and uncompressed sizes is not
+        /// significant.
+        /// </para>
+        ///
+        /// <para>
+        /// To satisfy these applications, this delegate allows the DotNetZip library to ask
+        /// the application to for approval for re-reading the stream, in the case where
+        /// inflation occurs.  The callback is invoked only in the case of inflation; that
+        /// is to say when the uncompressed stream is smaller than the compressed stream.
+        /// </para>
+        ///
+        /// <para>
+        /// As with other properties (like Password and ForceNoCompression), setting the
+        /// corresponding delegate on the ZipFile class itself will set it on all ZipEntry
+        /// items that are subsequently added to the ZipFile instance.
+        /// </para>
+        ///
+        /// </remarks>
         /// <example>
         /// <para>
         /// In this example, the application callback checks to see if the difference
-	/// between the compressed and uncompressed data is greater than 25%.  If it is,
-	/// then the callback returns true, and the application tells the library to re-read
-	/// the stream.  If not, then the callback returns false, and the library just keeps
-	/// the "inflated" file data.
+        /// between the compressed and uncompressed data is greater than 25%.  If it is,
+        /// then the callback returns true, and the application tells the library to re-read
+        /// the stream.  If not, then the callback returns false, and the library just keeps
+        /// the "inflated" file data.
         /// </para>
         ///
         /// <code>
-	///
+        ///
         /// public bool ReadTwiceCallback(int uncompressed, int compressed, string filename)
         /// {
         ///     return ((uncompressed * 1.0/compressed) > 1.25);
         /// }
-	/// 
-	/// public void CreateTheZip()
+        /// 
+        /// public void CreateTheZip()
         /// {
-	///     using (ZipFile zip = new ZipFile())
+        ///     using (ZipFile zip = new ZipFile())
         ///     {
         ///         zip2.WillReadTwiceOnInflation = ReadTwiceCallback;
         ///         zip2.AddFile(filename1);
@@ -458,12 +458,12 @@ namespace Ionic.Utils.Zip
         /// </example>
         /// <seealso cref="Ionic.Utils.Zip.ReadApprovalCallback"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.WillReadTwiceOnInflation"/>
-	public  ReadApprovalCallback WillReadTwiceOnInflation
-	{
-	    get ;
-	    set ;
-	}
-	
+        public ReadApprovalCallback WillReadTwiceOnInflation
+        {
+            get;
+            set;
+        }
+
 
 
         private System.IO.Stream ReadStream
@@ -516,7 +516,7 @@ namespace Ionic.Utils.Zip
         /// <c>AddFile()</c>, <c>AddItem()</c> and then write the zip archive to the
         /// disk by calling <c>Save()</c>. The zip file is not actually written to
         /// the disk until the application calls <c>ZipFile.Save()</c>.  At that point
-	/// the new zip file with the given name is created. 
+        /// the new zip file with the given name is created. 
         /// </para>
         /// 
         /// <para>
@@ -577,14 +577,14 @@ namespace Ionic.Utils.Zip
         ///
         public ZipFile(string zipFileName)
         {
-	    try 
-	    {
-		InitFile(zipFileName, null);
-	    }
-	    catch (Exception e1)
-	    {
-		throw new ZipException(String.Format("{0} is not a valid zip file", zipFileName), e1);
-	    }
+            try
+            {
+                InitFile(zipFileName, null);
+            }
+            catch (Exception e1)
+            {
+                throw new ZipException(String.Format("{0} is not a valid zip file", zipFileName), e1);
+            }
         }
 
 
@@ -654,7 +654,7 @@ namespace Ionic.Utils.Zip
         /// <c>AddFile()</c>, <c>AddItem()</c> and then write the zip archive to the
         /// disk by calling <c>Save()</c>. The zip file is not actually written to
         /// the disk until the application calls <c>ZipFile.Save()</c>.  At that point
-	/// the new zip file with the given name is created. 
+        /// the new zip file with the given name is created. 
         /// </para>
         /// 
         /// <para>
@@ -723,14 +723,14 @@ namespace Ionic.Utils.Zip
         /// <param name="statusMessageWriter">A TextWriter to use for writing verbose status messages.</param>
         public ZipFile(string zipFileName, System.IO.TextWriter statusMessageWriter)
         {
-	    try 
-	    {
-		InitFile(zipFileName, statusMessageWriter);
-	    }
-	    catch (Exception e1)
-	    {
-		throw new ZipException(String.Format("{0} is not a valid zip file", zipFileName), e1);
-	    }
+            try
+            {
+                InitFile(zipFileName, statusMessageWriter);
+            }
+            catch (Exception e1)
+            {
+                throw new ZipException(String.Format("{0} is not a valid zip file", zipFileName), e1);
+            }
         }
 
 
@@ -1609,14 +1609,14 @@ namespace Ionic.Utils.Zip
         }
 
 
-	/// <summary>
-	/// Creates a directory in the zip archive.  Use this when you
-	/// want to create a directory in the archive but there is no
-	/// corresponding filesystem represenntation for that directory.
-	/// </summary>
-	/// <param name="directoryNameInArchive">
-	/// The name of the directory to create in the archive.
-	/// </param>
+        /// <summary>
+        /// Creates a directory in the zip archive.  Use this when you
+        /// want to create a directory in the archive but there is no
+        /// corresponding filesystem represenntation for that directory.
+        /// </summary>
+        /// <param name="directoryNameInArchive">
+        /// The name of the directory to create in the archive.
+        /// </param>
         public ZipEntry AddDirectoryByName(string directoryNameInArchive)
         {
             // add the directory itself.
@@ -2301,10 +2301,19 @@ namespace Ionic.Utils.Zip
         public static ZipFile Read(string zipFileName, System.IO.TextWriter statusMessageWriter)
         {
             ZipFile zf = new ZipFile();
+
             zf._StatusMessageTextWriter = statusMessageWriter;
             zf._name = zipFileName;
-            ReadIntoInstance(zf);
-            zf._fileAlreadyExists = true;
+
+            try
+            {
+                ReadIntoInstance(zf);
+                zf._fileAlreadyExists = true;
+            }
+            catch (Exception e1)
+            {
+                throw new ZipException(String.Format("{0} is not a valid zip file", zipFileName), e1);
+            }
             return zf;
         }
 
@@ -2361,10 +2370,10 @@ namespace Ionic.Utils.Zip
         /// works. If the TextWriter is null, no verbose messages are written. 
         /// </para>
         /// </remarks>
-	///
+        ///
         /// <exception cref="Ionic.Utils.Zip.ZipException">
         /// Thrown if zipStream is null.
-	/// In this case, the inner exception is an ArgumentException.
+        /// In this case, the inner exception is an ArgumentException.
         /// </exception>
         ///
         /// <param name="zipStream">the stream containing the zip data.</param>
@@ -2372,7 +2381,7 @@ namespace Ionic.Utils.Zip
         /// <returns>an instance of ZipFile</returns>
         public static ZipFile Read(System.IO.Stream zipStream, System.IO.TextWriter statusMessageWriter)
         {
-	    if (zipStream == null)
+            if (zipStream == null)
                 throw new ZipException("Cannot read.", new ArgumentException("The stream must be non-null", "zipStream"));
 
             ZipFile zf = new ZipFile();
@@ -2444,52 +2453,70 @@ namespace Ionic.Utils.Zip
 
         private static void ReadIntoInstance(ZipFile zf)
         {
-            zf._entries = new System.Collections.Generic.List<ZipEntry>();
-            ZipEntry e;
-            if (zf.Verbose)
-                if (zf.Name == null)
-                    zf.StatusMessageTextWriter.WriteLine("Reading zip from stream...");
-                else
-                    zf.StatusMessageTextWriter.WriteLine("Reading zip {0}...", zf.Name);
-
-            while ((e = ZipEntry.Read(zf.ReadStream)) != null)
+            try
             {
+                zf._entries = new System.Collections.Generic.List<ZipEntry>();
+                ZipEntry e;
                 if (zf.Verbose)
-                    zf.StatusMessageTextWriter.WriteLine("  {0}", e.FileName);
+                    if (zf.Name == null)
+                        zf.StatusMessageTextWriter.WriteLine("Reading zip from stream...");
+                    else
+                        zf.StatusMessageTextWriter.WriteLine("Reading zip {0}...", zf.Name);
 
-                zf._entries.Add(e);
-            }
-
-            // read the zipfile's central directory structure here.
-            zf._direntries = new System.Collections.Generic.List<ZipDirEntry>();
-
-            ZipDirEntry de;
-            while ((de = ZipDirEntry.Read(zf.ReadStream)) != null)
-            {
-                zf._direntries.Add(de);
-                // Housekeeping: Since ZipFile exposes ZipEntry elements in the enumerator, 
-                // we need to copy the comment that we grab from the ZipDirEntry
-                // into the ZipEntry, so the application can access the comment. 
-                // Also since ZipEntry is used to Write zip files, we need to copy the 
-                // file attributes to the ZipEntry as appropriate. 
-                foreach (ZipEntry e1 in zf._entries)
+                while ((e = ZipEntry.Read(zf.ReadStream)) != null)
                 {
-                    if (e1.FileName == de.FileName)
+                    if (zf.Verbose)
+                        zf.StatusMessageTextWriter.WriteLine("  {0}", e.FileName);
+
+                    zf._entries.Add(e);
+                }
+
+                // read the zipfile's central directory structure here.
+                zf._direntries = new System.Collections.Generic.List<ZipDirEntry>();
+
+                ZipDirEntry de;
+                while ((de = ZipDirEntry.Read(zf.ReadStream)) != null)
+                {
+                    zf._direntries.Add(de);
+                    // Housekeeping: Since ZipFile exposes ZipEntry elements in the enumerator, 
+                    // we need to copy the comment that we grab from the ZipDirEntry
+                    // into the ZipEntry, so the application can access the comment. 
+                    // Also since ZipEntry is used to Write zip files, we need to copy the 
+                    // file attributes to the ZipEntry as appropriate. 
+                    foreach (ZipEntry e1 in zf._entries)
                     {
-                        e1.Comment = de.Comment;
-                        if (de.IsDirectory) e1.MarkAsDirectory();
-                        break;
+                        if (e1.FileName == de.FileName)
+                        {
+                            e1.Comment = de.Comment;
+                            if (de.IsDirectory) e1.MarkAsDirectory();
+                            break;
+                        }
                     }
                 }
+
+                ReadCentralDirectoryFooter(zf);
+
+                if (zf.Verbose && !String.IsNullOrEmpty(zf.Comment))
+                    zf.StatusMessageTextWriter.WriteLine("Zip file Comment: {0}", zf.Comment);
+
+                // when finished slurping in the zip, close the read stream
+                //zf.ReadStream.Close();
             }
-
-            ReadCentralDirectoryFooter(zf);
-
-            if (zf.Verbose && !String.IsNullOrEmpty(zf.Comment))
-                zf.StatusMessageTextWriter.WriteLine("Zip file Comment: {0}", zf.Comment);
-
-            // when finished slurping in the zip, close the read stream
-            //zf.ReadStream.Close();
+            catch (Exception e1)
+            {
+                if (zf._ReadStreamIsOurs && zf._readstream != null)
+                    {
+                        try
+                        {
+                            zf._readstream.Close();
+                            zf._readstream.Dispose();
+                            zf._readstream = null;
+                        }
+                        finally { }
+                    }
+                
+                throw e1;
+            }
         }
 
 
@@ -2857,7 +2884,7 @@ namespace Ionic.Utils.Zip
         /// 
         /// <exception cref="Ionic.Utils.Zip.ZipException">
         /// Thrown if the outputStream is not writable, or if the filename is 
-	/// null or empty. The inner exception is an ArgumentException in each case.
+        /// null or empty. The inner exception is an ArgumentException in each case.
         /// </exception>
         ///
         /// <param name="fileName">

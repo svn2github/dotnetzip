@@ -700,6 +700,39 @@ namespace Ionic.Utils.Zip.Tests.Extended
 
 
         [TestMethod]
+        public void Read_BadFile()
+        {
+            string ZipFileToRead = System.IO.Path.Combine(TopLevelDir, "Read_BadFile.zip");
+
+            string NewFile = System.IO.Path.GetTempFileName();
+            System.IO.File.Move(NewFile, ZipFileToRead);
+
+            NewFile = System.IO.Path.GetTempFileName();
+
+            string EntryToAdd = System.IO.Path.Combine(TopLevelDir, "NonExistentFile.txt");
+            System.IO.File.Move(NewFile, EntryToAdd);
+
+            try
+            {
+                using (ZipFile zip = ZipFile.Read(ZipFileToRead))
+                {
+                    zip.AddFile(EntryToAdd, "");
+                    zip.Save();
+                }
+            }
+            catch (Exception ex1)
+            {
+                // expected - the zip file is invalid
+                Console.WriteLine("Exception: {0}", ex1);
+            }
+
+            // this should succeed
+            System.IO.File.Delete(ZipFileToRead);
+            System.IO.File.Delete(EntryToAdd);
+
+        }
+
+        [TestMethod]
         public void Create_SaveCancellation()
         {
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Create_SaveCancellation.zip");
