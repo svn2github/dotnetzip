@@ -474,6 +474,16 @@ namespace Ionic.Utils.Zip
             set;
         }
 
+        /// <summary>
+        /// Set to indicate whether to use UTF-8 encoding on filenames and 
+        /// comments, according to the PKWare specification.  The default is to use 
+        /// IBM437 encoding. 
+        /// </summary>
+        public bool UseUtf8Encoding
+        {
+            get;
+            set;
+        }
 
 
         private System.IO.Compression.DeflateStream CompressedStream
@@ -569,7 +579,16 @@ namespace Ionic.Utils.Zip
             n = ze._s.Read(block, 0, block.Length);
             bytesRead += n;
 
-            ze._FileNameInArchive = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length);
+            if ((ze._BitField & 0x0800) == 0x0800)
+            {
+                ze._FileNameInArchive = Ionic.Utils.Zip.SharedUtilities.Utf8StringFromBuffer(block, block.Length);
+                ze.UseUtf8Encoding = true;
+            }
+            else
+            {
+                ze._FileNameInArchive = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length);
+
+            }
 
             // when creating an entry by reading, the LocalFileName is the same as the FileNameInArchivre
             ze._LocalFileName = ze._FileNameInArchive;
@@ -1410,10 +1429,10 @@ namespace Ionic.Utils.Zip
             bytes[i++] = _EntryHeader[5];
 
 
-	    // workitem 6182 - zero out extra field length before writing
+            // workitem 6182 - zero out extra field length before writing
             Int16 extraFieldLengthSave = (short)(_EntryHeader[28] + _EntryHeader[29] * 256);
-	    _EntryHeader[28]= 0;
-	    _EntryHeader[29]= 0;
+            _EntryHeader[28] = 0;
+            _EntryHeader[29] = 0;
 
             // Version Needed, Bitfield, compression method, lastmod,
             // crc, compressed and uncompressed sizes, filename length and extra field length -
@@ -1423,28 +1442,22 @@ namespace Ionic.Utils.Zip
                 bytes[i + j] = _EntryHeader[4 + j];
 
 
-	    // workitem 6182 - restore extra field length after writing
-	    _EntryHeader[28]= (byte)(extraFieldLengthSave & 0x00FF);
-	    _EntryHeader[29]= (byte)((extraFieldLengthSave & 0xFF00) >> 8);
+            // workitem 6182 - restore extra field length after writing
+            _EntryHeader[28] = (byte)(extraFieldLengthSave & 0x00FF);
+            _EntryHeader[29] = (byte)((extraFieldLengthSave & 0xFF00) >> 8);
 
             i += j;  // positioned at next available byte
 
-            int commentLength = 0;
+
             // File (entry) Comment Length
-            if ((Comment == null) || (Comment.Length == 0))
-            {
-                // no comment!
-                bytes[i++] = (byte)0;
-                bytes[i++] = (byte)0;
-            }
-            else
-            {
-                commentLength = Comment.Length;
-                // the size of our buffer defines the max length of the comment we can write
-                if (commentLength + i > bytes.Length) commentLength = bytes.Length - i;
-                bytes[i++] = (byte)(commentLength & 0x00FF);
-                bytes[i++] = (byte)((commentLength & 0xFF00) >> 8);
-            }
+            // the _CommentBytes private field was set during WriteHeader()
+            int commentLength = (_CommentBytes == null) ? 0 : _CommentBytes.Length;
+
+            // the size of our buffer defines the max length of the comment we can write
+            if (commentLength + i > bytes.Length) commentLength = bytes.Length - i;
+            bytes[i++] = (byte)(commentLength & 0x00FF);
+            bytes[i++] = (byte)((commentLength & 0xFF00) >> 8);
+
 
             // Disk number start
             bytes[i++] = 0;
@@ -1474,16 +1487,17 @@ namespace Ionic.Utils.Zip
             i += j;
 
             // "Extra field"
-            // in this library, it is always nothing
+            // In the central directory, this library always writes nothing for 
+            // the extra field.  
 
             // file (entry) comment
             if (commentLength != 0)
             {
-                char[] c = Comment.ToCharArray();
                 // now actually write the comment itself into the byte buffer
                 for (j = 0; (j < commentLength) && (i + j < bytes.Length); j++)
                 {
-                    bytes[i + j] = System.BitConverter.GetBytes(c[j])[0];
+                    bytes[i + j] = _CommentBytes[j];
+                    //System.BitConverter.GetBytes(c[j])[0];
                 }
                 i += j;
             }
@@ -1492,7 +1506,7 @@ namespace Ionic.Utils.Zip
         }
 
 
-#if UTF8
+#if INFOZIP_UTF8
         static private bool FileNameIsUtf8(char[] FileNameChars)
         {
             bool isUTF8 = false;
@@ -1520,7 +1534,7 @@ namespace Ionic.Utils.Zip
                 // return block;
             }
 
-#if UTF8
+#if INFOZIP_UTF8
 	    if (FileNameIsUtf8(FileNameChars))
 	    {
 		_FilenameIsUtf8= true;
@@ -1565,18 +1579,19 @@ namespace Ionic.Utils.Zip
         }
 
 
-        private char[] GetFileNameCharacters()
+        private byte[] GetFileNameBytes()
         {
             // here, we need to flip the backslashes to forward-slashes, 
             // also, we need to trim the \\server\share syntax from any UNC path.
             // and finally, we need to remove any leading .\
 
             string SlashFixed = FileName.Replace("\\", "/");
+            string result = null;
             if ((TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3) &&
             (FileName[1] == ':') && (SlashFixed[2] == '/'))
             {
-                return
-                    SlashFixed.Substring(3).ToCharArray();  // trim off volume letter, colon, and slash
+                // trim off volume letter, colon, and slash
+                result = SlashFixed.Substring(3);
             }
             else if ((FileName.Length >= 4) &&
                  ((SlashFixed[0] == '/') && (SlashFixed[1] == '/')))
@@ -1587,21 +1602,25 @@ namespace Ionic.Utils.Zip
                 //System.Console.WriteLine("third slash: {0}\n", n);
                 if (n == -1)
                     throw new ArgumentException("The path for that entry appears to be badly formatted");
-                return SlashFixed.Substring(n + 1).ToCharArray();
+                result = SlashFixed.Substring(n + 1);
             }
             else if ((FileName.Length >= 3) &&
                  ((SlashFixed[0] == '.') && (SlashFixed[1] == '/')))
             {
-                return
-                    SlashFixed.Substring(2).ToCharArray();  // trim off dot and slash
+                // trim off dot and slash
+                result = SlashFixed.Substring(2);
             }
             else
             {
-                return
-                    SlashFixed.ToCharArray();
+                result = SlashFixed;
             }
 
+            
+            return (UseUtf8Encoding) ? 
+                Ionic.Utils.Zip.SharedUtilities.Utf8StringToByteArray(result) :
+                Ionic.Utils.Zip.SharedUtilities.StringToByteArray(result);
         }
+
 
         private bool WantReadAgain()
         {
@@ -1632,14 +1651,33 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)(FixedVersionNeeded & 0x00FF);
             bytes[i++] = (byte)((FixedVersionNeeded & 0xFF00) >> 8);
 
+            // get byte array including any encoding
+            byte[] FileNameBytes = GetFileNameBytes();
+            Int16 filenameLength = (Int16)FileNameBytes.Length;
+
+            _CommentBytes = null;
+            if (_Comment != null && _Comment.Length != 0)
+            {
+                _CommentBytes = (UseUtf8Encoding) ?
+                    Ionic.Utils.Zip.SharedUtilities.Utf8StringToByteArray(_Comment) :
+                 Ionic.Utils.Zip.SharedUtilities.StringToByteArray(_Comment);
+            }
+            bool setUtf8Bit= UseUtf8Encoding && (Ionic.Utils.Zip.SharedUtilities.HighBytes(_CommentBytes) ||
+                Ionic.Utils.Zip.SharedUtilities.HighBytes(FileNameBytes));
+
             // general purpose bitfield
 
-            // In the current implementation, the only thing this library
-            // potentially writes to the general purpose Bitfield is
-            // encryption indicators.
+            // In the current implementation, this library uses only these bits 
+            // in the GP bitfield:
+            //  bit 0 = if set, indicates the entry is encrypted
+            //  bit 6 = strong encryption (not implemented yet)
+            //  bit 11 = UTF-8 encoding is used in the comment and filename
+
             Int16 BitField = (Int16)((UsesEncryption) ? 1 : 0);
             if (UsesEncryption && (IsStrong(Encryption)))
-                BitField |= 0x20;
+                BitField |= 0x0020;
+
+            if (setUtf8Bit) BitField |= 0x0800;
 
             bytes[i++] = (byte)(BitField & 0x00FF);
             bytes[i++] = (byte)((BitField & 0xFF00) >> 8);
@@ -1775,19 +1813,8 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)((_UncompressedSize & 0xFF000000) >> 24);
 
             // filename length (Int16)
-            char[] FileNameCharacters = GetFileNameCharacters();
-
-            Int16 filenameLength = (Int16)FileNameCharacters.Length;
             bytes[i++] = (byte)(filenameLength & 0x00FF);
             bytes[i++] = (byte)((filenameLength & 0xFF00) >> 8);
-
-            //Int16 filenameLength = (Int16)FileName.Length;
-            //// see note elsewhere about TrimVolumeFromFullyQualifiedPaths.
-            //if ((TrimVolumeFromFullyQualifiedPaths) && (FileName[1] == ':') && (FileName[2] == '\\')) filenameLength -= 3;
-            //// apply upper bound to the length????
-            //if (filenameLength + i > bytes.Length) filenameLength = (Int16)(bytes.Length - (Int16)i);
-            //bytes[i++] = (byte)(filenameLength & 0x00FF);
-            //bytes[i++] = (byte)((filenameLength & 0xFF00) >> 8);
 
 
             byte[] extra = GetExtraField();
@@ -1812,10 +1839,11 @@ namespace Ionic.Utils.Zip
             // Replace backslashes with forward slashes in the archive
 
             // The filename written to the archive.
-            // This is where we downcast Unicode to 8-bit encoding.
             int j = 0;
-            for (j = 0; (j < FileNameCharacters.Length) && (i + j < bytes.Length); j++)
-                bytes[i + j] = System.BitConverter.GetBytes(FileNameCharacters[j])[0];
+            // the buffer is already encoded; we just copy across the bytes.
+            for (j = 0; (j < FileNameBytes.Length) && (i + j < bytes.Length); j++)
+                bytes[i + j] = FileNameBytes[j];
+
             i += j;
 
             // extra field 
@@ -1989,9 +2017,7 @@ namespace Ionic.Utils.Zip
         private Int16 _CompressionMethod;
         private string _Comment;
         private bool _IsDirectory;
-#if UTF8
-	private bool _FilenameIsUtf8;
-#endif
+        private byte[] _CommentBytes;
         private Int32 _CompressedSize;
         private Int32 _CompressedFileDataSize; // CompressedSize less 12 bytes for the encryption header, if any
         private Int32 _UncompressedSize;

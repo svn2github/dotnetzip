@@ -143,7 +143,6 @@ namespace Ionic.Utils.Zip
             int i = 0;
             ZipDirEntry zde = new ZipDirEntry();
 
-#if USELOCALS
             Int16 versionMadeBy = (short)(block[i++] + block[i++] * 256);
             Int16 versionNeeded = (short)(block[i++] + block[i++] * 256);
             Int16 bitField = (short)(block[i++] + block[i++] * 256);
@@ -153,27 +152,33 @@ namespace Ionic.Utils.Zip
             Int32 compressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
             Int32 uncompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
 
-            DateTime lastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(lastModDateTime);
-#else
-            i += 24;
+            //DateTime lastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(lastModDateTime);
+            //i += 24;
+
             Int16 filenameLength = (short)(block[i++] + block[i++] * 256);
             Int16 extraFieldLength = (short)(block[i++] + block[i++] * 256);
             Int16 commentLength = (short)(block[i++] + block[i++] * 256);
             //Int16 diskNumber = (short)(block[i++] + block[i++] * 256);
             i += 2;
-#endif
 
             zde._InternalFileAttrs = (short)(block[i++] + block[i++] * 256);
             zde._ExternalFileAttrs = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
 
-#if USELOCALS
-            Int32 Offset = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
-#else
+            //Int32 Offset = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
             //i += 4;
-#endif
+
             block = new byte[filenameLength];
             n = s.Read(block, 0, block.Length);
-            zde._FileName = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length);
+            if ((bitField & 0x0800) == 0x0800)
+            {
+                // UTF-8 is in use
+                zde._FileName = Ionic.Utils.Zip.SharedUtilities.Utf8StringFromBuffer(block, block.Length);
+            }
+            else
+            {
+                zde._FileName = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length);
+            }
+
 
             if (extraFieldLength > 0)
             {
@@ -184,7 +189,15 @@ namespace Ionic.Utils.Zip
             {
                 block = new byte[commentLength];
                 n = s.Read(block, 0, block.Length);
-                zde._Comment = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length);
+                if ((bitField & 0x0800) == 0x0800)
+                {
+                    // UTF-8 is in use
+                    zde._Comment = Ionic.Utils.Zip.SharedUtilities.Utf8StringFromBuffer(block, block.Length);
+                }
+                else
+                {
+                    zde._Comment = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length);
+                }
             }
             return zde;
         }

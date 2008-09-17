@@ -182,7 +182,7 @@ namespace Ionic.Utils.Zip
         /// </remarks>
         public void InitCipher(string passphrase)
         {
-            byte[] p = SharedUtilities.AsciiStringToByteArray(passphrase);
+            byte[] p = SharedUtilities.StringToByteArray(passphrase);
             for (int i = 0; i < passphrase.Length; i++)
                 UpdateKeys(p[i]);
         }

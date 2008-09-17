@@ -32,7 +32,9 @@ namespace Ionic.Utils.Zip.Examples
 		"            Depends on Ionic's DotNetZip library. This is version {0} of the utility.\n" +
 		"usage:\n   ZipIt.exe <ZipFileToCreate> [arguments]\n" +
 		"\narguments: \n" +
-		"  -p <password>         - apply the specified password for all succeeding files added.\n" +
+        "  -utf8                 - use UTF-8 encoding for non-ASCII characters in comments and\n" + 
+        "                          filenames. The default is to use IBM437.\n" +
+        "  -p <password>         - apply the specified password for all succeeding files added.\n" +
 		"                          use \"\" to reset the password to nil.\n" +
 		"  -c <comment>          - use the given comment for the archive or, on \n" + 
 		"  -d <path>             - use the given directory path in the archive for\n" + 
@@ -64,6 +66,9 @@ namespace Ionic.Utils.Zip.Examples
 		System.Console.Error.WriteLine("That zip file ({0}) already exists.", args[0]);
 	    }
 
+        // because the comments and filenames on zip entries may be UTF-8
+        System.Console.OutputEncoding = new System.Text.UTF8Encoding();
+
 	    try
 	    {
 		ZipEntry e=null;
@@ -86,6 +91,10 @@ namespace Ionic.Utils.Zip.Examples
 			case "-flat":
 			    entryDirectoryPathInArchive= "";
 			    break;
+
+            case "-utf8":
+                zip.UseUnicode = true;
+                break;
 
 			case "-s":
 			    i++;

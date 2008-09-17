@@ -144,6 +144,89 @@ namespace Ionic.Utils.Zip
             set { _CaseSensitiveRetrieval = value; }
         }
 
+
+        /// <summary>
+        /// Indicates whether to encode entry filenames and entry comments using Unicode 
+        /// (UTF-8) according to the PKWare specification, for those filenames and comments
+        /// that cannot be encoded in the ASCII character set.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// By default, this flag is false, and filenames and comments are encoded 
+        /// in the IBM437 codepage. Setting this flag to true will specify that
+        /// filenames and comments are encoded with UTF-8, in adherence with 
+        /// the PKWare zip specification. 
+        /// </para>
+        /// <para>
+        /// Zip files created with strict adherence to the PKWare specification
+        /// with respect to UTF-8 encoding can contain entries with filenames containing
+        /// any combination of UTF-8 characters, including the full 
+        /// range of characters from Chinese, Latin, Hebrew, Greek, Cyrillic, and many 
+        /// other alphabets. 
+        /// However, because the UTF-8 portion of the PKWare specification is not broadly
+        /// supported by other zip libraries and utilities, such zip files may not
+        /// be readable by your favorite zip tool. In other words, interoperability
+        /// will suffer if you set this flag to true. 
+        /// </para>
+        /// <para>
+        /// In particular, Zip files created with strict adherence to the PKWare 
+        /// specification with respect to UTF-8 encoding will not work well with 
+        /// Explorer in Windows XP or Windows Vista, because Vista compressed folders 
+        /// do not support UTF-8 in zip files.  Vista can read the zip files, but shows
+        /// the filenames incorrectly.  Unpacking from Vista will result in filenames
+        /// that have rubbish characters in place of the high-order UTF-8 bytes.
+        /// </para>
+        /// <para>
+        /// Also, zip files that use UTF-8 encoding will not work well 
+        /// with Java applications that use the java.util.zip classes, as of 
+        /// v5.0 of the Java runtime. 
+        /// </para>
+        /// <para>
+        /// As a result, we have the curious situation that "correct" 
+        /// behavior by the DotNetZip library during zip creation will result 
+        /// in zip files that are not correctly read by various other tools.
+        /// </para>
+        /// <para>
+        /// The DotNetZip library can correctly read and write zip files 
+        /// with UTF-8 according to the PKware spec.  If you use DotNetZip for both 
+        /// creating and reading the zip file, there will be no loss of information 
+        /// in the filenames.  For example, using a self-extractor created by this
+        /// library will allow you to unpack files correctly with no loss of 
+        /// information in the filenames. 
+        /// </para>
+        /// <para>
+        /// Encoding filenames and comments using the IBM437 codepage, the default
+        /// behavior, will cause loss of information on some filenames, but will
+        /// be more interoperable with other utilities. As an example of the 
+        /// loss of information, the o-tilde character will be down-coded to plain o. 
+        /// Likewise, the O with a stroke through it, used in Danish and Norwegian,
+        /// will be down-coded to plain o. Chinese characters cannot be represented
+        /// in codepage IBM437; when using the default encoding, Chinese characters in 
+        /// filenames will be represented as ?.  
+        /// </para>
+        /// <para>
+        /// The loss of information associated to the use of the IBM437 encoding can 
+        /// lead to runtime errors. For example, using 
+        /// IBM437, any sequence of 4 Chinese characters will be encoded as 
+        /// ????.  If your application creates a ZipFile, then adds two files, each with 
+        /// names of four Chinese characters each, this will result in a duplicate 
+        /// filename exception.  In the case where you add a single file with a name 
+        /// containing four Chinese characters, attempting to unzip the file to the Windows
+        /// filesystem will lead to an exception, because ? is not a legal character in a filename.         
+        /// These are just a few examples of the problems associated to loss of information.
+        /// </para>
+        /// <para>
+        /// This flag has no effect or relation to the encoding of the content of 
+        /// entries in the zip file.  
+        /// </para>
+        /// </remarks>
+        public bool UseUnicode
+        {
+            get ; 
+            set ; 
+        }
+
+
         /// <summary>
         /// Gets or sets the <c>TextWriter</c> to which status messages are delivered 
         /// for the instance. If the TextWriter is set to a non-null value, then 
@@ -1183,6 +1266,7 @@ namespace Ionic.Utils.Zip
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
             ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
+            ze.UseUtf8Encoding = UseUnicode;
             ze._Source = EntrySource.Filesystem;
             ze.Password = _Password;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
