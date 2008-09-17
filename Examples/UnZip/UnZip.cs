@@ -62,7 +62,7 @@ namespace Ionic.Utils.Zip.Examples
             System.IO.Stream outstream = null;
 
             // because the comments and filenames on zip entries may be UTF-8
-            System.Console.OutputEncoding = new System.Text.UTF8Encoding();
+            //System.Console.OutputEncoding = new System.Text.UTF8Encoding();
 
             if (args.Length == 0) Usage();
             if (args[0] == "-")

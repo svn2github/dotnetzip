@@ -67,7 +67,7 @@ namespace Ionic.Utils.Zip.Examples
 	    }
 
         // because the comments and filenames on zip entries may be UTF-8
-        System.Console.OutputEncoding = new System.Text.UTF8Encoding();
+	    // System.Console.OutputEncoding = new System.Text.UTF8Encoding();
 
 	    try
 	    {
