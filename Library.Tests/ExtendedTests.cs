@@ -189,7 +189,6 @@ namespace Ionic.Utils.Zip.Tests.Extended
         }
 
 
-
         [TestMethod]
         public void Save_DoubleReadCallback()
         {

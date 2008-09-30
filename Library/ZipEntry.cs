@@ -142,7 +142,7 @@ namespace Ionic.Utils.Zip
             set
             {
                 _LastModified = value;
-                SetLastModDateTimeWithAdjustment(this);
+                //SetLastModDateTimeWithAdjustment(this);
             }
         }
 
@@ -506,14 +506,6 @@ namespace Ionic.Utils.Zip
         }
 
 
-        //         internal byte[] Header
-        //         {
-        //             get
-        //             {
-        //                 return _EntryHeader;
-        //             }
-        //         }
-
 
         private static bool ReadHeader(ZipEntry ze)
         {
@@ -552,7 +544,10 @@ namespace Ionic.Utils.Zip
             ze._VersionNeeded = (short)(block[i++] + block[i++] * 256);
             ze._BitField = (short)(block[i++] + block[i++] * 256);
             ze._CompressionMethod = (short)(block[i++] + block[i++] * 256);
-            ze._LastModDateTime = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+            int timeBlob = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+            // transform the time data into something usable (a DateTime)
+            ze._LastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(timeBlob);
+
 
             // The PKZIP spec says that if bit 3 is set (0x0008) in the General Purpose BitField, then the CRC,
             // Compressed size, and uncompressed size come directly after the file data.  The only way to find
@@ -587,7 +582,6 @@ namespace Ionic.Utils.Zip
             else
             {
                 ze._FileNameInArchive = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length);
-
             }
 
             // when creating an entry by reading, the LocalFileName is the same as the FileNameInArchivre
@@ -599,10 +593,6 @@ namespace Ionic.Utils.Zip
                 n = ze._s.Read(ze._Extra, 0, ze._Extra.Length);
                 bytesRead += n;
             }
-
-            // transform the time data into something usable
-            ze._LastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(ze._LastModDateTime);
-            SetLastModifiedWithAdjustment(ze);
 
             // actually get the compressed size and CRC if necessary
             if ((ze._BitField & 0x0008) == 0x0008)
@@ -805,15 +795,12 @@ namespace Ionic.Utils.Zip
             {
                 entry._LastModified = (System.IO.File.Exists(filename) || System.IO.Directory.Exists(filename)) ?
                 SharedUtilities.RoundToEvenSecond(System.IO.File.GetLastWriteTime(filename))
-                : 
+                :
                 DateTime.Now;
             }
 
             entry._LocalFileName = filename; // may include a path
-            //entry._FileNameInArchive = NameInArchive(filename, directoryPathInArchive);
             entry._FileNameInArchive = nameInArchive;
-
-            SetLastModDateTimeWithAdjustment(entry);
 
             // we don't actually slurp in the file until the caller invokes Write on this entry.
 
@@ -821,75 +808,6 @@ namespace Ionic.Utils.Zip
         }
 
 
-
-        private static void SetLastModifiedWithAdjustment(ZipEntry e)
-        {
-            // We may have to adjust the last modified time to compensate
-            // for differences in how the .NET Base Class Library deals
-            // with daylight saving time (DST) versus how the Windows
-            // filesystem deals with daylight saving time. See 
-            // http://blogs.msdn.com/oldnewthing/archive/2003/10/24/55413.aspx for some context. 
-
-            // in a nutshell: Daylight savings time rules change regularly.  In
-            // 2007, for example, the inception week of DST changed.  In 1977,
-            // DST was in place all year round. in 1945, likewise.  And so on.
-            // Win32 does not attempt to guess which time zone rules were in
-            // effect at the time in question.  It will render a time as
-            // "standard time" and allow the app to change to DST as necessary.
-            //  .NET makes a different choice.
-
-            // -------------------------------------------------------
-            // Compare the output of FileInfo.LastWriteTime.ToString("f") with
-            // what you see in the property sheet for a file that was last
-            // written to on the other side of the DST transition. For example,
-            // suppose the file was last modified on October 17, during DST but
-            // DST is not currently in effect. Explorer's file properties
-            // reports Thursday, October 17, 2003, 8:45:38 AM, but .NETs
-            // FileInfo reports Thursday, October 17, 2003, 9:45 AM.
-
-            // Win32 says, "Thursday, October 17, 2002 8:45:38 AM PST". Note:
-            // Pacific STANDARD Time. Even though October 17 of that year
-            // occurred during Pacific Daylight Time, Win32 displays the time as
-            // standard time because that's what time it is NOW.
-
-            // .NET BCL assumes that the current DST rules were in place at the
-            // time in question.  So, .NET says, "Well, if the rules in effect
-            // now were also in effect on October 17, 2003, then that would be
-            // daylight time" so it displays "Thursday, October 17, 2003, 9:45
-            // AM PDT" - daylight time.
-
-            // So .NET gives a value which is more intuitively correct, but is
-            // also potentially incorrect, and which is not invertible. Win32
-            // gives a value which is intuitively incorrect, but is strictly
-            // correct.
-            // -------------------------------------------------------
-
-            // With this adjustment, I add one hour to the tweaked .NET time, if
-            // necessary.  That is to say, if the time in question had occurred
-            // in what the .NET BCL assumed to be DST (an assumption that may be
-            // wrong given the constantly changing DST rules).
-
-            // We make this adjustment only upon reading the zip file.
-            // we make the converse adjustment when writing the zip file. 
-
-            if (e.LastModified.IsDaylightSavingTime())
-            {
-                e.LastModified += new System.TimeSpan(1, 0, 0);
-            }
-        }
-
-        private static void SetLastModDateTimeWithAdjustment(ZipEntry entry)
-        {
-            // Adjust the time if the .NET BCL thinks it is in DST.  
-            // see the note elsewhere in this file for more info. 
-            if (entry._LastModified.IsDaylightSavingTime())
-            {
-                System.DateTime AdjustedTime = entry._LastModified - new System.TimeSpan(1, 0, 0);
-                entry._LastModDateTime = Ionic.Utils.Zip.SharedUtilities.DateTimeToPacked(AdjustedTime);
-            }
-            else
-                entry._LastModDateTime = Ionic.Utils.Zip.SharedUtilities.DateTimeToPacked(entry._LastModified);
-        }
 
 
         #region Extract methods
@@ -1277,7 +1195,11 @@ namespace Ionic.Utils.Zip
                 output.Close();
                 //output.Dispose();
 
-                System.IO.File.SetLastWriteTime(TargetFile, LastModified);
+                // workitem 6191
+                DateTime AdjustedLastModified = (LastModified.IsDaylightSavingTime()) ?
+                LastModified : LastModified - new System.TimeSpan(1, 0, 0);
+
+                System.IO.File.SetLastWriteTime(TargetFile, AdjustedLastModified);
             }
         }
 
@@ -1624,8 +1546,8 @@ namespace Ionic.Utils.Zip
                 result = SlashFixed;
             }
 
-            
-            return (UseUtf8Encoding) ? 
+
+            return (UseUtf8Encoding) ?
                 Ionic.Utils.Zip.SharedUtilities.Utf8StringToByteArray(result) :
                 Ionic.Utils.Zip.SharedUtilities.StringToByteArray(result);
         }
@@ -1671,7 +1593,7 @@ namespace Ionic.Utils.Zip
                     Ionic.Utils.Zip.SharedUtilities.Utf8StringToByteArray(_Comment) :
                  Ionic.Utils.Zip.SharedUtilities.StringToByteArray(_Comment);
             }
-            bool setUtf8Bit= UseUtf8Encoding && (Ionic.Utils.Zip.SharedUtilities.HighBytes(_CommentBytes) ||
+            bool setUtf8Bit = UseUtf8Encoding && (Ionic.Utils.Zip.SharedUtilities.HighBytes(_CommentBytes) ||
                 Ionic.Utils.Zip.SharedUtilities.HighBytes(FileNameBytes));
 
             // general purpose bitfield
@@ -1794,10 +1716,12 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)((CompressionMethod & 0xFF00) >> 8);
 
             // LastMod
-            bytes[i++] = (byte)(_LastModDateTime & 0x000000FF);
-            bytes[i++] = (byte)((_LastModDateTime & 0x0000FF00) >> 8);
-            bytes[i++] = (byte)((_LastModDateTime & 0x00FF0000) >> 16);
-            bytes[i++] = (byte)((_LastModDateTime & 0xFF000000) >> 24);
+            int timeBlob = Ionic.Utils.Zip.SharedUtilities.DateTimeToPacked(LastModified);
+
+            bytes[i++] = (byte)(timeBlob & 0x000000FF);
+            bytes[i++] = (byte)((timeBlob & 0x0000FF00) >> 8);
+            bytes[i++] = (byte)((timeBlob & 0x00FF0000) >> 16);
+            bytes[i++] = (byte)((timeBlob & 0xFF000000) >> 24);
 
             // CRC - calculated above
             bytes[i++] = (byte)(_Crc32 & 0x000000FF);
@@ -2030,7 +1954,7 @@ namespace Ionic.Utils.Zip
         private Int32 _CompressedSize;
         private Int32 _CompressedFileDataSize; // CompressedSize less 12 bytes for the encryption header, if any
         private Int32 _UncompressedSize;
-        private Int32 _LastModDateTime;
+        //private Int32 _LastModDateTime;
         private Int32 _Crc32;
         private byte[] _Extra;
         private bool _OverwriteOnExtract;

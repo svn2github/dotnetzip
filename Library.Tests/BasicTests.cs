@@ -1174,26 +1174,6 @@ namespace Ionic.Utils.Zip.Tests.Basic
         public void CreateZip_VerifyFileLastModified()
         {
 
-            //  Remove all this crap
-            //            int i;
-            //             string[] Times = {
-            // "5/17/2008 11:08:38 PM",
-            // "5/17/2008 11:08:37 PM",
-            // "5/17/2008 11:08:06 PM",
-            // "5/17/2008 11:08:05 PM",
-            //                             };
-
-            //             // test reflexivity
-            //             for (i = 0; i < Times.Length; i++)
-            //             {
-            //                 System.DateTime dt1 = System.DateTime.Parse(Times[i]);
-            //                 Int32 packedTime = Ionic.Utils.Zip.Shared.DateTimeToPacked(Shared.RoundToEvenSecond(dt1));
-            //                 System.DateTime dt2=  Ionic.Utils.Zip.Shared.PackedToDateTime(packedTime);
-            //                 Console.WriteLine("Time: string({0})  parsed({1}) msdos-ized({2})", Times[i], dt1.ToString("R"), dt2.ToString("R"));
-            //             }
-            //             Console.WriteLine();
-
-
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_VerifyFileLastModified.zip");
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
@@ -1202,7 +1182,8 @@ namespace Ionic.Utils.Zip.Tests.Basic
             var timestamps = new Dictionary<string, DateTime>();
             var ActualFilenames = new List<string>();
             var ExcludedFilenames = new List<string>();
-            int maxFiles = 5; // _rnd.Next(12) + 10;
+            
+            int maxFiles = _rnd.Next(12) + 14;
             do
             {
                 string filename = null;
@@ -1211,7 +1192,15 @@ namespace Ionic.Utils.Zip.Tests.Basic
                 {
                     filename = PotentialFilenames[_rnd.Next(PotentialFilenames.Length)];
                     if (ExcludedFilenames.Contains(filename)) continue;
-                    if ((System.IO.Path.GetFileName(filename)[0] == '~') || (ActualFilenames.Contains(filename)))
+                    if (System.IO.Path.GetFileName(filename)[0] == '~'
+                            || ActualFilenames.Contains(filename)
+                            // there are some weird files on my system that cause this test to fail!
+                            // the GetLastWrite() method returns the "wrong" time - does not agree with
+                            // what is shown in Explorer or in a cmd.exe dir output.  So I exclude those 
+                            // files here.
+                            || filename.EndsWith(".cer")
+                            || filename == "MSCERTS.ini"
+                        )
                     {
                         ExcludedFilenames.Add(filename);
                     }
@@ -1226,12 +1215,16 @@ namespace Ionic.Utils.Zip.Tests.Basic
                 // surround this in a try...catch so as to avoid zipping up files open by someone else
                 try
                 {
-                    var tm = TestUtilities.RoundToEvenSecond(System.IO.File.GetLastWriteTime(filename));
+                    var lastWrite = System.IO.File.GetLastWriteTime(filename);
+                    var tm = TestUtilities.RoundToEvenSecond(lastWrite);
                     // hop out of the try block if the file is from TODAY.  (heuristic to avoid currently open files)
                     if ((tm.Year == DateTime.Now.Year) && (tm.Month == DateTime.Now.Month) && (tm.Day == DateTime.Now.Day))
                         throw new Exception();
                     var chk = TestUtilities.ComputeChecksum(filename);
                     checksums.Add(key, chk);
+                    TestContext.WriteLine("file '{0}'", filename);
+                    TestContext.WriteLine("          lastWrite: {0}", lastWrite.ToString("yyyy MMM dd HH:mm:ss"));
+                    TestContext.WriteLine("          rounded:   {0}", tm.ToString("yyyy MMM dd HH:mm:ss"));
                     timestamps.Add(key, tm);
                     ActualFilenames.Add(filename);
                 }
@@ -1247,7 +1240,10 @@ namespace Ionic.Utils.Zip.Tests.Basic
             using (ZipFile zip = new ZipFile(ZipFileToCreate))
             {
                 foreach (string s in ActualFilenames)
-                    zip.AddFile(s, "");
+                {
+                    ZipEntry e = zip.AddFile(s, "");
+                    e.Comment = System.IO.File.GetLastWriteTime(s).ToString("yyyyMMMdd HH:mm:ss");
+                }
                 zip.Comment = "The files in this archive will be checked for LastMod timestamp and checksum.";
                 zip.Save();
             }
@@ -1265,7 +1261,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
                     DateTime ActualFilesystemLastMod = System.IO.File.GetLastWriteTime(PathToExtractedFile);
                     Assert.AreEqual<DateTime>(timestamps[e.FileName], ActualFilesystemLastMod,
                         "Unexpected timestamp on extracted filesystem file ({0}).", PathToExtractedFile);
-
+                    
                     // verify the checksum of the file is correct
                     string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
                     string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
