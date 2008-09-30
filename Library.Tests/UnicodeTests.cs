@@ -126,7 +126,7 @@ namespace Ionic.Utils.Zip.Tests.Unicode
                     }
 
                     // Verify the number of files in the zip
-                    Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, FilesToZip.Length),
+                    Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), FilesToZip.Length,
                             "Incorrect number of entries in the zip file.");
 
                     i = 0;
@@ -204,7 +204,7 @@ namespace Ionic.Utils.Zip.Tests.Unicode
                 }
 
                 // Verify the number of files in the zip
-                Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, FilesToZip.Length),
+                Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), FilesToZip.Length,
                         "Incorrect number of entries in the zip file.");
 
                 i = 0;

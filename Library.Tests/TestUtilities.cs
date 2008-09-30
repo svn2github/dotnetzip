@@ -209,7 +209,7 @@ namespace Library.TestUtilities
             return candidate;
         }
 
-        internal static bool CheckZip(string zipfile, int fileCount)
+        internal static int CountEntries(string zipfile)
         {
             int entries = 0;
             using (ZipFile zip = ZipFile.Read(zipfile))
@@ -217,7 +217,7 @@ namespace Library.TestUtilities
                 foreach (ZipEntry e in zip)
                     if (!e.IsDirectory) entries++;
             }
-            return (entries == fileCount);
+            return entries;
         }
 
 

@@ -109,6 +109,35 @@ namespace Ionic.Utils.Zip.Tests.Error
             }
         }
 
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Utils.Zip.ZipException))]
+        public void CreateZip_AddDirectory_BlankName()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_AddDirectory_BlankName.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                zip.AddDirectoryByName("");
+                zip.Save();
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Utils.Zip.ZipException))]
+        public void CreateZip_AddFileFromString_BlankName()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_AddFileFromString_BlankName.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                zip.AddFileFromString("", "foo", "This is the content.");
+                zip.Save();
+            }
+        }
+
+
+
         [TestMethod]
         [ExpectedException(typeof(System.IO.IOException))]
         public void Error_Extract_ExistingFileWithoutOverwrite()
@@ -139,8 +168,8 @@ namespace Ionic.Utils.Zip.Tests.Error
                 zip.Save();
             }
 
-            Assert.IsTrue(TestUtilities.CheckZip(ZipFileToCreate, filenames.Length),
-                "Zip file created seems to be invalid.");
+            Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), filenames.Length,
+                "The zip file created has the wrong number of entries.");
 
             // extract the first time - this should succeed
             using (ZipFile zip = new ZipFile(ZipFileToCreate))

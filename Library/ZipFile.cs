@@ -222,8 +222,8 @@ namespace Ionic.Utils.Zip
         /// </remarks>
         public bool UseUnicode
         {
-            get ; 
-            set ; 
+            get;
+            set;
         }
 
 
@@ -1262,7 +1262,8 @@ namespace Ionic.Utils.Zip
         /// <returns>The ZipEntry corresponding to the file added.</returns>
         public ZipEntry AddFile(string fileName, String directoryPathInArchive)
         {
-            ZipEntry ze = ZipEntry.Create(fileName, directoryPathInArchive);
+            string nameInArchive = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
+            ZipEntry ze = ZipEntry.Create(fileName, nameInArchive);
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
             ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
@@ -1457,10 +1458,11 @@ namespace Ionic.Utils.Zip
         public void UpdateDirectory(string directoryName, String directoryPathInArchive)
         {
             // ideally this would be transactional!
-            var key = ZipEntry.NameInArchive(directoryName, directoryPathInArchive);
-            if (this[key] != null)
-                this.RemoveEntry(key);
-            //this.AddDirectory(DirectoryName, DirectoryPathInArchive);
+            //xxx
+            //var key = ZipEntry.NameInArchive(directoryName, directoryPathInArchive);
+            //if (this[key] != null)
+            //    this.RemoveEntry(key);
+            ////this.AddDirectory(DirectoryName, DirectoryPathInArchive);
             this.AddOrUpdateDirectoryImpl(directoryName, directoryPathInArchive, AddOrUpdateAction.AddOrUpdate);
         }
 
@@ -1550,7 +1552,8 @@ namespace Ionic.Utils.Zip
         /// <returns>The ZipEntry added.</returns>
         public ZipEntry AddFileStream(string fileName, string directoryPathInArchive, System.IO.Stream stream)
         {
-            ZipEntry ze = ZipEntry.Create(fileName, directoryPathInArchive, stream);
+            string n = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
+            ZipEntry ze = ZipEntry.Create(fileName, n, stream);
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.Password = _Password;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
@@ -1638,14 +1641,21 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// Adds a Directory to a Zip file archive. 
+        /// Adds the contents of a filesystem directory to a Zip file archive. 
         /// </summary>
         /// 
         /// <remarks>
+        /// <para>
         /// The name of the directory may be 
-        /// a relative path or a fully-qualified path. The add operation is recursive,
-        /// so that any files or subdirectories within the name directory are also
-        /// added to the archive.
+        /// a relative path or a fully-qualified path. Any files within the named 
+        /// directory are added to the archive.  Any subdirectories within the named
+        /// directory are also added to the archive, recursively. 
+        /// </para>
+        /// <para>
+        /// Top-level entries in the named directory will appear as top-level 
+        /// entries in the zip archive.  Entries in subdirectories in the named 
+        /// directory will result in entries in subdirectories in the zip archive.
+        /// </para>
         /// </remarks>
         /// 
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.AddItem(string)"/>
@@ -1662,15 +1672,17 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
-        /// Adds a Directory to a Zip file archive, overriding the path to be 
-        /// used in the archive. 
+        /// Adds the contents of a filesystem directory to a Zip file archive, 
+        /// overriding the path to be used for entries in the archive. 
         /// </summary>
         /// 
         /// <remarks>
+        /// <para>
         /// The name of the directory may be 
         /// a relative path or a fully-qualified path. The add operation is recursive,
         /// so that any files or subdirectories within the name directory are also
         /// added to the archive.
+        /// </para>
         /// </remarks>
         /// 
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.AddItem(string, string)"/>
@@ -1683,8 +1695,8 @@ namespace Ionic.Utils.Zip
         /// Specifies a directory path to use to override any path in the DirectoryName.
         /// This path may, or may not, correspond to a real directory in the current filesystem.
         /// If the zip is later extracted, this is the path used for the extracted file or directory. 
-        /// Passing null (nothing in VB) will use the path on the DirectoryName. Passing the empty string ("")
-        /// will insert the item at the root path within the archive. 
+        /// Passing null (nothing in VB) or the empty string ("")
+        /// will insert the items at the root path within the archive. 
         /// </param>
         /// 
         public void AddDirectory(string directoryName, string directoryPathInArchive)
@@ -1704,7 +1716,7 @@ namespace Ionic.Utils.Zip
         public ZipEntry AddDirectoryByName(string directoryNameInArchive)
         {
             // add the directory itself.
-            ZipEntry baseDir = ZipEntry.Create(directoryNameInArchive, null);
+            ZipEntry baseDir = ZipEntry.Create(directoryNameInArchive, directoryNameInArchive);
             baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             baseDir._Source = EntrySource.Filesystem;
             baseDir.MarkAsDirectory();
@@ -1716,50 +1728,86 @@ namespace Ionic.Utils.Zip
 
 
 
-        private void AddOrUpdateDirectoryImpl(string directoryName, string directoryPathInArchive, AddOrUpdateAction action)
+        private void AddOrUpdateDirectoryImpl(string directoryName, string rootDirectoryPathInArchive, AddOrUpdateAction action)
+        {
+            if (rootDirectoryPathInArchive == null)
+            {
+                rootDirectoryPathInArchive = "";
+                //System.IO.Path.GetDirectoryName(SharedUtilities.TrimVolumeAndSwapSlashes(directoryName));
+                //SharedUtilities.TrimVolumeAndSwapSlashes(directoryName);
+            }
+
+            AddOrUpdateDirectoryImpl(directoryName, rootDirectoryPathInArchive, action, 0);
+        }
+
+
+
+        private void AddOrUpdateDirectoryImpl(string directoryName, string rootDirectoryPathInArchive, AddOrUpdateAction action, int level)
         {
             if (Verbose) StatusMessageTextWriter.WriteLine("{0} {1}...",
                                (action == AddOrUpdateAction.AddOnly) ? "adding" : "Adding or updating", directoryName);
 
-            String[] filenames = System.IO.Directory.GetFiles(directoryName);
+            string dirForEntries = rootDirectoryPathInArchive;
 
-            // add the directory itself.
-            ZipEntry baseDir = ZipEntry.Create(directoryName, directoryPathInArchive);
-            baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
-            baseDir._Source = EntrySource.Filesystem;
-            baseDir.MarkAsDirectory();
-            if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", directoryName);
-
-            if (action == AddOrUpdateAction.AddOnly)
-                InsureUniqueEntry(baseDir);
-            else
+            if (level > 0)
             {
-                ZipEntry e = this[baseDir.FileName];
-                if (e != null)
-                    RemoveEntry(e);
-            }
-            _entries.Add(baseDir);
-            _contentsChanged = true;
+                int f = directoryName.Length;
+                for (int i = level; i > 0; i--)
+                    f = directoryName.LastIndexOfAny("/\\".ToCharArray(), f - 1, f - 1);
 
+                dirForEntries = directoryName.Substring(f + 1);
+                dirForEntries = System.IO.Path.Combine(rootDirectoryPathInArchive, dirForEntries);
+            }
+
+            // if not top level, or if the root is non-empty, then explicitly add the directory
+            if (level > 0 || rootDirectoryPathInArchive != "")
+            {
+                ZipEntry baseDir = ZipEntry.Create(directoryName, dirForEntries);
+                baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
+                baseDir._Source = EntrySource.Filesystem;
+                baseDir.MarkAsDirectory();
+
+                // Previously, we used to test for the existence of the directory and 
+                // throw if it exists.  But that seems silly. We will still throw 
+                // if a file exists and the action is AddOnly.  But for a directory, 
+                // it does not matter if it already exists.  So no throw. 
+
+                //if (action == AddOrUpdateAction.AddOnly)
+                //    InsureUniqueEntry(baseDir);
+                //else
+                //{
+                //    // For updates, remove the old entry before adding the new. 
+                //    ZipEntry e = this[baseDir.FileName];
+                //    if (e != null)
+                //        RemoveEntry(e);
+                //}
+
+
+                ZipEntry e = this[baseDir.FileName];
+                if (e == null)
+                {
+                    _entries.Add(baseDir);
+                    _contentsChanged = true;
+                }
+                dirForEntries = baseDir.FileName;
+            }
+
+            String[] filenames = System.IO.Directory.GetFiles(directoryName);
 
             // add the files: 
             foreach (String filename in filenames)
             {
                 if (action == AddOrUpdateAction.AddOnly)
-                    AddFile(filename, baseDir.FileName);
+                    AddFile(filename, dirForEntries);
                 else
-                    UpdateFile(filename, baseDir.FileName);
+                    UpdateFile(filename, dirForEntries);
             }
 
             // add the subdirectories:
             String[] dirnames = System.IO.Directory.GetDirectories(directoryName);
             foreach (String dir in dirnames)
             {
-                // add directory dir, rooted at baseDir.FileName 
-                if (action == AddOrUpdateAction.AddOnly)
-                    AddDirectory(dir, baseDir.FileName);
-                else
-                    UpdateDirectory(dir, baseDir.FileName);
+                AddOrUpdateDirectoryImpl(dir, rootDirectoryPathInArchive, action, level + 1);
             }
             _contentsChanged = true;
         }
@@ -2589,16 +2637,16 @@ namespace Ionic.Utils.Zip
             catch (Exception e1)
             {
                 if (zf._ReadStreamIsOurs && zf._readstream != null)
+                {
+                    try
                     {
-                        try
-                        {
-                            zf._readstream.Close();
-                            zf._readstream.Dispose();
-                            zf._readstream = null;
-                        }
-                        finally { }
+                        zf._readstream.Close();
+                        zf._readstream.Dispose();
+                        zf._readstream = null;
                     }
-                
+                    finally { }
+                }
+
                 throw e1;
             }
         }

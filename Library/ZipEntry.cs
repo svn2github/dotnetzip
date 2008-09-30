@@ -752,9 +752,9 @@ namespace Ionic.Utils.Zip
         //    return ZipEntry.Create(filename, null);
         //}
 
-        internal static ZipEntry Create(String filename, string directoryPathInArchive)
+        internal static ZipEntry Create(String filename, string nameInArchive)
         {
-            return Create(filename, directoryPathInArchive, null);
+            return Create(filename, nameInArchive, null);
         }
 
 
@@ -789,8 +789,11 @@ namespace Ionic.Utils.Zip
         //Daniel Bedarf
         private bool _isStream;
         private System.IO.Stream _inputStream;
-        internal static ZipEntry Create(String filename, string directoryPathInArchive, System.IO.Stream stream)
+        internal static ZipEntry Create(String filename, string nameInArchive, System.IO.Stream stream)
         {
+            if (String.IsNullOrEmpty(filename))
+                throw new Ionic.Utils.Zip.ZipException("The entry name must be non-null and non-empty.");
+
             ZipEntry entry = new ZipEntry();
             if (stream != null)
             {
@@ -799,10 +802,16 @@ namespace Ionic.Utils.Zip
                 entry._LastModified = DateTime.Now;
             }
             else
-                entry._LastModified = SharedUtilities.RoundToEvenSecond(System.IO.File.GetLastWriteTime(filename));
+            {
+                entry._LastModified = (System.IO.File.Exists(filename) || System.IO.Directory.Exists(filename)) ?
+                SharedUtilities.RoundToEvenSecond(System.IO.File.GetLastWriteTime(filename))
+                : 
+                DateTime.Now;
+            }
 
             entry._LocalFileName = filename; // may include a path
-            entry._FileNameInArchive = NameInArchive(filename, directoryPathInArchive);
+            //entry._FileNameInArchive = NameInArchive(filename, directoryPathInArchive);
+            entry._FileNameInArchive = nameInArchive;
 
             SetLastModDateTimeWithAdjustment(entry);
 
