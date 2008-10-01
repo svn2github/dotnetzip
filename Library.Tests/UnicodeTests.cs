@@ -106,12 +106,14 @@ namespace Ionic.Utils.Zip.Tests.Unicode
 
                 System.IO.Directory.SetCurrentDirectory(Subdir);
 
-                // create a zipfile twice
+                // create a zipfile twice, once using Unicode, once without
                 for (int j = 0; j < 2; j++)
                 {
                     // select the name of the zip file
                     string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("Create_UnicodeEntries_{0}_{1}.zip", k, j));
                     Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The zip file '{0}' already exists.", ZipFileToCreate);
+
+                    TestContext.WriteLine("\n\nFormat {0}, trial {1}.  filename: {2}...", k, j, ZipFileToCreate);
 
                     using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
                     {
@@ -120,6 +122,7 @@ namespace Ionic.Utils.Zip.Tests.Unicode
                         {
                             // use the local filename (not fully qualified)
                             ZipEntry e = zip1.AddFile(System.IO.Path.GetFileName(FilesToZip[i]));
+                            e.Comment = (j == 0) ? "This entry encoded with unicode" : "This entry encoded with the default code page.";
                         }
                         zip1.Comment = OrigComment;
                         zip1.Save();
@@ -131,7 +134,7 @@ namespace Ionic.Utils.Zip.Tests.Unicode
 
                     i = 0;
                     // verify the filenames are (or are not) unicode
-                    using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+                    using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate, (j == 0) ? System.Text.Encoding.UTF8 : ZipFile.DefaultEncoding))
                     {
                         foreach (ZipEntry e in zip2)
                         {
@@ -229,6 +232,98 @@ namespace Ionic.Utils.Zip.Tests.Unicode
             }
         }
 
+
+        struct CodepageTrial
+        {
+            public string codepage;
+            public string filenameFormat;
+            public bool exceptionExpected; // not all codepages will yield legal filenames for a given filenameFormat
+            public CodepageTrial(string cp, string format, bool except)
+            {
+                codepage = cp;
+                filenameFormat = format;
+                exceptionExpected = except; 
+            }
+        }
+
+        [TestMethod]
+        public void Create_WithSpecifiedCodepage()
+        {
+            int i;
+            CodepageTrial[] trials = {
+                                     new CodepageTrial( "big5",   "弹出应用程序{0:D3}.bin", true),
+                                     new CodepageTrial ("big5",   "您好{0:D3}.bin",         false),
+                                     new CodepageTrial ("gb2312", "弹出应用程序{0:D3}.bin", false),
+                                     new CodepageTrial ("gb2312", "您好{0:D3}.bin",         false),
+                                     // insert other languages here.??
+                                     };
+
+            for (int k = 0; k < trials.Length; k++)
+            {
+                TestContext.WriteLine("\n---------------------Trial {0}....", k);
+                TestContext.WriteLine("\n---------------------codepage: {0}....", trials[k].codepage);
+                // create the subdirectory
+                string Subdir = System.IO.Path.Combine(TopLevelDir, String.Format("trial{0}-files", k));
+                System.IO.Directory.CreateDirectory(Subdir);
+
+                // create a bunch of files
+                int NumFilesToCreate = _rnd.Next(3) + 3;
+                string[] FilesToZip = new string[NumFilesToCreate];
+                for (i = 0; i < NumFilesToCreate; i++)
+                {
+                    FilesToZip[i] = System.IO.Path.Combine(Subdir, String.Format(trials[k].filenameFormat, i));
+                    TestUtilities.CreateAndFillFileBinary(FilesToZip[i], _rnd.Next(5000) + 2000);
+                }
+
+                System.IO.Directory.SetCurrentDirectory(Subdir);
+
+                // select the name of the zip file
+                string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("Create_WithSpecifiedCodepage_{0}_{1}.zip", k, trials[k].codepage));
+                Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The zip file '{0}' already exists.", ZipFileToCreate);
+
+                TestContext.WriteLine("\n---------------------Creating zip....");
+
+                using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
+                {
+                    zip1.Encoding = System.Text.Encoding.GetEncoding(trials[k].codepage);
+                    for (i = 0; i < FilesToZip.Length; i++)
+                    {
+                        TestContext.WriteLine("adding entry {0}", FilesToZip[i]);
+                        // use the local filename (not fully qualified)
+                        ZipEntry e = zip1.AddFile(System.IO.Path.GetFileName(FilesToZip[i]));
+                        e.Comment = String.Format("This entry was encoded in the {0} codepage", trials[k].codepage);
+                    }
+                    zip1.Save();
+                }
+
+                TestContext.WriteLine("\n---------------------Extracting....");
+                System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+                try
+                {
+
+                    // verify the filenames are (or are not) unicode
+                    using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate, System.Text.Encoding.GetEncoding(trials[k].codepage)))
+                    {
+                        foreach (ZipEntry e in zip2)
+                        {
+                            TestContext.WriteLine("found entry {0}", e.FileName);
+                            e.Extract(String.Format("trial{0}-{1}-extract", k, trials[k].codepage));
+                        }
+                    }
+                }
+                catch (Exception e1)
+                {
+                    if (!trials[k].exceptionExpected)
+                        throw new System.Exception("while extracting", e1);
+
+                }
+            }
+
+            TestContext.WriteLine("\n---------------------Done.");
+
+
+        }
 
     }
 }

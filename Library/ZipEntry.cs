@@ -476,13 +476,54 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Set to indicate whether to use UTF-8 encoding on filenames and 
-        /// comments, according to the PKWare specification.  The default is to use 
-        /// IBM437 encoding. 
+        /// comments, according to the PKWare specification.  
         /// </summary>
+        /// <remarks>
+        /// If this flag is set, the entry will be marked as encoded with UTF-8, 
+        /// according to the PWare spec, if necessary.  Necessary means, if there are non-ANSI 
+        /// characters in the filename or in the comment attached to the entry.  
+        /// The default is to use IBM437 encoding. 
+        /// </remarks>
+        /// <remarks>
+        /// Setting this flag to true is equivalent to setting <c>Encoding</c> to <c>System.Text.Encoding.GetEncoding("UTF-8")</c>
+        /// </remarks>
         public bool UseUtf8Encoding
         {
-            get;
-            set;
+            get
+            {
+                return _encoding == System.Text.Encoding.GetEncoding("UTF-8");
+            }
+            set
+            {
+                _encoding = (value) ? System.Text.Encoding.GetEncoding("UTF-8") : Ionic.Utils.Zip.ZipFile.DefaultEncoding;
+            }
+        }
+
+        /// <summary>
+        /// The text encoding to use for this ZipEntry.  
+        /// </summary>
+        /// <remarks>
+        /// In its AppNote.txt document, PKWare describes how to specify in the zip entry header
+        /// that a filename or comment containing non-ANSI characters is encoded with UTF-8.  But, some 
+        /// archivers do not encode in UTF-8, and instead use the system default code page.  For example, 
+        /// WinRAR when run on a machine in Shanghai will encode filenames with the Chinese code page.  This 
+        /// behavior contrary to the Zip specification, but it occurs anyway.
+        /// </remarks>
+        /// <remarks>
+        /// Setting this property to the Encoding used when the zip file was created will allow the application
+        /// to read a zip archive produced in this way.  
+        /// </remarks>
+        /// <returns>Come back to this later!</paramref>
+        public System.Text.Encoding Encoding
+        {
+            get
+            {
+                return _encoding;
+            }
+            set
+            {
+                _encoding = value;
+            }
         }
 
 
@@ -507,7 +548,7 @@ namespace Ionic.Utils.Zip
 
 
 
-        private static bool ReadHeader(ZipEntry ze)
+        private static bool ReadHeader(ZipEntry ze, System.Text.Encoding defaultEncoding)
         {
             int bytesRead = 0;
 
@@ -576,12 +617,13 @@ namespace Ionic.Utils.Zip
 
             if ((ze._BitField & 0x0800) == 0x0800)
             {
-                ze._FileNameInArchive = Ionic.Utils.Zip.SharedUtilities.Utf8StringFromBuffer(block, block.Length);
+                ze._FileNameInArchive = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length, System.Text.Encoding.UTF8);
                 ze.UseUtf8Encoding = true;
             }
             else
             {
-                ze._FileNameInArchive = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length);
+                ze._FileNameInArchive = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length, defaultEncoding);
+                ze._encoding = defaultEncoding;
             }
 
             // when creating an entry by reading, the LocalFileName is the same as the FileNameInArchivre
@@ -679,12 +721,12 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// <param name="s">the stream to read from.</param>
         /// <returns>the ZipEntry read from the stream.</returns>
-        internal static ZipEntry Read(System.IO.Stream s)
+        internal static ZipEntry Read(System.IO.Stream s, System.Text.Encoding defaultEncoding)
         {
             ZipEntry entry = new ZipEntry();
             entry._Source = EntrySource.Zipfile;
             entry._s = s;
-            if (!ReadHeader(entry)) return null;
+            if (!ReadHeader(entry, defaultEncoding)) return null;
 
             // store the position in the stream for this entry
             entry.__FileDataPosition = entry._s.Position;
@@ -1546,10 +1588,11 @@ namespace Ionic.Utils.Zip
                 result = SlashFixed;
             }
 
+            //return (UseUtf8Encoding) ?
+            //    Ionic.Utils.Zip.SharedUtilities.Utf8StringToByteArray(result) :
+            //    Ionic.Utils.Zip.SharedUtilities.StringToByteArray(result);
 
-            return (UseUtf8Encoding) ?
-                Ionic.Utils.Zip.SharedUtilities.Utf8StringToByteArray(result) :
-                Ionic.Utils.Zip.SharedUtilities.StringToByteArray(result);
+            return  Ionic.Utils.Zip.SharedUtilities.StringToByteArray(result, _encoding);
         }
 
 
@@ -1589,10 +1632,12 @@ namespace Ionic.Utils.Zip
             _CommentBytes = null;
             if (_Comment != null && _Comment.Length != 0)
             {
-                _CommentBytes = (UseUtf8Encoding) ?
-                    Ionic.Utils.Zip.SharedUtilities.Utf8StringToByteArray(_Comment) :
-                 Ionic.Utils.Zip.SharedUtilities.StringToByteArray(_Comment);
+                //_CommentBytes = (UseUtf8Encoding) ?
+                //    Ionic.Utils.Zip.SharedUtilities.Utf8StringToByteArray(_Comment) :
+                // Ionic.Utils.Zip.SharedUtilities.StringToByteArray(_Comment);
+                _CommentBytes = Ionic.Utils.Zip.SharedUtilities.StringToByteArray(_Comment, _encoding);
             }
+
             bool setUtf8Bit = UseUtf8Encoding && (Ionic.Utils.Zip.SharedUtilities.HighBytes(_CommentBytes) ||
                 Ionic.Utils.Zip.SharedUtilities.HighBytes(FileNameBytes));
 
@@ -1958,6 +2003,7 @@ namespace Ionic.Utils.Zip
         private Int32 _Crc32;
         private byte[] _Extra;
         private bool _OverwriteOnExtract;
+        private System.Text.Encoding _encoding = System.Text.Encoding.GetEncoding("IBM437");         // default encoding = ibm437
 
         private long __FileDataPosition;
         private System.IO.MemoryStream _UnderlyingMemoryStream;

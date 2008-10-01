@@ -216,15 +216,63 @@ namespace Ionic.Utils.Zip
         /// These are just a few examples of the problems associated to loss of information.
         /// </para>
         /// <para>
-        /// This flag has no effect or relation to the encoding of the content of 
+        /// This flag has no effect or relation to the encoding of the content within the 
         /// entries in the zip file.  
         /// </para>
         /// </remarks>
         public bool UseUnicode
         {
-            get;
-            set;
+            get
+            {
+                return _encoding == System.Text.Encoding.GetEncoding("UTF-8");
+            }
+            set
+            {
+                _encoding = (value)? System.Text.Encoding.GetEncoding("UTF-8"):DefaultEncoding;
+            }
         }
+
+        /// <summary>
+        /// The text encoding to use when writing new entries to the ZipFile.  
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// In its AppNote.txt document, PKWare describes how to specify in the zip entry header
+        /// that a filename or comment containing non-ANSI characters is encoded with UTF-8.  But, some 
+        /// archivers do not follow the specification, and instead encode super-ANSI characters using the 
+        /// system default code page.  For example, WinRAR when run on a machine in Shanghai may encode 
+        /// filenames with the Chinese code page.  This behavior contrary to the Zip specification, but it 
+        /// occurs anyway.
+        /// </para>
+        /// <para>
+        /// When writing zip archives that will be read by one of these other archivers, use this property to 
+        /// specify the code page to use when encoding filenames and comments into the zip file.
+        /// </para>
+        /// <para>
+        /// Be aware that a zip file created after you've explicitly specified the code page will not 
+        /// be compliant to the PKWare specification, and may not be readable by compliant archivers. 
+        /// On the other hand, many archivers are non-compliant and can read zip files created in 
+        /// arbitrary code pages. 
+        /// </para>
+        /// <para>
+        /// When using an arbitrary, non-UTF8 code page for encoding, there is no standard way for the 
+        /// creator (DotNetZip) to specify in the zip file which code page has been used. 
+        /// </para>
+        /// </remarks>
+        public System.Text.Encoding Encoding
+        {
+            get
+            {
+                return _encoding;
+            }
+            set
+            {
+                _encoding = value;
+            }
+        }
+
+        public static System.Text.Encoding DefaultEncoding = System.Text.Encoding.GetEncoding("IBM437");
 
 
         /// <summary>
@@ -546,7 +594,6 @@ namespace Ionic.Utils.Zip
             get;
             set;
         }
-
 
 
         private System.IO.Stream ReadStream
@@ -1267,7 +1314,8 @@ namespace Ionic.Utils.Zip
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
             ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
-            ze.UseUtf8Encoding = UseUnicode;
+            //ze.UseUtf8Encoding = UseUnicode;
+            ze.Encoding = Encoding;
             ze._Source = EntrySource.Filesystem;
             ze.Password = _Password;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
@@ -2312,7 +2360,7 @@ namespace Ionic.Utils.Zip
             try
             {
                 // if no exception, then ... it is a zip file.
-                using (ZipFile zf = ZipFile.Read(fileName, null)) { }
+                using (ZipFile zf = ZipFile.Read(fileName, null, System.Text.Encoding.GetEncoding("IBM437"))) { }
                 result = true;
             }
             catch (ZipException) { }
@@ -2343,20 +2391,19 @@ namespace Ionic.Utils.Zip
         /// 
         public static ZipFile Read(string zipFileName)
         {
-            return ZipFile.Read(zipFileName, null);
+            return ZipFile.Read(zipFileName, null, System.Text.Encoding.GetEncoding("IBM437"));
         }
 
 
         /// <summary>
-        /// Reads a zip file archive and returns the instance.  
+        /// Reads a zip file archive using the specified text encoding, and returns the instance.  
         /// </summary>
         /// 
         /// <remarks>
         /// <para>
-        /// This version of the method allows the caller to pass in a <c>TextWriter</c>, to which verbose 
-        /// messages will be written during extraction or creation of the zip archive.  A console application
-        /// may wish to pass <c>System.Console.Out</c> to get messages on the Console. A graphical or headless application
-        /// may wish to capture the messages in a different <c>TextWriter</c>. 
+        /// This version of the method allows the caller to pass in a <c>TextWriter</c>.  
+        /// The ZipFile is read in using the default IBM437 encoding for entries where no
+        /// encoding is specified.
         /// </para>
         /// </remarks>
         /// 
@@ -2411,6 +2458,7 @@ namespace Ionic.Utils.Zip
         ///   ' can now use contents of sw, eg store in the audit log
         /// </code>
         /// </example>
+        /// 
         /// <exception cref="System.Exception">
         /// Thrown if the zipfile cannot be read. The implementation of this 
         /// method relies on <c>System.IO.File.OpenRead</c>, which can throw
@@ -2425,15 +2473,106 @@ namespace Ionic.Utils.Zip
         /// </param>
         /// 
         /// <param name="statusMessageWriter">
-        /// The <c>System.IO.TextWriter</c> to use for writing verbose status messages.
+        /// The <c>System.IO.TextWriter</c> to use for writing verbose status messages during operations
+        /// on the zip archive.  A console application may wish to pass <c>System.Console.Out</c> to get 
+        /// messages on the Console. A graphical or headless application may wish to capture the messages 
+        /// in a different <c>TextWriter</c>, such as a <c>System.IO.StringWriter</c>. 
         /// </param>
         /// 
         /// <returns>The instance read from the zip archive.</returns>
         /// 
         public static ZipFile Read(string zipFileName, System.IO.TextWriter statusMessageWriter)
         {
-            ZipFile zf = new ZipFile();
+            return ZipFile.Read(zipFileName, statusMessageWriter, DefaultEncoding);
+        }
 
+        /// <summary>
+        /// Reads a zip file archive using the specified text encoding, and returns the instance.  
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// This version of the method allows the caller to pass in an <c>Encoding</c>.  
+        /// The ZipFile is read in using the specified encoding for entries where no
+        /// encoding is specified.
+        /// </para>
+        /// <para>
+        /// See the <see cref="Ionic.Utils.Zip.ZipFile.Read(string, System.IO.TextWriter)"/> overload for a code example.
+        /// </para>
+        /// </remarks>
+        /// 
+        /// <exception cref="System.Exception">
+        /// Thrown if the zipfile cannot be read. The implementation of this 
+        /// method relies on <c>System.IO.File.OpenRead</c>, which can throw
+        /// a variety of exceptions, including specific exceptions if a file
+        /// is not found, an unauthorized access exception, exceptions for
+        /// poorly formatted filenames, and so on. 
+        /// </exception>
+        /// 
+        /// <param name="zipFileName">
+        /// The name of the zip archive to open.  
+        /// This can be a fully-qualified or relative pathname.
+        /// </param>
+        /// 
+        /// <param name="encoding">
+        /// The <c>System.Text.Encoding</c> to use when reading in the zip archive. Be careful specifying the
+        /// encoding.  If the value you use here is not the same as the Encoding used when the zip archive was 
+        /// created (possibly by a different archiver) you will get unexpected results.  
+        /// </param>
+        /// 
+        /// <returns>The instance read from the zip archive.</returns>
+        /// 
+        public static ZipFile Read(string zipFileName, System.Text.Encoding encoding)
+        {
+            return ZipFile.Read(zipFileName, null, encoding);
+        }
+
+
+        /// <summary>
+        /// Reads a zip file archive using the specified text encoding, and returns the instance.  
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// This version of the method allows the caller to pass in a <c>TextWriter</c> and an <c>Encoding</c>.  
+        /// </para>
+        /// <para>
+        /// See the <see cref="Ionic.Utils.Zip.ZipFile.Read(string, System.IO.TextWriter)"/> overload for a code example.
+        /// </para>
+        /// </remarks>
+        /// 
+        /// <exception cref="System.Exception">
+        /// Thrown if the zipfile cannot be read. The implementation of this 
+        /// method relies on <c>System.IO.File.OpenRead</c>, which can throw
+        /// a variety of exceptions, including specific exceptions if a file
+        /// is not found, an unauthorized access exception, exceptions for
+        /// poorly formatted filenames, and so on. 
+        /// </exception>
+        /// 
+        /// <param name="zipFileName">
+        /// The name of the zip archive to open.  
+        /// This can be a fully-qualified or relative pathname.
+        /// </param>
+        /// 
+        /// <param name="statusMessageWriter">
+        /// The <c>System.IO.TextWriter</c> to use for writing verbose status messages during operations
+        /// on the zip archive.  A console application may wish to pass <c>System.Console.Out</c> to get 
+        /// messages on the Console. A graphical or headless application may wish to capture the messages 
+        /// in a different <c>TextWriter</c>, such as a <c>System.IO.StringWriter</c>. 
+        /// </param>
+        /// 
+        /// <param name="encoding">
+        /// The <c>System.Text.Encoding</c> to use when reading in the zip archive. Be careful specifying the
+        /// encoding.  If the value you use here is not the same as the Encoding used when the zip archive was 
+        /// created (possibly by a different archiver) you will get unexpected results.  
+        /// </param>
+        /// 
+        /// <returns>The instance read from the zip archive.</returns>
+        /// 
+        public static ZipFile Read(string zipFileName, System.IO.TextWriter statusMessageWriter, System.Text.Encoding encoding)
+        {
+            ZipFile zf = new ZipFile();
+            zf.Encoding = encoding;
             zf._StatusMessageTextWriter = statusMessageWriter;
             zf._name = zipFileName;
 
@@ -2458,6 +2597,9 @@ namespace Ionic.Utils.Zip
         /// This is useful when when the zip archive content is available from 
         /// an already-open stream. The stream must be open and readable when calling this
         /// method.  The stream is left open when the reading is completed. 
+        /// </para>
+        /// <para>
+        /// The stream is read using the default <c>System.Text.Encoding</c>, which is the <c>IBM437</c> codepage.  
         /// </para>
         /// </remarks>
         ///
@@ -2484,22 +2626,20 @@ namespace Ionic.Utils.Zip
         /// <returns>an instance of ZipFile</returns>
         public static ZipFile Read(System.IO.Stream zipStream)
         {
-            return Read(zipStream, null);
+            return Read(zipStream, null, DefaultEncoding);
         }
 
         /// <summary>
-        /// Reads a zip archive from a stream.
+        /// Reads a zip archive from a stream, using the specified TextWriter for status messages.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This is useful when when the zip archive content is available from 
+        /// This method is useful when when the zip archive content is available from 
         /// an already-open stream. The stream must be open and readable when calling this
         /// method.  The stream is left open when the reading is completed. 
         /// </para>
         /// <para>
-        /// This overload allows the caller to specify a TextWriter to which 
-        /// Verbose messages are sent. For example, in a console application, System.Console.Out 
-        /// works. If the TextWriter is null, no verbose messages are written. 
+        /// The stream is read using the default <c>System.Text.Encoding</c>, which is the <c>IBM437</c> codepage.  
         /// </para>
         /// </remarks>
         ///
@@ -2509,14 +2649,52 @@ namespace Ionic.Utils.Zip
         /// </exception>
         ///
         /// <param name="zipStream">the stream containing the zip data.</param>
-        /// <param name="statusMessageWriter">The <c>System.IO.TextWriter</c> to which verbose status messages are written.</param>
+        /// <param name="statusMessageWriter">
+        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during operations on the ZipFile.  
+        /// For example, in a console application, System.Console.Out works, and will get a message for each entry added to the ZipFile. 
+        /// If the TextWriter is null, no verbose messages are written. 
+        /// </param>
+
         /// <returns>an instance of ZipFile</returns>
         public static ZipFile Read(System.IO.Stream zipStream, System.IO.TextWriter statusMessageWriter)
+        {
+            return Read(zipStream, statusMessageWriter, DefaultEncoding);
+        }
+
+        /// <summary>
+        /// Reads a zip archive from a stream, using the specified text Encoding and the specified TextWriter for status messages.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This method is useful when when the zip archive content is available from 
+        /// an already-open stream. The stream must be open and readable when calling this
+        /// method.  The stream is left open when the reading is completed. 
+        /// </para>
+        /// </remarks>
+        ///
+        /// <exception cref="Ionic.Utils.Zip.ZipException">
+        /// Thrown if zipStream is null.
+        /// In this case, the inner exception is an ArgumentException.
+        /// </exception>
+        ///
+        /// <param name="zipStream">the stream containing the zip data.</param>
+        /// <param name="statusMessageWriter">
+        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during operations on the ZipFile.  
+        /// For example, in a console application, System.Console.Out works, and will get a message for each entry added to the ZipFile. 
+        /// If the TextWriter is null, no verbose messages are written. 
+        /// </param>
+        /// <param name="encoding">
+        /// The text encoding to use when reading entries that do not have the UTF-8 encoding bit set. 
+        /// See the <see cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</see> property for more information. 
+        /// </param>
+        /// <returns>an instance of ZipFile</returns>
+        public static ZipFile Read(System.IO.Stream zipStream, System.IO.TextWriter statusMessageWriter, System.Text.Encoding encoding)
         {
             if (zipStream == null)
                 throw new ZipException("Cannot read.", new ArgumentException("The stream must be non-null", "zipStream"));
 
             ZipFile zf = new ZipFile();
+            zf._encoding = encoding;
             zf._StatusMessageTextWriter = statusMessageWriter;
             zf._readstream = zipStream;
             zf._ReadStreamIsOurs = false;
@@ -2543,8 +2721,7 @@ namespace Ionic.Utils.Zip
         /// <returns>an instance of ZipFile. The name on the ZipFile will be null (nothing in VB)). </returns>
         public static ZipFile Read(byte[] buffer)
         {
-            System.IO.MemoryStream ms = new System.IO.MemoryStream(buffer);
-            return Read(ms, null);
+            return Read(buffer, null, DefaultEncoding);
         }
 
 
@@ -2555,27 +2732,58 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// <para>
         /// This method is useful when the data for the zipfile is contained in a byte array, for
-        /// example when retrieving the data from a database or other non-filesystem store.
+        /// example when retrieving the data from a database or other non-filesystem store.  
+        /// The default Text Encoding (IBM437) is used to read the zipfile data.
         /// </para>
         /// 
-        /// <para>
-        /// This overload allows the caller to specify a <c>TextWriter</c> to which verbose status
-        /// messages are sent. For example, in a console application, <c>System.Console.Out</c>
-        /// works. If the TextWriter is null, no verbose messages are written.
-        /// </para>
         /// </remarks>
         /// 
         /// <param name="buffer">the byte array containing the zip data.</param>
         /// <param name="statusMessageWriter">
-        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written.
+        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during operations on the ZipFile.  
+        /// For example, in a console application, System.Console.Out works, and will get a message for each entry added to the ZipFile. 
+        /// If the TextWriter is null, no verbose messages are written. 
         /// </param>
         /// 
         /// <returns>an instance of ZipFile. The name is set to null.</returns>
         /// 
         public static ZipFile Read(byte[] buffer, System.IO.TextWriter statusMessageWriter)
         {
+            return Read(buffer, statusMessageWriter, DefaultEncoding);
+        }
+
+
+        /// <summary>
+        /// Reads a zip archive from a byte array, using the given StatusMessageWriter and text Encoding.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// This method is useful when the data for the zipfile is contained in a byte array, for
+        /// example when retrieving the data from a database or other non-filesystem store.  
+        /// </para>
+        /// 
+        /// </remarks>
+        /// 
+        /// <param name="buffer">the byte array containing the zip data.</param>
+        /// <param name="statusMessageWriter">
+        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during operations on the ZipFile.  
+        /// For example, in a console application, System.Console.Out works, and will get a message for each entry added to the ZipFile. 
+        /// If the TextWriter is null, no verbose messages are written. 
+        /// </param>
+        /// 
+        /// <param name="encoding">
+        /// The text encoding to use when reading entries that do not have the UTF-8 encoding bit set. 
+        /// See the <see cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</see> property for more information. 
+        /// </param>
+        ///         
+        /// <returns>an instance of ZipFile. The name is set to null.</returns>
+        /// 
+        public static ZipFile Read(byte[] buffer, System.IO.TextWriter statusMessageWriter, System.Text.Encoding encoding)
+        {
             ZipFile zf = new ZipFile();
             zf._StatusMessageTextWriter = statusMessageWriter;
+            zf._encoding = encoding;
             zf._readstream = new System.IO.MemoryStream(buffer);
             zf._ReadStreamIsOurs = true;
             ReadIntoInstance(zf);
@@ -2595,7 +2803,7 @@ namespace Ionic.Utils.Zip
                     else
                         zf.StatusMessageTextWriter.WriteLine("Reading zip {0}...", zf.Name);
 
-                while ((e = ZipEntry.Read(zf.ReadStream)) != null)
+                while ((e = ZipEntry.Read(zf.ReadStream, zf.Encoding)) != null)
                 {
                     if (zf.Verbose)
                         zf.StatusMessageTextWriter.WriteLine("  {0}", e.FileName);
@@ -2607,7 +2815,7 @@ namespace Ionic.Utils.Zip
                 zf._direntries = new System.Collections.Generic.List<ZipDirEntry>();
 
                 ZipDirEntry de;
-                while ((de = ZipDirEntry.Read(zf.ReadStream)) != null)
+                while ((de = ZipDirEntry.Read(zf.ReadStream, zf.Encoding)) != null)
                 {
                     zf._direntries.Add(de);
                     // Housekeeping: Since ZipFile exposes ZipEntry elements in the enumerator, 
@@ -2647,7 +2855,7 @@ namespace Ionic.Utils.Zip
                     finally { }
                 }
 
-                throw e1;
+                throw new Ionic.Utils.Zip.ZipException("Exception while reading", e1);
             }
         }
 
@@ -2684,7 +2892,7 @@ namespace Ionic.Utils.Zip
             {
                 block = new byte[commentLength];
                 zf.ReadStream.Read(block, 0, block.Length);
-                zf.Comment = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length);
+                zf.Comment = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length, zf._encoding);
             }
         }
 
@@ -3500,6 +3708,7 @@ namespace Ionic.Utils.Zip
         private bool _saveOperationCanceled;
         private bool _extractOperationCanceled;
         private bool _JustSaved;
+        private System.Text.Encoding _encoding = System.Text.Encoding.GetEncoding("IBM437"); // default = IBM437
         #endregion
     }
 

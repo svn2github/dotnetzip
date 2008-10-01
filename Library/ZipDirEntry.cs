@@ -117,7 +117,7 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// <param name="s">the stream from which to read.</param>
         /// <returns>the entry read from the archive.</returns>
-        public static ZipDirEntry Read(System.IO.Stream s)
+        public static ZipDirEntry Read(System.IO.Stream s, System.Text.Encoding expectedEncoding)
         {
             int signature = Ionic.Utils.Zip.SharedUtilities.ReadSignature(s);
             // return null if this is not a local file header signature
@@ -176,7 +176,7 @@ namespace Ionic.Utils.Zip
             }
             else
             {
-                zde._FileName = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length);
+                zde._FileName = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length, expectedEncoding);
             }
 
 
@@ -196,7 +196,7 @@ namespace Ionic.Utils.Zip
                 }
                 else
                 {
-                    zde._Comment = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length);
+                    zde._Comment = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length, expectedEncoding);
                 }
             }
             return zde;

@@ -69,42 +69,37 @@ namespace Ionic.Utils.Zip
         static System.Text.Encoding ibm437 = System.Text.Encoding.GetEncoding("IBM437");
         static System.Text.Encoding utf8 = System.Text.Encoding.GetEncoding("UTF-8");
 
-        internal static byte[] StringToByteArray(string value)
+        internal static byte[] StringToByteArray(string value, System.Text.Encoding encoding)
         {
-            byte[] a= ibm437.GetBytes(value);
+            byte[] a = encoding.GetBytes(value);
             return a;
         }
+        internal static byte[] StringToByteArray(string value)
+        {
+            return StringToByteArray(value, ibm437);
+        }
+
         internal static byte[] Utf8StringToByteArray(string value)
         {
-            byte[] a = utf8.GetBytes(value);
-            return a;
+            return StringToByteArray(value, utf8);
         }
 
         internal static string StringFromBuffer(byte[] buf, int maxlength)
         {
-#if ORIG
-            int i;
-            char[] c = new char[maxlength];
-            for (i = 0; (i < maxlength) && (i < buf.Length) && (buf[i] != 0); i++)
-            {
-		    c[i] = (char)buf[i]; // System.BitConverter.ToChar(buf, start+i*2);
-            }
-            string s = new System.String(c, 0, i);
-#else
-	    //var encoding= new System.Text.UTF8Encoding();
-        //var encoding = System.Text.Encoding.GetEncoding("iso-8859-1");
-
-	    string s = ibm437.GetString(buf);
-#endif
-
-            return s;
+            return StringFromBuffer(buf, maxlength, ibm437);
         }
 
         internal static string Utf8StringFromBuffer(byte[] buf, int maxlength)
         {
-	    string s = utf8.GetString(buf);
+            return StringFromBuffer(buf, maxlength, utf8);
+        }
+
+        internal static string StringFromBuffer(byte[] buf, int maxlength, System.Text.Encoding encoding)
+        {
+            string s = encoding.GetString(buf);
             return s;
         }
+
 
         internal static int ReadSignature(System.IO.Stream s)
         {
