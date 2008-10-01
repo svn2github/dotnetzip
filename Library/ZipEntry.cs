@@ -947,7 +947,37 @@ namespace Ionic.Utils.Zip
         /// 
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.OverwriteOnExtract"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.Extract(string, bool)"/>
-        ///
+        /// <seealso cref="Ionic.Utils.Zip.ZipFile.Extract(string)"/>
+        /// 
+        /// <example>
+        /// This example extracts only the entries in a zip file that are .txt files, into a directory called "textfiles".
+        /// <code lang="C#">
+        /// using (ZipFile zip = ZipFile.Read("PackedDocuments.zip"))
+        /// {
+        ///   foreach (string s1 in zip.EntryFilenames)
+        ///   {
+        ///     if (s1.EndsWith(".txt")) 
+        ///     {
+        ///       ZipEntry entry= zip[s1];
+        ///       entry.Extract("textfiles");
+        ///     }
+        ///   }
+        /// }
+        /// </code>
+        /// <code lang="VB">
+        ///   Using zip As ZipFile = ZipFile.Read("PackedDocuments.zip")
+        ///       Dim s1 As String
+        ///       For Each s1 In zip.EntryFilenames
+        ///           If s1.EndsWith(".txt") Then
+        ///               Dim entry as ZipEntry
+        ///               entry = zip(s1)
+        ///               entry.Extract("textfiles")
+        ///           End If
+        ///       Next
+        ///   End Using
+        /// </code>
+        /// </example>
+        /// 
         /// <remarks>
         /// <para>
         /// Existing entries in the filesystem will not be overwritten. If you would like to 

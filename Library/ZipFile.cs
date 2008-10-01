@@ -124,7 +124,7 @@ namespace Ionic.Utils.Zip
         /// during <c>AddXxx()</c> and <c>ReadXxx()</c> operations. 
         /// </summary>
         /// <remarks>
-        /// This is a synthetic property.  It returns true if the <see cref="StatusMessageWriter">StatusMessageWriter</see> is non-null. 
+        /// This is a synthetic property.  It returns true if the <see cref="StatusMessageTextWriter">StatusMessageTextWriter</see> is non-null. 
         /// </remarks>
         private bool Verbose
         {
@@ -320,7 +320,7 @@ namespace Ionic.Utils.Zip
         /// status messages for that ZipFile are sent to the console. 
         /// </para>
         ///
-        /// <code>
+        /// <code lang="C#">
         /// using (ZipFile zip= new ZipFile(FilePath))
         /// {
         ///   zip.StatusMessageTextWriter= System.Console.Out;
@@ -1613,27 +1613,44 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Uses the given stream as input to create an entry in the ZipFile, with the 
-        /// given FileName and given Directory Path.  Encryption will be used on the 
-        /// stream data if the Password is set on the ZipFile object, prior to calling
-        /// this method.
+        /// given FileName and given Directory Path.  
         /// </summary>
         ///
         /// <remarks>
+        /// <para>
         /// The stream must remain open and readable at least through the call to 
         /// <c>ZipFile.Save</c>.
+        /// </para>
+        /// <para>
+        /// Encryption will be used on the stream data when saving the 
+        /// ZipFile, if the Password is set on the ZipFile object prior to calling
+        /// this method.</para>
         /// </remarks>
         ///
+        /// <example>
         /// <code lang="C#">
-        /// using (ZipFile zip = ZipFile.Read(ZipToCreate))
+        /// String ZipToCreate = "Content.zip";
+        /// String FileNameInArchive = "Content-From-Stream.bin";
+        /// using (ZipFile zip = new ZipFile(ZipToCreate))
         /// {
-        ///   ZipEntry e= zip.AddFileStream("Content-From-Stream.bin", "basedirectory", StreamToRead);
-        ///   e.Comment = "The content for entry in the zip file was obtained from a stream";
+        ///   ZipEntry entry= zip.AddFileStream(FileNameInArchive, "basedirectory", StreamToRead);
+        ///   entry.Comment = "The content for entry in the zip file was obtained from a stream";
         ///   zip.AddFile("Readme.txt");
         ///   zip.Save();
         /// }
         /// 
         /// </code>
-        /// 
+        /// <code lang="VB">
+        /// Dim ZipToCreate As String = "Content.zip"
+        /// Dim FileNameInArchive As String = "Content-From-Stream.bin"
+        /// Using zip As ZipFile = New ZipFile(ZipToCreate)
+        ///   Dim entry as ZipEntry = zip.AddFileStream(FileNameInArchive, "basedirectory", Me.StreamToRead)
+        ///   entry.Comment = "The content for entry in the zip file was obtained from a stream"
+        ///   zip.AddFile("Readme.txt")
+        ///   zip.Save
+        /// End Using
+        /// </code>
+        /// </example>
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.UpdateFileStream(string, string, System.IO.Stream)"/>
         ///
         /// <param name="fileName">FileName which is shown in the ZIP File</param>
@@ -1695,7 +1712,7 @@ namespace Ionic.Utils.Zip
         ///   Using zip1 As ZipFile = New ZipFile
         ///     zip1.AddFileFromString("Readme.txt", "", Content)
         ///     zip1.AddFile("MyDocuments\Resume.doc", "files")
-        ///     zip1.Comment = ("This zip file was created at " & DateTime.Now.ToString("G"))
+        ///     zip1.Comment = ("This zip file was created at " &amp; DateTime.Now.ToString("G"))
         ///     zip1.Save("Content.zip")
         ///   End Using
         /// End Sub
@@ -2267,7 +2284,7 @@ namespace Ionic.Utils.Zip
         /// 		zip.Save(targetZip)
         /// 	    End Using
         /// 	Catch ex1 As Exception
-        /// 	    Console.Error.WriteLine(("exception: " & ex1.ToString))
+        /// 	    Console.Error.WriteLine(("exception: " &amp; ex1.ToString))
         /// 	End Try
         /// End Sub
         /// 
