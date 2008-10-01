@@ -116,6 +116,9 @@ namespace Ionic.Utils.Zip
         /// Reads one entry from the zip directory structure in the zip file. 
         /// </summary>
         /// <param name="s">the stream from which to read.</param>
+        /// <param name="expectedEncoding">
+        /// The text encoding to use if the entry is not marked UTF-8.
+        /// </param>
         /// <returns>the entry read from the archive.</returns>
         public static ZipDirEntry Read(System.IO.Stream s, System.Text.Encoding expectedEncoding)
         {

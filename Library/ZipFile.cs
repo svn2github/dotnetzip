@@ -48,7 +48,7 @@ namespace Ionic.Utils.Zip
     /// <summary>
     /// The ZipFile type represents a zip archive file.  This is the main type in the 
     /// DotNetZip class library.  This class reads and writes zip files, as defined in the format
-    /// for zip described by PKWare.  This implementation is based on the
+    /// for zip described by PKWare.  The compression for this implementation is based on the
     /// System.IO.Compression.DeflateStream base class in the .NET Framework
     /// base class library, for v2.0 and later.
     /// </summary>
@@ -81,7 +81,7 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// <para>
         /// According to the zip spec, the comment is not encrypted, even if there is a password
-        /// set on the zip archive. But you knew that...
+        /// set on the zip archive. 
         /// </para>
         /// </remarks>
         public string Comment
@@ -120,9 +120,12 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// Indicates whether verbose output is sent to Output 
+        /// Indicates whether verbose output is sent to the StatusMessageWriter
         /// during <c>AddXxx()</c> and <c>ReadXxx()</c> operations. 
         /// </summary>
+        /// <remarks>
+        /// This is a synthetic property.  It returns true if the <see cref="StatusMessageWriter">StatusMessageWriter</see> is non-null. 
+        /// </remarks>
         private bool Verbose
         {
             get { return (_StatusMessageTextWriter != null); }
@@ -152,20 +155,22 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// <remarks>
         /// <para>
+        /// The PKWare specification provides for encoding in either the IBM437 code page, or in UTF-8. 
+        /// This flag selects the encoding according to that specification. 
         /// By default, this flag is false, and filenames and comments are encoded 
-        /// in the IBM437 codepage. Setting this flag to true will specify that
-        /// filenames and comments are encoded with UTF-8, in adherence with 
-        /// the PKWare zip specification. 
+        /// into the zip file in the IBM437 codepage. 
+        /// Setting this flag to true will specify that
+        /// filenames and comments are encoded with UTF-8. 
         /// </para>
         /// <para>
         /// Zip files created with strict adherence to the PKWare specification
         /// with respect to UTF-8 encoding can contain entries with filenames containing
-        /// any combination of UTF-8 characters, including the full 
+        /// any combination of Unicode characters, including the full 
         /// range of characters from Chinese, Latin, Hebrew, Greek, Cyrillic, and many 
         /// other alphabets. 
         /// However, because the UTF-8 portion of the PKWare specification is not broadly
         /// supported by other zip libraries and utilities, such zip files may not
-        /// be readable by your favorite zip tool. In other words, interoperability
+        /// be readable by your favorite zip tool or archiver. In other words, interoperability
         /// will suffer if you set this flag to true. 
         /// </para>
         /// <para>
@@ -173,30 +178,32 @@ namespace Ionic.Utils.Zip
         /// specification with respect to UTF-8 encoding will not work well with 
         /// Explorer in Windows XP or Windows Vista, because Vista compressed folders 
         /// do not support UTF-8 in zip files.  Vista can read the zip files, but shows
-        /// the filenames incorrectly.  Unpacking from Vista will result in filenames
+        /// the filenames incorrectly.  Unpacking from Windows Vista Explorer will result in filenames
         /// that have rubbish characters in place of the high-order UTF-8 bytes.
         /// </para>
         /// <para>
         /// Also, zip files that use UTF-8 encoding will not work well 
         /// with Java applications that use the java.util.zip classes, as of 
-        /// v5.0 of the Java runtime. 
+        /// v5.0 of the Java runtime. The Java runtime does not correctly 
+        /// implement the PKWare specification in this regard.
         /// </para>
         /// <para>
         /// As a result, we have the curious situation that "correct" 
         /// behavior by the DotNetZip library during zip creation will result 
-        /// in zip files that are not correctly read by various other tools.
+        /// in zip files that are not able to be read by various other tools.
         /// </para>
         /// <para>
-        /// The DotNetZip library can correctly read and write zip files 
-        /// with UTF-8 according to the PKware spec.  If you use DotNetZip for both 
-        /// creating and reading the zip file, there will be no loss of information 
-        /// in the filenames.  For example, using a self-extractor created by this
+        /// The DotNetZip library can read and write zip files 
+        /// with UTF8-encoded entries, according to the PKware spec.  If you use DotNetZip for both 
+        /// creating and reading the zip file, and you use UTF-8, there will be no loss of information 
+        /// in the filenames. For example, using a self-extractor created by this
         /// library will allow you to unpack files correctly with no loss of 
         /// information in the filenames. 
         /// </para>
         /// <para>
         /// Encoding filenames and comments using the IBM437 codepage, the default
-        /// behavior, will cause loss of information on some filenames, but will
+        /// behavior, will cause loss of information on some filenames that contain 
+        /// super-ASCII characters, but the resulting zipfile will
         /// be more interoperable with other utilities. As an example of the 
         /// loss of information, the o-tilde character will be down-coded to plain o. 
         /// Likewise, the O with a stroke through it, used in Danish and Norwegian,
@@ -219,6 +226,17 @@ namespace Ionic.Utils.Zip
         /// This flag has no effect or relation to the encoding of the content within the 
         /// entries in the zip file.  
         /// </para>
+        /// <para>
+        /// Rather than specify the encoding in a binary fashion using this flag, an application
+        /// can specify an arbitrary encoding via the <c>Encoding</c>property.  Setting 
+        /// the encoding explicitly when creating zip archives will result in non-compliant 
+        /// zip files that, curiously, are fairly interoperable.  The challenge is, the PKWare specification
+        /// does not provide for a way to specify an arbitrary code page for an entry.  Therefore 
+        /// if you set the encoding explicitly when creating a zip archive, you must take care upon 
+        /// reading the zip archive to use the same code page.  If you get it wrong, the behavior is 
+        /// undefined and may result in incorrect filenames, exceptions, and acne.  
+        /// </para>
+        /// <seealso cref="Encoding">Encoding</seealso>
         /// </remarks>
         public bool UseUnicode
         {
@@ -242,24 +260,32 @@ namespace Ionic.Utils.Zip
         /// that a filename or comment containing non-ANSI characters is encoded with UTF-8.  But, some 
         /// archivers do not follow the specification, and instead encode super-ANSI characters using the 
         /// system default code page.  For example, WinRAR when run on a machine in Shanghai may encode 
-        /// filenames with the Chinese code page.  This behavior contrary to the Zip specification, but it 
+        /// filenames with the Chinese code page.  This behavior is contrary to the Zip specification, but it 
         /// occurs anyway.
         /// </para>
         /// <para>
-        /// When writing zip archives that will be read by one of these other archivers, use this property to 
-        /// specify the code page to use when encoding filenames and comments into the zip file.
+        /// When using DotNetZip to write zip archives that will be read by one of these other archivers, 
+        /// set this property to specify the code page to use when encoding filenames and comments into the zip file.
         /// </para>
         /// <para>
-        /// Be aware that a zip file created after you've explicitly specified the code page will not 
-        /// be compliant to the PKWare specification, and may not be readable by compliant archivers. 
-        /// On the other hand, many archivers are non-compliant and can read zip files created in 
-        /// arbitrary code pages. 
+        /// The default encoding is codepage IBM437.  Be aware that a zip file created after you've explicitly 
+        /// specified the code page will not be compliant to the PKWare specification, and may not be readable 
+        /// by compliant archivers.  On the other hand, many (most?) archivers are non-compliant and can read zip files 
+        /// created in arbitrary code pages.  The trick is to use the proper codepage when reading the zip.
         /// </para>
         /// <para>
         /// When using an arbitrary, non-UTF8 code page for encoding, there is no standard way for the 
-        /// creator (DotNetZip) to specify in the zip file which code page has been used. 
+        /// creator application - whether DotNetZip, WinRar, or something else - to specify in the zip file 
+        /// which codepage has been used. As a result, readers of zip files are not
+        /// able to inspect the zip file and determine the codepage that was used for the entries contained within it. 
+        /// It is left to the application to determine the necessary codepage when reading zipfiles encoded this way.  
+        /// If you use an incorrect codepage when reading a zipfile, you can get entries with filenames
+        /// that are either incorrect or not legal in Windows. Extracting entries with illegal characters 
+        /// in the filenames will lead to exceptions. Caveat Emptor.
         /// </para>
         /// </remarks>
+        /// 
+        /// <seealso cref="Ionic.Utils.Zip.ZipFile.DefaultEncoding">DefaultEncoding</seealso>.
         public System.Text.Encoding Encoding
         {
             get
@@ -272,7 +298,12 @@ namespace Ionic.Utils.Zip
             }
         }
 
-        public static System.Text.Encoding DefaultEncoding = System.Text.Encoding.GetEncoding("IBM437");
+        /// <summary>
+        /// The default text encoding used in zip archives.  It is numeric 437, also known as IBM437. 
+        /// </summary>
+        /// <seealso cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</seealso>
+
+        public readonly static System.Text.Encoding DefaultEncoding = System.Text.Encoding.GetEncoding("IBM437");
 
 
         /// <summary>
@@ -1111,9 +1142,10 @@ namespace Ionic.Utils.Zip
         /// This example shows how to zip up a set of files into a flat hierarchy, 
         /// regardless of where in the filesystem the files originated.
         /// <code>
-        /// String[] filenames= { 
+        /// String[] itemnames= { 
         ///   "c:\\temp\\Readme.txt",
         ///   "MyProposal.docx",
+        ///   "SupportFiles",  // a directory
         ///   "images\\Image1.jpg"
         /// };
         ///
@@ -1121,10 +1153,10 @@ namespace Ionic.Utils.Zip
         /// {
         ///   using (ZipFile zip = new ZipFile(ZipToCreate,System.Console.Out))
         ///   {
-        ///     for (int i = 1; i &lt; filenames.Length; i++)
+        ///     for (int i = 1; i &lt; itemnames.Length; i++)
         ///     {
-        ///       // will add Files or Dirs, recurses and flattens subdirectories,
-        ///       zip.AddItem(filenames[i],"flat"); 
+        ///       // will add Files or Dirs, recurses and flattens subdirectories
+        ///       zip.AddItem(itemnames[i],"flat"); 
         ///     }
         ///     zip.Save();
         ///   }
@@ -1136,16 +1168,17 @@ namespace Ionic.Utils.Zip
         /// </code>
         ///
         /// <code lang="VB">
-        ///   Dim filenames As String() = _
+        ///   Dim itemnames As String() = _
         ///     New String() { "c:\temp\Readme.txt", _
         ///                    "MyProposal.docx", _
+        ///                    "SupportFiles", _
         ///                    "images\Image1.jpg" }
         ///   Try 
         ///       Using zip As New ZipFile(ZipToCreate, Console.Out)
         ///           Dim i As Integer
-        ///           For i = 1 To filenames.Length - 1
+        ///           For i = 1 To itemnames.Length - 1
         ///               ' will add Files or Dirs, recursing and flattening subdirectories.
-        ///               zip.AddItem(filenames(i), "flat")
+        ///               zip.AddItem(itemnames(i), "flat")
         ///           Next i
         ///           zip.Save
         ///       End Using
@@ -1350,7 +1383,9 @@ namespace Ionic.Utils.Zip
         /// <code>
         /// using (ZipFile zip1 = new ZipFile())
         /// {
+        ///   // UpdateFile might more accurately be called "AddOrUpdateFile"
         ///   zip1.UpdateFile("MyDocuments\\Readme.txt", "");
+        ///   zip1.UpdateFile("CustomerList.csv", "");
         ///   zip1.Comment = "This zip archive has been created.";
         ///   zip1.Save("Content.zip");
         /// }
@@ -1358,21 +1393,23 @@ namespace Ionic.Utils.Zip
         /// using (ZipFile zip2 = ZipFile.Read("Content.zip"))
         /// {
         ///   zip2.UpdateFile("Updates\\Readme.txt", "");
-        ///   zip2.Comment = "This zip archive has been updated.";
+        ///   zip2.Comment = "This zip archive has been updated: The Readme.txt file has been changed.";
         ///   zip2.Save();
         /// }
         ///
         /// </code>
         /// <code lang="VB">
         ///   Using zip1 As New ZipFile
+        ///       ' UpdateFile might more accurately be called "AddOrUpdateFile"
         ///       zip1.UpdateFile("MyDocuments\Readme.txt", "")
+        ///       zip1.UpdateFile("CustomerList.csv", "")
         ///       zip1.Comment = "This zip archive has been created."
         ///       zip1.Save("Content.zip")
         ///   End Using
         ///
         ///   Using zip2 As ZipFile = ZipFile.Read("Content.zip")
         ///       zip2.UpdateFile("Updates\Readme.txt", "")
-        ///       zip2.Comment = "This zip archive has been updated."
+        ///       zip2.Comment = "This zip archive has been updated: The Readme.txt file has been changed."
         ///       zip2.Save
         ///   End Using
         /// </code>
@@ -1586,6 +1623,17 @@ namespace Ionic.Utils.Zip
         /// <c>ZipFile.Save</c>.
         /// </remarks>
         ///
+        /// <code lang="C#">
+        /// using (ZipFile zip = ZipFile.Read(ZipToCreate))
+        /// {
+        ///   ZipEntry e= zip.AddFileStream("Content-From-Stream.bin", "basedirectory", StreamToRead);
+        ///   e.Comment = "The content for entry in the zip file was obtained from a stream";
+        ///   zip.AddFile("Readme.txt");
+        ///   zip.Save();
+        /// }
+        /// 
+        /// </code>
+        /// 
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.UpdateFileStream(string, string, System.IO.Stream)"/>
         ///
         /// <param name="fileName">FileName which is shown in the ZIP File</param>
@@ -1630,16 +1678,27 @@ namespace Ionic.Utils.Zip
         /// 
         /// <example>
         /// This example shows how to add an entry to the zipfile, using a string as content for that entry. 
-        /// <code>
+        /// <code lang="C#">
         /// string Content = "This string will be the content of the Readme.txt file in the zip archive.";
         /// using (ZipFile zip1 = new ZipFile())
         /// {
         ///   zip1.AddFile("MyDocuments\\Resume.doc", "files");
-        ///   zip1.AddFileFromString(Content, "Readme.txt", ""); 
+        ///   zip1.AddFileFromString("Readme.txt", "", Content); 
         ///   zip1.Comment = "This zip file was created at " + System.DateTime.Now.ToString("G");
         ///   zip1.Save("Content.zip");
         /// }
         /// 
+        /// </code>
+        /// <code lang="VB">
+        /// Public Sub Run()
+        ///   Dim Content As String = "This string will be the content of the Readme.txt file in the zip archive."
+        ///   Using zip1 As ZipFile = New ZipFile
+        ///     zip1.AddFileFromString("Readme.txt", "", Content)
+        ///     zip1.AddFile("MyDocuments\Resume.doc", "files")
+        ///     zip1.Comment = ("This zip file was created at " & DateTime.Now.ToString("G"))
+        ///     zip1.Save("Content.zip")
+        ///   End Using
+        /// End Sub
         /// </code>
         /// </example>
         public ZipEntry AddFileFromString(string fileName, string directoryPathInArchive, string content)
@@ -2183,7 +2242,7 @@ namespace Ionic.Utils.Zip
         /// Fired after each entry has been written to the archive.
         /// </summary>
         /// <example>
-        /// <code>
+        /// <code lang="C#">
         /// public static void SaveProgress(object sender, SaveProgressEventArgs e)
         /// {
         ///   Console.WriteLine("{0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal);
@@ -2198,6 +2257,23 @@ namespace Ionic.Utils.Zip
         ///   }
         /// }
         ///
+        /// </code>
+        /// <code lang="VB">
+        /// Public Sub ZipUp(ByVal targetZip As String, ByVal directory As String)
+        /// 	Try 
+        /// 	    Using zip As ZipFile = New ZipFile
+        /// 		AddHandler zip.SaveProgress, AddressOf MySaveProgress
+        /// 		zip.AddDirectory(directory)
+        /// 		zip.Save(targetZip)
+        /// 	    End Using
+        /// 	Catch ex1 As Exception
+        /// 	    Console.Error.WriteLine(("exception: " & ex1.ToString))
+        /// 	End Try
+        /// End Sub
+        /// 
+        /// Public Sub MySaveProgress(ByVal sender As Object, ByVal e As SaveProgressEventArgs)
+        ///     Console.WriteLine("{0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal)
+        /// End Sub
         /// </code>
         /// </example>
         public event EventHandler<SaveProgressEventArgs> SaveProgress;
@@ -2372,6 +2448,11 @@ namespace Ionic.Utils.Zip
         /// Reads a zip file archive and returns the instance.  
         /// </summary>
         /// 
+        /// <remarks>
+        /// <para>
+        /// The stream is read using the default <c>System.Text.Encoding</c>, which is the <c>IBM437</c> codepage.  
+        /// </para>
+        /// </remarks>
         /// <exception cref="System.Exception">
         /// Thrown if the ZipFile cannot be read. The implementation of this 
         /// method relies on <c>System.IO.File.OpenRead</c>, which can throw
@@ -2385,13 +2466,13 @@ namespace Ionic.Utils.Zip
         /// This can be a fully-qualified or relative pathname.
         /// </param>
         /// 
-        /// <overloads>If I am counting correctly, this method has 6 overloads.</overloads>
+        /// <overloads>This method has a bunch of interesting overloads. They are all static (Shared in VB)</overloads>
         ///
         /// <returns>The instance read from the zip archive.</returns>
         /// 
         public static ZipFile Read(string zipFileName)
         {
-            return ZipFile.Read(zipFileName, null, System.Text.Encoding.GetEncoding("IBM437"));
+            return ZipFile.Read(zipFileName, null, DefaultEncoding);
         }
 
 
@@ -2405,10 +2486,13 @@ namespace Ionic.Utils.Zip
         /// The ZipFile is read in using the default IBM437 encoding for entries where no
         /// encoding is specified.
         /// </para>
+        /// <para>
+        /// The stream is read using the default <c>System.Text.Encoding</c>, which is the <c>IBM437</c> codepage.  
+        /// </para>
         /// </remarks>
         /// 
         /// <example>
-        /// <code>
+        /// <code lang="C#">
         /// var sw = new System.IO.StringWriter();
         /// using (ZipFile zip =  ZipFile.Read("PackedDocuments.zip", sw))
         /// {
@@ -2429,7 +2513,7 @@ namespace Ionic.Utils.Zip
         ///   zip.Comment = "This archive has been updated.";
         ///   zip.Save();
         /// }
-        /// // can now use contents of sw, eg store in the audit log
+        /// // can now use contents of sw, eg store in an audit log
         /// </code>
         ///
         /// <code lang="VB">
@@ -2455,7 +2539,7 @@ namespace Ionic.Utils.Zip
         ///       zip.Comment = "This archive has been updated."
         ///       zip.Save
         ///   End Using
-        ///   ' can now use contents of sw, eg store in the audit log
+        ///   ' can now use contents of sw, eg store in an audit log
         /// </code>
         /// </example>
         /// 
@@ -2632,14 +2716,17 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// Reads a zip archive from a stream, using the specified TextWriter for status messages.
         /// </summary>
+        /// 
         /// <remarks>
         /// <para>
         /// This method is useful when when the zip archive content is available from 
         /// an already-open stream. The stream must be open and readable when calling this
         /// method.  The stream is left open when the reading is completed. 
         /// </para>
+        /// 
         /// <para>
         /// The stream is read using the default <c>System.Text.Encoding</c>, which is the <c>IBM437</c> codepage.  
+        /// For more information on the encoding, see the <see cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</see> property.
         /// </para>
         /// </remarks>
         ///
@@ -2649,16 +2736,47 @@ namespace Ionic.Utils.Zip
         /// </exception>
         ///
         /// <param name="zipStream">the stream containing the zip data.</param>
+        /// 
         /// <param name="statusMessageWriter">
         /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during operations on the ZipFile.  
         /// For example, in a console application, System.Console.Out works, and will get a message for each entry added to the ZipFile. 
         /// If the TextWriter is null, no verbose messages are written. 
         /// </param>
-
+        /// 
         /// <returns>an instance of ZipFile</returns>
         public static ZipFile Read(System.IO.Stream zipStream, System.IO.TextWriter statusMessageWriter)
         {
             return Read(zipStream, statusMessageWriter, DefaultEncoding);
+        }
+
+        /// <summary>
+        /// Reads a zip archive from a stream, using the specified encoding.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// This method is useful when when the zip archive content is available from 
+        /// an already-open stream. The stream must be open and readable when calling this
+        /// method.  The stream is left open when the reading is completed. 
+        /// </para>
+        /// </remarks>
+        ///
+        /// <exception cref="Ionic.Utils.Zip.ZipException">
+        /// Thrown if zipStream is null.
+        /// In this case, the inner exception is an ArgumentException.
+        /// </exception>
+        ///
+        /// <param name="zipStream">the stream containing the zip data.</param>
+        /// 
+        /// <param name="encoding">
+        /// The text encoding to use when reading entries that do not have the UTF-8 encoding bit set. 
+        /// See the <see cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</see> property for more information. 
+        /// </param>
+        /// 
+        /// <returns>an instance of ZipFile</returns>
+        public static ZipFile Read(System.IO.Stream zipStream, System.Text.Encoding encoding)
+        {
+            return Read(zipStream, null, encoding);
         }
 
         /// <summary>

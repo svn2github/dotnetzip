@@ -503,17 +503,32 @@ namespace Ionic.Utils.Zip
         /// The text encoding to use for this ZipEntry.  
         /// </summary>
         /// <remarks>
+        /// <para>
         /// In its AppNote.txt document, PKWare describes how to specify in the zip entry header
         /// that a filename or comment containing non-ANSI characters is encoded with UTF-8.  But, some 
-        /// archivers do not encode in UTF-8, and instead use the system default code page.  For example, 
-        /// WinRAR when run on a machine in Shanghai will encode filenames with the Chinese code page.  This 
-        /// behavior contrary to the Zip specification, but it occurs anyway.
+        /// archivers do not follow the specification, and instead encode super-ANSI characters using the 
+        /// system default code page.  For example, WinRAR when run on a machine in Shanghai may encode 
+        /// filenames with the Chinese code page.  This behavior is contrary to the Zip specification, but it 
+        /// occurs anyway.
+        /// </para>
+        /// <para>
+        /// When writing zip archives that will be read by one of these other archivers, use this property to 
+        /// specify the code page to use when encoding filenames and comments into the zip file.
+        /// </para>
+        /// <para>
+        /// Be aware that a zip file created after you've explicitly specified the code page will not 
+        /// be compliant to the PKWare specification, and may not be readable by compliant archivers. 
+        /// On the other hand, many archivers are non-compliant and can read zip files created in 
+        /// arbitrary code pages. 
+        /// </para>
+        /// <para>
+        /// When using an arbitrary, non-UTF8 code page for encoding, there is no standard way for the 
+        /// creator (DotNetZip) to specify in the zip file which code page has been used. DotNetZip is not
+        /// able to inspect the zip file and determine the codepage used for the entries within it. Therefore, 
+        /// you, the application author, must determine that.  If you use a codepage which results in filenames
+        /// that are not legal in Windows, you will get exceptions upon extract. Caveat Emptor.
+        /// </para>
         /// </remarks>
-        /// <remarks>
-        /// Setting this property to the Encoding used when the zip file was created will allow the application
-        /// to read a zip archive produced in this way.  
-        /// </remarks>
-        /// <returns>Come back to this later!</paramref>
         public System.Text.Encoding Encoding
         {
             get
@@ -720,6 +735,9 @@ namespace Ionic.Utils.Zip
         /// actuall decrypt at this point. 
         /// </summary>
         /// <param name="s">the stream to read from.</param>
+        /// <param name="defaultEncoding">
+        /// The text encoding to use when reading the ZipEntry, if it is not marked as UTF-8.
+        /// </param>
         /// <returns>the ZipEntry read from the stream.</returns>
         internal static ZipEntry Read(System.IO.Stream s, System.Text.Encoding defaultEncoding)
         {
@@ -784,10 +802,6 @@ namespace Ionic.Utils.Zip
         //    return ZipEntry.Create(filename, null);
         //}
 
-        internal static ZipEntry Create(String filename, string nameInArchive)
-        {
-            return Create(filename, nameInArchive, null);
-        }
 
 
         internal static string NameInArchive(String filename, string directoryPathInArchive)
@@ -818,6 +832,13 @@ namespace Ionic.Utils.Zip
         }
 
 
+
+        internal static ZipEntry Create(String filename, string nameInArchive)
+        {
+            return Create(filename, nameInArchive, null);
+        }
+
+
         //Daniel Bedarf
         private bool _isStream;
         private System.IO.Stream _inputStream;
@@ -842,7 +863,7 @@ namespace Ionic.Utils.Zip
             }
 
             entry._LocalFileName = filename; // may include a path
-            entry._FileNameInArchive = nameInArchive;
+            entry._FileNameInArchive = nameInArchive.Replace('\\','/');
 
             // we don't actually slurp in the file until the caller invokes Write on this entry.
 
@@ -1851,8 +1872,6 @@ namespace Ionic.Utils.Zip
             for (j = 0; j < i; j++)
                 _EntryHeader[j] = bytes[j];
         }
-
-
 
 
 
