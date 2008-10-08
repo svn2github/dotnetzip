@@ -110,20 +110,48 @@ namespace Ionic.Utils.Zip
 
 
 
-        private string SaveTemporary()
+        private string SfxSaveTemporary()
         {
-            bool save_contentsChanged = _contentsChanged;
             var tempFileName = System.IO.Path.Combine(TempFileFolder, System.IO.Path.GetRandomFileName() + ".zip");
-            var outstream = new System.IO.FileStream(tempFileName, System.IO.FileMode.CreateNew);
-            if (outstream == null)
-                throw new BadStateException(String.Format("Cannot open the temporary file ({0}) for writing.", tempFileName));
-            if (Verbose) StatusMessageTextWriter.WriteLine("Saving temp zip file....");
-            // write an entry in the zip for each file
-            foreach (ZipEntry e in _entries)
-                e.Write(outstream);
-            WriteCentralDirectoryStructure(outstream);
-            outstream.Close();
-            _contentsChanged = save_contentsChanged;
+            Stream outstream = null;
+            try
+            {
+                bool save_contentsChanged = _contentsChanged;
+                outstream = new System.IO.FileStream(tempFileName, System.IO.FileMode.CreateNew);
+                if (outstream == null)
+                    throw new BadStateException(String.Format("Cannot open the temporary file ({0}) for writing.", tempFileName));
+                if (Verbose) StatusMessageTextWriter.WriteLine("Saving temp zip file....");
+                // write an entry in the zip for each file
+                int n = 0;
+                foreach (ZipEntry e in _entries)
+                {
+                    e.Write(outstream);
+                    n++;
+                    OnSaveProgress(n, e.FileName);
+                    if (_saveOperationCanceled)
+                        break;
+                }
+
+                if (!_saveOperationCanceled)
+                {
+                    WriteCentralDirectoryStructure(outstream);
+                    outstream.Close();
+                    outstream = null;
+                    OnSaveCompleted();
+                }
+                _contentsChanged = save_contentsChanged;
+            }
+
+            finally
+            {
+                if (outstream != null)
+                {
+                    try { outstream.Close(); }
+                    catch { }
+                    try { outstream.Dispose(); }
+                    catch { }
+                }
+            }
             return tempFileName;
         }
 
@@ -191,7 +219,10 @@ namespace Ionic.Utils.Zip
                 if (Verbose) StatusMessageTextWriter.WriteLine("Warning: The generated self-extracting file will not have an .exe extension.");
             }
 
-            string TempZipFile = SaveTemporary();
+            string TempZipFile = SfxSaveTemporary();
+
+            if (TempZipFile == null)
+                return; // cancelled
 
             // look for myself (ZipFile will be present in the Ionic.Utils.Zip assembly)
             Assembly a1 = typeof(ZipFile).Assembly;
@@ -297,24 +328,17 @@ namespace Ionic.Utils.Zip
             if (cr.Errors.Count != 0)
                 throw new SfxGenerationException("Errors compiling the extraction logic!");
 
-
             try
             {
                 if (Directory.Exists(TempDir))
                 {
-                    try
-                    {
-                        Directory.Delete(TempDir, true);
-                    }
+                    try { Directory.Delete(TempDir, true); }
                     catch { }
                 }
 
                 if (File.Exists(TempZipFile))
                 {
-                    try
-                    {
-                        File.Delete(TempZipFile);
-                    }
+                    try { File.Delete(TempZipFile);}
                     catch { }
                 }
             }
@@ -348,7 +372,7 @@ namespace Ionic.Utils.Zip
             {
                 index++;
                 string Name = String.Format("{0}-{1}-{2}.{3}",
-                                AppName, System.DateTime.Now.ToString("yyyyMMMdd-HHmmss"), index, extension);
+                        AppName, System.DateTime.Now.ToString("yyyyMMMdd-HHmmss"), index, extension);
                 candidate = System.IO.Path.Combine(parentDir, Name);
             } while (System.IO.File.Exists(candidate) || System.IO.Directory.Exists(candidate));
 

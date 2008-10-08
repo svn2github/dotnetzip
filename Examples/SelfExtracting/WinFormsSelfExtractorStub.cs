@@ -97,7 +97,7 @@
             string targetDirectory = txtExtractDirectory.Text;
             bool WantOverwrite = chk_Overwrite.Checked;
             bool extractCancelled = false;
-            string currentPassword = null;
+            string currentPassword = "";
 
             Stream s = GetZipStream();
 
@@ -125,25 +125,38 @@
                             }
                         else
                         {
-                            while ((currentPassword == null) || (currentPassword == ""))
+                            if (currentPassword == "")
                             {
-                                currentPassword = PromptForPassword(entry.FileName);
-                            }
-
-                            try
-                            {
-                                entry.ExtractWithPassword(currentPassword, WantOverwrite, targetDirectory);
-                            }
-                            catch (Exception ex2)
-                            {
-                                // TODO: probably want a retry here in the case of bad password.
-                                DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
-                                    String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-
-                                if (result == DialogResult.Cancel)
+                                do
                                 {
-                                    extractCancelled = true;
-                                    break;
+                                    currentPassword = PromptForPassword(entry.FileName);
+                                }
+                                while (currentPassword == "");
+                            }
+
+                            if (currentPassword == null)
+                            {
+                                extractCancelled = true;
+                                currentPassword = "";
+                                break;
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    entry.ExtractWithPassword(targetDirectory, WantOverwrite, currentPassword);
+                                }
+                                catch (Exception ex2)
+                                {
+                                    // TODO: probably want a retry here in the case of bad password.
+                                    DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
+                                        String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+
+                                    if (result == DialogResult.Cancel)
+                                    {
+                                        extractCancelled = true;
+                                        break;
+                                    }
                                 }
                             }
                         }

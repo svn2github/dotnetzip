@@ -10,6 +10,7 @@ using System.Windows.Forms;
         {
             InitializeComponent();
         }
+        private bool wasCanceled = false;
         public string EntryName
         {
             set
@@ -21,8 +22,21 @@ using System.Windows.Forms;
         {
             get
             {
+                if (wasCanceled) return null;
                 return textBox1.Text;
             }
         }
+
+        private void btnOk_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            wasCanceled = true;
+            this.Close();
+        }
+
     }
 }

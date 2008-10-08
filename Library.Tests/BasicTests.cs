@@ -705,7 +705,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
                 var sw = new System.IO.StringWriter();
                 using (ZipFile zip = new ZipFile(ZipFileToCreate, sw))
                 {
-                    if (k==0)
+                    if (k == 0)
                         zip.AddDirectory(dirToZip);
                     else
                         zip.AddDirectory(dirToZip, trials[k].arg);
@@ -750,8 +750,8 @@ namespace Ionic.Utils.Zip.Tests.Basic
                                new TestTrial { arg=null, re="^dir(\\d){3}(/file(\\d+).ext)?$"},
                                new TestTrial { arg="rtdha", re="(?s)^rtdha(/dir(\\d){3}(/file(\\d+).ext)?)?$"},
                                new TestTrial { arg="sdfjk/BBB", re="(?s)^sdfjk/BBB(/dir(\\d){3}(/file(\\d+).ext)?)?$"}
-                               }; 
-            
+                               };
+
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);
 
             for (int k = 0; k < trials.Length; k++)
@@ -773,7 +773,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
                     string Subdir = System.IO.Path.Combine(dirToZip, String.Format("dir{0:D3}", i));
                     System.IO.Directory.CreateDirectory(Subdir);
 
-                    int fileCount = _rnd.Next(4) ;  // sometimes zero
+                    int fileCount = _rnd.Next(4);  // sometimes zero
                     for (j = 0; j < fileCount; j++)
                     {
                         String file = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.ext", j));
@@ -819,35 +819,59 @@ namespace Ionic.Utils.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_VerifyThatStreamRemainsOpenAfterSave()
         {
-            int filesAdded = _rnd.Next(3) + 3;
-            for (int i = 0; i < filesAdded; i++)
-                TestUtilities.CreateUniqueFile("bin", TopLevelDir, _rnd.Next(10000) + 5000);
+            bool[] ForceCompressionOptions = { true, false };
+            string[] Passwords = { null, System.IO.Path.GetRandomFileName() };
 
-            string dirToZip = System.IO.Path.GetFileName(TopLevelDir);
-            var ms = new System.IO.MemoryStream();
-            Assert.IsTrue(ms.CanSeek, "The MemoryStream does not do Seek.");
-            using (ZipFile zip = new ZipFile(ms))
+            for (int j = 0; j < Passwords.Length; j++)
             {
-                zip.AddDirectory(dirToZip);
-                zip.Save();
-            }
-
-            Assert.IsTrue(ms.CanSeek, "After writing, the OutputStream does not do Seek.");
-            Assert.IsTrue(ms.CanRead, "The OutputStream cannot be Read.");
-
-            // seek to the beginning
-            ms.Seek(0, System.IO.SeekOrigin.Begin);
-            int filesFound = 0;
-            using (ZipFile z2 = ZipFile.Read(ms))
-            {
-                foreach (ZipEntry e in z2)
+                for (int k = 0; k < ForceCompressionOptions.Length; k++)
                 {
-                    if (!e.IsDirectory)
-                        filesFound++;
+                    TestContext.WriteLine("\n\n---------------------------------\nTrial ({0},{1}):  Password='{2}' Compression={3}\n", j, k, Passwords[j], ForceCompressionOptions[k]);
+                    System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+                    string dirToZip = System.IO.Path.GetRandomFileName();
+                    System.IO.Directory.CreateDirectory(dirToZip);
+
+                    int filesAdded = _rnd.Next(3) + 3;
+                    for (int i = 0; i < filesAdded; i++)
+                    {
+                        var s = System.IO.Path.Combine(dirToZip, String.Format("tempfile-{0}-{1}-{2}.bin", j, k, i));
+                        int sz = _rnd.Next(10000) + 5000;
+                        TestContext.WriteLine("  Creating file: {0} sz({1})", s, sz);
+                        TestUtilities.CreateAndFillFileBinary(s, sz);
+                    }
+
+                    TestContext.WriteLine("\n");
+
+                    //string dirToZip = System.IO.Path.GetFileName(TopLevelDir);
+                    var ms = new System.IO.MemoryStream();
+                    Assert.IsTrue(ms.CanSeek, String.Format("Trial {0}: The output MemoryStream does not do Seek.", k));
+                    using (ZipFile zip1 = new ZipFile(ms))
+                    {
+                        zip1.ForceNoCompression = ForceCompressionOptions[k];
+                        zip1.Password = Passwords[j];
+                        zip1.Comment = String.Format("Trial ({0},{1}):  Password='{2}' Compression={3}\n", j, k, Passwords[j], ForceCompressionOptions[k]);
+                        zip1.AddDirectory(dirToZip);
+                        zip1.Save();
+                    }
+
+                    Assert.IsTrue(ms.CanSeek, String.Format("Trial {0}: After writing, the OutputStream does not do Seek.", k));
+                    Assert.IsTrue(ms.CanRead, String.Format("Trial {0}: The OutputStream cannot be Read.", k));
+
+                    // seek to the beginning
+                    ms.Seek(0, System.IO.SeekOrigin.Begin);
+                    int filesFound = 0;
+                    using (ZipFile zip2 = ZipFile.Read(ms))
+                    {
+                        foreach (ZipEntry e in zip2)
+                        {
+                            TestContext.WriteLine("  Found entry: {0} isDir({1}) sz_c({2}) sz_unc({3})", e.FileName, e.IsDirectory, e.CompressedSize, e.UncompressedSize);
+                            if (!e.IsDirectory)
+                                filesFound++;
+                        }
+                    }
+                    Assert.AreEqual<int>(filesFound, filesAdded, String.Format("Trial {0}, Found an incorrect number of files.", k));
                 }
             }
-
-            Assert.AreEqual<int>(filesFound, filesAdded, "Found an incorrect number of files.");
         }
 
 
@@ -911,6 +935,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
                 }
             }
         }
+
 
         [TestMethod]
         public void CreateZip_WithEmptyDirectory()
@@ -1123,6 +1148,8 @@ namespace Ionic.Utils.Zip.Tests.Basic
                     FilesToZip.Length, entries);
         }
 
+
+
         [TestMethod]
         public void CreateZip_SetFileLastModified()
         {
@@ -1173,7 +1200,6 @@ namespace Ionic.Utils.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_VerifyFileLastModified()
         {
-
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_VerifyFileLastModified.zip");
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
@@ -1182,8 +1208,10 @@ namespace Ionic.Utils.Zip.Tests.Basic
             var timestamps = new Dictionary<string, DateTime>();
             var ActualFilenames = new List<string>();
             var ExcludedFilenames = new List<string>();
-            
-            int maxFiles = _rnd.Next(12) + 14;
+
+            int maxFiles = _rnd.Next(PotentialFilenames.Length / 2) + PotentialFilenames.Length / 3;
+            maxFiles = Math.Min(maxFiles, 85);
+            TestContext.WriteLine("\n-----------------------------\nFinding files in '{0}'...", System.Environment.GetEnvironmentVariable("TEMP"));
             do
             {
                 string filename = null;
@@ -1194,12 +1222,13 @@ namespace Ionic.Utils.Zip.Tests.Basic
                     if (ExcludedFilenames.Contains(filename)) continue;
                     if (System.IO.Path.GetFileName(filename)[0] == '~'
                             || ActualFilenames.Contains(filename)
-                            // there are some weird files on my system that cause this test to fail!
-                            // the GetLastWrite() method returns the "wrong" time - does not agree with
-                            // what is shown in Explorer or in a cmd.exe dir output.  So I exclude those 
-                            // files here.
-                            || filename.EndsWith(".cer")
-                            || filename == "MSCERTS.ini"
+                        // there are some weird files on my system that cause this test to fail!
+                        // the GetLastWrite() method returns the "wrong" time - does not agree with
+                        // what is shown in Explorer or in a cmd.exe dir output.  So I exclude those 
+                        // files here.
+                        //|| filename.EndsWith(".cer")
+                        //|| filename.EndsWith(".msrcincident")
+                        //|| filename == "MSCERTS.ini"
                         )
                     {
                         ExcludedFilenames.Add(filename);
@@ -1222,9 +1251,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
                         throw new Exception();
                     var chk = TestUtilities.ComputeChecksum(filename);
                     checksums.Add(key, chk);
-                    TestContext.WriteLine("file '{0}'", filename);
-                    TestContext.WriteLine("          lastWrite: {0}", lastWrite.ToString("yyyy MMM dd HH:mm:ss"));
-                    TestContext.WriteLine("          rounded:   {0}", tm.ToString("yyyy MMM dd HH:mm:ss"));
+                    TestContext.WriteLine("  {1}  {2}  {0}", System.IO.Path.GetFileName(filename), lastWrite.ToString("yyyy MMM dd HH:mm:ss"), tm.ToString("yyyy MMM dd HH:mm:ss"));
                     timestamps.Add(key, tm);
                     ActualFilenames.Add(filename);
                 }
@@ -1232,7 +1259,8 @@ namespace Ionic.Utils.Zip.Tests.Basic
                 {
                     ExcludedFilenames.Add(filename);
                 }
-            } while ((ActualFilenames.Count < maxFiles) && (ActualFilenames.Count < PotentialFilenames.Length));
+            } while ((ActualFilenames.Count < maxFiles) && (ActualFilenames.Count < PotentialFilenames.Length) &&
+                ActualFilenames.Count + ExcludedFilenames.Count < PotentialFilenames.Length);
 
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);
 
@@ -1261,7 +1289,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
                     DateTime ActualFilesystemLastMod = System.IO.File.GetLastWriteTime(PathToExtractedFile);
                     Assert.AreEqual<DateTime>(timestamps[e.FileName], ActualFilesystemLastMod,
                         "Unexpected timestamp on extracted filesystem file ({0}).", PathToExtractedFile);
-                    
+
                     // verify the checksum of the file is correct
                     string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
                     string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
@@ -1270,6 +1298,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
             }
             Assert.AreEqual<int>(entries, ActualFilenames.Count, "Unexpected file count.");
         }
+
 
 
         [TestMethod]

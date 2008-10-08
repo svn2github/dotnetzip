@@ -83,60 +83,73 @@ namespace Ionic.Utils.Zip.Tests.Password
         public void Password_BasicAddAndExtract()
         {
             int i;
-            string password = "Password!";
+            string[] Passwords = { null, "Password!", TestUtilities.GenerateRandomPassword(), "A" };
+            bool[] ForceCompressionOptions = { true, false };
 
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Password_BasicAddAndExtract.zip");
-            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-
-            string DirToZip = Path.Combine(TopLevelDir, "zipthis");
-            System.IO.Directory.CreateDirectory(DirToZip);
-
-            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
-
-            TestContext.WriteLine("\n---------------------creating files and computing checksums...");
-            int NumFilesToCreate = _rnd.Next(16) + 11;
-            string[] filenames = new string[NumFilesToCreate];
-            var checksums = new Dictionary<string,byte[]>();
-            for (i = 0; i < NumFilesToCreate; i++)
+            for (int k = 0; k < ForceCompressionOptions.Length; k++)
             {
-                filenames[i] = Path.Combine("zipthis", String.Format("file{0:D3}.txt", i));
-                TestUtilities.CreateAndFillFileText(filenames[i], _rnd.Next(12000) + 3000);
-                string key = System.IO.Path.GetFileName(filenames[i]);
-                checksums.Add(key, TestUtilities.ComputeChecksum(filenames[i]));
-                TestContext.WriteLine("  chk[{0}]={1}", key, TestUtilities.CheckSumToString(checksums[key]));
-            }
-
-            TestContext.WriteLine("\n---------------------adding files to the archive...");
-
-            var sw = new System.IO.StringWriter();
-            using (ZipFile zip = new ZipFile(ZipFileToCreate, sw))
-            {
-                zip.Password = password;
-                zip.AddDirectory(System.IO.Path.GetFileName(DirToZip));
-                zip.Save();
-            }
-            TestContext.WriteLine(sw.ToString());
-
-            Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), NumFilesToCreate,
-                    "The Zip file has an unexpected number of entries.");
-
-            TestContext.WriteLine("\n---------------------verifying checksums...");
-
-            using (ZipFile zip = ZipFile.Read(ZipFileToCreate))
-            {
-                foreach (ZipEntry e in zip)
-                    TestContext.WriteLine("found entry: {0}", e.FileName);
-
-                foreach (ZipEntry e in zip)
+                for (int j = 0; j < Passwords.Length; j++)
                 {
-                    e.ExtractWithPassword("unpack", true, password);
-                    if (!e.IsDirectory)
+                    TestContext.WriteLine("\n\n===================\nTrial ({0}) pw({1})", j, Passwords[j]);
+                    string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("Password_BasicAddAndExtract-{0}-{1}.zip", k, j));
+                    Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+                    System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+                    string DirToZip = String.Format("zipthis-{0}-{1}", k, j);
+                    System.IO.Directory.CreateDirectory(DirToZip);
+
+                    TestContext.WriteLine("\n---------------------creating files and computing checksums...");
+                    int NumFilesToCreate = _rnd.Next(10) + 10;
+                    string[] filenames = new string[NumFilesToCreate];
+                    var checksums = new Dictionary<string, string>();
+                    for (i = 0; i < NumFilesToCreate; i++)
                     {
-                        //bool success = Int32.TryParse(e.FileName, out j);
-                        byte[] c2 = TestUtilities.ComputeChecksum(Path.Combine("unpack", e.FileName));
-                        Assert.AreEqual<string>(TestUtilities.CheckSumToString(checksums[e.FileName]),
-                                TestUtilities.CheckSumToString(c2), "The checksum of the extracted file is incorrect.");
+                        filenames[i] = Path.Combine(DirToZip, String.Format("file{0:D3}.txt", i));
+                        int sz = _rnd.Next(22000) + 3000;
+                        //int sz = 1000;
+                        var repeatedLine = String.Format("Line to Repeat... {0} {1} {2} filename: {3}", i, k, j, filenames[i]);
+                        TestUtilities.CreateAndFillFileText(filenames[i], repeatedLine, sz);
+                        string key = System.IO.Path.GetFileName(filenames[i]);
+                        checksums.Add(key, TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filenames[i])));
+                        TestContext.WriteLine("  chk[{0}]={1}", key, checksums[key]);
                     }
+
+                    TestContext.WriteLine("\n---------------------adding files to the archive...");
+
+                    var sw = new System.IO.StringWriter();
+                    using (ZipFile zip = new ZipFile(ZipFileToCreate, sw))
+                    {
+                        zip.ForceNoCompression = ForceCompressionOptions[k];
+                        zip.Password = Passwords[j];
+                        zip.AddDirectory(System.IO.Path.GetFileName(DirToZip));
+                        zip.Save();
+                    }
+                    TestContext.WriteLine(sw.ToString());
+
+                    Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), NumFilesToCreate,
+                            "The Zip file has an unexpected number of entries.");
+
+                    TestContext.WriteLine("\n---------------------verifying checksums...");
+
+                    using (ZipFile zip = ZipFile.Read(ZipFileToCreate))
+                    {
+                        foreach (ZipEntry e in zip)
+                            TestContext.WriteLine("found entry: {0}", e.FileName);
+
+                        var extractDir = String.Format("extract-{0}-{1}", k, j);
+                        TestContext.WriteLine("  Extract with pw({0})", Passwords[j]);
+                        foreach (ZipEntry e in zip)
+                        {
+                            e.ExtractWithPassword(extractDir, true, Passwords[j]);
+                            if (!e.IsDirectory)
+                            {
+                                byte[] c2 = TestUtilities.ComputeChecksum(Path.Combine(extractDir, e.FileName));
+                                Assert.AreEqual<string>(checksums[e.FileName],
+                                        TestUtilities.CheckSumToString(c2), "The checksum of the extracted file is incorrect.");
+                            }
+                        }
+                    }
+                    TestContext.WriteLine("\n");
                 }
             }
         }

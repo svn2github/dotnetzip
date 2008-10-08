@@ -10,7 +10,17 @@ namespace Ionic.Utils.Zip
     /// reads of the file stream. This callback is called only when the initial 
     /// compression operation inflates the size of the file data. 
     /// </summary>
-    public delegate bool ReadApprovalCallback(Int32 uncompressedSize, Int32 compressedSize, string filename);
+    public delegate bool ReReadApprovalCallback(Int32 uncompressedSize, Int32 compressedSize, string filename);
+
+    /// <summary>
+    /// Delegate for the callback by which the application tells the libraary whether
+    /// to use compression on the file or not.  Using this callback, the application can 
+    /// specify that previously-compressed files (.mp3, .png, .docx, etc) should 
+    /// not be compressed, for example, or can turn on or off compression based on any 
+    /// other factor.
+    /// </summary>
+    public delegate bool WantCompressionCallback(string localFilename, string filenameInArchive);
+
 
     /// <summary>
     /// Provides information about the progress of a save or extract operation.

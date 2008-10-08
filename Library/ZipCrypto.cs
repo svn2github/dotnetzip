@@ -11,7 +11,7 @@
 // Created Tue Apr 15 17:39:56 2008
 //
 // last saved: 
-// Time-stamp: <Thursday, April 17, 2008  20:43:33  (by dinoch)>
+// Time-stamp: <2008-October-06 20:53:05>
 //
 // ------------------------------------------------------------------
 
@@ -119,7 +119,7 @@ namespace Ionic.Utils.Zip
         /// <returns>The ciphertext.</returns>
         public byte[] EncryptMessage(byte[] plaintext, int length)
         {
-            if (plaintext== null)
+            if (plaintext == null)
                 throw new ZipException("Cannot encrypt.", new System.ArgumentException("Bad length during Encryption: the plainText must be non-null.", "plaintext"));
 
             if (length > plaintext.Length)
@@ -190,10 +190,10 @@ namespace Ionic.Utils.Zip
 
         private void UpdateKeys(byte byeValue)
         {
-            _Keys[0] = (UInt32) crc32.ComputeCrc32(_Keys[0], byeValue);
+            _Keys[0] = (UInt32)crc32.ComputeCrc32(_Keys[0], byeValue);
             _Keys[1] = _Keys[1] + (byte)_Keys[0];
             _Keys[1] = _Keys[1] * 0x08088405 + 1;
-            _Keys[2] = (UInt32) crc32.ComputeCrc32(_Keys[2], (byte)(_Keys[1] >> 24));
+            _Keys[2] = (UInt32)crc32.ComputeCrc32(_Keys[2], (byte)(_Keys[1] >> 24));
         }
 
         ///// <summary>
@@ -241,31 +241,44 @@ namespace Ionic.Utils.Zip
 
     }
 
-    /// <summary>
-    /// A read-only Stream for reading and concurrently decrypting data from a zip file.
-    /// </summary>
-    internal class ZipCipherInputStream : System.IO.Stream
+    internal enum CryptoMode
     {
-        private ZipCrypto _Cipher;
+        Encrypt,
+        Decrypt
+    }
+
+    /// <summary>
+    /// A Stream for reading and concurrently decrypting data from a zip file, 
+    /// or for writing and concurrently encrypting data to a zip file.
+    /// </summary>
+    internal class ZipCipherStream : System.IO.Stream
+    {
+        private ZipCrypto _cipher;
         private System.IO.Stream _s;
+        private CryptoMode _mode;
 
         /// <summary>
         /// The  constructor.
         /// </summary>
         /// <param name="s">The underlying stream</param>
+        /// <param name="mode">To either encrypt or decrypt.</param>
         /// <param name="cipher">The pre-initialized ZipCrypto object.</param>
-        public ZipCipherInputStream(System.IO.Stream s, ZipCrypto cipher)
+        public ZipCipherStream(System.IO.Stream s, ZipCrypto cipher, CryptoMode mode)
             : base()
         {
-            _Cipher = cipher;
+            _cipher = cipher;
             _s = s;
+            _mode = mode;
         }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if (_mode == CryptoMode.Encrypt)
+                throw new NotImplementedException();
+
             byte[] db = new byte[count];
             int n = _s.Read(db, 0, count);
-            byte[] decrypted = _Cipher.DecryptMessage(db, n);
+            byte[] decrypted = _cipher.DecryptMessage(db, n);
             for (int i = 0; i < n; i++)
             {
                 buffer[offset + i] = decrypted[i];
@@ -275,27 +288,37 @@ namespace Ionic.Utils.Zip
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new NotImplementedException();
+            if (_mode == CryptoMode.Decrypt)
+                throw new NotImplementedException();
+
+            byte[] plaintext = null;
+            if (offset != 0)
+            {
+                plaintext = new byte[count];
+                for (int i = 0; i < count; i++)
+                {
+                    plaintext[i] = buffer[offset + i];
+                }
+            }
+            else plaintext = buffer;
+
+            byte[] encrypted = _cipher.EncryptMessage(plaintext, count);
+            _s.Write(encrypted, 0, encrypted.Length);
         }
+
 
         public override bool CanRead
         {
-            get { return true; }
+            get { return (_mode == CryptoMode.Decrypt); }
         }
         public override bool CanSeek
         {
-            get
-            {
-                return false;
-            }
+            get { return false; }
         }
 
         public override bool CanWrite
         {
-            get
-            {
-                return false;
-            }
+            get { return (_mode == CryptoMode.Encrypt); }
         }
 
         public override void Flush()
@@ -310,16 +333,9 @@ namespace Ionic.Utils.Zip
 
         public override long Position
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
-
         public override long Seek(long offset, System.IO.SeekOrigin origin)
         {
             throw new NotImplementedException();

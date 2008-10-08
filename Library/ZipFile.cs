@@ -542,8 +542,6 @@ namespace Ionic.Utils.Zip
 
 
 
-
-
         /// <summary>
         /// A callback that allows the application to specify whether multiple reads of the
         /// stream should be performed, in the case that a compression operation actually
@@ -620,12 +618,11 @@ namespace Ionic.Utils.Zip
         /// </example>
         /// <seealso cref="Ionic.Utils.Zip.ReadApprovalCallback"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.WillReadTwiceOnInflation"/>
-        public ReadApprovalCallback WillReadTwiceOnInflation
+        public ReReadApprovalCallback WillReadTwiceOnInflation
         {
             get;
             set;
         }
-
 
         private System.IO.Stream ReadStream
         {
@@ -985,7 +982,7 @@ namespace Ionic.Utils.Zip
             // So, we wrap the stream with a counting stream, so that we can retrieve the count
             // of bytes written at any particular moment. 
 
-            _writestream = new CountingOutputStream(outputStream);
+            _writestream = new CountingStream(outputStream);
             _entries = new System.Collections.Generic.List<ZipEntry>();
         }
 
@@ -1032,7 +1029,7 @@ namespace Ionic.Utils.Zip
             // So, we wrap the stream with a counting stream, so that we can retrieve the count
             // of bytes written at any particular moment. 
 
-            _writestream = new CountingOutputStream(outputStream);
+            _writestream = new CountingStream(outputStream);
             _entries = new System.Collections.Generic.List<ZipEntry>();
             _StatusMessageTextWriter = statusMessageWriter;
         }
@@ -1668,6 +1665,10 @@ namespace Ionic.Utils.Zip
             string n = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
             ZipEntry ze = ZipEntry.Create(fileName, n, stream);
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
+            ze.ForceNoCompression = ForceNoCompression;
+            ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
+            ze.Encoding = Encoding;
+            ze._Source = EntrySource.Stream; 
             ze.Password = _Password;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
             InsureUniqueEntry(ze);
@@ -2161,7 +2162,7 @@ namespace Ionic.Utils.Zip
         {
             // The Central Directory Structure.
             // We need to keep track of the start and Finish of the Central Directory Structure. 
-            var output = s as CountingOutputStream;
+            var output = s as CountingStream;
             long Start = (output != null) ? output.BytesWritten : s.Position;
 
             foreach (ZipEntry e in _entries)

@@ -96,9 +96,17 @@ namespace Library.TestUtilities
                 {
                     // pick a word at random
                     string selectedWord = LoremIpsumWords[_rnd.Next(LoremIpsumWords.Length)];
-                    sw.Write(selectedWord);
-                    sw.Write(" ");
-                    bytesRemaining -= (selectedWord.Length + 1);
+                    if (bytesRemaining < selectedWord.Length + 1)
+                    {
+                        sw.Write(selectedWord.Substring(0, bytesRemaining));
+                        bytesRemaining = 0;
+                    }
+                    else
+                    {
+                        sw.Write(selectedWord);
+                        sw.Write(" ");
+                        bytesRemaining -= (selectedWord.Length + 1);
+                    }
                 } while (bytesRemaining > 0);
                 sw.Close();
             }
@@ -112,8 +120,21 @@ namespace Library.TestUtilities
             {
                 do
                 {
-                    sw.WriteLine(Line);
-                    bytesRemaining -= (Line.Length + 1);
+                    if (bytesRemaining < Line.Length + 2)
+                    {
+                        if (bytesRemaining == 1)
+                            sw.Write(" ");
+                        else if (bytesRemaining == 1)
+                            sw.WriteLine();
+                        else
+                            sw.WriteLine(Line.Substring(0, bytesRemaining - 2));
+                        bytesRemaining = 0;
+                    }
+                    else
+                    {
+                        sw.WriteLine(Line);
+                        bytesRemaining -= (Line.Length + 2);
+                    }
                 } while (bytesRemaining > 0);
                 sw.Close();
             }
@@ -133,14 +154,17 @@ namespace Library.TestUtilities
                     fileStream.Write(Buffer, 0, sizeOfChunkToWrite);
                     bytesRemaining -= sizeOfChunkToWrite;
                 }
+                fileStream.Close();
             }
         }
 
 
         internal static void CreateAndFillFile(string Filename, int size)
         {
-            Assert.IsTrue(size > 0, "File size should be greater than zero.");
-            if (_rnd.Next(2) == 0)
+            //Assert.IsTrue(size > 0, "File size should be greater than zero.");
+            if (size == 0)
+                System.IO.File.Create(Filename);
+            else if (_rnd.Next(2) == 0)
                 CreateAndFillFileText(Filename, size);
             else
                 CreateAndFillFileBinary(Filename, size);
@@ -148,10 +172,13 @@ namespace Library.TestUtilities
 
         internal static string CreateUniqueFile(string extension, string ContainingDirectory)
         {
-            string fileToCreate = GenerateUniquePathname(extension, ContainingDirectory);
-            System.IO.File.Create(fileToCreate);
-            return fileToCreate;
+            //string nameOfFileToCreate = GenerateUniquePathname(extension, ContainingDirectory);
+            string nameOfFileToCreate = System.IO.Path.Combine(ContainingDirectory, String.Format("{0}.{1}", System.IO.Path.GetRandomFileName(), extension));
+            var fs = System.IO.File.Create(nameOfFileToCreate);
+            fs.Close();
+            return nameOfFileToCreate;
         }
+
         internal static string CreateUniqueFile(string extension)
         {
             return CreateUniqueFile(extension, null);
@@ -164,9 +191,10 @@ namespace Library.TestUtilities
 
         internal static string CreateUniqueFile(string extension, string ContainingDirectory, int size)
         {
-            string fileToCreate = GenerateUniquePathname(extension, ContainingDirectory);
-            CreateAndFillFile(fileToCreate, size);
-            return fileToCreate;
+            //string fileToCreate = GenerateUniquePathname(extension, ContainingDirectory);
+            string nameOfFileToCreate = System.IO.Path.Combine(ContainingDirectory, String.Format("{0}.{1}", System.IO.Path.GetRandomFileName(), extension));
+            CreateAndFillFile(nameOfFileToCreate, size);
+            return nameOfFileToCreate;
         }
 
         static System.Reflection.Assembly _a = null;

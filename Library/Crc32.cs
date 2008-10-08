@@ -48,7 +48,7 @@ namespace Ionic.Utils.Zip
             get
             {
                 // return one's complement of the running result
-                return (Int32) (~_RunningCrc32Result);
+                return (Int32)(~_RunningCrc32Result);
             }
         }
 
@@ -75,8 +75,8 @@ namespace Ionic.Utils.Zip
 
             unchecked
             {
-                UInt32 crc32Result;
-                crc32Result = 0xFFFFFFFF;
+                //UInt32 crc32Result;
+                //crc32Result = 0xFFFFFFFF;
                 byte[] buffer = new byte[BUFFER_SIZE];
                 int readSize = BUFFER_SIZE;
 
@@ -86,16 +86,19 @@ namespace Ionic.Utils.Zip
                 _TotalBytesRead += count;
                 while (count > 0)
                 {
-                    for (int i = 0; i < count; i++)
-                    {
-                        crc32Result = ((crc32Result) >> 8) ^ crc32Table[(buffer[i]) ^ ((crc32Result) & 0x000000FF)];
-                    }
+                    //for (int i = 0; i < count; i++)
+                    //{
+                    //    _RunningCrc32Result = ((_RunningCrc32Result) >> 8) ^ crc32Table[(buffer[i]) ^ ((_RunningCrc32Result) & 0x000000FF)];
+                    //}
+
+
+                    SlurpBlock(buffer, 0, count);
                     count = input.Read(buffer, 0, readSize);
                     if (output != null) output.Write(buffer, 0, count);
                     _TotalBytesRead += count;
                 }
 
-                return (Int32) (~crc32Result);
+                return (Int32)(~_RunningCrc32Result);
             }
         }
 
@@ -176,7 +179,7 @@ namespace Ionic.Utils.Zip
 
         // private member vars
         private Int32 _TotalBytesRead;
-        private UInt32[] crc32Table;
+        private static UInt32[] crc32Table;
         private const int BUFFER_SIZE = 8192;
         private UInt32 _RunningCrc32Result = 0xFFFFFFFF;
 
@@ -186,14 +189,35 @@ namespace Ionic.Utils.Zip
 
 
     /// <summary>
-    /// A read-only, forward-only Stream that calculates a CRC, a checksum, on all bytes read.
-    /// This class can be used to verify the CRC of a ZipEntry when reading from a stream.
+    /// A read-only, forward-only Stream that calculates a CRC, a checksum, on all bytes read, 
+    /// or on all bytes written.
     /// </summary>
+    ///
+    /// <remarks>
+    /// This class can be used to verify the CRC of a ZipEntry when reading from a stream, 
+    /// or to calculate a CRC when writing to a stream.  The stream should be used to either 
+    /// read, or write, but not both.  If you intermix reads and writes, the results are
+    /// not defined.
+    /// </remarks>
     public class CrcCalculatorStream : System.IO.Stream
     {
         private System.IO.Stream _InnerStream;
         private CRC32 _Crc32;
         private int _length = 0;
+
+        /// <summary>
+        /// Gets the total number of bytes run through the CRC32 calculator.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// This is either the total number of bytes read, or the total number
+        /// of bytes written, depending on the direction of this stream.
+        /// </remarks>
+        public int TotalBytesSlurped
+        {
+            get { return _Crc32.TotalBytesRead; }
+        }
+
 
         /// <summary>
         /// The constructor.
@@ -244,9 +268,9 @@ namespace Ionic.Utils.Zip
             // This is especially useful when returning a stream for the uncompressed data directly to the 
             // application.  The app won't necessarily read only the UncompressedSize number of bytes.  
             // For example wrapping the stream returned from OpenReader() into a StreadReader() and
-            // calling ReadToEnd() on it, We can "over-read" the zip data and geta  corrupt string.  
+            // calling ReadToEnd() on it, We can "over-read" the zip data and get a corrupt string.  
             // The length limits that, prevents that problem. 
-            
+
             if (_length != 0)
             {
                 if (_Crc32.TotalBytesRead >= _length) return 0; // EOF
@@ -254,19 +278,20 @@ namespace Ionic.Utils.Zip
                 if (bytesRemaining < count) bytesToRead = bytesRemaining;
             }
             int n = _InnerStream.Read(buffer, offset, bytesToRead);
-            if (n>0) _Crc32.SlurpBlock(buffer, offset, n);
+            if (n > 0) _Crc32.SlurpBlock(buffer, offset, n);
             return n;
         }
 
         /// <summary>
-        /// This method is not implemented and will throw if called.
+        /// Write to the stream. 
         /// </summary>
-        /// <param name="buffer">N/A</param>
-        /// <param name="offset">N/A</param>
-        /// <param name="count">N/A</param>
+        /// <param name="buffer">the buffer from which to write</param>
+        /// <param name="offset">the offset at which to start writing</param>
+        /// <param name="count">the number of bytes to write</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new NotImplementedException();
+            if (count > 0) _Crc32.SlurpBlock(buffer, offset, count);
+            _InnerStream.Write(buffer, offset, count);
         }
 
         /// <summary>
@@ -286,11 +311,11 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// Indicates whether the stream supports writing. Always returns false.
+        /// Indicates whether the stream supports writing. Always returns true.
         /// </summary>
         public override bool CanWrite
         {
-            get { return false; }
+            get { return true; }
         }
 
         /// <summary>
@@ -306,7 +331,8 @@ namespace Ionic.Utils.Zip
         /// </summary>
         public override long Length
         {
-            get {
+            get
+            {
                 if (_length == 0) throw new NotImplementedException();
                 else return _length;
             }
@@ -317,7 +343,7 @@ namespace Ionic.Utils.Zip
         /// </summary>
         public override long Position
         {
-            get { return _Crc32.TotalBytesRead;  }
+            get { return _Crc32.TotalBytesRead; }
             set { throw new NotImplementedException(); }
         }
 

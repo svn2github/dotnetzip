@@ -255,18 +255,26 @@ namespace Ionic.Utils.Zip
     }
 
 
-    /// <summary>
-    /// A write-only Stream, used for bookkeeping on ASP.NET output streams.
+    /// <summary> 
+    /// A Stream wrapper, used for bookkeeping on input or output
+    /// streams.  In some cases, it is not possible to get the Position
+    /// of a stream, let's say, on a write-only output stream like
+    /// ASP.NET's Response.Output, or on a different write-only stream
+    /// provided as the destination for the zip by the application.
+    /// In this case, we can use this counting stream to count the bytes
+    /// read or written.
     /// </summary>
-    internal class CountingOutputStream : System.IO.Stream
+    internal class CountingStream : System.IO.Stream
     {
         private System.IO.Stream _s;
         private int _bytesWritten;
+        private int _bytesRead;
+
         /// <summary>
         /// The  constructor.
         /// </summary>
         /// <param name="s">The underlying stream</param>
-        public CountingOutputStream(System.IO.Stream s)
+        public CountingStream(System.IO.Stream s)
             : base()
         {
             _s = s;
@@ -277,10 +285,21 @@ namespace Ionic.Utils.Zip
             get { return _bytesWritten; }
         }
 
+        public int BytesRead
+        {
+            get { return _bytesRead; }
+        }
+
+        public void Adjust(int delta)
+        {
+            _bytesWritten -= delta;
+        }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            throw new NotImplementedException();
+            int n = _s.Read(buffer, offset, count);
+            _bytesRead += n;
+            return n;
         }
 
         public override void Write(byte[] buffer, int offset, int count)
@@ -291,16 +310,16 @@ namespace Ionic.Utils.Zip
 
         public override bool CanRead
         {
-            get { return false; }
+            get { return _s.CanRead; }
         }
         public override bool CanSeek
         {
-            get { return false; }
+            get { return _s.CanSeek; }
         }
 
         public override bool CanWrite
         {
-            get { return true; }
+            get { return _s.CanWrite; }
         }
 
         public override void Flush()
@@ -310,15 +329,15 @@ namespace Ionic.Utils.Zip
 
         public override long Length
         {
-            get { return _bytesWritten; }
+            get { return _s.Length; }   // bytesWritten??
         }
 
         public override long Position
         {
-            get { return _bytesWritten; }
+            get { return _s.Position; }
             set
             {
-                throw new NotImplementedException();
+                _s.Seek(value, System.IO.SeekOrigin.Begin);
             }
         }
 
