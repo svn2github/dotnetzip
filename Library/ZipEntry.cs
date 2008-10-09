@@ -640,9 +640,9 @@ namespace Ionic.Utils.Zip
             ze._VersionNeeded = (short)(block[i++] + block[i++] * 256);
             ze._BitField = (short)(block[i++] + block[i++] * 256);
             ze._CompressionMethod = (short)(block[i++] + block[i++] * 256);
-            int timeBlob = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+            ze._TimeBlob = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
             // transform the time data into something usable (a DateTime)
-            ze._LastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(timeBlob);
+            ze._LastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(ze._TimeBlob);
 
 
             // The PKZIP spec says that if bit 3 is set (0x0008) in the General Purpose BitField, then the CRC,
@@ -836,12 +836,6 @@ namespace Ionic.Utils.Zip
 
         }
 
-
-
-        //internal static ZipEntry Create(String filename)
-        //{
-        //    return ZipEntry.Create(filename, null);
-        //}
 
 
 
@@ -1361,7 +1355,23 @@ namespace Ionic.Utils.Zip
                 // is the highest-order byte in the CRC. We check it here. 
                 if (DecryptedHeader[11] != (byte)((_Crc32 >> 24) & 0xff))
                 {
-                    throw new BadPasswordException("The password did not match.");
+                    // In the case that bit 3 of the general purpose bit flag is set to indicate
+                    // the presence of an 'Extended File Header', the last byte of the decrypted
+                    // header is sometimes compared with the high-order byte of the lastmodified 
+                    // time, and not the CRC, to verify the password. 
+                    //
+                    // This is not documented in the PKWare Appnote.txt.  
+                    // This was discovered this by analysis of the Crypt.c source file in the InfoZip library
+                    // http://www.info-zip.org/pub/infozip/
+
+                    if ((_BitField & 0x0008) != 0x0008)
+                    {
+                        throw new BadPasswordException("The password did not match.");
+                    }
+                    else if (DecryptedHeader[11] != (byte)((_TimeBlob >> 8) & 0xff))
+                    {
+                        throw new BadPasswordException("The password did not match.");
+                    }
                 }
 
                 // We have a good password. 
@@ -1391,7 +1401,12 @@ namespace Ionic.Utils.Zip
         {
             if (basedir != null)
             {
-                OutputFile = System.IO.Path.Combine(basedir, this.FileName);
+                // Sometimes the name on the entry starts with a slash.
+                // Rather than unpack to the root of the volume, we're going to 
+                // drop the slash and unpack to the specified base directory. 
+                OutputFile = (this.FileName.StartsWith("/"))
+                    ? System.IO.Path.Combine(basedir, this.FileName.Substring(1))
+                    : System.IO.Path.Combine(basedir, this.FileName);
 
                 // check if a directory
                 if ((IsDirectory) || (FileName.EndsWith("/")))
@@ -1448,11 +1463,14 @@ namespace Ionic.Utils.Zip
             int LeftToRead = (CompressionMethod == 0x08) ? this.UncompressedSize : this._CompressedFileDataSize;
 
             // get a stream that either decrypts or not.
-            Stream input2 = (Encryption == EncryptionAlgorithm.PkzipWeak) ?
-        new ZipCipherStream(input, cipher, CryptoMode.Decrypt) : input;
+            Stream input2 = (Encryption == EncryptionAlgorithm.PkzipWeak)
+                ? new ZipCipherStream(input, cipher, CryptoMode.Decrypt) 
+                : input;
 
             // using the above, now we get a stream that either decompresses or not.
-            Stream input3 = (CompressionMethod == 0x08) ? new DeflateStream(input2, CompressionMode.Decompress, true) : input2;
+            Stream input3 = (CompressionMethod == 0x08) 
+                ? new DeflateStream(input2, CompressionMode.Decompress, true) 
+                : input2;
 
             //var out2 = new CrcCalculatorStream(output, LeftToRead);
 
@@ -1498,7 +1516,6 @@ namespace Ionic.Utils.Zip
             bytes[i++] = _EntryHeader[4];
             bytes[i++] = _EntryHeader[5];
 
-
             // workitem 6182 - zero out extra field length before writing
             Int16 extraFieldLengthSave = (short)(_EntryHeader[28] + _EntryHeader[29] * 256);
             _EntryHeader[28] = 0;
@@ -1511,13 +1528,11 @@ namespace Ionic.Utils.Zip
             for (j = 0; j < 26; j++)
                 bytes[i + j] = _EntryHeader[4 + j];
 
-
             // workitem 6182 - restore extra field length after writing
             _EntryHeader[28] = (byte)(extraFieldLengthSave & 0x00FF);
             _EntryHeader[29] = (byte)((extraFieldLengthSave & 0xFF00) >> 8);
 
             i += j;  // positioned at next available byte
-
 
             // File (entry) Comment Length
             // the _CommentBytes private field was set during WriteHeader()
@@ -1527,7 +1542,6 @@ namespace Ionic.Utils.Zip
             if (commentLength + i > bytes.Length) commentLength = bytes.Length - i;
             bytes[i++] = (byte)(commentLength & 0x00FF);
             bytes[i++] = (byte)((commentLength & 0xFF00) >> 8);
-
 
             // Disk number start
             bytes[i++] = 0;
@@ -1657,14 +1671,14 @@ namespace Ionic.Utils.Zip
 
             string SlashFixed = FileName.Replace("\\", "/");
             string result = null;
-            if ((TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3) &&
-        (FileName[1] == ':') && (SlashFixed[2] == '/'))
+            if ((TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3) 
+                && (FileName[1] == ':') && (SlashFixed[2] == '/'))
             {
                 // trim off volume letter, colon, and slash
                 result = SlashFixed.Substring(3);
             }
-            else if ((FileName.Length >= 4) &&
-             ((SlashFixed[0] == '/') && (SlashFixed[1] == '/')))
+            else if ((FileName.Length >= 4) 
+                && ((SlashFixed[0] == '/') && (SlashFixed[1] == '/')))
             {
                 int n = SlashFixed.IndexOf('/', 2);
                 //System.Console.WriteLine("input Path '{0}'", FileName);
@@ -1674,8 +1688,8 @@ namespace Ionic.Utils.Zip
                     throw new ArgumentException("The path for that entry appears to be badly formatted");
                 result = SlashFixed.Substring(n + 1);
             }
-            else if ((FileName.Length >= 3) &&
-             ((SlashFixed[0] == '.') && (SlashFixed[1] == '/')))
+            else if ((FileName.Length >= 3)
+                && ((SlashFixed[0] == '.') && (SlashFixed[1] == '/')))
             {
                 // trim off dot and slash
                 result = SlashFixed.Substring(2);
@@ -1840,11 +1854,11 @@ namespace Ionic.Utils.Zip
             //  bit 6 = strong encryption (not implemented yet)
             //  bit 11 = UTF-8 encoding is used in the comment and filename
 
-            Int16 BitField = (Int16)((UsesEncryption) ? 1 : 0);
+            _BitField = (Int16)((UsesEncryption) ? 1 : 0);
             if (UsesEncryption && (IsStrong(Encryption)))
-                BitField |= 0x0020;
+                _BitField |= 0x0020;
 
-            if (setUtf8Bit) BitField |= 0x0800;
+            if (setUtf8Bit) _BitField |= 0x0800;
 
             // The PKZIP spec says that if bit 3 is set (0x0008) in the General Purpose BitField,
             // then the CRC, Compressed size, and uncompressed size are written directly after the
@@ -1863,10 +1877,10 @@ namespace Ionic.Utils.Zip
             // the output.
 
             if (!s.CanSeek)
-                BitField |= 0x0008;
+                _BitField |= 0x0008;
 
-            bytes[i++] = (byte)(BitField & 0x00FF);
-            bytes[i++] = (byte)((BitField & 0xFF00) >> 8);
+            bytes[i++] = (byte)(_BitField & 0x00FF);
+            bytes[i++] = (byte)((_BitField & 0xFF00) >> 8);
 
             // Here, we want to set values for Compressed Size, Uncompressed Size, and CRC.
             // If we have __FileDataPosition as nonzero, then that means we are reading this
@@ -1890,12 +1904,12 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)((CompressionMethod & 0xFF00) >> 8);
 
             // LastMod
-            int timeBlob = Ionic.Utils.Zip.SharedUtilities.DateTimeToPacked(LastModified);
+            _TimeBlob = Ionic.Utils.Zip.SharedUtilities.DateTimeToPacked(LastModified);
 
-            bytes[i++] = (byte)(timeBlob & 0x000000FF);
-            bytes[i++] = (byte)((timeBlob & 0x0000FF00) >> 8);
-            bytes[i++] = (byte)((timeBlob & 0x00FF0000) >> 16);
-            bytes[i++] = (byte)((timeBlob & 0xFF000000) >> 24);
+            bytes[i++] = (byte)(_TimeBlob & 0x000000FF);
+            bytes[i++] = (byte)((_TimeBlob & 0x0000FF00) >> 8);
+            bytes[i++] = (byte)((_TimeBlob & 0x00FF0000) >> 16);
+            bytes[i++] = (byte)((_TimeBlob & 0xFF000000) >> 24);
 
             // CRC - zero now, actual value will be calculated later
             bytes[i++] = (byte)(_Crc32 & 0x000000FF);
@@ -1964,7 +1978,6 @@ namespace Ionic.Utils.Zip
 
 
 
-        private bool _crcCalculated = false;
         private Int32 FigureCrc32()
         {
             if (_crcCalculated == false)
@@ -2279,7 +2292,8 @@ namespace Ionic.Utils.Zip
         private Int32 _CompressedSize;
         private Int32 _CompressedFileDataSize; // CompressedSize less 12 bytes for the encryption header, if any
         private Int32 _UncompressedSize;
-        //private Int32 _LastModDateTime;
+        private Int32 _TimeBlob;
+        private bool _crcCalculated = false;
         private Int32 _Crc32;
         private byte[] _Extra;
         private bool _OverwriteOnExtract;

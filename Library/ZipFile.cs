@@ -616,7 +616,7 @@ namespace Ionic.Utils.Zip
         /// }
         /// </code>
         /// </example>
-        /// <seealso cref="Ionic.Utils.Zip.ReadApprovalCallback"/>
+        /// <seealso cref="Ionic.Utils.Zip.ReReadApprovalCallback"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.WillReadTwiceOnInflation"/>
         public ReReadApprovalCallback WillReadTwiceOnInflation
         {
