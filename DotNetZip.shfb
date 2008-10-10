@@ -4,15 +4,21 @@
     </assemblies>
     <namespaceSummaries>
         <namespaceSummaryItem name="" isDocumented="False" />
-        <namespaceSummaryItem name="Ionic.Utils.Zip" isDocumented="True">This Ionic.Utils.Zip namespace includes classes to read and write zip files, according to the format
+        <namespaceSummaryItem name="Ionic.Utils.Zip" isDocumented="True">DotNetZip ships classes in the Ionic.Utils.Zip namespace, to read and write zip files according to the format
 described by pkware, at:
-http://www.pkware.com/business_and_developers/developer/popups/appnote.txt
+http://www.pkware.com/business_and_developers/developer/popups/appnote.txt.
 
 This implementation utilizes the
 System.IO.Compression.DeflateStream base class in the .NET Framework
-v2.0 base class library.</namespaceSummaryItem>
+v2.0 base class library.
+
+DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Girls Club of King County, in Washington, USA.  http://cheeso.members.winisp.net/DotNetZipDonate.aspx</namespaceSummaryItem>
     </namespaceSummaries>
-    <ProjectSummary />
+    <additionalContent>
+        <contentItem sourcePath=".\About.htm" destPath="" excludeItems="False" />
+        <contentItem sourcePath=".\Examples.htm" destPath="" excludeItems="False" />
+    </additionalContent>
+    <ProjectSummary>DotNetZip is a small, easy-to-use class library for manipulating .zip files. It can enable .NET applications written in VB.NET, C#, any .NET language, to easily create, read, and update zip files.  DotNetZip is donationware:  http://cheeso.members.winisp.net/DotNetZipDonate.aspx</ProjectSummary>
     <MissingTags>Summary, Parameter, Returns, AutoDocumentCtors, Namespace</MissingTags>
     <VisibleItems>InheritedMembers, InheritedFrameworkMembers, Protected, SealedProtected</VisibleItems>
     <HtmlHelp1xCompilerPath path="" />

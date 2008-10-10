@@ -1,0 +1,153 @@
+<html>
+<head>
+<title>About DotNetZip</title>
+<style>
+p,body,a,tr,td
+             { font-family: Verdana, Arial, Helvetica; font-size: 10pt }
+h1,h2,h3,h4,h5,h6
+             { font-family: Verdana, Arial, Helvetica; font-weight: normal; font-style: normal; }
+h1           { font-size: 20pt }
+h2           { font-size: 18pt; font-weight:bold; color: navy }
+h3           { font-size: 16pt; font-weight:bold; color: #483d8b }
+h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2px; }
+</style>
+</head>
+<!-- @DefaultTopic --> 
+<body>
+<h1>DotNetZip - Zip file manipulation in .NET languages </h1>
+<p>
+DotNetZip is a small, easy-to-use class library for manipulating .zip files. It can enable .NET applications written in VB.NET, C#, F#, and any .NET language, to easily create, read, and update zip files. It supports these kinds of scenarios:
+</p>
+
+<ul>
+<li> creating a zip archive, adding files or directories into the archive</li>
+<li> extracting files from an existing archive</li>
+<li> modifying an existing archive - removing entries from an archive or adding new entries to an archive</li>
+<li> password protecting entries in the archive</li>
+<li> getting entry input from a file or a stream</li>
+<li> reading a zip file from a file or a stream</li>
+<li> extracting an entry into a file or a stream</li>
+</ul>
+
+
+<p>The library can be used in any .NET application - Console, Winforms, WPF, ASP.NET, Sharepoint, Web services apps, Powershell scripts, and so on. It produces zip files that are fully interoperable with Windows Explorer, as well as Java applications, apps running on Linux. </p>
+
+<p>It is designed to be simple and easy to use. DotNetZip is packaged as a single DLL, about 200k in size. It has no third-party dependencies. Get zipping just by referencing the DLL. </p>
+
+<h2>DotNetZip is DonationWare</h2>
+<p>If you find DotNetZip useful, consider donating.   I am now <a href="http://cheeso.members.winisp.net/DotNetZipDonate.aspx">accepting donations</a> on behalf of my favorite charity. and Yes, it is a real charity. </p>
+
+
+<h2>Example Usage</h2>
+<pre lang="cs" numberLines="true" outlining="true"
+  title="Example: creating a zip file">
+   try
+   {
+     using (ZipFile zip = new ZipFile("MyZipFile.zip")
+     {
+       zip.AddFile("c:\\photos\\personal\\7440-N49th.png");
+       zip.AddFile("c:\\Desktop\\2005_Annual_Report.pdf");
+       zip.AddFile("ReadMe.txt");
+       zip.Save();
+     }
+   }
+   catch (System.Exception ex1)
+   {
+     System.Console.Error.WriteLine("exception: " + ex1);
+   }
+</pre>
+
+<p>Tons more examples on <A href="http://www.codeplex.com/DotNetZip">Codeplex</a>, and in the helpfile.</p>
+
+
+
+<h2>Frequently Asked Questions </h2>
+
+<p><b>How does this Zip Library work?</b><br/>
+There's a single DLL, a single assembly, fully managed code, written in C#, that provides support for reading and writing Zip archive files and streams. The main type is ZipFile, featuring Add() and Extract() methods, as well as an enumerator for the entries contained within. </p>
+
+<p><b>What do I need, in order to be able to create and read zip files from within my application using this library?</b><br/>
+To use the zip capability in your applications, you need to be using the .NET Framework 2.0 or later, and you need the DotNetZip assembly. You can use the Zip library from any application, whether a console application, a Windows-Forms application, a server-based application like an ASP.NET page, or something else. You can use C#, VB.NET, COBOL.NET, IronPython, IronRuby, F#, or any other .NET language. </p>
+
+<p><b>What do I need to build this library from the source?</b><br/>
+You need the .NET Framework SDK v3.5, or later; or, Visual Studio 2008 or later. While the library is usable by .NET 2.0 and later, to build it you need .NET 3.5 or later. This is because the source code uses features that were introduced in the C# v3.0 compiler, vars and array initializers and so on. The .NET 3.5 SDK is available here. I don't know if the library will build in Visual C# Express 2008; I never tried it. It might. </p>
+
+<p><b>How big is the library?</b><br/>
+As of version 1.4, the Ionic zip DLL is about 50k in size. The self-extracting stuff, added in v1.5 in June 2008, brought that to about 200k in size. There is just one DLL. There is no other pre-requisite. </p>
+
+<p><b>Why would you want to produce yet another Zip Library?</b><br/>
+There are a number of options in the .NET Ecosystem for manipulating zip files. Some are commercial libraries, some are open-source. You can even shoe-horn the System.IO.Packaging API, which is included in .NET 3.0, into a zip library. But there are tradeoffs for all of them. Some people don't want to pay for a commercially-supported library. Some people don't like the GPL. Most people want something simple and easy to use. This is one more option. It's fast, it's simple, it's free.</p>
+
+<p><b>Does this library make self-extracting zip files? </b><br/>
+Yes. As of v1.5, It can make self-extracting zip files. It also makes standard zip files. </p>
+
+<p><b>Are the zip files this library makes compatible with the Java.util.zip classes in the Java class library? </b><br/>
+Yes. This library makes standard zip files. </p>
+
+<p><b>If I create a zipfile with this library, can I open it from within a Java application, using the java.util.zip library?</b><br/>
+Yes. This library makes standard zip files, so anything that can read and write zip files, on any platform, can work with zipfiles generated from this library. </p>
+
+<p><b>If I create a zipfile with a java application, can I open it from within a .NET application, using this library?</b><br/>
+Yes. This library makes compliant zip files. </p>
+
+<p><b>Can I use Windows Explorer to open the zip files that this library creates?</b><br/>
+Yes. This library makes standard zip files. </p>
+
+<p><b>Does the library support zero-length zip entries, zipfile comments, zip entry comments, and zipping up empty directories? </b><br/>
+Yes. </p>
+
+<p><b>Does this library support any compression algorithm other than deflate?</b><br/>
+No. That is what is provided by the System.IO.Compression.DeflateStream class.</p>
+
+<p><b>Why would I not just use the Packaging APIs included in the .NET Framework 3.0?</b><br/>
+The Packaging APIs are optimized for producing .docx files and .xlsx files. This library is generally simpler and cleaner for creating or reading plain, generic zipfiles. </p>
+
+<p><b>Can I use this library to read .docx files, .xslx files?</b><br/>
+Yes. They are just zip files.  Keep in mind, the Packaging APIs included in .NET 3.0 are optimized for producing .docx files and .xlsx files. </p>
+
+<p><b>Does the library support reading or writing encrypted or password protected zip files?</b><br/>
+Yes, in v1.4 of the library, first available in May 2008. Your applications can now handle zip files that use passwords to protect the entries in the zip archive. It uses PKZip encryption, which is known to be breakable.</p>
+
+<p><b>Can Windows Explorer ("compressed folders") read and extract the zip files created by this library if the zip has password protection?</b><br/>
+Yes. It just works.</p>
+
+<p><b>Does the library support Unicode filenames and comments?</b><br/>
+Yes, as of September 2008, the library can create and read zip files
+that have Unicode (UTF-8) filenames and comments. You can also specify
+arbitrary code pages when reading or writing zipfiles. But, Windows
+Explorer does not support UTF-8 encoded zip files. To read the zip you
+create, you will have to use a tool or library that supports unicode,
+such as WinRar, DotNetZip, etc. </p>
+
+<p><b>Can the library be used to read a zip file that has entries with filenames containing Chinese characters, as produced by WinRAR?</b><br/>
+Yes. To do this you would specify the "big5" code page (cp 950) when reading the zip.  You would do something similar for zip files produced with other code pages.</p>
+
+<p><b>Can Windows Explorer ("compressed folders") read the zip files created by this library if the zip has entries with Unicode-encoded filenames?</b><br/>
+No. But that is a limitation of Windows XP and Windows Vista. It is not a limitation of this library. </p>
+
+<p><b>Is there documentation for the library?</b><br/>
+Yes, there is a CHM file in MSDN helpfile format, generated from the xml comments in the code. </p>
+
+<p><b>Does the library support zipping to a stream? Or unzipping from a stream?</b><br/>
+Yes, this was added in v1.4 of the Library. This means you can zip up files and Save the zip archive to a stream, such as the ASP.NET Response.OutputStream. As well you can Read a zip archive from an open stream. This complements the capability of being able to Save to a plain .zip file or read from a plain .zip file, which was in the library since v1.1</p>
+
+<p><b>Ok, you can save a zip archive to a stream, and read a zip from a stream, But... can you add an entry to a zipfile, grabbing content from a stream? can you unzip a single entry into a stream?</b><br/>
+Yes, this capability was added in v1.4. </p>
+
+<p><b>Does this library allow removal of entries from zip files, or updating of entries in zip files?</b><br/>
+Yes, this capability was added in v1.5. </p>
+
+<p><b>What if I add an already-compressed file into a zip archive?</b><br/>
+Yes, the library handles already-compressed data, such as .mp3 files or .jpg files, intelligently. </p>
+
+<p><b>Do I have to write programs to take advantage of this thing? or is there some other way I can take advantage of the DotNetZip?</b><br/>
+Typically people will embed this DLL into an application. But, the DotNetZip downloads includes a package of "example" applications: a couple command-line utilities and one GUI program that utilize the library, that you can use out of the box to zip and unzip. I drop these in my own bin directory and it allows me to zip and unzip from the command line or from batch files. Also, you can take advantage of the DotNetZip library from within Powershell, if that is your bag. Creating or extracting zips within a ps1 script is pretty handy. </p>
+
+<p><b>Can I grab the source for DotNetZip and embed it into my own project?</b><br/>
+Yes - that's allowed by the license.</p>
+
+<p><b>Does the library handle ZIP64?</b><br/>
+No. It's an open request. I haven't figured out what it would take.</p>
+
+</body>
+</html>

@@ -454,7 +454,7 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Sets the password to be used for any entry subsequently added 
-        /// to the ZipFile, using one of the AddFile, AddDiorectory, or AddItem methods; 
+        /// to the ZipFile, using one of the AddFile, AddDirectory, or AddItem methods; 
         /// or any entry subsequently extracted from the ZipFile using one of the Extract methods on the ZipFile class.  
         /// This password is applied to the entries, not
         /// to the zip archive itself. 
