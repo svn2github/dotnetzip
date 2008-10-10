@@ -810,7 +810,7 @@ namespace Ionic.Utils.Zip
         private static void HandleUnexpectedDataDescriptor(ZipEntry entry)
         {
             System.IO.Stream s = entry._s;
-            // In some cases, the "data descriptor" is present, without a signature, even when bit 3 of the BitField is not set.  
+            // In some cases, the "data descriptor" is present, without a signature, even when bit 3 of the BitField is NOT SET.  
             // This is the CRC, followed
             //    by the compressed length and the uncompressed length (4 bytes for each 
             //    of those three elements).  Need to check that here.             
@@ -2110,6 +2110,10 @@ namespace Ionic.Utils.Zip
             _EntryHeader[i++] = (byte)((_UncompressedSize & 0x00FF0000) >> 16);
             _EntryHeader[i++] = (byte)((_UncompressedSize & 0xFF000000) >> 24);
 
+
+	    // workitem 6414
+	    if (s.CanSeek)
+	    {
             // seek in the raw output stream, to the beginning of the header for this entry.
             s.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
 
@@ -2122,6 +2126,46 @@ namespace Ionic.Utils.Zip
 
             // seek in the raw output stream, to the end of the file data for this entry
             s.Seek(_CompressedSize, System.IO.SeekOrigin.Current);
+	    }
+	    else 
+	    {
+		// eg, ASP.NET Response.OutputStream, or stdout
+
+            if ((_BitField & 0x0008) != 0x0008)
+		throw new ZipException("Logic error.");
+
+
+		byte[] Descriptor = new byte[16];
+		i=0;
+		// signature
+		int sig= ZipConstants.ZipEntryDataDescriptorSignature;
+		Descriptor[i++] = (byte)(sig & 0x000000FF);
+		Descriptor[i++] = (byte)((sig & 0x0000FF00) >> 8);
+		Descriptor[i++] = (byte)((sig & 0x00FF0000) >> 16);
+		Descriptor[i++] = (byte)((sig & 0xFF000000) >> 24);
+
+            // CRC - the correct value now
+            Descriptor[i++] = (byte)(_Crc32 & 0x000000FF);
+            Descriptor[i++] = (byte)((_Crc32 & 0x0000FF00) >> 8);
+            Descriptor[i++] = (byte)((_Crc32 & 0x00FF0000) >> 16);
+            Descriptor[i++] = (byte)((_Crc32 & 0xFF000000) >> 24);
+
+            // CompressedSize - the correct value now
+            Descriptor[i++] = (byte)(_CompressedSize & 0x000000FF);
+            Descriptor[i++] = (byte)((_CompressedSize & 0x0000FF00) >> 8);
+            Descriptor[i++] = (byte)((_CompressedSize & 0x00FF0000) >> 16);
+            Descriptor[i++] = (byte)((_CompressedSize & 0xFF000000) >> 24);
+
+            // UncompressedSize - the correct value now
+            Descriptor[i++] = (byte)(_UncompressedSize & 0x000000FF);
+            Descriptor[i++] = (byte)((_UncompressedSize & 0x0000FF00) >> 8);
+            Descriptor[i++] = (byte)((_UncompressedSize & 0x00FF0000) >> 16);
+            Descriptor[i++] = (byte)((_UncompressedSize & 0xFF000000) >> 24);
+		
+            // finally, write the updated header to the output stream
+            s.Write(Descriptor, 0, Descriptor.Length);
+	    }
+
         }
 
 
@@ -2162,6 +2206,7 @@ namespace Ionic.Utils.Zip
                 // the file pointer is positioned directly after file data.
 
                 if (nCycles > 1) readAgain = false;
+                else if (!outstream.CanSeek) readAgain = false;
                 else if (cipher != null && CompressedSize - 12 <= UncompressedSize) readAgain = false;
                 else readAgain = WantReadAgain();
 
