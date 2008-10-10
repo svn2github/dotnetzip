@@ -246,7 +246,7 @@ namespace Ionic.Utils.Zip
             }
             set
             {
-                _encoding = (value)? System.Text.Encoding.GetEncoding("UTF-8"):DefaultEncoding;
+                _encoding = (value) ? System.Text.Encoding.GetEncoding("UTF-8") : DefaultEncoding;
             }
         }
 
@@ -1668,7 +1668,7 @@ namespace Ionic.Utils.Zip
             ze.ForceNoCompression = ForceNoCompression;
             ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
             ze.Encoding = Encoding;
-            ze._Source = EntrySource.Stream; 
+            ze._Source = EntrySource.Stream;
             ze.Password = _Password;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
             InsureUniqueEntry(ze);
@@ -1909,7 +1909,7 @@ namespace Ionic.Utils.Zip
                 //}
 
 
-		// check for uniqueness:
+                // check for uniqueness:
                 ZipEntry e = this[baseDir.FileName];
                 if (e == null)
                 {
@@ -3391,6 +3391,61 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
+        /// This is an integer indexer into the Zip archive.  
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// This property is read-write. But don't get too excited: When setting the value, the
+        /// only legal value is null. If you assign a non-null value
+        /// (non Nothing in VB), the setter will throw an exception.
+        /// </para>
+        /// <para>
+        /// Setting the value to null is equivalent to calling <c>ZipFile.RemoveEntry</c> 
+        /// with the filename for the given entry.
+        /// </para>
+        /// </remarks>
+        /// 
+        /// <exception cref="System.ArgumentException">
+        /// Thrown if the caller attempts to assign a non-null value to the indexer, 
+        /// or if the caller uses an out-of-range index value.
+        /// </exception>
+        ///
+        /// <param name="ix">
+        /// The index value.
+        /// </param>
+        /// 
+        /// <returns>
+        /// The ZipEntry within the Zip archive at the specified index. If the 
+        /// entry does not exist in the archive, this indexer throws.
+        /// </returns>
+        /// 
+        public ZipEntry this[int ix]
+        {
+            // workitem 6402
+            get
+            {
+                if (_JustSaved)
+                {
+                    // work item 5593
+                    // read in the just-saved zip archive                    
+                    ReadIntoInstance(this);
+                    _JustSaved = false;
+                }
+
+                return _entries[ix];
+            }
+
+            set
+            {
+                if (value != null)
+                    throw new ArgumentException("You may not set this to a non-null ZipEntry value.");
+                RemoveEntry(_entries[ix]);
+            }
+        }
+
+
+        /// <summary>
         /// This is a name-based indexer into the Zip archive.  
         /// </summary>
         /// 
@@ -3406,7 +3461,8 @@ namespace Ionic.Utils.Zip
         /// (non Nothing in VB), the setter will throw an exception.
         /// </para>
         /// <para>
-        /// Setting the value to null is equivalent to calling <c>ZipFile.Remove</c> with the filename.
+        /// Setting the value to null is equivalent to calling <c>ZipFile.RemoveEntry</c> 
+        /// with the filename.
         /// </para>
         /// </remarks>
         /// 
@@ -3559,7 +3615,8 @@ namespace Ionic.Utils.Zip
         /// 
         /// <remarks>
         /// <para>
-        /// After calling <c>RemoveEntry</c>, the application must call <c>Save</c> to make the changes permanent.  
+        /// After calling <c>RemoveEntry</c>, the application must call <c>Save</c> to make the 
+        /// changes permanent.  
         /// </para>
         /// </remarks>
         ///
