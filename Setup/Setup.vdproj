@@ -27,20 +27,8 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_C060BD63BAE174847120EBBA72BFED6E"
-        "OwnerKey" = "8:_1095DCE16DF54952900B158E667C1D5F"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_C060BD63BAE174847120EBBA72BFED6E"
-        "OwnerKey" = "8:_F7DA600A0D264B64822406B06AD1BFDE"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_C060BD63BAE174847120EBBA72BFED6E"
-        "OwnerKey" = "8:_CB8DB966CAC04B37B66694A2F4A5443F"
+        "MsmKey" = "8:_C761E906187B41B991150E5027BA2F8A"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -64,6 +52,12 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_C761E906187B41B991150E5027BA2F8A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_CB8DB966CAC04B37B66694A2F4A5443F"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -71,12 +65,6 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_1095DCE16DF54952900B158E667C1D5F"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_C060BD63BAE174847120EBBA72BFED6E"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -187,37 +175,6 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_C060BD63BAE174847120EBBA72BFED6E"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Utils.Zip, Version=1.6.0.1, Culture=neutral, PublicKeyToken=c551e179877da246, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_C060BD63BAE174847120EBBA72BFED6E"
-                    {
-                    "Name" = "8:Ionic.Utils.Zip.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:Ionic.Utils.Zip.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_23BCB24D0FEF491DB38964CE9740634B"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
         }
@@ -912,6 +869,34 @@
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{98008721-C4DD-4F34-B3AE-A3453E29BB65}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_C761E906187B41B991150E5027BA2F8A"
+            {
+            "SourcePath" = "8:..\\Examples\\WinFormsApp\\obj\\Debug\\WinFormsExample.exe"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_23BCB24D0FEF491DB38964CE9740634B"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{6BCCF138-2EFB-464C-B872-E3079F0A4708}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {

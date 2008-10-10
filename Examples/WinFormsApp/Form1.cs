@@ -52,6 +52,8 @@ namespace WinFormsExample
         }
 
 
+
+
         private void KickoffZipup()
         {
             _folderName = tbDirName.Text;
@@ -73,21 +75,32 @@ namespace WinFormsExample
             this.btnCancel.Enabled = true;
             lblStatus.Text = "Zipping...";
 
-            string comment = "Created at " + System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss") +
-                "\r\n  by " + this.Text;
+            var options = new WorkerOptions
+            {
+                ZipName = this.tbZipName.Text,
+                Folder = _folderName,
+                Comment = "Created at " + System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss") + "\r\n  by " + this.Text
+            };
 
             if (this.tbComment.Text != TB_COMMENT_NOTE)
-                comment += "\r\n" + this.tbComment.Text;
+                options.Comment += "\r\n" + this.tbComment.Text;
 
-            string encodingName = "ibm437";
+            options.Encoding = "ibm437";
             if (this.comboBox1.SelectedIndex != 0)
             {
-                encodingName = this.comboBox1.SelectedItem.ToString();
-                comment += "\r\nEncoding used: " + encodingName;
+                options.Encoding = this.comboBox1.SelectedItem.ToString();
+                options.Comment += "\r\nEncoding used: " + options.Encoding;
             }
+
+            if (this.radioSfxCmd.Checked)
+                options.ZipFlavor = 2;
+            else if (this.radioSfxGui.Checked)
+                options.ZipFlavor = 1;
+            else options.ZipFlavor = 0;
+
             _workerThread = new Thread(this.DoSave);
             _workerThread.Name = "Zip Saver thread";
-            _workerThread.Start(new string[] { this.tbZipName.Text, _folderName, encodingName, comment });
+            _workerThread.Start(options);
             this.Cursor = Cursors.WaitCursor;
 
         }
@@ -134,20 +147,25 @@ namespace WinFormsExample
             }
         }
 
-        private void DoSave(object p)
+        private void DoSave(Object p)
         {
-            string[] args = p as string[];
+            WorkerOptions options = p as WorkerOptions;
 
-            using (var zip1 = new ZipFile(args[0]))
+            using (var zip1 = new ZipFile())
             {
-                zip1.Encoding = System.Text.Encoding.GetEncoding(args[2]);
-                zip1.Comment = args[3];
-                zip1.AddDirectory(args[1]);
+                zip1.Encoding = System.Text.Encoding.GetEncoding(options.Encoding);
+                zip1.Comment = options.Comment;
+                zip1.AddDirectory(options.Folder);
                 _entriesToZip = zip1.EntryFileNames.Count;
                 SetProgressBar();
                 zip1.SaveProgress += this.zip1_SaveProgress;
                 zip1.SaveCompleted += this.zip1_SaveCompleted;
-                zip1.Save();
+                if (options.ZipFlavor == 1)
+                    zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.WinFormsApplication);
+                else if (options.ZipFlavor == 2)
+                    zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.ConsoleApplication);
+                else
+                    zip1.Save(options.ZipName);
             }
         }
 
@@ -226,6 +244,53 @@ namespace WinFormsExample
             ResetState();
         }
 
+        private void radioSfx_CheckedChanged(object sender, EventArgs e)
+        {
+            if (this.radioSfxGui.Checked || this.radioSfxCmd.Checked)
+            {
+                // Always use UTF-8 when creating a self-extractor.
+                // A zip created with UTF-8 encoding is foolproof when 
+                // extracted with the DotNetZip library.  The only reason you wouldn't
+                // want to use UTF-8 is when your extractor doesn't support it. 
+                // But DotNetZip supports it, and DotNetZip is the extractor on a SFX, 
+                // so .. we'll use UTF-8 when these checkboxes are checked.  
+
+                // but we will cache the current setting, so if the user clicks back
+                // to the traditional zip, then he will get his favorite flavor of encoding restored. 
+                if (_mostRecentEncoding == null)
+                    _mostRecentEncoding = this.comboBox1.SelectedItem.ToString();
+                this.comboBox1.SelectedIndex = 1; // UTF-8
+                this.comboBox1.Enabled = false;
+
+                // intelligently change the name of the thing to create
+                if (this.tbZipName.Text.ToUpper().EndsWith(".ZIP"))
+                {
+                    tbZipName.Text = System.Text.RegularExpressions.Regex.Replace(tbZipName.Text, "(?i:)\\.zip$", ".exe");
+                }
+            }
+        }
+
+        private void radioTraditionalZip_CheckedChanged(object sender, EventArgs e)
+        {
+            if (this.radioTraditionalZip.Checked)
+            {
+                // re-enable the encoding, and set it to what it was most recently
+                this.comboBox1.Enabled = true;
+                if (_mostRecentEncoding != null)
+                {
+                    this.SelectNamedEncoding(_mostRecentEncoding);
+                    _mostRecentEncoding = null;
+                }
+                
+                // intelligently change the name of the thing to create
+                if (this.tbZipName.Text.ToUpper().EndsWith(".EXE"))
+                {
+                    tbZipName.Text = System.Text.RegularExpressions.Regex.Replace(tbZipName.Text, "(?i:)\\.exe$", ".zip");
+                }
+            }
+        }
+
+
         private void ResetState()
         {
             this.btnCancel.Enabled = false;
@@ -266,20 +331,34 @@ namespace WinFormsExample
                 if (s != null) this.tbZipName.Text = s;
 
                 s = (string)AppCuKey.GetValue(_rvn_Encoding);
-                if (s!=null)
+                if (s != null)
                 {
-                    for (int i = 0; i < this.comboBox1.Items.Count; i++)
-                    {
-                        if (this.comboBox1.Items[i].ToString() == s)
-                        {
-                            this.comboBox1.SelectedIndex = i;
-                            break;
-                        }
-                    }
+                    SelectNamedEncoding(s);
                 }
+
+                int x = (Int32)AppCuKey.GetValue(_rvn_ZipFlavor, 0);
+                if (x == 2)
+                    this.radioSfxCmd.Checked = true;
+                else if (x == 1)
+                    this.radioSfxGui.Checked = true;
+                else
+                    this.radioTraditionalZip.Checked = true;
+
 
                 AppCuKey.Close();
                 AppCuKey = null;
+            }
+        }
+
+        private void SelectNamedEncoding(string s)
+        {
+            for (int i = 0; i < this.comboBox1.Items.Count; i++)
+            {
+                if (this.comboBox1.Items[i].ToString() == s)
+                {
+                    this.comboBox1.SelectedIndex = i;
+                    break;
+                }
             }
         }
 
@@ -292,8 +371,15 @@ namespace WinFormsExample
                 AppCuKey.SetValue(_rvn_ZipTarget, this.tbZipName.Text);
                 AppCuKey.SetValue(_rvn_Encoding, this.comboBox1.SelectedItem.ToString());
 
+                int x = 0;
+                if (this.radioSfxCmd.Checked)
+                    x = 2;
+                else if (this.radioSfxGui.Checked)
+                    x = 1;
+                AppCuKey.SetValue(_rvn_ZipFlavor, x);
+
                 AppCuKey.SetValue(_rvn_LastRun, System.DateTime.Now.ToString("yyyy MMM dd HH:mm:ss"));
-                int x = (Int32)AppCuKey.GetValue(_rvn_Runs, 0);
+                x = (Int32)AppCuKey.GetValue(_rvn_Runs, 0);
                 x++;
                 AppCuKey.SetValue(_rvn_Runs, x);
 
@@ -329,15 +415,25 @@ namespace WinFormsExample
         private Thread _workerThread;
         private static string TB_COMMENT_NOTE = "-zip file comment here-";
         private List<String> _EncodingNames;
+        private string _mostRecentEncoding;
 
         private Microsoft.Win32.RegistryKey _appCuKey;
-
         private static string _AppRegyPath = "Software\\Dino Chiesa\\DotNetZip Winforms Tool";
         private static string _rvn_DirectoryToZip = "DirectoryToZip";
         private static string _rvn_ZipTarget = "ZipTarget";
         private static string _rvn_Encoding = "Encoding";
+        private static string _rvn_ZipFlavor = "ZipFlavor";
         private static string _rvn_LastRun = "LastRun";
         private static string _rvn_Runs = "Runs";
 
+    }
+
+    public class WorkerOptions
+    {
+        public string ZipName;
+        public string Folder;
+        public string Encoding;
+        public string Comment;
+        public int ZipFlavor;
     }
 }
