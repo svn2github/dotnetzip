@@ -3055,6 +3055,7 @@ namespace Ionic.Utils.Zip
             {
                 block = new byte[commentLength];
                 zf.ReadStream.Read(block, 0, block.Length);
+		// workitem 6415
                 // use UTF if the caller hasn't already set a non-default encoding
                 if (Ionic.Utils.Zip.SharedUtilities.HighBytes(block) && zf._encoding == System.Text.Encoding.GetEncoding("ibm437"))
                     zf._encoding = System.Text.Encoding.UTF8;

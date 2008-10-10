@@ -242,6 +242,7 @@
             Application.Exit();
         }
 
+	// workitem 6413
         private void btnContents_Click(object sender, EventArgs e)
         {
             ZipContentsDialog dlg1 = new ZipContentsDialog();

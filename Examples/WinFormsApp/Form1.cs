@@ -88,7 +88,7 @@ namespace WinFormsExample
             }
 
 
-	    options.Comment = String.Format("Encoding {0}\r\nCreated at {1} ||{2}\r\n",
+	    options.Comment = String.Format("Encoding {0}\r\nCreated at {1} || {2}\r\n",
 				    options.Encoding,
 				    System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss"), 
 				    this.Text);
