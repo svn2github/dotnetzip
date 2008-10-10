@@ -1,8 +1,8 @@
 ﻿namespace Ionic.Utils.Zip
 {
     using System;
-using System.Collections.Generic;
-using System.Windows.Forms;
+    using System.Collections.Generic;
+    using System.Windows.Forms;
 
     public partial class PasswordDialog : Form
     {

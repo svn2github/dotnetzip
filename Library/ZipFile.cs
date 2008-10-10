@@ -2231,12 +2231,15 @@ namespace Ionic.Utils.Zip
             }
             else
             {
+#if NO_UTF8		
                 Int16 commentLength = (Int16)Comment.Length;
                 // the size of our buffer defines the max length of the comment we can write
                 if (commentLength + i + 2 > bytes.Length) commentLength = (Int16)(bytes.Length - i - 2);
                 bytes[i++] = (byte)(commentLength & 0x00FF);
                 bytes[i++] = (byte)((commentLength & 0xFF00) >> 8);
+
                 char[] c = Comment.ToCharArray();
+
                 int j = 0;
                 // now actually write the comment itself into the byte buffer
                 for (j = 0; (j < commentLength) && (i + j < bytes.Length); j++)
@@ -2244,6 +2247,28 @@ namespace Ionic.Utils.Zip
                     bytes[i + j] = System.BitConverter.GetBytes(c[j])[0];
                 }
                 i += j;
+#else
+
+		byte[] block = SharedUtilities.StringToByteArray(Comment, Encoding);
+                Int16 commentLength = (Int16)block.Length;
+                // the size of our buffer defines the max length of the comment we can write
+                if (commentLength + i + 2 > bytes.Length) commentLength = (Int16)(bytes.Length - i - 2);
+                bytes[i++] = (byte)(commentLength & 0x00FF);
+                bytes[i++] = (byte)((commentLength & 0xFF00) >> 8);
+
+            if (commentLength != 0)
+            {
+		int j=0;
+                // now actually write the comment itself into the byte buffer
+                for (j = 0; (j < commentLength) && (i + j < bytes.Length); j++)
+                {
+                    bytes[i + j] = block[j];
+                }
+                i += j;
+	    }
+
+#endif
+
             }
 
             s.Write(bytes, 0, i);
@@ -3030,6 +3055,9 @@ namespace Ionic.Utils.Zip
             {
                 block = new byte[commentLength];
                 zf.ReadStream.Read(block, 0, block.Length);
+                // use UTF if the caller hasn't already set a non-default encoding
+                if (Ionic.Utils.Zip.SharedUtilities.HighBytes(block) && zf._encoding == System.Text.Encoding.GetEncoding("ibm437"))
+                    zf._encoding = System.Text.Encoding.UTF8;
                 zf.Comment = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length, zf._encoding);
             }
         }

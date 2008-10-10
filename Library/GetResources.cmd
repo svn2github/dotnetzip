@@ -22,12 +22,15 @@ mkdir %ResourceDirectory%
 copy /y ..\Examples\SelfExtracting\CommandLineSelfExtractorStub.cs        %ResourceDirectory%
 copy /y ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.cs           %ResourceDirectory%
 copy /y ..\Examples\SelfExtracting\PasswordDialog.cs                      %ResourceDirectory%
+copy /y ..\Examples\SelfExtracting\ZipContentsDialog.cs                   %ResourceDirectory%
 copy /y ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.Designer.cs  %ResourceDirectory%
 copy /y ..\Examples\SelfExtracting\PasswordDialog.Designer.cs             %ResourceDirectory%
+copy /y ..\Examples\SelfExtracting\ZipContentsDialog.Designer.cs          %ResourceDirectory%
 
 
 copy /y ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.resx     %ResourceDirectory%
-copy /y ..\Examples\SelfExtracting\PasswordDialog.resx     %ResourceDirectory%
+copy /y ..\Examples\SelfExtracting\PasswordDialog.resx                %ResourceDirectory%
+copy /y ..\Examples\SelfExtracting\ZipContentsDialog.resx             %ResourceDirectory%
 
 
 @REM c:\netsdk3.0\bin\resgen.exe ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.resx     %ResourceDirectory%\WinFormsSelfExtractorStub.resources

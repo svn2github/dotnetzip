@@ -79,18 +79,23 @@ namespace WinFormsExample
             {
                 ZipName = this.tbZipName.Text,
                 Folder = _folderName,
-                Comment = "Created at " + System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss") + "\r\n  by " + this.Text
+		    Encoding = "ibm437"
             };
 
-            if (this.tbComment.Text != TB_COMMENT_NOTE)
-                options.Comment += "\r\n" + this.tbComment.Text;
-
-            options.Encoding = "ibm437";
             if (this.comboBox1.SelectedIndex != 0)
             {
                 options.Encoding = this.comboBox1.SelectedItem.ToString();
-                options.Comment += "\r\nEncoding used: " + options.Encoding;
             }
+
+
+	    options.Comment = String.Format("Encoding {0}\r\nCreated at {1} ||{2}\r\n",
+				    options.Encoding,
+				    System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss"), 
+				    this.Text);
+
+            if (this.tbComment.Text != TB_COMMENT_NOTE)
+                options.Comment += this.tbComment.Text;
+
 
             if (this.radioSfxCmd.Checked)
                 options.ZipFlavor = 2;

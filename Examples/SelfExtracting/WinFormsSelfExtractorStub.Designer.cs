@@ -38,6 +38,7 @@
             this.chk_OpenExplorer = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.txtComment = new System.Windows.Forms.TextBox();
+            this.btnContents = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnExtract
@@ -138,11 +139,23 @@
             this.txtComment.Size = new System.Drawing.Size(504, 86);
             this.txtComment.TabIndex = 9;
             // 
+            // btnContents
+            // 
+            this.btnContents.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnContents.Location = new System.Drawing.Point(290, 209);
+            this.btnContents.Name = "btnContents";
+            this.btnContents.Size = new System.Drawing.Size(90, 23);
+            this.btnContents.TabIndex = 10;
+            this.btnContents.Text = "Show Contents";
+            this.btnContents.UseVisualStyleBackColor = true;
+            this.btnContents.Click += new System.EventHandler(this.btnContents_Click);
+            // 
             // WinFormsSelfExtractorStub
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(524, 244);
+            this.Controls.Add(this.btnContents);
             this.Controls.Add(this.txtComment);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.chk_OpenExplorer);
@@ -173,5 +186,6 @@
         private System.Windows.Forms.CheckBox chk_OpenExplorer;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txtComment;
+        private System.Windows.Forms.Button btnContents;
     }
 }

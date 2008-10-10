@@ -91,12 +91,15 @@ namespace Ionic.Utils.Zip
                     "System.Windows.Forms.dll", "System.dll", "System.Drawing.dll"},
                 CopyThroughResources = new List<string>{
                     "Ionic.Utils.Zip.WinFormsSelfExtractorStub.resources",
-                    "Ionic.Utils.Zip.PasswordDialog.resources"},
+                    "Ionic.Utils.Zip.PasswordDialog.resources",
+                    "Ionic.Utils.Zip.ZipContentsDialog.resources"},
                 ResourcesToCompile = new List<string>{
                     "Ionic.Utils.Zip.Resources.WinFormsSelfExtractorStub.cs",
                     "Ionic.Utils.Zip.WinFormsSelfExtractorStub", // .Designer.cs
                     "Ionic.Utils.Zip.Resources.PasswordDialog.cs",
-                    "Ionic.Utils.Zip.PasswordDialog"             //.Designer.cs"
+                    "Ionic.Utils.Zip.PasswordDialog",             //.Designer.cs"
+                    "Ionic.Utils.Zip.Resources.ZipContentsDialog.cs",
+                    "Ionic.Utils.Zip.ZipContentsDialog"             //.Designer.cs"
                 }
             },
             new ExtractorSettings() {

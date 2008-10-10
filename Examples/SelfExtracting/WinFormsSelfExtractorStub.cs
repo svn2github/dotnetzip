@@ -10,16 +10,17 @@
     {
         //const string IdString = "DotNetZip Self Extractor, see http://www.codeplex.com/DotNetZip";
         const string DllResourceName = "Ionic.Utils.Zip.dll";
+
+
+
         public WinFormsSelfExtractorStub()
         {
             InitializeComponent();
             txtExtractDirectory.Text = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
 
-            Stream s = GetZipStream();
             try
             {
-                using (global::Ionic.Utils.Zip.ZipFile zip = global::Ionic.Utils.Zip.ZipFile.Read(s))
-                {
+                
                     if ((zip.Comment != null) && (zip.Comment != ""))
                     {
                         txtComment.Text = zip.Comment;
@@ -32,7 +33,7 @@
                         txtComment.Visible = false;
                         this.Size = new System.Drawing.Size(this.Width, this.Height - 113);
                     }
-                }
+                
             }
             catch
             {
@@ -99,12 +100,9 @@
             bool extractCancelled = false;
             string currentPassword = "";
 
-            Stream s = GetZipStream();
-
             try
             {
-                using (global::Ionic.Utils.Zip.ZipFile zip = global::Ionic.Utils.Zip.ZipFile.Read(s))
-                {
+
                     foreach (global::Ionic.Utils.Zip.ZipEntry entry in zip)
                     {
                         if (entry.Encryption == global::Ionic.Utils.Zip.EncryptionAlgorithm.None)
@@ -161,7 +159,7 @@
                             }
                         }
                     }
-                }
+                
             }
             catch (Exception)
             {
@@ -190,32 +188,46 @@
 
         }
 
-        private static Stream GetZipStream()
+        private Stream ZipStream
         {
-            // There are only two embedded resources.
-            // One of them is the zip dll.  The other is the zip archive.
-            // We load the resouce that is NOT the DLL, as the zip archive.
-            Assembly a = Assembly.GetExecutingAssembly();
-            string[] x = a.GetManifestResourceNames();
-            Stream s = null;
-            foreach (string name in x)
+            get
             {
-                if ((name != DllResourceName) && (name.EndsWith(".zip")))
-                {
-                    s = a.GetManifestResourceStream(name);
-                    break;
-                }
-            }
+                if (_s != null) return _s;
 
-            if (s == null)
-            {
-                MessageBox.Show("No Zip archive found.",
-                       "Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-                Application.Exit();
+                // There are only two embedded resources.
+                // One of them is the zip dll.  The other is the zip archive.
+                // We load the resouce that is NOT the DLL, as the zip archive.
+                Assembly a = Assembly.GetExecutingAssembly();
+                string[] x = a.GetManifestResourceNames();
+                _s = null;
+                foreach (string name in x)
+                {
+                    if ((name != DllResourceName) && (name.EndsWith(".zip")))
+                    {
+                        _s = a.GetManifestResourceStream(name);
+                        break;
+                    }
+                }
+
+                if (_s == null)
+                {
+                    MessageBox.Show("No Zip archive found.",
+                           "Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+                    Application.Exit();
+                }
+                return _s;
             }
-            return s;
         }
 
+        private ZipFile zip
+        {
+            get
+            {
+                if (_zip == null)
+                    _zip = global::Ionic.Utils.Zip.ZipFile.Read(ZipStream);
+                return _zip;
+            }
+        }
 
         private string PromptForPassword(string entryName)
         {
@@ -229,6 +241,19 @@
         {
             Application.Exit();
         }
+
+        private void btnContents_Click(object sender, EventArgs e)
+        {
+            ZipContentsDialog dlg1 = new ZipContentsDialog();
+            dlg1.ZipFile = zip;
+            dlg1.ShowDialog();
+            return;
+        }
+
+
+        Stream _s;
+        global::Ionic.Utils.Zip.ZipFile _zip;
+
     }
 
 

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.label1 = new System.Windows.Forms.Label();
             this.tbDirName = new System.Windows.Forms.TextBox();
             this.btnDirBrowse = new System.Windows.Forms.Button();
@@ -238,6 +239,7 @@
             this.Controls.Add(this.btnDirBrowse);
             this.Controls.Add(this.tbDirName);
             this.Controls.Add(this.label1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "WinForms Example for DotNetZip";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);

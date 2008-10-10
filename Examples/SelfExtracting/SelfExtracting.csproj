@@ -6,7 +6,7 @@
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{276B8174-A24E-4257-9969-42D692F8CAC2}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Ionic.Utils.Zip</RootNamespace>
     <AssemblyName>CreateSelfExtractor</AssemblyName>
@@ -57,6 +57,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CreateSelfExtractor.cs" />
+    <EmbeddedResource Include="ZipContentsDialog.cs">
+      <SubType>Form</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ZipContentsDialog.Designer.cs">
+      <DependentUpon>ZipContentsDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="PasswordDialog.cs">
       <SubType>Form</SubType>
     </EmbeddedResource>
@@ -77,6 +83,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="WinFormsSelfExtractorStub.resx">
       <DependentUpon>WinFormsSelfExtractorStub.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ZipContentsDialog.resx">
+      <DependentUpon>ZipContentsDialog.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
