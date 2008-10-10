@@ -426,9 +426,9 @@ namespace Ionic.Utils.Zip
             set
             {
                 _Password = value;
-                Encryption = (_Password == null) ?
-                    EncryptionAlgorithm.None :
-                    EncryptionAlgorithm.PkzipWeak;
+                Encryption = (_Password == null) 
+                    ? EncryptionAlgorithm.None
+                    : EncryptionAlgorithm.PkzipWeak;
             }
         }
 
@@ -806,6 +806,7 @@ namespace Ionic.Utils.Zip
             return entry;
         }
 
+
         private static void HandleUnexpectedDataDescriptor(ZipEntry entry)
         {
             System.IO.Stream s = entry._s;
@@ -887,10 +888,9 @@ namespace Ionic.Utils.Zip
             }
             else
             {
-                entry._LastModified = (System.IO.File.Exists(filename) || System.IO.Directory.Exists(filename)) ?
-            SharedUtilities.RoundToEvenSecond(System.IO.File.GetLastWriteTime(filename))
-            :
-            DateTime.Now;
+                entry._LastModified = (System.IO.File.Exists(filename) || System.IO.Directory.Exists(filename))
+                    ? SharedUtilities.RoundToEvenSecond(System.IO.File.GetLastWriteTime(filename))
+                    : DateTime.Now;
 
                 if (!entry._LastModified.IsDaylightSavingTime() &&
                     DateTime.Now.IsDaylightSavingTime())
@@ -1264,8 +1264,9 @@ namespace Ionic.Utils.Zip
             // seek to the beginning of the file data in the stream
             this._s.Seek(this.__FileDataPosition, System.IO.SeekOrigin.Begin);
 
-            var instream = (Encryption == EncryptionAlgorithm.PkzipWeak) ?
-        new ZipCipherStream(this._s, cipher, CryptoMode.Decrypt) : this._s;
+            var instream = (Encryption == EncryptionAlgorithm.PkzipWeak)
+        ? new ZipCipherStream(this._s, cipher, CryptoMode.Decrypt)
+        : this._s;
 
             return new CrcCalculatorStream((CompressionMethod == 0x08) ?
                        new DeflateStream(instream, CompressionMode.Decompress, true) :
@@ -1384,7 +1385,7 @@ namespace Ionic.Utils.Zip
         private void ValidateEncryption()
         {
             if ((Encryption != EncryptionAlgorithm.PkzipWeak) &&
-        (Encryption != EncryptionAlgorithm.None))
+                (Encryption != EncryptionAlgorithm.None))
                 throw new ArgumentException(String.Format("Unsupported Encryption algorithm ({0:X2})",
                               Encryption));
         }
@@ -1464,12 +1465,12 @@ namespace Ionic.Utils.Zip
 
             // get a stream that either decrypts or not.
             Stream input2 = (Encryption == EncryptionAlgorithm.PkzipWeak)
-                ? new ZipCipherStream(input, cipher, CryptoMode.Decrypt) 
+                ? new ZipCipherStream(input, cipher, CryptoMode.Decrypt)
                 : input;
 
             // using the above, now we get a stream that either decompresses or not.
-            Stream input3 = (CompressionMethod == 0x08) 
-                ? new DeflateStream(input2, CompressionMode.Decompress, true) 
+            Stream input3 = (CompressionMethod == 0x08)
+                ? new DeflateStream(input2, CompressionMode.Decompress, true)
                 : input2;
 
             //var out2 = new CrcCalculatorStream(output, LeftToRead);
@@ -1671,13 +1672,13 @@ namespace Ionic.Utils.Zip
 
             string SlashFixed = FileName.Replace("\\", "/");
             string result = null;
-            if ((TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3) 
+            if ((TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3)
                 && (FileName[1] == ':') && (SlashFixed[2] == '/'))
             {
                 // trim off volume letter, colon, and slash
                 result = SlashFixed.Substring(3);
             }
-            else if ((FileName.Length >= 4) 
+            else if ((FileName.Length >= 4)
                 && ((SlashFixed[0] == '/') && (SlashFixed[1] == '/')))
             {
                 int n = SlashFixed.IndexOf('/', 2);
@@ -1698,10 +1699,6 @@ namespace Ionic.Utils.Zip
             {
                 result = SlashFixed;
             }
-
-            //return (UseUtf8Encoding) ?
-            //    Ionic.Utils.Zip.SharedUtilities.Utf8StringToByteArray(result) :
-            //    Ionic.Utils.Zip.SharedUtilities.StringToByteArray(result);
 
             return Ionic.Utils.Zip.SharedUtilities.StringToByteArray(result, _encoding);
         }
@@ -2052,7 +2049,6 @@ namespace Ionic.Utils.Zip
                 else
                     output2 = output1;
 
-
                 // as we emit the file, we maybe deflate, then maybe encrypt, then write the bytes. 
                 byte[] buffer = new byte[READBLOCK_SIZE];
 
@@ -2081,7 +2077,6 @@ namespace Ionic.Utils.Zip
             _UncompressedSize = input1.TotalBytesSlurped;
             _CompressedSize = counter.BytesWritten;
 
-            //Console.WriteLine("final CRC= 0x{0:X8}", input1.Crc32);
             _Crc32 = input1.Crc32;
 
             if ((_Password != null) && (Encryption == EncryptionAlgorithm.PkzipWeak))

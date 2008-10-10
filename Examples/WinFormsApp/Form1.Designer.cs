@@ -29,14 +29,18 @@
         private void InitializeComponent()
         {
             this.label1 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.tbDirName = new System.Windows.Forms.TextBox();
+            this.btnDirBrowse = new System.Windows.Forms.Button();
+            this.btnOk = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.button3 = new System.Windows.Forms.Button();
-            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.btnCancel = new System.Windows.Forms.Button();
+            this.tbZipName = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
+            this.lblStatus = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.tbComment = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -48,93 +52,152 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "directory to zip: ";
             // 
-            // textBox1
+            // tbDirName
             // 
-            this.textBox1.Location = new System.Drawing.Point(99, 21);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(177, 20);
-            this.textBox1.TabIndex = 1;
-            this.textBox1.Text = "c:\\users\\dinoch\\Music";
+            this.tbDirName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbDirName.Location = new System.Drawing.Point(99, 20);
+            this.tbDirName.Name = "tbDirName";
+            this.tbDirName.Size = new System.Drawing.Size(454, 20);
+            this.tbDirName.TabIndex = 1;
+            this.tbDirName.Text = "c:\\dinoch\\dev\\dotnet\\zip\\test\\UnicodeTestCases\\A\\den f¢rste hjemmeside i rækken [" +
+                "DK]";
             // 
-            // button1
+            // btnDirBrowse
             // 
-            this.button1.Location = new System.Drawing.Point(282, 21);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(26, 20);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "...";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.btnDirBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnDirBrowse.Location = new System.Drawing.Point(559, 20);
+            this.btnDirBrowse.Name = "btnDirBrowse";
+            this.btnDirBrowse.Size = new System.Drawing.Size(24, 20);
+            this.btnDirBrowse.TabIndex = 2;
+            this.btnDirBrowse.Text = "...";
+            this.btnDirBrowse.UseVisualStyleBackColor = true;
+            this.btnDirBrowse.Click += new System.EventHandler(this.button1_Click);
             // 
-            // button2
+            // btnOk
             // 
-            this.button2.Location = new System.Drawing.Point(243, 73);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(101, 29);
-            this.button2.TabIndex = 3;
-            this.button2.Text = "Zip It!";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.btnOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnOk.Location = new System.Drawing.Point(483, 171);
+            this.btnOk.Name = "btnOk";
+            this.btnOk.Size = new System.Drawing.Size(101, 29);
+            this.btnOk.TabIndex = 3;
+            this.btnOk.Text = "Zip It!";
+            this.btnOk.UseVisualStyleBackColor = true;
+            this.btnOk.Click += new System.EventHandler(this.button2_Click);
             // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(12, 163);
+            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar1.Location = new System.Drawing.Point(12, 224);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(332, 23);
+            this.progressBar1.Size = new System.Drawing.Size(571, 23);
             this.progressBar1.TabIndex = 4;
             // 
-            // button3
+            // btnCancel
             // 
-            this.button3.Enabled = false;
-            this.button3.Location = new System.Drawing.Point(244, 192);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(100, 23);
-            this.button3.TabIndex = 5;
-            this.button3.Text = "Cancel";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCancel.Enabled = false;
+            this.btnCancel.Location = new System.Drawing.Point(483, 253);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(101, 29);
+            this.btnCancel.TabIndex = 5;
+            this.btnCancel.Text = "Cancel";
+            this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.button3_Click);
             // 
-            // textBox2
+            // tbZipName
             // 
-            this.textBox2.Location = new System.Drawing.Point(99, 47);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(177, 20);
-            this.textBox2.TabIndex = 7;
-            this.textBox2.Text = "c:\\temp\\Temp.zip";
+            this.tbZipName.AcceptsReturn = true;
+            this.tbZipName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbZipName.Location = new System.Drawing.Point(99, 48);
+            this.tbZipName.Name = "tbZipName";
+            this.tbZipName.Size = new System.Drawing.Size(454, 20);
+            this.tbZipName.TabIndex = 7;
+            this.tbZipName.Text = "c:\\dinoch\\dev\\dotnet\\zip\\test\\U.zip";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 50);
+            this.label2.Location = new System.Drawing.Point(12, 52);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(76, 13);
+            this.label2.Size = new System.Drawing.Size(73, 13);
             this.label2.TabIndex = 6;
-            this.label2.Text = "File to save to:";
+            this.label2.Text = "file to save to:";
             // 
-            // label3
+            // lblStatus
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 147);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(0, 13);
-            this.label3.TabIndex = 8;
+            this.lblStatus.AutoSize = true;
+            this.lblStatus.Location = new System.Drawing.Point(20, 256);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(0, 13);
+            this.lblStatus.TabIndex = 8;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(12, 80);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(54, 13);
+            this.label4.TabIndex = 9;
+            this.label4.Text = "encoding:";
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(99, 76);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(177, 21);
+            this.comboBox1.TabIndex = 11;
+            // 
+            // tbComment
+            // 
+            this.tbComment.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbComment.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbComment.ForeColor = System.Drawing.SystemColors.InactiveCaption;
+            this.tbComment.Location = new System.Drawing.Point(99, 105);
+            this.tbComment.Multiline = true;
+            this.tbComment.Name = "tbComment";
+            this.tbComment.Size = new System.Drawing.Size(484, 49);
+            this.tbComment.TabIndex = 13;
+            this.tbComment.Text = "-zip file comment here-";
+            this.tbComment.Leave += new System.EventHandler(this.tbComment_Leave);
+            this.tbComment.Enter += new System.EventHandler(this.tbComment_Enter);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(12, 108);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(53, 13);
+            this.label5.TabIndex = 12;
+            this.label5.Text = "comment:";
             // 
             // Form1
             // 
+            this.AcceptButton = this.btnOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(356, 264);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.textBox2);
+            this.ClientSize = new System.Drawing.Size(595, 311);
+            this.Controls.Add(this.tbComment);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.lblStatus);
+            this.Controls.Add(this.tbZipName);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.button3);
+            this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.progressBar1);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.btnOk);
+            this.Controls.Add(this.btnDirBrowse);
+            this.Controls.Add(this.tbDirName);
             this.Controls.Add(this.label1);
             this.Name = "Form1";
-            this.Text = "Win Forms Zip Example";
+            this.Text = "WinForms Example for DotNetZip";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -143,14 +206,18 @@
         #endregion
 
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.TextBox tbDirName;
+        private System.Windows.Forms.Button btnDirBrowse;
+        private System.Windows.Forms.Button btnOk;
         private System.Windows.Forms.ProgressBar progressBar1;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.TextBox tbZipName;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label lblStatus;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.TextBox tbComment;
+        private System.Windows.Forms.Label label5;
     }
 }
 

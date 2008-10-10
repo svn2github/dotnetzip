@@ -1888,6 +1888,7 @@ namespace Ionic.Utils.Zip
             if (level > 0 || rootDirectoryPathInArchive != "")
             {
                 ZipEntry baseDir = ZipEntry.Create(directoryName, dirForEntries);
+                baseDir.Encoding = this.Encoding;  // workitem 6410
                 baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
                 baseDir._Source = EntrySource.Filesystem;
                 baseDir.MarkAsDirectory();
@@ -1908,6 +1909,7 @@ namespace Ionic.Utils.Zip
                 //}
 
 
+		// check for uniqueness:
                 ZipEntry e = this[baseDir.FileName];
                 if (e == null)
                 {
