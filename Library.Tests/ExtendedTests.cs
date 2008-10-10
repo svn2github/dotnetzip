@@ -494,7 +494,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
                         // create an arbitrary directory name, add it to the zip archive
                         string DirName = TestUtilities.GenerateRandomName(24);
                         zip1.AddDirectoryByName(DirName);
-                        DirsAdded.Add(DirName);
+                        DirsAdded.Add(DirName + "/");
                     }
                     zip1.Save();
                 }
@@ -506,7 +506,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
                     foreach (var e in zip2)
                     {
                         TestContext.WriteLine("dir: {0}", e.FileName);
-                        Assert.IsTrue(DirsAdded.Contains(e.FileName));
+                        Assert.IsTrue(DirsAdded.Contains(e.FileName), "Cannot find the expected entry");
                         Assert.IsTrue(e.IsDirectory);
                         dirCount++;
                     }
@@ -535,7 +535,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
                         DirName = System.IO.Path.Combine(DirName, TestUtilities.GenerateRandomAsciiString(11));
                     }
                     zip1.AddDirectoryByName(DirName);
-                    DirsAdded.Add(DirName);
+                    DirsAdded.Add(DirName.Replace("\\", "/") + "/");
                 }
                 zip1.Save();
             }
@@ -546,7 +546,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
                 foreach (var e in zip2)
                 {
                     TestContext.WriteLine("dir: {0}", e.FileName);
-                    Assert.IsTrue(DirsAdded.Contains(e.FileName.Replace("/", "\\")));
+                    Assert.IsTrue(DirsAdded.Contains(e.FileName), "Cannot find the expected directory.");
                     Assert.IsTrue(e.IsDirectory);
                     dirCount++;
                 }
@@ -573,7 +573,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
                         System.IO.Path.Combine(DirName, TestUtilities.GenerateRandomAsciiString(8));
 
                     zip1.AddDirectoryByName(DirName);
-                    DirsAdded.Add(DirName);
+                    DirsAdded.Add(DirName.Replace("\\", "/") + "/");
                     if (n % 2 == 0) zip1.Password = password;
                     zip1.AddFileFromString(new System.String((char)(n + 48), 3) + ".txt", DirName, "Hello, Dolly!");
                     if (n % 2 == 0) zip1.Password = null;
@@ -588,7 +588,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
                 {
                     TestContext.WriteLine("e: {0}", e.FileName);
                     if (e.IsDirectory)
-                        Assert.IsTrue(DirsAdded.Contains(e.FileName.Replace("/", "\\")));
+                        Assert.IsTrue(DirsAdded.Contains(e.FileName),"Cannot find the expected directory.");
                     else
                     {
                         if ((entryCount - 1) % 4 == 0) e.Password = password;

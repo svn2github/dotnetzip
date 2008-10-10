@@ -679,8 +679,8 @@ namespace Ionic.Utils.Zip.Tests.Basic
                                new TestTrial { arg=null, re="^file(\\d+).ext$"},
                                new TestTrial { arg="", re="^file(\\d+).ext$"},
                                new TestTrial { arg=null, re="^file(\\d+).ext$"},
-                               new TestTrial { arg="Xabf", re="(?s)^Xabf(/file(\\d+).ext)?$"},
-                               new TestTrial { arg="AAAA/BBB", re="(?s)^AAAA/BBB(/file(\\d+).ext)?$"}
+                               new TestTrial { arg="Xabf", re="(?s)^Xabf/(file(\\d+).ext)?$"},
+                               new TestTrial { arg="AAAA/BBB", re="(?s)^AAAA/BBB/(file(\\d+).ext)?$"}
                                };
 
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);
@@ -745,11 +745,11 @@ namespace Ionic.Utils.Zip.Tests.Basic
         public void CreateZip_AddDirectory_Nested()
         {
             TestTrial[] trials = { 
-                               new TestTrial { arg=null, re="^dir(\\d){3}(/file(\\d+).ext)?$"},
-                               new TestTrial { arg="", re="^dir(\\d){3}(/file(\\d+).ext)?$"},
-                               new TestTrial { arg=null, re="^dir(\\d){3}(/file(\\d+).ext)?$"},
-                               new TestTrial { arg="rtdha", re="(?s)^rtdha(/dir(\\d){3}(/file(\\d+).ext)?)?$"},
-                               new TestTrial { arg="sdfjk/BBB", re="(?s)^sdfjk/BBB(/dir(\\d){3}(/file(\\d+).ext)?)?$"}
+                               new TestTrial { arg=null, re="^dir(\\d){3}/(file(\\d+).ext)?$"},
+                               new TestTrial { arg="", re="^dir(\\d){3}/(file(\\d+).ext)?$"},
+                               new TestTrial { arg=null, re="^dir(\\d){3}/(file(\\d+).ext)?$"},
+                               new TestTrial { arg="rtdha", re="(?s)^rtdha/(dir(\\d){3}/(file(\\d+).ext)?)?$"},
+                               new TestTrial { arg="sdfjk/BBB", re="(?s)^sdfjk/BBB/(dir(\\d){3}/(file(\\d+).ext)?)?$"}
                                };
 
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);

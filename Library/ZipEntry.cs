@@ -1499,6 +1499,9 @@ namespace Ionic.Utils.Zip
         internal void MarkAsDirectory()
         {
             _IsDirectory = true;
+	    // workitem 6279
+	    if (!_FileNameInArchive.EndsWith("/"))
+		_FileNameInArchive += "/";
         }
 
 
