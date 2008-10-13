@@ -364,6 +364,18 @@ namespace Ionic.Utils.Zip
         /// that Compression not be used, by setting this flag.  The default value is false.
         /// </para> 
         ///
+	/// <para>
+	/// Do not construe setting this flag to false as "Force Compression".  Setting it
+	/// to false merely does NOT force No compression.  Think about it a little bit:
+	/// There's a difference.  If you want to force the use fo deflate algorithm when
+	/// storing each entry into the zip archive, define a <see
+	/// cref="WillReadTwiceOnInflation"/> callback, which always returns false.  This is
+	/// probably the wrong thing to do, but you could do it.  Forcing the use of the
+	/// Deflate algorithm when storing an entry does not guarantee that the data size
+	/// will get smaller. It could increase, as described above.  But if you want to be
+	/// pig-headed about it, go ahead.
+	/// </para>
+	///
         /// <para>
         /// Changes to this flag apply to all entries subsequently added to the archive. 
         /// The application can also set the CompressionMethod
