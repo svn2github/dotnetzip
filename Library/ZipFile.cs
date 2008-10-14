@@ -1782,22 +1782,32 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// 
         /// <remarks>
+	/// 
         /// <para>
         /// The name of the directory may be 
         /// a relative path or a fully-qualified path. Any files within the named 
         /// directory are added to the archive.  Any subdirectories within the named
         /// directory are also added to the archive, recursively. 
         /// </para>
+	/// 
         /// <para>
         /// Top-level entries in the named directory will appear as top-level 
         /// entries in the zip archive.  Entries in subdirectories in the named 
         /// directory will result in entries in subdirectories in the zip archive.
         /// </para>
+	/// 
+        /// <para>
+	/// If you want the entries to appear in a containing directory in the zip
+	/// archive itself, then you should call the AddDirectory() overload that allows
+	/// you to explicitly specify a containing directory.
+        /// </para>
+	/// 
         /// </remarks>
         /// 
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.AddItem(string)"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.AddFile(string)"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.UpdateDirectory(string)"/>
+	/// <seealso cref="Ionic.Utils.Zip.ZipFile.AddDirectory(string, string)"/>
         ///
         /// <overloads>This method has 2 overloads.</overloads>
         /// 
@@ -1815,12 +1825,30 @@ namespace Ionic.Utils.Zip
         /// 
         /// <remarks>
         /// <para>
-        /// The name of the directory may be 
-        /// a relative path or a fully-qualified path. The add operation is recursive,
-        /// so that any files or subdirectories within the name directory are also
-        /// added to the archive.
+        /// The name of the directory may be a relative path or a fully-qualified
+        /// path. The add operation is recursive, so that any files or subdirectories
+        /// within the name directory are also added to the archive.
         /// </para>
         /// </remarks>
+        /// 
+        /// <example>
+	/// <para>
+	/// In this code, calling the ZipUp() method with a value of "c:\temp" for the
+	/// directory parameter will result in a zip file structure in which all entries
+	/// are contained in a toplevel "temp" directory.
+	/// </para>
+	///
+        /// <code lang="C#">
+        /// public void ZipUp(string targetZip, string directory)
+        /// {
+        ///   using (var zip = new ZipFile())
+        ///   {
+        ///     zip.AddDirectory(directory, System.IO.Path.GetFileName(directory));
+        ///     zip.Save(targetZip);
+        ///   }
+        /// }
+        /// </code>
+        /// </example>
         /// 
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.AddItem(string, string)"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.AddFile(string, string)"/>
@@ -1843,10 +1871,26 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
-        /// Creates a directory in the zip archive.  Use this when you
-        /// want to create a directory in the archive but there is no
-        /// corresponding filesystem represenntation for that directory.
+        /// Creates a directory in the zip archive.  
         /// </summary>
+	/// 
+	/// <remarks>
+	/// 
+	/// <para>
+	/// Use this when you want to create a directory in the archive but there is no
+        /// corresponding filesystem representation for that directory.
+	/// </para>
+	///
+	/// <para>
+	/// You will probably not need to do this in your code. One of the only times
+	/// you will want to do this is if you want an empty directory in the zip
+	/// archive.  If you add a file to a zip archive that is stored within a
+	/// multi-level directory, all of the directory tree is implicitly created in
+	/// the zip archive.  
+	/// </para>
+	/// 
+	/// </remarks>
+	/// 
         /// <param name="directoryNameInArchive">
         /// The name of the directory to create in the archive.
         /// </param>
