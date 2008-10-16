@@ -607,9 +607,9 @@ namespace Ionic.Utils.Zip
         {
             int bytesRead = 0;
 
-            ze._RelativeOffsetOfHeader = (int)ze._s.Position;
+            ze._RelativeOffsetOfHeader = (int)ze.ArchiveStream.Position;
 
-            int signature = Ionic.Utils.Zip.SharedUtilities.ReadSignature(ze._s);
+            int signature = Ionic.Utils.Zip.SharedUtilities.ReadSignature(ze.ArchiveStream);
             bytesRead += 4;
 
             // Return false if this is not a local file header signature.
@@ -623,16 +623,16 @@ namespace Ionic.Utils.Zip
                 //
                 // Anything else is a surprise.
 
-                ze._s.Seek(-4, System.IO.SeekOrigin.Current); // unread the signature
+                ze.ArchiveStream.Seek(-4, System.IO.SeekOrigin.Current); // unread the signature
                 if (ZipDirEntry.IsNotValidSig(signature) && (signature != ZipConstants.EndOfCentralDirectorySignature))
                 {
-                    throw new BadReadException(String.Format("  ZipEntry::Read(): Bad signature (0x{0:X8}) at position  0x{1:X8}", signature, ze._s.Position));
+                    throw new BadReadException(String.Format("  ZipEntry::Read(): Bad signature (0x{0:X8}) at position  0x{1:X8}", signature, ze.ArchiveStream.Position));
                 }
                 return false;
             }
 
             byte[] block = new byte[26];
-            int n = ze._s.Read(block, 0, block.Length);
+            int n = ze.ArchiveStream.Read(block, 0, block.Length);
             if (n != block.Length) return false;
             bytesRead += n;
 
@@ -667,7 +667,7 @@ namespace Ionic.Utils.Zip
             Int16 extraFieldLength = (short)(block[i++] + block[i++] * 256);
 
             block = new byte[filenameLength];
-            n = ze._s.Read(block, 0, block.Length);
+            n = ze.ArchiveStream.Read(block, 0, block.Length);
             bytesRead += n;
 
             if ((ze._BitField & 0x0800) == 0x0800)
@@ -687,7 +687,7 @@ namespace Ionic.Utils.Zip
             if (extraFieldLength > 0)
             {
                 ze._Extra = new byte[extraFieldLength];
-                n = ze._s.Read(ze._Extra, 0, ze._Extra.Length);
+                n = ze.ArchiveStream.Read(ze._Extra, 0, ze._Extra.Length);
                 bytesRead += n;
             }
 
@@ -702,13 +702,13 @@ namespace Ionic.Utils.Zip
                 // was standard output or a non-seekable device.  For ZIP64(tm) format
                 // archives, the compressed and uncompressed sizes are 8 bytes each.
 
-                long posn = ze._s.Position;
-                long SizeOfDataRead = Ionic.Utils.Zip.SharedUtilities.FindSignature(ze._s, ZipConstants.ZipEntryDataDescriptorSignature);
+                long posn = ze.ArchiveStream.Position;
+                long SizeOfDataRead = Ionic.Utils.Zip.SharedUtilities.FindSignature(ze.ArchiveStream, ZipConstants.ZipEntryDataDescriptorSignature);
                 if (SizeOfDataRead == -1) return false;
 
                 // read 3x 4-byte fields (CRC, Compressed Size, Uncompressed Size)
                 block = new byte[12];
-                n = ze._s.Read(block, 0, block.Length);
+                n = ze.ArchiveStream.Read(block, 0, block.Length);
                 if (n != 12) return false;
                 bytesRead += n;
                 i = 0;
@@ -720,7 +720,7 @@ namespace Ionic.Utils.Zip
                     throw new BadReadException("Data format error (bit 3 is set)");
 
                 // seek back to previous position, to read file data
-                ze._s.Seek(posn, System.IO.SeekOrigin.Begin);
+                ze.ArchiveStream.Seek(posn, System.IO.SeekOrigin.Begin);
             }
 
             ze._CompressedFileDataSize = ze._CompressedSize;
@@ -743,7 +743,7 @@ namespace Ionic.Utils.Zip
 
                 // read the 12-byte encryption header
                 ze._WeakEncryptionHeader = new byte[12];
-                n = ze._s.Read(ze._WeakEncryptionHeader, 0, 12);
+                n = ze.ArchiveStream.Read(ze._WeakEncryptionHeader, 0, 12);
                 if (n != 12) return false;
 
                 bytesRead += n;
@@ -784,11 +784,11 @@ namespace Ionic.Utils.Zip
         {
             ZipEntry entry = new ZipEntry();
             entry._Source = EntrySource.Zipfile;
-            entry._s = s;
+            entry._archiveStream = s;
             if (!ReadHeader(entry, defaultEncoding)) return null;
 
             // store the position in the stream for this entry
-            entry.__FileDataPosition = entry._s.Position;
+            entry.__FileDataPosition = entry.ArchiveStream.Position;
 
             // seek past the data without reading it. We will read on Extract()
             s.Seek(entry._CompressedFileDataSize, System.IO.SeekOrigin.Current);
@@ -809,7 +809,7 @@ namespace Ionic.Utils.Zip
 
         private static void HandleUnexpectedDataDescriptor(ZipEntry entry)
         {
-            System.IO.Stream s = entry._s;
+            System.IO.Stream s = entry.ArchiveStream;
             // In some cases, the "data descriptor" is present, without a signature, even when bit 3 of the BitField is NOT SET.  
             // This is the CRC, followed
             //    by the compressed length and the uncompressed length (4 bytes for each 
@@ -1255,6 +1255,23 @@ namespace Ionic.Utils.Zip
         }
 
 
+	private System.IO.Stream ArchiveStream 
+	{
+	    get
+	    {
+		if (_archiveStream == null)
+		{
+		    if (_zipfile!=null)
+		    {
+                _zipfile.Reset();
+			_archiveStream = _zipfile.ReadStream;
+		    }
+		}
+		return _archiveStream;
+	    }
+	}
+
+
         private CrcCalculatorStream InternalOpenReader(string password)
         {
             ValidateCompression();
@@ -1262,11 +1279,11 @@ namespace Ionic.Utils.Zip
             ZipCrypto cipher = SetupCipher(password);
 
             // seek to the beginning of the file data in the stream
-            this._s.Seek(this.__FileDataPosition, System.IO.SeekOrigin.Begin);
+            this.ArchiveStream.Seek(this.__FileDataPosition, System.IO.SeekOrigin.Begin);
 
             var instream = (Encryption == EncryptionAlgorithm.PkzipWeak)
-        ? new ZipCipherStream(this._s, cipher, CryptoMode.Decrypt)
-        : this._s;
+        ? new ZipCipherStream(this.ArchiveStream, cipher, CryptoMode.Decrypt)
+        : this.ArchiveStream;
 
             return new CrcCalculatorStream((CompressionMethod == 0x08) ?
                        new DeflateStream(instream, CompressionMode.Decompress, true) :
@@ -1446,7 +1463,7 @@ namespace Ionic.Utils.Zip
 
         private Int32 _ExtractOne(System.IO.Stream output, ZipCrypto cipher)
         {
-            System.IO.Stream input = this._s;
+            System.IO.Stream input = this.ArchiveStream;
 
             // seek to the beginning of the file data in the stream
             input.Seek(this.__FileDataPosition, System.IO.SeekOrigin.Begin);
@@ -2007,6 +2024,15 @@ namespace Ionic.Utils.Zip
         }
 
 
+internal void CopyMetaData(ZipEntry source)
+{
+    this.__FileDataPosition = source.__FileDataPosition;
+    this.CompressionMethod = source.CompressionMethod;
+    this._CompressedFileDataSize = source._CompressedFileDataSize;
+    this._UncompressedSize = source._UncompressedSize;
+    this._BitField = source._BitField;
+    this._LastModified= source._LastModified;
+}
 
 
         private void _WriteFileData(ZipCrypto cipher, System.IO.Stream s)
@@ -2018,6 +2044,8 @@ namespace Ionic.Utils.Zip
             Stream input = null;
             CrcCalculatorStream input1 = null;
             CountingStream counter = null;
+            this.__FileDataPosition = s.Position;
+
             try
             {
                 // get the original stream:
@@ -2273,7 +2301,7 @@ namespace Ionic.Utils.Zip
             byte[] bytes = new byte[READBLOCK_SIZE];
 
             // just read from the existing input zipfile and write to the output
-            System.IO.Stream input = this._s;
+            System.IO.Stream input = this.ArchiveStream;
 
             // seek to the beginning of the entry data (header + file data) in the stream
             input.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
@@ -2342,6 +2370,7 @@ namespace Ionic.Utils.Zip
         private bool _OverwriteOnExtract;
         private System.Text.Encoding _encoding = System.Text.Encoding.GetEncoding("IBM437");         // default encoding = ibm437
 
+        internal ZipFile _zipfile;
         private long __FileDataPosition;
         //private System.IO.MemoryStream _UnderlyingMemoryStream;
         //private System.IO.Compression.DeflateStream _CompressedStream;
@@ -2354,7 +2383,7 @@ namespace Ionic.Utils.Zip
         internal EntrySource _Source = EntrySource.None;
         private EncryptionAlgorithm _Encryption = EncryptionAlgorithm.None;
         private byte[] _WeakEncryptionHeader;
-        private System.IO.Stream _s;
+        private System.IO.Stream _archiveStream;
         private System.IO.Stream _sourceStream;
 
         private const int READBLOCK_SIZE = 0x2200;

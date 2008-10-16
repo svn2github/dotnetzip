@@ -364,18 +364,18 @@ namespace Ionic.Utils.Zip
         /// that Compression not be used, by setting this flag.  The default value is false.
         /// </para> 
         ///
-	/// <para>
-	/// Do not construe setting this flag to false as "Force Compression".  Setting it
-	/// to false merely does NOT force No compression.  Think about it a little bit:
-	/// There's a difference.  If you want to force the use fo deflate algorithm when
-	/// storing each entry into the zip archive, define a <see
-	/// cref="WillReadTwiceOnInflation"/> callback, which always returns false.  This is
-	/// probably the wrong thing to do, but you could do it.  Forcing the use of the
-	/// Deflate algorithm when storing an entry does not guarantee that the data size
-	/// will get smaller. It could increase, as described above.  But if you want to be
-	/// pig-headed about it, go ahead.
-	/// </para>
-	///
+        /// <para>
+        /// Do not construe setting this flag to false as "Force Compression".  Setting it
+        /// to false merely does NOT force No compression.  Think about it a little bit:
+        /// There's a difference.  If you want to force the use fo deflate algorithm when
+        /// storing each entry into the zip archive, define a <see
+        /// cref="WillReadTwiceOnInflation"/> callback, which always returns false.  This is
+        /// probably the wrong thing to do, but you could do it.  Forcing the use of the
+        /// Deflate algorithm when storing an entry does not guarantee that the data size
+        /// will get smaller. It could increase, as described above.  But if you want to be
+        /// pig-headed about it, go ahead.
+        /// </para>
+        ///
         /// <para>
         /// Changes to this flag apply to all entries subsequently added to the archive. 
         /// The application can also set the CompressionMethod
@@ -636,7 +636,7 @@ namespace Ionic.Utils.Zip
             set;
         }
 
-        private System.IO.Stream ReadStream
+        internal System.IO.Stream ReadStream
         {
             get
             {
@@ -664,6 +664,36 @@ namespace Ionic.Utils.Zip
             //    _readstream = null;
             //}
         }
+
+
+
+	// called by ZipEntry in ZipEntry.Extract(), when there is no stream set for the ZipEntry.
+        internal void Reset()
+        {
+            if (_JustSaved)
+            {
+                // read in the just-saved zip archive
+                ZipFile x = new ZipFile();
+                x._name = this._name;
+                x.Encoding = this.Encoding;
+                ReadIntoInstance(x);
+                // copy the contents of the entries.
+                // cannot just replace the entries - the app may be holding them
+                foreach (ZipEntry e1 in x)
+                {
+                    foreach (ZipEntry e2 in this)
+                    {
+                        if (e1.FileName == e2.FileName)
+                        {
+                            e2.CopyMetaData(e1);
+                        }
+                    }
+                }
+                _JustSaved = false;
+            }
+        }
+
+
         #endregion
 
         #region Constructors
@@ -932,10 +962,15 @@ namespace Ionic.Utils.Zip
         /// <para>
         /// When using a filesystem file for the Zip output, it is possible to call
         /// <c>Save</c> multiple times on the ZipFile instance. With each call the zip content
-        /// is written to the output file. When saving to a <c>Stream</c>, after the initial
+        /// is written to the output file. When saving to a <c>Stream</c>, as you would do when you use this constructor, after the initial
         /// call to <c>Save</c>, additional calls to <c>Save</c> will throw. This is because the
         /// stream is assumed to be a write-only stream, and after the initial <c>Save</c>, it
         /// is not possible to seek backwards and "unwrite" the zip file data.
+        /// </para>
+        ///
+        /// <para>
+        /// Calling Save() on a ZipFile that has been created with this constructor will not
+        /// result in the creation of a temporary zipfile in the filesystem.  
         /// </para>
         ///
         /// </remarks>
@@ -1782,32 +1817,32 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// 
         /// <remarks>
-	/// 
+        /// 
         /// <para>
         /// The name of the directory may be 
         /// a relative path or a fully-qualified path. Any files within the named 
         /// directory are added to the archive.  Any subdirectories within the named
         /// directory are also added to the archive, recursively. 
         /// </para>
-	/// 
+        /// 
         /// <para>
         /// Top-level entries in the named directory will appear as top-level 
         /// entries in the zip archive.  Entries in subdirectories in the named 
         /// directory will result in entries in subdirectories in the zip archive.
         /// </para>
-	/// 
+        /// 
         /// <para>
-	/// If you want the entries to appear in a containing directory in the zip
-	/// archive itself, then you should call the AddDirectory() overload that allows
-	/// you to explicitly specify a containing directory.
+        /// If you want the entries to appear in a containing directory in the zip
+        /// archive itself, then you should call the AddDirectory() overload that allows
+        /// you to explicitly specify a containing directory.
         /// </para>
-	/// 
+        /// 
         /// </remarks>
         /// 
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.AddItem(string)"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.AddFile(string)"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.UpdateDirectory(string)"/>
-	/// <seealso cref="Ionic.Utils.Zip.ZipFile.AddDirectory(string, string)"/>
+        /// <seealso cref="Ionic.Utils.Zip.ZipFile.AddDirectory(string, string)"/>
         ///
         /// <overloads>This method has 2 overloads.</overloads>
         /// 
@@ -1832,12 +1867,12 @@ namespace Ionic.Utils.Zip
         /// </remarks>
         /// 
         /// <example>
-	/// <para>
-	/// In this code, calling the ZipUp() method with a value of "c:\temp" for the
-	/// directory parameter will result in a zip file structure in which all entries
-	/// are contained in a toplevel "temp" directory.
-	/// </para>
-	///
+        /// <para>
+        /// In this code, calling the ZipUp() method with a value of "c:\temp" for the
+        /// directory parameter will result in a zip file structure in which all entries
+        /// are contained in a toplevel "temp" directory.
+        /// </para>
+        ///
         /// <code lang="C#">
         /// public void ZipUp(string targetZip, string directory)
         /// {
@@ -1873,24 +1908,24 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// Creates a directory in the zip archive.  
         /// </summary>
-	/// 
-	/// <remarks>
-	/// 
-	/// <para>
-	/// Use this when you want to create a directory in the archive but there is no
+        /// 
+        /// <remarks>
+        /// 
+        /// <para>
+        /// Use this when you want to create a directory in the archive but there is no
         /// corresponding filesystem representation for that directory.
-	/// </para>
-	///
-	/// <para>
-	/// You will probably not need to do this in your code. One of the only times
-	/// you will want to do this is if you want an empty directory in the zip
-	/// archive.  If you add a file to a zip archive that is stored within a
-	/// multi-level directory, all of the directory tree is implicitly created in
-	/// the zip archive.  
-	/// </para>
-	/// 
-	/// </remarks>
-	/// 
+        /// </para>
+        ///
+        /// <para>
+        /// You will probably not need to do this in your code. One of the only times
+        /// you will want to do this is if you want an empty directory in the zip
+        /// archive.  If you add a file to a zip archive that is stored within a
+        /// multi-level directory, all of the directory tree is implicitly created in
+        /// the zip archive.  
+        /// </para>
+        /// 
+        /// </remarks>
+        /// 
         /// <param name="directoryNameInArchive">
         /// The name of the directory to create in the archive.
         /// </param>
@@ -2063,6 +2098,7 @@ namespace Ionic.Utils.Zip
                 foreach (ZipEntry e in _entries)
                 {
                     e.Write(WriteStream);
+                    e._zipfile = this;
                     n++;
                     OnSaveProgress(n, e.FileName);
                     if (_saveOperationCanceled)
@@ -2305,23 +2341,23 @@ namespace Ionic.Utils.Zip
                 i += j;
 #else
 
-		byte[] block = SharedUtilities.StringToByteArray(Comment, Encoding);
+                byte[] block = SharedUtilities.StringToByteArray(Comment, Encoding);
                 Int16 commentLength = (Int16)block.Length;
                 // the size of our buffer defines the max length of the comment we can write
                 if (commentLength + i + 2 > bytes.Length) commentLength = (Int16)(bytes.Length - i - 2);
                 bytes[i++] = (byte)(commentLength & 0x00FF);
                 bytes[i++] = (byte)((commentLength & 0xFF00) >> 8);
 
-            if (commentLength != 0)
-            {
-		int j=0;
-                // now actually write the comment itself into the byte buffer
-                for (j = 0; (j < commentLength) && (i + j < bytes.Length); j++)
+                if (commentLength != 0)
                 {
-                    bytes[i + j] = block[j];
+                    int j = 0;
+                    // now actually write the comment itself into the byte buffer
+                    for (j = 0; (j < commentLength) && (i + j < bytes.Length); j++)
+                    {
+                        bytes[i + j] = block[j];
+                    }
+                    i += j;
                 }
-                i += j;
-	    }
 
 #endif
 
@@ -3111,7 +3147,7 @@ namespace Ionic.Utils.Zip
             {
                 block = new byte[commentLength];
                 zf.ReadStream.Read(block, 0, block.Length);
-		// workitem 6415
+                // workitem 6415
                 // use UTF if the caller hasn't already set a non-default encoding
                 if (Ionic.Utils.Zip.SharedUtilities.HighBytes(block) && zf._encoding == System.Text.Encoding.GetEncoding("ibm437"))
                     zf._encoding = System.Text.Encoding.UTF8;
@@ -3510,6 +3546,7 @@ namespace Ionic.Utils.Zip
             // workitem 6402
             get
             {
+#if NONONO
                 if (_JustSaved)
                 {
                     // work item 5593
@@ -3517,6 +3554,7 @@ namespace Ionic.Utils.Zip
                     ReadIntoInstance(this);
                     _JustSaved = false;
                 }
+#endif
 
                 return _entries[ix];
             }
@@ -3596,6 +3634,7 @@ namespace Ionic.Utils.Zip
         {
             get
             {
+#if NONONO
                 if (_JustSaved)
                 {
                     // work item 5593
@@ -3603,7 +3642,7 @@ namespace Ionic.Utils.Zip
                     ReadIntoInstance(this);
                     _JustSaved = false;
                 }
-
+#endif
                 foreach (ZipEntry e in _entries)
                 {
                     if (this.CaseSensitiveRetrieval)
@@ -3773,21 +3812,38 @@ namespace Ionic.Utils.Zip
             if (!_entries.Contains(entry))
                 throw new ArgumentException("The entry you specified does not exist in the zip archive.");
 
+#if NONONO	    
+            if (_JustSaved)
+            {
+		// In this case the _direntries struct is not filled. 
+		// 
+                // work item 5593
+                // read in the just-saved zip archive 
+		ZipFile x = new ZipFile();
+                ReadIntoInstance(x);
+
+                _JustSaved = false;
+            }
+#endif
+
             _entries.Remove(entry);
 
-            bool FoundAndRemovedDirEntry = false;
-            foreach (ZipDirEntry de1 in _direntries)
+            if (_direntries != null)
             {
-                if (entry.FileName == de1.FileName)
+                bool FoundAndRemovedDirEntry = false;
+                foreach (ZipDirEntry de1 in _direntries)
                 {
-                    _direntries.Remove(de1);
-                    FoundAndRemovedDirEntry = true;
-                    break;
+                    if (entry.FileName == de1.FileName)
+                    {
+                        _direntries.Remove(de1);
+                        FoundAndRemovedDirEntry = true;
+                        break;
+                    }
                 }
-            }
 
-            if (!FoundAndRemovedDirEntry)
-                throw new BadStateException("The entry to be removed was not found in the directory.");
+                if (!FoundAndRemovedDirEntry)
+                    throw new BadStateException("The entry to be removed was not found in the directory.");
+            }
 
             _contentsChanged = true;
         }
@@ -3853,7 +3909,8 @@ namespace Ionic.Utils.Zip
         /// 
         public void RemoveEntry(String fileName)
         {
-            ZipEntry e = this[fileName];
+            string modifiedName = ZipEntry.NameInArchive(fileName, null);
+            ZipEntry e = this[modifiedName];
             if (e == null)
                 throw new ArgumentException("The entry you specified was not found in the zip archive.");
 
