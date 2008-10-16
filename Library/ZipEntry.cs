@@ -426,7 +426,7 @@ namespace Ionic.Utils.Zip
             set
             {
                 _Password = value;
-                Encryption = (_Password == null) 
+                Encryption = (_Password == null)
                     ? EncryptionAlgorithm.None
                     : EncryptionAlgorithm.PkzipWeak;
             }
@@ -1255,21 +1255,21 @@ namespace Ionic.Utils.Zip
         }
 
 
-	private System.IO.Stream ArchiveStream 
-	{
-	    get
-	    {
-		if (_archiveStream == null)
-		{
-		    if (_zipfile!=null)
-		    {
-                _zipfile.Reset();
-			_archiveStream = _zipfile.ReadStream;
-		    }
-		}
-		return _archiveStream;
-	    }
-	}
+        private System.IO.Stream ArchiveStream
+        {
+            get
+            {
+                if (_archiveStream == null)
+                {
+                    if (_zipfile != null)
+                    {
+                        _zipfile.Reset();
+                        _archiveStream = _zipfile.ReadStream;
+                    }
+                }
+                return _archiveStream;
+            }
+        }
 
 
         private CrcCalculatorStream InternalOpenReader(string password)
@@ -1516,9 +1516,9 @@ namespace Ionic.Utils.Zip
         internal void MarkAsDirectory()
         {
             _IsDirectory = true;
-	    // workitem 6279
-	    if (!_FileNameInArchive.EndsWith("/"))
-		_FileNameInArchive += "/";
+            // workitem 6279
+            if (!_FileNameInArchive.EndsWith("/"))
+                _FileNameInArchive += "/";
         }
 
 
@@ -2024,15 +2024,15 @@ namespace Ionic.Utils.Zip
         }
 
 
-internal void CopyMetaData(ZipEntry source)
-{
-    this.__FileDataPosition = source.__FileDataPosition;
-    this.CompressionMethod = source.CompressionMethod;
-    this._CompressedFileDataSize = source._CompressedFileDataSize;
-    this._UncompressedSize = source._UncompressedSize;
-    this._BitField = source._BitField;
-    this._LastModified= source._LastModified;
-}
+        internal void CopyMetaData(ZipEntry source)
+        {
+            this.__FileDataPosition = source.__FileDataPosition;
+            this.CompressionMethod = source.CompressionMethod;
+            this._CompressedFileDataSize = source._CompressedFileDataSize;
+            this._UncompressedSize = source._UncompressedSize;
+            this._BitField = source._BitField;
+            this._LastModified = source._LastModified;
+        }
 
 
         private void _WriteFileData(ZipCrypto cipher, System.IO.Stream s)
@@ -2139,60 +2139,60 @@ internal void CopyMetaData(ZipEntry source)
             _EntryHeader[i++] = (byte)((_UncompressedSize & 0xFF000000) >> 24);
 
 
-	    // workitem 6414
-	    if (s.CanSeek)
-	    {
-            // seek in the raw output stream, to the beginning of the header for this entry.
-            s.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
+            // workitem 6414
+            if (s.CanSeek)
+            {
+                // seek in the raw output stream, to the beginning of the header for this entry.
+                s.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
 
-            // finally, write the updated header to the output stream
-            s.Write(_EntryHeader, 0, _EntryHeader.Length);
+                // finally, write the updated header to the output stream
+                s.Write(_EntryHeader, 0, _EntryHeader.Length);
 
-            // adjust the count on the CountingStream as necessary
-            var s1 = s as CountingStream;
-            if (s1 != null) s1.Adjust(_EntryHeader.Length);
+                // adjust the count on the CountingStream as necessary
+                var s1 = s as CountingStream;
+                if (s1 != null) s1.Adjust(_EntryHeader.Length);
 
-            // seek in the raw output stream, to the end of the file data for this entry
-            s.Seek(_CompressedSize, System.IO.SeekOrigin.Current);
-	    }
-	    else 
-	    {
-		// eg, ASP.NET Response.OutputStream, or stdout
+                // seek in the raw output stream, to the end of the file data for this entry
+                s.Seek(_CompressedSize, System.IO.SeekOrigin.Current);
+            }
+            else
+            {
+                // eg, ASP.NET Response.OutputStream, or stdout
 
-            if ((_BitField & 0x0008) != 0x0008)
-		throw new ZipException("Logic error.");
+                if ((_BitField & 0x0008) != 0x0008)
+                    throw new ZipException("Logic error.");
 
 
-		byte[] Descriptor = new byte[16];
-		i=0;
-		// signature
-		int sig= ZipConstants.ZipEntryDataDescriptorSignature;
-		Descriptor[i++] = (byte)(sig & 0x000000FF);
-		Descriptor[i++] = (byte)((sig & 0x0000FF00) >> 8);
-		Descriptor[i++] = (byte)((sig & 0x00FF0000) >> 16);
-		Descriptor[i++] = (byte)((sig & 0xFF000000) >> 24);
+                byte[] Descriptor = new byte[16];
+                i = 0;
+                // signature
+                int sig = ZipConstants.ZipEntryDataDescriptorSignature;
+                Descriptor[i++] = (byte)(sig & 0x000000FF);
+                Descriptor[i++] = (byte)((sig & 0x0000FF00) >> 8);
+                Descriptor[i++] = (byte)((sig & 0x00FF0000) >> 16);
+                Descriptor[i++] = (byte)((sig & 0xFF000000) >> 24);
 
-            // CRC - the correct value now
-            Descriptor[i++] = (byte)(_Crc32 & 0x000000FF);
-            Descriptor[i++] = (byte)((_Crc32 & 0x0000FF00) >> 8);
-            Descriptor[i++] = (byte)((_Crc32 & 0x00FF0000) >> 16);
-            Descriptor[i++] = (byte)((_Crc32 & 0xFF000000) >> 24);
+                // CRC - the correct value now
+                Descriptor[i++] = (byte)(_Crc32 & 0x000000FF);
+                Descriptor[i++] = (byte)((_Crc32 & 0x0000FF00) >> 8);
+                Descriptor[i++] = (byte)((_Crc32 & 0x00FF0000) >> 16);
+                Descriptor[i++] = (byte)((_Crc32 & 0xFF000000) >> 24);
 
-            // CompressedSize - the correct value now
-            Descriptor[i++] = (byte)(_CompressedSize & 0x000000FF);
-            Descriptor[i++] = (byte)((_CompressedSize & 0x0000FF00) >> 8);
-            Descriptor[i++] = (byte)((_CompressedSize & 0x00FF0000) >> 16);
-            Descriptor[i++] = (byte)((_CompressedSize & 0xFF000000) >> 24);
+                // CompressedSize - the correct value now
+                Descriptor[i++] = (byte)(_CompressedSize & 0x000000FF);
+                Descriptor[i++] = (byte)((_CompressedSize & 0x0000FF00) >> 8);
+                Descriptor[i++] = (byte)((_CompressedSize & 0x00FF0000) >> 16);
+                Descriptor[i++] = (byte)((_CompressedSize & 0xFF000000) >> 24);
 
-            // UncompressedSize - the correct value now
-            Descriptor[i++] = (byte)(_UncompressedSize & 0x000000FF);
-            Descriptor[i++] = (byte)((_UncompressedSize & 0x0000FF00) >> 8);
-            Descriptor[i++] = (byte)((_UncompressedSize & 0x00FF0000) >> 16);
-            Descriptor[i++] = (byte)((_UncompressedSize & 0xFF000000) >> 24);
-		
-            // finally, write the updated header to the output stream
-            s.Write(Descriptor, 0, Descriptor.Length);
-	    }
+                // UncompressedSize - the correct value now
+                Descriptor[i++] = (byte)(_UncompressedSize & 0x000000FF);
+                Descriptor[i++] = (byte)((_UncompressedSize & 0x0000FF00) >> 8);
+                Descriptor[i++] = (byte)((_UncompressedSize & 0x00FF0000) >> 16);
+                Descriptor[i++] = (byte)((_UncompressedSize & 0xFF000000) >> 24);
+
+                // finally, write the updated header to the output stream
+                s.Write(Descriptor, 0, Descriptor.Length);
+            }
 
         }
 
@@ -2243,6 +2243,10 @@ internal void CopyMetaData(ZipEntry source)
                     // seek back!
                     // seek in the raw output stream, to the beginning of the file data for this entry
                     outstream.Seek(_RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
+
+                    // if the last entry expands, we read again; but here, we must truncate the stream
+                    // to prevent garbage data after the end-of-central-directory.
+                    outstream.SetLength(outstream.Position);
 
                     // adjust the count on the CountingStream as necessary
                     var s1 = outstream as CountingStream;
