@@ -134,7 +134,7 @@ namespace Ionic.Utils.Zip
         {
             long startingPosition = stream.Position;
 
-            int BATCH_SIZE = 1024;
+            int BATCH_SIZE = 8192;
             byte[] targetBytes = new byte[4];
             targetBytes[0] = (byte)(SignatureToFind >> 24);
             targetBytes[1] = (byte)((SignatureToFind & 0x00FF0000) >> 16);
@@ -152,11 +152,16 @@ namespace Ionic.Utils.Zip
                     {
                         if (batch[i] == targetBytes[3])
                         {
+                            long curPosition = stream.Position;
                             stream.Seek(i - n, System.IO.SeekOrigin.Current);
                             int sig = ReadSignature(stream);
                             success = (sig == SignatureToFind);
-                            if (!success) stream.Seek(-3, System.IO.SeekOrigin.Current);
-                            break; // out of for loop
+                            if (!success)
+                            {
+                                stream.Seek(curPosition, System.IO.SeekOrigin.Begin);
+                            }
+                            else
+                                break; // out of for loop
                         }
                     }
                 }
@@ -171,7 +176,7 @@ namespace Ionic.Utils.Zip
 
             // subtract 4 for the signature.
             long bytesRead = (stream.Position - startingPosition) - 4;
-            // number of bytes read, should be the same as compressed size of file            
+
             return bytesRead;
         }
 

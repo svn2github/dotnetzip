@@ -703,23 +703,53 @@ namespace Ionic.Utils.Zip
                 // archives, the compressed and uncompressed sizes are 8 bytes each.
 
                 long posn = ze.ArchiveStream.Position;
-                long SizeOfDataRead = Ionic.Utils.Zip.SharedUtilities.FindSignature(ze.ArchiveStream, ZipConstants.ZipEntryDataDescriptorSignature);
-                if (SizeOfDataRead == -1) return false;
 
-                // read 3x 4-byte fields (CRC, Compressed Size, Uncompressed Size)
-                block = new byte[12];
-                n = ze.ArchiveStream.Read(block, 0, block.Length);
-                if (n != 12) return false;
-                bytesRead += n;
-                i = 0;
-                ze._Crc32 = (Int32)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
-                ze._CompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
-                ze._UncompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+                // here, we're going to loop until we find a ZipEntryDataDescriptorSignature and 
+                    // a consistent data record after that.   The data record indicates the 
+                // length of the entry data. 
+                bool wantMore = true;
+                long SizeOfDataRead = 0;
+                int tries = 0;
+                while (wantMore)
+                {
+                    tries++;
+                    // We call the FindSignature shared routine to find the specified signature in the already-opened zip archive, 
+                    // starting from the current cursor position in that filestream.  There are two possibilities:  either we find the 
+                    // signature or we don't.  If we cannot find it, then the routine returns -1, and the ReadHeader() method returns false, 
+                    // indicating we cannot read a legal entry header.  If we have found it, then the FindSignature() method returns 
+                    // the number of bytes in the stream we had to seek forward, to find the sig.  We need this to determine if
+                    // the zip entry is valid, later. 
 
-                if (SizeOfDataRead != ze._CompressedSize)
-                    throw new BadReadException("Data format error (bit 3 is set)");
+                    long d = Ionic.Utils.Zip.SharedUtilities.FindSignature(ze.ArchiveStream, ZipConstants.ZipEntryDataDescriptorSignature);
+                    if (d == -1) return false;
 
-                // seek back to previous position, to read file data
+                    // total size of data read (through all loops of this). 
+                    SizeOfDataRead += d;
+
+                    // read 3x 4-byte fields (CRC, Compressed Size, Uncompressed Size)
+                    block = new byte[12];
+                    n = ze.ArchiveStream.Read(block, 0, block.Length);
+                    if (n != 12) return false;
+                    bytesRead += n;
+                    i = 0;
+                    ze._Crc32 = (Int32)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
+                    ze._CompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+                    ze._UncompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+
+                    wantMore = (SizeOfDataRead != ze._CompressedSize);
+                    if (wantMore)
+                    {
+                        // seek back to un-read the last 12 bytes  - maybe THEY contain 
+                        // the ZipEntryDataDescriptorSignature
+                        ze.ArchiveStream.Seek(-12, System.IO.SeekOrigin.Current);
+                        SizeOfDataRead += 4; // for the false signature
+                    }
+                }
+
+                //if (SizeOfDataRead != ze._CompressedSize)
+                //    throw new BadReadException("Data format error (bit 3 is set)");
+
+                // seek back to previous position, to prepare to read file data
                 ze.ArchiveStream.Seek(posn, System.IO.SeekOrigin.Begin);
             }
 
