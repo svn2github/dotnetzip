@@ -704,9 +704,9 @@ namespace Ionic.Utils.Zip
 
                 long posn = ze.ArchiveStream.Position;
 
-                // here, we're going to loop until we find a ZipEntryDataDescriptorSignature and 
-                    // a consistent data record after that.   The data record indicates the 
-                // length of the entry data. 
+                // Here, we're going to loop until we find a ZipEntryDataDescriptorSignature and 
+                // a consistent data record after that.   To be consistent, the data record must 
+                // indicate the length of the entry data. 
                 bool wantMore = true;
                 long SizeOfDataRead = 0;
                 int tries = 0;
@@ -739,10 +739,14 @@ namespace Ionic.Utils.Zip
                     wantMore = (SizeOfDataRead != ze._CompressedSize);
                     if (wantMore)
                     {
-                        // seek back to un-read the last 12 bytes  - maybe THEY contain 
-                        // the ZipEntryDataDescriptorSignature
+                        // Seek back to un-read the last 12 bytes  - maybe THEY contain 
+                        // the ZipEntryDataDescriptorSignature.
+                        // (12 bytes for the CRC, Comp and Uncomp size.)
                         ze.ArchiveStream.Seek(-12, System.IO.SeekOrigin.Current);
-                        SizeOfDataRead += 4; // for the false signature
+
+                        // Adjust the size to account for the false signature read in 
+                        // FindSignature().
+                        SizeOfDataRead += 4; 
                     }
                 }
 

@@ -1082,6 +1082,24 @@ namespace Ionic.Utils.Zip
         }
 
 
+	/// <summary>
+	/// Returns the version number on the assembly.
+	/// </summary>
+	/// <remarks>
+	/// This property is exposed as a convenience.  Callers
+	/// could also get the version value by retrieving  GetName().Version 
+	/// on the System.Reflection.Assembly object pointing to the
+	/// DotNetZip assembly. But sometimes it is not clear which
+	/// assembly is being loaded.  This property makes it clear. 
+	/// </remarks>
+	public static System.Version LibraryVersion
+	{
+	    get 
+	    {
+		return
+                    System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+	    }
+	}
 
         private void InitFile(string zipFileName, System.IO.TextWriter statusMessageWriter)
         {
