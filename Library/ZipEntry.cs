@@ -2078,7 +2078,11 @@ namespace Ionic.Utils.Zip
             Stream input = null;
             CrcCalculatorStream input1 = null;
             CountingStream counter = null;
-            this.__FileDataPosition = s.Position;
+	    try {
+		// s.Position may fail on some write-only streams, eg stdout or System.Web.HttpResponseStream
+		// We swallow that exception, because we don't care! 
+		this.__FileDataPosition = s.Position;
+	    } catch{}
 
             try
             {
