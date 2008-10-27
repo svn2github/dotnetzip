@@ -34,6 +34,8 @@ namespace Ionic.Utils.Zip.Examples
 		"\narguments: \n" +
         "  -utf8                 - use UTF-8 encoding for non-ASCII characters in comments and\n" + 
         "                          filenames. The default is to use IBM437.\n" +
+        "  -cp <codepage         - use the specified numeric codepage for encoding non-ASCII\n"+
+        "                          characters in comments and filenames.\n" +
         "  -p <password>         - apply the specified password for all succeeding files added.\n" +
 		"                          use \"\" to reset the password to nil.\n" +
 		"  -c <comment>          - use the given comment for the archive or, on \n" + 
@@ -71,6 +73,7 @@ namespace Ionic.Utils.Zip.Examples
 
 	    try
 	    {
+		int codePage = 0;
 		ZipEntry e=null;
 		string entryComment= null;
 		string entryDirectoryPathInArchive = null;
@@ -116,6 +119,14 @@ namespace Ionic.Utils.Zip.Examples
 			    if (args.Length <= i) Usage();
 			    if (zip.Comment == null) zip.Comment = args[i];
 			    else entryComment = args[i];
+			    break;
+
+			case "-cp":
+			    i++;
+			    if (args.Length <= i) Usage();
+			    System.Int32.TryParse(args[i], out codePage);
+			    if (codePage!=0)
+				zip.Encoding= System.Text.Encoding.GetEncoding(codePage);
 			    break;
 
 			case "-d":
