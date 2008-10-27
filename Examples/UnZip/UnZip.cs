@@ -32,12 +32,19 @@ namespace Ionic.Utils.Zip.Examples
             Console.WriteLine("            Depends on Ionic's DotNetZip. This is version {0} of the utility.",
                   System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
             Console.WriteLine("usage:\n" +
-                  "  unzip [-o|-] [-q] [-p <password>] <zipfile> [-d <unpackdirectory>] [<entryToUnzip>]\n" +
+                  "  unzip  [-p <password>] <zipfile> <options>  [<entryToUnzip>]\n" +
                   "     unzips all files in the archive to the specified directory, which should exist.\n" +
-                  "     If no directory is provided, this utility uses the current directory. The\n" +
-                  "     -o option specifies to overwrite existing files if necessary. Specifying\n" +
-                  "     - as the first argument will extract to the console. Specifying -q will\n" +
-                  "     extract quietly.  Specifying an entry by name will extract a single named entry.\n\n" +
+                  "     If no directory is provided, this utility uses the current directory. UTF-8\n" + 
+                  "     encoding is used if the zip file wants it.\n" + 
+		  "\narguments:\n"+
+		  "  -o                overwrite existing files if necessary.\n" +
+		  "  -q                operate quietly (no verbose messages). \n" +
+                  "  -cp <codepage>    extract with the specified numeric codepage.  Only do this if you\n" +
+                  "                    know the codepage. If UTF-8 is required you don't need this switch.\n" +
+                  "                    If the codepage you specify here is different than the codepage of \n"+
+                  "                    the cmd.exe, then the verbose messages will look odd, but the files\n" +
+                  "                    will be extracted properly.\n" +
+                  "  -d <directory>    unpack to the specified directory. \n\n"+
                   "  unzip -l <zipfile>\n" +
                   "     lists the entries in the zip archive.\n" +
                   "  unzip -?\n" +
@@ -51,6 +58,7 @@ namespace Ionic.Utils.Zip.Examples
         {
             int startArgs = 0;
             int i;
+            int codePage= 0;
             string zipfile = null;
             string targdir = null;
             string password = null;
@@ -101,6 +109,13 @@ namespace Ionic.Utils.Zip.Examples
 
                         break;
 
+                    case "-cp":
+                        i++;
+                        if (args.Length <= i) Usage();
+                        if (codePage != 0) Usage();
+                        System.Int32.TryParse(args[i], out codePage);
+                        break;
+
                     case "-l":
                         if (password != null) Usage();
                         if (targdir != null) Usage();
@@ -142,8 +157,9 @@ namespace Ionic.Utils.Zip.Examples
 
             try
             {
-                using (ZipFile zip = ZipFile.Read(zipfile))
+                using (ZipFile zip = (codePage!=0)? ZipFile.Read(zipfile, System.Text.Encoding.GetEncoding(codePage)) : ZipFile.Read(zipfile) )
                 {
+
                     if (entryToExtract != null)
                     {
                         // find the entry
