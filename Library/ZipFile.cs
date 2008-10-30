@@ -2740,11 +2740,23 @@ namespace Ionic.Utils.Zip
         /// The ZipFile is read in using the specified encoding for entries where UTF-8
         /// encoding is not explicitly specified.
         /// </para>
-        /// <para>
-        /// See the <see cref="Ionic.Utils.Zip.ZipFile.Read(string, System.IO.TextWriter)"/> overload for a code example.
-        /// </para>
         /// </remarks>
         /// 
+        /// <example>
+        /// This example shows how to read a zip file using the Big-5 Chinese code page (950), 
+        /// and extract each entry in the zip file.
+        /// <code lang="C#">
+        /// using (ZipFile zip = ZipFile.Read(ZipToExtract,
+        ///                                   System.Text.Encoding.GetEncoding(950)))
+        /// {
+        ///   foreach (ZipEntry e in zip)
+        ///   {
+        ///      e.Extract(extractDirectory);
+        ///   }
+        /// }
+        /// </code>
+        /// </example>
+	///
         /// <exception cref="System.Exception">
         /// Thrown if the zipfile cannot be read. The implementation of this 
         /// method relies on <c>System.IO.File.OpenRead</c>, which can throw
@@ -2782,11 +2794,25 @@ namespace Ionic.Utils.Zip
         /// The ZipFile is read in using the specified encoding for entries where UTF-8
         /// encoding is not explicitly specified.
         /// </para>
-        /// <para>
-        /// See the <see cref="Ionic.Utils.Zip.ZipFile.Read(string, System.IO.TextWriter)"/> overload for a code example.
-        /// </para>
         /// </remarks>
         /// 
+        /// 
+        /// <example>
+        /// This example shows how to read a zip file using the Big-5 Chinese code page (950), 
+        /// and extract each entry in the zip file, while sending status messages out to the Console. 
+        /// <code lang="C#">
+        /// using (ZipFile zip = ZipFile.Read(ZipToExtract,
+        ///                                   System.Console.Out,
+        ///                                   System.Text.Encoding.GetEncoding(950)))
+        /// {
+        ///   foreach (ZipEntry e in zip)
+        ///   {
+        ///      e.Extract(extractDirectory);
+        ///   }
+        /// }
+        /// </code>
+        /// </example>
+	///
         /// <exception cref="System.Exception">
         /// Thrown if the zipfile cannot be read. The implementation of this 
         /// method relies on <c>System.IO.File.OpenRead</c>, which can throw
@@ -2891,7 +2917,8 @@ namespace Ionic.Utils.Zip
         /// For more information on the encoding, see the <see cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</see> property.
         /// </para>
         /// </remarks>
-        ///
+        /// 
+        /// 
         /// <exception cref="Ionic.Utils.Zip.ZipException">
         /// Thrown if zipStream is null.
         /// In this case, the inner exception is an ArgumentException.
