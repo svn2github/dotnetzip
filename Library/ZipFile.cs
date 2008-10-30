@@ -223,7 +223,7 @@ namespace Ionic.Utils.Zip
         /// to loss of information.
         /// </para>
         /// <para>
-        /// This flag has no effect or relation to the encoding of the content within the 
+        /// This flag is independent of the encoding of the content within the 
         /// entries in the zip file.  
         /// </para>
         /// <para>
@@ -231,7 +231,8 @@ namespace Ionic.Utils.Zip
         /// can specify an arbitrary encoding via the <c>Encoding</c>property.  Setting 
         /// the encoding explicitly when creating zip archives will result in non-compliant 
         /// zip files that, curiously, are fairly interoperable.  The challenge is, the PKWare specification
-        /// does not provide for a way to specify an arbitrary code page for an entry.  Therefore 
+        /// does not provide for a way to specify that an entry in a zip archive uses a code page that is
+	/// neither IBM437 nor UTF-8.   Therefore 
         /// if you set the encoding explicitly when creating a zip archive, you must take care upon 
         /// reading the zip archive to use the same code page.  If you get it wrong, the behavior is 
         /// undefined and may result in incorrect filenames, exceptions, and acne.  
