@@ -151,7 +151,7 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// Indicates whether to encode entry filenames and entry comments using Unicode 
         /// (UTF-8) according to the PKWare specification, for those filenames and comments
-        /// that cannot be encoded in the ASCII character set.
+        /// that cannot be encoded in the IBM437 character set.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -202,8 +202,8 @@ namespace Ionic.Utils.Zip
         /// </para>
         /// <para>
         /// Encoding filenames and comments using the IBM437 codepage, the default
-        /// behavior, will cause loss of information on some filenames that contain 
-        /// super-ASCII characters, but the resulting zipfile will
+        /// behavior, will cause loss of information on some filenames,
+        /// but the resulting zipfile will
         /// be more interoperable with other utilities. As an example of the 
         /// loss of information, the o-tilde character will be down-coded to plain o. 
         /// Likewise, the O with a stroke through it, used in Danish and Norwegian,
@@ -212,15 +212,15 @@ namespace Ionic.Utils.Zip
         /// filenames will be represented as ?.  
         /// </para>
         /// <para>
-        /// The loss of information associated to the use of the IBM437 encoding can 
-        /// lead to runtime errors. For example, using 
-        /// IBM437, any sequence of 4 Chinese characters will be encoded as 
-        /// ????.  If your application creates a ZipFile, then adds two files, each with 
-        /// names of four Chinese characters each, this will result in a duplicate 
-        /// filename exception.  In the case where you add a single file with a name 
-        /// containing four Chinese characters, attempting to unzip the file to the Windows
-        /// filesystem will lead to an exception, because ? is not a legal character in a filename.         
-        /// These are just a few examples of the problems associated to loss of information.
+        /// The loss of information associated to the use of the IBM437 encoding can lead to
+        /// runtime errors. For example, using IBM437, any sequence of 4 Chinese characters will
+        /// be encoded as ????.  If your application creates a ZipFile, then adds two files, each
+        /// with names of four Chinese characters each, this will result in a duplicate filename
+        /// exception.  In the case where you add a single file with a name containing four
+        /// Chinese characters, calling Extract() on the entry that has question marks in the
+        /// filename will result in an exception, because the question mark is not legal for use
+        /// within filenames on Windows.  These are just a few examples of the problems associated
+        /// to loss of information.
         /// </para>
         /// <para>
         /// This flag has no effect or relation to the encoding of the content within the 
@@ -287,9 +287,9 @@ namespace Ionic.Utils.Zip
         /// which codepage has been used. As a result, readers of zip files are not
         /// able to inspect the zip file and determine the codepage that was used for the entries contained within it. 
         /// It is left to the application to determine the necessary codepage when reading zipfiles encoded this way.  
-        /// If you use an incorrect codepage when reading a zipfile, you can get entries with filenames
-        /// that are either incorrect or not legal in Windows. Extracting entries with illegal characters 
-        /// in the filenames will lead to exceptions. Caveat Emptor.
+        /// If you use an incorrect codepage when reading a zipfile, you will get entries with filenames
+        /// that are incorrect, and they may even contain characters that are not legal for use within filenames in
+        ///  Windows. Extracting entries with illegal characters in the filenames will lead to exceptions. Caveat Emptor.
         /// </para>
         /// </remarks>
         /// 
@@ -2773,9 +2773,11 @@ namespace Ionic.Utils.Zip
         /// <param name="encoding">
         /// The <c>System.Text.Encoding</c> to use when reading in the zip archive. Be careful specifying the
         /// encoding.  If the value you use here is not the same as the Encoding used when the zip archive was 
-        /// created (possibly by a different archiver) you will get unexpected results.  
+        /// created (possibly by a different archiver) you will get unexpected results and possibly exceptions. 
         /// </param>
         /// 
+        /// <seealso cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</seealso>.
+	///
         /// <returns>The instance read from the zip archive.</returns>
         /// 
         public static ZipFile Read(string zipFileName, System.Text.Encoding encoding)
@@ -2836,9 +2838,11 @@ namespace Ionic.Utils.Zip
         /// <param name="encoding">
         /// The <c>System.Text.Encoding</c> to use when reading in the zip archive. Be careful specifying the
         /// encoding.  If the value you use here is not the same as the Encoding used when the zip archive was 
-        /// created (possibly by a different archiver) you will get unexpected results.  
+        /// created (possibly by a different archiver) you will get unexpected results and possibly exceptions.  
         /// </param>
         /// 
+        /// <seealso cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</seealso>.
+	///
         /// <returns>The instance read from the zip archive.</returns>
         /// 
         public static ZipFile Read(string zipFileName, System.IO.TextWriter statusMessageWriter, System.Text.Encoding encoding)
@@ -2958,8 +2962,11 @@ namespace Ionic.Utils.Zip
         /// <param name="zipStream">the stream containing the zip data.</param>
         /// 
         /// <param name="encoding">
-        /// The text encoding to use when reading entries that do not have the UTF-8 encoding bit set. 
-        /// See the <see cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</see> property for more information. 
+        /// The text encoding to use when reading entries that do not have the UTF-8 encoding bit
+	/// set.  Be careful specifying the encoding.  If the value you use here is not the same
+	/// as the Encoding used when the zip archive was created (possibly by a different
+	/// archiver) you will get unexpected results and possibly exceptions.  See the <see
+	/// cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</see> property for more information.
         /// </param>
         /// 
         /// <returns>an instance of ZipFile</returns>
@@ -2990,10 +2997,15 @@ namespace Ionic.Utils.Zip
         /// For example, in a console application, System.Console.Out works, and will get a message for each entry added to the ZipFile. 
         /// If the TextWriter is null, no verbose messages are written. 
         /// </param>
+	///
         /// <param name="encoding">
-        /// The text encoding to use when reading entries that do not have the UTF-8 encoding bit set. 
-        /// See the <see cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</see> property for more information. 
+        /// The text encoding to use when reading entries that do not have the UTF-8 encoding bit
+	/// set.  Be careful specifying the encoding.  If the value you use here is not the same
+	/// as the Encoding used when the zip archive was created (possibly by a different
+	/// archiver) you will get unexpected results and possibly exceptions.  See the <see
+	/// cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</see> property for more information.
         /// </param>
+        /// 
         /// <returns>an instance of ZipFile</returns>
         public static ZipFile Read(System.IO.Stream zipStream, System.IO.TextWriter statusMessageWriter, System.Text.Encoding encoding)
         {
@@ -3080,10 +3092,13 @@ namespace Ionic.Utils.Zip
         /// </param>
         /// 
         /// <param name="encoding">
-        /// The text encoding to use when reading entries that do not have the UTF-8 encoding bit set. 
-        /// See the <see cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</see> property for more information. 
+        /// The text encoding to use when reading entries that do not have the UTF-8 encoding bit
+	/// set.  Be careful specifying the encoding.  If the value you use here is not the same
+	/// as the Encoding used when the zip archive was created (possibly by a different
+	/// archiver) you will get unexpected results and possibly exceptions.  See the <see
+	/// cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</see> property for more information.
         /// </param>
-        ///         
+        /// 
         /// <returns>an instance of ZipFile. The name is set to null.</returns>
         /// 
         public static ZipFile Read(byte[] buffer, System.IO.TextWriter statusMessageWriter, System.Text.Encoding encoding)
