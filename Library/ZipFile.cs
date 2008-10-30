@@ -251,7 +251,8 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// The text encoding to use when writing new entries to the ZipFile.  
+        /// Set the text encoding to use when writing new entries to the ZipFile, or get the text encoding
+	/// that was used when reading the entries from the ZipFile. 
         /// </summary>
         /// 
         /// <remarks>
@@ -260,7 +261,7 @@ namespace Ionic.Utils.Zip
         /// that a filename or comment containing non-ANSI characters is encoded with UTF-8.  But, some 
         /// archivers do not follow the specification, and instead encode super-ANSI characters using the 
         /// system default code page.  For example, WinRAR when run on a machine in Shanghai may encode 
-        /// filenames with the Chinese code page.  This behavior is contrary to the Zip specification, but it 
+        /// filenames with the Big-5 Chinese (950) code page.  This behavior is contrary to the Zip specification, but it 
         /// occurs anyway.
         /// </para>
         /// <para>
@@ -272,6 +273,13 @@ namespace Ionic.Utils.Zip
         /// specified the code page will not be compliant to the PKWare specification, and may not be readable 
         /// by compliant archivers.  On the other hand, many (most?) archivers are non-compliant and can read zip files 
         /// created in arbitrary code pages.  The trick is to use the proper codepage when reading the zip.
+        /// </para>
+        /// <para>
+        /// When using DotNetZip to read zip archives that have been created by a different tool or library, and the zip
+        /// archive uses an arbitrary code page, you must specify the encoding to use before or when the zipfile is READ.  
+        /// This means you must use a ZipFile.Read() method that allows you to specify a System.Text.Encoding parameter. 
+	/// Setting the Encoding property after your application has read in the zip archive will not 
+	/// affect the entry names of entries that have already been read in, and is probably not what you want.  
         /// </para>
         /// <para>
         /// When using an arbitrary, non-UTF8 code page for encoding, there is no standard way for the 
@@ -2638,11 +2646,8 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// <para>
         /// This version of the method allows the caller to pass in a <c>TextWriter</c>.  
-        /// The ZipFile is read in using the default IBM437 encoding for entries where no
-        /// encoding is specified.
-        /// </para>
-        /// <para>
-        /// The stream is read using the default <c>System.Text.Encoding</c>, which is the <c>IBM437</c> codepage.  
+        /// The ZipFile is read in using the default IBM437 encoding for entries where UTF-8 
+        /// encoding is not explicitly specified.
         /// </para>
         /// </remarks>
         /// 
@@ -2732,8 +2737,8 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// <para>
         /// This version of the method allows the caller to pass in an <c>Encoding</c>.  
-        /// The ZipFile is read in using the specified encoding for entries where no
-        /// encoding is specified.
+        /// The ZipFile is read in using the specified encoding for entries where UTF-8
+        /// encoding is not explicitly specified.
         /// </para>
         /// <para>
         /// See the <see cref="Ionic.Utils.Zip.ZipFile.Read(string, System.IO.TextWriter)"/> overload for a code example.
@@ -2774,6 +2779,8 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// <para>
         /// This version of the method allows the caller to pass in a <c>TextWriter</c> and an <c>Encoding</c>.  
+        /// The ZipFile is read in using the specified encoding for entries where UTF-8
+        /// encoding is not explicitly specified.
         /// </para>
         /// <para>
         /// See the <see cref="Ionic.Utils.Zip.ZipFile.Read(string, System.IO.TextWriter)"/> overload for a code example.
