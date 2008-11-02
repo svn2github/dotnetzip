@@ -158,7 +158,7 @@ namespace WinFormsExample
 
             using (var zip1 = new ZipFile())
             {
-                zip1.Encoding = System.Text.Encoding.GetEncoding(options.Encoding);
+                zip1.ProvisionalAlternateEncoding = System.Text.Encoding.GetEncoding(options.Encoding);
                 zip1.Comment = options.Comment;
                 zip1.AddDirectory(options.Folder);
                 _entriesToZip = zip1.EntryFileNames.Count;

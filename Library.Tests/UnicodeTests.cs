@@ -117,7 +117,7 @@ namespace Ionic.Utils.Zip.Tests.Unicode
 
                     using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
                     {
-                        zip1.UseUnicode = (j == 0);
+                        zip1.UseUnicodeAsNecessary = (j == 0);
                         for (i = 0; i < FilesToZip.Length; i++)
                         {
                             // use the local filename (not fully qualified)
@@ -197,7 +197,7 @@ namespace Ionic.Utils.Zip.Tests.Unicode
 
                 using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
                 {
-                    zip1.UseUnicode = (j == 0);
+                    zip1.UseUnicodeAsNecessary = (j == 0);
                     for (i = 0; i < FilesToZip.Length; i++)
                     {
                         // use the local filename (not fully qualified)
@@ -285,7 +285,7 @@ namespace Ionic.Utils.Zip.Tests.Unicode
 
                 using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
                 {
-                    zip1.Encoding = System.Text.Encoding.GetEncoding(trials[k].codepage);
+                    zip1.ProvisionalAlternateEncoding = System.Text.Encoding.GetEncoding(trials[k].codepage);
                     for (i = 0; i < FilesToZip.Length; i++)
                     {
                         TestContext.WriteLine("adding entry {0}", FilesToZip[i]);

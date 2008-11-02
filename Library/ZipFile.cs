@@ -232,85 +232,95 @@ namespace Ionic.Utils.Zip
         /// the encoding explicitly when creating zip archives will result in non-compliant 
         /// zip files that, curiously, are fairly interoperable.  The challenge is, the PKWare specification
         /// does not provide for a way to specify that an entry in a zip archive uses a code page that is
-	/// neither IBM437 nor UTF-8.   Therefore 
+        /// neither IBM437 nor UTF-8.   Therefore 
         /// if you set the encoding explicitly when creating a zip archive, you must take care upon 
         /// reading the zip archive to use the same code page.  If you get it wrong, the behavior is 
         /// undefined and may result in incorrect filenames, exceptions, and acne.  
         /// </para>
-        /// <seealso cref="Encoding">Encoding</seealso>
+        /// <seealso cref="ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</seealso>
         /// </remarks>
-        public bool UseUnicode
+        public bool UseUnicodeAsNecessary
         {
             get
             {
-                return _encoding == System.Text.Encoding.GetEncoding("UTF-8");
+                return _provisionalAlternateEncoding == System.Text.Encoding.GetEncoding("UTF-8");
             }
             set
             {
-                _encoding = (value) ? System.Text.Encoding.GetEncoding("UTF-8") : DefaultEncoding;
+                _provisionalAlternateEncoding = (value) ? System.Text.Encoding.GetEncoding("UTF-8") : DefaultEncoding;
             }
         }
 
         /// <summary>
-        /// Set the text encoding to use when writing new entries to the ZipFile, or get the text encoding
-	/// that was used when reading the entries from the ZipFile. 
+        /// Set the text encoding to use when writing new entries to the ZipFile, for those
+        /// entries that cannot be encoded with the default (IBM437) encoding; or, get the
+        /// text encoding that was used when reading the entries from the ZipFile.
         /// </summary>
         /// 
         /// <remarks>
         /// <para>
-        /// In its AppNote.txt document, PKWare describes how to specify in the zip entry header
-        /// that a filename or comment containing non-ANSI characters is encoded with UTF-8.  But, some 
-        /// archivers do not follow the specification, and instead encode super-ANSI characters using the 
-        /// system default code page.  For example, WinRAR when run on a machine in Shanghai may encode 
-        /// filenames with the Big-5 Chinese (950) code page.  This behavior is contrary to the Zip specification, but it 
+        /// In its AppNote.txt document, PKWare describes how to specify in the zip entry
+        /// header that a filename or comment containing non-ANSI characters is encoded with
+        /// UTF-8.  But, some archivers do not follow the specification, and instead encode
+        /// super-ANSI characters using the system default code page.  For example, WinRAR
+        /// when run on a machine in Shanghai may encode filenames with the Big-5 Chinese
+        /// (950) code page.  This behavior is contrary to the Zip specification, but it
         /// occurs anyway.
         /// </para>
         /// <para>
         /// When using DotNetZip to write zip archives that will be read by one of these other archivers, 
-        /// set this property to specify the code page to use when encoding filenames and comments into the zip file.
+        /// set this property to specify the code page to use when encoding filenames and comments into the 
+        /// zip file, for entries that cannot be encoded with the default codepage for zip files, IBM437.
+        /// This is why this property is "provisional".  In all cases, IBM437 is used where possible. 
         /// </para>
         /// <para>
-        /// The default encoding is codepage IBM437.  Be aware that a zip file created after you've explicitly 
-        /// specified the code page will not be compliant to the PKWare specification, and may not be readable 
-        /// by compliant archivers.  On the other hand, many (most?) archivers are non-compliant and can read zip files 
-        /// created in arbitrary code pages.  The trick is to use the proper codepage when reading the zip.
+        /// Be aware that a zip file created after you've explicitly set the
+        /// ProvisionalAlternateEncoding property to a value other than IBM437 may not be compliant
+        /// to the PKWare specification, and may not be readable by compliant archivers.  On
+        /// the other hand, many (most?) archivers are non-compliant and can read zip files
+        /// created in arbitrary code pages.  The trick is to use the proper codepage when
+        /// reading the zip.
         /// </para>
         /// <para>
-        /// When using DotNetZip to read zip archives that have been created by a different tool or library, and the zip
-        /// archive uses an arbitrary code page, you must specify the encoding to use before or when the zipfile is READ.  
-        /// This means you must use a ZipFile.Read() method that allows you to specify a System.Text.Encoding parameter. 
-	/// Setting the Encoding property after your application has read in the zip archive will not 
-	/// affect the entry names of entries that have already been read in, and is probably not what you want.  
+        /// When using DotNetZip to read zip archives that have been created by a different
+        /// tool or library, and the zip archive uses an arbitrary code page, you must
+        /// specify the encoding to use before or when the zipfile is READ.  This means you
+        /// must use a ZipFile.Read() method that allows you to specify a
+        /// System.Text.Encoding parameter.  Setting the ProvisionalAlternateEncoding property after
+        /// your application has read in the zip archive will not affect the entry names of
+        /// entries that have already been read in, and is probably not what you want.
         /// </para>
         /// <para>
-        /// When using an arbitrary, non-UTF8 code page for encoding, there is no standard way for the 
-        /// creator application - whether DotNetZip, WinRar, or something else - to specify in the zip file 
-        /// which codepage has been used. As a result, readers of zip files are not
-        /// able to inspect the zip file and determine the codepage that was used for the entries contained within it. 
-        /// It is left to the application to determine the necessary codepage when reading zipfiles encoded this way.  
-        /// If you use an incorrect codepage when reading a zipfile, you will get entries with filenames
-        /// that are incorrect, and they may even contain characters that are not legal for use within filenames in
-        ///  Windows. Extracting entries with illegal characters in the filenames will lead to exceptions. Caveat Emptor.
+        /// When using an arbitrary, non-UTF8 code page for encoding, there is no standard
+        /// way for the creator application - whether DotNetZip, WinRar, or something else -
+        /// to specify in the zip file which codepage has been used. As a result, readers of
+        /// zip files are not able to inspect the zip file and determine the codepage that
+        /// was used for the entries contained within it.  It is left to the application to
+        /// determine the necessary codepage when reading zipfiles encoded this way.  If you
+        /// use an incorrect codepage when reading a zipfile, you will get entries with
+        /// filenames that are incorrect, and they may even contain characters that are not
+        /// legal for use within filenames in Windows. Extracting entries with illegal
+        /// characters in the filenames will lead to exceptions. Caveat Emptor.
         /// </para>
         /// </remarks>
         /// 
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.DefaultEncoding">DefaultEncoding</seealso>.
-        public System.Text.Encoding Encoding
+        public System.Text.Encoding ProvisionalAlternateEncoding
         {
             get
             {
-                return _encoding;
+                return _provisionalAlternateEncoding;
             }
             set
             {
-                _encoding = value;
+                _provisionalAlternateEncoding = value;
             }
         }
 
         /// <summary>
         /// The default text encoding used in zip archives.  It is numeric 437, also known as IBM437. 
         /// </summary>
-        /// <seealso cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</seealso>
+        /// <seealso cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</seealso>
 
         public readonly static System.Text.Encoding DefaultEncoding = System.Text.Encoding.GetEncoding("IBM437");
 
@@ -676,7 +686,7 @@ namespace Ionic.Utils.Zip
 
 
 
-	// called by ZipEntry in ZipEntry.Extract(), when there is no stream set for the ZipEntry.
+        // called by ZipEntry in ZipEntry.Extract(), when there is no stream set for the ZipEntry.
         internal void Reset()
         {
             if (_JustSaved)
@@ -684,7 +694,7 @@ namespace Ionic.Utils.Zip
                 // read in the just-saved zip archive
                 ZipFile x = new ZipFile();
                 x._name = this._name;
-                x.Encoding = this.Encoding;
+                x.ProvisionalAlternateEncoding = this.ProvisionalAlternateEncoding;
                 ReadIntoInstance(x);
                 // copy the contents of the entries.
                 // cannot just replace the entries - the app may be holding them
@@ -1091,24 +1101,24 @@ namespace Ionic.Utils.Zip
         }
 
 
-	/// <summary>
-	/// Returns the version number on the assembly.
-	/// </summary>
-	/// <remarks>
-	/// This property is exposed as a convenience.  Callers
-	/// could also get the version value by retrieving  GetName().Version 
-	/// on the System.Reflection.Assembly object pointing to the
-	/// DotNetZip assembly. But sometimes it is not clear which
-	/// assembly is being loaded.  This property makes it clear. 
-	/// </remarks>
-	public static System.Version LibraryVersion
-	{
-	    get 
-	    {
-		return
-                    System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-	    }
-	}
+        /// <summary>
+        /// Returns the version number on the assembly.
+        /// </summary>
+        /// <remarks>
+        /// This property is exposed as a convenience.  Callers
+        /// could also get the version value by retrieving  GetName().Version 
+        /// on the System.Reflection.Assembly object pointing to the
+        /// DotNetZip assembly. But sometimes it is not clear which
+        /// assembly is being loaded.  This property makes it clear. 
+        /// </remarks>
+        public static System.Version LibraryVersion
+        {
+            get
+            {
+                return
+                            System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            }
+        }
 
         private void InitFile(string zipFileName, System.IO.TextWriter statusMessageWriter)
         {
@@ -1418,8 +1428,7 @@ namespace Ionic.Utils.Zip
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
             ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
-            //ze.UseUtf8Encoding = UseUnicode;
-            ze.Encoding = Encoding;
+            ze.ProvisionalAlternateEncoding = ProvisionalAlternateEncoding;
             ze._Source = EntrySource.Filesystem;
             ze.Password = _Password;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
@@ -1741,7 +1750,7 @@ namespace Ionic.Utils.Zip
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
             ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
-            ze.Encoding = Encoding;
+            ze.ProvisionalAlternateEncoding = ProvisionalAlternateEncoding;
             ze._Source = EntrySource.Stream;
             ze.Password = _Password;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
@@ -2006,7 +2015,7 @@ namespace Ionic.Utils.Zip
             if (level > 0 || rootDirectoryPathInArchive != "")
             {
                 ZipEntry baseDir = ZipEntry.Create(directoryName, dirForEntries);
-                baseDir.Encoding = this.Encoding;  // workitem 6410
+                baseDir.ProvisionalAlternateEncoding = this.ProvisionalAlternateEncoding;  // workitem 6410
                 baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
                 baseDir._Source = EntrySource.Filesystem;
                 baseDir.MarkAsDirectory();
@@ -2368,7 +2377,7 @@ namespace Ionic.Utils.Zip
                 i += j;
 #else
 
-                byte[] block = SharedUtilities.StringToByteArray(Comment, Encoding);
+                byte[] block = ProvisionalAlternateEncoding.GetBytes(Comment);
                 Int16 commentLength = (Int16)block.Length;
                 // the size of our buffer defines the max length of the comment we can write
                 if (commentLength + i + 2 > bytes.Length) commentLength = (Int16)(bytes.Length - i - 2);
@@ -2757,7 +2766,7 @@ namespace Ionic.Utils.Zip
         /// }
         /// </code>
         /// </example>
-	///
+        ///
         /// <exception cref="System.Exception">
         /// Thrown if the zipfile cannot be read. The implementation of this 
         /// method relies on <c>System.IO.File.OpenRead</c>, which can throw
@@ -2777,8 +2786,8 @@ namespace Ionic.Utils.Zip
         /// created (possibly by a different archiver) you will get unexpected results and possibly exceptions. 
         /// </param>
         /// 
-        /// <seealso cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</seealso>.
-	///
+        /// <seealso cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</seealso>.
+        ///
         /// <returns>The instance read from the zip archive.</returns>
         /// 
         public static ZipFile Read(string zipFileName, System.Text.Encoding encoding)
@@ -2815,7 +2824,7 @@ namespace Ionic.Utils.Zip
         /// }
         /// </code>
         /// </example>
-	///
+        ///
         /// <exception cref="System.Exception">
         /// Thrown if the zipfile cannot be read. The implementation of this 
         /// method relies on <c>System.IO.File.OpenRead</c>, which can throw
@@ -2842,14 +2851,14 @@ namespace Ionic.Utils.Zip
         /// created (possibly by a different archiver) you will get unexpected results and possibly exceptions.  
         /// </param>
         /// 
-        /// <seealso cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</seealso>.
-	///
+        /// <seealso cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</seealso>.
+        ///
         /// <returns>The instance read from the zip archive.</returns>
         /// 
         public static ZipFile Read(string zipFileName, System.IO.TextWriter statusMessageWriter, System.Text.Encoding encoding)
         {
             ZipFile zf = new ZipFile();
-            zf.Encoding = encoding;
+            zf.ProvisionalAlternateEncoding = encoding;
             zf._StatusMessageTextWriter = statusMessageWriter;
             zf._name = zipFileName;
 
@@ -2919,7 +2928,7 @@ namespace Ionic.Utils.Zip
         /// 
         /// <para>
         /// The stream is read using the default <c>System.Text.Encoding</c>, which is the <c>IBM437</c> codepage.  
-        /// For more information on the encoding, see the <see cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</see> property.
+        /// For more information on the encoding, see the <see cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</see> property.
         /// </para>
         /// </remarks>
         /// 
@@ -2964,10 +2973,10 @@ namespace Ionic.Utils.Zip
         /// 
         /// <param name="encoding">
         /// The text encoding to use when reading entries that do not have the UTF-8 encoding bit
-	/// set.  Be careful specifying the encoding.  If the value you use here is not the same
-	/// as the Encoding used when the zip archive was created (possibly by a different
-	/// archiver) you will get unexpected results and possibly exceptions.  See the <see
-	/// cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</see> property for more information.
+        /// set.  Be careful specifying the encoding.  If the value you use here is not the same
+        /// as the Encoding used when the zip archive was created (possibly by a different
+        /// archiver) you will get unexpected results and possibly exceptions.  See the <see
+        /// cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</see> property for more information.
         /// </param>
         /// 
         /// <returns>an instance of ZipFile</returns>
@@ -2998,13 +3007,13 @@ namespace Ionic.Utils.Zip
         /// For example, in a console application, System.Console.Out works, and will get a message for each entry added to the ZipFile. 
         /// If the TextWriter is null, no verbose messages are written. 
         /// </param>
-	///
+        ///
         /// <param name="encoding">
         /// The text encoding to use when reading entries that do not have the UTF-8 encoding bit
-	/// set.  Be careful specifying the encoding.  If the value you use here is not the same
-	/// as the Encoding used when the zip archive was created (possibly by a different
-	/// archiver) you will get unexpected results and possibly exceptions.  See the <see
-	/// cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</see> property for more information.
+        /// set.  Be careful specifying the encoding.  If the value you use here is not the same
+        /// as the Encoding used when the zip archive was created (possibly by a different
+        /// archiver) you will get unexpected results and possibly exceptions.  See the <see
+        /// cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</see> property for more information.
         /// </param>
         /// 
         /// <returns>an instance of ZipFile</returns>
@@ -3014,7 +3023,7 @@ namespace Ionic.Utils.Zip
                 throw new ZipException("Cannot read.", new ArgumentException("The stream must be non-null", "zipStream"));
 
             ZipFile zf = new ZipFile();
-            zf._encoding = encoding;
+            zf._provisionalAlternateEncoding = encoding;
             zf._StatusMessageTextWriter = statusMessageWriter;
             zf._readstream = zipStream;
             zf._ReadStreamIsOurs = false;
@@ -3094,10 +3103,10 @@ namespace Ionic.Utils.Zip
         /// 
         /// <param name="encoding">
         /// The text encoding to use when reading entries that do not have the UTF-8 encoding bit
-	/// set.  Be careful specifying the encoding.  If the value you use here is not the same
-	/// as the Encoding used when the zip archive was created (possibly by a different
-	/// archiver) you will get unexpected results and possibly exceptions.  See the <see
-	/// cref="Ionic.Utils.Zip.ZipFile.Encoding">Encoding</see> property for more information.
+        /// set.  Be careful specifying the encoding.  If the value you use here is not the same
+        /// as the Encoding used when the zip archive was created (possibly by a different
+        /// archiver) you will get unexpected results and possibly exceptions.  See the <see
+        /// cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</see> property for more information.
         /// </param>
         /// 
         /// <returns>an instance of ZipFile. The name is set to null.</returns>
@@ -3106,7 +3115,7 @@ namespace Ionic.Utils.Zip
         {
             ZipFile zf = new ZipFile();
             zf._StatusMessageTextWriter = statusMessageWriter;
-            zf._encoding = encoding;
+            zf._provisionalAlternateEncoding = encoding;
             zf._readstream = new System.IO.MemoryStream(buffer);
             zf._ReadStreamIsOurs = true;
             ReadIntoInstance(zf);
@@ -3126,7 +3135,7 @@ namespace Ionic.Utils.Zip
                     else
                         zf.StatusMessageTextWriter.WriteLine("Reading zip {0}...", zf.Name);
 
-                while ((e = ZipEntry.Read(zf.ReadStream, zf.Encoding)) != null)
+                while ((e = ZipEntry.Read(zf.ReadStream, zf.ProvisionalAlternateEncoding)) != null)
                 {
                     if (zf.Verbose)
                         zf.StatusMessageTextWriter.WriteLine("  {0}", e.FileName);
@@ -3138,7 +3147,7 @@ namespace Ionic.Utils.Zip
                 zf._direntries = new System.Collections.Generic.List<ZipDirEntry>();
 
                 ZipDirEntry de;
-                while ((de = ZipDirEntry.Read(zf.ReadStream, zf.Encoding)) != null)
+                while ((de = ZipDirEntry.Read(zf.ReadStream, zf.ProvisionalAlternateEncoding)) != null)
                 {
                     zf._direntries.Add(de);
                     // Housekeeping: Since ZipFile exposes ZipEntry elements in the enumerator, 
@@ -3215,12 +3224,37 @@ namespace Ionic.Utils.Zip
             {
                 block = new byte[commentLength];
                 zf.ReadStream.Read(block, 0, block.Length);
-                // workitem 6415
-                // use UTF if the caller hasn't already set a non-default encoding
-                if (Ionic.Utils.Zip.SharedUtilities.HighBytes(block) && zf._encoding == System.Text.Encoding.GetEncoding("ibm437"))
-                    zf._encoding = System.Text.Encoding.UTF8;
-                zf.Comment = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length, zf._encoding);
+
+                // workitem 6513 - only use UTF8 as necessary
+                // test reflexivity
+                string s1 = DefaultEncoding.GetString(block);
+                byte[] b2 = DefaultEncoding.GetBytes(s1);
+                if (BlocksAreEqual(block, b2))
+                {
+                    zf.Comment = s1;
+                }
+                else
+                {
+                    // need alternate (non IBM437) encoding
+                    // workitem 6415
+                    // use UTF8 if the caller hasn't already set a non-default encoding
+                    System.Text.Encoding e = (zf._provisionalAlternateEncoding.CodePage == 437)
+                    ? System.Text.Encoding.UTF8
+                    : zf._provisionalAlternateEncoding;
+                    zf.Comment = e.GetString(block);
+                }
             }
+        }
+
+
+        private static bool BlocksAreEqual(byte[] a, byte[] b)
+        {
+            if (a.Length != b.Length) return false;
+            for (int i = 0; i < a.Length; i++)
+            {
+                if (a[i] != b[i]) return false;
+            }
+            return true;
         }
 
 
@@ -4113,7 +4147,8 @@ namespace Ionic.Utils.Zip
         private bool _saveOperationCanceled;
         private bool _extractOperationCanceled;
         private bool _JustSaved;
-        private System.Text.Encoding _encoding = System.Text.Encoding.GetEncoding("IBM437"); // default = IBM437
+        //private System.Text.Encoding _encoding = System.Text.Encoding.GetEncoding("IBM437"); // default = IBM437
+        private System.Text.Encoding _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437"); // default = IBM437
         #endregion
     }
 
@@ -4124,6 +4159,7 @@ namespace Ionic.Utils.Zip
         AddOrUpdate
     }
 }
+
 
 
 // Example usage: 

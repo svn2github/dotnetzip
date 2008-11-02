@@ -249,14 +249,15 @@ namespace Ionic.Utils.Zip
         }
 
 
-
-        internal static bool HighBytes(byte[] buffer)
-        {
-            if (buffer == null) return false;
-            for (int i = 0; i < buffer.Length; i++)
-                if ((buffer[i] & 0x80) == 0x80) return true;
-            return false;
-        }
+	// workitem 6513: testing for high bytes is not an effective way to see
+	// if a particular encoding is useful.  Instead we need to test reflexivity.
+//         internal static bool HighBytes(byte[] buffer)
+//         {
+//             if (buffer == null) return false;
+//             for (int i = 0; i < buffer.Length; i++)
+//                 if ((buffer[i] & 0x80) == 0x80) return true;
+//             return false;
+//         }
     }
 
 

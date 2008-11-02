@@ -517,40 +517,42 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// <remarks>
         /// If this flag is set, the entry will be marked as encoded with UTF-8, 
-        /// according to the PWare spec, if necessary.  Necessary means, if there are non-ANSI 
-        /// characters in the filename or in the comment attached to the entry.  
-        /// The default is to use IBM437 encoding. 
+        /// according to the PWare spec, if necessary.  Necessary means, if the filename or 
+        /// entry comment (if any) cannot be reflexively encoded with the default (IBM437) code page. 
         /// </remarks>
         /// <remarks>
-        /// Setting this flag to true is equivalent to setting <c>Encoding</c> to <c>System.Text.Encoding.GetEncoding("UTF-8")</c>
+        /// Setting this flag to true is equivalent to setting <c>ProvisionalAlternateEncoding</c> to <c>System.Text.Encoding.UTF8</c>
         /// </remarks>
-        public bool UseUtf8Encoding
+        public bool UseUnicodeAsNecessary
         {
             get
             {
-                return _encoding == System.Text.Encoding.GetEncoding("UTF-8");
+                return _provisionalAlternateEncoding == System.Text.Encoding.GetEncoding("UTF-8");
             }
             set
             {
-                _encoding = (value) ? System.Text.Encoding.GetEncoding("UTF-8") : Ionic.Utils.Zip.ZipFile.DefaultEncoding;
+                _provisionalAlternateEncoding = (value) ? System.Text.Encoding.GetEncoding("UTF-8") : Ionic.Utils.Zip.ZipFile.DefaultEncoding;
             }
         }
 
         /// <summary>
-        /// The text encoding to use for this ZipEntry.  
+        /// The text encoding to use for this ZipEntry, when the default
+        /// encoding is insufficient.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// In its AppNote.txt document, PKWare describes how to specify in the zip entry header
-        /// that a filename or comment containing non-ANSI characters is encoded with UTF-8.  But, some 
-        /// archivers do not follow the specification, and instead encode super-ANSI characters using the 
-        /// system default code page.  For example, WinRAR when run on a machine in Shanghai may encode 
-        /// filenames with the Chinese code page.  This behavior is contrary to the Zip specification, but it 
-        /// occurs anyway.
+        /// According to the zip specification from PKWare, filenames and comments for a
+        /// ZipEntry are encoded either with IBM437 or with UTF8.  But, some archivers do not
+        /// follow the specification, and instead encode characters using the system default
+        /// code page, or an arbitrary code page.  For example, WinRAR when run on a machine in
+        /// Shanghai may encode filenames with the Chinese (Big-5) code page.  This behavior is
+        /// contrary to the Zip specification, but it occurs anyway.  This property exists to
+        /// support that non-compliant behavior when reading or writing zip files.
         /// </para>
         /// <para>
         /// When writing zip archives that will be read by one of these other archivers, use this property to 
-        /// specify the code page to use when encoding filenames and comments into the zip file.
+        /// specify the code page to use when encoding filenames and comments into the zip
+        /// file, when the IBM437 code page will not suffice.
         /// </para>
         /// <para>
         /// Be aware that a zip file created after you've explicitly specified the code page will not 
@@ -566,15 +568,26 @@ namespace Ionic.Utils.Zip
         /// that are not legal in Windows, you will get exceptions upon extract. Caveat Emptor.
         /// </para>
         /// </remarks>
-        public System.Text.Encoding Encoding
+        public System.Text.Encoding ProvisionalAlternateEncoding
         {
             get
             {
-                return _encoding;
+                return _provisionalAlternateEncoding;
             }
             set
             {
-                _encoding = value;
+                _provisionalAlternateEncoding = value;
+            }
+        }
+
+        /// <summary>
+        /// The text encoding actually used for this ZipEntry.
+        /// </summary>
+        public System.Text.Encoding ActualEncoding
+        {
+            get
+            {
+                return _actualEncoding;
             }
         }
 
@@ -670,16 +683,12 @@ namespace Ionic.Utils.Zip
             n = ze.ArchiveStream.Read(block, 0, block.Length);
             bytesRead += n;
 
-            if ((ze._BitField & 0x0800) == 0x0800)
-            {
-                ze._FileNameInArchive = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length, System.Text.Encoding.UTF8);
-                ze.UseUtf8Encoding = true;
-            }
-            else
-            {
-                ze._FileNameInArchive = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length, defaultEncoding);
-                ze._encoding = defaultEncoding;
-            }
+	    // if the UTF8 bit is set for this entry, we override the encoding the application requested.
+            ze._actualEncoding= ((ze._BitField & 0x0800) == 0x0800)
+		? System.Text.Encoding.UTF8
+		: defaultEncoding;
+
+	    ze._FileNameInArchive = ze._actualEncoding.GetString(block);
 
             // when creating an entry by reading, the LocalFileName is the same as the FileNameInArchivre
             ze._LocalFileName = ze._FileNameInArchive;
@@ -1718,19 +1727,36 @@ namespace Ionic.Utils.Zip
         }
 
 
-        private byte[] GetFileNameBytes()
+
+	// workitem 6513: when writing, use alt encoding only when ibm437 will not do
+	private System.Text.Encoding GenerateCommentBytes()
+	{
+	    _CommentBytes = ibm437.GetBytes(_Comment);
+	    string s1 = ibm437.GetString(_CommentBytes);
+	    if (s1 == _Comment)
+		return ibm437;
+	    else
+	    {
+		_CommentBytes = _provisionalAlternateEncoding.GetBytes(_Comment);
+		return _provisionalAlternateEncoding;
+	    }
+	}
+
+
+	// workitem 6513
+	private void GetEncodedBytes(out byte[] result)
         {
             // here, we need to flip the backslashes to forward-slashes, 
             // also, we need to trim the \\server\share syntax from any UNC path.
             // and finally, we need to remove any leading .\
 
             string SlashFixed = FileName.Replace("\\", "/");
-            string result = null;
+            string s1 = null;
             if ((TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3)
                 && (FileName[1] == ':') && (SlashFixed[2] == '/'))
             {
                 // trim off volume letter, colon, and slash
-                result = SlashFixed.Substring(3);
+                s1 = SlashFixed.Substring(3);
             }
             else if ((FileName.Length >= 4)
                 && ((SlashFixed[0] == '/') && (SlashFixed[1] == '/')))
@@ -1741,20 +1767,62 @@ namespace Ionic.Utils.Zip
                 //System.Console.WriteLine("third slash: {0}\n", n);
                 if (n == -1)
                     throw new ArgumentException("The path for that entry appears to be badly formatted");
-                result = SlashFixed.Substring(n + 1);
+                s1 = SlashFixed.Substring(n + 1);
             }
             else if ((FileName.Length >= 3)
                 && ((SlashFixed[0] == '.') && (SlashFixed[1] == '/')))
             {
                 // trim off dot and slash
-                result = SlashFixed.Substring(2);
+                s1 = SlashFixed.Substring(2);
             }
             else
             {
-                result = SlashFixed;
+                s1 = SlashFixed;
             }
 
-            return Ionic.Utils.Zip.SharedUtilities.StringToByteArray(result, _encoding);
+	    // workitem 6513: when writing, use the alternative encoding only when ibm437 will not do.
+	    result = ibm437.GetBytes(s1);
+	    string s2 = ibm437.GetString(result);
+            _CommentBytes = null;
+	    if (s2 == s1)
+	    {
+		// file can be encoded with ibm437, now try comment
+		
+		// case 1: no comment.  use ibm437
+		if (_Comment == null || _Comment.Length == 0)
+		{
+		    _actualEncoding= ibm437;
+		    return;
+		}
+
+		// there is a comment.  Get the encoded form.
+		System.Text.Encoding commentEncoding= GenerateCommentBytes();
+
+		// case 2: if the comment also uses 437, we're good. 
+		if (commentEncoding.CodePage == 437)
+		{
+		    _actualEncoding= ibm437;
+		    return;
+		}
+
+		// case 3: comment requires non-437 code page.  Use the same
+		// code page for the filename.
+		_actualEncoding= commentEncoding;
+		result = commentEncoding.GetBytes(s1);
+		return ;
+	    }
+	    else
+	    {
+		// use the provisional encoding
+		result = _provisionalAlternateEncoding.GetBytes(s1);
+		if (_Comment != null && _Comment.Length != 0)
+		{
+		    _CommentBytes = _provisionalAlternateEncoding.GetBytes(_Comment);
+		}
+
+		_actualEncoding= _provisionalAlternateEncoding;
+		return ;
+	    }
         }
 
 
@@ -1883,18 +1951,13 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)((VersionNeededToExctract & 0xFF00) >> 8);
 
             // get byte array including any encoding
-            byte[] FileNameBytes = GetFileNameBytes();
+	    byte[] FileNameBytes;
+	    // workitem 6513
+	    GetEncodedBytes(out FileNameBytes);
             Int16 filenameLength = (Int16)FileNameBytes.Length;
 
-            _CommentBytes = null;
-            if (_Comment != null && _Comment.Length != 0)
-            {
-                _CommentBytes = Ionic.Utils.Zip.SharedUtilities.StringToByteArray(_Comment, _encoding);
-            }
-
-            // set the Utf8 bit if necessary
-            bool setUtf8Bit = UseUtf8Encoding && (Ionic.Utils.Zip.SharedUtilities.HighBytes(_CommentBytes) ||
-                          Ionic.Utils.Zip.SharedUtilities.HighBytes(FileNameBytes));
+            // set the UTF8 bit if necessary
+            bool setUtf8Bit = (ActualEncoding.CodePage == System.Text.Encoding.UTF8.CodePage);
 
             // general purpose bitfield
 
@@ -2389,8 +2452,6 @@ namespace Ionic.Utils.Zip
         }
 
 
-
-
         private DateTime _LastModified;
         private bool _TrimVolumeFromFullyQualifiedPaths = true;  // by default, trim them.
         private bool _ForceNoCompression;  // by default, false: do compression if it makes sense.
@@ -2410,7 +2471,9 @@ namespace Ionic.Utils.Zip
         private Int32 _Crc32;
         private byte[] _Extra;
         private bool _OverwriteOnExtract;
-        private System.Text.Encoding _encoding = System.Text.Encoding.GetEncoding("IBM437");         // default encoding = ibm437
+	private static System.Text.Encoding ibm437 = System.Text.Encoding.GetEncoding("IBM437");
+	private System.Text.Encoding _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437");
+	private System.Text.Encoding _actualEncoding = null;
 
         internal ZipFile _zipfile;
         private long __FileDataPosition;
