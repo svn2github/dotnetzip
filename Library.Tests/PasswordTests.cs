@@ -171,7 +171,7 @@ namespace Ionic.Utils.Zip.Tests.Password
             string[] filenames = 
             {
                 Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "AppNote.txt")
+                Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.xml"),
             };
 
             string[] checksums = 
@@ -229,7 +229,7 @@ namespace Ionic.Utils.Zip.Tests.Password
             string[] filenames = 
             {
                 Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "AppNote.txt")
+                Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.xml"),
             };
 
             string[] passwords = 
@@ -276,7 +276,7 @@ namespace Ionic.Utils.Zip.Tests.Password
             string[] filenames = 
             {
                 Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "AppNote.txt")
+                Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.xml"),
             };
 
             string[] checksums = 

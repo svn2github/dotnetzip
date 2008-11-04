@@ -83,6 +83,20 @@ namespace Ionic.Utils.Zip
         /// According to the zip spec, the comment is not encrypted, even if there is a password
         /// set on the zip archive. 
         /// </para>
+        /// <para>
+        /// The zip spec does not describe how to encode the comment string in a code page other than IBM437. 
+        /// Therefore, for "compliant" zip tools and libraries, comments will use IBM437.  However, there are
+        /// situations where you want an encoded Comment, for example using code page 950 "Big-5 Chinese".
+        /// DotNetZip will encode the comment in the code page specified by <see cref="ProvisionalAlternateEncoding"/>,
+        /// at the time of the call to ZipFile.Save().
+        /// </para>
+        /// <para>
+        /// When creating a zip archive using this library, it is possible to change the value of 
+        /// ProvisionalAlternateEncoding between each entry you add, and between adding entries and the 
+        /// call to Save(). Don't do this.  It will likely result in a zipfile that is not readable. 
+        /// For best interoperability, leave ProvisionalAlternateEncoding alone, or 
+        /// specify it only once, before adding any entries to the ZipFile instance.
+        /// </para>
         /// </remarks>
         public string Comment
         {
@@ -252,8 +266,8 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
-        /// Set the text encoding to use when writing new entries to the ZipFile, for those
-        /// entries that cannot be encoded with the default (IBM437) encoding; or, get the
+        /// The text encoding to use when writing new entries to the ZipFile, for those
+        /// entries that cannot be encoded with the default (IBM437) encoding; or, the
         /// text encoding that was used when reading the entries from the ZipFile.
         /// </summary>
         /// 
@@ -278,8 +292,23 @@ namespace Ionic.Utils.Zip
         /// ProvisionalAlternateEncoding property to a value other than IBM437 may not be compliant
         /// to the PKWare specification, and may not be readable by compliant archivers.  On
         /// the other hand, many (most?) archivers are non-compliant and can read zip files
-        /// created in arbitrary code pages.  The trick is to use the proper codepage when
+        /// created in arbitrary code pages.  The trick is to use or specify the proper codepage when
         /// reading the zip.
+        /// </para>
+        /// <para>
+        /// The Comment on the ZipFile is also encoded with this encoding, if it cannot be successfully
+        /// encoded in the default code page (IBM437).  
+        /// </para>
+        /// <para>
+        /// When creating a zip archive using this library, it is possible to change the value of 
+        /// ProvisionalAlternateEncoding between each entry you add, and between adding entries and the 
+        /// call to Save(). Don't do this. It will likely result in a zipfile that is not readable. 
+        /// For best interoperability, either leave ProvisionalAlternateEncoding alone, or 
+        /// specify it only once, before adding any entries to the ZipFile instance.  
+        /// If you want to add a comment to the ZipFile, and you would the comment to be encoded 
+        /// in a code page that is different than the code page you use for the filenames of the entries in the archive, 
+        /// then you can specify ProvisionalAlternateEncoding once before adding entries and then 
+        /// reset ProvisionalAlternateEncoding to IBM437 before calling Save().
         /// </para>
         /// <para>
         /// When using DotNetZip to read zip archives that have been created by a different
@@ -293,12 +322,12 @@ namespace Ionic.Utils.Zip
         /// <para>
         /// When using an arbitrary, non-UTF8 code page for encoding, there is no standard
         /// way for the creator application - whether DotNetZip, WinRar, or something else -
-        /// to specify in the zip file which codepage has been used. As a result, readers of
+        /// to specify in the zip file which codepage has been used for the entries. As a result, readers of
         /// zip files are not able to inspect the zip file and determine the codepage that
         /// was used for the entries contained within it.  It is left to the application to
         /// determine the necessary codepage when reading zipfiles encoded this way.  If you
         /// use an incorrect codepage when reading a zipfile, you will get entries with
-        /// filenames that are incorrect, and they may even contain characters that are not
+        /// filenames that are incorrect, and the incorrect filenames may even contain characters that are not
         /// legal for use within filenames in Windows. Extracting entries with illegal
         /// characters in the filenames will lead to exceptions. Caveat Emptor.
         /// </para>
@@ -2309,8 +2338,15 @@ namespace Ionic.Utils.Zip
 
         private void WriteCentralDirectoryFooter(Stream s, long StartOfCentralDirectory, long EndOfCentralDirectory)
         {
-            int bufferLength = 22;
-            if (Comment != null) bufferLength += Comment.Length;
+            int bufferLength = 24;
+            byte[] block = null;
+            Int16 commentLength = 0;
+            if ((Comment != null) && (Comment.Length != 0))
+            {
+                block = ProvisionalAlternateEncoding.GetBytes(Comment);
+                commentLength = (Int16)block.Length;
+            }
+            bufferLength += Comment.Length;
             byte[] bytes = new byte[bufferLength];
 
             int i = 0;
@@ -2359,26 +2395,6 @@ namespace Ionic.Utils.Zip
             }
             else
             {
-#if NO_UTF8		
-                Int16 commentLength = (Int16)Comment.Length;
-                // the size of our buffer defines the max length of the comment we can write
-                if (commentLength + i + 2 > bytes.Length) commentLength = (Int16)(bytes.Length - i - 2);
-                bytes[i++] = (byte)(commentLength & 0x00FF);
-                bytes[i++] = (byte)((commentLength & 0xFF00) >> 8);
-
-                char[] c = Comment.ToCharArray();
-
-                int j = 0;
-                // now actually write the comment itself into the byte buffer
-                for (j = 0; (j < commentLength) && (i + j < bytes.Length); j++)
-                {
-                    bytes[i + j] = System.BitConverter.GetBytes(c[j])[0];
-                }
-                i += j;
-#else
-
-                byte[] block = ProvisionalAlternateEncoding.GetBytes(Comment);
-                Int16 commentLength = (Int16)block.Length;
                 // the size of our buffer defines the max length of the comment we can write
                 if (commentLength + i + 2 > bytes.Length) commentLength = (Int16)(bytes.Length - i - 2);
                 bytes[i++] = (byte)(commentLength & 0x00FF);
@@ -2394,9 +2410,6 @@ namespace Ionic.Utils.Zip
                     }
                     i += j;
                 }
-
-#endif
-
             }
 
             s.Write(bytes, 0, i);

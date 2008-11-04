@@ -150,8 +150,12 @@ namespace Ionic.Utils.Zip.Tests.Unicode
                             i++;
                         }
 
+
+                        // according to the spec,
                         // unicode is not supported on the zip archive comment!
-                        Assert.AreNotEqual<String>(OrigComment, zip2.Comment);
+                        // But this library won't enforce that. 
+                        // We will leave it up to the application.
+                        // Assert.AreNotEqual<String>(OrigComment, zip2.Comment);
 
                     }
                 }

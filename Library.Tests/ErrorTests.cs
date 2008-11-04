@@ -1,6 +1,4 @@
 ﻿using System;
-//using System.Text;
-//using System.Collections.Generic;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -157,7 +155,7 @@ namespace Ionic.Utils.Zip.Tests.Error
                 Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.dll"),
                 Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.pdb"),
                 Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.xml"),
-                Path.Combine(SourceDir, "AppNote.txt")
+                //Path.Combine(SourceDir, "AppNote.txt")
             };
             int j = 0;
             using (ZipFile zip = new ZipFile(ZipFileToCreate))
@@ -426,7 +424,7 @@ namespace Ionic.Utils.Zip.Tests.Error
             string[] filenames =
             {
                 Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "AppNote.txt")
+                Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.xml"),
             };
 
             // passwords to use for those entries
@@ -492,7 +490,8 @@ namespace Ionic.Utils.Zip.Tests.Error
             {
                 Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
                 Path.Combine(SourceDir, "Examples\\Unzip\\bin\\Debug\\Unzip.exe"),
-                Path.Combine(SourceDir, "AppNote.txt")
+                Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.xml"),
+
             };
 
             // create the zipfile, adding the files
