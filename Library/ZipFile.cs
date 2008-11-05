@@ -837,13 +837,61 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
+        /// Creates a new ZipFile instance, using the specified ZipFileName for the filename, and 
+        /// the specified Encoding.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// See the documentation on the <see cref="ZipFile(String)">ZipFile constructor
+	/// that accepts a single string argument</see> for basic information on all the ZipFile constructors.
+        /// </para>
+        ///
+        /// <para>
+        /// The Encoding is used as the default alternate encoding for entries with filenames
+        /// or comments that cannot be encoded with the IBM437 code page.  This is a equivalent to setting 
+	/// the ProvisionalAlternateEncoding property on the ZIpFile instance after construction.
+        /// </para>
+        ///
+        /// </remarks>
+        /// 
+        /// <exception cref="Ionic.Utils.Zip.ZipException">
+        /// Thrown if zipFileName refers to an existing file that is not a valid zip file. 
+        /// </exception>
+        ///
+        /// <param name="zipFileName">The filename to use for the new zip archive.</param>
+        /// <param name="encoding">The Encoding is used as the default alternate encoding for entries with filenames
+        /// or comments that cannot be encoded with the IBM437 code page. </param>
+        public ZipFile(string zipFileName, System.Text.Encoding encoding)
+        {
+            try
+            {
+                InitFile(zipFileName, null);
+		ProvisionalAlternateEncoding = encoding;
+            }
+            catch (Exception e1)
+            {
+                throw new ZipException(String.Format("{0} is not a valid zip file", zipFileName), e1);
+            }
+        }
+
+
+
+        /// <summary>
         /// Create a zip file, without specifying a target filename or stream to save to. 
         /// </summary>
         /// 
         /// <remarks>
+        /// <para>
+        /// See the documentation on the <see cref="ZipFile(String)">ZipFile constructor
+	/// that accepts a single string argument</see> for basic information on all the ZipFile constructors.
+        /// </para>
+        ///
+        /// <para>
         /// If you do eventually call <c>Save()</c>, you will need to have specified
         /// a zip filename at some point. Either as a parameter to <c>Save()</c> or 
         /// on the ZipFile object itself.
+        /// </para>
         /// </remarks>
         /// 
         /// <example>
@@ -885,36 +933,35 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
-        /// Creates a new ZipFile instance, using the specified ZipFileName for the filename. 
-        /// The ZipFileName may be fully qualified.
+        /// Create a zip file, specifying a text Encoding, but without specifying a target filename or stream to save to. 
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// See the documentation on the <see cref="ZipFile(String)">ZipFile constructor
+	/// that accepts a single string argument</see> for basic information on all the ZipFile constructors.
+        /// </para>
+        ///
+        /// </remarks>
+        ///
+        /// <param name="encoding">The Encoding is used as the default alternate encoding for entries with filenames
+        /// or comments that cannot be encoded with the IBM437 code page. </param>
+        public ZipFile(System.Text.Encoding encoding)
+        {
+            InitFile(null, null);
+	    ProvisionalAlternateEncoding = encoding;
+        }
+
+
+        /// <summary>
+        /// Creates a new ZipFile instance, using the specified ZipFileName for the filename, 
+        /// and the specified status message writer. 
         /// </summary>
         ///
         /// <remarks>
         /// <para>
-        /// Applications can use this constructor to create a new ZipFile for writing, 
-        /// or to slurp in an existing zip archive for read and write purposes.  
-        /// </para>
-        ///
-        /// <para>
-        /// To create a new zip archive, an application should call this constructor,
-        /// passing the name of a file that does not exist.  Then the application can
-        /// add directories or files to the ZipFile via <c>AddDirectory()</c>,
-        /// <c>AddFile()</c>, <c>AddItem()</c> and then write the zip archive to the
-        /// disk by calling <c>Save()</c>. The zip file is not actually written to
-        /// the disk until the application calls <c>ZipFile.Save()</c>.  At that point
-        /// the new zip file with the given name is created. 
-        /// </para>
-        /// 
-        /// <para>
-        /// To read an existing zip archive, the application should call this constructor,
-        /// passing the name of a valid zip file that does exist.  The file is then read into
-        /// the <c>ZipFile</c> instance.  The app can then enumerate the entries or can modify
-        /// the zip file, for example adding entries, removing entries, changing comments, and
-        /// so on.  When reading an existing zip archive, the application may wish to
-        /// explicitly specify that it is reading an existing zip file by using
-        /// <c>ZipFile.Read()</c>.  On the other hand, this parameterized constructor allows
-        /// applications to use the same code to add items to a zip archive, regardless of
-        /// whether the zip file exists.
+        /// See the documentation on the <see cref="ZipFile(String)">ZipFile constructor
+	/// that accepts a single string argument</see> for basic information on all the ZipFile constructors.
         /// </para>
         ///
         /// <para>
@@ -922,7 +969,8 @@ namespace Ionic.Utils.Zip
         /// verbose messages will be written during extraction or creation of the zip archive.
         /// A console application may wish to pass System.Console.Out to get messages on the
         /// Console. A graphical or headless application may wish to capture the messages in a
-        /// different <c>TextWriter</c>, for example, a <c>StringWriter</c>.
+        /// different <c>TextWriter</c>, for example, a <c>StringWriter</c>, and then display
+        /// the messages in a TextBox, or generate an audit log of ZipFile operations.
         /// </para>
         /// 
         /// <para>
@@ -983,6 +1031,63 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
+        /// Creates a new ZipFile instance, using the specified ZipFileName for the filename, 
+        /// the specified status message writer, and the specified Encoding.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// <para>
+        /// This constructor works like the <see cref="ZipFile(String)">ZipFile constructor
+	/// that accepts a single string argument.</see> See that reference for detail on what
+	/// this constructor does.
+        /// </para>
+        ///
+        /// <para>
+        /// This version of the constructor allows the caller to pass in a TextWriter, and an
+        /// Encoding.  The TextWriter will collect verbose messages that are generated by the
+        /// library during extraction or creation of the zip archive.  A console application
+        /// may wish to pass System.Console.Out to get messages on the Console. A graphical or
+        /// headless application may wish to capture the messages in a different
+        /// <c>TextWriter</c>, for example, a <c>StringWriter</c>, and then display the
+        /// messages in a TextBox, or generate an audit log of ZipFile operations.
+        /// </para>
+        /// 
+        /// <para>
+        /// The Encoding is used as the default alternate encoding for entries with filenames
+        /// or comments that cannot be encoded with the IBM437 code page.  This is a equivalent to setting 
+	/// the ProvisionalAlternateEncoding property on the ZIpFile instance after construction.
+        /// </para>
+        /// 
+        /// <para>
+        /// To encrypt the data for the  files added to the ZipFile instance, set the Password
+        /// property after creating the ZipFile instance.
+        /// </para>
+        /// 
+        /// </remarks>
+        ///
+        /// <exception cref="Ionic.Utils.Zip.ZipException">
+        /// Thrown if zipFileName refers to an existing file that is not a valid zip file. 
+        /// </exception>
+        ///
+        /// <param name="zipFileName">The filename to use for the new zip archive.</param>
+        /// <param name="statusMessageWriter">A TextWriter to use for writing verbose status messages.</param>
+        /// <param name="encoding">The Encoding is used as the default alternate encoding for entries with filenames
+        /// or comments that cannot be encoded with the IBM437 code page. </param>
+        public ZipFile(string zipFileName, System.IO.TextWriter statusMessageWriter, System.Text.Encoding encoding)
+        {
+            try
+            {
+                InitFile(zipFileName, statusMessageWriter);
+		ProvisionalAlternateEncoding = encoding;
+            }
+            catch (Exception e1)
+            {
+                throw new ZipException(String.Format("{0} is not a valid zip file", zipFileName), e1);
+            }
+        }
+
+
+        /// <summary>
         /// Constructor to create an instance of ZipFile that writes Zip archives to a <c>System.IO.Stream</c>.
         /// </summary>
         /// 
@@ -1024,7 +1129,7 @@ namespace Ionic.Utils.Zip
         /// </remarks>
         /// 
         /// <exception cref="System.ArgumentException">
-        /// Thrown if the stream is not writable.  Seriously, think about it, dude. 
+        /// Thrown if the stream is not writable.
         /// You need a writable stream if you're going to extract zip content to it. 
         /// </exception>
         ///
@@ -1081,22 +1186,55 @@ namespace Ionic.Utils.Zip
             _entries = new System.Collections.Generic.List<ZipEntry>();
         }
 
+
         /// <summary>
-        /// Constructor to create an instance of ZipFile that writes Zip archives to a stream.
+        /// Constructor to create an instance of ZipFile that writes Zip archives to a <c>System.IO.Stream</c>,
+	/// and using a specific Encoding.
         /// </summary>
         /// 
         /// <remarks>
-        /// <para>Applications can use this constructor to create an instance of ZipFile 
-        /// for writing to a stream. This is useful when zipping up content, but for any 
-        /// reason it is not desirable to create a zip file in the filesystem itself. 
+        /// <para>
+        /// See the documentation on the <see cref="ZipFile(System.IO.Stream)">ZipFile constructor
+	/// that accepts a single Stream argument</see> for basic information on this constructor.
         /// </para>
-        /// <para>Typically an application writing a zip archive in this manner will create and
-        /// open a stream, then call this constructor, passing in the stream.  Then the app will 
-        /// add directories or files to the ZipFile via AddDirectory or AddFile or AddItem.  The 
-        /// app will then write the zip archive to the memory stream by calling <c>Save</c>. The 
-        /// compressed (zipped) data is not actually written to the stream until the application 
-        /// calls <c>ZipFile.Save</c> .
+        ///
+        /// <para>
+        /// The Encoding is used as the default alternate encoding for entries with filenames
+        /// or comments that cannot be encoded with the IBM437 code page.  This is a equivalent to setting 
+	/// the ProvisionalAlternateEncoding property on the ZIpFile instance after construction.
         /// </para>
+        ///
+        /// </remarks>
+        ///
+        /// <param name="outputStream">The <c>System.IO.Stream</c> to write to. It must be writable.</param>
+        /// <param name="encoding">The Encoding is used as the default alternate encoding for entries with filenames
+        /// or comments that cannot be encoded with the IBM437 code page. </param>
+        public ZipFile(System.IO.Stream outputStream, System.Text.Encoding encoding)
+        {
+            if (!outputStream.CanWrite)
+                throw new ArgumentException("The outputStream must be a writable stream.");
+
+            // At various times during writing of the archive, we retrieve the position in the 
+            // stream.  But, the Response.OutputStream in an ASP.NET page doesn't allow this.
+            // So, we wrap the stream with a counting stream, so that we can retrieve the count
+            // of bytes written at any particular moment. 
+
+            _writestream = new CountingStream(outputStream);
+	    ProvisionalAlternateEncoding = encoding;
+            _entries = new System.Collections.Generic.List<ZipEntry>();
+        }
+
+        /// <summary>
+        /// Constructor to create an instance of ZipFile that writes Zip archives to a stream, 
+	/// and uses the specified TextWriter to collect status messages.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// See the documentation on the <see cref="ZipFile(System.IO.Stream)">ZipFile constructor
+	/// that accepts a single Stream argument</see> for basic information on this constructor.
+        /// </para>
+        ///
         /// <para>
         /// This version of the constructor allows the caller to pass in a TextWriter, to which  
         /// verbose messages will be written during creation of the zip archive.  A console 
@@ -1131,6 +1269,62 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
+        /// Constructor to create an instance of ZipFile that writes Zip archives to a stream, 
+	/// and uses the specified TextWriter to collect status messages.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// See the documentation on the <see cref="ZipFile(System.IO.Stream)">ZipFile constructor
+	/// that accepts a single Stream argument</see> for basic information on this constructor.
+        /// </para>
+        ///
+        /// <para>
+        /// This version of the constructor allows the caller to pass in a TextWriter, and an
+        /// Encoding.  The TextWriter collects status messages emitted by the ZipFile class
+        /// during creation of the zip archive.  A console application may wish to pass
+        /// System.Console.Out to get messages on the Console.  A graphical or headless
+        /// application may wish to capture the messages in a different TextWriter, for
+        /// example, a <c>StringWriter</c>, and then display the messages in a TextBox, or
+        /// generate an audit log of ZipFile operations.
+        /// </para>
+	///
+        /// <para>
+        /// The Encoding is used as the default alternate encoding for entries with filenames
+        /// or comments that cannot be encoded with the IBM437 code page.  This is a equivalent to setting 
+	/// the ProvisionalAlternateEncoding property on the ZIpFile instance after construction.
+        /// </para>
+        /// 
+        /// </remarks>
+        ///
+        /// <exception cref="System.ArgumentException">
+        /// Thrown if the stream is not writable. 
+        /// You need to specify a writable stream if you're going to extract zip content to it. 
+        /// </exception>
+        ///
+        /// <param name="outputStream">The outputStream to write to. It must be writable.</param>
+        /// <param name="statusMessageWriter">A TextWriter to use for writing verbose status messages.</param>
+        /// <param name="encoding">The Encoding is used as the default alternate encoding for entries with filenames
+        /// or comments that cannot be encoded with the IBM437 code page. </param>
+        public ZipFile(System.IO.Stream outputStream, System.IO.TextWriter statusMessageWriter, System.Text.Encoding encoding)
+        {
+
+            if (!outputStream.CanWrite)
+                throw new ArgumentException("The outputStream must be a writable stream.");
+
+            // At various times during writing of the archive, we retrieve the position in the 
+            // stream.  But, the Response.OutputStream in an ASP.NET page doesn't allow this.
+            // So, we wrap the stream with a counting stream, so that we can retrieve the count
+            // of bytes written at any particular moment. 
+
+            _writestream = new CountingStream(outputStream);
+	    ProvisionalAlternateEncoding = encoding;
+            _entries = new System.Collections.Generic.List<ZipEntry>();
+            _StatusMessageTextWriter = statusMessageWriter;
+        }
+
+
+        /// <summary>
         /// Returns the version number on the assembly.
         /// </summary>
         /// <remarks>
@@ -1144,8 +1338,7 @@ namespace Ionic.Utils.Zip
         {
             get
             {
-                return
-                            System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             }
         }
 
