@@ -2832,10 +2832,33 @@ namespace Ionic.Utils.Zip
         /// 	End Try
         /// End Sub
         /// 
-        /// Public Sub MySaveProgress(ByVal sender As Object, ByVal e As SaveProgressEventArgs)
-	///   If (e.EventType = ZipProgressEventType.Saving_BeforeSaveEntry) Then
-        ///     Console.WriteLine("{0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal)
-	///   End If
+        /// Private Shared justHadByteUpdate As Boolean = False
+        /// 
+        /// Public Shared Sub MySaveProgress(ByVal sender As Object, ByVal e As SaveProgressEventArgs)
+        ///     If (e.EventType Is ZipProgressEventType.Saving_Started) Then
+        ///         Console.WriteLine("Saving: {0}", e.ArchiveName)
+	/// 
+        ///     ElseIf (e.EventType Is ZipProgressEventType.Saving_Completed) Then
+        ///         CreateLargeZip.justHadByteUpdate = False
+        ///         Console.WriteLine
+        ///         Console.WriteLine("Done: {0}", e.ArchiveName)
+	/// 
+        ///     ElseIf (e.EventType Is ZipProgressEventType.Saving_BeforeWriteEntry) Then
+        ///         If CreateLargeZip.justHadByteUpdate Then
+        ///             Console.WriteLine
+        ///         End If
+        ///         Console.WriteLine("  Writing: {0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal)
+        ///         CreateLargeZip.justHadByteUpdate = False
+	/// 
+        ///     ElseIf (e.EventType Is ZipProgressEventType.Saving_EntryBytesWritten) Then
+        ///         If CreateLargeZip.justHadByteUpdate Then
+        ///             Console.SetCursorPosition(0, Console.CursorTop)
+        ///         End If
+        ///         Console.Write("     {0}/{1} ({2:N0}%)", e.BytesWritten, _
+	///                       e.TotalBytesToWrite, _
+	///                       (CDbl(e.BytesWritten) / (0.01 * e.TotalBytesToWrite)))
+        ///         CreateLargeZip.justHadByteUpdate = True
+        ///     End If
         /// End Sub
         /// </code>
         /// </example>
@@ -2886,6 +2909,17 @@ namespace Ionic.Utils.Zip
             }
         }
 
+        private void OnSaveStarted()
+        {
+            lock (LOCK)
+            {
+                if (SaveProgress != null)
+                {
+                    var e = SaveProgressEventArgs.Started(ArchiveNameForEvent);
+                    SaveProgress(this, e);
+                }
+            }
+        }
         private void OnSaveCompleted()
         {
             lock (LOCK)
@@ -2899,18 +2933,133 @@ namespace Ionic.Utils.Zip
         }
 
 
-        private void OnSaveStarted()
+
+
+        /// <summary>
+        /// An event handler invoked before, during, and after the reading of a zip archive.
+        /// </summary>
+	///
+        /// <remarks>
+	/// <para>
+	/// Depending on the particular event being signaled, different properties on the
+	/// ReadProgressEventArgs parameter are set.  The following table 
+	/// summarizes the available EventTypes and the conditions under which this 
+	/// event handler is invoked with a ReadProgressEventArgs with the given EventType.
+	/// </para>
+	/// 
+	/// <list type="table">
+	/// <listheader>
+	/// <term>value of EntryType</term>
+	/// <description>Meaning and conditions</description>
+	/// </listheader>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Reading_Started</term>
+	/// <description>Set just as ZipFile.Read() begins. Meaningful properties: ArchiveName.
+        /// </description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Reading_Completed</term>
+	/// <description>Set when ZipFile.Read() has completed. Meaningful properties: ArchiveName.
+        /// </description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Reading_ArchiveBytesRead</term>
+	/// <description>updates the number of bytes read for the entire archive. 
+	/// Meaningful properties: ArchiveName, NameOfLatestEntry, BytesTransferred, TotalBytesToTransfer.
+        /// </description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Reading_BeforeReadEntry</term>
+	/// <description>indicates an entry is about to be read from the archive.
+	/// Meaningful properties: ArchiveName, EntriesTotal.
+        /// </description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Reading_AfterReadEntry</term>
+	/// <description>indicates an entry has just been read from the archive.
+	/// Meaningful properties: ArchiveName, EntriesTotal, NameOfLatestEntry.
+        /// </description>
+	/// </item>
+	///
+	/// </list>
+        /// </remarks>
+        public event EventHandler<ReadProgressEventArgs> ReadProgress;
+
+        private void OnReadStarted()
         {
             lock (LOCK)
             {
-                if (SaveProgress != null)
+                if (ReadProgress != null)
                 {
-                    var e = SaveProgressEventArgs.Started(ArchiveNameForEvent);
-                    SaveProgress(this, e);
+                    var e = ReadProgressEventArgs.Started(ArchiveNameForEvent);
+                    ReadProgress(this, e);
                 }
             }
         }
 
+        private void OnReadCompleted()
+        {
+            lock (LOCK)
+            {
+                if (ReadProgress != null)
+                {
+                    var e = ReadProgressEventArgs.Completed(ArchiveNameForEvent);
+                    ReadProgress(this, e);
+                }
+            }
+        }
+
+        internal void OnReadBytes(string entryName)
+        {
+            lock (LOCK)
+            {
+                if (ReadProgress != null)
+                {
+		    var e= ReadProgressEventArgs.ByteUpdate(ArchiveNameForEvent, 
+							    entryName,
+							    (int) ReadStream.Position,
+							    LengthOfReadStream);
+                    ReadProgress(this, e);
+                }
+            }
+        }	
+
+        internal void OnReadEntry(bool before, string entryName)
+        {
+            lock (LOCK)
+            {
+                if (ReadProgress != null)
+                {
+		    ReadProgressEventArgs e= (before)
+			? ReadProgressEventArgs.Before(ArchiveNameForEvent, _entries.Count)
+			: ReadProgressEventArgs.After(ArchiveNameForEvent, entryName, _entries.Count);
+                    ReadProgress(this, e);
+                }
+            }
+        }
+
+	private int _lengthOfReadStream= -99;
+	private int LengthOfReadStream
+	{
+	    get
+	    {
+		if (_lengthOfReadStream== -99)
+		{
+		    if (_ReadStreamIsOurs)
+		    {
+			System.IO.FileInfo fi = new System.IO.FileInfo(_name);
+			_lengthOfReadStream= (int) fi.Length;
+		    }
+		    else _lengthOfReadStream= -1;
+		}
+		return _lengthOfReadStream;
+	    }
+	}
 
 
         /// <summary>
@@ -3009,12 +3158,44 @@ namespace Ionic.Utils.Zip
         /// }
         ///
         /// </code>
+        /// <code lang="VB">
+        /// Public Shared Sub Main(ByVal args As String())
+        ///     Dim ZipToUnpack As String = "C1P3SML.zip"
+        ///     Dim TargetDir As String = "ExtractTest_Extract"
+        ///     Console.WriteLine("Extracting file {0} to {1}", ZipToUnpack, TargetDir)
+        ///     Using zip1 As ZipFile = ZipFile.Read(ZipToUnpack)
+        ///         AddHandler zip1.ExtractProgress, AddressOf MyExtractProgress
+        ///         Dim e As ZipEntry
+        ///         For Each e In zip1
+        ///             e.Extract(TargetDir, True)
+        ///         Next
+        ///     End Using
+        /// End Sub
+        /// 
+        /// Private Shared justHadByteUpdate As Boolean = False
+        /// 
+        /// Public Shared Sub MyExtractProgress(ByVal sender As Object, ByVal e As ExtractProgressEventArgs)
+        ///     If (e.EventType Is ZipProgressEventType.Extracting_EntryBytesWritten) Then
+        ///         If ExtractTest.justHadByteUpdate Then
+        ///             Console.SetCursorPosition(0, Console.CursorTop)
+        ///         End If
+        ///         Console.Write("   {0}/{1} ({2:N0}%)", e.BytesWritten, e.TotalBytesToWrite, (CDbl(e.BytesWritten) / (0.01 * e.TotalBytesToWrite)))
+        ///         ExtractTest.justHadByteUpdate = True
+        ///     ElseIf (e.EventType Is ZipProgressEventType.Extracting_BeforeExtractEntry) Then
+        ///         If ExtractTest.justHadByteUpdate Then
+        ///             Console.WriteLine
+        ///         End If
+        ///         Console.WriteLine("Extracting: {0}", e.NameOfLatestEntry)
+        ///         ExtractTest.justHadByteUpdate = False
+        ///     End If
+        /// End Sub
+        /// </code>
         /// </example>
         public event EventHandler<ExtractProgressEventArgs> ExtractProgress;
 
 
 
-        private void OnExtractProgress(int current, bool before, string currentEntryName, string path, bool overwrite)
+        private void OnExtractEntry(int current, bool before, string currentEntryName, string path, bool overwrite)
         {
             lock (LOCK)
             {
@@ -3030,7 +3211,7 @@ namespace Ionic.Utils.Zip
 
 
         // Can be called from within ZipEntry._ExtractOne.
-        internal bool OnBlockExtracted(string entryName, int bytesWritten, int totalBytesToWrite)
+        internal bool OnExtractBlock(string entryName, int bytesWritten, int totalBytesToWrite)
         {
             lock (LOCK)
             {
@@ -3048,7 +3229,7 @@ namespace Ionic.Utils.Zip
 
 
         // Can be called from within ZipEntry.InternalExtract.
-        internal bool OnSingleEntryExtractProgress(string entryName, string path, bool before, bool overwrite)
+        internal bool OnSingleEntryExtract(string entryName, string path, bool before, bool overwrite)
         {
             lock (LOCK)
             {
@@ -3160,6 +3341,15 @@ namespace Ionic.Utils.Zip
             return ZipFile.Read(zipFileName, null, DefaultEncoding);
         }
 
+        /// <summary>
+        /// Reads a zip file archive and returns the instance, using the specified
+	/// ReadProgress event handler.  
+        /// </summary>
+        /// 
+        public static ZipFile Read(string zipFileName, EventHandler<ReadProgressEventArgs> readProgress )
+        {
+            return ZipFile.Read(zipFileName, null, DefaultEncoding, readProgress);
+        }
 
         /// <summary>
         /// Reads a zip file archive using the specified text encoding, and returns the instance.  
@@ -3252,6 +3442,19 @@ namespace Ionic.Utils.Zip
             return ZipFile.Read(zipFileName, statusMessageWriter, DefaultEncoding);
         }
 
+
+        /// <summary>
+        /// Reads a zip file archive using the specified text encoding, and the
+	/// specified ReadProgress event handler, and returns the instance.  
+        /// </summary>
+        /// 
+        public static ZipFile Read(string zipFileName, 
+				   System.IO.TextWriter statusMessageWriter,
+				   EventHandler<ReadProgressEventArgs> readProgress )
+        {
+            return ZipFile.Read(zipFileName, statusMessageWriter, DefaultEncoding, readProgress);
+        }
+
         /// <summary>
         /// Reads a zip file archive using the specified text encoding, and returns the instance.  
         /// </summary>
@@ -3309,7 +3512,21 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
-        /// Reads a zip file archive using the specified text encoding, and returns the instance.  
+        /// Reads a zip file archive using the specified text encoding and ReadProgress
+	/// event handler, and returns the instance.  
+        /// </summary>
+        /// 
+        public static ZipFile Read(string zipFileName, 
+				   System.Text.Encoding encoding,
+				   EventHandler<ReadProgressEventArgs> readProgress )
+        {
+            return ZipFile.Read(zipFileName, null, encoding, readProgress);
+        }
+
+
+        /// <summary>
+        /// Reads a zip file archive using the specified text encoding and the specified
+	/// TextWriter for status messages, and returns the instance.  
         /// </summary>
         /// 
         /// <remarks>
@@ -3363,16 +3580,34 @@ namespace Ionic.Utils.Zip
         /// created (possibly by a different archiver) you will get unexpected results and possibly exceptions.  
         /// </param>
         /// 
-        /// <seealso cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</seealso>.
+        /// <seealso cref="ProvisionalAlternateEncoding"/>
         ///
         /// <returns>The instance read from the zip archive.</returns>
         /// 
-        public static ZipFile Read(string zipFileName, System.IO.TextWriter statusMessageWriter, System.Text.Encoding encoding)
-        {
+        public static ZipFile Read(string zipFileName, 
+				   System.IO.TextWriter statusMessageWriter, 
+				   System.Text.Encoding encoding)
+	{
+	    return Read(zipFileName, statusMessageWriter, encoding, null);
+	}
+
+        /// <summary>
+        /// Reads a zip file archive using the specified text encoding,  the specified
+	/// TextWriter for status messages, and the specified ReadProgress event handler, 
+	/// and returns the instance.  
+        /// </summary>
+        /// 
+        public static ZipFile Read(string zipFileName, 
+				   System.IO.TextWriter statusMessageWriter, 
+				   System.Text.Encoding encoding,
+				   EventHandler<ReadProgressEventArgs> readProgress )
+	{
             ZipFile zf = new ZipFile();
             zf.ProvisionalAlternateEncoding = encoding;
             zf._StatusMessageTextWriter = statusMessageWriter;
             zf._name = zipFileName;
+	    if (readProgress!= null)
+		zf.ReadProgress = readProgress;
 
             try
             {
@@ -3428,6 +3663,16 @@ namespace Ionic.Utils.Zip
         }
 
         /// <summary>
+        /// Reads a zip archive from a stream, with a given ReadProgress event handler.
+        /// </summary>
+        ///
+        public static ZipFile Read(System.IO.Stream zipStream, EventHandler<ReadProgressEventArgs> readProgress )
+        {
+            return Read(zipStream, null, DefaultEncoding, readProgress);
+        }
+
+
+        /// <summary>
         /// Reads a zip archive from a stream, using the specified TextWriter for status messages.
         /// </summary>
         /// 
@@ -3453,15 +3698,43 @@ namespace Ionic.Utils.Zip
         /// <param name="zipStream">the stream containing the zip data.</param>
         /// 
         /// <param name="statusMessageWriter">
-        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during operations on the ZipFile.  
-        /// For example, in a console application, System.Console.Out works, and will get a message for each entry added to the ZipFile. 
-        /// If the TextWriter is null, no verbose messages are written. 
+        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during
+        /// operations on the ZipFile.  For example, in a console application,
+        /// System.Console.Out works, and will get a message for each entry added to the
+        /// ZipFile.  If the TextWriter is null, no verbose messages are written.
         /// </param>
         /// 
         /// <returns>an instance of ZipFile</returns>
         public static ZipFile Read(System.IO.Stream zipStream, System.IO.TextWriter statusMessageWriter)
         {
             return Read(zipStream, statusMessageWriter, DefaultEncoding);
+        }
+
+
+        /// <summary>
+        /// Reads a zip archive from a stream, using the specified TextWriter for status messages, 
+	/// and the specified ReadProgress event handler.
+        /// </summary>
+        ///
+        /// <param name="zipStream">the stream containing the zip data.</param>
+        /// 
+        /// <param name="statusMessageWriter">
+        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during
+        /// operations on the ZipFile.  For example, in a console application,
+        /// System.Console.Out works, and will get a message for each entry added to the
+        /// ZipFile.  If the TextWriter is null, no verbose messages are written.
+        /// </param>
+        /// 
+        /// <param name="readProgress">
+	/// An event handler for Read operations.
+        /// </param>
+        /// 
+        /// <returns>an instance of ZipFile</returns>
+        public static ZipFile Read(System.IO.Stream zipStream, 
+				   System.IO.TextWriter statusMessageWriter,
+				   EventHandler<ReadProgressEventArgs> readProgress )
+        {
+            return Read(zipStream, statusMessageWriter, DefaultEncoding, readProgress);
         }
 
         /// <summary>
@@ -3484,11 +3757,12 @@ namespace Ionic.Utils.Zip
         /// <param name="zipStream">the stream containing the zip data.</param>
         /// 
         /// <param name="encoding">
-        /// The text encoding to use when reading entries that do not have the UTF-8 encoding bit
-        /// set.  Be careful specifying the encoding.  If the value you use here is not the same
-        /// as the Encoding used when the zip archive was created (possibly by a different
+        /// The text encoding to use when reading entries that do not have the UTF-8 encoding
+        /// bit set.  Be careful specifying the encoding.  If the value you use here is not the
+        /// same as the Encoding used when the zip archive was created (possibly by a different
         /// archiver) you will get unexpected results and possibly exceptions.  See the <see
-        /// cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</see> property for more information.
+        /// cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</see>
+        /// property for more information.
         /// </param>
         /// 
         /// <returns>an instance of ZipFile</returns>
@@ -3497,9 +3771,38 @@ namespace Ionic.Utils.Zip
             return Read(zipStream, null, encoding);
         }
 
-        /// <summary>
-        /// Reads a zip archive from a stream, using the specified text Encoding and the specified TextWriter for status messages.
+	/// <summary>
+        /// Reads a zip archive from a stream, using the specified encoding, and
+	/// and the specified ReadProgress event handler.
         /// </summary>
+        /// 
+        /// <param name="zipStream">the stream containing the zip data.</param>
+        /// 
+        /// <param name="encoding">
+        /// The text encoding to use when reading entries that do not have the UTF-8 encoding
+        /// bit set.  Be careful specifying the encoding.  If the value you use here is not the
+        /// same as the Encoding used when the zip archive was created (possibly by a different
+        /// archiver) you will get unexpected results and possibly exceptions.  See the <see
+        /// cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</see>
+        /// property for more information.
+        /// </param>
+        /// 
+        /// <param name="readProgress">
+	/// An event handler for Read operations.
+        /// </param>
+        /// 
+        /// <returns>an instance of ZipFile</returns>
+        public static ZipFile Read(System.IO.Stream zipStream, System.Text.Encoding encoding, 
+				   EventHandler<ReadProgressEventArgs> readProgress )
+        {
+            return Read(zipStream, null, encoding, readProgress);
+        }
+
+        /// <summary>
+        /// Reads a zip archive from a stream, using the specified text Encoding and the 
+	/// specified TextWriter for status messages.
+        /// </summary>
+	///
         /// <remarks>
         /// <para>
         /// This method is useful when when the zip archive content is available from 
@@ -3514,34 +3817,80 @@ namespace Ionic.Utils.Zip
         /// </exception>
         ///
         /// <param name="zipStream">the stream containing the zip data.</param>
+        ///
         /// <param name="statusMessageWriter">
-        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during operations on the ZipFile.  
-        /// For example, in a console application, System.Console.Out works, and will get a message for each entry added to the ZipFile. 
-        /// If the TextWriter is null, no verbose messages are written. 
+        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during
+        /// operations on the ZipFile.  For example, in a console application,
+        /// System.Console.Out works, and will get a message for each entry added to the
+        /// ZipFile.  If the TextWriter is null, no verbose messages are written.
         /// </param>
         ///
         /// <param name="encoding">
-        /// The text encoding to use when reading entries that do not have the UTF-8 encoding bit
-        /// set.  Be careful specifying the encoding.  If the value you use here is not the same
-        /// as the Encoding used when the zip archive was created (possibly by a different
+        /// The text encoding to use when reading entries that do not have the UTF-8 encoding
+        /// bit set.  Be careful specifying the encoding.  If the value you use here is not the
+        /// same as the Encoding used when the zip archive was created (possibly by a different
         /// archiver) you will get unexpected results and possibly exceptions.  See the <see
-        /// cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</see> property for more information.
+        /// cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</see>
+        /// property for more information.
         /// </param>
         /// 
         /// <returns>an instance of ZipFile</returns>
-        public static ZipFile Read(System.IO.Stream zipStream, System.IO.TextWriter statusMessageWriter, System.Text.Encoding encoding)
+        public static ZipFile Read(System.IO.Stream zipStream, 
+				   System.IO.TextWriter statusMessageWriter, 
+				   System.Text.Encoding encoding)
         {
+	    return Read(zipStream, statusMessageWriter,encoding, null);
+        }
+
+
+        /// <summary>
+        /// Reads a zip archive from a stream, using the specified text Encoding, the 
+	/// specified TextWriter for status messages, 
+	/// and the specified ReadProgress event handler.
+        /// </summary>
+	///
+        /// <param name="zipStream">the stream containing the zip data.</param>
+        ///
+        /// <param name="statusMessageWriter">
+        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during
+        /// operations on the ZipFile.  For example, in a console application,
+        /// System.Console.Out works, and will get a message for each entry added to the
+        /// ZipFile.  If the TextWriter is null, no verbose messages are written.
+        /// </param>
+        ///
+        /// <param name="encoding">
+        /// The text encoding to use when reading entries that do not have the UTF-8 encoding
+        /// bit set.  Be careful specifying the encoding.  If the value you use here is not the
+        /// same as the Encoding used when the zip archive was created (possibly by a different
+        /// archiver) you will get unexpected results and possibly exceptions.  See the <see
+        /// cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</see>
+        /// property for more information.
+        /// </param>
+        /// 
+        /// <param name="readProgress">
+	/// An event handler for Read operations.
+        /// </param>
+        /// 
+        /// <returns>an instance of ZipFile</returns>
+        public static ZipFile Read(System.IO.Stream zipStream, 
+				   System.IO.TextWriter statusMessageWriter, 
+				   System.Text.Encoding encoding, 
+				   EventHandler<ReadProgressEventArgs> readProgress )
+	{
             if (zipStream == null)
                 throw new ZipException("Cannot read.", new ArgumentException("The stream must be non-null", "zipStream"));
 
             ZipFile zf = new ZipFile();
             zf._provisionalAlternateEncoding = encoding;
+	    if (readProgress!=null)
+		zf.ReadProgress += readProgress;
             zf._StatusMessageTextWriter = statusMessageWriter;
             zf._readstream = zipStream;
             zf._ReadStreamIsOurs = false;
             ReadIntoInstance(zf);
             return zf;
-        }
+	}
+
 
         /// <summary>
         /// Reads a zip archive from a byte array.
@@ -3580,10 +3929,12 @@ namespace Ionic.Utils.Zip
         /// </remarks>
         /// 
         /// <param name="buffer">the byte array containing the zip data.</param>
+	///
         /// <param name="statusMessageWriter">
-        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during operations on the ZipFile.  
-        /// For example, in a console application, System.Console.Out works, and will get a message for each entry added to the ZipFile. 
-        /// If the TextWriter is null, no verbose messages are written. 
+        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during
+        /// operations on the ZipFile.  For example, in a console application,
+        /// System.Console.Out works, and will get a message for each entry added to the
+        /// ZipFile.  If the TextWriter is null, no verbose messages are written.
         /// </param>
         /// 
         /// <returns>an instance of ZipFile. The name is set to null.</returns>
@@ -3607,18 +3958,21 @@ namespace Ionic.Utils.Zip
         /// </remarks>
         /// 
         /// <param name="buffer">the byte array containing the zip data.</param>
+	///
         /// <param name="statusMessageWriter">
-        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during operations on the ZipFile.  
-        /// For example, in a console application, System.Console.Out works, and will get a message for each entry added to the ZipFile. 
-        /// If the TextWriter is null, no verbose messages are written. 
+        /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during
+        /// operations on the ZipFile.  For example, in a console application,
+        /// System.Console.Out works, and will get a message for each entry added to the
+        /// ZipFile.  If the TextWriter is null, no verbose messages are written.
         /// </param>
         /// 
         /// <param name="encoding">
-        /// The text encoding to use when reading entries that do not have the UTF-8 encoding bit
-        /// set.  Be careful specifying the encoding.  If the value you use here is not the same
-        /// as the Encoding used when the zip archive was created (possibly by a different
+        /// The text encoding to use when reading entries that do not have the UTF-8 encoding
+        /// bit set.  Be careful specifying the encoding.  If the value you use here is not the
+        /// same as the Encoding used when the zip archive was created (possibly by a different
         /// archiver) you will get unexpected results and possibly exceptions.  See the <see
-        /// cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</see> property for more information.
+        /// cref="Ionic.Utils.Zip.ZipFile.ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</see>
+        /// property for more information.
         /// </param>
         /// 
         /// <returns>an instance of ZipFile. The name is set to null.</returns>
@@ -3639,6 +3993,7 @@ namespace Ionic.Utils.Zip
         {
             try
             {
+		zf.OnReadStarted();
                 zf._entries = new System.Collections.Generic.List<ZipEntry>();
                 ZipEntry e;
                 if (zf.Verbose)
@@ -3685,6 +4040,8 @@ namespace Ionic.Utils.Zip
 
                 // when finished slurping in the zip, close the read stream
                 //zf.ReadStream.Close();
+
+		zf.OnReadCompleted();
             }
             catch (Exception e1)
             {
@@ -3964,10 +4321,10 @@ namespace Ionic.Utils.Zip
                             StatusMessageTextWriter.WriteLine("  Comment: {0}", e.Comment);
                     }
                     e.Password = _Password;  // this may be null
-                    OnExtractProgress(n, true, e.FileName, path, wantOverwrite);
+                    OnExtractEntry(n, true, e.FileName, path, wantOverwrite);
                     e.Extract(path, wantOverwrite);
                     n++;
-                    OnExtractProgress(n, false, e.FileName, path, wantOverwrite);
+                    OnExtractEntry(n, false, e.FileName, path, wantOverwrite);
                     if (_extractOperationCanceled)
                         break;
 

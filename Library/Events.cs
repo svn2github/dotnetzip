@@ -28,6 +28,32 @@ namespace Ionic.Utils.Zip
     public enum ZipProgressEventType
     {
 	/// <summary>
+	/// Indicates that a Read() operation has started.
+	/// </summary>
+	Reading_Started,
+
+	/// <summary>
+	/// Indicates that an individual entry in the archive is about to be read.
+	/// </summary>
+	Reading_BeforeReadEntry,
+
+	/// <summary>
+	/// Indicates that an individual entry in the archive has just been read.
+	/// </summary>
+	Reading_AfterReadEntry,
+
+	/// <summary>
+	/// Indicates that a Read() operation has completed.
+	/// </summary>
+	Reading_Completed,
+
+	/// <summary>
+	/// The given event reports the number of bytes read so far
+	/// during a Read() operation.
+	/// </summary>
+	Reading_ArchiveBytesRead,
+
+	/// <summary>
 	/// Indicates that a Save() operation has started.
 	/// </summary>
 	Saving_Started,
@@ -115,8 +141,8 @@ namespace Ionic.Utils.Zip
         private String _nameOfLatestEntry;
         private ZipProgressEventType _flavor;
         private String _archiveName;
-        private int _bytesWritten;
-        private int _totalBytesToWrite;
+        private int _bytesTransferred;
+        private int _totalBytesToTransfer;
 
 
 	internal ZipProgressEventArgs() { }
@@ -175,27 +201,77 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
-        /// The number of bytes written so far for this entry.  
+        /// The number of bytes read or written so far for this entry.  
         /// </summary>
-        public int BytesWritten
+        public int BytesTransferred
         {
-            get { return _bytesWritten; }
-            set { _bytesWritten= value; }
+            get { return _bytesTransferred; }
+            set { _bytesTransferred= value; }
         }
 
 
 
         /// <summary>
-        /// Total number of bytes that will be written for this entry.  
+        /// Total number of bytes that will be read or written for this entry.
         /// </summary>
-        public int TotalBytesToWrite
+        public int TotalBytesToTransfer
         {
-            get { return _totalBytesToWrite; }
-            set { _totalBytesToWrite= value; }
+            get { return _totalBytesToTransfer; }
+            set { _totalBytesToTransfer= value; }
         }
     }
 
 
+
+    /// <summary>
+    /// Provides information about the progress of a Read operation.
+    /// </summary>
+    public class ReadProgressEventArgs : ZipProgressEventArgs
+    {
+
+	internal ReadProgressEventArgs() { }
+
+	private ReadProgressEventArgs(string archiveName, ZipProgressEventType flavor) 
+	    : base(archiveName, flavor) 
+	{ }
+
+        internal static ReadProgressEventArgs Before(string archiveName, int entriesTotal)
+	{
+	    var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_BeforeReadEntry);
+	    x.EntriesTotal= entriesTotal;
+	    return x;
+	}
+
+        internal static ReadProgressEventArgs After(string archiveName, string entryName, int entriesTotal)
+	{
+	    var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_AfterReadEntry);
+	    x.EntriesTotal= entriesTotal;
+	    x.NameOfLatestEntry = entryName;
+	    return x;
+	}
+
+        internal static ReadProgressEventArgs Started(string archiveName)
+        {
+	    var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_Started);
+	    return x;
+        }
+
+        internal static ReadProgressEventArgs ByteUpdate(string archiveName, string entryName, int bytesXferred, int totalBytes)
+        {
+	    var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_ArchiveBytesRead);
+	    x.NameOfLatestEntry = entryName;
+	    x.BytesTransferred = bytesXferred;
+	    x.TotalBytesToTransfer= totalBytes;
+	    return x;
+        }
+
+        internal static ReadProgressEventArgs Completed(string archiveName)
+        {
+	    var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_Completed);
+	    return x;
+        }
+
+    }
 
     /// <summary>
     /// Provides information about the progress of a save operation.
@@ -232,8 +308,8 @@ namespace Ionic.Utils.Zip
 	    var x = new SaveProgressEventArgs(archiveName, ZipProgressEventType.Saving_EntryBytesWritten);
 	    x.ArchiveName= archiveName;
 	    x.NameOfLatestEntry= entryName;
-	    x.BytesWritten = bytesWritten;
-	    x.TotalBytesToWrite= totalBytes;
+	    x.BytesTransferred = bytesWritten;
+	    x.TotalBytesToTransfer= totalBytes;
 	    return x;
         }
 
@@ -342,8 +418,8 @@ namespace Ionic.Utils.Zip
 	    var x = new ExtractProgressEventArgs(archiveName, ZipProgressEventType.Extracting_EntryBytesWritten);
 	    x.ArchiveName= archiveName;
 	    x.NameOfLatestEntry= entryName;
-	    x.BytesWritten = bytesWritten;
-	    x.TotalBytesToWrite= totalBytes;
+	    x.BytesTransferred = bytesWritten;
+	    x.TotalBytesToTransfer= totalBytes;
 	    return x;
         }
 
@@ -375,7 +451,6 @@ namespace Ionic.Utils.Zip
         {
             get { return _target; }
         }
-
 
     }
 

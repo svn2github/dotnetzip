@@ -728,6 +728,8 @@ namespace Ionic.Utils.Zip
                     // the number of bytes in the stream we had to seek forward, to find the sig.  We need this to determine if
                     // the zip entry is valid, later. 
 
+		    ze._zipfile.OnReadBytes(ze.FileName);
+
                     long d = Ionic.Utils.Zip.SharedUtilities.FindSignature(ze.ArchiveStream, ZipConstants.ZipEntryDataDescriptorSignature);
                     if (d == -1) return false;
 
@@ -815,7 +817,7 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Reads one ZipEntry from the given stream.  If the entry is encrypted, we don't
-        /// actuall decrypt at this point. 
+        /// actually decrypt at this point. 
         /// </summary>
         /// <param name="zf">the zipfile this entry belongs to.</param>
         /// <returns>the ZipEntry read from the stream.</returns>
@@ -827,6 +829,7 @@ namespace Ionic.Utils.Zip
             entry._Source = EntrySource.Zipfile;
             entry._zipfile = zf;
             entry._archiveStream = s;
+	    zf.OnReadEntry(true, null);
             if (!ReadHeader(entry, defaultEncoding)) return null;
 
             // store the position in the stream for this entry
@@ -844,6 +847,9 @@ namespace Ionic.Utils.Zip
             // workitem 5306
             // http://www.codeplex.com/DotNetZip/WorkItem/View.aspx?WorkItemId=5306
             HandleUnexpectedDataDescriptor(entry);
+
+	    zf.OnReadBytes(entry.FileName);
+	    zf.OnReadEntry(false, entry.FileName);
 
             return entry;
         }
@@ -1338,7 +1344,7 @@ namespace Ionic.Utils.Zip
 
         private void OnExtractProgress(int bytesWritten, int totalBytesToWrite)
         {
-            _ioOperationCanceled = _zipfile.OnBlockExtracted(FileName, bytesWritten, totalBytesToWrite);
+            _ioOperationCanceled = _zipfile.OnExtractBlock(FileName, bytesWritten, totalBytesToWrite);
         }
 
         private void OnBeforeExtract(string path)
@@ -1346,7 +1352,7 @@ namespace Ionic.Utils.Zip
             if (!_zipfile._inExtractAll)
             {
                 _ioOperationCanceled =
-                    _zipfile.OnSingleEntryExtractProgress(FileName, path, true, OverwriteOnExtract);
+                    _zipfile.OnSingleEntryExtract(FileName, path, true, OverwriteOnExtract);
             }
         }
 
@@ -1354,7 +1360,7 @@ namespace Ionic.Utils.Zip
         {
             if (!_zipfile._inExtractAll)
             {
-                _zipfile.OnSingleEntryExtractProgress(FileName, path, false, OverwriteOnExtract);
+                _zipfile.OnSingleEntryExtract(FileName, path, false, OverwriteOnExtract);
             }
         }
 
