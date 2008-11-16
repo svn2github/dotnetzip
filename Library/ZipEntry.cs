@@ -500,8 +500,7 @@ namespace Ionic.Utils.Zip
         /// </summary>
         ///
         /// <remarks>
-        /// <para>
-        /// </para>
+        /// See <see cref="ZipFile.WantCompression" />
         /// </remarks>
         public WantCompressionCallback WantCompression
         {
@@ -683,12 +682,12 @@ namespace Ionic.Utils.Zip
             n = ze.ArchiveStream.Read(block, 0, block.Length);
             bytesRead += n;
 
-	    // if the UTF8 bit is set for this entry, we override the encoding the application requested.
-            ze._actualEncoding= ((ze._BitField & 0x0800) == 0x0800)
-		? System.Text.Encoding.UTF8
-		: defaultEncoding;
+            // if the UTF8 bit is set for this entry, we override the encoding the application requested.
+            ze._actualEncoding = ((ze._BitField & 0x0800) == 0x0800)
+        ? System.Text.Encoding.UTF8
+        : defaultEncoding;
 
-	    ze._FileNameInArchive = ze._actualEncoding.GetString(block);
+            ze._FileNameInArchive = ze._actualEncoding.GetString(block);
 
             // when creating an entry by reading, the LocalFileName is the same as the FileNameInArchivre
             ze._LocalFileName = ze._FileNameInArchive;
@@ -755,7 +754,7 @@ namespace Ionic.Utils.Zip
 
                         // Adjust the size to account for the false signature read in 
                         // FindSignature().
-                        SizeOfDataRead += 4; 
+                        SizeOfDataRead += 4;
                     }
                 }
 
@@ -818,15 +817,15 @@ namespace Ionic.Utils.Zip
         /// Reads one ZipEntry from the given stream.  If the entry is encrypted, we don't
         /// actuall decrypt at this point. 
         /// </summary>
-        /// <param name="s">the stream to read from.</param>
-        /// <param name="defaultEncoding">
-        /// The text encoding to use when reading the ZipEntry, if it is not marked as UTF-8.
-        /// </param>
+        /// <param name="zf">the zipfile this entry belongs to.</param>
         /// <returns>the ZipEntry read from the stream.</returns>
-        internal static ZipEntry Read(System.IO.Stream s, System.Text.Encoding defaultEncoding)
+        internal static ZipEntry Read(ZipFile zf)
         {
+            System.IO.Stream s = zf.ReadStream;
+            System.Text.Encoding defaultEncoding = zf.ProvisionalAlternateEncoding;
             ZipEntry entry = new ZipEntry();
             entry._Source = EntrySource.Zipfile;
+            entry._zipfile = zf;
             entry._archiveStream = s;
             if (!ReadHeader(entry, defaultEncoding)) return null;
 
@@ -1336,62 +1335,157 @@ namespace Ionic.Utils.Zip
         #endregion
 
 
+
+        private void OnExtractProgress(int bytesWritten, int totalBytesToWrite)
+        {
+            _ioOperationCanceled = _zipfile.OnBlockExtracted(FileName, bytesWritten, totalBytesToWrite);
+        }
+
+        private void OnBeforeExtract(string path)
+        {
+            if (!_zipfile._inExtractAll)
+            {
+                _ioOperationCanceled =
+                    _zipfile.OnSingleEntryExtractProgress(FileName, path, true, OverwriteOnExtract);
+            }
+        }
+
+        private void OnAfterExtract(string path)
+        {
+            if (!_zipfile._inExtractAll)
+            {
+                _zipfile.OnSingleEntryExtractProgress(FileName, path, false, OverwriteOnExtract);
+            }
+        }
+
+        private void OnWriteBlock(int bytesWritten, int totalBytesToWrite)
+        {
+            _ioOperationCanceled = _zipfile.OnSaveBlock(FileName, bytesWritten, totalBytesToWrite);
+        }
+
+
         // Pass in either basedir or s, but not both. 
         // In other words, you can extract to a stream or to a directory (filesystem), but not both!
         // The Password param is required for encrypted entries.
         private void InternalExtract(string baseDir, System.IO.Stream outstream, string password)
         {
-            ValidateCompression();
-            ValidateEncryption();
-
-            string TargetFile;
-            if (ValidateOutput(baseDir, outstream, out TargetFile)) return;
-
-            // if none specified, use the password on the entry itself.
-            if (password == null) password = _Password;
-
-            ZipCrypto cipher = SetupCipher(password);
-
+            OnBeforeExtract(baseDir);
+            _ioOperationCanceled = false;
+            string TargetFile = null;
             System.IO.Stream output = null;
-            if (TargetFile != null)
+
+            try
             {
-                // ensure the target path exists
-                if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(TargetFile)))
-                    System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(TargetFile));
+                ValidateCompression();
+                ValidateEncryption();
 
-                // and ensure we can create the file
-                if ((OverwriteOnExtract) && (System.IO.File.Exists(TargetFile)))
-                    System.IO.File.Delete(TargetFile);
+                if (ValidateOutput(baseDir, outstream, out TargetFile)) return;
 
-                output = new System.IO.FileStream(TargetFile, System.IO.FileMode.CreateNew);
+                // if none specified, use the password on the entry itself.
+                if (password == null) password = _Password;
+
+                ZipCrypto cipher = SetupCipher(password);
+
+                if (TargetFile != null)
+                {
+                    // ensure the target path exists
+                    if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(TargetFile)))
+                        System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(TargetFile));
+
+                    // and ensure we can create the file
+                    if ((OverwriteOnExtract) && (System.IO.File.Exists(TargetFile)))
+                        System.IO.File.Delete(TargetFile);
+
+                    output = new System.IO.FileStream(TargetFile, System.IO.FileMode.CreateNew);
+                }
+                else
+                    output = outstream;
+
+                if (_ioOperationCanceled)
+                {
+                    try
+                    {
+                        if (TargetFile != null)
+                        {
+                            if (output != null) output.Close();
+                            // attempt to remove the target file if an exception has occurred:
+                            if (System.IO.File.Exists(TargetFile))
+                                System.IO.File.Delete(TargetFile);
+                        }
+                    }
+                    finally { }
+
+                }
+
+                Int32 ActualCrc32 = _ExtractOne(output, cipher);
+
+                if (_ioOperationCanceled)
+                {
+                    try
+                    {
+                        if (TargetFile != null)
+                        {
+                            if (output != null) output.Close();
+                            // attempt to remove the target file if an exception has occurred:
+                            if (System.IO.File.Exists(TargetFile))
+                                System.IO.File.Delete(TargetFile);
+                        }
+                    }
+                    finally { }
+                }
+
+                // After extracting, Validate the CRC32
+                if (ActualCrc32 != _Crc32)
+                {
+                    throw new BadCrcException("CRC error: the file being extracted appears to be corrupted. " +
+                                  String.Format("Expected 0x{0:X8}, actual 0x{1:X8}", _Crc32, ActualCrc32));
+                }
+
+
+                if (TargetFile != null)
+                {
+                    output.Close();
+                    output = null;
+
+                    // workitem 6191
+                    DateTime AdjustedLastModified = LastModified;
+                    if (DateTime.Now.IsDaylightSavingTime())
+                    {
+                        if (!LastModified.IsDaylightSavingTime())
+                            AdjustedLastModified = LastModified - new System.TimeSpan(1, 0, 0);
+                    }
+#if NOTUSED
+		    else 
+		    {
+			AdjustedLastModified= (LastModified.IsDaylightSavingTime())
+			    ? LastModified  //+ new System.TimeSpan(1, 0, 0)
+			    : LastModified ;
+		    }
+#endif
+                    System.IO.File.SetLastWriteTime(TargetFile, AdjustedLastModified);
+                }
+
+                OnAfterExtract(baseDir);
+
             }
-            else
-                output = outstream;
-
-
-            Int32 ActualCrc32 = _ExtractOne(output, cipher);
-
-            // After extracting, Validate the CRC32
-            if (ActualCrc32 != _Crc32)
+            catch
             {
-                //throw new BadCrcException("CRC error: the file being extracted appears to be corrupted.");
-                throw new BadCrcException("CRC error: the file being extracted appears to be corrupted. " +
-                      String.Format("Expected 0x{0:X8}, actual 0x{1:X8}", _Crc32, ActualCrc32));
-                //String.Format("CRC error: expected 0x{0:X8}, actual 0x{1:X8}", _Crc32, ActualCrc32);
+                try
+                {
+                    if (TargetFile != null)
+                    {
+                        if (output != null) output.Close();
+                        // attempt to remove the target file if an exception has occurred:
+                        if (System.IO.File.Exists(TargetFile))
+                            System.IO.File.Delete(TargetFile);
+                    }
+                }
+                finally { }
+
+                // re-raise the original exception
+                throw;
             }
 
-
-            if (TargetFile != null)
-            {
-                output.Close();
-                //output.Dispose();
-
-                // workitem 6191
-                DateTime AdjustedLastModified = (LastModified.IsDaylightSavingTime()) ?
-            LastModified : LastModified - new System.TimeSpan(1, 0, 0);
-
-                System.IO.File.SetLastWriteTime(TargetFile, AdjustedLastModified);
-            }
         }
 
 
@@ -1534,7 +1628,7 @@ namespace Ionic.Utils.Zip
                 : input2;
 
             //var out2 = new CrcCalculatorStream(output, LeftToRead);
-
+            int bytesWritten = 0;
             // as we read, we maybe decrypt, and then we maybe decompress. Then we write.
             using (var s1 = new CrcCalculatorStream(input3))
             {
@@ -1545,6 +1639,14 @@ namespace Ionic.Utils.Zip
                     _CheckRead(n);
                     output.Write(bytes, 0, n);
                     LeftToRead -= n;
+                    bytesWritten += n;
+
+                    // fire the progress event, check for cancels
+                    OnExtractProgress(bytesWritten, UncompressedSize);
+                    if (_ioOperationCanceled)
+                    {
+                        break;
+                    }
                 }
 
                 CrcResult = s1.Crc32;
@@ -1728,23 +1830,23 @@ namespace Ionic.Utils.Zip
 
 
 
-	// workitem 6513: when writing, use alt encoding only when ibm437 will not do
-	private System.Text.Encoding GenerateCommentBytes()
-	{
-	    _CommentBytes = ibm437.GetBytes(_Comment);
-	    string s1 = ibm437.GetString(_CommentBytes);
-	    if (s1 == _Comment)
-		return ibm437;
-	    else
-	    {
-		_CommentBytes = _provisionalAlternateEncoding.GetBytes(_Comment);
-		return _provisionalAlternateEncoding;
-	    }
-	}
+        // workitem 6513: when writing, use alt encoding only when ibm437 will not do
+        private System.Text.Encoding GenerateCommentBytes()
+        {
+            _CommentBytes = ibm437.GetBytes(_Comment);
+            string s1 = ibm437.GetString(_CommentBytes);
+            if (s1 == _Comment)
+                return ibm437;
+            else
+            {
+                _CommentBytes = _provisionalAlternateEncoding.GetBytes(_Comment);
+                return _provisionalAlternateEncoding;
+            }
+        }
 
 
-	// workitem 6513
-	private void GetEncodedBytes(out byte[] result)
+        // workitem 6513
+        private void GetEncodedBytes(out byte[] result)
         {
             // here, we need to flip the backslashes to forward-slashes, 
             // also, we need to trim the \\server\share syntax from any UNC path.
@@ -1780,49 +1882,49 @@ namespace Ionic.Utils.Zip
                 s1 = SlashFixed;
             }
 
-	    // workitem 6513: when writing, use the alternative encoding only when ibm437 will not do.
-	    result = ibm437.GetBytes(s1);
-	    string s2 = ibm437.GetString(result);
+            // workitem 6513: when writing, use the alternative encoding only when ibm437 will not do.
+            result = ibm437.GetBytes(s1);
+            string s2 = ibm437.GetString(result);
             _CommentBytes = null;
-	    if (s2 == s1)
-	    {
-		// file can be encoded with ibm437, now try comment
-		
-		// case 1: no comment.  use ibm437
-		if (_Comment == null || _Comment.Length == 0)
-		{
-		    _actualEncoding= ibm437;
-		    return;
-		}
+            if (s2 == s1)
+            {
+                // file can be encoded with ibm437, now try comment
 
-		// there is a comment.  Get the encoded form.
-		System.Text.Encoding commentEncoding= GenerateCommentBytes();
+                // case 1: no comment.  use ibm437
+                if (_Comment == null || _Comment.Length == 0)
+                {
+                    _actualEncoding = ibm437;
+                    return;
+                }
 
-		// case 2: if the comment also uses 437, we're good. 
-		if (commentEncoding.CodePage == 437)
-		{
-		    _actualEncoding= ibm437;
-		    return;
-		}
+                // there is a comment.  Get the encoded form.
+                System.Text.Encoding commentEncoding = GenerateCommentBytes();
 
-		// case 3: comment requires non-437 code page.  Use the same
-		// code page for the filename.
-		_actualEncoding= commentEncoding;
-		result = commentEncoding.GetBytes(s1);
-		return ;
-	    }
-	    else
-	    {
-		// use the provisional encoding
-		result = _provisionalAlternateEncoding.GetBytes(s1);
-		if (_Comment != null && _Comment.Length != 0)
-		{
-		    _CommentBytes = _provisionalAlternateEncoding.GetBytes(_Comment);
-		}
+                // case 2: if the comment also uses 437, we're good. 
+                if (commentEncoding.CodePage == 437)
+                {
+                    _actualEncoding = ibm437;
+                    return;
+                }
 
-		_actualEncoding= _provisionalAlternateEncoding;
-		return ;
-	    }
+                // case 3: comment requires non-437 code page.  Use the same
+                // code page for the filename.
+                _actualEncoding = commentEncoding;
+                result = commentEncoding.GetBytes(s1);
+                return;
+            }
+            else
+            {
+                // use the provisional encoding
+                result = _provisionalAlternateEncoding.GetBytes(s1);
+                if (_Comment != null && _Comment.Length != 0)
+                {
+                    _CommentBytes = _provisionalAlternateEncoding.GetBytes(_Comment);
+                }
+
+                _actualEncoding = _provisionalAlternateEncoding;
+                return;
+            }
         }
 
 
@@ -1840,7 +1942,7 @@ namespace Ionic.Utils.Zip
 
 
         // heuristic - if the filename is one of a known list of non-compressible files, 
-        // return false. else true.
+        // return false. else true.  We apply this by just checking the extension. 
         private bool SeemsCompressible(string filename)
         {
             string re = "^(?i)(.+)\\.(mp3|png|docx|xlsx|zip)$";
@@ -1951,9 +2053,9 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)((VersionNeededToExctract & 0xFF00) >> 8);
 
             // get byte array including any encoding
-	    byte[] FileNameBytes;
-	    // workitem 6513
-	    GetEncodedBytes(out FileNameBytes);
+            byte[] FileNameBytes;
+            // workitem 6513
+            GetEncodedBytes(out FileNameBytes);
             Int16 filenameLength = (Int16)FileNameBytes.Length;
 
             // set the UTF8 bit if necessary
@@ -2141,11 +2243,13 @@ namespace Ionic.Utils.Zip
             Stream input = null;
             CrcCalculatorStream input1 = null;
             CountingStream counter = null;
-	    try {
-		// s.Position may fail on some write-only streams, eg stdout or System.Web.HttpResponseStream
-		// We swallow that exception, because we don't care! 
-		this.__FileDataPosition = s.Position;
-	    } catch{}
+            try
+            {
+                // s.Position may fail on some write-only streams, eg stdout or System.Web.HttpResponseStream
+                // We swallow that exception, because we don't care! 
+                this.__FileDataPosition = s.Position;
+            }
+            catch { }
 
             try
             {
@@ -2181,13 +2285,22 @@ namespace Ionic.Utils.Zip
                 else
                     output2 = output1;
 
+                int fileLength = 0;
+                if (_sourceStream == null)
+                {
+                    System.IO.FileInfo fi = new System.IO.FileInfo(LocalFileName);
+                    fileLength = (int)fi.Length;
+                }
+
                 // as we emit the file, we maybe deflate, then maybe encrypt, then write the bytes. 
                 byte[] buffer = new byte[READBLOCK_SIZE];
-
                 int n = input1.Read(buffer, 0, READBLOCK_SIZE);
                 while (n > 0)
                 {
                     output2.Write(buffer, 0, n);
+                    OnWriteBlock(counter.BytesWritten, fileLength);
+                    if (_ioOperationCanceled)
+                        break;
                     n = input1.Read(buffer, 0, READBLOCK_SIZE);
                 }
 
@@ -2203,8 +2316,11 @@ namespace Ionic.Utils.Zip
                     input.Close();
                     input.Dispose();
                 }
-
             }
+
+            if (_ioOperationCanceled)
+                return;
+
 
             _UncompressedSize = input1.TotalBytesSlurped;
             _CompressedSize = counter.BytesWritten;
@@ -2294,7 +2410,6 @@ namespace Ionic.Utils.Zip
                 // finally, write the updated header to the output stream
                 s.Write(Descriptor, 0, Descriptor.Length);
             }
-
         }
 
 
@@ -2471,9 +2586,9 @@ namespace Ionic.Utils.Zip
         private Int32 _Crc32;
         private byte[] _Extra;
         private bool _OverwriteOnExtract;
-	private static System.Text.Encoding ibm437 = System.Text.Encoding.GetEncoding("IBM437");
-	private System.Text.Encoding _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437");
-	private System.Text.Encoding _actualEncoding = null;
+        private static System.Text.Encoding ibm437 = System.Text.Encoding.GetEncoding("IBM437");
+        private System.Text.Encoding _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437");
+        private System.Text.Encoding _actualEncoding = null;
 
         internal ZipFile _zipfile;
         private long __FileDataPosition;
@@ -2490,6 +2605,8 @@ namespace Ionic.Utils.Zip
         private byte[] _WeakEncryptionHeader;
         private System.IO.Stream _archiveStream;
         private System.IO.Stream _sourceStream;
+        private object LOCK = new object();
+        private bool _ioOperationCanceled;
 
         private const int READBLOCK_SIZE = 0x2200;
     }

@@ -211,9 +211,14 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Utils.Zip, Version=1.6.3.10, Culture=neutral, PublicKeyToken=c551e179877da246, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Utils.Zip, Version=1.7.1.2, Culture=neutral, PublicKeyToken=c551e179877da246, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
+                    "_C060BD63BAE174847120EBBA72BFED6E"
+                    {
+                    "Name" = "8:Ionic.Utils.Zip.dll"
+                    "Attributes" = "3:512"
+                    }
                 }
             "SourcePath" = "8:Ionic.Utils.Zip.dll"
             "TargetName" = "8:"
@@ -289,14 +294,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DotNetZip Utilities v1.7"
-        "ProductCode" = "8:{8D31C2AE-583D-4FD5-946B-290AE189A0E7}"
-        "PackageCode" = "8:{8AD9E593-22D6-40FD-92A7-7E592A342B21}"
+        "ProductCode" = "8:{6A205B6A-6693-4F2C-B9E2-C19F1116A844}"
+        "PackageCode" = "8:{F7C455AA-1536-41B3-BE07-60EAB0C128CC}"
         "UpgradeCode" = "8:{BEF05388-A74D-4383-BD87-61940DF83E20}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.5"
+        "ProductVersion" = "8:1.7"
         "Manufacturer" = "8:Dino Chiesa"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"

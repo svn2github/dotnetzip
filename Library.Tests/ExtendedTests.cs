@@ -667,24 +667,30 @@ namespace Ionic.Utils.Zip.Tests.Extended
         int _cancelIndex;
         public void SaveProgress(object sender, SaveProgressEventArgs e)
         {
-            _progressEventCalls++;
-            TestContext.WriteLine("Saved: {0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal);
-            if (_cancelIndex == _progressEventCalls)
+            if (e.EventType == ZipProgressEventType.Saving_AfterWriteEntry)
             {
-                e.Cancel = true;
-                TestContext.WriteLine("Cancelling...");
+                _progressEventCalls++;
+                TestContext.WriteLine("{0}: {1} ({2}/{3})", e.EventType.ToString(), e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal);
+                if (_cancelIndex == _progressEventCalls)
+                {
+                    e.Cancel = true;
+                    TestContext.WriteLine("Cancelling...");
+                }
             }
         }
 
 
         public void ExtractProgress(object sender, ExtractProgressEventArgs e)
         {
-            _progressEventCalls++;
-            TestContext.WriteLine("Extracted: {0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesExtracted, e.EntriesTotal);
-            if (_cancelIndex == _progressEventCalls)
+            if (e.EventType == ZipProgressEventType.Extracting_AfterExtractEntry)
             {
-                e.Cancel = true;
-                TestContext.WriteLine("Cancelling...");
+                _progressEventCalls++;
+                TestContext.WriteLine("Extracted: {0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesExtracted, e.EntriesTotal);
+                if (_cancelIndex == _progressEventCalls)
+                {
+                    e.Cancel = true;
+                    TestContext.WriteLine("Cancelling...");
+                }
             }
         }
 

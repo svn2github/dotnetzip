@@ -8,7 +8,7 @@ namespace WinFormsExample
 {
     public partial class Form1 : Form
     {
-        delegate void SaveCompleted(object sender, SaveEventArgs e);
+        delegate void SaveCompleted(object sender, SaveProgressEventArgs e);
 
         public Form1()
         {
@@ -164,7 +164,7 @@ namespace WinFormsExample
                 _entriesToZip = zip1.EntryFileNames.Count;
                 SetProgressBar();
                 zip1.SaveProgress += this.zip1_SaveProgress;
-                zip1.SaveCompleted += this.zip1_SaveCompleted;
+                zip1.SaveProgress += this.zip1_SaveCompleted;
                 if (options.ZipFlavor == 1)
                     zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.WinFormsApplication);
                 else if (options.ZipFlavor == 2)
@@ -178,9 +178,12 @@ namespace WinFormsExample
 
         void zip1_SaveProgress(object sender, SaveProgressEventArgs e)
         {
-            StepProgress();
-            if (_saveCanceled)
-                e.Cancel = true;
+            if (e.EventType == ZipProgressEventType.Saving_BeforeWriteEntry)
+            {
+                StepProgress();
+                if (_saveCanceled)
+                    e.Cancel = true;
+            }
         }
 
 
@@ -307,16 +310,19 @@ namespace WinFormsExample
                 _workerThread.Join();
         }
 
-        void zip1_SaveCompleted(object sender, SaveEventArgs e)
+        void zip1_SaveCompleted(object sender, SaveProgressEventArgs e)
         {
-            if (this.btnCancel.InvokeRequired)
+            if (e.EventType == ZipProgressEventType.Saving_Completed)
             {
-                this.btnCancel.Invoke(new SaveCompleted(this.zip1_SaveCompleted), new object[] { sender, e });
-            }
-            else
-            {
-                lblStatus.Text += "...Done.";
-                ResetState();
+                if (this.btnCancel.InvokeRequired)
+                {
+                    this.btnCancel.Invoke(new SaveCompleted(this.zip1_SaveCompleted), new object[] { sender, e });
+                }
+                else
+                {
+                    lblStatus.Text += "...Done.";
+                    ResetState();
+                }
             }
         }
 

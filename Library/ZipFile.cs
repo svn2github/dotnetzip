@@ -1,3 +1,4 @@
+
 // ZipFile.cs
 //
 // Copyright (c) 2006, 2007, 2008 Microsoft Corporation.  All rights reserved.
@@ -676,13 +677,74 @@ namespace Ionic.Utils.Zip
         /// }
         /// </code>
         /// </example>
-        /// <seealso cref="Ionic.Utils.Zip.ReReadApprovalCallback"/>
+        /// <seealso cref="Ionic.Utils.Zip.ZipFile.WantCompression"/>
+        /// <seealso cref="Ionic.Utils.Zip.WantCompressionCallback"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipEntry.WillReadTwiceOnInflation"/>
         public ReReadApprovalCallback WillReadTwiceOnInflation
         {
             get;
             set;
         }
+
+
+        /// <summary>
+        /// A callback that allows the application to specify whether compression should
+        /// be used for a given entry that is about to be added to the zip archive.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// <para>
+        /// In some cases, applying the Deflate compression algorithm to an entry can
+        /// result an increase in the size of the data.  This "inflation" can happen with
+        /// previously compressed files, such as a zip, jpg, png, mp3, and so on.  In a few
+        /// tests, inflation on zip files can be as large as 60%!  Inflation can also happen
+        /// with very small files.  
+        /// </para>
+        ///
+        /// <para>
+        /// To handle these cases, the DotNetZip library takes this approach: first it
+        /// applies a heuristic, to determine whether it should try to compress a file or
+        /// not.  The library checks the extension of the entry, and if it is one of a
+        /// known list of uncompressible file types (mp3, zip, docx, and others), the
+        /// library will not attempt to compress the entry.  The library does not actually
+        /// check the content of the entry.  If you name a text file "Text.zip", and then
+        /// attempt to add it to a zip archive, this library will, by default, not attempt
+        /// to compress the entry.
+        /// </para>
+        ///
+        /// <para>
+        /// For filetypes not covered by that heuristic, the library attempts to compress
+        /// the entry, and then checks the size of the result.  If applying the Deflate
+        /// algorithm increases the size of the data, then the library discards the
+        /// compressed bytes, and stores the uncompressed file data into the zip archive,
+        /// in compliance with the zip spec.  This is an optimization where smaller size is
+        /// preferred over longer run times.
+        /// </para>
+        ///
+        /// <para>
+        /// Next, the library exposes this <see cref="ZipFile.WantCompression"/> callback.  With
+        /// this callback, the application can supply its own logic for determining whether
+        /// to apply the Deflate algorithm or not.  For example, an application may desire
+        /// that files over 40mb in size are never compressed, or always compressed.  An
+        /// application may desire that the first 7 entries added to an archive are
+        /// compressed, and the remaining ones are not.  The WantCompression callback
+        /// allows the application full control, on an entry-by-entry basis.
+        /// </para>
+        ///
+        /// <para>
+        /// Finally, the application can specify that compression is not even tried, by setting the
+        /// ForceNoCompression flag.  In this case, the compress-and-check-sizes process as
+        /// decribed above, is not done, nor is the callback invoked.
+        /// </para>
+        /// </remarks>
+        /// <seealso cref="Ionic.Utils.Zip.ReReadApprovalCallback"/>
+        /// <seealso cref="Ionic.Utils.Zip.ZipFile.WillReadTwiceOnInflation"/>
+        public WantCompressionCallback WantCompression
+        {
+            get;
+            set;
+        }
+
 
         internal System.IO.Stream ReadStream
         {
@@ -844,13 +906,13 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// <para>
         /// See the documentation on the <see cref="ZipFile(String)">ZipFile constructor
-	/// that accepts a single string argument</see> for basic information on all the ZipFile constructors.
+        /// that accepts a single string argument</see> for basic information on all the ZipFile constructors.
         /// </para>
         ///
         /// <para>
         /// The Encoding is used as the default alternate encoding for entries with filenames
         /// or comments that cannot be encoded with the IBM437 code page.  This is a equivalent to setting 
-	/// the ProvisionalAlternateEncoding property on the ZIpFile instance after construction.
+        /// the ProvisionalAlternateEncoding property on the ZIpFile instance after construction.
         /// </para>
         ///
         /// </remarks>
@@ -867,7 +929,7 @@ namespace Ionic.Utils.Zip
             try
             {
                 InitFile(zipFileName, null);
-		ProvisionalAlternateEncoding = encoding;
+                ProvisionalAlternateEncoding = encoding;
             }
             catch (Exception e1)
             {
@@ -884,7 +946,7 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// <para>
         /// See the documentation on the <see cref="ZipFile(String)">ZipFile constructor
-	/// that accepts a single string argument</see> for basic information on all the ZipFile constructors.
+        /// that accepts a single string argument</see> for basic information on all the ZipFile constructors.
         /// </para>
         ///
         /// <para>
@@ -939,7 +1001,7 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// <para>
         /// See the documentation on the <see cref="ZipFile(String)">ZipFile constructor
-	/// that accepts a single string argument</see> for basic information on all the ZipFile constructors.
+        /// that accepts a single string argument</see> for basic information on all the ZipFile constructors.
         /// </para>
         ///
         /// </remarks>
@@ -949,7 +1011,7 @@ namespace Ionic.Utils.Zip
         public ZipFile(System.Text.Encoding encoding)
         {
             InitFile(null, null);
-	    ProvisionalAlternateEncoding = encoding;
+            ProvisionalAlternateEncoding = encoding;
         }
 
 
@@ -961,7 +1023,7 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// <para>
         /// See the documentation on the <see cref="ZipFile(String)">ZipFile constructor
-	/// that accepts a single string argument</see> for basic information on all the ZipFile constructors.
+        /// that accepts a single string argument</see> for basic information on all the ZipFile constructors.
         /// </para>
         ///
         /// <para>
@@ -1038,8 +1100,8 @@ namespace Ionic.Utils.Zip
         /// <remarks>
         /// <para>
         /// This constructor works like the <see cref="ZipFile(String)">ZipFile constructor
-	/// that accepts a single string argument.</see> See that reference for detail on what
-	/// this constructor does.
+        /// that accepts a single string argument.</see> See that reference for detail on what
+        /// this constructor does.
         /// </para>
         ///
         /// <para>
@@ -1055,7 +1117,7 @@ namespace Ionic.Utils.Zip
         /// <para>
         /// The Encoding is used as the default alternate encoding for entries with filenames
         /// or comments that cannot be encoded with the IBM437 code page.  This is a equivalent to setting 
-	/// the ProvisionalAlternateEncoding property on the ZIpFile instance after construction.
+        /// the ProvisionalAlternateEncoding property on the ZIpFile instance after construction.
         /// </para>
         /// 
         /// <para>
@@ -1078,7 +1140,7 @@ namespace Ionic.Utils.Zip
             try
             {
                 InitFile(zipFileName, statusMessageWriter);
-		ProvisionalAlternateEncoding = encoding;
+                ProvisionalAlternateEncoding = encoding;
             }
             catch (Exception e1)
             {
@@ -1189,19 +1251,19 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Constructor to create an instance of ZipFile that writes Zip archives to a <c>System.IO.Stream</c>,
-	/// and using a specific Encoding.
+        /// and using a specific Encoding.
         /// </summary>
         /// 
         /// <remarks>
         /// <para>
         /// See the documentation on the <see cref="ZipFile(System.IO.Stream)">ZipFile constructor
-	/// that accepts a single Stream argument</see> for basic information on this constructor.
+        /// that accepts a single Stream argument</see> for basic information on this constructor.
         /// </para>
         ///
         /// <para>
         /// The Encoding is used as the default alternate encoding for entries with filenames
         /// or comments that cannot be encoded with the IBM437 code page.  This is a equivalent to setting 
-	/// the ProvisionalAlternateEncoding property on the ZIpFile instance after construction.
+        /// the ProvisionalAlternateEncoding property on the ZIpFile instance after construction.
         /// </para>
         ///
         /// </remarks>
@@ -1220,19 +1282,19 @@ namespace Ionic.Utils.Zip
             // of bytes written at any particular moment. 
 
             _writestream = new CountingStream(outputStream);
-	    ProvisionalAlternateEncoding = encoding;
+            ProvisionalAlternateEncoding = encoding;
             _entries = new System.Collections.Generic.List<ZipEntry>();
         }
 
         /// <summary>
         /// Constructor to create an instance of ZipFile that writes Zip archives to a stream, 
-	/// and uses the specified TextWriter to collect status messages.
+        /// and uses the specified TextWriter to collect status messages.
         /// </summary>
         /// 
         /// <remarks>
         /// <para>
         /// See the documentation on the <see cref="ZipFile(System.IO.Stream)">ZipFile constructor
-	/// that accepts a single Stream argument</see> for basic information on this constructor.
+        /// that accepts a single Stream argument</see> for basic information on this constructor.
         /// </para>
         ///
         /// <para>
@@ -1270,13 +1332,13 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Constructor to create an instance of ZipFile that writes Zip archives to a stream, 
-	/// and uses the specified TextWriter to collect status messages.
+        /// and uses the specified TextWriter to collect status messages.
         /// </summary>
         /// 
         /// <remarks>
         /// <para>
         /// See the documentation on the <see cref="ZipFile(System.IO.Stream)">ZipFile constructor
-	/// that accepts a single Stream argument</see> for basic information on this constructor.
+        /// that accepts a single Stream argument</see> for basic information on this constructor.
         /// </para>
         ///
         /// <para>
@@ -1288,11 +1350,11 @@ namespace Ionic.Utils.Zip
         /// example, a <c>StringWriter</c>, and then display the messages in a TextBox, or
         /// generate an audit log of ZipFile operations.
         /// </para>
-	///
+        ///
         /// <para>
         /// The Encoding is used as the default alternate encoding for entries with filenames
         /// or comments that cannot be encoded with the IBM437 code page.  This is a equivalent to setting 
-	/// the ProvisionalAlternateEncoding property on the ZIpFile instance after construction.
+        /// the ProvisionalAlternateEncoding property on the ZIpFile instance after construction.
         /// </para>
         /// 
         /// </remarks>
@@ -1318,7 +1380,7 @@ namespace Ionic.Utils.Zip
             // of bytes written at any particular moment. 
 
             _writestream = new CountingStream(outputStream);
-	    ProvisionalAlternateEncoding = encoding;
+            ProvisionalAlternateEncoding = encoding;
             _entries = new System.Collections.Generic.List<ZipEntry>();
             _StatusMessageTextWriter = statusMessageWriter;
         }
@@ -1650,8 +1712,10 @@ namespace Ionic.Utils.Zip
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
             ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
+            ze.WantCompression = WantCompression;
             ze.ProvisionalAlternateEncoding = ProvisionalAlternateEncoding;
             ze._Source = EntrySource.Filesystem;
+            ze._zipfile = this;
             ze.Password = _Password;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
             InsureUniqueEntry(ze);
@@ -1972,8 +2036,10 @@ namespace Ionic.Utils.Zip
             ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
             ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
+            ze.WantCompression = WantCompression;
             ze.ProvisionalAlternateEncoding = ProvisionalAlternateEncoding;
             ze._Source = EntrySource.Stream;
+            ze._zipfile = this;
             ze.Password = _Password;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
             InsureUniqueEntry(ze);
@@ -2355,10 +2421,11 @@ namespace Ionic.Utils.Zip
                 int n = 0;
                 foreach (ZipEntry e in _entries)
                 {
+                    OnSaveEntry(n, e.FileName, true);
                     e.Write(WriteStream);
                     e._zipfile = this;
                     n++;
-                    OnSaveProgress(n, e.FileName);
+                    OnSaveEntry(n, e.FileName, false);
                     if (_saveOperationCanceled)
                         break;
                 }
@@ -2367,6 +2434,8 @@ namespace Ionic.Utils.Zip
                     return;
 
                 WriteCentralDirectoryStructure(WriteStream);
+
+                OnSaveEvent(ZipProgressEventType.Saving_AfterSaveTempArchive);
 
                 // do the rename as necessary
                 if ((_temporaryFileName != null) && (_name != null))
@@ -2407,7 +2476,9 @@ namespace Ionic.Utils.Zip
                         //
                         // Better to just keep it simple. 
                         System.IO.File.Delete(_name);
+                        OnSaveEvent(ZipProgressEventType.Saving_BeforeRenameTempArchive);
                         System.IO.File.Move(_temporaryFileName, _name);
+                        OnSaveEvent(ZipProgressEventType.Saving_AfterRenameTempArchive);
                     }
                     else
                         System.IO.File.Move(_temporaryFileName, _name);
@@ -2420,7 +2491,7 @@ namespace Ionic.Utils.Zip
 
             }
 
-                // workitem 5043
+        // workitem 5043
             finally
             {
                 CleanupAfterSaveOperation();
@@ -2442,7 +2513,7 @@ namespace Ionic.Utils.Zip
             catch (Exception ex1)
             {
                 StatusMessageTextWriter
-                .WriteLine("ZipFile::Save: could not delete temp file: {0}.", ex1.Message);
+            .WriteLine("ZipFile::Save: could not delete temp file: {0}.", ex1.Message);
             }
         }
 
@@ -2539,7 +2610,7 @@ namespace Ionic.Utils.Zip
                 block = ProvisionalAlternateEncoding.GetBytes(Comment);
                 commentLength = (Int16)block.Length;
             }
-            bufferLength += Comment.Length;
+            bufferLength += commentLength;
             byte[] bytes = new byte[bufferLength];
 
             int i = 0;
@@ -2612,19 +2683,130 @@ namespace Ionic.Utils.Zip
 
         #region Events
 
-        /// <summary>
-        /// Fired when the save starts.
-        /// </summary>
-        public event EventHandler<SaveEventArgs> SaveStarted;
+        private string ArchiveNameForEvent
+        {
+            get
+            {
+                return (_name != null) ? _name : "(stream)";
+            }
+        }
+
 
         /// <summary>
-        /// Fired after each entry has been written to the archive.
+        /// An event handler invoked when a Save() starts, before and after each entry has been
+        /// written to the archive, when a Save() completes, and during other Save events.
         /// </summary>
+        ///
+        /// <remarks>
+	/// <para>
+	/// Depending on the particular event, different properties on the
+	/// SaveProgressEventArgs parameter are set.  The following table 
+	/// summarizes the available EventTypes and the conditions under which this 
+	/// event handler is invoked with a SaveProgressEventArgs with the given EventType.
+	/// </para>
+	/// 
+	/// <list type="table">
+	/// <listheader>
+	/// <term>value of EntryType</term>
+	/// <description>Meaning and conditions</description>
+	/// </listheader>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Saving_Started</term>
+	/// <description>Set when ZipFile.Save() begins. 
+        /// </description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Saving_BeforeSaveEntry</term>
+	/// <description>Set within ZipFile.Save(), just before writing data for each particular entry. 
+        /// </description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Saving_AfterSaveEntry</term>
+	/// <description>Set within ZipFile.Save(), just after having finished writing data for each 
+	/// particular entry. 
+        /// </description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Saving_Completed</term>
+	/// <description>Set when ZipFile.Save() has completed. 
+        /// </description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Saving_AfterSaveTempArchive</term>
+	/// <description>Set after the temporary file has been created.  This happens only
+	/// when saving to a disk file.  This event will not be invoked when saving to a stream.
+        /// </description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Saving_BeforeRenameTempArchive</term>
+	/// <description>Set just before renaming the temporary file to the permanent location.  This 
+	/// happens only when saving to a disk file.  This event will not be invoked when saving to a stream.
+        /// </description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Saving_AfterRenameTempArchive</term>
+	/// <description>Set just after renaming the temporary file to the permanent location.  This 
+	/// happens only when saving to a disk file.  This event will not be invoked when saving to a stream.
+        /// </description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Saving_AfterCompileSelfExtractor</term>
+	/// <description>Set after a self-extracting archive has finished compiling. 
+	/// This EventType is used only within SaveSelfExtractor().
+        /// </description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Saving_BytesWritten</term>
+	/// <description>Set during the save of a particular entry, to update progress of the Save(). 
+	/// When this EventType is set, the BytesWritten is the number of bytes written to the 
+	/// compressed stream.  The TotalBytesToWrite is the number of bytes in the uncompressed file.
+        /// </description>
+	/// </item>
+	/// 
+	/// </list>
+        /// </remarks>
+        ///
         /// <example>
         /// <code lang="C#">
+        /// static bool justHadByteUpdate= false;
         /// public static void SaveProgress(object sender, SaveProgressEventArgs e)
         /// {
-        ///   Console.WriteLine("{0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal);
+        ///     if (e.EventType == ZipProgressEventType.Saving_Started)
+        ///         Console.WriteLine("Saving: {0}", e.ArchiveName);
+        /// 
+        ///     else if (e.EventType == ZipProgressEventType.Saving_Completed)
+        ///     {
+        ///         justHadByteUpdate= false; 
+        ///         Console.WriteLine();
+        ///         Console.WriteLine("Done: {0}", e.ArchiveName);
+        ///     }
+        /// 
+        ///     else if (e.EventType == ZipProgressEventType.Saving_BeforeWriteEntry)
+        ///     {
+        ///         if (justHadByteUpdate) 
+        ///             Console.WriteLine();
+        ///         Console.WriteLine("  Writing: {0} ({1}/{2})",  
+        ///                           e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal);
+        ///         justHadByteUpdate= false;
+        ///     }
+        /// 
+        ///     else if (e.EventType == ZipProgressEventType.Saving_EntryBytesWritten)
+        ///     {
+        ///         if (justHadByteUpdate)
+        ///             Console.SetCursorPosition(0, Console.CursorTop);
+        ///          Console.Write("     {0}/{1} ({2:N0}%)", e.BytesWritten, e.TotalBytesToWrite,
+        ///                       e.BytesWritten / (0.01 * e.TotalBytesToWrite ));
+        ///         justHadByteUpdate= true;
+        ///     }
         /// }
         /// 
         /// public static ZipUp(string targetZip, string directory)
@@ -2651,28 +2833,38 @@ namespace Ionic.Utils.Zip
         /// End Sub
         /// 
         /// Public Sub MySaveProgress(ByVal sender As Object, ByVal e As SaveProgressEventArgs)
+	///   If (e.EventType = ZipProgressEventType.Saving_BeforeSaveEntry) Then
         ///     Console.WriteLine("{0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal)
+	///   End If
         /// End Sub
         /// </code>
         /// </example>
         public event EventHandler<SaveProgressEventArgs> SaveProgress;
 
-        /// <summary>
-        /// Fired after the save completes.
-        /// </summary>
-        public event EventHandler<SaveEventArgs> SaveCompleted;
 
-
-        /// <summary>
-        /// Fires the <see cref="SaveProgress"/> method.
-        /// </summary>
-        private void OnSaveProgress(int current, string currentEntryName)
+        internal bool OnSaveBlock(string entryName, int bytesWritten, int totalBytesToWrite)
         {
             lock (LOCK)
             {
                 if (SaveProgress != null)
                 {
-                    var e = new SaveProgressEventArgs(_entries.Count, current, currentEntryName);
+                    var e =  SaveProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entryName, 
+							      bytesWritten, totalBytesToWrite);
+                    SaveProgress(this, e);
+                    if (e.Cancel)
+                        _saveOperationCanceled = true;
+                }
+            }
+	    return _saveOperationCanceled;
+        }
+
+        private void OnSaveEntry(int current, string entryName, bool before)
+        {
+            lock (LOCK)
+            {
+                if (SaveProgress != null)
+                {
+                    var e = new SaveProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, entryName);
                     SaveProgress(this, e);
                     if (e.Cancel)
                         _saveOperationCanceled = true;
@@ -2680,15 +2872,28 @@ namespace Ionic.Utils.Zip
             }
         }
 
+        private void OnSaveEvent(ZipProgressEventType eventFlavor)
+        {
+            lock (LOCK)
+            {
+                if (SaveProgress != null)
+                {
+                    var e = new SaveProgressEventArgs(ArchiveNameForEvent, eventFlavor);
+                    SaveProgress(this, e);
+                    if (e.Cancel)
+                        _saveOperationCanceled = true;
+                }
+            }
+        }
 
         private void OnSaveCompleted()
         {
             lock (LOCK)
             {
-                if (SaveCompleted != null)
+                if (SaveProgress != null)
                 {
-                    var e = new SaveEventArgs((_name != null) ? _name : "(stream)");
-                    SaveCompleted(this, e);
+                    var e = SaveProgressEventArgs.Completed(ArchiveNameForEvent);
+                    SaveProgress(this, e);
                 }
             }
         }
@@ -2698,10 +2903,10 @@ namespace Ionic.Utils.Zip
         {
             lock (LOCK)
             {
-                if (SaveStarted != null)
+                if (SaveProgress != null)
                 {
-                    var e = new SaveEventArgs((_name != null) ? _name : "(stream)");
-                    SaveStarted(this, e);
+                    var e = SaveProgressEventArgs.Started(ArchiveNameForEvent);
+                    SaveProgress(this, e);
                 }
             }
         }
@@ -2709,26 +2914,97 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
-        /// Fired when the ExtractAll starts, before the first entry is extracted.
+        /// An event handler invoked before, during, and after extraction of entries 
+	/// in the zip archive. 
         /// </summary>
-        public event EventHandler<ExtractEventArgs> ExtractStarted;
-
-        /// <summary>
-        /// Fired after each entry has been extracted from the archive, during the 
-        /// execution of the ExtractAll method.
-        /// </summary>
+	///
+	/// <remarks>
+	/// <para>
+	/// Depending on the particular event, different properties on the
+	/// ExtractProgressEventArgs parameter are set.  The following table 
+	/// summarizes the available EventTypes and the conditions under which this 
+	/// event handler is invoked with a ExtractProgressEventArgs with the given EventType.
+	/// </para>
+	/// 
+	/// <list type="table">
+	/// <listheader>
+	/// <term>value of EntryType</term>
+	/// <description>Meaning and conditions</description>
+	/// </listheader>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Extracting_BeforeExtractAll</term>
+	/// <description>Set when ExtractAll() begins.  The ArchiveName, Overwrite,
+	/// and ExtractLocation properties are meaningful.</description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Extracting_AfterExtractAll</term>
+	/// <description>Set when ExtractAll() has completed.  The ArchiveName, 
+	/// Overwrite, and ExtractLocation properties are meaningful.
+	/// </description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Extracting_BeforeExtractEntry</term>
+	/// <description>Set when an Extract() on an entry in the ZipFile has begun.  
+	/// Properties that are meaningful:  ArchiveName, EntriesTotal, NameOfLatestEntry, Overwrite, 
+	/// ExtractLocation, EntriesExtracted.
+	/// </description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Extracting_AfterExtractEntry</term>
+	/// <description>Set when an Extract() on an entry in the ZipFile has completed.  
+	/// Properties that are meaningful:  ArchiveName, EntriesTotal, NameOfLatestEntry, Overwrite, 
+	/// ExtractLocation, EntriesExtracted.
+	/// </description>
+	/// </item>
+	/// 
+	/// <item>
+	/// <term>ZipProgressEventType.Extracting_EntryBytesWritten</term>
+	/// <description>Set within a call to Extract() on an entry in the ZipFile, as
+	/// data is extracted for the entry.  Properties that are meaningful:  ArchiveName, 
+	/// NameOfLatestEntry, BytesWritten, TotalBytesToWrite. 
+	/// </description>
+	/// </item>
+	/// 
+	/// </list>
+	/// 
+	/// </remarks>
+	///
         /// <example>
         /// <code>
+        /// private static bool justHadByteUpdate = false;
         /// public static void ExtractProgress(object sender, ExtractProgressEventArgs e)
         /// {
-        ///   Console.WriteLine("{0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesExtractd, e.EntriesTotal);
+        ///   if(e.EventType == ZipProgressEventType.Extracting_EntryBytesWritten)
+        ///   {
+        ///     if (justHadByteUpdate)
+        ///       Console.SetCursorPosition(0, Console.CursorTop);
+	///
+        ///     Console.Write("   {0}/{1} ({2:N0}%)", e.BytesWritten, e.TotalBytesToWrite,
+        ///                   e.BytesWritten / (0.01 * e.TotalBytesToWrite ));
+        ///     justHadByteUpdate = true;
+        ///   }
+        ///   else if(e.EventType == ZipProgressEventType.Extracting_BeforeExtractEntry)
+        ///   {
+        ///     if (justHadByteUpdate) 
+        ///       Console.WriteLine();
+        ///     Console.WriteLine("Extracting: {0}", e.NameOfLatestEntry);
+        ///     justHadByteUpdate= false;
+        ///   }
         /// }
-        /// 
+	///
         /// public static ExtractZip(string zipToExtract, string directory)
         /// {
-        ///   using (var zip = new ZipFile(zipToExtract)) {
+	///   string TargetDirectory= "extract";
+        ///   using (var zip = ZipFile.Read(zipToExtract)) {
         ///     zip.ExtractProgress += ExtractProgress; 
-        ///     zip.ExtractAll(directory, true);
+        ///     foreach (var e in zip1)
+        ///     {
+        ///       e.Extract(TargetDirectory, true);
+        ///     }
         ///   }
         /// }
         ///
@@ -2736,22 +3012,15 @@ namespace Ionic.Utils.Zip
         /// </example>
         public event EventHandler<ExtractProgressEventArgs> ExtractProgress;
 
-        /// <summary>
-        /// Fired after the extract completes.
-        /// </summary>
-        public event EventHandler<ExtractEventArgs> ExtractCompleted;
 
 
-        /// <summary>
-        /// Fires the <see cref="ExtractProgress"/> method.
-        /// </summary>
-        private void OnExtractProgress(int current, string currentEntryName, string path, bool overwrite)
+        private void OnExtractProgress(int current, bool before, string currentEntryName, string path, bool overwrite)
         {
             lock (LOCK)
             {
                 if (ExtractProgress != null)
                 {
-                    var e = new ExtractProgressEventArgs(_entries.Count, current, currentEntryName, path, overwrite);
+                    var e = new ExtractProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, currentEntryName, path, overwrite);
                     ExtractProgress(this, e);
                     if (e.Cancel)
                         _extractOperationCanceled = true;
@@ -2760,31 +3029,68 @@ namespace Ionic.Utils.Zip
         }
 
 
-        private void OnExtractCompleted(string path, bool wantOverwrite)
+        // Can be called from within ZipEntry._ExtractOne.
+        internal bool OnBlockExtracted(string entryName, int bytesWritten, int totalBytesToWrite)
         {
             lock (LOCK)
             {
-                if (ExtractCompleted != null)
+                if (ExtractProgress != null)
                 {
-                    var e = new ExtractEventArgs((_name != null) ? _name : "(stream)",
+                    var e = ExtractProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entryName, 
+								bytesWritten, totalBytesToWrite);
+                    ExtractProgress(this, e);
+                    if (e.Cancel)
+                        _extractOperationCanceled = true;
+                }
+            }
+            return _extractOperationCanceled;
+        }
+
+
+        // Can be called from within ZipEntry.InternalExtract.
+        internal bool OnSingleEntryExtractProgress(string entryName, string path, bool before, bool overwrite)
+        {
+            lock (LOCK)
+            {
+                if (ExtractProgress != null)
+                {
+                    var e = (before)
+            ? ExtractProgressEventArgs.BeforeExtractEntry(ArchiveNameForEvent, entryName, path, overwrite)
+            : ExtractProgressEventArgs.AfterExtractEntry(ArchiveNameForEvent, entryName, path, overwrite);
+                    ExtractProgress(this, e);
+                    if (e.Cancel)
+                        _extractOperationCanceled = true;
+                }
+            }
+            return _extractOperationCanceled;
+        }
+
+
+        private void OnExtractAllCompleted(string path, bool wantOverwrite)
+        {
+            lock (LOCK)
+            {
+                if (ExtractProgress != null)
+                {
+                    var e = ExtractProgressEventArgs.ExtractAllCompleted(ArchiveNameForEvent,
                          path,
                          wantOverwrite);
-                    ExtractCompleted(this, e);
+                    ExtractProgress(this, e);
                 }
             }
         }
 
 
-        private void OnExtractStarted(string path, bool wantOverwrite)
+        private void OnExtractAllStarted(string path, bool wantOverwrite)
         {
             lock (LOCK)
             {
-                if (ExtractStarted != null)
+                if (ExtractProgress != null)
                 {
-                    var e = new ExtractEventArgs((_name != null) ? _name : "(stream)",
+                    var e = ExtractProgressEventArgs.ExtractAllStarted(ArchiveNameForEvent,
                          path,
                          wantOverwrite);
-                    ExtractStarted(this, e);
+                    ExtractProgress(this, e);
                 }
             }
         }
@@ -3341,7 +3647,7 @@ namespace Ionic.Utils.Zip
                     else
                         zf.StatusMessageTextWriter.WriteLine("Reading zip {0}...", zf.Name);
 
-                while ((e = ZipEntry.Read(zf.ReadStream, zf.ProvisionalAlternateEncoding)) != null)
+                while ((e = ZipEntry.Read(zf)) != null)
                 {
                     if (zf.Verbose)
                         zf.StatusMessageTextWriter.WriteLine("  {0}", e.FileName);
@@ -3445,8 +3751,8 @@ namespace Ionic.Utils.Zip
                     // workitem 6415
                     // use UTF8 if the caller hasn't already set a non-default encoding
                     System.Text.Encoding e = (zf._provisionalAlternateEncoding.CodePage == 437)
-                    ? System.Text.Encoding.UTF8
-                    : zf._provisionalAlternateEncoding;
+            ? System.Text.Encoding.UTF8
+            : zf._provisionalAlternateEncoding;
                     zf.Comment = e.GetString(block);
                 }
             }
@@ -3570,14 +3876,12 @@ namespace Ionic.Utils.Zip
         /// </para>
         ///
         /// <para>
-        /// You may also wish to take advantage of the <c>ExtractStarted</c>,
-        /// <c>ExtractProgress</c>, and <c>ExtractCompleted</c> events.
+        /// You may wish to take advantage of the <c>ExtractProgress</c> event.
         /// </para>
         ///
         /// </remarks>
         ///
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.ExtractAll(string, bool)"/>
-        /// <seealso cref="Ionic.Utils.Zip.ZipFile.ExtractStarted"/>
         /// <seealso cref="Ionic.Utils.Zip.ZipFile.ExtractProgress"/>
         ///
         /// <param name="path">The path to which the contents of the zip archive should be extracted.</param>
@@ -3633,39 +3937,49 @@ namespace Ionic.Utils.Zip
         public void ExtractAll(string path, bool wantOverwrite)
         {
             bool header = Verbose;
-
-            OnExtractStarted(path, wantOverwrite);
-
-            int n = 0;
-            foreach (ZipEntry e in _entries)
+            _inExtractAll = true;
+            try
             {
-                if (header)
-                {
-                    StatusMessageTextWriter.WriteLine("\n{1,-22} {2,-8} {3,4}   {4,-8}  {0}",
-                              "Name", "Modified", "Size", "Ratio", "Packed");
-                    StatusMessageTextWriter.WriteLine(new System.String('-', 72));
-                    header = false;
-                }
-                if (Verbose)
-                {
-                    StatusMessageTextWriter.WriteLine("{1,-22} {2,-8} {3,4:F0}%   {4,-8} {0}",
-                              e.FileName,
-                              e.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
-                              e.UncompressedSize,
-                              e.CompressionRatio,
-                              e.CompressedSize);
-                    if (!String.IsNullOrEmpty(e.Comment))
-                        StatusMessageTextWriter.WriteLine("  Comment: {0}", e.Comment);
-                }
-                e.Password = _Password;  // this may be null
-                e.Extract(path, wantOverwrite);
-                n++;
-                OnExtractProgress(n, e.FileName, path, wantOverwrite);
-                if (_extractOperationCanceled)
-                    break;
+                OnExtractAllStarted(path, wantOverwrite);
 
+                int n = 0;
+                foreach (ZipEntry e in _entries)
+                {
+                    if (header)
+                    {
+                        StatusMessageTextWriter.WriteLine("\n{1,-22} {2,-8} {3,4}   {4,-8}  {0}",
+                                  "Name", "Modified", "Size", "Ratio", "Packed");
+                        StatusMessageTextWriter.WriteLine(new System.String('-', 72));
+                        header = false;
+                    }
+                    if (Verbose)
+                    {
+                        StatusMessageTextWriter.WriteLine("{1,-22} {2,-8} {3,4:F0}%   {4,-8} {0}",
+                                  e.FileName,
+                                  e.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
+                                  e.UncompressedSize,
+                                  e.CompressionRatio,
+                                  e.CompressedSize);
+                        if (!String.IsNullOrEmpty(e.Comment))
+                            StatusMessageTextWriter.WriteLine("  Comment: {0}", e.Comment);
+                    }
+                    e.Password = _Password;  // this may be null
+                    OnExtractProgress(n, true, e.FileName, path, wantOverwrite);
+                    e.Extract(path, wantOverwrite);
+                    n++;
+                    OnExtractProgress(n, false, e.FileName, path, wantOverwrite);
+                    if (_extractOperationCanceled)
+                        break;
+
+                }
+
+                OnExtractAllCompleted(path, wantOverwrite);
             }
-            OnExtractCompleted(path, wantOverwrite);
+            finally
+            {
+
+                _inExtractAll = false;
+            }
         }
 
 
@@ -3675,9 +3989,16 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// 
         /// <remarks>
-        /// Calling this method, the entry is extracted using the Password that is 
-        /// specified on the ZipFile instance. If you have not set the Password property, then
-        /// the password is null, and the entry is extracted with no password.
+        /// <para>
+        /// Using this method, the entry is extracted using the Password that is specified on
+        /// the ZipFile instance. If you have not set the Password property, then the password
+        /// is null, and the entry is extracted with no password.  The file, including any
+        /// relative qualifying path, is created at the current working directory.
+        /// </para>
+        ///
+        /// <para>
+        /// The ExtractProgress event is invoked before and after extraction, if it has been set. 
+        /// </para>
         /// </remarks>
         /// 
         /// <param name="fileName">
@@ -3699,9 +4020,16 @@ namespace Ionic.Utils.Zip
         /// </summary>
         ///
         /// <remarks>
-        /// Calling this method, the entry is extracted using the Password that is 
-        /// specified on the ZipFile instance. If you have not set the Password property, then
-        /// the password is null, and the entry is extracted with no password.
+        /// <para>
+        /// Calling this method, the entry is extracted using the Password that is specified on
+        /// the ZipFile instance. If you have not set the Password property, then the password
+        /// is null, and the entry is extracted with no password.  The file, including any
+        /// relative qualifying path, is created at the specified directory.
+        /// </para>
+        ///
+        /// <para>
+        /// The ExtractProgress event is invoked before and after extraction, if it has been set. 
+        /// </para>
         /// </remarks>
         /// 
         /// <param name="fileName">
@@ -3721,14 +4049,20 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Extract a single item from the archive, potentially overwriting  
-        /// any existing file in the filesystem by the same name. The file, including any relative 
-        /// qualifying path, is created at the current working directory.  
+        /// any existing file in the filesystem by the same name.
         /// </summary>
         /// 
         /// <remarks>
-        /// Calling this method, the entry is extracted using the Password that is 
-        /// specified on the ZipFile instance. If you have not set the Password property, then
-        /// the password is null, and the entry is extracted with no password.
+        /// <para>
+        /// Using this method, the entry is extracted using the Password that is specified on
+        /// the ZipFile instance. If you have not set the Password property, then the password
+        /// is null, and the entry is extracted with no password.  The file, including any
+        /// relative qualifying path, is created at the current working directory.
+        /// </para>
+        ///
+        /// <para>
+        /// The ExtractProgress event is invoked before and after extraction, if it has been set. 
+        /// </para>
         /// </remarks>
         /// 
         /// <param name="fileName">
@@ -3751,14 +4085,20 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Extract a single item from the archive, into the specified directory, potentially overwriting  
-        /// any existing file in the filesystem by the same name. The file, including any relative 
-        /// qualifying path, is created in the specified directory.  
+        /// any existing file in the filesystem by the same name.   
         /// </summary>
         /// 
         /// <remarks>
-        /// Calling this method, the entry is extracted using the Password that is 
-        /// specified on the ZipFile instance. If you have not set the Password property, then
-        /// the password is null, and the entry is extracted with no password.
+        /// <para>
+        /// Calling this method, the entry is extracted using the Password that is specified on
+        /// the ZipFile instance. If you have not set the Password property, then the password
+        /// is null, and the entry is extracted with no password.  The file, including any
+        /// relative qualifying path, is created at the specified directory.
+        /// </para>
+        ///
+        /// <para>
+        /// The ExtractProgress event is invoked before and after extraction, if it has been set. 
+        /// </para>
         /// </remarks>
         /// 
         /// <param name="fileName">
@@ -3779,14 +4119,19 @@ namespace Ionic.Utils.Zip
 
 
         /// <summary>
-        /// Extract a single specified file from the archive, to the given stream.  This is 
-        /// useful when extracting to Console.Out or to a memory stream, for example. 
+        /// Extract a single specified file from the archive, to the given stream.   
         /// </summary>
         /// 
         /// <remarks>
+        /// <para>
         /// Calling this method, the entry is extracted using the Password that is 
         /// specified on the ZipFile instance. If you have not set the Password property, then
         /// the password is null, and the entry is extracted with no password.
+        /// </para>
+        ///
+        /// <para>
+        /// The ExtractProgress event is invoked before and after extraction, if it has been set. 
+        /// </para>
         /// </remarks>
         /// 
         /// <exception cref="Ionic.Utils.Zip.ZipException">
@@ -3943,13 +4288,13 @@ namespace Ionic.Utils.Zip
             get
             {
 #if NONONO
-                if (_JustSaved)
-                {
-                    // work item 5593
-                    // read in the just-saved zip archive                    
-                    ReadIntoInstance(this);
-                    _JustSaved = false;
-                }
+		    if (_JustSaved)
+		    {
+			// work item 5593
+			// read in the just-saved zip archive                    
+			ReadIntoInstance(this);
+			_JustSaved = false;
+		    }
 #endif
                 foreach (ZipEntry e in _entries)
                 {
@@ -4121,17 +4466,17 @@ namespace Ionic.Utils.Zip
                 throw new ArgumentException("The entry you specified does not exist in the zip archive.");
 
 #if NONONO	    
-            if (_JustSaved)
-            {
-		// In this case the _direntries struct is not filled. 
-		// 
-                // work item 5593
-                // read in the just-saved zip archive 
-		ZipFile x = new ZipFile();
-                ReadIntoInstance(x);
+		if (_JustSaved)
+		{
+		    // In this case the _direntries struct is not filled. 
+		    // 
+		    // work item 5593
+		    // read in the just-saved zip archive 
+		    ZipFile x = new ZipFile();
+		    ReadIntoInstance(x);
 
-                _JustSaved = false;
-            }
+		    _JustSaved = false;
+		}
 #endif
 
             _entries.Remove(entry);
@@ -4353,6 +4698,7 @@ namespace Ionic.Utils.Zip
         private bool _saveOperationCanceled;
         private bool _extractOperationCanceled;
         private bool _JustSaved;
+        internal bool _inExtractAll = false;
         //private System.Text.Encoding _encoding = System.Text.Encoding.GetEncoding("IBM437"); // default = IBM437
         private System.Text.Encoding _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437"); // default = IBM437
         #endregion
