@@ -728,7 +728,7 @@ namespace Ionic.Utils.Zip
                     // the number of bytes in the stream we had to seek forward, to find the sig.  We need this to determine if
                     // the zip entry is valid, later. 
 
-		    ze._zipfile.OnReadBytes(ze.FileName);
+                    ze._zipfile.OnReadBytes(ze);
 
                     long d = Ionic.Utils.Zip.SharedUtilities.FindSignature(ze.ArchiveStream, ZipConstants.ZipEntryDataDescriptorSignature);
                     if (d == -1) return false;
@@ -829,7 +829,7 @@ namespace Ionic.Utils.Zip
             entry._Source = EntrySource.Zipfile;
             entry._zipfile = zf;
             entry._archiveStream = s;
-	    zf.OnReadEntry(true, null);
+            zf.OnReadEntry(true, null);
             if (!ReadHeader(entry, defaultEncoding)) return null;
 
             // store the position in the stream for this entry
@@ -848,8 +848,8 @@ namespace Ionic.Utils.Zip
             // http://www.codeplex.com/DotNetZip/WorkItem/View.aspx?WorkItemId=5306
             HandleUnexpectedDataDescriptor(entry);
 
-	    zf.OnReadBytes(entry.FileName);
-	    zf.OnReadEntry(false, entry.FileName);
+            zf.OnReadBytes(entry);
+            zf.OnReadEntry(false, entry);
 
             return entry;
         }
@@ -1344,7 +1344,7 @@ namespace Ionic.Utils.Zip
 
         private void OnExtractProgress(int bytesWritten, int totalBytesToWrite)
         {
-            _ioOperationCanceled = _zipfile.OnExtractBlock(FileName, bytesWritten, totalBytesToWrite);
+            _ioOperationCanceled = _zipfile.OnExtractBlock(this, bytesWritten, totalBytesToWrite);
         }
 
         private void OnBeforeExtract(string path)
@@ -1352,7 +1352,7 @@ namespace Ionic.Utils.Zip
             if (!_zipfile._inExtractAll)
             {
                 _ioOperationCanceled =
-                    _zipfile.OnSingleEntryExtract(FileName, path, true, OverwriteOnExtract);
+                    _zipfile.OnSingleEntryExtract(this, path, true, OverwriteOnExtract);
             }
         }
 
@@ -1360,13 +1360,13 @@ namespace Ionic.Utils.Zip
         {
             if (!_zipfile._inExtractAll)
             {
-                _zipfile.OnSingleEntryExtract(FileName, path, false, OverwriteOnExtract);
+                _zipfile.OnSingleEntryExtract(this, path, false, OverwriteOnExtract);
             }
         }
 
         private void OnWriteBlock(int bytesWritten, int totalBytesToWrite)
         {
-            _ioOperationCanceled = _zipfile.OnSaveBlock(FileName, bytesWritten, totalBytesToWrite);
+            _ioOperationCanceled = _zipfile.OnSaveBlock(this, bytesWritten, totalBytesToWrite);
         }
 
 
@@ -1379,6 +1379,7 @@ namespace Ionic.Utils.Zip
             _ioOperationCanceled = false;
             string TargetFile = null;
             System.IO.Stream output = null;
+            bool fileExistsBeforeExtraction = false;
 
             try
             {
@@ -1399,9 +1400,13 @@ namespace Ionic.Utils.Zip
                         System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(TargetFile));
 
                     // and ensure we can create the file
-                    if ((OverwriteOnExtract) && (System.IO.File.Exists(TargetFile)))
-                        System.IO.File.Delete(TargetFile);
-
+                    if (System.IO.File.Exists(TargetFile))
+                    {
+                        fileExistsBeforeExtraction = true;
+                        if (OverwriteOnExtract)
+                            System.IO.File.Delete(TargetFile);
+                        else throw new ZipException("The file already exists.");
+                    }
                     output = new System.IO.FileStream(TargetFile, System.IO.FileMode.CreateNew);
                 }
                 else
@@ -1481,9 +1486,14 @@ namespace Ionic.Utils.Zip
                     if (TargetFile != null)
                     {
                         if (output != null) output.Close();
-                        // attempt to remove the target file if an exception has occurred:
+                        // An exception has occurred.
+                        // if the file exists, check to see if it existed before we tried extracting.
+                        // if it did not, or if we were overwriting the file, attempt to remove the target file.
                         if (System.IO.File.Exists(TargetFile))
-                            System.IO.File.Delete(TargetFile);
+                        {
+                            if (!fileExistsBeforeExtraction || OverwriteOnExtract)
+                                System.IO.File.Delete(TargetFile);
+                        }
                     }
                 }
                 finally { }
@@ -1491,7 +1501,6 @@ namespace Ionic.Utils.Zip
                 // re-raise the original exception
                 throw;
             }
-
         }
 
 

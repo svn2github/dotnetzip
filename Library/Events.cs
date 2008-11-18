@@ -27,107 +27,107 @@ namespace Ionic.Utils.Zip
     /// </summary>
     public enum ZipProgressEventType
     {
-	/// <summary>
-	/// Indicates that a Read() operation has started.
-	/// </summary>
-	Reading_Started,
+        /// <summary>
+        /// Indicates that a Read() operation has started.
+        /// </summary>
+        Reading_Started,
 
-	/// <summary>
-	/// Indicates that an individual entry in the archive is about to be read.
-	/// </summary>
-	Reading_BeforeReadEntry,
+        /// <summary>
+        /// Indicates that an individual entry in the archive is about to be read.
+        /// </summary>
+        Reading_BeforeReadEntry,
 
-	/// <summary>
-	/// Indicates that an individual entry in the archive has just been read.
-	/// </summary>
-	Reading_AfterReadEntry,
+        /// <summary>
+        /// Indicates that an individual entry in the archive has just been read.
+        /// </summary>
+        Reading_AfterReadEntry,
 
-	/// <summary>
-	/// Indicates that a Read() operation has completed.
-	/// </summary>
-	Reading_Completed,
+        /// <summary>
+        /// Indicates that a Read() operation has completed.
+        /// </summary>
+        Reading_Completed,
 
-	/// <summary>
-	/// The given event reports the number of bytes read so far
-	/// during a Read() operation.
-	/// </summary>
-	Reading_ArchiveBytesRead,
+        /// <summary>
+        /// The given event reports the number of bytes read so far
+        /// during a Read() operation.
+        /// </summary>
+        Reading_ArchiveBytesRead,
 
-	/// <summary>
-	/// Indicates that a Save() operation has started.
-	/// </summary>
-	Saving_Started,
+        /// <summary>
+        /// Indicates that a Save() operation has started.
+        /// </summary>
+        Saving_Started,
 
-	/// <summary>
-	/// Indicates that an individual entry in the archive is about to be written.
-	/// </summary>
-	Saving_BeforeWriteEntry,
+        /// <summary>
+        /// Indicates that an individual entry in the archive is about to be written.
+        /// </summary>
+        Saving_BeforeWriteEntry,
 
-	/// <summary>
-	/// Indicates that an individual entry in the archive has just been saved.
-	/// </summary>
-	Saving_AfterWriteEntry,
+        /// <summary>
+        /// Indicates that an individual entry in the archive has just been saved.
+        /// </summary>
+        Saving_AfterWriteEntry,
 
-	/// <summary>
-	/// Indicates that a Save() operation has completed.
-	/// </summary>
-	Saving_Completed,
+        /// <summary>
+        /// Indicates that a Save() operation has completed.
+        /// </summary>
+        Saving_Completed,
 
-	/// <summary>
-	/// Indicates that the zip archive has been created in a
-	/// temporary location during a Save() operation.
-	/// </summary>
-	Saving_AfterSaveTempArchive,
+        /// <summary>
+        /// Indicates that the zip archive has been created in a
+        /// temporary location during a Save() operation.
+        /// </summary>
+        Saving_AfterSaveTempArchive,
 
-	/// <summary>
-	/// Indicates that the temporary file is about to be renamed to the final archive 
-	/// name during a Save() operation.
-	/// </summary>
-	Saving_BeforeRenameTempArchive,
+        /// <summary>
+        /// Indicates that the temporary file is about to be renamed to the final archive 
+        /// name during a Save() operation.
+        /// </summary>
+        Saving_BeforeRenameTempArchive,
 
-	/// <summary>
-	/// Indicates that the temporary file is has just been renamed to the final archive 
-	/// name during a Save() operation.
-	/// </summary>
-	Saving_AfterRenameTempArchive,
+        /// <summary>
+        /// Indicates that the temporary file is has just been renamed to the final archive 
+        /// name during a Save() operation.
+        /// </summary>
+        Saving_AfterRenameTempArchive,
 
-	/// <summary>
-	/// Indicates that the self-extracting archive has been compiled
-	/// during a Save() operation.
-	/// </summary>
-	Saving_AfterCompileSelfExtractor,
+        /// <summary>
+        /// Indicates that the self-extracting archive has been compiled
+        /// during a Save() operation.
+        /// </summary>
+        Saving_AfterCompileSelfExtractor,
 
-	/// <summary>
-	/// The given event is reporting the number of bytes written so far
-	/// during a Save() operation.
-	/// </summary>
-	Saving_EntryBytesWritten,
+        /// <summary>
+        /// The given event is reporting the number of bytes written so far
+        /// during a Save() operation.
+        /// </summary>
+        Saving_EntryBytesWritten,
 
-	/// <summary>
-	/// Indicates that an entry is about to be extracted. 
-	/// </summary>
-	Extracting_BeforeExtractEntry,
+        /// <summary>
+        /// Indicates that an entry is about to be extracted. 
+        /// </summary>
+        Extracting_BeforeExtractEntry,
 
-	/// <summary>
-	/// Indicates that an entry has just been extracted. 
-	/// </summary>
-	Extracting_AfterExtractEntry,
+        /// <summary>
+        /// Indicates that an entry has just been extracted. 
+        /// </summary>
+        Extracting_AfterExtractEntry,
 
-	/// <summary>
-	/// The given event is reporting the number of bytes written so far for the current entry
-	/// during an Extract() operation.
-	/// </summary>
-	Extracting_EntryBytesWritten,
+        /// <summary>
+        /// The given event is reporting the number of bytes written so far for the current entry
+        /// during an Extract() operation.
+        /// </summary>
+        Extracting_EntryBytesWritten,
 
-	/// <summary>
-	/// Indicates that an ExtractAll operation is about to begin.
-	/// </summary>
-	Extracting_BeforeExtractAll,
+        /// <summary>
+        /// Indicates that an ExtractAll operation is about to begin.
+        /// </summary>
+        Extracting_BeforeExtractAll,
 
-	/// <summary>
-	/// Indicates that an ExtractAll operation has completed.
-	/// </summary>
-	Extracting_AfterExtractAll,
+        /// <summary>
+        /// Indicates that an ExtractAll operation has completed.
+        /// </summary>
+        Extracting_AfterExtractAll,
     }
 
 
@@ -138,20 +138,20 @@ namespace Ionic.Utils.Zip
     {
         private int _entriesTotal;
         private bool _cancel;
-        private String _nameOfLatestEntry;
+        private ZipEntry _latestEntry;
         private ZipProgressEventType _flavor;
         private String _archiveName;
         private int _bytesTransferred;
         private int _totalBytesToTransfer;
 
 
-	internal ZipProgressEventArgs() { }
+        internal ZipProgressEventArgs() { }
 
-	internal ZipProgressEventArgs(string archiveName, ZipProgressEventType flavor) 
-	{ 
+        internal ZipProgressEventArgs(string archiveName, ZipProgressEventType flavor)
+        {
             this._archiveName = archiveName;
             this._flavor = flavor;
-	}
+        }
 
         /// <summary>
         /// The total number of entries to be saved or extracted.
@@ -159,21 +159,21 @@ namespace Ionic.Utils.Zip
         public int EntriesTotal
         {
             get { return _entriesTotal; }
-            set { _entriesTotal= value; }
+            set { _entriesTotal = value; }
         }
 
         /// <summary>
         /// The name of the last entry saved or extracted.
         /// </summary>
-        public string NameOfLatestEntry
+        public ZipEntry CurrentEntry
         {
-            get { return _nameOfLatestEntry; }
-            set { _nameOfLatestEntry= value; }
+            get { return _latestEntry; }
+            set { _latestEntry = value; }
         }
 
         /// <summary>
         /// In an event handler, set this to cancel the save or extract 
-	/// operation that is in progress.
+        /// operation that is in progress.
         /// </summary>
         public bool Cancel
         {
@@ -187,7 +187,7 @@ namespace Ionic.Utils.Zip
         public ZipProgressEventType EventType
         {
             get { return _flavor; }
-            set { _flavor= value; }
+            set { _flavor = value; }
         }
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace Ionic.Utils.Zip
         public String ArchiveName
         {
             get { return _archiveName; }
-            set { _archiveName= value; }
+            set { _archiveName = value; }
         }
 
 
@@ -206,7 +206,7 @@ namespace Ionic.Utils.Zip
         public int BytesTransferred
         {
             get { return _bytesTransferred; }
-            set { _bytesTransferred= value; }
+            set { _bytesTransferred = value; }
         }
 
 
@@ -217,7 +217,7 @@ namespace Ionic.Utils.Zip
         public int TotalBytesToTransfer
         {
             get { return _totalBytesToTransfer; }
-            set { _totalBytesToTransfer= value; }
+            set { _totalBytesToTransfer = value; }
         }
     }
 
@@ -229,46 +229,46 @@ namespace Ionic.Utils.Zip
     public class ReadProgressEventArgs : ZipProgressEventArgs
     {
 
-	internal ReadProgressEventArgs() { }
+        internal ReadProgressEventArgs() { }
 
-	private ReadProgressEventArgs(string archiveName, ZipProgressEventType flavor) 
-	    : base(archiveName, flavor) 
-	{ }
+        private ReadProgressEventArgs(string archiveName, ZipProgressEventType flavor)
+            : base(archiveName, flavor)
+        { }
 
         internal static ReadProgressEventArgs Before(string archiveName, int entriesTotal)
-	{
-	    var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_BeforeReadEntry);
-	    x.EntriesTotal= entriesTotal;
-	    return x;
-	}
+        {
+            var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_BeforeReadEntry);
+            x.EntriesTotal = entriesTotal;
+            return x;
+        }
 
-        internal static ReadProgressEventArgs After(string archiveName, string entryName, int entriesTotal)
-	{
-	    var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_AfterReadEntry);
-	    x.EntriesTotal= entriesTotal;
-	    x.NameOfLatestEntry = entryName;
-	    return x;
-	}
+        internal static ReadProgressEventArgs After(string archiveName, ZipEntry entry, int entriesTotal)
+        {
+            var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_AfterReadEntry);
+            x.EntriesTotal = entriesTotal;
+            x.CurrentEntry = entry;
+            return x;
+        }
 
         internal static ReadProgressEventArgs Started(string archiveName)
         {
-	    var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_Started);
-	    return x;
+            var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_Started);
+            return x;
         }
 
-        internal static ReadProgressEventArgs ByteUpdate(string archiveName, string entryName, int bytesXferred, int totalBytes)
+        internal static ReadProgressEventArgs ByteUpdate(string archiveName, ZipEntry entry, int bytesXferred, int totalBytes)
         {
-	    var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_ArchiveBytesRead);
-	    x.NameOfLatestEntry = entryName;
-	    x.BytesTransferred = bytesXferred;
-	    x.TotalBytesToTransfer= totalBytes;
-	    return x;
+            var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_ArchiveBytesRead);
+            x.CurrentEntry = entry;
+            x.BytesTransferred = bytesXferred;
+            x.TotalBytesToTransfer = totalBytes;
+            return x;
         }
 
         internal static ReadProgressEventArgs Completed(string archiveName)
         {
-	    var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_Completed);
-	    return x;
+            var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_Completed);
+            return x;
         }
 
     }
@@ -288,41 +288,41 @@ namespace Ionic.Utils.Zip
         /// <param name="entriesTotal">The total number of entries in the zip archive.</param>
         /// <param name="entriesSaved">Number of entries that have been saved.</param>
         /// <param name="lastEntry">The last entry saved.</param>
-        internal SaveProgressEventArgs(string archiveName, bool before, int entriesTotal, int entriesSaved, string lastEntry) 
-	    : base(archiveName, (before) ? ZipProgressEventType.Saving_BeforeWriteEntry: ZipProgressEventType.Saving_AfterWriteEntry )
+        internal SaveProgressEventArgs(string archiveName, bool before, int entriesTotal, int entriesSaved, ZipEntry entry)
+            : base(archiveName, (before) ? ZipProgressEventType.Saving_BeforeWriteEntry : ZipProgressEventType.Saving_AfterWriteEntry)
         {
-	    this.EntriesTotal= entriesTotal;
-	    this.NameOfLatestEntry= lastEntry;
-	    this._entriesSaved = entriesSaved;
+            this.EntriesTotal = entriesTotal;
+            this.CurrentEntry = entry;
+            this._entriesSaved = entriesSaved;
         }
 
-	internal SaveProgressEventArgs() { }
+        internal SaveProgressEventArgs() { }
 
-	internal SaveProgressEventArgs(string archiveName, ZipProgressEventType flavor) 
-	    : base(archiveName, flavor) 
-	{ }
+        internal SaveProgressEventArgs(string archiveName, ZipProgressEventType flavor)
+            : base(archiveName, flavor)
+        { }
 
 
-        internal static SaveProgressEventArgs ByteUpdate(string archiveName, string entryName, int bytesWritten, int totalBytes)
+        internal static SaveProgressEventArgs ByteUpdate(string archiveName, ZipEntry entry, int bytesWritten, int totalBytes)
         {
-	    var x = new SaveProgressEventArgs(archiveName, ZipProgressEventType.Saving_EntryBytesWritten);
-	    x.ArchiveName= archiveName;
-	    x.NameOfLatestEntry= entryName;
-	    x.BytesTransferred = bytesWritten;
-	    x.TotalBytesToTransfer= totalBytes;
-	    return x;
+            var x = new SaveProgressEventArgs(archiveName, ZipProgressEventType.Saving_EntryBytesWritten);
+            x.ArchiveName = archiveName;
+            x.CurrentEntry = entry;
+            x.BytesTransferred = bytesWritten;
+            x.TotalBytesToTransfer = totalBytes;
+            return x;
         }
 
         internal static SaveProgressEventArgs Started(string archiveName)
         {
-	    var x = new SaveProgressEventArgs(archiveName, ZipProgressEventType.Saving_Started);
-	    return x;
+            var x = new SaveProgressEventArgs(archiveName, ZipProgressEventType.Saving_Started);
+            return x;
         }
 
         internal static SaveProgressEventArgs Completed(string archiveName)
         {
-	    var x = new SaveProgressEventArgs(archiveName, ZipProgressEventType.Saving_Completed);
-	    return x;
+            var x = new SaveProgressEventArgs(archiveName, ZipProgressEventType.Saving_Completed);
+            return x;
         }
 
         /// <summary>
@@ -342,8 +342,8 @@ namespace Ionic.Utils.Zip
     public class ExtractProgressEventArgs : ZipProgressEventArgs
     {
         private int _entriesExtracted;
-	private bool _overwrite;
-	private string _target;
+        private bool _overwrite;
+        private string _target;
 
         /// <summary>
         /// Constructor for the ExtractProgressEventArgs.
@@ -355,80 +355,79 @@ namespace Ionic.Utils.Zip
         /// <param name="lastEntry">The last entry extracted.</param>
         /// <param name="extractLocation">The location to which entries are extracted.</param>
         /// <param name="wantOverwrite">indicates whether the extract operation will overwrite existing files.</param>
-        internal ExtractProgressEventArgs(string archiveName, bool before, int entriesTotal, int entriesExtracted, string lastEntry, string extractLocation, bool wantOverwrite)
-	    : base(archiveName, (before)?ZipProgressEventType.Extracting_BeforeExtractEntry:ZipProgressEventType.Extracting_AfterExtractEntry) 
-
+        internal ExtractProgressEventArgs(string archiveName, bool before, int entriesTotal, int entriesExtracted, ZipEntry entry, string extractLocation, bool wantOverwrite)
+            : base(archiveName, (before) ? ZipProgressEventType.Extracting_BeforeExtractEntry : ZipProgressEventType.Extracting_AfterExtractEntry)
         {
-	    this.EntriesTotal= entriesTotal;
-	    this.NameOfLatestEntry= lastEntry;
-            this._entriesExtracted= entriesExtracted;
-	    this._overwrite= wantOverwrite;
-	    this._target= extractLocation;
+            this.EntriesTotal = entriesTotal;
+            this.CurrentEntry = entry;
+            this._entriesExtracted = entriesExtracted;
+            this._overwrite = wantOverwrite;
+            this._target = extractLocation;
         }
 
-	internal ExtractProgressEventArgs(string archiveName, ZipProgressEventType flavor) 
-	    : base(archiveName, flavor) 
-	{ }
+        internal ExtractProgressEventArgs(string archiveName, ZipProgressEventType flavor)
+            : base(archiveName, flavor)
+        { }
 
-	internal ExtractProgressEventArgs()
-	{ }
+        internal ExtractProgressEventArgs()
+        { }
 
 
-        internal static ExtractProgressEventArgs BeforeExtractEntry(string archiveName, string entryName, string extractLocation, bool wantOverwrite)
+        internal static ExtractProgressEventArgs BeforeExtractEntry(string archiveName, ZipEntry entry, string extractLocation, bool wantOverwrite)
         {
-	    var x = new ExtractProgressEventArgs();
-	    x.ArchiveName= archiveName;
-	    x.EventType= ZipProgressEventType.Extracting_BeforeExtractEntry;
-	    x.NameOfLatestEntry= entryName;
-	    x._target= extractLocation;
-	    x._overwrite= wantOverwrite;
-	    return x;
+            var x = new ExtractProgressEventArgs();
+            x.ArchiveName = archiveName;
+            x.EventType = ZipProgressEventType.Extracting_BeforeExtractEntry;
+            x.CurrentEntry = entry;
+            x._target = extractLocation;
+            x._overwrite = wantOverwrite;
+            return x;
         }
 
-        internal static ExtractProgressEventArgs AfterExtractEntry(string archiveName, string entryName, string extractLocation, bool wantOverwrite)
+        internal static ExtractProgressEventArgs AfterExtractEntry(string archiveName, ZipEntry entry, string extractLocation, bool wantOverwrite)
         {
-	    var x = new ExtractProgressEventArgs();
-	    x.ArchiveName= archiveName;
-	    x.EventType= ZipProgressEventType.Extracting_AfterExtractEntry;
-	    x.NameOfLatestEntry= entryName;
-	    x._target= extractLocation;
-	    x._overwrite= wantOverwrite;
-	    return x;
+            var x = new ExtractProgressEventArgs();
+            x.ArchiveName = archiveName;
+            x.EventType = ZipProgressEventType.Extracting_AfterExtractEntry;
+            x.CurrentEntry = entry;
+            x._target = extractLocation;
+            x._overwrite = wantOverwrite;
+            return x;
         }
 
         internal static ExtractProgressEventArgs ExtractAllStarted(string archiveName, string extractLocation, bool wantOverwrite)
         {
-	    var x = new ExtractProgressEventArgs(archiveName, ZipProgressEventType.Extracting_BeforeExtractAll);
-	    x._overwrite= wantOverwrite;
-	    x._target= extractLocation;
-	    return x;
+            var x = new ExtractProgressEventArgs(archiveName, ZipProgressEventType.Extracting_BeforeExtractAll);
+            x._overwrite = wantOverwrite;
+            x._target = extractLocation;
+            return x;
         }
 
-	internal static ExtractProgressEventArgs ExtractAllCompleted(string archiveName, string extractLocation, bool wantOverwrite)
+        internal static ExtractProgressEventArgs ExtractAllCompleted(string archiveName, string extractLocation, bool wantOverwrite)
         {
-	    var x = new ExtractProgressEventArgs(archiveName, ZipProgressEventType.Extracting_AfterExtractAll);
-	    x._overwrite= wantOverwrite;
-	    x._target= extractLocation;
-	    return x;
+            var x = new ExtractProgressEventArgs(archiveName, ZipProgressEventType.Extracting_AfterExtractAll);
+            x._overwrite = wantOverwrite;
+            x._target = extractLocation;
+            return x;
         }
 
 
-	internal static ExtractProgressEventArgs ByteUpdate(string archiveName, string entryName, int bytesWritten, int totalBytes)
+        internal static ExtractProgressEventArgs ByteUpdate(string archiveName, ZipEntry entry, int bytesWritten, int totalBytes)
         {
-	    var x = new ExtractProgressEventArgs(archiveName, ZipProgressEventType.Extracting_EntryBytesWritten);
-	    x.ArchiveName= archiveName;
-	    x.NameOfLatestEntry= entryName;
-	    x.BytesTransferred = bytesWritten;
-	    x.TotalBytesToTransfer= totalBytes;
-	    return x;
+            var x = new ExtractProgressEventArgs(archiveName, ZipProgressEventType.Extracting_EntryBytesWritten);
+            x.ArchiveName = archiveName;
+            x.CurrentEntry = entry;
+            x.BytesTransferred = bytesWritten;
+            x.TotalBytesToTransfer = totalBytes;
+            return x;
         }
 
 
 
         /// <summary>
         /// Number of entries extracted so far.  This is set only if the 
-	/// EventType is Extracting_BeforeExtractEntry or Extracting_AfterExtractEntry, and 
-	/// the Extract() is occurring witin the scope of a call to ExtractAll().
+        /// EventType is Extracting_BeforeExtractEntry or Extracting_AfterExtractEntry, and 
+        /// the Extract() is occurring witin the scope of a call to ExtractAll().
         /// </summary>
         public int EntriesExtracted
         {

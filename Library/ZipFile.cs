@@ -1,4 +1,3 @@
-
 // ZipFile.cs
 //
 // Copyright (c) 2006, 2007, 2008 Microsoft Corporation.  All rights reserved.
@@ -31,8 +30,7 @@
 // 1. does not do 0..9 compression levels (not supported by DeflateStream)
 // 2. does only PKZIP encryption, which is weak.  No Strong Encryption (yet?)
 // 3. no support for reading or writing multi-disk zip archives
-// 4. no support for double-byte chars in filenames
-// 5. no support for asynchronous operation
+// 4. no support for asynchronous operation
 // 
 // But it does read and write basic zip files, and it gets reasonable compression. 
 //
@@ -2421,11 +2419,11 @@ namespace Ionic.Utils.Zip
                 int n = 0;
                 foreach (ZipEntry e in _entries)
                 {
-                    OnSaveEntry(n, e.FileName, true);
+                    OnSaveEntry(n, e, true);
                     e.Write(WriteStream);
                     e._zipfile = this;
                     n++;
-                    OnSaveEntry(n, e.FileName, false);
+                    OnSaveEntry(n, e, false);
                     if (_saveOperationCanceled)
                         break;
                 }
@@ -2865,13 +2863,13 @@ namespace Ionic.Utils.Zip
         public event EventHandler<SaveProgressEventArgs> SaveProgress;
 
 
-        internal bool OnSaveBlock(string entryName, int bytesWritten, int totalBytesToWrite)
+        internal bool OnSaveBlock(ZipEntry entry, int bytesWritten, int totalBytesToWrite)
         {
             lock (LOCK)
             {
                 if (SaveProgress != null)
                 {
-                    var e =  SaveProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entryName, 
+                    var e =  SaveProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry, 
 							      bytesWritten, totalBytesToWrite);
                     SaveProgress(this, e);
                     if (e.Cancel)
@@ -2881,13 +2879,13 @@ namespace Ionic.Utils.Zip
 	    return _saveOperationCanceled;
         }
 
-        private void OnSaveEntry(int current, string entryName, bool before)
+        private void OnSaveEntry(int current, ZipEntry entry, bool before)
         {
             lock (LOCK)
             {
                 if (SaveProgress != null)
                 {
-                    var e = new SaveProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, entryName);
+                    var e = new SaveProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, entry);
                     SaveProgress(this, e);
                     if (e.Cancel)
                         _saveOperationCanceled = true;
@@ -3014,14 +3012,14 @@ namespace Ionic.Utils.Zip
             }
         }
 
-        internal void OnReadBytes(string entryName)
+        internal void OnReadBytes(ZipEntry entry)
         {
             lock (LOCK)
             {
                 if (ReadProgress != null)
                 {
 		    var e= ReadProgressEventArgs.ByteUpdate(ArchiveNameForEvent, 
-							    entryName,
+							    entry,
 							    (int) ReadStream.Position,
 							    LengthOfReadStream);
                     ReadProgress(this, e);
@@ -3029,7 +3027,7 @@ namespace Ionic.Utils.Zip
             }
         }	
 
-        internal void OnReadEntry(bool before, string entryName)
+        internal void OnReadEntry(bool before, ZipEntry entry)
         {
             lock (LOCK)
             {
@@ -3037,7 +3035,7 @@ namespace Ionic.Utils.Zip
                 {
 		    ReadProgressEventArgs e= (before)
 			? ReadProgressEventArgs.Before(ArchiveNameForEvent, _entries.Count)
-			: ReadProgressEventArgs.After(ArchiveNameForEvent, entryName, _entries.Count);
+			: ReadProgressEventArgs.After(ArchiveNameForEvent, entry, _entries.Count);
                     ReadProgress(this, e);
                 }
             }
@@ -3195,13 +3193,13 @@ namespace Ionic.Utils.Zip
 
 
 
-        private void OnExtractEntry(int current, bool before, string currentEntryName, string path, bool overwrite)
+        private void OnExtractEntry(int current, bool before, ZipEntry  currentEntry, string path, bool overwrite)
         {
             lock (LOCK)
             {
                 if (ExtractProgress != null)
                 {
-                    var e = new ExtractProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, currentEntryName, path, overwrite);
+                    var e = new ExtractProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, currentEntry, path, overwrite);
                     ExtractProgress(this, e);
                     if (e.Cancel)
                         _extractOperationCanceled = true;
@@ -3211,13 +3209,13 @@ namespace Ionic.Utils.Zip
 
 
         // Can be called from within ZipEntry._ExtractOne.
-        internal bool OnExtractBlock(string entryName, int bytesWritten, int totalBytesToWrite)
+        internal bool OnExtractBlock(ZipEntry entry, int bytesWritten, int totalBytesToWrite)
         {
             lock (LOCK)
             {
                 if (ExtractProgress != null)
                 {
-                    var e = ExtractProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entryName, 
+                    var e = ExtractProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry, 
 								bytesWritten, totalBytesToWrite);
                     ExtractProgress(this, e);
                     if (e.Cancel)
@@ -3229,15 +3227,15 @@ namespace Ionic.Utils.Zip
 
 
         // Can be called from within ZipEntry.InternalExtract.
-        internal bool OnSingleEntryExtract(string entryName, string path, bool before, bool overwrite)
+        internal bool OnSingleEntryExtract(ZipEntry entry, string path, bool before, bool overwrite)
         {
             lock (LOCK)
             {
                 if (ExtractProgress != null)
                 {
                     var e = (before)
-            ? ExtractProgressEventArgs.BeforeExtractEntry(ArchiveNameForEvent, entryName, path, overwrite)
-            : ExtractProgressEventArgs.AfterExtractEntry(ArchiveNameForEvent, entryName, path, overwrite);
+            ? ExtractProgressEventArgs.BeforeExtractEntry(ArchiveNameForEvent, entry, path, overwrite)
+            : ExtractProgressEventArgs.AfterExtractEntry(ArchiveNameForEvent, entry, path, overwrite);
                     ExtractProgress(this, e);
                     if (e.Cancel)
                         _extractOperationCanceled = true;
@@ -4321,10 +4319,10 @@ namespace Ionic.Utils.Zip
                             StatusMessageTextWriter.WriteLine("  Comment: {0}", e.Comment);
                     }
                     e.Password = _Password;  // this may be null
-                    OnExtractEntry(n, true, e.FileName, path, wantOverwrite);
+                    OnExtractEntry(n, true, e, path, wantOverwrite);
                     e.Extract(path, wantOverwrite);
                     n++;
-                    OnExtractEntry(n, false, e.FileName, path, wantOverwrite);
+                    OnExtractEntry(n, false, e, path, wantOverwrite);
                     if (_extractOperationCanceled)
                         break;
 
@@ -4740,6 +4738,18 @@ namespace Ionic.Utils.Zip
                 return foo.AsReadOnly();
             }
         }
+
+
+	/// <summary>
+	/// Returns the readonly collection of entries in the Zip archive.
+	/// </summary>
+        public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> Entries
+	{
+	    get
+	    {
+		return _entries.AsReadOnly();
+	    }
+	}
 
 
 

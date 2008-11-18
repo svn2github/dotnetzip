@@ -128,10 +128,10 @@ namespace Ionic.Utils.Zip
                 int n = 0;
                 foreach (ZipEntry e in _entries)
                 {
-                    OnSaveEntry(n, e.FileName, true);
+                    OnSaveEntry(n, e, true);
                     e.Write(outstream);
                     n++;
-                    OnSaveEntry(n, e.FileName, false);
+                    OnSaveEntry(n, e, false);
                     if (_saveOperationCanceled)
                         break;
                 }
@@ -223,7 +223,7 @@ namespace Ionic.Utils.Zip
             }
 
             string TempZipFile = SfxSaveTemporary();
-	    OnSaveEvent(ZipProgressEventType.Saving_AfterSaveTempArchive);
+            OnSaveEvent(ZipProgressEventType.Saving_AfterSaveTempArchive);
 
             if (TempZipFile == null)
                 return; // cancelled
@@ -332,7 +332,7 @@ namespace Ionic.Utils.Zip
             if (cr.Errors.Count != 0)
                 throw new SfxGenerationException("Errors compiling the extraction logic!");
 
-	    OnSaveEvent(ZipProgressEventType.Saving_AfterCompileSelfExtractor);
+            OnSaveEvent(ZipProgressEventType.Saving_AfterCompileSelfExtractor);
 
             try
             {
@@ -344,13 +344,13 @@ namespace Ionic.Utils.Zip
 
                 if (File.Exists(TempZipFile))
                 {
-                    try { File.Delete(TempZipFile);}
+                    try { File.Delete(TempZipFile); }
                     catch { }
                 }
             }
             catch { }
 
-	    OnSaveCompleted();
+            OnSaveCompleted();
 
             if (Verbose) StatusMessageTextWriter.WriteLine("Created self-extracting zip file {0}.", cr.PathToAssembly);
             return;

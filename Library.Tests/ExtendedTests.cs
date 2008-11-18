@@ -670,7 +670,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
             if (e.EventType == ZipProgressEventType.Saving_AfterWriteEntry)
             {
                 _progressEventCalls++;
-                TestContext.WriteLine("{0}: {1} ({2}/{3})", e.EventType.ToString(), e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal);
+                TestContext.WriteLine("{0}: {1} ({2}/{3})", e.EventType.ToString(), e.CurrentEntry.FileName, e.EntriesSaved, e.EntriesTotal);
                 if (_cancelIndex == _progressEventCalls)
                 {
                     e.Cancel = true;
@@ -685,7 +685,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
             if (e.EventType == ZipProgressEventType.Extracting_AfterExtractEntry)
             {
                 _progressEventCalls++;
-                TestContext.WriteLine("Extracted: {0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesExtracted, e.EntriesTotal);
+                TestContext.WriteLine("Extracted: {0} ({1}/{2})", e.CurrentEntry.FileName, e.EntriesExtracted, e.EntriesTotal);
                 if (_cancelIndex == _progressEventCalls)
                 {
                     e.Cancel = true;

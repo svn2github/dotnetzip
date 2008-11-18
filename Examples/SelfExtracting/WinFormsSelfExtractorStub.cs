@@ -11,34 +11,37 @@
         //const string IdString = "DotNetZip Self Extractor, see http://www.codeplex.com/DotNetZip";
         const string DllResourceName = "Ionic.Utils.Zip.dll";
 
-
+        delegate void ExtractEntryProgress(ExtractProgressEventArgs e);
 
         public WinFormsSelfExtractorStub()
         {
             InitializeComponent();
-            txtExtractDirectory.Text = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            _setCancel = true;
+
+            txtExtractDirectory.Text =
+                System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal),
+                ZipName);
 
             try
             {
-                
-                    if ((zip.Comment != null) && (zip.Comment != ""))
-                    {
-                        txtComment.Text = zip.Comment;
-                    }
-                    else
-                    {
-                        //label2.Text = "";
-                        //txtComment.Text = "";
-                        label2.Visible= false;
-                        txtComment.Visible = false;
-                        this.Size = new System.Drawing.Size(this.Width, this.Height - 113);
-                    }
-                
+                if ((zip.Comment != null) && (zip.Comment != ""))
+                {
+                    txtComment.Text = zip.Comment;
+                }
+                else
+                {
+                    //label2.Text = "";
+                    //txtComment.Text = "";
+                    label2.Visible = false;
+                    txtComment.Visible = false;
+                    this.Size = new System.Drawing.Size(this.Width, this.Height - 113);
+                }
+
             }
             catch
             {
                 label2.Visible = false;
-                txtComment.Visible= false;
+                txtComment.Visible = false;
                 this.Size = new System.Drawing.Size(this.Width, this.Height - 113);
             }
         }
@@ -95,25 +98,86 @@
 
         private void btnExtract_Click(object sender, EventArgs e)
         {
+            KickoffExtract();
+        }
+
+
+        private void KickoffExtract()
+        {
+            // disable most of the UI: 
+            this.btnContents.Enabled = false;
+            this.btnExtract.Enabled = false;
+            this.chk_OpenExplorer.Enabled = false;
+            this.chk_Overwrite.Enabled = false;
+            this.txtExtractDirectory.Enabled = false;
+            this.btnDirBrowse.Enabled = false;
+            this.btnExtract.Text = "Extracting...";
+            System.Threading.Thread _workerThread = new System.Threading.Thread(this.DoExtract);
+            _workerThread.Name = "Zip Extractor thread";
+            _workerThread.Start(null);
+            this.Cursor = Cursors.WaitCursor;
+        }
+
+
+        private void DoExtract(Object p)
+        {
             string targetDirectory = txtExtractDirectory.Text;
             bool WantOverwrite = chk_Overwrite.Checked;
             bool extractCancelled = false;
+            _setCancel = false;
             string currentPassword = "";
+            SetProgressBars();
 
             try
             {
+                zip.ExtractProgress += ExtractProgress;
+                foreach (global::Ionic.Utils.Zip.ZipEntry entry in zip)
+                {
+                    if (_setCancel) { extractCancelled = true; break; }
+                    if (entry.Encryption == global::Ionic.Utils.Zip.EncryptionAlgorithm.None)
+                        try
+                        {
+                            entry.Extract(targetDirectory, WantOverwrite);
+                        }
+                        catch (Exception ex1)
+                        {
+                            DialogResult result = MessageBox.Show(String.Format("Failed to extract entry {0} -- {1}", entry.FileName, ex1.Message.ToString()),
+                                 String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
 
-                    foreach (global::Ionic.Utils.Zip.ZipEntry entry in zip)
+                            if (result == DialogResult.Cancel)
+                            {
+                                extractCancelled = true;
+                                break;
+                            }
+                        }
+                    else
                     {
-                        if (entry.Encryption == global::Ionic.Utils.Zip.EncryptionAlgorithm.None)
+                        if (currentPassword == "")
+                        {
+                            do
+                            {
+                                currentPassword = PromptForPassword(entry.FileName);
+                            }
+                            while (currentPassword == "");
+                        }
+
+                        if (currentPassword == null)
+                        {
+                            extractCancelled = true;
+                            currentPassword = "";
+                            break;
+                        }
+                        else
+                        {
                             try
                             {
-                                entry.Extract(targetDirectory, WantOverwrite);
+                                entry.ExtractWithPassword(targetDirectory, WantOverwrite, currentPassword);
                             }
-                            catch (Exception ex1)
+                            catch (Exception ex2)
                             {
-                                DialogResult result = MessageBox.Show(String.Format("Failed to extract entry {0} -- {1}", entry.FileName, ex1.Message.ToString()),
-                                     String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+                                // TODO: probably want a retry here in the case of bad password.
+                                DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
+                                    String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
 
                                 if (result == DialogResult.Cancel)
                                 {
@@ -121,45 +185,10 @@
                                     break;
                                 }
                             }
-                        else
-                        {
-                            if (currentPassword == "")
-                            {
-                                do
-                                {
-                                    currentPassword = PromptForPassword(entry.FileName);
-                                }
-                                while (currentPassword == "");
-                            }
-
-                            if (currentPassword == null)
-                            {
-                                extractCancelled = true;
-                                currentPassword = "";
-                                break;
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    entry.ExtractWithPassword(targetDirectory, WantOverwrite, currentPassword);
-                                }
-                                catch (Exception ex2)
-                                {
-                                    // TODO: probably want a retry here in the case of bad password.
-                                    DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
-                                        String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-
-                                    if (result == DialogResult.Cancel)
-                                    {
-                                        extractCancelled = true;
-                                        break;
-                                    }
-                                }
-                            }
                         }
                     }
-                
+                }
+
             }
             catch (Exception)
             {
@@ -168,11 +197,10 @@
                 Application.Exit();
             }
 
-            if (extractCancelled) return;
 
-            btnExtract.Text = "Extracted.";
-            btnExtract.Enabled = false;
-            btnCancel.Text = "Quit";
+            SetUiDone();
+
+            if (extractCancelled) return;
 
             if (chk_OpenExplorer.Checked)
             {
@@ -185,7 +213,104 @@
                 catch { }
             }
             //Application.Exit();
+        }
 
+        private void SetUiDone()
+        {
+            if (this.btnExtract.InvokeRequired)
+            {
+                this.btnExtract.Invoke(new MethodInvoker(this.SetUiDone));
+            }
+            else
+            {
+                this.lblStatus.Text = "Done.";
+                btnExtract.Text = "Extracted.";
+                btnExtract.Enabled = false;
+                btnCancel.Text = "Quit";
+                _setCancel = true;
+                this.Cursor = Cursors.Default;
+            }
+        }
+
+        private void ExtractProgress(object sender, ExtractProgressEventArgs e)
+        {
+            if (e.EventType == ZipProgressEventType.Extracting_EntryBytesWritten)
+            {
+                StepEntryProgress(e);
+            }
+
+            else if (e.EventType == ZipProgressEventType.Extracting_AfterExtractEntry)
+            {
+                StepArchiveProgress(e);
+            }
+            if (_setCancel)
+                e.Cancel = true;
+        }
+
+        private void StepArchiveProgress(ExtractProgressEventArgs e)
+        {
+            if (this.progressBar1.InvokeRequired)
+            {
+                this.progressBar2.Invoke(new ExtractEntryProgress(this.StepArchiveProgress), new object[] { e });
+            }
+            else
+            {
+                this.progressBar1.PerformStep();
+
+                // reset the progress bar for the entry:
+                this.progressBar2.Value = this.progressBar2.Maximum = 1;
+                this.lblStatus.Text = "";
+                this.Update();
+            }
+        }
+
+        private void StepEntryProgress(ExtractProgressEventArgs e)
+        {
+            if (this.progressBar2.InvokeRequired)
+            {
+                this.progressBar2.Invoke(new ExtractEntryProgress(this.StepEntryProgress), new object[] { e });
+            }
+            else
+            {
+                if (this.progressBar2.Maximum == 1)
+                {
+                    this.progressBar2.Maximum = e.TotalBytesToTransfer;
+                    this.lblStatus.Text = String.Format("Extracting {0}/{1}: {2} ...",
+                        this.progressBar1.Value, zip.Entries.Count, e.CurrentEntry.FileName);
+                }
+
+                this.progressBar2.Value = (e.BytesTransferred >= this.progressBar2.Maximum)
+                    ? this.progressBar2.Maximum
+                    : e.BytesTransferred;
+                this.Update();
+            }
+        }
+
+        private void SetProgressBars()
+        {
+            if (this.progressBar1.InvokeRequired)
+            {
+                this.progressBar1.Invoke(new MethodInvoker(this.SetProgressBars));
+            }
+            else
+            {
+                this.progressBar1.Value = 0;
+                this.progressBar1.Maximum = zip.Entries.Count;
+                this.progressBar1.Minimum = 0;
+                this.progressBar1.Step = 1;
+                this.progressBar2.Value = 0;
+                this.progressBar2.Minimum = 0;
+                this.progressBar2.Maximum = 1; // will be set later, for each entry.
+                this.progressBar2.Step = 1;
+            }
+        }
+
+        private String ZipName
+        {
+            get
+            {
+               return System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
+            }
         }
 
         private Stream ZipStream
@@ -204,7 +329,7 @@
                 {
                     if ((name != DllResourceName) && (name.EndsWith(".zip")))
                     {
-                        _s = a.GetManifestResourceStream(name);
+                        _s = a.GetManifestResourceStream(name);                        
                         break;
                     }
                 }
@@ -239,10 +364,13 @@
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            if (_setCancel == false)
+                _setCancel = true;
+            else
+                Application.Exit();
         }
 
-	// workitem 6413
+        // workitem 6413
         private void btnContents_Click(object sender, EventArgs e)
         {
             ZipContentsDialog dlg1 = new ZipContentsDialog();
@@ -252,6 +380,7 @@
         }
 
 
+        bool _setCancel;
         Stream _s;
         global::Ionic.Utils.Zip.ZipFile _zip;
 

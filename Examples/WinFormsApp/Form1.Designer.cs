@@ -45,6 +45,7 @@
             this.radioTraditionalZip = new System.Windows.Forms.RadioButton();
             this.radioSfxGui = new System.Windows.Forms.RadioButton();
             this.radioSfxCmd = new System.Windows.Forms.RadioButton();
+            this.progressBar2 = new System.Windows.Forms.ProgressBar();
             this.SuspendLayout();
             // 
             // label1
@@ -76,39 +77,39 @@
             this.btnDirBrowse.TabIndex = 2;
             this.btnDirBrowse.Text = "...";
             this.btnDirBrowse.UseVisualStyleBackColor = true;
-            this.btnDirBrowse.Click += new System.EventHandler(this.button1_Click);
+            this.btnDirBrowse.Click += new System.EventHandler(this.btnDirBrowse_Click);
             // 
             // btnOk
             // 
             this.btnOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOk.Location = new System.Drawing.Point(509, 227);
+            this.btnOk.Location = new System.Drawing.Point(509, 223);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(101, 29);
             this.btnOk.TabIndex = 3;
             this.btnOk.Text = "Zip It!";
             this.btnOk.UseVisualStyleBackColor = true;
-            this.btnOk.Click += new System.EventHandler(this.button2_Click);
+            this.btnOk.Click += new System.EventHandler(this.btnZipup_Click);
             // 
             // progressBar1
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(12, 262);
+            this.progressBar1.Location = new System.Drawing.Point(12, 259);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(597, 23);
+            this.progressBar1.Size = new System.Drawing.Size(597, 14);
             this.progressBar1.TabIndex = 4;
             // 
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.Enabled = false;
-            this.btnCancel.Location = new System.Drawing.Point(509, 291);
+            this.btnCancel.Location = new System.Drawing.Point(509, 300);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(101, 29);
             this.btnCancel.TabIndex = 5;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
-            this.btnCancel.Click += new System.EventHandler(this.button3_Click);
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // tbZipName
             // 
@@ -134,7 +135,7 @@
             // 
             this.lblStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(20, 294);
+            this.lblStatus.Location = new System.Drawing.Point(12, 300);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(0, 13);
             this.lblStatus.TabIndex = 8;
@@ -166,7 +167,7 @@
             this.tbComment.Location = new System.Drawing.Point(99, 133);
             this.tbComment.Multiline = true;
             this.tbComment.Name = "tbComment";
-            this.tbComment.Size = new System.Drawing.Size(510, 88);
+            this.tbComment.Size = new System.Drawing.Size(510, 84);
             this.tbComment.TabIndex = 13;
             this.tbComment.Text = "-zip file comment here-";
             this.tbComment.Leave += new System.EventHandler(this.tbComment_Leave);
@@ -217,12 +218,22 @@
             this.radioSfxCmd.UseVisualStyleBackColor = true;
             this.radioSfxCmd.CheckedChanged += new System.EventHandler(this.radioSfx_CheckedChanged);
             // 
+            // progressBar2
+            // 
+            this.progressBar2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar2.Location = new System.Drawing.Point(12, 279);
+            this.progressBar2.Name = "progressBar2";
+            this.progressBar2.Size = new System.Drawing.Size(597, 14);
+            this.progressBar2.TabIndex = 17;
+            // 
             // Form1
             // 
             this.AcceptButton = this.btnOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(621, 330);
+            this.ClientSize = new System.Drawing.Size(621, 339);
+            this.Controls.Add(this.progressBar2);
             this.Controls.Add(this.radioSfxCmd);
             this.Controls.Add(this.radioSfxGui);
             this.Controls.Add(this.radioTraditionalZip);
@@ -241,7 +252,7 @@
             this.Controls.Add(this.label1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
-            this.Text = "DotNetZip's WinForms Zip Creator";
+            this.Text = "DotNetZip\'s WinForms Zip Creator";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -266,6 +277,7 @@
         private System.Windows.Forms.RadioButton radioTraditionalZip;
         private System.Windows.Forms.RadioButton radioSfxGui;
         private System.Windows.Forms.RadioButton radioSfxCmd;
+        private System.Windows.Forms.ProgressBar progressBar2;
     }
 }
 

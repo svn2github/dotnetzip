@@ -8,7 +8,8 @@ namespace WinFormsExample
 {
     public partial class Form1 : Form
     {
-        delegate void SaveCompleted(object sender, SaveProgressEventArgs e);
+        delegate void SaveEntryProgress(SaveProgressEventArgs e);
+        delegate void ButtonClick(object sender, EventArgs e);
 
         public Form1()
         {
@@ -57,6 +58,7 @@ namespace WinFormsExample
         private void KickoffZipup()
         {
             _folderName = tbDirName.Text;
+
             if (_folderName == null || _folderName == "") return;
             if (this.tbZipName.Text == null || this.tbZipName.Text == "") return;
 
@@ -70,6 +72,8 @@ namespace WinFormsExample
 
             _saveCanceled = false;
             _nFilesCompleted = 0;
+            _totalBytesAfterCompress = 0;
+            _totalBytesBeforeCompress = 0;
             this.btnOk.Enabled = false;
             this.btnOk.Text = "Zipping...";
             this.btnCancel.Enabled = true;
@@ -79,7 +83,7 @@ namespace WinFormsExample
             {
                 ZipName = this.tbZipName.Text,
                 Folder = _folderName,
-		    Encoding = "ibm437"
+                Encoding = "ibm437"
             };
 
             if (this.comboBox1.SelectedIndex != 0)
@@ -87,11 +91,10 @@ namespace WinFormsExample
                 options.Encoding = this.comboBox1.SelectedItem.ToString();
             }
 
-
-	    options.Comment = String.Format("Encoding {0}\r\nCreated at {1} || {2}\r\n",
-				    options.Encoding,
-				    System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss"), 
-				    this.Text);
+            options.Comment = String.Format("Encoding {0}\r\nCreated at {1} || {2}\r\n",
+                        options.Encoding,
+                        System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss"),
+                        this.Text);
 
             if (this.tbComment.Text != TB_COMMENT_NOTE)
                 options.Comment += this.tbComment.Text;
@@ -137,11 +140,11 @@ namespace WinFormsExample
             }
         }
 
-        private void SetProgressBar()
+        private void SetProgressBars()
         {
             if (this.progressBar1.InvokeRequired)
             {
-                this.progressBar1.Invoke(new MethodInvoker(this.SetProgressBar));
+                this.progressBar1.Invoke(new MethodInvoker(this.SetProgressBars));
             }
             else
             {
@@ -149,28 +152,40 @@ namespace WinFormsExample
                 this.progressBar1.Maximum = _entriesToZip;
                 this.progressBar1.Minimum = 0;
                 this.progressBar1.Step = 1;
+                this.progressBar2.Value = 0;
+                this.progressBar2.Minimum = 0;
+                this.progressBar2.Maximum = 1; // will be set later, for each entry.
+                this.progressBar2.Step = 1;
             }
         }
+
 
         private void DoSave(Object p)
         {
             WorkerOptions options = p as WorkerOptions;
-
-            using (var zip1 = new ZipFile())
+            try
             {
-                zip1.ProvisionalAlternateEncoding = System.Text.Encoding.GetEncoding(options.Encoding);
-                zip1.Comment = options.Comment;
-                zip1.AddDirectory(options.Folder);
-                _entriesToZip = zip1.EntryFileNames.Count;
-                SetProgressBar();
-                zip1.SaveProgress += this.zip1_SaveProgress;
-                zip1.SaveProgress += this.zip1_SaveCompleted;
-                if (options.ZipFlavor == 1)
-                    zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.WinFormsApplication);
-                else if (options.ZipFlavor == 2)
-                    zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.ConsoleApplication);
-                else
-                    zip1.Save(options.ZipName);
+                using (var zip1 = new ZipFile())
+                {
+                    zip1.ProvisionalAlternateEncoding = System.Text.Encoding.GetEncoding(options.Encoding);
+                    zip1.Comment = options.Comment;
+                    zip1.AddDirectory(options.Folder);
+                    _entriesToZip = zip1.EntryFileNames.Count;
+                    SetProgressBars();
+                    zip1.SaveProgress += this.zip1_SaveProgress;
+
+                    if (options.ZipFlavor == 1)
+                        zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.WinFormsApplication);
+                    else if (options.ZipFlavor == 2)
+                        zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.ConsoleApplication);
+                    else
+                        zip1.Save(options.ZipName);
+                }
+            }
+            catch (System.Exception exc1)
+            {
+                MessageBox.Show(String.Format("Exception while zipping: {0}", exc1.Message));
+                btnCancel_Click(null, null);
             }
         }
 
@@ -178,32 +193,84 @@ namespace WinFormsExample
 
         void zip1_SaveProgress(object sender, SaveProgressEventArgs e)
         {
-            if (e.EventType == ZipProgressEventType.Saving_BeforeWriteEntry)
+            switch (e.EventType)
             {
-                StepProgress();
-                if (_saveCanceled)
-                    e.Cancel = true;
+                case ZipProgressEventType.Saving_AfterWriteEntry:
+                    StepArchiveProgress(e);
+                    break;
+                case ZipProgressEventType.Saving_EntryBytesWritten:
+                    StepEntryProgress(e);
+                    break;
+                case ZipProgressEventType.Saving_Completed:
+                    SaveCompleted();
+                    break;
+                case ZipProgressEventType.Saving_AfterSaveTempArchive:
+                    TempArchiveSaved();
+                    break;
+            }
+            if (_saveCanceled)
+                e.Cancel = true;
+        }
+
+        private void TempArchiveSaved()
+        {
+            if (this.lblStatus.InvokeRequired)
+            {
+                this.lblStatus.Invoke(new MethodInvoker(this.TempArchiveSaved));
+            }
+            else
+            {
+                lblStatus.Text = (this.radioSfxCmd.Checked || this.radioSfxGui.Checked)
+                    ? "Temp archive saved...compiling SFX..."
+                    : "Temp archive saved...";
             }
         }
 
 
-        private void StepProgress()
+
+        private void SaveCompleted()
+        {
+            if (this.lblStatus.InvokeRequired)
+            {
+                this.lblStatus.Invoke(new MethodInvoker(this.SaveCompleted));
+            }
+            else
+            {
+                lblStatus.Text = String.Format("Done, Compressed {0} files, {1:N0}% of original.",
+                    _nFilesCompleted, (100.00 * _totalBytesAfterCompress) /_totalBytesBeforeCompress);
+                
+                ResetState();
+            }
+        }
+
+
+
+        private void StepArchiveProgress(SaveProgressEventArgs e)
         {
             if (this.progressBar1.InvokeRequired)
             {
-                this.progressBar1.Invoke(new MethodInvoker(this.StepProgress));
+                this.progressBar1.Invoke(new SaveEntryProgress(this.StepArchiveProgress), new object[] { e });
             }
             else
             {
                 if (!_saveCanceled)
                 {
                     _nFilesCompleted++;
-                    lblStatus.Text = String.Format("{0} of {1} files...", _nFilesCompleted, _entriesToZip);
                     this.progressBar1.PerformStep();
+                    _totalBytesAfterCompress += e.CurrentEntry.CompressedSize;
+                    _totalBytesBeforeCompress += e.CurrentEntry.UncompressedSize;
 
-                    // Sleep here just to show the progress bar, when the number of files is small. 
-                    // You probably don't want this for actual use!
-                    if (_entriesToZip < 10)
+                    // reset the progress bar for the entry:
+                    this.progressBar2.Value = this.progressBar2.Maximum = 1;
+
+                    this.Update();
+
+                    // Sleep here just to show the progress bar, when the number of files is small,
+                    // or when all done. 
+                    // You may not want this for actual use!
+                    if (this.progressBar2.Value == this.progressBar2.Maximum)
+                        Thread.Sleep(350);
+                    else if (_entriesToZip < 10)
                         Thread.Sleep(350);
                     else if (_entriesToZip < 20)
                         Thread.Sleep(200);
@@ -213,6 +280,32 @@ namespace WinFormsExample
                         Thread.Sleep(80);
                     else if (_entriesToZip < 75)
                         Thread.Sleep(40);
+                    // more than 75 entries, don't sleep at all.
+                }
+            }
+        }
+
+
+        private void StepEntryProgress(SaveProgressEventArgs e)
+        {
+            if (this.progressBar2.InvokeRequired)
+            {
+                this.progressBar2.Invoke(new SaveEntryProgress(this.StepEntryProgress), new object[] { e });
+            }
+            else
+            {
+                if (!_saveCanceled)
+                {
+                    if (this.progressBar2.Maximum == 1)
+                    {
+                        this.progressBar2.Maximum = e.TotalBytesToTransfer;
+                        lblStatus.Text = String.Format("{0} of {1} files...({2})", 
+                            _nFilesCompleted + 1, _entriesToZip, e.CurrentEntry.FileName);
+                    }
+
+                    this.progressBar2.Value = (e.BytesTransferred >= this.progressBar2.Maximum)
+                        ? this.progressBar2.Maximum
+                        : e.BytesTransferred;
 
                     this.Update();
                 }
@@ -221,7 +314,7 @@ namespace WinFormsExample
 
 
 
-        private void button1_Click(object sender, EventArgs e)
+        private void btnDirBrowse_Click(object sender, EventArgs e)
         {
             _folderName = tbDirName.Text;
             // Configure open file dialog box
@@ -240,16 +333,23 @@ namespace WinFormsExample
         }
 
 
-        private void button2_Click(object sender, EventArgs e)
+        private void btnZipup_Click(object sender, EventArgs e)
         {
             KickoffZipup();
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private void btnCancel_Click(object sender, EventArgs e)
         {
-            _saveCanceled = true;
-            lblStatus.Text = "Canceled...";
-            ResetState();
+            if (this.lblStatus.InvokeRequired)
+            {
+                this.lblStatus.Invoke(new ButtonClick(this.btnCancel_Click), new object[] { sender, e });
+            }
+            else
+            {
+                _saveCanceled = true;
+                lblStatus.Text = "Canceled...";
+                ResetState();
+            }
         }
 
         private void radioSfx_CheckedChanged(object sender, EventArgs e)
@@ -289,7 +389,7 @@ namespace WinFormsExample
                     this.SelectNamedEncoding(_mostRecentEncoding);
                     _mostRecentEncoding = null;
                 }
-                
+
                 // intelligently change the name of the thing to create
                 if (this.tbZipName.Text.ToUpper().EndsWith(".EXE"))
                 {
@@ -305,25 +405,10 @@ namespace WinFormsExample
             this.btnOk.Enabled = true;
             this.btnOk.Text = "Zip it!";
             this.progressBar1.Value = 0;
+            this.progressBar2.Value = 0;
             this.Cursor = Cursors.Default;
             if (!_workerThread.IsAlive)
                 _workerThread.Join();
-        }
-
-        void zip1_SaveCompleted(object sender, SaveProgressEventArgs e)
-        {
-            if (e.EventType == ZipProgressEventType.Saving_Completed)
-            {
-                if (this.btnCancel.InvokeRequired)
-                {
-                    this.btnCancel.Invoke(new SaveCompleted(this.zip1_SaveCompleted), new object[] { sender, e });
-                }
-                else
-                {
-                    lblStatus.Text += "...Done.";
-                    ResetState();
-                }
-            }
         }
 
 
@@ -423,6 +508,8 @@ namespace WinFormsExample
         private int _entriesToZip;
         private bool _saveCanceled;
         private int _nFilesCompleted;
+        private int _totalBytesBeforeCompress;
+        private int _totalBytesAfterCompress;
         private Thread _workerThread;
         private static string TB_COMMENT_NOTE = "-zip file comment here-";
         private List<String> _EncodingNames;
