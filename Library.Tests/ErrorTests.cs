@@ -137,7 +137,7 @@ namespace Ionic.Utils.Zip.Tests.Error
 
 
         [TestMethod]
-        [ExpectedException(typeof(System.IO.IOException))]
+        [ExpectedException(typeof(Ionic.Utils.Zip.ZipException))]
         public void Error_Extract_ExistingFileWithoutOverwrite()
         {
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "ExtractWithoutOverwrite.zip");

@@ -287,7 +287,7 @@ namespace Ionic.Utils.Zip
         /// <param name="before">whether this is before saving the entry, or after</param>
         /// <param name="entriesTotal">The total number of entries in the zip archive.</param>
         /// <param name="entriesSaved">Number of entries that have been saved.</param>
-        /// <param name="lastEntry">The last entry saved.</param>
+        /// <param name="entry">The entry involved in the event.</param>
         internal SaveProgressEventArgs(string archiveName, bool before, int entriesTotal, int entriesSaved, ZipEntry entry)
             : base(archiveName, (before) ? ZipProgressEventType.Saving_BeforeWriteEntry : ZipProgressEventType.Saving_AfterWriteEntry)
         {
@@ -352,7 +352,7 @@ namespace Ionic.Utils.Zip
         /// <param name="before">whether this is before saving the entry, or after</param>
         /// <param name="entriesTotal">The total number of entries in the zip archive.</param>
         /// <param name="entriesExtracted">Number of entries that have been extracted.</param>
-        /// <param name="lastEntry">The last entry extracted.</param>
+        /// <param name="entry">The entry involved in the event.</param>
         /// <param name="extractLocation">The location to which entries are extracted.</param>
         /// <param name="wantOverwrite">indicates whether the extract operation will overwrite existing files.</param>
         internal ExtractProgressEventArgs(string archiveName, bool before, int entriesTotal, int entriesExtracted, ZipEntry entry, string extractLocation, bool wantOverwrite)

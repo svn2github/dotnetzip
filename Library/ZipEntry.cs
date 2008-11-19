@@ -684,8 +684,8 @@ namespace Ionic.Utils.Zip
 
             // if the UTF8 bit is set for this entry, we override the encoding the application requested.
             ze._actualEncoding = ((ze._BitField & 0x0800) == 0x0800)
-        ? System.Text.Encoding.UTF8
-        : defaultEncoding;
+                ? System.Text.Encoding.UTF8
+                : defaultEncoding;
 
             ze._FileNameInArchive = ze._actualEncoding.GetString(block);
 
@@ -698,9 +698,10 @@ namespace Ionic.Utils.Zip
                 n = ze.ArchiveStream.Read(ze._Extra, 0, ze._Extra.Length);
                 bytesRead += n;
             }
-
+            
+	    // workitem 6607 - don't read for directories
             // actually get the compressed size and CRC if necessary
-            if ((ze._BitField & 0x0008) == 0x0008)
+            if (!ze._LocalFileName.EndsWith("/") && (ze._BitField & 0x0008) == 0x0008)
             {
                 // This descriptor exists only if bit 3 of the general
                 // purpose bit flag is set (see below).  It is byte aligned
@@ -838,8 +839,9 @@ namespace Ionic.Utils.Zip
             // seek past the data without reading it. We will read on Extract()
             s.Seek(entry._CompressedFileDataSize, System.IO.SeekOrigin.Current);
 
+	    // workitem 6607 - don't seek for directories
             // finally, seek past the (already read) Data descriptor if necessary
-            if ((entry._BitField & 0x0008) == 0x0008)
+            if (((entry._BitField & 0x0008) == 0x0008) && !entry.FileName.EndsWith("/"))
             {
                 s.Seek(16, System.IO.SeekOrigin.Current);
             }

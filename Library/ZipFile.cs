@@ -2696,81 +2696,81 @@ namespace Ionic.Utils.Zip
         /// </summary>
         ///
         /// <remarks>
-	/// <para>
-	/// Depending on the particular event, different properties on the
-	/// SaveProgressEventArgs parameter are set.  The following table 
-	/// summarizes the available EventTypes and the conditions under which this 
-	/// event handler is invoked with a SaveProgressEventArgs with the given EventType.
-	/// </para>
-	/// 
-	/// <list type="table">
-	/// <listheader>
-	/// <term>value of EntryType</term>
-	/// <description>Meaning and conditions</description>
-	/// </listheader>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Saving_Started</term>
-	/// <description>Set when ZipFile.Save() begins. 
+        /// <para>
+        /// Depending on the particular event, different properties on the
+        /// SaveProgressEventArgs parameter are set.  The following table 
+        /// summarizes the available EventTypes and the conditions under which this 
+        /// event handler is invoked with a SaveProgressEventArgs with the given EventType.
+        /// </para>
+        /// 
+        /// <list type="table">
+        /// <listheader>
+        /// <term>value of EntryType</term>
+        /// <description>Meaning and conditions</description>
+        /// </listheader>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Saving_Started</term>
+        /// <description>Set when ZipFile.Save() begins. 
         /// </description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Saving_BeforeSaveEntry</term>
-	/// <description>Set within ZipFile.Save(), just before writing data for each particular entry. 
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Saving_BeforeSaveEntry</term>
+        /// <description>Set within ZipFile.Save(), just before writing data for each particular entry. 
         /// </description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Saving_AfterSaveEntry</term>
-	/// <description>Set within ZipFile.Save(), just after having finished writing data for each 
-	/// particular entry. 
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Saving_AfterSaveEntry</term>
+        /// <description>Set within ZipFile.Save(), just after having finished writing data for each 
+        /// particular entry. 
         /// </description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Saving_Completed</term>
-	/// <description>Set when ZipFile.Save() has completed. 
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Saving_Completed</term>
+        /// <description>Set when ZipFile.Save() has completed. 
         /// </description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Saving_AfterSaveTempArchive</term>
-	/// <description>Set after the temporary file has been created.  This happens only
-	/// when saving to a disk file.  This event will not be invoked when saving to a stream.
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Saving_AfterSaveTempArchive</term>
+        /// <description>Set after the temporary file has been created.  This happens only
+        /// when saving to a disk file.  This event will not be invoked when saving to a stream.
         /// </description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Saving_BeforeRenameTempArchive</term>
-	/// <description>Set just before renaming the temporary file to the permanent location.  This 
-	/// happens only when saving to a disk file.  This event will not be invoked when saving to a stream.
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Saving_BeforeRenameTempArchive</term>
+        /// <description>Set just before renaming the temporary file to the permanent location.  This 
+        /// happens only when saving to a disk file.  This event will not be invoked when saving to a stream.
         /// </description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Saving_AfterRenameTempArchive</term>
-	/// <description>Set just after renaming the temporary file to the permanent location.  This 
-	/// happens only when saving to a disk file.  This event will not be invoked when saving to a stream.
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Saving_AfterRenameTempArchive</term>
+        /// <description>Set just after renaming the temporary file to the permanent location.  This 
+        /// happens only when saving to a disk file.  This event will not be invoked when saving to a stream.
         /// </description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Saving_AfterCompileSelfExtractor</term>
-	/// <description>Set after a self-extracting archive has finished compiling. 
-	/// This EventType is used only within SaveSelfExtractor().
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Saving_AfterCompileSelfExtractor</term>
+        /// <description>Set after a self-extracting archive has finished compiling. 
+        /// This EventType is used only within SaveSelfExtractor().
         /// </description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Saving_BytesWritten</term>
-	/// <description>Set during the save of a particular entry, to update progress of the Save(). 
-	/// When this EventType is set, the BytesWritten is the number of bytes written to the 
-	/// compressed stream.  The TotalBytesToWrite is the number of bytes in the uncompressed file.
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Saving_BytesWritten</term>
+        /// <description>Set during the save of a particular entry, to update progress of the Save(). 
+        /// When this EventType is set, the BytesWritten is the number of bytes written to the 
+        /// compressed stream.  The TotalBytesToWrite is the number of bytes in the uncompressed file.
         /// </description>
-	/// </item>
-	/// 
-	/// </list>
+        /// </item>
+        /// 
+        /// </list>
         /// </remarks>
         ///
         /// <example>
@@ -2835,26 +2835,26 @@ namespace Ionic.Utils.Zip
         /// Public Shared Sub MySaveProgress(ByVal sender As Object, ByVal e As SaveProgressEventArgs)
         ///     If (e.EventType Is ZipProgressEventType.Saving_Started) Then
         ///         Console.WriteLine("Saving: {0}", e.ArchiveName)
-	/// 
+        /// 
         ///     ElseIf (e.EventType Is ZipProgressEventType.Saving_Completed) Then
         ///         CreateLargeZip.justHadByteUpdate = False
         ///         Console.WriteLine
         ///         Console.WriteLine("Done: {0}", e.ArchiveName)
-	/// 
+        /// 
         ///     ElseIf (e.EventType Is ZipProgressEventType.Saving_BeforeWriteEntry) Then
         ///         If CreateLargeZip.justHadByteUpdate Then
         ///             Console.WriteLine
         ///         End If
         ///         Console.WriteLine("  Writing: {0} ({1}/{2})", e.NameOfLatestEntry, e.EntriesSaved, e.EntriesTotal)
         ///         CreateLargeZip.justHadByteUpdate = False
-	/// 
+        /// 
         ///     ElseIf (e.EventType Is ZipProgressEventType.Saving_EntryBytesWritten) Then
         ///         If CreateLargeZip.justHadByteUpdate Then
         ///             Console.SetCursorPosition(0, Console.CursorTop)
         ///         End If
         ///         Console.Write("     {0}/{1} ({2:N0}%)", e.BytesWritten, _
-	///                       e.TotalBytesToWrite, _
-	///                       (CDbl(e.BytesWritten) / (0.01 * e.TotalBytesToWrite)))
+        ///                       e.TotalBytesToWrite, _
+        ///                       (CDbl(e.BytesWritten) / (0.01 * e.TotalBytesToWrite)))
         ///         CreateLargeZip.justHadByteUpdate = True
         ///     End If
         /// End Sub
@@ -2869,14 +2869,14 @@ namespace Ionic.Utils.Zip
             {
                 if (SaveProgress != null)
                 {
-                    var e =  SaveProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry, 
-							      bytesWritten, totalBytesToWrite);
+                    var e = SaveProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry,
+                                  bytesWritten, totalBytesToWrite);
                     SaveProgress(this, e);
                     if (e.Cancel)
                         _saveOperationCanceled = true;
                 }
             }
-	    return _saveOperationCanceled;
+            return _saveOperationCanceled;
         }
 
         private void OnSaveEntry(int current, ZipEntry entry, bool before)
@@ -2936,55 +2936,55 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// An event handler invoked before, during, and after the reading of a zip archive.
         /// </summary>
-	///
+        ///
         /// <remarks>
-	/// <para>
-	/// Depending on the particular event being signaled, different properties on the
-	/// ReadProgressEventArgs parameter are set.  The following table 
-	/// summarizes the available EventTypes and the conditions under which this 
-	/// event handler is invoked with a ReadProgressEventArgs with the given EventType.
-	/// </para>
-	/// 
-	/// <list type="table">
-	/// <listheader>
-	/// <term>value of EntryType</term>
-	/// <description>Meaning and conditions</description>
-	/// </listheader>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Reading_Started</term>
-	/// <description>Set just as ZipFile.Read() begins. Meaningful properties: ArchiveName.
+        /// <para>
+        /// Depending on the particular event being signaled, different properties on the
+        /// ReadProgressEventArgs parameter are set.  The following table 
+        /// summarizes the available EventTypes and the conditions under which this 
+        /// event handler is invoked with a ReadProgressEventArgs with the given EventType.
+        /// </para>
+        /// 
+        /// <list type="table">
+        /// <listheader>
+        /// <term>value of EntryType</term>
+        /// <description>Meaning and conditions</description>
+        /// </listheader>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Reading_Started</term>
+        /// <description>Set just as ZipFile.Read() begins. Meaningful properties: ArchiveName.
         /// </description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Reading_Completed</term>
-	/// <description>Set when ZipFile.Read() has completed. Meaningful properties: ArchiveName.
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Reading_Completed</term>
+        /// <description>Set when ZipFile.Read() has completed. Meaningful properties: ArchiveName.
         /// </description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Reading_ArchiveBytesRead</term>
-	/// <description>updates the number of bytes read for the entire archive. 
-	/// Meaningful properties: ArchiveName, NameOfLatestEntry, BytesTransferred, TotalBytesToTransfer.
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Reading_ArchiveBytesRead</term>
+        /// <description>updates the number of bytes read for the entire archive. 
+        /// Meaningful properties: ArchiveName, NameOfLatestEntry, BytesTransferred, TotalBytesToTransfer.
         /// </description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Reading_BeforeReadEntry</term>
-	/// <description>indicates an entry is about to be read from the archive.
-	/// Meaningful properties: ArchiveName, EntriesTotal.
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Reading_BeforeReadEntry</term>
+        /// <description>indicates an entry is about to be read from the archive.
+        /// Meaningful properties: ArchiveName, EntriesTotal.
         /// </description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Reading_AfterReadEntry</term>
-	/// <description>indicates an entry has just been read from the archive.
-	/// Meaningful properties: ArchiveName, EntriesTotal, NameOfLatestEntry.
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Reading_AfterReadEntry</term>
+        /// <description>indicates an entry has just been read from the archive.
+        /// Meaningful properties: ArchiveName, EntriesTotal, NameOfLatestEntry.
         /// </description>
-	/// </item>
-	///
-	/// </list>
+        /// </item>
+        ///
+        /// </list>
         /// </remarks>
         public event EventHandler<ReadProgressEventArgs> ReadProgress;
 
@@ -3018,14 +3018,14 @@ namespace Ionic.Utils.Zip
             {
                 if (ReadProgress != null)
                 {
-		    var e= ReadProgressEventArgs.ByteUpdate(ArchiveNameForEvent, 
-							    entry,
-							    (int) ReadStream.Position,
-							    LengthOfReadStream);
+                    var e = ReadProgressEventArgs.ByteUpdate(ArchiveNameForEvent,
+                                        entry,
+                                        (int)ReadStream.Position,
+                                        LengthOfReadStream);
                     ReadProgress(this, e);
                 }
             }
-        }	
+        }
 
         internal void OnReadEntry(bool before, ZipEntry entry)
         {
@@ -3033,93 +3033,93 @@ namespace Ionic.Utils.Zip
             {
                 if (ReadProgress != null)
                 {
-		    ReadProgressEventArgs e= (before)
-			? ReadProgressEventArgs.Before(ArchiveNameForEvent, _entries.Count)
-			: ReadProgressEventArgs.After(ArchiveNameForEvent, entry, _entries.Count);
+                    ReadProgressEventArgs e = (before)
+                    ? ReadProgressEventArgs.Before(ArchiveNameForEvent, _entries.Count)
+                    : ReadProgressEventArgs.After(ArchiveNameForEvent, entry, _entries.Count);
                     ReadProgress(this, e);
                 }
             }
         }
 
-	private int _lengthOfReadStream= -99;
-	private int LengthOfReadStream
-	{
-	    get
-	    {
-		if (_lengthOfReadStream== -99)
-		{
-		    if (_ReadStreamIsOurs)
-		    {
-			System.IO.FileInfo fi = new System.IO.FileInfo(_name);
-			_lengthOfReadStream= (int) fi.Length;
-		    }
-		    else _lengthOfReadStream= -1;
-		}
-		return _lengthOfReadStream;
-	    }
-	}
+        private int _lengthOfReadStream = -99;
+        private int LengthOfReadStream
+        {
+            get
+            {
+                if (_lengthOfReadStream == -99)
+                {
+                    if (_ReadStreamIsOurs)
+                    {
+                        System.IO.FileInfo fi = new System.IO.FileInfo(_name);
+                        _lengthOfReadStream = (int)fi.Length;
+                    }
+                    else _lengthOfReadStream = -1;
+                }
+                return _lengthOfReadStream;
+            }
+        }
 
 
         /// <summary>
         /// An event handler invoked before, during, and after extraction of entries 
-	/// in the zip archive. 
+        /// in the zip archive. 
         /// </summary>
-	///
-	/// <remarks>
-	/// <para>
-	/// Depending on the particular event, different properties on the
-	/// ExtractProgressEventArgs parameter are set.  The following table 
-	/// summarizes the available EventTypes and the conditions under which this 
-	/// event handler is invoked with a ExtractProgressEventArgs with the given EventType.
-	/// </para>
-	/// 
-	/// <list type="table">
-	/// <listheader>
-	/// <term>value of EntryType</term>
-	/// <description>Meaning and conditions</description>
-	/// </listheader>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Extracting_BeforeExtractAll</term>
-	/// <description>Set when ExtractAll() begins.  The ArchiveName, Overwrite,
-	/// and ExtractLocation properties are meaningful.</description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Extracting_AfterExtractAll</term>
-	/// <description>Set when ExtractAll() has completed.  The ArchiveName, 
-	/// Overwrite, and ExtractLocation properties are meaningful.
-	/// </description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Extracting_BeforeExtractEntry</term>
-	/// <description>Set when an Extract() on an entry in the ZipFile has begun.  
-	/// Properties that are meaningful:  ArchiveName, EntriesTotal, NameOfLatestEntry, Overwrite, 
-	/// ExtractLocation, EntriesExtracted.
-	/// </description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Extracting_AfterExtractEntry</term>
-	/// <description>Set when an Extract() on an entry in the ZipFile has completed.  
-	/// Properties that are meaningful:  ArchiveName, EntriesTotal, NameOfLatestEntry, Overwrite, 
-	/// ExtractLocation, EntriesExtracted.
-	/// </description>
-	/// </item>
-	/// 
-	/// <item>
-	/// <term>ZipProgressEventType.Extracting_EntryBytesWritten</term>
-	/// <description>Set within a call to Extract() on an entry in the ZipFile, as
-	/// data is extracted for the entry.  Properties that are meaningful:  ArchiveName, 
-	/// NameOfLatestEntry, BytesWritten, TotalBytesToWrite. 
-	/// </description>
-	/// </item>
-	/// 
-	/// </list>
-	/// 
-	/// </remarks>
-	///
+        ///
+        /// <remarks>
+        /// <para>
+        /// Depending on the particular event, different properties on the
+        /// ExtractProgressEventArgs parameter are set.  The following table 
+        /// summarizes the available EventTypes and the conditions under which this 
+        /// event handler is invoked with a ExtractProgressEventArgs with the given EventType.
+        /// </para>
+        /// 
+        /// <list type="table">
+        /// <listheader>
+        /// <term>value of EntryType</term>
+        /// <description>Meaning and conditions</description>
+        /// </listheader>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Extracting_BeforeExtractAll</term>
+        /// <description>Set when ExtractAll() begins.  The ArchiveName, Overwrite,
+        /// and ExtractLocation properties are meaningful.</description>
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Extracting_AfterExtractAll</term>
+        /// <description>Set when ExtractAll() has completed.  The ArchiveName, 
+        /// Overwrite, and ExtractLocation properties are meaningful.
+        /// </description>
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Extracting_BeforeExtractEntry</term>
+        /// <description>Set when an Extract() on an entry in the ZipFile has begun.  
+        /// Properties that are meaningful:  ArchiveName, EntriesTotal, NameOfLatestEntry, Overwrite, 
+        /// ExtractLocation, EntriesExtracted.
+        /// </description>
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Extracting_AfterExtractEntry</term>
+        /// <description>Set when an Extract() on an entry in the ZipFile has completed.  
+        /// Properties that are meaningful:  ArchiveName, EntriesTotal, NameOfLatestEntry, Overwrite, 
+        /// ExtractLocation, EntriesExtracted.
+        /// </description>
+        /// </item>
+        /// 
+        /// <item>
+        /// <term>ZipProgressEventType.Extracting_EntryBytesWritten</term>
+        /// <description>Set within a call to Extract() on an entry in the ZipFile, as
+        /// data is extracted for the entry.  Properties that are meaningful:  ArchiveName, 
+        /// NameOfLatestEntry, BytesWritten, TotalBytesToWrite. 
+        /// </description>
+        /// </item>
+        /// 
+        /// </list>
+        /// 
+        /// </remarks>
+        ///
         /// <example>
         /// <code>
         /// private static bool justHadByteUpdate = false;
@@ -3129,7 +3129,7 @@ namespace Ionic.Utils.Zip
         ///   {
         ///     if (justHadByteUpdate)
         ///       Console.SetCursorPosition(0, Console.CursorTop);
-	///
+        ///
         ///     Console.Write("   {0}/{1} ({2:N0}%)", e.BytesWritten, e.TotalBytesToWrite,
         ///                   e.BytesWritten / (0.01 * e.TotalBytesToWrite ));
         ///     justHadByteUpdate = true;
@@ -3142,10 +3142,10 @@ namespace Ionic.Utils.Zip
         ///     justHadByteUpdate= false;
         ///   }
         /// }
-	///
+        ///
         /// public static ExtractZip(string zipToExtract, string directory)
         /// {
-	///   string TargetDirectory= "extract";
+        ///   string TargetDirectory= "extract";
         ///   using (var zip = ZipFile.Read(zipToExtract)) {
         ///     zip.ExtractProgress += ExtractProgress; 
         ///     foreach (var e in zip1)
@@ -3193,7 +3193,7 @@ namespace Ionic.Utils.Zip
 
 
 
-        private void OnExtractEntry(int current, bool before, ZipEntry  currentEntry, string path, bool overwrite)
+        private void OnExtractEntry(int current, bool before, ZipEntry currentEntry, string path, bool overwrite)
         {
             lock (LOCK)
             {
@@ -3215,8 +3215,8 @@ namespace Ionic.Utils.Zip
             {
                 if (ExtractProgress != null)
                 {
-                    var e = ExtractProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry, 
-								bytesWritten, totalBytesToWrite);
+                    var e = ExtractProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry,
+                                bytesWritten, totalBytesToWrite);
                     ExtractProgress(this, e);
                     if (e.Cancel)
                         _extractOperationCanceled = true;
@@ -3341,10 +3341,10 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Reads a zip file archive and returns the instance, using the specified
-	/// ReadProgress event handler.  
+        /// ReadProgress event handler.  
         /// </summary>
         /// 
-        public static ZipFile Read(string zipFileName, EventHandler<ReadProgressEventArgs> readProgress )
+        public static ZipFile Read(string zipFileName, EventHandler<ReadProgressEventArgs> readProgress)
         {
             return ZipFile.Read(zipFileName, null, DefaultEncoding, readProgress);
         }
@@ -3443,12 +3443,12 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Reads a zip file archive using the specified text encoding, and the
-	/// specified ReadProgress event handler, and returns the instance.  
+        /// specified ReadProgress event handler, and returns the instance.  
         /// </summary>
         /// 
-        public static ZipFile Read(string zipFileName, 
-				   System.IO.TextWriter statusMessageWriter,
-				   EventHandler<ReadProgressEventArgs> readProgress )
+        public static ZipFile Read(string zipFileName,
+                   System.IO.TextWriter statusMessageWriter,
+                   EventHandler<ReadProgressEventArgs> readProgress)
         {
             return ZipFile.Read(zipFileName, statusMessageWriter, DefaultEncoding, readProgress);
         }
@@ -3511,12 +3511,12 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Reads a zip file archive using the specified text encoding and ReadProgress
-	/// event handler, and returns the instance.  
+        /// event handler, and returns the instance.  
         /// </summary>
         /// 
-        public static ZipFile Read(string zipFileName, 
-				   System.Text.Encoding encoding,
-				   EventHandler<ReadProgressEventArgs> readProgress )
+        public static ZipFile Read(string zipFileName,
+                   System.Text.Encoding encoding,
+                   EventHandler<ReadProgressEventArgs> readProgress)
         {
             return ZipFile.Read(zipFileName, null, encoding, readProgress);
         }
@@ -3524,7 +3524,7 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Reads a zip file archive using the specified text encoding and the specified
-	/// TextWriter for status messages, and returns the instance.  
+        /// TextWriter for status messages, and returns the instance.  
         /// </summary>
         /// 
         /// <remarks>
@@ -3582,30 +3582,30 @@ namespace Ionic.Utils.Zip
         ///
         /// <returns>The instance read from the zip archive.</returns>
         /// 
-        public static ZipFile Read(string zipFileName, 
-				   System.IO.TextWriter statusMessageWriter, 
-				   System.Text.Encoding encoding)
-	{
-	    return Read(zipFileName, statusMessageWriter, encoding, null);
-	}
+        public static ZipFile Read(string zipFileName,
+                   System.IO.TextWriter statusMessageWriter,
+                   System.Text.Encoding encoding)
+        {
+            return Read(zipFileName, statusMessageWriter, encoding, null);
+        }
 
         /// <summary>
         /// Reads a zip file archive using the specified text encoding,  the specified
-	/// TextWriter for status messages, and the specified ReadProgress event handler, 
-	/// and returns the instance.  
+        /// TextWriter for status messages, and the specified ReadProgress event handler, 
+        /// and returns the instance.  
         /// </summary>
         /// 
-        public static ZipFile Read(string zipFileName, 
-				   System.IO.TextWriter statusMessageWriter, 
-				   System.Text.Encoding encoding,
-				   EventHandler<ReadProgressEventArgs> readProgress )
-	{
+        public static ZipFile Read(string zipFileName,
+                   System.IO.TextWriter statusMessageWriter,
+                   System.Text.Encoding encoding,
+                   EventHandler<ReadProgressEventArgs> readProgress)
+        {
             ZipFile zf = new ZipFile();
             zf.ProvisionalAlternateEncoding = encoding;
             zf._StatusMessageTextWriter = statusMessageWriter;
             zf._name = zipFileName;
-	    if (readProgress!= null)
-		zf.ReadProgress = readProgress;
+            if (readProgress != null)
+                zf.ReadProgress = readProgress;
 
             try
             {
@@ -3664,7 +3664,7 @@ namespace Ionic.Utils.Zip
         /// Reads a zip archive from a stream, with a given ReadProgress event handler.
         /// </summary>
         ///
-        public static ZipFile Read(System.IO.Stream zipStream, EventHandler<ReadProgressEventArgs> readProgress )
+        public static ZipFile Read(System.IO.Stream zipStream, EventHandler<ReadProgressEventArgs> readProgress)
         {
             return Read(zipStream, null, DefaultEncoding, readProgress);
         }
@@ -3711,7 +3711,7 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Reads a zip archive from a stream, using the specified TextWriter for status messages, 
-	/// and the specified ReadProgress event handler.
+        /// and the specified ReadProgress event handler.
         /// </summary>
         ///
         /// <param name="zipStream">the stream containing the zip data.</param>
@@ -3724,13 +3724,13 @@ namespace Ionic.Utils.Zip
         /// </param>
         /// 
         /// <param name="readProgress">
-	/// An event handler for Read operations.
+        /// An event handler for Read operations.
         /// </param>
         /// 
         /// <returns>an instance of ZipFile</returns>
-        public static ZipFile Read(System.IO.Stream zipStream, 
-				   System.IO.TextWriter statusMessageWriter,
-				   EventHandler<ReadProgressEventArgs> readProgress )
+        public static ZipFile Read(System.IO.Stream zipStream,
+                   System.IO.TextWriter statusMessageWriter,
+                   EventHandler<ReadProgressEventArgs> readProgress)
         {
             return Read(zipStream, statusMessageWriter, DefaultEncoding, readProgress);
         }
@@ -3769,9 +3769,9 @@ namespace Ionic.Utils.Zip
             return Read(zipStream, null, encoding);
         }
 
-	/// <summary>
+        /// <summary>
         /// Reads a zip archive from a stream, using the specified encoding, and
-	/// and the specified ReadProgress event handler.
+        /// and the specified ReadProgress event handler.
         /// </summary>
         /// 
         /// <param name="zipStream">the stream containing the zip data.</param>
@@ -3786,21 +3786,21 @@ namespace Ionic.Utils.Zip
         /// </param>
         /// 
         /// <param name="readProgress">
-	/// An event handler for Read operations.
+        /// An event handler for Read operations.
         /// </param>
         /// 
         /// <returns>an instance of ZipFile</returns>
-        public static ZipFile Read(System.IO.Stream zipStream, System.Text.Encoding encoding, 
-				   EventHandler<ReadProgressEventArgs> readProgress )
+        public static ZipFile Read(System.IO.Stream zipStream, System.Text.Encoding encoding,
+                   EventHandler<ReadProgressEventArgs> readProgress)
         {
             return Read(zipStream, null, encoding, readProgress);
         }
 
         /// <summary>
         /// Reads a zip archive from a stream, using the specified text Encoding and the 
-	/// specified TextWriter for status messages.
+        /// specified TextWriter for status messages.
         /// </summary>
-	///
+        ///
         /// <remarks>
         /// <para>
         /// This method is useful when when the zip archive content is available from 
@@ -3833,20 +3833,20 @@ namespace Ionic.Utils.Zip
         /// </param>
         /// 
         /// <returns>an instance of ZipFile</returns>
-        public static ZipFile Read(System.IO.Stream zipStream, 
-				   System.IO.TextWriter statusMessageWriter, 
-				   System.Text.Encoding encoding)
+        public static ZipFile Read(System.IO.Stream zipStream,
+                   System.IO.TextWriter statusMessageWriter,
+                   System.Text.Encoding encoding)
         {
-	    return Read(zipStream, statusMessageWriter,encoding, null);
+            return Read(zipStream, statusMessageWriter, encoding, null);
         }
 
 
         /// <summary>
         /// Reads a zip archive from a stream, using the specified text Encoding, the 
-	/// specified TextWriter for status messages, 
-	/// and the specified ReadProgress event handler.
+        /// specified TextWriter for status messages, 
+        /// and the specified ReadProgress event handler.
         /// </summary>
-	///
+        ///
         /// <param name="zipStream">the stream containing the zip data.</param>
         ///
         /// <param name="statusMessageWriter">
@@ -3866,28 +3866,28 @@ namespace Ionic.Utils.Zip
         /// </param>
         /// 
         /// <param name="readProgress">
-	/// An event handler for Read operations.
+        /// An event handler for Read operations.
         /// </param>
         /// 
         /// <returns>an instance of ZipFile</returns>
-        public static ZipFile Read(System.IO.Stream zipStream, 
-				   System.IO.TextWriter statusMessageWriter, 
-				   System.Text.Encoding encoding, 
-				   EventHandler<ReadProgressEventArgs> readProgress )
-	{
+        public static ZipFile Read(System.IO.Stream zipStream,
+                   System.IO.TextWriter statusMessageWriter,
+                   System.Text.Encoding encoding,
+                   EventHandler<ReadProgressEventArgs> readProgress)
+        {
             if (zipStream == null)
                 throw new ZipException("Cannot read.", new ArgumentException("The stream must be non-null", "zipStream"));
 
             ZipFile zf = new ZipFile();
             zf._provisionalAlternateEncoding = encoding;
-	    if (readProgress!=null)
-		zf.ReadProgress += readProgress;
+            if (readProgress != null)
+                zf.ReadProgress += readProgress;
             zf._StatusMessageTextWriter = statusMessageWriter;
             zf._readstream = zipStream;
             zf._ReadStreamIsOurs = false;
             ReadIntoInstance(zf);
             return zf;
-	}
+        }
 
 
         /// <summary>
@@ -3927,7 +3927,7 @@ namespace Ionic.Utils.Zip
         /// </remarks>
         /// 
         /// <param name="buffer">the byte array containing the zip data.</param>
-	///
+        ///
         /// <param name="statusMessageWriter">
         /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during
         /// operations on the ZipFile.  For example, in a console application,
@@ -3956,7 +3956,7 @@ namespace Ionic.Utils.Zip
         /// </remarks>
         /// 
         /// <param name="buffer">the byte array containing the zip data.</param>
-	///
+        ///
         /// <param name="statusMessageWriter">
         /// The <c>System.IO.TextWriter</c> to which verbose status messages are written during
         /// operations on the ZipFile.  For example, in a console application,
@@ -3991,7 +3991,7 @@ namespace Ionic.Utils.Zip
         {
             try
             {
-		zf.OnReadStarted();
+                zf.OnReadStarted();
                 zf._entries = new System.Collections.Generic.List<ZipEntry>();
                 ZipEntry e;
                 if (zf.Verbose)
@@ -4039,7 +4039,7 @@ namespace Ionic.Utils.Zip
                 // when finished slurping in the zip, close the read stream
                 //zf.ReadStream.Close();
 
-		zf.OnReadCompleted();
+                zf.OnReadCompleted();
             }
             catch (Exception e1)
             {
@@ -4740,16 +4740,16 @@ namespace Ionic.Utils.Zip
         }
 
 
-	/// <summary>
-	/// Returns the readonly collection of entries in the Zip archive.
-	/// </summary>
+        /// <summary>
+        /// Returns the readonly collection of entries in the Zip archive.
+        /// </summary>
         public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> Entries
-	{
-	    get
-	    {
-		return _entries.AsReadOnly();
-	    }
-	}
+        {
+            get
+            {
+                return _entries.AsReadOnly();
+            }
+        }
 
 
 
