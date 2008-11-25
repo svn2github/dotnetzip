@@ -416,7 +416,8 @@ namespace Ionic.Utils.Zip
         /// to false merely does NOT force No compression.  Think about it a little bit:
         /// There's a difference.  If you want to force the use fo deflate algorithm when
         /// storing each entry into the zip archive, define a <see
-        /// cref="WillReadTwiceOnInflation"/> callback, which always returns false.  This is
+        /// cref="WillReadTwiceOnInflation"/> callback, which always returns false, and a 
+	/// <see cref="WantCompression" /> callback that always returns true.  This is
         /// probably the wrong thing to do, but you could do it.  Forcing the use of the
         /// Deflate algorithm when storing an entry does not guarantee that the data size
         /// will get smaller. It could increase, as described above.  But if you want to be
@@ -2763,10 +2764,10 @@ namespace Ionic.Utils.Zip
         /// </item>
         /// 
         /// <item>
-        /// <term>ZipProgressEventType.Saving_BytesWritten</term>
+        /// <term>ZipProgressEventType.Saving_BytesRead</term>
         /// <description>Set during the save of a particular entry, to update progress of the Save(). 
-        /// When this EventType is set, the BytesWritten is the number of bytes written to the 
-        /// compressed stream.  The TotalBytesToWrite is the number of bytes in the uncompressed file.
+        /// When this EventType is set, the BytesTransferred is the number of bytes that have been read from the 
+        /// source stream.  The TotalBytesToTransfer is the number of bytes in the uncompressed file.
         /// </description>
         /// </item>
         /// 
@@ -2863,14 +2864,14 @@ namespace Ionic.Utils.Zip
         public event EventHandler<SaveProgressEventArgs> SaveProgress;
 
 
-        internal bool OnSaveBlock(ZipEntry entry, int bytesWritten, int totalBytesToWrite)
+        internal bool OnSaveBlock(ZipEntry entry, int bytesXferred, int totalBytesToXfer)
         {
             lock (LOCK)
             {
                 if (SaveProgress != null)
                 {
                     var e = SaveProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry,
-                                  bytesWritten, totalBytesToWrite);
+                                  bytesXferred, totalBytesToXfer);
                     SaveProgress(this, e);
                     if (e.Cancel)
                         _saveOperationCanceled = true;

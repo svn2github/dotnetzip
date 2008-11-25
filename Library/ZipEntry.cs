@@ -1366,9 +1366,9 @@ namespace Ionic.Utils.Zip
             }
         }
 
-        private void OnWriteBlock(int bytesWritten, int totalBytesToWrite)
+        private void OnWriteBlock(int bytesXferred, int totalBytesToXfer)
         {
-            _ioOperationCanceled = _zipfile.OnSaveBlock(this, bytesWritten, totalBytesToWrite);
+            _ioOperationCanceled = _zipfile.OnSaveBlock(this, bytesXferred, totalBytesToXfer);
         }
 
 
@@ -2259,7 +2259,7 @@ namespace Ionic.Utils.Zip
 
             Stream input = null;
             CrcCalculatorStream input1 = null;
-            CountingStream counter = null;
+            CountingStream outputCounter = null;
             try
             {
                 // s.Position may fail on some write-only streams, eg stdout or System.Web.HttpResponseStream
@@ -2285,11 +2285,11 @@ namespace Ionic.Utils.Zip
                 input1 = new CrcCalculatorStream(input);
 
                 // wrap a counting stream around the raw output stream:
-                counter = new CountingStream(s);
+                outputCounter = new CountingStream(s);
 
                 // maybe wrap an encrypting stream around that:
                 Stream output1 = (Encryption == EncryptionAlgorithm.PkzipWeak) ?
-                    (Stream)(new ZipCipherStream(counter, cipher, CryptoMode.Encrypt)) : counter;
+                    (Stream)(new ZipCipherStream(outputCounter, cipher, CryptoMode.Encrypt)) : outputCounter;
 
                 // maybe wrap a DeflateStream around that
                 Stream output2 = null;
@@ -2315,7 +2315,7 @@ namespace Ionic.Utils.Zip
                 while (n > 0)
                 {
                     output2.Write(buffer, 0, n);
-                    OnWriteBlock(counter.BytesWritten, fileLength);
+                    OnWriteBlock(input1.TotalBytesSlurped, fileLength);  // outputCounter.BytesWritten
                     if (_ioOperationCanceled)
                         break;
                     n = input1.Read(buffer, 0, READBLOCK_SIZE);
@@ -2340,7 +2340,7 @@ namespace Ionic.Utils.Zip
 
 
             _UncompressedSize = input1.TotalBytesSlurped;
-            _CompressedSize = counter.BytesWritten;
+            _CompressedSize = outputCounter.BytesWritten;
 
             _Crc32 = input1.Crc32;
 

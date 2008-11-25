@@ -198,7 +198,7 @@ namespace WinFormsExample
                 case ZipProgressEventType.Saving_AfterWriteEntry:
                     StepArchiveProgress(e);
                     break;
-                case ZipProgressEventType.Saving_EntryBytesWritten:
+                case ZipProgressEventType.Saving_EntryBytesRead:
                     StepEntryProgress(e);
                     break;
                 case ZipProgressEventType.Saving_Completed:

@@ -98,10 +98,10 @@ namespace Ionic.Utils.Zip
         Saving_AfterCompileSelfExtractor,
 
         /// <summary>
-        /// The given event is reporting the number of bytes written so far
+        /// The given event is reporting the number of source bytes that have run through the compressor so far
         /// during a Save() operation.
         /// </summary>
-        Saving_EntryBytesWritten,
+        Saving_EntryBytesRead,
 
         /// <summary>
         /// Indicates that an entry is about to be extracted. 
@@ -303,12 +303,12 @@ namespace Ionic.Utils.Zip
         { }
 
 
-        internal static SaveProgressEventArgs ByteUpdate(string archiveName, ZipEntry entry, int bytesWritten, int totalBytes)
+        internal static SaveProgressEventArgs ByteUpdate(string archiveName, ZipEntry entry, int bytesXferred, int totalBytes)
         {
-            var x = new SaveProgressEventArgs(archiveName, ZipProgressEventType.Saving_EntryBytesWritten);
+            var x = new SaveProgressEventArgs(archiveName, ZipProgressEventType.Saving_EntryBytesRead);
             x.ArchiveName = archiveName;
             x.CurrentEntry = entry;
-            x.BytesTransferred = bytesWritten;
+            x.BytesTransferred = bytesXferred;
             x.TotalBytesToTransfer = totalBytes;
             return x;
         }
