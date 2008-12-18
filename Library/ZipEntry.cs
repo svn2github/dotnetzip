@@ -212,7 +212,7 @@ namespace Ionic.Utils.Zip
         ///
         /// <para>
         /// This is the name of the entry in the ZipFile itself.  This name may be different
-        /// than the name of the filesystem file used to create the entry. In fact, there
+        /// than the name of the filesystem file used to create the entry (LocalFileName). In fact, there
         /// may be no filesystem file at all, if the entry is created from a stream or a string.
         /// </para>
         /// </remarks>
@@ -220,6 +220,16 @@ namespace Ionic.Utils.Zip
         public string FileName
         {
             get { return _FileNameInArchive; }
+            set
+            {
+                // rename the entry!
+                if (value == null || value == "") throw new ZipException("The FileName must be non empty and non-null.");
+
+                var filename = ZipEntry.NameInArchive(value, null);
+                _FileNameInArchive = value;
+                this._zipfile.NotifyEntryChanged();
+                _metadataChanged = true;
+            }
         }
 
         /// <summary>
@@ -237,7 +247,11 @@ namespace Ionic.Utils.Zip
         public string Comment
         {
             get { return _Comment; }
-            set { _Comment = value; }
+            set
+            {
+                _Comment = value;
+                _metadataChanged = true;
+            }
         }
 
         /// <summary>
@@ -417,10 +431,23 @@ namespace Ionic.Utils.Zip
 
         /// <summary>
         /// Set this to request that the entry be encrypted when writing the zip
-        /// archive.  This is a write-only property on the entry. The password 
+        /// archive.  
+        /// </summary>
+	/// <remarks>
+	/// <para>
+	/// This is a write-only property on the entry. The password 
         /// is used to encrypt the entry during the Save() operation, or decrypt during
         /// the Extract() or OpenReader() operation. 
-        /// </summary>
+	/// </para>
+	/// <para>
+	/// If you have read a zipfile, setting the password on an entry and then
+	/// saving the zipfile does not update the password on that entry in the
+	/// archive.  If you read a zipfile that contains encrypted entries, you cannot
+	/// modify the password on any entry, except by extracting the entry with the
+	/// first password (if any), and then adding a new entry with a new password.
+	/// If you do this, you may wish to also remove the previous entry.
+	/// </para>
+	/// </remarks>
         public string Password
         {
             set
@@ -698,8 +725,8 @@ namespace Ionic.Utils.Zip
                 n = ze.ArchiveStream.Read(ze._Extra, 0, ze._Extra.Length);
                 bytesRead += n;
             }
-            
-	    // workitem 6607 - don't read for directories
+
+            // workitem 6607 - don't read for directories
             // actually get the compressed size and CRC if necessary
             if (!ze._LocalFileName.EndsWith("/") && (ze._BitField & 0x0008) == 0x0008)
             {
@@ -839,7 +866,7 @@ namespace Ionic.Utils.Zip
             // seek past the data without reading it. We will read on Extract()
             s.Seek(entry._CompressedFileDataSize, System.IO.SeekOrigin.Current);
 
-	    // workitem 6607 - don't seek for directories
+            // workitem 6607 - don't seek for directories
             // finally, seek past the (already read) Data descriptor if necessary
             if (((entry._BitField & 0x0008) == 0x0008) && !entry.FileName.EndsWith("/"))
             {
@@ -886,6 +913,7 @@ namespace Ionic.Utils.Zip
                 s.Seek(-4, System.IO.SeekOrigin.Current); // unread the block
 
         }
+
 
 
 
@@ -2540,39 +2568,68 @@ namespace Ionic.Utils.Zip
             // just read from the existing input zipfile and write to the output
             System.IO.Stream input = this.ArchiveStream;
 
-            // seek to the beginning of the entry data (header + file data) in the stream
-            input.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
-
-            // Here, we need to grab-n-cache the header - it is used later when 
-            // writing the Central Directory Structure.
-            _EntryHeader = new byte[this._LengthOfHeader];
-            n = input.Read(_EntryHeader, 0, _EntryHeader.Length);
-            _CheckRead(n);
-
-            // once again, seek to the beginning of the entry data in the input stream
-            input.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
-
-            // workitem 5616
-            // remember the offset, within the output stream, of this particular entry header.
-            // This may have changed if any of the other entries changed (eg, if a different
-            // entry was removed or added.)
-            var counter = outstream as CountingStream;
-            _RelativeOffsetOfHeader = (int)((counter != null) ? counter.BytesWritten : outstream.Position);
-
-            // copy through the header, filedata, everything...
-            int Remaining = this._TotalEntrySize;
-            while (Remaining > 0)
+            if (_metadataChanged)
             {
-                int len = (Remaining > bytes.Length) ? bytes.Length : Remaining;
+                int origRelativeOffsetOfHeader = _RelativeOffsetOfHeader;
+                int origLengthOfHeader = _LengthOfHeader;
+                WriteHeader(outstream,0);
+                // seek to the beginning of the entry data in the input stream
+                input.Seek(origRelativeOffsetOfHeader + origLengthOfHeader, System.IO.SeekOrigin.Begin);
 
-                // read
-                n = input.Read(bytes, 0, len);
+                // copy through everything after the header
+                int Remaining = this._CompressedSize;
+                while (Remaining > 0)
+                {
+                    int len = (Remaining > bytes.Length) ? bytes.Length : Remaining;
+
+                    // read
+                    n = input.Read(bytes, 0, len);
+                    _CheckRead(n);
+
+                    // write
+                    outstream.Write(bytes, 0, n);
+                    Remaining -= n;
+                }
+
+                _TotalEntrySize = _LengthOfHeader + _CompressedSize;
+            }
+            else
+            {
+                // seek to the beginning of the entry data (header + file data) in the stream
+                input.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
+
+                // Here, we need to grab-n-cache the header - it is used later when 
+                // writing the Central Directory Structure.
+                _EntryHeader = new byte[this._LengthOfHeader];
+                n = input.Read(_EntryHeader, 0, _EntryHeader.Length);
                 _CheckRead(n);
 
-                // write
-                outstream.Write(bytes, 0, n);
-                Remaining -= n;
+                // once again, seek to the beginning of the entry data in the input stream
+                input.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
+
+                // workitem 5616
+                // remember the offset, within the output stream, of this particular entry header.
+                // This may have changed if any of the other entries changed (eg, if a different
+                // entry was removed or added.)
+                var counter = outstream as CountingStream;
+                _RelativeOffsetOfHeader = (int)((counter != null) ? counter.BytesWritten : outstream.Position);
+
+                // copy through the header, filedata, everything...
+                int Remaining = this._TotalEntrySize;
+                while (Remaining > 0)
+                {
+                    int len = (Remaining > bytes.Length) ? bytes.Length : Remaining;
+
+                    // read
+                    n = input.Read(bytes, 0, len);
+                    _CheckRead(n);
+
+                    // write
+                    outstream.Write(bytes, 0, n);
+                    Remaining -= n;
+                }
             }
+
         }
 
 
@@ -2592,7 +2649,7 @@ namespace Ionic.Utils.Zip
         private Int16 _VersionNeeded;
         private Int16 _BitField;
         private Int16 _CompressionMethod;
-        private string _Comment;
+        internal string _Comment;
         private bool _IsDirectory;
         private byte[] _CommentBytes;
         private Int32 _CompressedSize;
@@ -2603,6 +2660,8 @@ namespace Ionic.Utils.Zip
         private Int32 _Crc32;
         private byte[] _Extra;
         private bool _OverwriteOnExtract;
+        private bool _metadataChanged;
+
         private static System.Text.Encoding ibm437 = System.Text.Encoding.GetEncoding("IBM437");
         private System.Text.Encoding _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437");
         private System.Text.Encoding _actualEncoding = null;

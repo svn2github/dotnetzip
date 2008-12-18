@@ -195,6 +195,12 @@ namespace Ionic.Utils.Zip
             int minute = (packedTime & 0x07E0) >> 5;
             //int second = packedTime & 0x001F;
             int second = (packedTime & 0x001F) * 2;
+            
+            // validation and error checking.
+            // this is not foolproof but will catch most errors.
+            if (second >= 60) {minute++; second=0;}
+            if (minute >= 60) {hour++; minute=0;}
+            if (hour >= 24) { day++; hour = 0; }
 
             DateTime d = System.DateTime.Now;
             try { d = new System.DateTime(year, month, day, hour, minute, second, 0); }

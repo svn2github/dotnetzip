@@ -417,7 +417,7 @@ namespace Ionic.Utils.Zip
         /// There's a difference.  If you want to force the use fo deflate algorithm when
         /// storing each entry into the zip archive, define a <see
         /// cref="WillReadTwiceOnInflation"/> callback, which always returns false, and a 
-	/// <see cref="WantCompression" /> callback that always returns true.  This is
+        /// <see cref="WantCompression" /> callback that always returns true.  This is
         /// probably the wrong thing to do, but you could do it.  Forcing the use of the
         /// Deflate algorithm when storing an entry does not guarantee that the data size
         /// will get smaller. It could increase, as described above.  But if you want to be
@@ -743,6 +743,14 @@ namespace Ionic.Utils.Zip
             get;
             set;
         }
+
+
+
+        internal void NotifyEntryChanged()
+        {
+            _contentsChanged = true;
+        }
+
 
 
         internal System.IO.Stream ReadStream
@@ -4025,7 +4033,7 @@ namespace Ionic.Utils.Zip
                     {
                         if (e1.FileName == de.FileName)
                         {
-                            e1.Comment = de.Comment;
+                            e1._Comment = de.Comment;
                             if (de.IsDirectory) e1.MarkAsDirectory();
                             break;
                         }
