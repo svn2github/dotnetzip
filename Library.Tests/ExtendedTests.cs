@@ -166,7 +166,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
 
                         if (j != 1)
                             Assert.IsTrue(e.CompressedSize <= e.UncompressedSize,
-                                "The zip entry {0} has expanded ({1} > {2}).", e.FileName, e.CompressedSize, e.UncompressedSize);
+                      "The zip entry {0} has expanded ({1} > {2}).", e.FileName, e.CompressedSize, e.UncompressedSize);
 
                         e.Extract(extractDir);
                         filename = System.IO.Path.Combine(extractDir, e.FileName);
@@ -220,7 +220,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
 
                     // Verify the files are in the zip
                     Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), entriesAdded,
-                      String.Format("Trial {0}-{1}: The Zip file has the wrong number of entries.", j, k));
+                     String.Format("Trial {0}-{1}: The Zip file has the wrong number of entries.", j, k));
 
                     // now extract the files and verify their contents
                     using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
@@ -243,10 +243,10 @@ namespace Ionic.Utils.Zip.Tests.Extended
                                     } while (n > 0);
 
                                     Assert.AreEqual<Int32>(s.Crc32, e1.Crc32,
-                                        string.Format("The Entry {0} failed the CRC Check.", eName));
+                               string.Format("The Entry {0} failed the CRC Check.", eName));
 
                                     Assert.AreEqual<Int32>(totalBytesRead, e1.UncompressedSize,
-                                        string.Format("We read an unexpected number of bytes. ({0})", eName));
+                               string.Format("We read an unexpected number of bytes. ({0})", eName));
 
 
 
@@ -321,7 +321,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
             }
 
             Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), 7,
-              "The Zip file has the wrong number of entries.");
+                 "The Zip file has the wrong number of entries.");
 
             Assert.IsTrue(ZipFile.IsZipFile(ZipFileToCreate),
               "The IsZipFile() method returned an unexpected result for an existing zip file.");
@@ -362,7 +362,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
 
             // Verify the files are in the zip
             Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), entriesAdded,
-              "The Zip file has the wrong number of entries.");
+                 "The Zip file has the wrong number of entries.");
 
             Assert.IsTrue(ZipFile.IsZipFile(ZipFileToCreate),
               "The IsZipFile() method returned an unexpected result for an existing zip file.");
@@ -588,7 +588,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
                 {
                     TestContext.WriteLine("e: {0}", e.FileName);
                     if (e.IsDirectory)
-                        Assert.IsTrue(DirsAdded.Contains(e.FileName),"Cannot find the expected directory.");
+                        Assert.IsTrue(DirsAdded.Contains(e.FileName), "Cannot find the expected directory.");
                     else
                     {
                         if ((entryCount - 1) % 4 == 0) e.Password = password;
@@ -990,6 +990,95 @@ namespace Ionic.Utils.Zip.Tests.Extended
 
 
 
+        [TestMethod]
+        public void Extract_MultiThreaded_wi6637()
+        {
+            int nConcurrentZipFiles = 5;
+            for (int k = 0; k < 1; k++)
+            {
+                TestContext.WriteLine("\n-----------------------------\r\n{0}: Trial {1}...",
+                      DateTime.Now.ToString("HH:mm:ss"),
+                      k);
+
+                System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+                string[] ZipFileToCreate = new string[nConcurrentZipFiles];
+                for (int m = 0; m < nConcurrentZipFiles; m++)
+                {
+                    ZipFileToCreate[m] = System.IO.Path.Combine(TopLevelDir, String.Format("Extract_MultiThreaded-{0}-{1}.zip", k, m));
+                    TestContext.WriteLine("  Creating file: {0}", ZipFileToCreate[m]);
+                    string DirToZip = System.IO.Path.GetFileNameWithoutExtension(System.IO.Path.GetRandomFileName());
+
+                    var Files = TestUtilities.GenerateFilesFlat(DirToZip);
+                    TestContext.WriteLine("Zipping {0} files from dir '{1}'...", Files.Length, DirToZip);
+
+                    using (ZipFile zip1 = new ZipFile())
+                    {
+                        zip1.Comment = "Brick walls are there for a reason: to let you show how badly you want your goal.";
+                        for (int i = 0; i < Files.Length; i++)
+                        {
+                            TestContext.WriteLine("  Adding entry: {0}", Files[i]);
+                            zip1.AddFile(Files[i], System.IO.Path.GetFileName(DirToZip));
+                        }
+                        zip1.Save(ZipFileToCreate[m]);
+                    }
+                    TestContext.WriteLine("\n");
+                }
+
+
+                // multi-thread extract
+                foreach (string fileName in ZipFileToCreate)
+                {
+                    TestContext.WriteLine("queueing unzip for file: {0}", fileName);
+
+                    System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(processZip), fileName);
+                }
+
+                while (completedEntries != ZipFileToCreate.Length)
+                    System.Threading.Thread.Sleep(400);
+
+                TestContext.WriteLine("done.");
+
+            }
+        }
+
+
+
+        private int _completedEntries;
+        private int completedEntries
+        {
+            get { return _completedEntries; }
+            set
+            {
+                lock (this)
+                {
+                    _completedEntries = value;
+                }
+            }
+        }
+
+
+
+        private void processZip(object o)
+        {
+            string fileName = o as string;
+
+            string zDir = System.IO.Path.Combine("extract",
+                             System.IO.Path.GetFileNameWithoutExtension(fileName.ToString()));
+
+            TestContext.WriteLine("extracting {0}...", fileName);
+
+            using (var zFile = Ionic.Utils.Zip.ZipFile.Read(fileName))
+            {
+                zFile.ExtractAll(zDir, true);
+            }
+            completedEntries++;
+        }
+
+
+
+
+
 
         [TestMethod]
         public void Extract_SelfExtractor_WinForms()
@@ -1047,5 +1136,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
                 }
             }
         }
+
+
     }
 }

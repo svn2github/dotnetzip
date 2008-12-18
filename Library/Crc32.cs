@@ -141,11 +141,8 @@ namespace Ionic.Utils.Zip
         }
 
 
-        /// <summary>
-        /// Construct an instance of the CRC32 class, pre-initialising the table
-        /// for speed of lookup.
-        /// </summary>
-        public CRC32()
+        // pre-initialize the crc table for speed of lookup.
+        static CRC32()
         {
             unchecked
             {

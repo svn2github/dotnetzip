@@ -435,8 +435,8 @@ namespace Ionic.Utils.Zip
         /// </summary>
 	/// <remarks>
 	/// <para>
-	/// This is a write-only property on the entry. The password 
-        /// is used to encrypt the entry during the Save() operation, or decrypt during
+	/// This is a write-only property on the entry. The password set here is implicitly 
+        /// used to encrypt the entry during the Save() operation, or to decrypt during
         /// the Extract() or OpenReader() operation. 
 	/// </para>
 	/// <para>
