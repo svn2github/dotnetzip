@@ -245,7 +245,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
                                     Assert.AreEqual<Int32>(s.Crc32, e1.Crc32,
                                string.Format("The Entry {0} failed the CRC Check.", eName));
 
-                                    Assert.AreEqual<Int32>(totalBytesRead, e1.UncompressedSize,
+                                    Assert.AreEqual<Int32>(totalBytesRead, (int)e1.UncompressedSize,
                                string.Format("We read an unexpected number of bytes. ({0})", eName));
 
 
@@ -261,7 +261,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
 
         private int _doubleReadCallbacks = 0;
         private bool _callbackAnswer = false;
-        public bool ReadTwiceCallback(int u, int c, string filename)
+        public bool ReadTwiceCallback(long u, long c, string filename)
         {
             _doubleReadCallbacks++;
             TestContext.WriteLine("ReadTwiceCallback: {0} {1} {2}", u, c, filename);

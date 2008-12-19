@@ -1,4 +1,4 @@
-Wed, 06 Feb 2008  11:06
+Fri, 19 Dec 2008  06:03
 
 Zip Library 
 ---------------------------------
@@ -84,10 +84,10 @@ like this:
 
 There are a number of other options for using the class
 library.  For example, you can read zip archives from streams,
-or you can create (write) zip archives to streams.  Check the
+or you can create (write) zip archives to streams.  You can apply
+passwords for weak encryption.  You can specify a code page for the
+filenames and metadata of entries in an archive.  Check the
 doc for complete information. 
-
-
 
 
 
@@ -110,18 +110,12 @@ package, all those directories will be created, and the file
 will be written into that directory hierarchy.  
 
 If you don't want that directory information in your archive,
-then you need to either 
- (a) copy the file or files to be compressed into the local
-     directory
- (b) change the applications current directory to where the file
-     resides, before adding it to the zipfile.
+then you need to use the overload of the AddFile() method: 
 
-The latter involves a call to
-System.IO.Directory.SetCurrentDirectory(), 
-before you call ZipFile.AddXxx().
+    zip.AddFile("c:\\a\\b\\c\\Hello.doc", "files");
 
-See the doc:
-http://msdn2.microsoft.com/en-us/library/system.io.directory.setcurrentdirectory.aspx
+This will place the Hello.doc into the "files" directory in the archive
+itself.
 
 
 
@@ -202,17 +196,15 @@ To build this example,  using the .NET Framework SDK v2.0,
        and 
      c:\WINDOWS\Microsoft.NET\Framework\v2.0.50727
 
-3. open a CMD prompt and CD to the zip\Library directory. 
+3. open a CMD prompt and CD to the DotNetZip directory.
   
 4. msbuild 
 
-5. To build the examples, cd ..\Examples\{ZipIt,Unzip,etc}  and type msbuild again
-
-6. to clean and rebuild either the library or examples, do: 
+5. to clean and rebuild, do
    msbuild /t:clean
    msbuild
 
-7. There is a setup directory, which contains the project
+6. There is a setup directory, which contains the project
    necessary to build the MSI file.  Unfortunately msbuild does
    not include support for building setup projects (vdproj). 
 
@@ -259,8 +251,6 @@ mmkay?
 
 
 
-
-
 Building the Help File
 --------------------------------------------
 If you want to build the helpfile, you need the SandCastle
@@ -274,25 +264,25 @@ Limitations
 
 There are numerous limitations to this library:
 
- it does not support encryption, or double-byte
- chars in filenames.
+ it does not support zip64 extensions.
+     does not support file lengths greater than 0xffffffff.
+     does not support more than 65535 entries in a zip archive.
+     does not support archive lengths greater than 4g.
 
- it does not support file lengths greater than 0xffffffff.
-
- it does not support "multi-disk archives."
+ it does not support "multi-disk archives." or "disk spanning"
 
  it does not do varying compression levels. 
 
-
- there is no GUI tool
+ The GUI tool for creating zips is pretty basic.
 
  and, I'm sure, many others
 
 But it is a good basic library for reading and writing zipfiles
-in .NET applications..
+in .NET applications.
 
 And yes, the zipfile that this example is shipped in, was
 produced by this example library. 
+
 
 
 

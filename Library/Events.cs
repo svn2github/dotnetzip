@@ -10,7 +10,7 @@ namespace Ionic.Utils.Zip
     /// reads of the file stream. This callback is called only when the initial 
     /// compression operation inflates the size of the file data. 
     /// </summary>
-    public delegate bool ReReadApprovalCallback(Int32 uncompressedSize, Int32 compressedSize, string filename);
+    public delegate bool ReReadApprovalCallback(Int64 uncompressedSize, Int64 compressedSize, string filename);
 
     /// <summary>
     /// Delegate for the callback by which the application tells the libraary whether
@@ -142,7 +142,7 @@ namespace Ionic.Utils.Zip
         private ZipProgressEventType _flavor;
         private String _archiveName;
         private int _bytesTransferred;
-        private int _totalBytesToTransfer;
+        private Int64 _totalBytesToTransfer;
 
 
         internal ZipProgressEventArgs() { }
@@ -214,7 +214,7 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// Total number of bytes that will be read or written for this entry.
         /// </summary>
-        public int TotalBytesToTransfer
+        public Int64 TotalBytesToTransfer
         {
             get { return _totalBytesToTransfer; }
             set { _totalBytesToTransfer = value; }
@@ -412,7 +412,7 @@ namespace Ionic.Utils.Zip
         }
 
 
-        internal static ExtractProgressEventArgs ByteUpdate(string archiveName, ZipEntry entry, int bytesWritten, int totalBytes)
+        internal static ExtractProgressEventArgs ByteUpdate(string archiveName, ZipEntry entry, int bytesWritten, Int64 totalBytes)
         {
             var x = new ExtractProgressEventArgs(archiveName, ZipProgressEventType.Extracting_EntryBytesWritten);
             x.ArchiveName = archiveName;

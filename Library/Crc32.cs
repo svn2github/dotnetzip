@@ -200,7 +200,7 @@ namespace Ionic.Utils.Zip
     {
         private System.IO.Stream _InnerStream;
         private CRC32 _Crc32;
-        private int _length = 0;
+        private Int64 _length = 0;
 
         /// <summary>
         /// Gets the total number of bytes run through the CRC32 calculator.
@@ -233,7 +233,7 @@ namespace Ionic.Utils.Zip
         /// </summary>
         /// <param name="stream">The underlying stream</param>
         /// <param name="length">The length of the stream to slurp</param>
-        public CrcCalculatorStream(System.IO.Stream stream, int length)
+        public CrcCalculatorStream(System.IO.Stream stream, Int64 length)
             : base()
         {
             _InnerStream = stream;
@@ -271,8 +271,8 @@ namespace Ionic.Utils.Zip
             if (_length != 0)
             {
                 if (_Crc32.TotalBytesRead >= _length) return 0; // EOF
-                int bytesRemaining = _length - _Crc32.TotalBytesRead;
-                if (bytesRemaining < count) bytesToRead = bytesRemaining;
+                Int64 bytesRemaining = _length - _Crc32.TotalBytesRead;
+                if (bytesRemaining < count) bytesToRead = (int) bytesRemaining;
             }
             int n = _InnerStream.Read(buffer, offset, bytesToRead);
             if (n > 0) _Crc32.SlurpBlock(buffer, offset, n);

@@ -279,8 +279,8 @@ namespace Ionic.Utils.Zip
     internal class CountingStream : System.IO.Stream
     {
         private System.IO.Stream _s;
-        private int _bytesWritten;
-        private int _bytesRead;
+        private Int64 _bytesWritten;
+        private Int64 _bytesRead;
 
         /// <summary>
         /// The  constructor.
@@ -292,17 +292,17 @@ namespace Ionic.Utils.Zip
             _s = s;
         }
 
-        public int BytesWritten
+        public Int64 BytesWritten
         {
             get { return _bytesWritten; }
         }
 
-        public int BytesRead
+        public Int64 BytesRead
         {
             get { return _bytesRead; }
         }
 
-        public void Adjust(int delta)
+        public void Adjust(Int64 delta)
         {
             _bytesWritten -= delta;
         }

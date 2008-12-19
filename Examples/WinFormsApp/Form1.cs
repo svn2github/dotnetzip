@@ -237,8 +237,8 @@ namespace WinFormsExample
             else
             {
                 lblStatus.Text = String.Format("Done, Compressed {0} files, {1:N0}% of original.",
-                    _nFilesCompleted, (100.00 * _totalBytesAfterCompress) /_totalBytesBeforeCompress);
-                
+                    _nFilesCompleted, (100.00 * _totalBytesAfterCompress) / _totalBytesBeforeCompress);
+
                 ResetState();
             }
         }
@@ -298,14 +298,24 @@ namespace WinFormsExample
                 {
                     if (this.progressBar2.Maximum == 1)
                     {
-                        this.progressBar2.Maximum = e.TotalBytesToTransfer;
-                        lblStatus.Text = String.Format("{0} of {1} files...({2})", 
+                        // reset
+                        Int64 max = e.TotalBytesToTransfer;
+                        _progress2MaxFactor = 0;
+                        while (max > System.Int32.MaxValue)
+                        {
+                            max /= 2;
+                            _progress2MaxFactor++;
+                        }
+                        this.progressBar2.Maximum = (int)max;
+                        lblStatus.Text = String.Format("{0} of {1} files...({2})",
                             _nFilesCompleted + 1, _entriesToZip, e.CurrentEntry.FileName);
                     }
 
-                    this.progressBar2.Value = (e.BytesTransferred >= this.progressBar2.Maximum)
+                    int xferred = e.BytesTransferred >> _progress2MaxFactor;
+
+                    this.progressBar2.Value = (xferred >= this.progressBar2.Maximum)
                         ? this.progressBar2.Maximum
-                        : e.BytesTransferred;
+                        : xferred;
 
                     this.Update();
                 }
@@ -505,11 +515,12 @@ namespace WinFormsExample
         }
 
         private string _folderName;
+        private int _progress2MaxFactor;
         private int _entriesToZip;
         private bool _saveCanceled;
         private int _nFilesCompleted;
-        private int _totalBytesBeforeCompress;
-        private int _totalBytesAfterCompress;
+        private long _totalBytesBeforeCompress;
+        private long _totalBytesAfterCompress;
         private Thread _workerThread;
         private static string TB_COMMENT_NOTE = "-zip file comment here-";
         private List<String> _EncodingNames;

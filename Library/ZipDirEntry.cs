@@ -111,6 +111,35 @@ namespace Ionic.Utils.Zip
 
         //internal ZipDirEntry(ZipEntry ze) { }
 
+#if OPTIMIZE_WI6612
+        public ZipEntry AsZipEntry()
+        {
+            ZipEntry e = new ZipEntry();
+            e._Comment = this.Comment;
+            e.FileName = this.FileName;
+            if (this.IsDirectory) e.MarkAsDirectory();
+            e._VersionNeeded = _VersionNeeded;
+            e._BitField = _BitField;
+            e._CompressionMethod = _CompressionMethod;
+            e._LastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(this._TimeBlob);
+
+            e._Crc32 = this._Crc32;
+            e._CompressedSize = _CompressedSize;
+            e._CompressedFileDataSize = _CompressedSize;
+            e._UncompressedSize = _UncompressedSize;
+            e._RelativeOffsetOfHeader = _RelativeOffsetOfLocalHeader;
+            e._LocalFileName = e.FileName;
+
+            if ((e._BitField & 0x01) == 0x01)
+            {
+                e._Encryption = EncryptionAlgorithm.PkzipWeak;
+
+                // decrease the filedata size by 12 bytes
+                e._CompressedFileDataSize -= 12;
+            }
+            return e;
+        }
+#endif
 
         /// <summary>
         /// Reads one entry from the zip directory structure in the zip file. 
@@ -139,6 +168,7 @@ namespace Ionic.Utils.Zip
                 return null;
             }
 
+            int bytesRead = 42 + 4;
             byte[] block = new byte[42];
             int n = s.Read(block, 0, block.Length);
             if (n != block.Length) return null;
@@ -146,14 +176,14 @@ namespace Ionic.Utils.Zip
             int i = 0;
             ZipDirEntry zde = new ZipDirEntry();
 
-            Int16 versionMadeBy = (short)(block[i++] + block[i++] * 256);
-            Int16 versionNeeded = (short)(block[i++] + block[i++] * 256);
-            Int16 bitField = (short)(block[i++] + block[i++] * 256);
-            Int16 compressionMethod = (short)(block[i++] + block[i++] * 256);
-            Int32 lastModDateTime = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
-            Int32 crc32 = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
-            Int32 compressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
-            Int32 uncompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+            zde._VersionMadeBy = (short)(block[i++] + block[i++] * 256);
+            zde._VersionNeeded = (short)(block[i++] + block[i++] * 256);
+            zde._BitField = (short)(block[i++] + block[i++] * 256);
+            zde._CompressionMethod = (short)(block[i++] + block[i++] * 256);
+            zde._TimeBlob = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+            zde._Crc32 = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+            zde._CompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+            zde._UncompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
 
             //DateTime lastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(lastModDateTime);
             //i += 24;
@@ -167,12 +197,13 @@ namespace Ionic.Utils.Zip
             zde._InternalFileAttrs = (short)(block[i++] + block[i++] * 256);
             zde._ExternalFileAttrs = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
 
-            //Int32 Offset = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
-            //i += 4;
+            zde._RelativeOffsetOfLocalHeader = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+            
 
             block = new byte[filenameLength];
             n = s.Read(block, 0, block.Length);
-            if ((bitField & 0x0800) == 0x0800)
+            bytesRead += n;
+            if ((zde._BitField & 0x0800) == 0x0800)
             {
                 // UTF-8 is in use
                 zde._FileName = Ionic.Utils.Zip.SharedUtilities.Utf8StringFromBuffer(block, block.Length);
@@ -187,12 +218,14 @@ namespace Ionic.Utils.Zip
             {
                 zde._Extra = new byte[extraFieldLength];
                 n = s.Read(zde._Extra, 0, zde._Extra.Length);
+                bytesRead += n;
             }
             if (commentLength > 0)
             {
                 block = new byte[commentLength];
                 n = s.Read(block, 0, block.Length);
-                if ((bitField & 0x0800) == 0x0800)
+                bytesRead += n;
+                if ((zde._BitField & 0x0800) == 0x0800)
                 {
                     // UTF-8 is in use
                     zde._Comment = Ionic.Utils.Zip.SharedUtilities.Utf8StringFromBuffer(block, block.Length);
@@ -202,6 +235,7 @@ namespace Ionic.Utils.Zip
                     zde._Comment = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length, expectedEncoding);
                 }
             }
+            zde._LengthOfDirEntry = bytesRead;
             return zde;
         }
 
@@ -215,21 +249,21 @@ namespace Ionic.Utils.Zip
             return (signature != ZipConstants.ZipDirEntrySignature);
         }
 
-        //private DateTime _LastModified;
         private string _FileName;
         private string _Comment;
-        //private Int16 _VersionMadeBy;
-        //private Int16 _VersionNeeded;
-        //private Int16 _CompressionMethod;
-        //private Int32 _CompressedSize;
-        //private Int32 _UncompressedSize;
+        private Int16 _VersionMadeBy;
+        private Int16 _VersionNeeded;
+        private Int16 _CompressionMethod;
+        private Int32 _CompressedSize;
+        private Int32 _UncompressedSize;
+        private Int32 _RelativeOffsetOfLocalHeader;
         private Int16 _InternalFileAttrs;
         private Int32 _ExternalFileAttrs;
-        //private Int16 _BitField;
-        //private Int32 _LastModDateTime;
-        //private Int32 _Crc32;
+        private Int16 _BitField;
+        private Int32 _TimeBlob;
+        private Int32 _Crc32;
+        private Int32 _LengthOfDirEntry;
         private byte[] _Extra;
-
     }
 
 

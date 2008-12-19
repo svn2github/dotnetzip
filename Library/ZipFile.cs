@@ -855,8 +855,8 @@ namespace Ionic.Utils.Zip
         /// 
         /// <para>
         /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
-	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
-	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+        /// instance, or you can synchronize multi-thread access to a single instance.
         /// </para>
         /// 
         /// </remarks>
@@ -930,8 +930,8 @@ namespace Ionic.Utils.Zip
         ///
         /// <para>
         /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
-	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
-	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+        /// instance, or you can synchronize multi-thread access to a single instance.
         /// </para>
         /// 
         /// </remarks>
@@ -973,11 +973,11 @@ namespace Ionic.Utils.Zip
         /// a zip filename at some point. Either as a parameter to <c>Save()</c> or 
         /// on the ZipFile object itself.
         /// </para>
-	///
+        ///
         /// <para>
         /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
-	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
-	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+        /// instance, or you can synchronize multi-thread access to a single instance.
         /// </para>
         /// 
         /// </remarks>
@@ -1068,8 +1068,8 @@ namespace Ionic.Utils.Zip
         /// 
         /// <para>
         /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
-	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
-	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+        /// instance, or you can synchronize multi-thread access to a single instance.
         /// </para>
         /// 
         /// </remarks>
@@ -1159,8 +1159,8 @@ namespace Ionic.Utils.Zip
         /// 
         /// <para>
         /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
-	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
-	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+        /// instance, or you can synchronize multi-thread access to a single instance.
         /// </para>
         /// 
         /// </remarks>
@@ -1228,8 +1228,8 @@ namespace Ionic.Utils.Zip
         ///
         /// <para>
         /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
-	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
-	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+        /// instance, or you can synchronize multi-thread access to a single instance.
         /// </para>
         /// 
         /// </remarks>
@@ -1312,8 +1312,8 @@ namespace Ionic.Utils.Zip
         ///
         /// <para>
         /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
-	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
-	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+        /// instance, or you can synchronize multi-thread access to a single instance.
         /// </para>
         /// 
         /// </remarks>
@@ -1354,11 +1354,11 @@ namespace Ionic.Utils.Zip
         /// A graphical or headless application may wish to capture the messages in a different 
         /// TextWriter. 
         /// </para>
-	///
+        ///
         /// <para>
         /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
-	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
-	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+        /// instance, or you can synchronize multi-thread access to a single instance.
         /// </para>
         /// 
         /// </remarks>
@@ -1416,8 +1416,8 @@ namespace Ionic.Utils.Zip
         /// 
         /// <para>
         /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
-	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
-	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+        /// instance, or you can synchronize multi-thread access to a single instance.
         /// </para>
         /// 
         /// </remarks>
@@ -2930,9 +2930,9 @@ namespace Ionic.Utils.Zip
 
         internal bool OnSaveBlock(ZipEntry entry, int bytesXferred, int totalBytesToXfer)
         {
-            lock (LOCK)
+            if (SaveProgress != null)
             {
-                if (SaveProgress != null)
+                lock (LOCK)
                 {
                     var e = SaveProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry,
                                   bytesXferred, totalBytesToXfer);
@@ -2946,9 +2946,9 @@ namespace Ionic.Utils.Zip
 
         private void OnSaveEntry(int current, ZipEntry entry, bool before)
         {
-            lock (LOCK)
+            if (SaveProgress != null)
             {
-                if (SaveProgress != null)
+                lock (LOCK)
                 {
                     var e = new SaveProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, entry);
                     SaveProgress(this, e);
@@ -2960,9 +2960,9 @@ namespace Ionic.Utils.Zip
 
         private void OnSaveEvent(ZipProgressEventType eventFlavor)
         {
-            lock (LOCK)
+            if (SaveProgress != null)
             {
-                if (SaveProgress != null)
+                lock (LOCK)
                 {
                     var e = new SaveProgressEventArgs(ArchiveNameForEvent, eventFlavor);
                     SaveProgress(this, e);
@@ -2974,9 +2974,9 @@ namespace Ionic.Utils.Zip
 
         private void OnSaveStarted()
         {
-            lock (LOCK)
+            if (SaveProgress != null)
             {
-                if (SaveProgress != null)
+                lock (LOCK)
                 {
                     var e = SaveProgressEventArgs.Started(ArchiveNameForEvent);
                     SaveProgress(this, e);
@@ -2985,9 +2985,9 @@ namespace Ionic.Utils.Zip
         }
         private void OnSaveCompleted()
         {
-            lock (LOCK)
+            if (SaveProgress != null)
             {
-                if (SaveProgress != null)
+                lock (LOCK)
                 {
                     var e = SaveProgressEventArgs.Completed(ArchiveNameForEvent);
                     SaveProgress(this, e);
@@ -3055,9 +3055,9 @@ namespace Ionic.Utils.Zip
 
         private void OnReadStarted()
         {
-            lock (LOCK)
+            if (ReadProgress != null)
             {
-                if (ReadProgress != null)
+                lock (LOCK)
                 {
                     var e = ReadProgressEventArgs.Started(ArchiveNameForEvent);
                     ReadProgress(this, e);
@@ -3067,9 +3067,9 @@ namespace Ionic.Utils.Zip
 
         private void OnReadCompleted()
         {
-            lock (LOCK)
+            if (ReadProgress != null)
             {
-                if (ReadProgress != null)
+                lock (LOCK)
                 {
                     var e = ReadProgressEventArgs.Completed(ArchiveNameForEvent);
                     ReadProgress(this, e);
@@ -3079,9 +3079,9 @@ namespace Ionic.Utils.Zip
 
         internal void OnReadBytes(ZipEntry entry)
         {
-            lock (LOCK)
+            if (ReadProgress != null)
             {
-                if (ReadProgress != null)
+                lock (LOCK)
                 {
                     var e = ReadProgressEventArgs.ByteUpdate(ArchiveNameForEvent,
                                         entry,
@@ -3094,9 +3094,9 @@ namespace Ionic.Utils.Zip
 
         internal void OnReadEntry(bool before, ZipEntry entry)
         {
-            lock (LOCK)
+            if (ReadProgress != null)
             {
-                if (ReadProgress != null)
+                lock (LOCK)
                 {
                     ReadProgressEventArgs e = (before)
                     ? ReadProgressEventArgs.Before(ArchiveNameForEvent, _entries.Count)
@@ -3260,9 +3260,9 @@ namespace Ionic.Utils.Zip
 
         private void OnExtractEntry(int current, bool before, ZipEntry currentEntry, string path, bool overwrite)
         {
-            lock (LOCK)
+            if (ExtractProgress != null)
             {
-                if (ExtractProgress != null)
+                lock (LOCK)
                 {
                     var e = new ExtractProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, currentEntry, path, overwrite);
                     ExtractProgress(this, e);
@@ -3274,11 +3274,11 @@ namespace Ionic.Utils.Zip
 
 
         // Can be called from within ZipEntry._ExtractOne.
-        internal bool OnExtractBlock(ZipEntry entry, int bytesWritten, int totalBytesToWrite)
+        internal bool OnExtractBlock(ZipEntry entry, int bytesWritten, Int64 totalBytesToWrite)
         {
-            lock (LOCK)
+            if (ExtractProgress != null)
             {
-                if (ExtractProgress != null)
+                lock (LOCK)
                 {
                     var e = ExtractProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry,
                                 bytesWritten, totalBytesToWrite);
@@ -3294,9 +3294,9 @@ namespace Ionic.Utils.Zip
         // Can be called from within ZipEntry.InternalExtract.
         internal bool OnSingleEntryExtract(ZipEntry entry, string path, bool before, bool overwrite)
         {
-            lock (LOCK)
+            if (ExtractProgress != null)
             {
-                if (ExtractProgress != null)
+                lock (LOCK)
                 {
                     var e = (before)
             ? ExtractProgressEventArgs.BeforeExtractEntry(ArchiveNameForEvent, entry, path, overwrite)
@@ -3312,9 +3312,9 @@ namespace Ionic.Utils.Zip
 
         private void OnExtractAllCompleted(string path, bool wantOverwrite)
         {
-            lock (LOCK)
+            if (ExtractProgress != null)
             {
-                if (ExtractProgress != null)
+                lock (LOCK)
                 {
                     var e = ExtractProgressEventArgs.ExtractAllCompleted(ArchiveNameForEvent,
                          path,
@@ -3327,9 +3327,9 @@ namespace Ionic.Utils.Zip
 
         private void OnExtractAllStarted(string path, bool wantOverwrite)
         {
-            lock (LOCK)
+            if (ExtractProgress != null)
             {
-                if (ExtractProgress != null)
+                lock (LOCK)
                 {
                     var e = ExtractProgressEventArgs.ExtractAllStarted(ArchiveNameForEvent,
                          path,
@@ -4054,60 +4054,72 @@ namespace Ionic.Utils.Zip
 
         private static void ReadIntoInstance(ZipFile zf)
         {
+            System.IO.Stream s = zf.ReadStream;
             try
             {
-                zf.OnReadStarted();
-                zf._entries = new System.Collections.Generic.List<ZipEntry>();
-                ZipEntry e;
-                if (zf.Verbose)
-                    if (zf.Name == null)
-                        zf.StatusMessageTextWriter.WriteLine("Reading zip from stream...");
-                    else
-                        zf.StatusMessageTextWriter.WriteLine("Reading zip {0}...", zf.Name);
-
-                // work item 6647:  PK00 (packed to removable disk)
-                bool firstEntry = true;
-                while ((e = ZipEntry.Read(zf, firstEntry)) != null)
+#if OPTIMIZE_WI6612
+                if (!s.CanSeek)
                 {
-                    if (zf.Verbose)
-                        zf.StatusMessageTextWriter.WriteLine("  {0}", e.FileName);
-
-                    zf._entries.Add(e);
-                    firstEntry = false;
+                    ReadIntoInstance_Orig(zf);
+                    return;
                 }
 
-                // read the zipfile's central directory structure here.
-                zf._direntries = new System.Collections.Generic.List<ZipDirEntry>();
+                long origPosn = s.Position;
 
-                ZipDirEntry de;
-                while ((de = ZipDirEntry.Read(zf.ReadStream, zf.ProvisionalAlternateEncoding)) != null)
+                // Try reading the central directory, rather than scanning the file. 
+                uint datum = (uint)Ionic.Utils.Zip.SharedUtilities.ReadInt(s);
+                if (datum != ZipConstants.PackedToRemovableMedia &&
+                    datum != ZipConstants.ZipEntrySignature &&
+                    datum != ZipConstants.EndOfCentralDirectorySignature)
                 {
-                    zf._direntries.Add(de);
-                    // Housekeeping: Since ZipFile exposes ZipEntry elements in the enumerator, 
-                    // we need to copy the comment that we grab from the ZipDirEntry
-                    // into the ZipEntry, so the application can access the comment. 
-                    // Also since ZipEntry is used to Write zip files, we need to copy the 
-                    // file attributes to the ZipEntry as appropriate. 
-                    foreach (ZipEntry e1 in zf._entries)
+                    throw new BadReadException(String.Format("  ZipFile::Read(): Bad signature (0x{0:X8}) at position 0x{1:X8}", datum, s.Position));
+                }
+
+                if (datum == ZipConstants.EndOfCentralDirectorySignature)
+                    return;
+
+                int nTries = 0;
+                bool success = false;
+                long posn = -18;  // size of end-of-central-directory-footer plus 2 bytes for archive comment length of 0
+                do
+                {
+                    s.Seek(posn, System.IO.SeekOrigin.End);
+                    long bytesRead = SharedUtilities.FindSignature(s, (int)ZipConstants.EndOfCentralDirectorySignature);
+                    if (bytesRead != -1)
                     {
-                        if (e1.FileName == de.FileName)
-                        {
-                            e1._Comment = de.Comment;
-                            if (de.IsDirectory) e1.MarkAsDirectory();
-                            break;
-                        }
+                        success = true;
+                    }
+                    else
+                    {
+                        nTries++;
+                        posn -= (80 * nTries);
                     }
                 }
+                while (!success && nTries < 3);
 
-                ReadCentralDirectoryFooter(zf);
+                if (success)
+                {
+                    byte[] block = new byte[16];
+                    zf.ReadStream.Read(block, 0, block.Length);
+                    int i = 12;
 
-                if (zf.Verbose && !String.IsNullOrEmpty(zf.Comment))
-                    zf.StatusMessageTextWriter.WriteLine("Zip file Comment: {0}", zf.Comment);
+                    Int32 DirOffset = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+                    s.Seek(DirOffset, System.IO.SeekOrigin.Begin);
 
-                // when finished slurping in the zip, close the read stream
-                //zf.ReadStream.Close();
+                    ReadCentralDirectory(zf);
+                }
+                else
+                {
+                    // Could not find the central directory.
+                    // Fallback to the old method
+                    s.Seek(origPosn, System.IO.SeekOrigin.Begin);
+                    ReadIntoInstance_Orig(zf);
+                }
 
-                zf.OnReadCompleted();
+#else
+                ReadIntoInstance_Orig(zf);
+#endif
+
             }
             catch (Exception e1)
             {
@@ -4126,6 +4138,105 @@ namespace Ionic.Utils.Zip
             }
         }
 
+#if OPTIMIZE_WI6612
+        private static void ReadCentralDirectory(ZipFile zf)
+        {
+            // read the zipfile's central directory structure here.
+            zf._direntries = new System.Collections.Generic.List<ZipDirEntry>();
+
+            zf._entries = new System.Collections.Generic.List<ZipEntry>();
+
+            ZipDirEntry de;
+            while ((de = ZipDirEntry.Read(zf.ReadStream, zf.ProvisionalAlternateEncoding)) != null)
+            {
+                zf._direntries.Add(de);
+
+                ZipEntry e = de.AsZipEntry();
+                e._zipfile = zf;
+                
+                e._archiveStream = zf.ReadStream;
+                zf.OnReadEntry(true, null);
+
+                if (zf.Verbose)
+                    zf.StatusMessageTextWriter.WriteLine("  {0}", e.FileName);
+
+                zf._entries.Add(e);
+            }
+
+            ReadCentralDirectoryFooter(zf);
+
+            if (zf.Verbose && !String.IsNullOrEmpty(zf.Comment))
+                zf.StatusMessageTextWriter.WriteLine("Zip file Comment: {0}", zf.Comment);
+
+            // when finished slurping in the zip, close the read stream
+            //zf.ReadStream.Close();
+
+            zf.OnReadCompleted();
+        }
+#endif
+
+
+        // build the TOC by reading each entry in the file.
+        private static void ReadIntoInstance_Orig(ZipFile zf)
+        {
+
+            zf.OnReadStarted();
+            zf._entries = new System.Collections.Generic.List<ZipEntry>();
+            ZipEntry e;
+            if (zf.Verbose)
+                if (zf.Name == null)
+                    zf.StatusMessageTextWriter.WriteLine("Reading zip from stream...");
+                else
+                    zf.StatusMessageTextWriter.WriteLine("Reading zip {0}...", zf.Name);
+
+            // work item 6647:  PK00 (packed to removable disk)
+            bool firstEntry = true;
+            while ((e = ZipEntry.Read(zf, firstEntry)) != null)
+            {
+                if (zf.Verbose)
+                    zf.StatusMessageTextWriter.WriteLine("  {0}", e.FileName);
+
+                zf._entries.Add(e);
+                firstEntry = false;
+            }
+
+            // read the zipfile's central directory structure here.
+            zf._direntries = new System.Collections.Generic.List<ZipDirEntry>();
+
+            ZipDirEntry de;
+            while ((de = ZipDirEntry.Read(zf.ReadStream, zf.ProvisionalAlternateEncoding)) != null)
+            {
+                zf._direntries.Add(de);
+                // Housekeeping: Since ZipFile exposes ZipEntry elements in the enumerator, 
+                // we need to copy the comment that we grab from the ZipDirEntry
+                // into the ZipEntry, so the application can access the comment. 
+                // Also since ZipEntry is used to Write zip files, we need to copy the 
+                // file attributes to the ZipEntry as appropriate. 
+                foreach (ZipEntry e1 in zf._entries)
+                {
+                    if (e1.FileName == de.FileName)
+                    {
+                        e1._Comment = de.Comment;
+                        if (de.IsDirectory) e1.MarkAsDirectory();
+                        break;
+                    }
+                }
+            }
+
+            ReadCentralDirectoryFooter(zf);
+
+            if (zf.Verbose && !String.IsNullOrEmpty(zf.Comment))
+                zf.StatusMessageTextWriter.WriteLine("Zip file Comment: {0}", zf.Comment);
+
+            // when finished slurping in the zip, close the read stream
+            //zf.ReadStream.Close();
+
+            zf.OnReadCompleted();
+
+        }
+
+
+
 
         private static void ReadCentralDirectoryFooter(ZipFile zf)
         {
@@ -4141,10 +4252,10 @@ namespace Ionic.Utils.Zip
             }
 
             // read a bunch of throwaway metadata for supporting multi-disk archives (throwback!)
-            // read the comment here
             byte[] block = new byte[16];
             zf.ReadStream.Read(block, 0, block.Length); // discard result
 
+            // read the comment here
             ReadZipFileComment(zf);
         }
 
@@ -4622,16 +4733,6 @@ namespace Ionic.Utils.Zip
             // workitem 6402
             get
             {
-#if NONONO
-                if (_JustSaved)
-                {
-                    // work item 5593
-                    // read in the just-saved zip archive                    
-                    ReadIntoInstance(this);
-                    _JustSaved = false;
-                }
-#endif
-
                 return _entries[ix];
             }
 
@@ -4710,15 +4811,6 @@ namespace Ionic.Utils.Zip
         {
             get
             {
-#if NONONO
-		    if (_JustSaved)
-		    {
-			// work item 5593
-			// read in the just-saved zip archive                    
-			ReadIntoInstance(this);
-			_JustSaved = false;
-		    }
-#endif
                 foreach (ZipEntry e in _entries)
                 {
                     if (this.CaseSensitiveRetrieval)
@@ -4899,20 +4991,6 @@ namespace Ionic.Utils.Zip
         {
             if (!_entries.Contains(entry))
                 throw new ArgumentException("The entry you specified does not exist in the zip archive.");
-
-#if NONONO	    
-		if (_JustSaved)
-		{
-		    // In this case the _direntries struct is not filled. 
-		    // 
-		    // work item 5593
-		    // read in the just-saved zip archive 
-		    ZipFile x = new ZipFile();
-		    ReadIntoInstance(x);
-
-		    _JustSaved = false;
-		}
-#endif
 
             _entries.Remove(entry);
 
