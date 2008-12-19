@@ -4009,12 +4009,15 @@ namespace Ionic.Utils.Zip
                     else
                         zf.StatusMessageTextWriter.WriteLine("Reading zip {0}...", zf.Name);
 
-                while ((e = ZipEntry.Read(zf)) != null)
+                // work item 6647:  PK00 (packed to removable disk)
+                bool firstEntry = true;
+                while ((e = ZipEntry.Read(zf, firstEntry)) != null)
                 {
                     if (zf.Verbose)
                         zf.StatusMessageTextWriter.WriteLine("  {0}", e.FileName);
 
                     zf._entries.Add(e);
+                    firstEntry = false;
                 }
 
                 // read the zipfile's central directory structure here.

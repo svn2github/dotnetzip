@@ -848,16 +848,21 @@ namespace Ionic.Utils.Zip
         /// actually decrypt at this point. 
         /// </summary>
         /// <param name="zf">the zipfile this entry belongs to.</param>
+        /// <param name="first">true of this is the first entry being read from the stream.</param>
         /// <returns>the ZipEntry read from the stream.</returns>
-        internal static ZipEntry Read(ZipFile zf)
+        internal static ZipEntry Read(ZipFile zf, bool first)
         {
             System.IO.Stream s = zf.ReadStream;
+
             System.Text.Encoding defaultEncoding = zf.ProvisionalAlternateEncoding;
             ZipEntry entry = new ZipEntry();
             entry._Source = EntrySource.Zipfile;
             entry._zipfile = zf;
             entry._archiveStream = s;
             zf.OnReadEntry(true, null);
+
+            if (first) HandlePK00Prefix(entry);
+
             if (!ReadHeader(entry, defaultEncoding)) return null;
 
             // store the position in the stream for this entry
@@ -882,6 +887,20 @@ namespace Ionic.Utils.Zip
 
             return entry;
         }
+
+
+	private static void HandlePK00Prefix(ZipEntry entry)
+	{
+	    // in some cases, the zip file begins with "PK00".  This is a throwback and is rare,
+	    // but we handle it anyway. We do not change behavior based on it.
+            System.IO.Stream s = entry.ArchiveStream;
+            uint datum = (uint)Ionic.Utils.Zip.SharedUtilities.ReadInt(s);
+            if (datum != ZipConstants.PackedToRemovableMedia)
+            {
+                s.Seek(-4, System.IO.SeekOrigin.Current); // unread the block
+	    }
+	}
+
 
 
         private static void HandleUnexpectedDataDescriptor(ZipEntry entry)
