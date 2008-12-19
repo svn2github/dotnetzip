@@ -853,6 +853,12 @@ namespace Ionic.Utils.Zip
         /// property after creating the ZipFile instance.
         /// </para>
         /// 
+        /// <para>
+        /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
+	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// </para>
+        /// 
         /// </remarks>
         ///
         /// <exception cref="Ionic.Utils.Zip.ZipException">
@@ -922,6 +928,12 @@ namespace Ionic.Utils.Zip
         /// the ProvisionalAlternateEncoding property on the ZIpFile instance after construction.
         /// </para>
         ///
+        /// <para>
+        /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
+	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// </para>
+        /// 
         /// </remarks>
         /// 
         /// <exception cref="Ionic.Utils.Zip.ZipException">
@@ -961,6 +973,13 @@ namespace Ionic.Utils.Zip
         /// a zip filename at some point. Either as a parameter to <c>Save()</c> or 
         /// on the ZipFile object itself.
         /// </para>
+	///
+        /// <para>
+        /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
+	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// </para>
+        /// 
         /// </remarks>
         /// 
         /// <example>
@@ -1045,6 +1064,12 @@ namespace Ionic.Utils.Zip
         /// <para>
         /// To encrypt the data for the  files added to the ZipFile instance, set the Password
         /// property after creating the ZipFile instance.
+        /// </para>
+        /// 
+        /// <para>
+        /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
+	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+	/// instance, or you can synchronize multi-thread access to a single instance.
         /// </para>
         /// 
         /// </remarks>
@@ -1132,6 +1157,12 @@ namespace Ionic.Utils.Zip
         /// property after creating the ZipFile instance.
         /// </para>
         /// 
+        /// <para>
+        /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
+	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// </para>
+        /// 
         /// </remarks>
         ///
         /// <exception cref="Ionic.Utils.Zip.ZipException">
@@ -1195,6 +1226,12 @@ namespace Ionic.Utils.Zip
         /// result in the creation of a temporary zipfile in the filesystem.  
         /// </para>
         ///
+        /// <para>
+        /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
+	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// </para>
+        /// 
         /// </remarks>
         /// 
         /// <exception cref="System.ArgumentException">
@@ -1273,6 +1310,12 @@ namespace Ionic.Utils.Zip
         /// the ProvisionalAlternateEncoding property on the ZIpFile instance after construction.
         /// </para>
         ///
+        /// <para>
+        /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
+	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// </para>
+        /// 
         /// </remarks>
         ///
         /// <param name="outputStream">The <c>System.IO.Stream</c> to write to. It must be writable.</param>
@@ -1311,6 +1354,13 @@ namespace Ionic.Utils.Zip
         /// A graphical or headless application may wish to capture the messages in a different 
         /// TextWriter. 
         /// </para>
+	///
+        /// <para>
+        /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
+	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+	/// instance, or you can synchronize multi-thread access to a single instance.
+        /// </para>
+        /// 
         /// </remarks>
         ///
         /// <exception cref="System.ArgumentException">
@@ -1362,6 +1412,12 @@ namespace Ionic.Utils.Zip
         /// The Encoding is used as the default alternate encoding for entries with filenames
         /// or comments that cannot be encoded with the IBM437 code page.  This is a equivalent to setting 
         /// the ProvisionalAlternateEncoding property on the ZIpFile instance after construction.
+        /// </para>
+        /// 
+        /// <para>
+        /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a single
+	/// instance with multiple threads.  You may have multiple threads that each use a distinct ZipFile 
+	/// instance, or you can synchronize multi-thread access to a single instance.
         /// </para>
         /// 
         /// </remarks>
