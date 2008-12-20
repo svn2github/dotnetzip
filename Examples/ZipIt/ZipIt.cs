@@ -35,6 +35,7 @@ namespace Ionic.Utils.Zip.Examples
             "  -utf8                 - use UTF-8 encoding for entries with comments or\n" +
             "                          filenames that cannot be encoded with the default IBM437\n" +
             "                          code page.\n" +
+            "  -64                   - use ZIP64 extensions, for large files or large numbers of files.\n" +
             "  -cp <codepage         - use the specified numeric codepage for entries with comments \n" +
             "                          or filenames that cannot be encoded with the default IBM437\n" +
             "                          code page.\n" +
@@ -99,6 +100,10 @@ namespace Ionic.Utils.Zip.Examples
 
                             case "-utf8":
                                 zip.UseUnicodeAsNecessary = true;
+                                break;
+
+                            case "-64":
+                                zip.UseZip64WhenSaving = Zip64Option.Always;
                                 break;
 
                             case "-s":

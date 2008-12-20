@@ -161,9 +161,10 @@ namespace Ionic.Utils.Zip
                 // This can happen when walking through a zipfile.  After the last ZipDirEntry, 
                 // we expect to read an EndOfCentralDirectorySignature.  When we get this is how we 
                 // know we've reached the end of the central directory. 
-                if (signature != ZipConstants.EndOfCentralDirectorySignature)
+                if (signature != ZipConstants.EndOfCentralDirectorySignature &&
+                    signature != ZipConstants.Zip64EndOfCentralDirectoryRecordSignature)
                 {
-                    throw new BadReadException(String.Format("  ZipDirEntry::Read(): Bad signature ({0:X8}) at position 0x{1:X8}", signature, s.Position));
+                    throw new BadReadException(String.Format("  ZipDirEntry::Read(): Bad signature (0x{0:X8}) at position 0x{1:X8}", signature, s.Position));
                 }
                 return null;
             }

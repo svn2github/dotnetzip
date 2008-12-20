@@ -100,11 +100,18 @@ namespace WinFormsExample
                 options.Comment += this.tbComment.Text;
 
 
-            if (this.radioSfxCmd.Checked)
+            if (this.radioFlavorSfxCmd.Checked)
                 options.ZipFlavor = 2;
-            else if (this.radioSfxGui.Checked)
+            else if (this.radioFlavorSfxGui.Checked)
                 options.ZipFlavor = 1;
             else options.ZipFlavor = 0;
+
+            if (this.radioZip64AsNecessary.Checked)
+                options.Zip64 = Zip64Option.AsNecessary;
+            else if (this.radioZip64Always.Checked)
+                options.Zip64 = Zip64Option.Always;
+            else options.Zip64 = Zip64Option.Never;
+
 
             _workerThread = new Thread(this.DoSave);
             _workerThread.Name = "Zip Saver thread";
@@ -140,6 +147,7 @@ namespace WinFormsExample
             }
         }
 
+
         private void SetProgressBars()
         {
             if (this.progressBar1.InvokeRequired)
@@ -173,6 +181,8 @@ namespace WinFormsExample
                     _entriesToZip = zip1.EntryFileNames.Count;
                     SetProgressBars();
                     zip1.SaveProgress += this.zip1_SaveProgress;
+
+                    zip1.UseZip64WhenSaving = options.Zip64;
 
                     if (options.ZipFlavor == 1)
                         zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.WinFormsApplication);
@@ -220,7 +230,7 @@ namespace WinFormsExample
             }
             else
             {
-                lblStatus.Text = (this.radioSfxCmd.Checked || this.radioSfxGui.Checked)
+                lblStatus.Text = (this.radioFlavorSfxCmd.Checked || this.radioFlavorSfxGui.Checked)
                     ? "Temp archive saved...compiling SFX..."
                     : "Temp archive saved...";
             }
@@ -362,9 +372,9 @@ namespace WinFormsExample
             }
         }
 
-        private void radioSfx_CheckedChanged(object sender, EventArgs e)
+        private void radioFlavorSfx_CheckedChanged(object sender, EventArgs e)
         {
-            if (this.radioSfxGui.Checked || this.radioSfxCmd.Checked)
+            if (this.radioFlavorSfxGui.Checked || this.radioFlavorSfxCmd.Checked)
             {
                 // Always use UTF-8 when creating a self-extractor.
                 // A zip created with UTF-8 encoding is foolproof when 
@@ -388,9 +398,9 @@ namespace WinFormsExample
             }
         }
 
-        private void radioTraditionalZip_CheckedChanged(object sender, EventArgs e)
+        private void radioFlavorZip_CheckedChanged(object sender, EventArgs e)
         {
-            if (this.radioTraditionalZip.Checked)
+            if (this.radioFlavorZip.Checked)
             {
                 // re-enable the encoding, and set it to what it was most recently
                 this.comboBox1.Enabled = true;
@@ -444,11 +454,19 @@ namespace WinFormsExample
 
                 int x = (Int32)AppCuKey.GetValue(_rvn_ZipFlavor, 0);
                 if (x == 2)
-                    this.radioSfxCmd.Checked = true;
+                    this.radioFlavorSfxCmd.Checked = true;
                 else if (x == 1)
-                    this.radioSfxGui.Checked = true;
+                    this.radioFlavorSfxGui.Checked = true;
                 else
-                    this.radioTraditionalZip.Checked = true;
+                    this.radioFlavorZip.Checked = true;
+
+                x = (Int32)AppCuKey.GetValue(_rvn_Zip64Option, 0);
+                if (x == 1)
+                    this.radioZip64AsNecessary.Checked = true;
+                else if (x == 2)
+                    this.radioZip64Always.Checked = true;
+                else
+                    this.radioZip64Never.Checked = true;
 
 
                 AppCuKey.Close();
@@ -478,11 +496,18 @@ namespace WinFormsExample
                 AppCuKey.SetValue(_rvn_Encoding, this.comboBox1.SelectedItem.ToString());
 
                 int x = 0;
-                if (this.radioSfxCmd.Checked)
+                if (this.radioFlavorSfxCmd.Checked)
                     x = 2;
-                else if (this.radioSfxGui.Checked)
+                else if (this.radioFlavorSfxGui.Checked)
                     x = 1;
                 AppCuKey.SetValue(_rvn_ZipFlavor, x);
+
+                x = 0;
+                if (this.radioZip64AsNecessary.Checked)
+                    x = 1;
+                else if (this.radioZip64Always.Checked)
+                    x = 2;
+                AppCuKey.SetValue(_rvn_Zip64Option, x);
 
                 AppCuKey.SetValue(_rvn_LastRun, System.DateTime.Now.ToString("yyyy MMM dd HH:mm:ss"));
                 x = (Int32)AppCuKey.GetValue(_rvn_Runs, 0);
@@ -532,6 +557,7 @@ namespace WinFormsExample
         private static string _rvn_ZipTarget = "ZipTarget";
         private static string _rvn_Encoding = "Encoding";
         private static string _rvn_ZipFlavor = "ZipFlavor";
+        private static string _rvn_Zip64Option = "Zip64Option";
         private static string _rvn_LastRun = "LastRun";
         private static string _rvn_Runs = "Runs";
 
@@ -544,5 +570,6 @@ namespace WinFormsExample
         public string Encoding;
         public string Comment;
         public int ZipFlavor;
+        public Zip64Option Zip64;
     }
 }

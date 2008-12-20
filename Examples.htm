@@ -23,6 +23,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 
 <p>There are a few complete, working example applications shipped in the source code distribution. </p>
 
+<hr>
 <p>Add items to a zip file, using the same password for all items.</p>
 
 <pre lang="cs" numberLines="true" outlining="true"
@@ -37,6 +38,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
   }
 </pre>
 
+<hr>
 
 <p>Add files to a zip file, using different passwords for different files.</p>
 <pre lang="cs" numberLines="true" outlining="true"
@@ -55,6 +57,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 
 
 
+<hr>
 <p>Create a zip, but tell the library to not use compression when adding
 in the file. This makes sense with previously-compressed files such as
 those in .mp3 format.  The Deflate algorithm can actually increase the
@@ -76,6 +79,7 @@ to do it explicitly.
 
 
 
+<hr>
 
 <p>Zip up an entire directory, recursively.  Use unicode to encode
 entries in the archive, for those files in that directory tree that have
@@ -96,6 +100,7 @@ widely supported by other zip utilities)</p>
 
 
 
+<hr>
 
 <p>Zip up an entire directory, recursively.  Use the "big5" encoding for 
 those files in that directory tree that have
@@ -113,6 +118,7 @@ chinese characters.
 </pre>
 
 
+<hr>
 
 <p>Zip up a set of files, each protected by the same password. Also,
 explicitly  override the last modified time for all of the files as they are stored
@@ -135,6 +141,7 @@ in the zip archive.</p>
   }
 </pre>
 
+<hr>
 
 <p>Zip up a set of files and directories, and re-map them into a
 different directory hierarchy in the zip file.</p>
@@ -155,6 +162,7 @@ different directory hierarchy in the zip file.</p>
   }
 </pre>
 
+<hr>
 
 <p>Add content obtained from a stream into a zip archive. Also, add a
 comment to the entry that was added from the stream.</p>
@@ -171,6 +179,8 @@ comment to the entry that was added from the stream.</p>
 </pre>
 
 
+<hr>
+
 <p>Remove an entry from an existing zip file.  This was first supported in v1.5 of the library.</p>
 <pre lang="cs" numberLines="true" outlining="true"
   title="Remove an entry">
@@ -184,6 +194,33 @@ comment to the entry that was added from the stream.</p>
 </pre>
 
 
+<hr>
+
+<p>Open an existing zip file, rename an entry, then save it. This was first supported in v1.7 of the library.</p>
+<pre lang="cs" numberLines="true" outlining="true"
+  title="Rename">
+ int renameCount = 0;
+ using (ZipFile zip2 = ZipFile.Read(ExistingZipFile))
+ {
+    foreach (ZipEntry e in zip2)
+    {
+      if (e.FileName.EndsWith(".txt"))
+      {
+         var newname = "renamed_files\\" + e.FileName;
+
+         e.FileName = newname;
+         e.Comment = "renamed";
+         renameCount++;
+      }
+    }
+    zip2.Comment = String.Format("This archive has been modified. {0} files have been renamed.", renameCount);
+    zip2.Save();
+ }
+</pre>
+
+
+<hr>
+
 <p>Extract all files from a zip archive:</p>
 <pre lang="cs" numberLines="true" outlining="true"
   title="Extract 1">
@@ -196,6 +233,8 @@ comment to the entry that was added from the stream.</p>
   }
 </pre>
 
+
+<hr>
 
 <p>The default behavior of extraction is to NOT overwrite existing
 files. In this example, the app Extracts all files, and overwrites
@@ -213,6 +252,7 @@ existing files in the filesystem:</p>
 </pre>
 
 
+<hr>
 <p>Extract an entry from the zip archive into a previously-opened stream:</p>
 
 <pre lang="cs" numberLines="true" outlining="true"
@@ -224,6 +264,7 @@ existing files in the filesystem:</p>
   }
 </pre>
 
+<hr>
 
 <p>Extract an Entry that was encrypted with a password, into the
 specified base directory:</p>
@@ -237,6 +278,7 @@ specified base directory:</p>
   }
 </pre>
 
+<hr>
 
 <p>List all the entries in a zip file: </p>
 
@@ -268,6 +310,7 @@ specified base directory:</p>
   }
 </pre>
 
+<hr>
 
 <p>Read in zip archive content from a stream, then extract the content
 for one entry to another stream. In this example, the filename
@@ -283,6 +326,7 @@ filesystem. The I/O is done strictly with the given streams. </p>
   }
 </pre>
 
+<hr>
 
 <p>Create a zip dynamically within an ASP.NET postback method, then
 download that zipfile to the requesting browser through
@@ -298,7 +342,8 @@ public void btnGo_Click (Object sender, EventArgs e)
   Response.ContentType = "application/zip";
   Response.AddHeader("content-disposition", "filename=" + filename);
   
-  using (ZipFile zip = new ZipFile(Response.OutputStream)) {
+  using (ZipFile zip = new ZipFile(Response.OutputStream))
+  {
     zip.AddFile(ListOfFiles.SelectedItem.Text, "files");
     zip.AddStringAsFile(ReadmeText, "Readme.txt", "");
     zip.Save();
@@ -308,7 +353,7 @@ public void btnGo_Click (Object sender, EventArgs e)
 }
 </pre>
 
-
+<hr>
 <p>Create a zip with a single entry, obtaining the content for that entry
 from a string.   Attach a comment to that entry.  Specify the name of the zip file at the time of
 save. </p>
@@ -324,6 +369,7 @@ save. </p>
   }
 </pre>
 
+<hr>
 
 <p>Open an existing zip archive and modify it: update one entry and
 remove another. </p>
@@ -334,7 +380,14 @@ remove another. </p>
   {
     ZipEntry e = zip["README.txt"];
     e.RemoveEntry();
-    zip.UpdateItem("Portfolio.doc"); 
+
+    // for this entry, update the archive  with content from the filesystem
+    zip.UpdateItem("Portfolio.doc");
+
+    // update the filename of an entry
+    e = zip["Table1.jpg"];
+    e.FileName = "Figure1.jpg";
+
     zip.Comment = "This zip archive was updated " + System.DateTime.ToString("G"); 
     zip.Save();
   }

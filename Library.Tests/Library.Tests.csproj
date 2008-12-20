@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{549466CE-5CA6-4904-BA44-58141544BE70}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -47,6 +47,7 @@
     <Compile Include="TestUtilities.cs" />
     <Compile Include="UnicodeTests.cs" />
     <Compile Include="UpdateTests.cs" />
+    <Compile Include="Zip64Tests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Library\Library.csproj">

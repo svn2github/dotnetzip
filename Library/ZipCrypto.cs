@@ -11,7 +11,7 @@
 // Created Tue Apr 15 17:39:56 2008
 //
 // last saved: 
-// Time-stamp: <2008-October-06 20:53:05>
+// Time-stamp: <2008-December-19 21:20:59>
 //
 // ------------------------------------------------------------------
 
@@ -37,10 +37,14 @@ namespace Ionic.Utils.Zip
     public class ZipCrypto
     {
         /// <summary>
-        /// The default constructor.  You're probably never gonna call this.  Seriously.
-        /// Stop reading this documentation.  It's not useful to you.  Go do something else.
-        /// Check the football scores. Go get an ice cream with a friend.  Seriously.
+        /// The default constructor for ZipCrypto.
         /// </summary>
+	///
+	/// <remarks>
+	/// This class is intended for internal use by the library only. It's probably not useful to you. Seriously.
+        /// Stop reading this documentation.  It's a waste of your time.  Go do something else.
+        /// Check the football scores. Go get an ice cream with a friend.  Seriously.
+	/// </remarks>
         public ZipCrypto() { }
 
 

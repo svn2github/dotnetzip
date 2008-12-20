@@ -42,10 +42,19 @@
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.tbComment = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
-            this.radioTraditionalZip = new System.Windows.Forms.RadioButton();
-            this.radioSfxGui = new System.Windows.Forms.RadioButton();
-            this.radioSfxCmd = new System.Windows.Forms.RadioButton();
+            this.radioFlavorZip = new System.Windows.Forms.RadioButton();
+            this.radioFlavorSfxGui = new System.Windows.Forms.RadioButton();
+            this.radioFlavorSfxCmd = new System.Windows.Forms.RadioButton();
             this.progressBar2 = new System.Windows.Forms.ProgressBar();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.radioZip64Never = new System.Windows.Forms.RadioButton();
+            this.radioZip64Always = new System.Windows.Forms.RadioButton();
+            this.radioZip64AsNecessary = new System.Windows.Forms.RadioButton();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -82,7 +91,7 @@
             // btnOk
             // 
             this.btnOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOk.Location = new System.Drawing.Point(509, 223);
+            this.btnOk.Location = new System.Drawing.Point(509, 266);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(101, 29);
             this.btnOk.TabIndex = 3;
@@ -94,7 +103,7 @@
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(12, 259);
+            this.progressBar1.Location = new System.Drawing.Point(12, 302);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(597, 14);
             this.progressBar1.TabIndex = 4;
@@ -103,7 +112,7 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.Enabled = false;
-            this.btnCancel.Location = new System.Drawing.Point(509, 300);
+            this.btnCancel.Location = new System.Drawing.Point(509, 343);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(101, 29);
             this.btnCancel.TabIndex = 5;
@@ -135,7 +144,7 @@
             // 
             this.lblStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(12, 300);
+            this.lblStatus.Location = new System.Drawing.Point(12, 343);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(0, 13);
             this.lblStatus.TabIndex = 8;
@@ -143,7 +152,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 103);
+            this.label4.Location = new System.Drawing.Point(12, 106);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(54, 13);
             this.label4.TabIndex = 9;
@@ -152,7 +161,7 @@
             // comboBox1
             // 
             this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(99, 99);
+            this.comboBox1.Location = new System.Drawing.Point(99, 102);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(177, 21);
             this.comboBox1.TabIndex = 11;
@@ -164,10 +173,10 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.tbComment.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbComment.ForeColor = System.Drawing.SystemColors.InactiveCaption;
-            this.tbComment.Location = new System.Drawing.Point(99, 133);
+            this.tbComment.Location = new System.Drawing.Point(99, 162);
             this.tbComment.Multiline = true;
             this.tbComment.Name = "tbComment";
-            this.tbComment.Size = new System.Drawing.Size(510, 84);
+            this.tbComment.Size = new System.Drawing.Size(510, 98);
             this.tbComment.TabIndex = 13;
             this.tbComment.Text = "-zip file comment here-";
             this.tbComment.Leave += new System.EventHandler(this.tbComment_Leave);
@@ -176,67 +185,135 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(12, 136);
+            this.label5.Location = new System.Drawing.Point(12, 153);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(53, 13);
             this.label5.TabIndex = 12;
             this.label5.Text = "comment:";
             // 
-            // radioTraditionalZip
+            // radioFlavorZip
             // 
-            this.radioTraditionalZip.AutoSize = true;
-            this.radioTraditionalZip.Location = new System.Drawing.Point(103, 74);
-            this.radioTraditionalZip.Name = "radioTraditionalZip";
-            this.radioTraditionalZip.Size = new System.Drawing.Size(86, 17);
-            this.radioTraditionalZip.TabIndex = 14;
-            this.radioTraditionalZip.TabStop = true;
-            this.radioTraditionalZip.Text = "traditional zip";
-            this.radioTraditionalZip.UseVisualStyleBackColor = true;
-            this.radioTraditionalZip.CheckedChanged += new System.EventHandler(this.radioTraditionalZip_CheckedChanged);
+            this.radioFlavorZip.AutoSize = true;
+            this.radioFlavorZip.Location = new System.Drawing.Point(13, 8);
+            this.radioFlavorZip.Name = "radioFlavorZip";
+            this.radioFlavorZip.Size = new System.Drawing.Size(86, 17);
+            this.radioFlavorZip.TabIndex = 14;
+            this.radioFlavorZip.Text = "traditional zip";
+            this.radioFlavorZip.UseVisualStyleBackColor = true;
+            this.radioFlavorZip.CheckedChanged += new System.EventHandler(this.radioFlavorZip_CheckedChanged);
             // 
-            // radioSfxGui
+            // radioFlavorSfxGui
             // 
-            this.radioSfxGui.AutoSize = true;
-            this.radioSfxGui.Location = new System.Drawing.Point(195, 74);
-            this.radioSfxGui.Name = "radioSfxGui";
-            this.radioSfxGui.Size = new System.Drawing.Size(113, 17);
-            this.radioSfxGui.TabIndex = 15;
-            this.radioSfxGui.TabStop = true;
-            this.radioSfxGui.Text = "self-extractor (GUI)";
-            this.radioSfxGui.UseVisualStyleBackColor = true;
-            this.radioSfxGui.CheckedChanged += new System.EventHandler(this.radioSfx_CheckedChanged);
+            this.radioFlavorSfxGui.AutoSize = true;
+            this.radioFlavorSfxGui.Location = new System.Drawing.Point(112, 8);
+            this.radioFlavorSfxGui.Name = "radioFlavorSfxGui";
+            this.radioFlavorSfxGui.Size = new System.Drawing.Size(113, 17);
+            this.radioFlavorSfxGui.TabIndex = 15;
+            this.radioFlavorSfxGui.Text = "self-extractor (GUI)";
+            this.radioFlavorSfxGui.UseVisualStyleBackColor = true;
+            this.radioFlavorSfxGui.CheckedChanged += new System.EventHandler(this.radioFlavorSfx_CheckedChanged);
             // 
-            // radioSfxCmd
+            // radioFlavorSfxCmd
             // 
-            this.radioSfxCmd.AutoSize = true;
-            this.radioSfxCmd.Location = new System.Drawing.Point(314, 74);
-            this.radioSfxCmd.Name = "radioSfxCmd";
-            this.radioSfxCmd.Size = new System.Drawing.Size(118, 17);
-            this.radioSfxCmd.TabIndex = 16;
-            this.radioSfxCmd.TabStop = true;
-            this.radioSfxCmd.Text = "self-extractor (CMD)";
-            this.radioSfxCmd.UseVisualStyleBackColor = true;
-            this.radioSfxCmd.CheckedChanged += new System.EventHandler(this.radioSfx_CheckedChanged);
+            this.radioFlavorSfxCmd.AutoSize = true;
+            this.radioFlavorSfxCmd.Location = new System.Drawing.Point(238, 8);
+            this.radioFlavorSfxCmd.Name = "radioFlavorSfxCmd";
+            this.radioFlavorSfxCmd.Size = new System.Drawing.Size(118, 17);
+            this.radioFlavorSfxCmd.TabIndex = 16;
+            this.radioFlavorSfxCmd.Text = "self-extractor (CMD)";
+            this.radioFlavorSfxCmd.UseVisualStyleBackColor = true;
+            this.radioFlavorSfxCmd.CheckedChanged += new System.EventHandler(this.radioFlavorSfx_CheckedChanged);
             // 
             // progressBar2
             // 
             this.progressBar2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar2.Location = new System.Drawing.Point(12, 279);
+            this.progressBar2.Location = new System.Drawing.Point(12, 322);
             this.progressBar2.Name = "progressBar2";
             this.progressBar2.Size = new System.Drawing.Size(597, 14);
             this.progressBar2.TabIndex = 17;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(12, 76);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(36, 13);
+            this.label3.TabIndex = 18;
+            this.label3.Text = "flavor:";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(12, 132);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(45, 13);
+            this.label6.TabIndex = 19;
+            this.label6.Text = "ZIP64?:";
+            // 
+            // radioZip64Never
+            // 
+            this.radioZip64Never.AutoSize = true;
+            this.radioZip64Never.Location = new System.Drawing.Point(14, 8);
+            this.radioZip64Never.Name = "radioZip64Never";
+            this.radioZip64Never.Size = new System.Drawing.Size(54, 17);
+            this.radioZip64Never.TabIndex = 20;
+            this.radioZip64Never.Text = "Never";
+            this.radioZip64Never.UseVisualStyleBackColor = true;
+            // 
+            // radioZip64Always
+            // 
+            this.radioZip64Always.AutoSize = true;
+            this.radioZip64Always.Location = new System.Drawing.Point(85, 8);
+            this.radioZip64Always.Name = "radioZip64Always";
+            this.radioZip64Always.Size = new System.Drawing.Size(58, 17);
+            this.radioZip64Always.TabIndex = 21;
+            this.radioZip64Always.Text = "Always";
+            this.radioZip64Always.UseVisualStyleBackColor = true;
+            // 
+            // radioZip64AsNecessary
+            // 
+            this.radioZip64AsNecessary.AutoSize = true;
+            this.radioZip64AsNecessary.Location = new System.Drawing.Point(160, 8);
+            this.radioZip64AsNecessary.Name = "radioZip64AsNecessary";
+            this.radioZip64AsNecessary.Size = new System.Drawing.Size(90, 17);
+            this.radioZip64AsNecessary.TabIndex = 22;
+            this.radioZip64AsNecessary.Text = "As Necessary";
+            this.radioZip64AsNecessary.UseVisualStyleBackColor = true;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.radioFlavorSfxGui);
+            this.groupBox1.Controls.Add(this.radioFlavorZip);
+            this.groupBox1.Controls.Add(this.radioFlavorSfxCmd);
+            this.groupBox1.Location = new System.Drawing.Point(99, 68);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(386, 28);
+            this.groupBox1.TabIndex = 23;
+            this.groupBox1.TabStop = false;
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.radioZip64Never);
+            this.groupBox2.Controls.Add(this.radioZip64Always);
+            this.groupBox2.Controls.Add(this.radioZip64AsNecessary);
+            this.groupBox2.Location = new System.Drawing.Point(99, 124);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(386, 28);
+            this.groupBox2.TabIndex = 24;
+            this.groupBox2.TabStop = false;
             // 
             // Form1
             // 
             this.AcceptButton = this.btnOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(621, 339);
+            this.ClientSize = new System.Drawing.Size(621, 382);
+            this.Controls.Add(this.groupBox2);
+            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.progressBar2);
-            this.Controls.Add(this.radioSfxCmd);
-            this.Controls.Add(this.radioSfxGui);
-            this.Controls.Add(this.radioTraditionalZip);
             this.Controls.Add(this.tbComment);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.comboBox1);
@@ -254,6 +331,10 @@
             this.Name = "Form1";
             this.Text = "DotNetZip\'s WinForms Zip Creator";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -274,10 +355,17 @@
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.TextBox tbComment;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.RadioButton radioTraditionalZip;
-        private System.Windows.Forms.RadioButton radioSfxGui;
-        private System.Windows.Forms.RadioButton radioSfxCmd;
+        private System.Windows.Forms.RadioButton radioFlavorZip;
+        private System.Windows.Forms.RadioButton radioFlavorSfxGui;
+        private System.Windows.Forms.RadioButton radioFlavorSfxCmd;
         private System.Windows.Forms.ProgressBar progressBar2;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.RadioButton radioZip64Never;
+        private System.Windows.Forms.RadioButton radioZip64Always;
+        private System.Windows.Forms.RadioButton radioZip64AsNecessary;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox groupBox2;
     }
 }
 
