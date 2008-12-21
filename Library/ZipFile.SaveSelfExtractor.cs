@@ -324,10 +324,11 @@ namespace Ionic.Utils.Zip
 
             System.CodeDom.Compiler.CompilerResults cr = csharp.CompileAssemblyFromSource(cp, LiteralSource);
             if (cr == null)
-                throw new SfxGenerationException("Errors compiling the extraction logic!");
+                throw new SfxGenerationException("Cannot compile the extraction logic!");
 
-            foreach (string output in cr.Output)
-                if (Verbose) StatusMessageTextWriter.WriteLine(output);
+            if (Verbose)
+                foreach (string output in cr.Output)
+                    StatusMessageTextWriter.WriteLine(output);
 
             if (cr.Errors.Count != 0)
                 throw new SfxGenerationException("Errors compiling the extraction logic!");

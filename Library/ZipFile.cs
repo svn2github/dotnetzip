@@ -744,11 +744,18 @@ namespace Ionic.Utils.Zip
         /// </para>
         ///
         /// <para>
-        /// As with other properties (like <see cref="Password"/> and <see cref="ForceNoCompression"/>), setting the
-        /// corresponding delegate on the ZipFile class itself will set it on all ZipEntry
-        /// items that are subsequently added to the ZipFile instance.
+        /// As with other properties (like <see cref="Password"/> and <see cref="ForceNoCompression"/>),
+        /// setting the corresponding delegate on the ZipFile class itself will set it on all ZipEntry
+        /// items that are subsequently added to the ZipFile instance. In other words, if you set this
+        /// callback after you have added files to the ZipFile, but before you have called Save(), those
+        /// items will not be governed by the callback when you do call Save(). Your best bet is to 
+	/// set this callback before adding any entries.  
         /// </para>
         ///
+        /// <para>
+	/// Of course, if you want to have different callbacks for different entries, you may do so. 
+        /// </para>
+	///
         /// </remarks>
         /// <example>
         /// <para>
@@ -761,7 +768,7 @@ namespace Ionic.Utils.Zip
         ///
         /// <code>
         ///
-        /// public bool ReadTwiceCallback(int uncompressed, int compressed, string filename)
+        /// public bool ReadTwiceCallback(long uncompressed, long compressed, string filename)
         /// {
         ///     return ((uncompressed * 1.0/compressed) > 1.25);
         /// }
@@ -770,6 +777,7 @@ namespace Ionic.Utils.Zip
         /// {
         ///     using (ZipFile zip = new ZipFile())
         ///     {
+	///         // set the callback before adding files to the zip
         ///         zip2.WillReadTwiceOnInflation = ReadTwiceCallback;
         ///         zip2.AddFile(filename1);
         ///         zip2.AddFile(filename2);
@@ -2610,7 +2618,6 @@ namespace Ionic.Utils.Zip
                 if (_entries.Count >= 0xFFFF && _zip64 == Zip64Option.Never)
                     throw new ZipException("The number of entries is 0xFFFF or greater. Consider setting the UseZip64WhenSaving property on the ZipFile instance.");
 
-
                 // write an entry in the zip for each file
                 int n = 0;
                 foreach (ZipEntry e in _entries)
@@ -3589,28 +3596,72 @@ namespace Ionic.Utils.Zip
         /// <summary>
         /// Checks the given file to see if it appears to be a valid zip file.
         /// </summary>
-        /// <remarks>
-        /// This method opens the file, and reads in the zip header, as well as the
-        /// zip directory structure.  If everything succeeds, then the method
-        /// returns true.  If anything fails - for example if an incorrect signature
-        /// is found, the the method returns false.  This method also returns false
-        /// (no exception) for a file that does not exist.  Because this method does
-        /// not actually read in the zip content, decrypt, and check CRCs, it is
-        /// possible for this method to return true in the case the zip file is
-        /// corrupted.
-        /// </remarks>
         /// <param name="fileName">The file to check.</param>
         /// <returns>true if the file appears to be a zip file.</returns>
         public static bool IsZipFile(string fileName)
         {
+	    return IsZipFile(fileName, false);
+	}
+
+
+	/// <summary>
+	/// Checks a to see if a file is a valid zip file.
+	/// </summary>
+	///
+        /// <remarks>
+	/// <para>
+        /// This method opens the specified zip file, reads in the zip archive, then optionally extracts 
+        /// each entry in the archive, dumping all the bits. 
+	/// </para>
+	/// 
+	/// <para>
+	/// If everything succeeds, then the method
+        /// returns true.  If anything fails - for example if an incorrect signature or CRC
+        /// is found, the the method returns false.  This method also returns false
+        /// (no exception) for a file that does not exist.  
+	/// </para>
+	///
+	/// <para>
+	/// If <c>testExtract</c> is true, this method reads in the content for each
+        /// entry, expands it, and checks CRCs.  This provides an additional check
+        /// beyond verifying the zip header data.
+	/// </para>
+	///
+	/// <para>
+	/// If <c>testExtract</c> is true, and if any of the zip entries are protected
+	/// with a password, this method will return false.  If you want to verify a
+	/// ZipFile that has entries which are protected with a password, you will need
+	/// to do that manually.
+	/// </para>
+        /// </remarks>
+        /// <param name="fileName">The zip file to check.</param>
+        /// <param name="testExtract">true if the caller wants to extract each entry.</param>
+        /// <returns>true if the file appears to be a valid zip file.</returns>
+        public static bool IsZipFile(string fileName, bool testExtract)
+        {
             bool result = false;
-            try
-            {
-                // if no exception, then ... it is a zip file.
-                using (ZipFile zf = ZipFile.Read(fileName, null, System.Text.Encoding.GetEncoding("IBM437"))) { }
-                result = true;
-            }
-            catch (ZipException) { }
+            try 
+	    {
+		if (!System.IO.File.Exists(fileName)) return false;
+		
+		var bitBucket= System.IO.Stream.Null;
+
+		using (ZipFile zip1 = ZipFile.Read(fileName, null, System.Text.Encoding.GetEncoding("IBM437"))) 
+		{
+		    if (testExtract)
+			{
+		    foreach (var e in zip1)
+		    {
+			if (!e.IsDirectory)
+			{
+			    e.Extract(bitBucket);
+			}
+		    }
+			}
+		}
+		result = true;
+	    }
+	    catch (Exception) { }
             return result;
         }
 
@@ -5275,6 +5326,18 @@ namespace Ionic.Utils.Zip
             get
             {
                 return _entries.AsReadOnly();
+            }
+        }
+
+
+        /// <summary>
+        /// Returns the number of entries in the Zip archive.
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                return _entries.Count;
             }
         }
 

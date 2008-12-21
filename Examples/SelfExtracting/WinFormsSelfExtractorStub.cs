@@ -274,14 +274,25 @@
             {
                 if (this.progressBar2.Maximum == 1)
                 {
-                    this.progressBar2.Maximum = e.TotalBytesToTransfer;
+                        // reset
+                        Int64 max = e.TotalBytesToTransfer;
+                        _progress2MaxFactor = 0;
+                        while (max > System.Int32.MaxValue)
+                        {
+                            max /= 2;
+                            _progress2MaxFactor++;
+                        }
+                        this.progressBar2.Maximum = (int)max;
                     this.lblStatus.Text = String.Format("Extracting {0}/{1}: {2} ...",
                         this.progressBar1.Value, zip.Entries.Count, e.CurrentEntry.FileName);
                 }
 
-                this.progressBar2.Value = (e.BytesTransferred >= this.progressBar2.Maximum)
-                    ? this.progressBar2.Maximum
-                    : e.BytesTransferred;
+                    int xferred = e.BytesTransferred >> _progress2MaxFactor;
+
+                    this.progressBar2.Value = (xferred >= this.progressBar2.Maximum)
+                        ? this.progressBar2.Maximum
+                        : xferred;
+
                 this.Update();
             }
         }
@@ -380,7 +391,8 @@
         }
 
 
-        bool _setCancel;
+        private int _progress2MaxFactor;
+        private bool _setCancel;
         Stream _s;
         global::Ionic.Utils.Zip.ZipFile _zip;
 

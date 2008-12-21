@@ -264,11 +264,6 @@ Limitations
 
 There are numerous limitations to this library:
 
- it does not support zip64 extensions.
-     does not support file lengths greater than 0xffffffff.
-     does not support more than 65535 entries in a zip archive.
-     does not support archive lengths greater than 4g.
-
  it does not support "multi-disk archives." or "disk spanning"
 
  it does not do varying compression levels. 

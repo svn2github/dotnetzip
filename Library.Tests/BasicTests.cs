@@ -1303,7 +1303,7 @@ namespace Ionic.Utils.Zip.Tests.Basic
                     // verify that the LastMod time on the filesystem file is set correctly
                     e.Extract("unpack");
                     string PathToExtractedFile = System.IO.Path.Combine("unpack", e.FileName);
-                    DateTime ActualFilesystemLastMod = System.IO.File.GetLastWriteTime(PathToExtractedFile);
+                    DateTime ActualFilesystemLastMod = AdjustTimeForWin32VersusDotnetDiscrepancy(System.IO.File.GetLastWriteTime(PathToExtractedFile));
                     Assert.AreEqual<DateTime>(timestamps[e.FileName], ActualFilesystemLastMod,
                         "Unexpected timestamp on extracted filesystem file ({0}).", PathToExtractedFile);
 
@@ -1314,6 +1314,19 @@ namespace Ionic.Utils.Zip.Tests.Basic
                 }
             }
             Assert.AreEqual<int>(entries, ActualFilenames.Count, "Unexpected file count.");
+        }
+
+        private DateTime AdjustTimeForWin32VersusDotnetDiscrepancy(DateTime dateTime)
+        {
+            // does the converse of the adjustment that is done within the DotNetZip lib.
+
+            if (!dateTime.IsDaylightSavingTime() && DateTime.Now.IsDaylightSavingTime())
+                dateTime = dateTime - new System.TimeSpan(1, 0, 0);
+
+            if (dateTime.IsDaylightSavingTime() && !DateTime.Now.IsDaylightSavingTime())
+                dateTime = dateTime + new System.TimeSpan(1, 0, 0);
+
+            return dateTime;
         }
 
 

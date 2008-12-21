@@ -326,7 +326,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
             Assert.IsTrue(ZipFile.IsZipFile(ZipFileToCreate),
               "The IsZipFile() method returned an unexpected result for an existing zip file.");
 
-            Assert.AreEqual<int>(_doubleReadCallbacks, 2);
+            Assert.AreEqual<int>(1, _doubleReadCallbacks);  // 1, for the single zip file added to the zip
         }
 
 

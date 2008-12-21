@@ -24,7 +24,7 @@ namespace WinFormsExample
 
         private void FixTitle()
         {
-            this.Text = String.Format("WinForms Example for DotNetZip v{0}",
+            this.Text = String.Format("WinForms Zip Creator Example for DotNetZip v{0}",
                 System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
         }
 
@@ -91,15 +91,6 @@ namespace WinFormsExample
                 options.Encoding = this.comboBox1.SelectedItem.ToString();
             }
 
-            options.Comment = String.Format("Encoding {0}\r\nCreated at {1} || {2}\r\n",
-                        options.Encoding,
-                        System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss"),
-                        this.Text);
-
-            if (this.tbComment.Text != TB_COMMENT_NOTE)
-                options.Comment += this.tbComment.Text;
-
-
             if (this.radioFlavorSfxCmd.Checked)
                 options.ZipFlavor = 2;
             else if (this.radioFlavorSfxGui.Checked)
@@ -112,12 +103,29 @@ namespace WinFormsExample
                 options.Zip64 = Zip64Option.Always;
             else options.Zip64 = Zip64Option.Never;
 
+            options.Comment = String.Format("Encoding:{0} || Flavor:{1} || ZIP64:{2}\r\nCreated at {3} || {4}\r\n",
+                        options.Encoding,
+                        FlavorToString(options.ZipFlavor),
+                        options.Zip64.ToString(),
+                        System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss"),
+                        this.Text);
+
+            if (this.tbComment.Text != TB_COMMENT_NOTE)
+                options.Comment += this.tbComment.Text;
+
 
             _workerThread = new Thread(this.DoSave);
             _workerThread.Name = "Zip Saver thread";
             _workerThread.Start(options);
             this.Cursor = Cursors.WaitCursor;
 
+        }
+
+        private string FlavorToString(int p)
+        {
+            if (p == 2) return "SFX-CMD";
+            if (p == 1) return "SFX-GUI";
+            return "ZIP";
         }
 
 
@@ -395,6 +403,25 @@ namespace WinFormsExample
                 {
                     tbZipName.Text = System.Text.RegularExpressions.Regex.Replace(tbZipName.Text, "(?i:)\\.zip$", ".exe");
                 }
+
+                // We also do the same thing with the ZIP64 setting, for the same reason. 
+                // Extracting from a ZIP64 is foolproof when DotNetZip is the extractor. 
+
+                if (_mostRecentZip64 == null)
+                {
+                    Zip64Option x =
+                    (this.radioZip64AsNecessary.Checked)
+                    ? Zip64Option.AsNecessary
+                    : (this.radioZip64Always.Checked)
+                    ? Zip64Option.Always
+                    : Zip64Option.Never;
+                    _mostRecentZip64 = new Nullable<Zip64Option>(x);
+                }
+                this.radioZip64Always.Checked = true;
+                this.radioZip64Always.Enabled = false;
+                this.radioZip64AsNecessary.Enabled = false;
+                this.radioZip64Never.Enabled = false;
+
             }
         }
 
@@ -414,6 +441,21 @@ namespace WinFormsExample
                 if (this.tbZipName.Text.ToUpper().EndsWith(".EXE"))
                 {
                     tbZipName.Text = System.Text.RegularExpressions.Regex.Replace(tbZipName.Text, "(?i:)\\.exe$", ".zip");
+                }
+
+                // re-enable the zip64 setting, too.
+                this.radioZip64Always.Enabled = true;
+                this.radioZip64AsNecessary.Enabled = true;
+                this.radioZip64Never.Enabled = true;
+                if (_mostRecentZip64 != null)
+                {
+                    if (_mostRecentZip64.Value == Zip64Option.Always)
+                        this.radioZip64Always.Checked = true;
+                    if (_mostRecentZip64.Value == Zip64Option.AsNecessary)
+                        this.radioZip64AsNecessary.Checked = true;
+                    if (_mostRecentZip64.Value == Zip64Option.Never)
+                        this.radioZip64Never.Checked = true;
+                    _mostRecentZip64 = null;
                 }
             }
         }
@@ -550,6 +592,7 @@ namespace WinFormsExample
         private static string TB_COMMENT_NOTE = "-zip file comment here-";
         private List<String> _EncodingNames;
         private string _mostRecentEncoding;
+        private Nullable<Zip64Option> _mostRecentZip64;
 
         private Microsoft.Win32.RegistryKey _appCuKey;
         private static string _AppRegyPath = "Software\\Dino Chiesa\\DotNetZip Winforms Tool";
