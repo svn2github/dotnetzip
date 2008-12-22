@@ -168,6 +168,7 @@ namespace Ionic.Utils.Zip
                 else break;
                 if (success) break;
             } while (true);
+
             if (!success)
             {
                 stream.Seek(startingPosition, System.IO.SeekOrigin.Begin);
@@ -179,6 +180,67 @@ namespace Ionic.Utils.Zip
 
             return bytesRead;
         }
+
+
+        internal static int ProcessExtraField(Int16 extraFieldLength, System.IO.Stream s, bool isZip64,
+                          ref byte[] Buffer,
+                          ref Int64 Uncompressed,
+                          ref Int64 Compressed,
+                          ref Int64 RelativeOffset)
+        {
+            int additionalBytesRead = 0;
+            //Buffer= null;
+            //Uncompressed= Compressed= RelativeOffset= 0;
+            if (extraFieldLength > 0)
+            {
+                Buffer = new byte[extraFieldLength];
+                additionalBytesRead = s.Read(Buffer, 0, Buffer.Length);
+
+                int j = 0;
+                while (j < Buffer.Length)
+                {
+                    int start = j;
+
+                    Int16 HeaderId = (short)(Buffer[j] + Buffer[j + 1] * 256);
+                    Int16 DataSize = (short)(Buffer[j + 2] + Buffer[j + 3] * 256);
+
+                    j += 4;
+
+                    if (HeaderId == 0x0001) // ZIP64
+                    {
+                        // This flag is true IFF the prior compressed/uncompressed size values were 0xFFFFFFFF
+                        // We don't need to be rigid about this.  
+                        //if (!isZip64)
+                        //throw new BadReadException(String.Format("  Found zip64 metadata when none expected at position 0x{0:X16}", s.Position - additionalBytesRead));
+
+                        if (DataSize > 28)
+                            throw new BadReadException(String.Format("  Inconsistent ZIP64 datasize (0x{0:X4}) at position 0x{1:X16}", DataSize, s.Position - additionalBytesRead));
+
+                        if (Uncompressed == -1)
+                        {
+                            Uncompressed = BitConverter.ToInt64(Buffer, j);
+                            j += 8;
+                        }
+                        if (Compressed == -1)
+                        {
+                            Compressed = BitConverter.ToInt64(Buffer, j);
+                            j += 8;
+                        }
+                        if (RelativeOffset == -1)
+                        {
+                            RelativeOffset = BitConverter.ToInt64(Buffer, j);
+                            j += 8;
+                        }
+                        // ignore the potential last 4 bytes - I don't know what to do with them anyway.
+                    }
+
+                    // move to the next Header in the extra field
+                    j = start + DataSize + 4;
+                }
+            }
+            return additionalBytesRead;
+        }
+
 
 
         internal
@@ -195,11 +257,11 @@ namespace Ionic.Utils.Zip
             int minute = (packedTime & 0x07E0) >> 5;
             //int second = packedTime & 0x001F;
             int second = (packedTime & 0x001F) * 2;
-            
+
             // validation and error checking.
             // this is not foolproof but will catch most errors.
-            if (second >= 60) {minute++; second=0;}
-            if (minute >= 60) {hour++; minute=0;}
+            if (second >= 60) { minute++; second = 0; }
+            if (minute >= 60) { hour++; minute = 0; }
             if (hour >= 24) { day++; hour = 0; }
 
             DateTime d = System.DateTime.Now;
@@ -255,15 +317,15 @@ namespace Ionic.Utils.Zip
         }
 
 
-	// workitem 6513: testing for high bytes is not an effective way to see
-	// if a particular encoding is useful.  Instead we need to test reflexivity.
-//         internal static bool HighBytes(byte[] buffer)
-//         {
-//             if (buffer == null) return false;
-//             for (int i = 0; i < buffer.Length; i++)
-//                 if ((buffer[i] & 0x80) == 0x80) return true;
-//             return false;
-//         }
+        // workitem 6513: testing for high bytes is not an effective way to see
+        // if a particular encoding is useful.  Instead we need to test reflexivity.
+        //         internal static bool HighBytes(byte[] buffer)
+        //         {
+        //             if (buffer == null) return false;
+        //             for (int i = 0; i < buffer.Length; i++)
+        //                 if ((buffer[i] & 0x80) == 0x80) return true;
+        //             return false;
+        //         }
     }
 
 

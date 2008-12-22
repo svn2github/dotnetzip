@@ -1,3 +1,5 @@
+#define OPTIMIZE_WI6612
+
 // ZipDirEntry.cs
 //
 // Copyright (c) 2006, 2007, 2008 Microsoft Corporation.  All rights reserved.
@@ -129,14 +131,17 @@ namespace Ionic.Utils.Zip
             e._UncompressedSize = _UncompressedSize;
             e._RelativeOffsetOfHeader = _RelativeOffsetOfLocalHeader;
             e._LocalFileName = e.FileName;
+            e.__FileDataPosition = e._RelativeOffsetOfHeader + 30 + _filenameLength + _extraFieldLength;
 
             if ((e._BitField & 0x01) == 0x01)
             {
                 e._Encryption = EncryptionAlgorithm.PkzipWeak;
-
-                // decrease the filedata size by 12 bytes
+                e.__FileDataPosition += 12;
                 e._CompressedFileDataSize -= 12;
             }
+
+            e._LengthOfHeader = 30 + _filenameLength + _extraFieldLength;
+
             return e;
         }
 #endif
@@ -189,9 +194,9 @@ namespace Ionic.Utils.Zip
             //DateTime lastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(lastModDateTime);
             //i += 24;
 
-            Int16 filenameLength = (short)(block[i++] + block[i++] * 256);
-            Int16 extraFieldLength = (short)(block[i++] + block[i++] * 256);
-            Int16 commentLength = (short)(block[i++] + block[i++] * 256);
+            zde._filenameLength = (short)(block[i++] + block[i++] * 256);
+            zde._extraFieldLength = (short)(block[i++] + block[i++] * 256);
+            zde._commentLength = (short)(block[i++] + block[i++] * 256);
             //Int16 diskNumber = (short)(block[i++] + block[i++] * 256);
             i += 2;
 
@@ -199,9 +204,8 @@ namespace Ionic.Utils.Zip
             zde._ExternalFileAttrs = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
 
             zde._RelativeOffsetOfLocalHeader = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
-            
 
-            block = new byte[filenameLength];
+            block = new byte[zde._filenameLength];
             n = s.Read(block, 0, block.Length);
             bytesRead += n;
             if ((zde._BitField & 0x0800) == 0x0800)
@@ -215,15 +219,20 @@ namespace Ionic.Utils.Zip
             }
 
 
-            if (extraFieldLength > 0)
+            if (zde._extraFieldLength > 0)
             {
-                zde._Extra = new byte[extraFieldLength];
-                n = s.Read(zde._Extra, 0, zde._Extra.Length);
-                bytesRead += n;
+                bool IsZip64Format = ((uint)zde._CompressedSize == 0xFFFFFFFF &&
+                              (uint)zde._UncompressedSize == 0xFFFFFFFF);
+
+                bytesRead += SharedUtilities.ProcessExtraField(zde._extraFieldLength, s, IsZip64Format,
+                                           ref zde._Extra,
+                                           ref zde._UncompressedSize,
+                                           ref zde._CompressedSize,
+                                           ref zde._RelativeOffsetOfLocalHeader);
             }
-            if (commentLength > 0)
+            if (zde._commentLength > 0)
             {
-                block = new byte[commentLength];
+                block = new byte[zde._commentLength];
                 n = s.Read(block, 0, block.Length);
                 bytesRead += n;
                 if ((zde._BitField & 0x0800) == 0x0800)
@@ -255,15 +264,18 @@ namespace Ionic.Utils.Zip
         private Int16 _VersionMadeBy;
         private Int16 _VersionNeeded;
         private Int16 _CompressionMethod;
-        private Int32 _CompressedSize;
-        private Int32 _UncompressedSize;
-        private Int32 _RelativeOffsetOfLocalHeader;
+        private Int64 _CompressedSize;
+        private Int64 _UncompressedSize;
+        private Int64 _RelativeOffsetOfLocalHeader;
         private Int16 _InternalFileAttrs;
         private Int32 _ExternalFileAttrs;
         private Int16 _BitField;
         private Int32 _TimeBlob;
         private Int32 _Crc32;
         private Int32 _LengthOfDirEntry;
+        private Int16 _filenameLength;
+        private Int16 _extraFieldLength;
+        private Int16 _commentLength;
         private byte[] _Extra;
     }
 

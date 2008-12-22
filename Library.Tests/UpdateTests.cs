@@ -493,7 +493,6 @@ namespace Ionic.Utils.Zip.Tests.Update
 
                     zip1.Comment = "UpdateTests::UpdateZip_UpdateEntryComment(): This archive will be updated.";
                     zip1.Save(ZipFileToCreate);
-
                 }
 
                 // Verify the files are in the zip
