@@ -27,6 +27,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfExtracting", "Examples\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Win Forms Zip Example", "Examples\WinFormsApp\Win Forms Zip Example.csproj", "{6BCCF138-2EFB-464C-B872-E3079F0A4708}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CF-Library", "CF-Library\CF-Library.csproj", "{051C2B3B-8CDF-42CB-9EA2-027232BFC395}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CF-Unzipper", "CF-Unzipper\CF-Unzipper.csproj", "{D2E7C1EA-6FF1-4E26-96FC-24F6FB68B61B}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = DotNetZip.vsmdi
@@ -74,6 +78,16 @@ Global
 		{6BCCF138-2EFB-464C-B872-E3079F0A4708}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6BCCF138-2EFB-464C-B872-E3079F0A4708}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6BCCF138-2EFB-464C-B872-E3079F0A4708}.Release|Any CPU.Build.0 = Release|Any CPU
+		{051C2B3B-8CDF-42CB-9EA2-027232BFC395}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{051C2B3B-8CDF-42CB-9EA2-027232BFC395}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{051C2B3B-8CDF-42CB-9EA2-027232BFC395}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{051C2B3B-8CDF-42CB-9EA2-027232BFC395}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2E7C1EA-6FF1-4E26-96FC-24F6FB68B61B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2E7C1EA-6FF1-4E26-96FC-24F6FB68B61B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2E7C1EA-6FF1-4E26-96FC-24F6FB68B61B}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{D2E7C1EA-6FF1-4E26-96FC-24F6FB68B61B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2E7C1EA-6FF1-4E26-96FC-24F6FB68B61B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2E7C1EA-6FF1-4E26-96FC-24F6FB68B61B}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

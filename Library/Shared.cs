@@ -96,7 +96,8 @@ namespace Ionic.Utils.Zip
 
         internal static string StringFromBuffer(byte[] buf, int maxlength, System.Text.Encoding encoding)
         {
-            string s = encoding.GetString(buf);
+            // this form of the GetString() method is required for .NET CF compatibility
+            string s = encoding.GetString(buf, 0, buf.Length);
             return s;
         }
 
@@ -317,15 +318,56 @@ namespace Ionic.Utils.Zip
         }
 
 
-        // workitem 6513: testing for high bytes is not an effective way to see
-        // if a particular encoding is useful.  Instead we need to test reflexivity.
-        //         internal static bool HighBytes(byte[] buffer)
-        //         {
-        //             if (buffer == null) return false;
-        //             for (int i = 0; i < buffer.Length; i++)
-        //                 if ((buffer[i] & 0x80) == 0x80) return true;
-        //             return false;
-        //         }
+        private static System.Random _rnd = new System.Random();
+
+        /// <summary>
+        /// Return a random filename, suitable for use as a temporary file.
+        /// </summary>
+        /// <remarks>
+        /// The System.IO.Path.GetRandomFileName() method is not available on the Compact
+        /// Framework, so this library provides its own substitute. 
+        /// </remarks>
+        /// <returns>a filename of the form DotNetZip-xxxxxxxx.tmp, where xxxxxxxx is replaced 
+        /// by randomly chosen characters.</returns>
+        public static string GetTempFilename()
+        {
+            string candidate= null;
+            do
+            {
+                candidate = "DotNetZip-" + GenerateRandomStringImpl(8, 97) + ".tmp";
+            } while (System.IO.File.Exists(candidate));
+
+            return candidate;
+        }
+
+
+        private static string GenerateRandomStringImpl(int length, int delta)
+        {
+            bool WantMixedCase = (delta == 0);
+
+            string result = "";
+            char[] a = new char[length];
+
+            for (int i = 0; i < length; i++)
+            {
+                if (WantMixedCase)
+                    delta = (_rnd.Next(2) == 0) ? 65 : 97;
+                a[i] = GetOneRandomChar(delta);
+            }
+
+            result = new System.String(a);
+            return result;
+        }
+
+
+        private static char GetOneRandomChar(int delta)
+        {
+            // delta == 65 means uppercase
+            // delta == 97 means lowercase
+            return (char)(_rnd.Next(26) + delta);
+        }
+
+
     }
 
 

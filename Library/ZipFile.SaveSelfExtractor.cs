@@ -180,13 +180,20 @@ namespace Ionic.Utils.Zip
         /// <c>ConsoleApplication</c>.  A self-extractor generated with that flavor setting will
         /// run from the command line. It accepts command-line options to set the overwrite
         /// behavior, and to specify the target extraction directory.
-        /// 
         /// </para>
+        /// 
         /// <para>
         /// There are a few temporary files created during the saving to a self-extracting zip. 
-        /// These files are normally stored in the directory pointed to by the TEMP environment
-        /// variable, and they are removed upon successful completion of this method. 
+        /// These files are normally stored in the directory pointed to by 
+	/// System.IO.Path.GetTempPath()
+        /// and they are removed upon successful completion of this method. 
         /// </para>
+        /// 
+        /// <para>
+        /// NB: This method is not available in the version of DotNetZip
+        /// build for the .NET Compact Framework.  
+	/// </para>
+        /// 
         /// </remarks>
         /// 
         /// <example>

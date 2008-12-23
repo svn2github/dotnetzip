@@ -19,6 +19,7 @@ DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Gir
         <contentItem sourcePath=".\Examples.htm" destPath="" excludeItems="False" />
         <contentItem sourcePath=".\Example-ASPNET.htm" destPath="" excludeItems="False" />
         <contentItem sourcePath=".\Examples-VB.htm" destPath="" excludeItems="False" />
+        <contentItem sourcePath=".\CompactFramework.htm" destPath="" excludeItems="False" />
     </additionalContent>
     <ProjectSummary>DotNetZip is a small, easy-to-use class library for manipulating .zip files. It can enable .NET applications written in VB.NET, C#, any .NET language, to easily create, read, and update zip files.  DotNetZip is donationware:  http://cheeso.members.winisp.net/DotNetZipDonate.aspx</ProjectSummary>
     <MissingTags>Summary, Parameter, Returns, AutoDocumentCtors, Namespace</MissingTags>

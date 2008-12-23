@@ -1,0 +1,81 @@
+<html>
+<head>
+<title>Using DotNetZip in .NET Compact Framework Applications</title>
+<style>
+p,body,a,tr,td
+             { font-family: Verdana, Arial, Helvetica; font-size: 10pt }
+h1,h2,h3,h4,h5,h6
+             { font-family: Verdana, Arial, Helvetica; font-weight: normal; font-style: normal; }
+h1           { font-size: 20pt }
+h2           { font-size: 18pt; font-weight:bold; color: navy }
+h3           { font-size: 16pt; font-weight:bold; color: #483d8b }
+h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2px; }
+</style>
+</head>
+
+<!-- @SortOrder 2 --> 
+
+<body>
+<h1>DotNetZip works with the .NET Compact Framework</h1>
+
+<p>As of v1.7.1.10, DotNetZip runs on the .NET Compact Framework v3.5.
+There is a special reduced version of the library that runs on smart
+devices.  </p>
+
+<p>The programming model is exactly the same as for the regular
+DotNetZip library. There are a few differences in operation.</p>
+
+<ol>
+
+<li> The .NET Compact Framework lacks a SetLastModifiedTime() method on
+the System.IO.File class. Therefore, when your .NET CF application
+unzips a zip archive, the unzipped files will not have the file times
+set properly.  
+
+<li>The CF version of DotNetZip is not able to produce Self-extracting
+archives.  The ZipFile.SaveSelfExtractor() method is not available in
+the CF version of DotNetZip.
+
+</ol>
+
+<hr>
+
+<h2>Using DotNetZip in a Smart Device project</h2>
+
+<p> To build a smart device application that uses DotNetZip, you will
+need to use Visual Studio 2008 or later.  </p>
+
+<ol>
+
+<li>Open Visual Studio 2008.
+</li>
+
+<li>Create a smart device project.  Specify that it will use the .NET
+Compact Framework v3.5.  This is required in order to get the
+Compression libraries. </li>
+
+<li>Add a Reference to the CF Library for DotNetZip.  
+The filename is Ionic.Utils.Zip.CF.dll </li>
+
+<li>Build your application as normal. </li>
+
+</ol>
+
+
+<h2>About the Project Design</h2>
+
+<p> The CF-Library project in the DotNetZip source distribution includes
+all of the source files as <i>Links</i> to the original files in the
+Library project.  This means, the source files are not duplicated. Any
+changes need to be made only once.  The CF-Library project is simply a
+"build project" in that regard. There is no additional source code
+specifically for the .NET Compact Framework.  </p>
+
+<p>NETCF is defined as a conditional compile symbol for the CF-Library
+project.  This symbol is used in the source to exclude code that will
+not run on the .NET Compact Framework, for example, the calls to
+SetLastModifiedTime() method on the System.IO.File class.  </p>
+
+
+</body>
+</html>

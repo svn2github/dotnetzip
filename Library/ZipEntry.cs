@@ -768,14 +768,14 @@ namespace Ionic.Utils.Zip
                 ze._CompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
                 ze._UncompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
 
-                // validate ZIP64
-                if (((uint)ze._CompressedSize == 0xFFFFFFFF &&
-                    (uint)ze._UncompressedSize != 0xFFFFFFFF) ||
-                    ((uint)ze._CompressedSize != 0xFFFFFFFF &&
-                    (uint)ze._UncompressedSize == 0xFFFFFFFF))
-                    throw new BadReadException(String.Format("  ZipEntry::Read(): Inconsistent uncompressed size (0x{0:X8}) for zip64, at position  0x{1:X16}", ze._UncompressedSize, ze.ArchiveStream.Position));
+                // validate ZIP64 - no.  we don't need to be pedantic about it. 
+                //if (((uint)ze._CompressedSize == 0xFFFFFFFF &&
+                //    (uint)ze._UncompressedSize != 0xFFFFFFFF) ||
+                //    ((uint)ze._CompressedSize != 0xFFFFFFFF &&
+                //    (uint)ze._UncompressedSize == 0xFFFFFFFF))
+                //    throw new BadReadException(String.Format("  ZipEntry::Read(): Inconsistent uncompressed size (0x{0:X8}) for zip64, at position  0x{1:X16}", ze._UncompressedSize, ze.ArchiveStream.Position));
 
-                if ((uint)ze._CompressedSize == 0xFFFFFFFF &&
+                if ((uint)ze._CompressedSize == 0xFFFFFFFF ||
                     (uint)ze._UncompressedSize == 0xFFFFFFFF)
 
                     ze._IsZip64Format = true;
@@ -803,7 +803,8 @@ namespace Ionic.Utils.Zip
                 ? System.Text.Encoding.UTF8
                 : defaultEncoding;
 
-            ze._FileNameInArchive = ze._actualEncoding.GetString(block);
+	    // need to use this form of GetString() for .NET CF
+            ze._FileNameInArchive = ze._actualEncoding.GetString(block, 0, block.Length);
 
             // when creating an entry by reading, the LocalFileName is the same as the FileNameInArchive
             ze._LocalFileName = ze._FileNameInArchive;
@@ -1645,22 +1646,17 @@ namespace Ionic.Utils.Zip
                     output.Close();
                     output = null;
 
+#if !NETCF
                     // workitem 6191
                     DateTime AdjustedLastModified = LastModified;
-                    if (DateTime.Now.IsDaylightSavingTime())
-                    {
-                        if (!LastModified.IsDaylightSavingTime())
+                    if (DateTime.Now.IsDaylightSavingTime() && !LastModified.IsDaylightSavingTime())
                             AdjustedLastModified = LastModified - new System.TimeSpan(1, 0, 0);
-                    }
-#if NOTUSED
-		    else 
-		    {
-			AdjustedLastModified= (LastModified.IsDaylightSavingTime())
-			    ? LastModified  //+ new System.TimeSpan(1, 0, 0)
-			    : LastModified ;
-		    }
-#endif
+
+                    //if (!DateTime.Now.IsDaylightSavingTime() && LastModified.IsDaylightSavingTime())
+		    //AdjustedLastModified = LastModified + new System.TimeSpan(1, 0, 0);
+
                     System.IO.File.SetLastWriteTime(TargetFile, AdjustedLastModified);
+#endif
                 }
 
                 OnAfterExtract(baseDir);
@@ -2110,7 +2106,8 @@ namespace Ionic.Utils.Zip
         private System.Text.Encoding GenerateCommentBytes()
         {
             _CommentBytes = ibm437.GetBytes(_Comment);
-            string s1 = ibm437.GetString(_CommentBytes);
+	    // need to use this form of GetString() for .NET CF
+            string s1 = ibm437.GetString(_CommentBytes, 0, _CommentBytes.Length);
             if (s1 == _Comment)
                 return ibm437;
             else
@@ -2160,7 +2157,8 @@ namespace Ionic.Utils.Zip
 
             // workitem 6513: when writing, use the alternative encoding only when ibm437 will not do.
             result = ibm437.GetBytes(s1);
-            string s2 = ibm437.GetString(result);
+	    // need to use this form of GetString() for .NET CF
+            string s2 = ibm437.GetString(result,0, result.Length);
             _CommentBytes = null;
             if (s2 == s1)
             {

@@ -17,6 +17,10 @@ System.IO.Compression.DeflateStream class, to provide handling
 for Zip files.  Using this library, you can write .NET
 applications that read and write zip-format files. 
 
+There is a versiono of this library available for the .NET Compact
+Framework, too. 
+
+
 
 The Zip Format
 ---------------------------------
@@ -181,20 +185,26 @@ or
 Visual Studio 2008 or later
 
 
+to run on a smart device:
+  .NET Framework 3.5 or later
+
+
 
 Building DotNetZip with the .NET SDK
 -------------------------------------
 
-To build this example,  using the .NET Framework SDK v2.0,
+To build this example, using the .NET Framework SDK v3.5,
 
 1. extract the contents of the source zip into a new directory. 
 
-2. be sure the .NET 2.0 SDK and .NET 2.0 runtime directories
-   are on your path.  These are typically
+2. be sure the .NET 2.0 SDK, .NET 3.5 runtime, and .NET 2.0 runtime 
+   directories are on your path.  These are typically
 
      C:\Program Files\Microsoft.NET\SDK\v2.0\bin
+     c:\windows\Microsoft.NET\Framework\v3.5
        and 
      c:\WINDOWS\Microsoft.NET\Framework\v2.0.50727
+
 
 3. open a CMD prompt and CD to the DotNetZip directory.
   
@@ -281,7 +291,7 @@ produced by this example library.
 
 
 
-See Also
+Origins
 ---------------------------------
 There is a GPL-licensed library that writes zip files, it is
 called SharpZipLib and can be found at 
@@ -291,3 +301,9 @@ This example library is not based on SharpZipLib.
 
 There is a Zip library as part of the Mono project.  This
 library is also not based on that.
+
+Now that the Java class library is open source, there is at least one
+open-source Java implementation for zip.  This implementation is not
+based on a port of any Java code, or any other project.
+
+This library, except for the CRC32 stuff, is all new code, written by me.

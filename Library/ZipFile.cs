@@ -591,9 +591,10 @@ namespace Ionic.Utils.Zip
                 // first time through only (default value)
                 if (_TempFileFolder == null)
                 {
-                    if (Environment.GetEnvironmentVariable("TEMP") != null)
-                        _TempFileFolder = Environment.GetEnvironmentVariable("TEMP");
-                    else
+                    // Do not use Environment.GetEnvironmentVariable()
+                    // Use System.IO.Path.GetTempPath for compat with .NET CF
+                    _TempFileFolder = System.IO.Path.GetTempPath();
+                    if (_TempFileFolder == null)
                         _TempFileFolder = ".";
                 }
                 return _TempFileFolder;
@@ -4452,17 +4453,24 @@ namespace Ionic.Utils.Zip
                 // seek backwards a bit, then look for the EoCD signature. 
                 int nTries = 0;
                 bool success = false;
-                long posn = -18;  // size of end-of-central-directory-footer plus 2 bytes for archive comment length of 0
+
+                // The size of the end-of-central-directory-footer plus 2 bytes is 18.
+                // This implies an archive comment length of 0.
+                // We'll add a margin of safety and start "in front" of that, when 
+                // looking for the EndOfCentralDirectorySignature
+                long posn = s.Length - 64; 
                 do
                 {
-                    s.Seek(posn, System.IO.SeekOrigin.End);
+                    s.Seek(posn, System.IO.SeekOrigin.Begin);
                     long bytesRead = SharedUtilities.FindSignature(s, (int)ZipConstants.EndOfCentralDirectorySignature);
                     if (bytesRead != -1)
                         success = true;
                     else
                     {
                         nTries++;
-                        posn -= (80 * nTries);
+                        //weird - with NETCF, negative offsets from SeekOrigin.End DO NOT WORK
+                        posn = s.Length - (100 * nTries);
+                        if (posn < 0) posn = 0;
                     }
                 }
                 while (!success && nTries < 3);
@@ -4488,7 +4496,7 @@ namespace Ionic.Utils.Zip
                 else
                 {
                     // Could not find the central directory.
-                    // Fallback to the old method
+                    // Fallback to the old method.
                     s.Seek(origPosn, System.IO.SeekOrigin.Begin);
                     ReadIntoInstance_Orig(zf);
                 }
@@ -4548,9 +4556,10 @@ namespace Ionic.Utils.Zip
         private static uint VerifyBeginningOfZipFile(System.IO.Stream s)
         {
             uint datum = (uint)Ionic.Utils.Zip.SharedUtilities.ReadInt(s);
-            if (datum != ZipConstants.PackedToRemovableMedia &&
-                datum != ZipConstants.ZipEntrySignature &&
-                datum != ZipConstants.EndOfCentralDirectorySignature)
+            if (datum != ZipConstants.PackedToRemovableMedia && // weird edge case
+                datum != ZipConstants.ZipEntrySignature && // normal BOF marker
+                datum != ZipConstants.EndOfCentralDirectorySignature // for zip file with no entries
+                )
             {
                 throw new BadReadException(String.Format("  ZipFile::Read(): Bad signature (0x{0:X8}) at start of file at position 0x{1:X8}", datum, s.Position));
             }
@@ -4561,9 +4570,7 @@ namespace Ionic.Utils.Zip
 
         private static void ReadCentralDirectory(ZipFile zf)
         {
-            // read the zipfile's central directory structure here.
             zf._direntries = new System.Collections.Generic.List<ZipDirEntry>();
-
             zf._entries = new System.Collections.Generic.List<ZipEntry>();
 
             ZipDirEntry de;
@@ -4599,7 +4606,6 @@ namespace Ionic.Utils.Zip
         // build the TOC by reading each entry in the file.
         private static void ReadIntoInstance_Orig(ZipFile zf)
         {
-
             zf.OnReadStarted();
             zf._entries = new System.Collections.Generic.List<ZipEntry>();
             ZipEntry e;
@@ -4608,6 +4614,15 @@ namespace Ionic.Utils.Zip
                     zf.StatusMessageTextWriter.WriteLine("Reading zip from stream...");
                 else
                     zf.StatusMessageTextWriter.WriteLine("Reading zip {0}...", zf.Name);
+
+#if NO
+            // read the zipfile's central directory structure here.
+            uint sig = VerifyBeginningOfZipFile(zf.ReadStream);
+            if (sig != ZipConstants.PackedToRemovableMedia)
+                zf.ReadStream.Seek(-4, SeekOrigin.Current);
+#endif
+
+
 
             // work item 6647:  PK00 (packed to removable disk)
             bool firstEntry = true;
@@ -4739,7 +4754,7 @@ namespace Ionic.Utils.Zip
 
                 // workitem 6513 - only use UTF8 as necessary
                 // test reflexivity
-                string s1 = DefaultEncoding.GetString(block);
+                string s1 = DefaultEncoding.GetString(block,0, block.Length);
                 byte[] b2 = DefaultEncoding.GetBytes(s1);
                 if (BlocksAreEqual(block, b2))
                 {
@@ -4751,9 +4766,9 @@ namespace Ionic.Utils.Zip
                     // workitem 6415
                     // use UTF8 if the caller hasn't already set a non-default encoding
                     System.Text.Encoding e = (zf._provisionalAlternateEncoding.CodePage == 437)
-            ? System.Text.Encoding.UTF8
-            : zf._provisionalAlternateEncoding;
-                    zf.Comment = e.GetString(block);
+                        ? System.Text.Encoding.UTF8
+                        : zf._provisionalAlternateEncoding;
+                    zf.Comment = e.GetString(block,0,block.Length);
                 }
             }
         }
@@ -5652,8 +5667,8 @@ namespace Ionic.Utils.Zip
                     if (_name != null)
                     {
                         _temporaryFileName = (TempFileFolder != ".") ?
-                System.IO.Path.Combine(TempFileFolder, System.IO.Path.GetRandomFileName())
-                : System.IO.Path.GetRandomFileName();
+                System.IO.Path.Combine(TempFileFolder, SharedUtilities.GetTempFilename())
+                : SharedUtilities.GetTempFilename();
                         _writestream = new System.IO.FileStream(_temporaryFileName, System.IO.FileMode.CreateNew);
                     }
                 }

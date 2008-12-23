@@ -41,6 +41,7 @@ namespace Ionic.Utils.Zip
         {
         } 
         
+#if !NETCF
         /// <summary>
         /// Come on, you know how exceptions work. Why are you looking at this documentation?
         /// </summary>
@@ -49,6 +50,7 @@ namespace Ionic.Utils.Zip
         protected BadPasswordException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext)
             : base(serializationInfo, streamingContext)
           {  }
+#endif
 
     }
 
@@ -82,6 +84,8 @@ namespace Ionic.Utils.Zip
             : base(message, innerException)
         {
         }
+
+#if !NETCF
         /// <summary>
         /// Come on, you know how exceptions work. Why are you looking at this documentation?
         /// </summary>
@@ -89,7 +93,8 @@ namespace Ionic.Utils.Zip
         /// <param name="streamingContext">The streaming context from which to deserialize.</param>
         protected BadReadException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext)
             : base(serializationInfo, streamingContext)
-          {  }
+          {  }        
+#endif
 
     }
 
@@ -122,6 +127,8 @@ namespace Ionic.Utils.Zip
             : base(message, innerException)
         {
         }
+
+#if !NETCF
         /// <summary>
         /// Come on, you know how exceptions work. Why are you looking at this documentation?
         /// </summary>
@@ -130,6 +137,7 @@ namespace Ionic.Utils.Zip
         protected BadCrcException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext)
             : base(serializationInfo, streamingContext)
           {  }
+#endif
 
     }
 
@@ -163,6 +171,7 @@ namespace Ionic.Utils.Zip
         { }
 
         
+#if !NETCF
         /// <summary>
         /// Come on, you know how exceptions work. Why are you looking at this documentation?
         /// </summary>
@@ -171,6 +180,7 @@ namespace Ionic.Utils.Zip
         protected SfxGenerationException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext)
             : base(serializationInfo, streamingContext)
           {  }
+#endif
 
     }
 
@@ -206,6 +216,7 @@ namespace Ionic.Utils.Zip
             : base(message, innerException)
         {}
 
+#if !NETCF
         /// <summary>
         /// Come on, you know how exceptions work. Why are you looking at this documentation?
         /// </summary>
@@ -214,6 +225,7 @@ namespace Ionic.Utils.Zip
         protected BadStateException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext)
             : base(serializationInfo, streamingContext)
           {  }
+#endif
 
     }
 
@@ -244,6 +256,7 @@ namespace Ionic.Utils.Zip
             : base(message, innerException)
         { }
 
+#if !NETCF
         /// <summary>
         /// Come on, you know how exceptions work. Why are you looking at this documentation?
         /// </summary>
@@ -252,6 +265,7 @@ namespace Ionic.Utils.Zip
         protected ZipException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext)
             : base(serializationInfo, streamingContext)
         { }
+#endif
 
     }
 
