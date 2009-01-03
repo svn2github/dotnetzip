@@ -55,9 +55,9 @@ using System.Reflection;
 using System.IO;
 using System.Collections.Generic;
 
+using Ionic.Zip;
 
-
-namespace Ionic.Utils.Zip
+namespace Ionic.Zip.Examples
 {
 
   public class CreateSelfExtractor
@@ -79,20 +79,20 @@ namespace Ionic.Utils.Zip
 	  "System.dll",
 	  "System.Drawing.dll"},
 	CopyThroughResources = new List<string>{
-	  "Ionic.Utils.Zip.WinFormsSelfExtractorStub.resources",
-	  "Ionic.Utils.Zip.PasswordDialog.resources"},
+	  "Ionic.Zip.WinFormsSelfExtractorStub.resources",
+	  "Ionic.Zip.PasswordDialog.resources"},
 	ResourcesToCompile = new List<string>{
-	  "Ionic.Utils.Zip.WinFormsSelfExtractorStub.cs",
-	  "Ionic.Utils.Zip.WinFormsSelfExtractorStub", // .Designer.cs
-	  "Ionic.Utils.Zip.PasswordDialog.cs",
-	  "Ionic.Utils.Zip.PasswordDialog"             //.Designer.cs"
+	  "Ionic.Zip.WinFormsSelfExtractorStub.cs",
+	  "Ionic.Zip.WinFormsSelfExtractorStub", // .Designer.cs
+	  "Ionic.Zip.PasswordDialog.cs",
+	  "Ionic.Zip.PasswordDialog"             //.Designer.cs"
 	}
       },
 
       new ExtractorSettings() {
 	ReferencedAssemblies= null,
 	CopyThroughResources = null,
-	ResourcesToCompile = new List<string>{"Ionic.Utils.Zip.CommandLineSelfExtractorStub.cs"}
+	ResourcesToCompile = new List<string>{"Ionic.Zip.CommandLineSelfExtractorStub.cs"}
       }
     };
 
@@ -114,7 +114,7 @@ namespace Ionic.Utils.Zip
 
 	ExtractorSettings settings = SettingsList[flavor];
 
-	// This is the list of referenced assemblies.  Ionic.Utils.Zip is needed here.
+	// This is the list of referenced assemblies.  Ionic.Zip is needed here.
 	// Also if it is the winforms (gui) extractor, we need other referenced assemblies.
 	System.CodeDom.Compiler.CompilerParameters cp =
 	  new System.CodeDom.Compiler.CompilerParameters();
@@ -159,7 +159,7 @@ namespace Ionic.Utils.Zip
 	// add the zip file as an embedded resource
 	cp.EmbeddedResources.Add(ZipFileToWrap);
 
-	// add the Ionic.Utils.Zip DLL as an embedded resource
+	// add the Ionic.Zip DLL as an embedded resource
 	cp.EmbeddedResources.Add(a1.Location);
 
 	var sb = new System.Text.StringBuilder();

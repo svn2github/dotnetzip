@@ -1,4 +1,4 @@
-namespace Ionic.Utils.Zip
+namespace Ionic.Zip
 {
     using System;
     using System.Collections.Generic;

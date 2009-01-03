@@ -18,9 +18,9 @@
 //
 
 using System;
-using Ionic.Utils.Zip;
+using Ionic.Zip;
 
-namespace Ionic.Utils.Zip.Examples
+namespace Ionic.Zip.Examples
 {
 
     public class ZipIt
@@ -79,7 +79,7 @@ namespace Ionic.Utils.Zip.Examples
                 int codePage = 0;
                 ZipEntry e = null;
                 string entryComment = null;
-                string entryDirectoryPathInArchive = null;
+                string entryDirectoryPathInArchive = "";
 
                 using (ZipFile zip = new ZipFile(args[0]))
                 {
@@ -113,7 +113,7 @@ namespace Ionic.Utils.Zip.Examples
                                 i++;
                                 if (args.Length <= i) Usage();
                                 string content = args[i];
-                                e = zip.AddFileFromString(entryName, "", content);
+                                e = zip.AddFileFromString(entryName, entryDirectoryPathInArchive, content);
                                 if (entryComment != null)
                                 {
                                     e.Comment = entryComment;
@@ -124,8 +124,13 @@ namespace Ionic.Utils.Zip.Examples
                             case "-c":
                                 i++;
                                 if (args.Length <= i) Usage();
-                                if (zip.Comment == null) zip.Comment = args[i];
-                                else entryComment = args[i];
+				entryComment = args[i];  // for the next entry
+                                break;
+
+                            case "-zc":
+                                i++;
+                                if (args.Length <= i) Usage();
+                                zip.Comment = args[i];
                                 break;
 
                             case "-cp":

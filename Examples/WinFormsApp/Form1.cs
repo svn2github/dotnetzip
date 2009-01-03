@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
-using Ionic.Utils.Zip;
+using Ionic.Zip;
 
 namespace WinFormsExample
 {

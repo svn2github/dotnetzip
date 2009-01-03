@@ -1,4 +1,4 @@
-﻿namespace Ionic.Utils.Zip
+﻿namespace Ionic.Zip
 {
     partial class PasswordDialog
     {

@@ -20,9 +20,9 @@
 
 
 using System;
-using Ionic.Utils.Zip;
+using Ionic.Zip;
 
-namespace Ionic.Utils.Zip.Examples
+namespace Ionic.Zip.Examples
 {
     public class ReadZip
     {

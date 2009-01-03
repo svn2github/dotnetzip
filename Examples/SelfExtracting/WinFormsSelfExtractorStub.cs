@@ -1,4 +1,4 @@
-﻿namespace Ionic.Utils.Zip
+﻿namespace Ionic.Zip
 {
     using System;
     using System.Reflection;
@@ -9,7 +9,7 @@
     public partial class WinFormsSelfExtractorStub : Form
     {
         //const string IdString = "DotNetZip Self Extractor, see http://www.codeplex.com/DotNetZip";
-        const string DllResourceName = "Ionic.Utils.Zip.dll";
+        const string DllResourceName = "Ionic.Zip.dll";
 
         delegate void ExtractEntryProgress(ExtractProgressEventArgs e);
 
@@ -131,10 +131,10 @@
             try
             {
                 zip.ExtractProgress += ExtractProgress;
-                foreach (global::Ionic.Utils.Zip.ZipEntry entry in zip)
+                foreach (global::Ionic.Zip.ZipEntry entry in zip)
                 {
                     if (_setCancel) { extractCancelled = true; break; }
-                    if (entry.Encryption == global::Ionic.Utils.Zip.EncryptionAlgorithm.None)
+                    if (entry.Encryption == global::Ionic.Zip.EncryptionAlgorithm.None)
                         try
                         {
                             entry.Extract(targetDirectory, WantOverwrite);
@@ -360,7 +360,7 @@
             get
             {
                 if (_zip == null)
-                    _zip = global::Ionic.Utils.Zip.ZipFile.Read(ZipStream);
+                    _zip = global::Ionic.Zip.ZipFile.Read(ZipStream);
                 return _zip;
             }
         }
@@ -394,7 +394,7 @@
         private int _progress2MaxFactor;
         private bool _setCancel;
         Stream _s;
-        global::Ionic.Utils.Zip.ZipFile _zip;
+        global::Ionic.Zip.ZipFile _zip;
 
     }
 

@@ -8,7 +8,7 @@
 // Created Fri Jun 06 14:51:31 2008
 //
 // last saved: 
-// Time-stamp: <Friday, June 06, 2008  17:44:24  (by dinoch)>
+// Time-stamp: <2009-January-01 07:09:55>
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2008 by Dino Chiesa
@@ -22,15 +22,15 @@ using System;
 using System.Reflection;
 using System.Resources;
 using System.IO;
-using Ionic.Utils.Zip;
+using Ionic.Zip;
 
 
-namespace Ionic.Utils.Zip
+namespace Ionic.Zip
 {
 
     public class SelfExtractor
     {
-        const string DllResourceName = "Ionic.Utils.Zip.dll";
+        const string DllResourceName = "Ionic.Zip.dll";
         // ctor
         public SelfExtractor() { }
 
@@ -44,7 +44,7 @@ namespace Ionic.Utils.Zip
             Assembly a1 = Assembly.GetExecutingAssembly();
             Assembly a2 = null;
 
-            Stream s = a1.GetManifestResourceStream("Ionic.Utils.Zip.dll");
+            Stream s = a1.GetManifestResourceStream("Ionic.Zip.dll");
             int n = 0;
             int totalBytesRead = 0;
             byte[] bytes = new byte[1024];
@@ -91,11 +91,11 @@ namespace Ionic.Utils.Zip
 
             try
             {
-                using (global::Ionic.Utils.Zip.ZipFile zip = global::Ionic.Utils.Zip.ZipFile.Read(s))
+                using (global::Ionic.Zip.ZipFile zip = global::Ionic.Zip.ZipFile.Read(s))
                 {
-                    foreach (global::Ionic.Utils.Zip.ZipEntry entry in zip)
+                    foreach (global::Ionic.Zip.ZipEntry entry in zip)
                     {
-                        if (entry.Encryption == global::Ionic.Utils.Zip.EncryptionAlgorithm.None)
+                        if (entry.Encryption == global::Ionic.Zip.EncryptionAlgorithm.None)
                             try
                             {
                                 entry.Extract(targetDirectory, WantOverwrite);
