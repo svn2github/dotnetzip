@@ -7,15 +7,17 @@
     <ProjectGuid>{051C2B3B-8CDF-42CB-9EA2-027232BFC395}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ionic.Utils.Zip.CF</RootNamespace>
-    <AssemblyName>Ionic.Utils.Zip.CF</AssemblyName>
+    <RootNamespace>Ionic.Zip.CF</RootNamespace>
+    <AssemblyName>Ionic.Zip.CF.Partial</AssemblyName>
     <ProjectTypeGuids>{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PlatformFamilyName>Smartphone</PlatformFamilyName>
     <PlatformID>f27da329-3269-4191-98e0-c87d3d7f1db9</PlatformID>
     <OSVersion>5.2</OSVersion>
-    <DeployDirSuffix>CF_Library</DeployDirSuffix>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <DeployDirSuffix>Ionic.Zip.CF</DeployDirSuffix>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <NativePlatformName>Windows Mobile 6 Standard SDK</NativePlatformName>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Ionic.pfx</AssemblyOriginatorKeyFile>
     <FormFactorID>
     </FormFactorID>
   </PropertyGroup>
@@ -24,7 +26,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;Smartphone; NETCF</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;Smartphone; NETCF; NETCF20</DefineConstants>
     <NoStdLib>true</NoStdLib>
     <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
@@ -47,37 +49,45 @@
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
-    <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Library\Constants.cs">
-      <Link>Constants.cs</Link>
-    </Compile>
-    <Compile Include="..\Library\Crc32.cs">
+    <Compile Include="..\Zip Partial DLL\Crc32.cs">
       <Link>Crc32.cs</Link>
     </Compile>
-    <Compile Include="..\Library\Events.cs">
+    <Compile Include="..\Zip Partial DLL\Events.cs">
       <Link>Events.cs</Link>
     </Compile>
-    <Compile Include="..\Library\Exceptions.cs">
+    <Compile Include="..\Zip Partial DLL\Exceptions.cs">
       <Link>Exceptions.cs</Link>
     </Compile>
-    <Compile Include="..\Library\Shared.cs">
+    <Compile Include="..\Zip Partial DLL\Shared.cs">
       <Link>Shared.cs</Link>
     </Compile>
-    <Compile Include="..\Library\ZipCrypto.cs">
+    <Compile Include="..\Zip Partial DLL\ZipConstants.cs">
+      <Link>ZipConstants.cs</Link>
+    </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipCrypto.cs">
       <Link>ZipCrypto.cs</Link>
     </Compile>
-    <Compile Include="..\Library\ZipDirEntry.cs">
+    <Compile Include="..\Zip Partial DLL\ZipDirEntry.cs">
       <Link>ZipDirEntry.cs</Link>
     </Compile>
-    <Compile Include="..\Library\ZipEntry.cs">
+    <Compile Include="..\Zip Partial DLL\ZipEntry.cs">
       <Link>ZipEntry.cs</Link>
     </Compile>
-    <Compile Include="..\Library\ZipFile.cs">
+    <Compile Include="..\Zip Partial DLL\ZipFile.cs">
       <Link>ZipFile.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Ionic.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Zlib CF\Zlib CF DLL.csproj">
+      <Project>{E082D395-52BE-41EE-812B-8B09C51025B4}</Project>
+      <Name>Zlib CF DLL</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>
