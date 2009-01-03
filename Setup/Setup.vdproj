@@ -27,30 +27,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_C060BD63BAE174847120EBBA72BFED6E"
-        "OwnerKey" = "8:_1095DCE16DF54952900B158E667C1D5F"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_C060BD63BAE174847120EBBA72BFED6E"
-        "OwnerKey" = "8:_F7DA600A0D264B64822406B06AD1BFDE"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_C060BD63BAE174847120EBBA72BFED6E"
-        "OwnerKey" = "8:_CB8DB966CAC04B37B66694A2F4A5443F"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_C060BD63BAE174847120EBBA72BFED6E"
-        "OwnerKey" = "8:_C761E906187B41B991150E5027BA2F8A"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_C761E906187B41B991150E5027BA2F8A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -59,6 +35,30 @@
         {
         "MsmKey" = "8:_CB8DB966CAC04B37B66694A2F4A5443F"
         "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_F7AA74365CE28C80F42FB41E6EC3BE70"
+        "OwnerKey" = "8:_1095DCE16DF54952900B158E667C1D5F"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_F7AA74365CE28C80F42FB41E6EC3BE70"
+        "OwnerKey" = "8:_F7DA600A0D264B64822406B06AD1BFDE"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_F7AA74365CE28C80F42FB41E6EC3BE70"
+        "OwnerKey" = "8:_CB8DB966CAC04B37B66694A2F4A5443F"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_F7AA74365CE28C80F42FB41E6EC3BE70"
+        "OwnerKey" = "8:_C761E906187B41B991150E5027BA2F8A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -94,7 +94,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_C060BD63BAE174847120EBBA72BFED6E"
+        "OwnerKey" = "8:_F7AA74365CE28C80F42FB41E6EC3BE70"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -207,20 +207,20 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_C060BD63BAE174847120EBBA72BFED6E"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F7AA74365CE28C80F42FB41E6EC3BE70"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Utils.Zip, Version=1.7.1.2, Culture=neutral, PublicKeyToken=c551e179877da246, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zip, Version=1.7.1.11, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_C060BD63BAE174847120EBBA72BFED6E"
+                    "_F7AA74365CE28C80F42FB41E6EC3BE70"
                     {
-                    "Name" = "8:Ionic.Utils.Zip.dll"
+                    "Name" = "8:Ionic.Zip.dll"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:Ionic.Utils.Zip.dll"
+            "SourcePath" = "8:Ionic.Zip.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_23BCB24D0FEF491DB38964CE9740634B"
@@ -295,7 +295,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DotNetZip Utilities v1.7"
         "ProductCode" = "8:{6A205B6A-6693-4F2C-B9E2-C19F1116A844}"
-        "PackageCode" = "8:{F7C455AA-1536-41B3-BE07-60EAB0C128CC}"
+        "PackageCode" = "8:{12863ED3-7D6A-4682-A15A-7A97F527F47C}"
         "UpgradeCode" = "8:{BEF05388-A74D-4383-BD87-61940DF83E20}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
