@@ -4,11 +4,11 @@ using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Ionic.Utils.Zip;
-using Library.TestUtilities;
+using Ionic.Zip;
+using Ionic.Zip.Tests.Utilities;
 using System.IO;
 
-namespace Ionic.Utils.Zip.Tests.Unicode
+namespace Ionic.Zip.Tests.Unicode
 {
     /// <summary>
     /// Summary description for UnicodeTests

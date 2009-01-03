@@ -3,14 +3,14 @@ using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Ionic.Utils.Zip;
-using Library.TestUtilities;
+using Ionic.Zip;
+using Ionic.Zip.Tests.Utilities;
 
 
 /// Tests for more advanced scenarios.
 /// 
 
-namespace Ionic.Utils.Zip.Tests.Extended
+namespace Ionic.Zip.Tests.Extended
 {
 
     public class XTWFND : System.Xml.XmlTextWriter
@@ -633,7 +633,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
                 zip.Comment = "This will be embedded into a self-extracting exe";
                 System.IO.MemoryStream ms1 = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes(ReadmeString));
                 zip.AddFileStream("Readme.txt", "", ms1);
-                zip.SaveSelfExtractor(ExeFileToCreate, Ionic.Utils.Zip.SelfExtractorFlavor.ConsoleApplication);
+                zip.SaveSelfExtractor(ExeFileToCreate, Ionic.Zip.SelfExtractorFlavor.ConsoleApplication);
             }
 
             System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo(ExeFileToCreate);
@@ -1068,7 +1068,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
 
             TestContext.WriteLine("extracting {0}...", fileName);
 
-            using (var zFile = Ionic.Utils.Zip.ZipFile.Read(fileName))
+            using (var zFile = Ionic.Zip.ZipFile.Read(fileName))
             {
                 zFile.ExtractAll(zDir, true);
             }
@@ -1110,7 +1110,7 @@ namespace Ionic.Utils.Zip.Tests.Extended
                     zip.AddDirectory(Subdir, System.IO.Path.GetFileName(Subdir));
                     zip.Comment = "For testing purposes, please extract to:  " + TargetUnpackDirectory;
                     if (Passwords[k] != null) zip.Comment += String.Format("\r\n\r\nThe password for all entries is:  {0}\n", Passwords[k]);
-                    zip.SaveSelfExtractor(ExeFileToCreate, Ionic.Utils.Zip.SelfExtractorFlavor.WinFormsApplication);
+                    zip.SaveSelfExtractor(ExeFileToCreate, Ionic.Zip.SelfExtractorFlavor.WinFormsApplication);
                 }
 
                 // run the self-extracting EXE we just created 

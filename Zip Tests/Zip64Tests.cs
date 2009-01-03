@@ -3,14 +3,14 @@ using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Ionic.Utils.Zip;
-using Library.TestUtilities;
+using Ionic.Zip;
+using Ionic.Zip.Tests.Utilities;
 
 
 /// Tests for more advanced scenarios.
 /// 
 
-namespace Ionic.Utils.Zip.Tests.Zip64
+namespace Ionic.Zip.Tests.Zip64
 {
 
     /// <summary>

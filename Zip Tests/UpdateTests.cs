@@ -3,10 +3,10 @@ using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Ionic.Utils.Zip;
-using Library.TestUtilities;
+using Ionic.Zip;
+using Ionic.Zip.Tests.Utilities;
 
-namespace Ionic.Utils.Zip.Tests.Update
+namespace Ionic.Zip.Tests.Update
 {
     /// <summary>
     /// Summary description for UnitTest1

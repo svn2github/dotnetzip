@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+//using System.Linq;
 using System.Text;
-using Ionic.Utils.Zip;
+using Ionic.Zip;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Library.TestUtilities
+namespace Ionic.Zip.Tests.Utilities
 {
     class TestUtilities
     {

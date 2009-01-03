@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RE = System.Text.RegularExpressions;
 
-using Ionic.Utils.Zip;
-using Library.TestUtilities;
+using Ionic.Zip;
+using Ionic.Zip.Tests.Utilities;
 using System.IO;
 
-namespace Ionic.Utils.Zip.Tests.Basic
+namespace Ionic.Zip.Tests.Basic
 {
     /// <summary>
     /// Summary description for UnitTest1
@@ -815,6 +815,43 @@ namespace Ionic.Utils.Zip.Tests.Basic
         }
 
 
+        [TestMethod]
+        // [ExpectedException(typeof(System.IO.FileNotFoundException))]
+        public void Basic_SaveToFileStream()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Basic_SaveToFileStream.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            string dirToZip = System.IO.Path.GetRandomFileName();
+            System.IO.Directory.CreateDirectory(dirToZip);
+
+            int filesAdded = _rnd.Next(3) + 3;
+            for (int i = 0; i < filesAdded; i++)
+            {
+                var s = System.IO.Path.Combine(dirToZip, String.Format("tempfile-{0}.bin", i));
+                int sz = _rnd.Next(10000) + 5000;
+                TestContext.WriteLine("  Creating file: {0} sz({1})", s, sz);
+                TestUtilities.CreateAndFillFileBinary(s, sz);
+            }
+
+            var fileStream = File.Create(ZipFileToCreate);
+
+            //  this is incorrect usage - should fail with an exception
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddDirectory(dirToZip);
+                zip1.Comment = "This is a Comment On the Archive";
+                zip1.Save(fileStream);
+            }
+
+            fileStream.Close();
+
+            // Verify the files are in the zip
+            Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), filesAdded,
+                "The Zip file has the wrong number of entries.");
+        }
+
+
 
         [TestMethod]
         public void CreateZip_VerifyThatStreamRemainsOpenAfterSave()
@@ -845,13 +882,13 @@ namespace Ionic.Utils.Zip.Tests.Basic
                     //string dirToZip = System.IO.Path.GetFileName(TopLevelDir);
                     var ms = new System.IO.MemoryStream();
                     Assert.IsTrue(ms.CanSeek, String.Format("Trial {0}: The output MemoryStream does not do Seek.", k));
-                    using (ZipFile zip1 = new ZipFile(ms))
+                    using (ZipFile zip1 = new ZipFile())
                     {
                         zip1.ForceNoCompression = ForceCompressionOptions[k];
                         zip1.Password = Passwords[j];
                         zip1.Comment = String.Format("Trial ({0},{1}):  Password='{2}' Compression={3}\n", j, k, Passwords[j], ForceCompressionOptions[k]);
                         zip1.AddDirectory(dirToZip);
-                        zip1.Save();
+                        zip1.Save(ms);
                     }
 
                     Assert.IsTrue(ms.CanSeek, String.Format("Trial {0}: After writing, the OutputStream does not do Seek.", k));

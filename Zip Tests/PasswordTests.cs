@@ -4,10 +4,10 @@ using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 
-using Ionic.Utils.Zip;
-using Library.TestUtilities;
+using Ionic.Zip;
+using Ionic.Zip.Tests.Utilities;
 
-namespace Ionic.Utils.Zip.Tests.Password
+namespace Ionic.Zip.Tests.Password
 {
     [TestClass]
     public class PasswordTests
@@ -171,7 +171,7 @@ namespace Ionic.Utils.Zip.Tests.Password
             string[] filenames = 
             {
                 Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.xml"),
+                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
             };
 
             string[] checksums = 
@@ -214,7 +214,7 @@ namespace Ionic.Utils.Zip.Tests.Password
 
 
         [TestMethod]
-        [ExpectedException(typeof(Ionic.Utils.Zip.BadPasswordException))]
+        [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
         public void Password_Extract_WrongPassword()
         {
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "MultipleEntriesDifferentPasswords.zip");
@@ -229,7 +229,7 @@ namespace Ionic.Utils.Zip.Tests.Password
             string[] filenames = 
             {
                 Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.xml"),
+                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
             };
 
             string[] passwords = 
@@ -276,7 +276,7 @@ namespace Ionic.Utils.Zip.Tests.Password
             string[] filenames = 
             {
                 Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.xml"),
+                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
             };
 
             string[] checksums = 

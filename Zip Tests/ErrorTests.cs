@@ -2,10 +2,10 @@
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Ionic.Utils.Zip;
-using Library.TestUtilities;
+//using Ionic.Zip;
+using Ionic.Zip.Tests.Utilities;
 
-namespace Ionic.Utils.Zip.Tests.Error
+namespace Ionic.Zip.Tests.Error
 {
     /// <summary>
     /// Summary description for ErrorTests
@@ -83,7 +83,7 @@ namespace Ionic.Utils.Zip.Tests.Error
         {
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Error_AddFile_NonExistentFile.zip");
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            using (Ionic.Zip.ZipFile zip = new Ionic.Zip.ZipFile(ZipFileToCreate))
             {
                 zip.AddFile("ThisFileDoesNotExist.txt");
                 zip.Comment = "This is a Comment On the Archive";
@@ -92,9 +92,8 @@ namespace Ionic.Utils.Zip.Tests.Error
         }
 
 
-
         [TestMethod]
-        [ExpectedException(typeof(Ionic.Utils.Zip.ZipException))]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Error_Read_NullStream()
         {
             System.IO.Stream s = null;
@@ -109,7 +108,7 @@ namespace Ionic.Utils.Zip.Tests.Error
 
 
         [TestMethod]
-        [ExpectedException(typeof(Ionic.Utils.Zip.ZipException))]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void CreateZip_AddDirectory_BlankName()
         {
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_AddDirectory_BlankName.zip");
@@ -122,7 +121,7 @@ namespace Ionic.Utils.Zip.Tests.Error
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Ionic.Utils.Zip.ZipException))]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void CreateZip_AddFileFromString_BlankName()
         {
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_AddFileFromString_BlankName.zip");
@@ -137,7 +136,7 @@ namespace Ionic.Utils.Zip.Tests.Error
 
 
         [TestMethod]
-        [ExpectedException(typeof(Ionic.Utils.Zip.ZipException))]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Error_Extract_ExistingFileWithoutOverwrite()
         {
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "ExtractWithoutOverwrite.zip");
@@ -152,9 +151,9 @@ namespace Ionic.Utils.Zip.Tests.Error
             string[] filenames = 
             {
                 Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.dll"),
-                Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.pdb"),
-                Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.xml"),
+                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.dll"),
+                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.pdb"),
+                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
                 //Path.Combine(SourceDir, "AppNote.txt")
             };
             int j = 0;
@@ -185,7 +184,7 @@ namespace Ionic.Utils.Zip.Tests.Error
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Ionic.Utils.Zip.ZipException))]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Error_Read_InvalidZip()
         {
             string SourceDir = CurrentDir;
@@ -317,7 +316,7 @@ namespace Ionic.Utils.Zip.Tests.Error
 
 
         [TestMethod]
-        [ExpectedException(typeof(Ionic.Utils.Zip.BadStateException))]
+        [ExpectedException(typeof(Ionic.Zip.BadStateException))]
         public void Error_Save_NoFilename()
         {
             string SourceDir = CurrentDir;
@@ -424,7 +423,7 @@ namespace Ionic.Utils.Zip.Tests.Error
             string[] filenames =
             {
                 Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.xml"),
+                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
             };
 
             // passwords to use for those entries
@@ -490,7 +489,7 @@ namespace Ionic.Utils.Zip.Tests.Error
             {
                 Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
                 Path.Combine(SourceDir, "Examples\\Unzip\\bin\\Debug\\Unzip.exe"),
-                Path.Combine(SourceDir, "Library\\bin\\Debug\\Ionic.Utils.Zip.xml"),
+                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
 
             };
 
