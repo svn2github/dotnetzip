@@ -3,22 +3,51 @@ Fri, 19 Dec 2008  06:03
 Zip Library 
 ---------------------------------
 
-The Microsoft .NET Framework {v2.0 v3.0 v3.5} includes new base class
-libraries supporting compression within streams - both the
-Deflate and Gzip formats are supported. But the new-for-.NET2.0
-System.IO.Compression namespace provides streaming compression
-only - useful for communicating between cooperating parties but
-not directly useful for creating compressed archives, like .zip
-files. The built-in compression library does not know how to
-format zip archive headers and so on.  
+This library allows applications to create and read ZIP files. 
 
-This is a simple class library that augments the 
-System.IO.Compression.DeflateStream class, to provide handling
-for Zip files.  Using this library, you can write .NET
-applications that read and write zip-format files. 
+The Microsoft .NET Framework, starting with v2.0 for the desktop
+Framework and v3.5 for the Compact Framework, includes new base class
+libraries supporting compression within streams - both the Deflate and
+Gzip formats are supported. But the System.IO.Compression namespace is
+not directly useful for creating compressed zip archives.  The built-in
+compression library does not know how to format zip archive headers and
+so on.
 
-There is a versiono of this library available for the .NET Compact
-Framework, too. 
+This is a simple class library that provides ZIP file support.  Using
+this library, you can write .NET applications that read and write
+zip-format files, including files with passwords, Unicode filenames, and
+comments.  The library also supports ZIP64 and self-extracting archives.
+
+DotNetZip works with applications running on PCs with Windows.  There is a
+version of this library available for the .NET Compact Framework, too.
+
+
+License
+--------
+
+This software is open source. It is released under the Microsoft Public License
+of October 2006.  See the License.txt file for details. 
+
+
+
+Dependencies
+---------------------------------
+
+Originally, this library was designed to depend upon the built-in 
+System.IO.Compression.DeflateStream class for the compression.  This
+proved to be less than satisfactory because the built-in compression
+library did not support compression levels and also was not available on
+.NET CF 2.0.
+
+As of v1.7, the library includes a managed code version of zlib, the
+library that produces RFC1950 and RFC1951 compressed streams.  Within
+that version of zlib, there is also a DeflateStream class which is
+similar to the built-in System.IO.Compression.DeflateStream, but more
+flexible, and often more effective as well.
+
+As a result, this library depends only on the .NET Framework v2.0, or the
+.NET Compact Framework v2.0.
+
 
 
 
@@ -41,10 +70,51 @@ DeflateStream class, included in the .NET Framework Class
 Library, does not read or write.
 
 
-This Class Library
+This Package
 ---------------------------------
 
-The library included here depends on the DeflateStream class,
+This package includes a managed ZLIB DLL, and a ZIP dll.  The latter
+depends upon the capabilities included in the former.  
+
+For each DLL, there is a version for the regular .NET
+Framework and another for the Compact Framework. 
+
+
+The Zlib Class Library
+---------------------------------
+
+The Zlib class library is packaged as Ionic.Zlib.DLL for the regular .NET
+Framework and Ionic.Zlib.CF.dll for the Compact Framework.  The ZLIB
+library does compression according to IETF RFC's 1950 and 1951.
+See http://www.ietf.org/rfc/rfc1950.txt
+
+The key classes are: 
+
+  ZlibCodec - a class for Zlib (RFC1950/1951) encoding and decoding.
+        This low-level class does deflation and inflation on buffers.
+
+  DeflateStream - patterned after the DeflateStream in
+        System.IO.Compression, this class supports compression
+        levels and other options.
+
+
+If you want to simply compress raw block data, this library is the thing
+you want.  
+
+When building apps that do zlib stuff, you need to add a reference to
+the Ionic.Zlib.dll in Visual Studio, or specify Ionic.Zlib.dll with the
+/R flag on the CSC.exe or VB.exe compiler line.
+
+
+
+The Zip Class Library
+---------------------------------
+
+The Zip class library is packaged as Ionic.Zip.DLL for the regular .NET
+Framework and Ionic.Zip.CF.dll for the Compact Framework.  The Zip
+library allows applications to create, read, and update zip files. 
+
+This library uses the DeflateStream class to compress file data,
 and extends it to support reading and writing of the metadata -
 the header, CRC, and other optional data - defined or required
 by the zip format spec.
@@ -63,8 +133,19 @@ can enumerate the entries in a ZipFile, via ZipEntry.  There are
 other supporting classes as well.  Typically apps do not
 directly interact with these other classes.
 
+If you want to create or read zip files, this library is the one you want.
 
-Using the Class Library
+When building apps that do zip stuff, you need to add a reference to
+the Ionic.Zip.dll in Visual Studio, or specify Ionic.Zip.dll with the
+/R flag on the CSC.exe or VB.exe compiler line.
+
+NB: If your application does both Zlib and Zip stuff, you need only add
+a reference to Ionic.Zip.dll.  Ionic.Zip.dll includes all the capability
+in Ionic.Zlib.dll.
+
+
+
+Using the Zip Class Library
 ---------------------------------
 
 Check the examples included in this package for simple apps that
@@ -92,6 +173,29 @@ or you can create (write) zip archives to streams.  You can apply
 passwords for weak encryption.  You can specify a code page for the
 filenames and metadata of entries in an archive.  Check the
 doc for complete information. 
+
+
+
+
+Namespace changes for the library
+---------------------------------
+
+With v1.7, the namespace for DotNetZip changed.  The old namespace was
+Ionic.Utils.Zip, with classes like 
+  Ionic.Utils.Zip.ZipFile
+  Ionic.Utils.Zip.ZipEntry
+  etc
+
+The new namespace drops the "Utils" segment, and is now Ionic.Zip.
+Classes are 
+  Ionic.Zip.ZipFile
+  Ionic.Zip.ZipEntry
+
+In addition, v1.7 adds the zlib capability, so that there are classes
+like:
+  Ionic.Zlib.DeflateStream
+  Ionic.Zlib.ZlibStream
+  Ionic.Zlib.ZlibCodec
 
 
 
@@ -128,22 +232,132 @@ About the Help file
 
 The .chm file contains help generated from the code.
 
-In some cases, Upon opening the .chm file for DotNetZipLib, the
-help items tree loads, but the contents are empty. You may see
-an Error: This program cannot display the webpage.  If this
-happens, it's probable that you encounter problem with Windows
-protection of files downloaded from less trusted
-location. Within Windows Explorer, right-click on the CHM file,
-select properties, and Unblock it (button in lower part of
-properties window).
+In some cases, Upon opening the .chm file for DotNetZipLib, the help
+items tree loads, but the contents are empty. You may see an Error:
+"This program cannot display the webpage."  or, "Address is invalid."
+If this happens, it's probable that you encounter problem with Windows
+protection of files downloaded from less trusted location. Within
+Windows Explorer, right-click on the CHM file, select properties, and
+Unblock it (button in lower part of properties window).
 
 
 
-License
---------
+The use of ILMerge
+--------------------------------
 
-This software is released under the Microsoft Public License
-of October 2006.  See the License.txt file for details. 
+This section is mostly interesting to developers who will work on the
+source code of DotNetZip, to extend or re-purpose it.  If you only plan
+to use DotNetZip, you probably don't need to care about this information.
+
+Microsoft makes available a tool called ILMerge which is effectively a
+managed library manager, similar to the lib tool in C toolkits.
+
+http://www.microsoft.com/downloads/details.aspx?familyid=22914587-b4ad-4eae-87cf-b14ae6a939b0&displaylang=en 
+
+With it, a developer can merge multiple assemblies into a single
+assembly.  
+
+DotNetZip packages two distinct libraries, and the ZIP library has a
+hard dependency on the ZLIB library. Rather than require developers who
+use DotNetZip to ship two DLLs with their zip-enabled applications, the
+DotNetZip build uses ILMerge.
+
+It works like this:
+  The zlib library is built and signed  (Ionic.Zlib.dll)
+  The "partial" zip library is built and signed (Ionic.Zip.Partial.dll)
+  ILmerge is used to combine those two into a single assembly (Ionic.Zip.dll) 
+
+In other words, Ionic.Zip.dll is a strict superset of Ionic.Zlib.dll.  
+
+This is true for the desktop DLL as well as the DLL for the Compact
+Framework.  See the "Zip Full DLL" project and the "Zip CF Full DLL"
+project - this is where the ILMerge steps are performed.
+
+The implication for users of this library is that you should never
+reference both Ionic.Zlib.dll and Ionic.Zip.dll in the same application.
+If your application does both Zlib and Zip stuff, you need only add a
+reference to Ionic.Zip.dll.  Ionic.Zip.dll includes all the capability
+in Ionic.Zlib.dll.
+
+
+
+
+The Reduced ZIP library
+--------------------------------
+
+The Self-Extracting Archive (SFX) support in the library implies a large
+increase in the size of the library.  (NB: SFX  is not supported in the
+Compact Framework version of the library.)  Some deployments may
+wish to omit the SFX support in order to get a smaller DLL. For that you can
+rely on the Ionic.Zip.Reduced.dll.  It provides everything the normal
+library does, except the SaveSelfExtractor() method on the ZipFile
+class.
+
+For size comparisons...
+
+assembly              ~size   comment
+-------------------------------------------------------
+Ionic.Zlib.dll          77k   DeflateStream and ZlibCodec
+
+Ionic.Zip.dll          335k   includes ZLIB and SFX
+
+Ionic.Zip.Partial.dll  258k   includes SFX, depends on a separate Ionic.Zlib.dll
+                              You should probably never reference this
+                              DLL directly. It is a interim build output.
+                              Included here for comparison purposes only.
+
+Ionic.Zip.Reduced.dll  130k   includes ZLIB but not SFX
+
+Ionic.Zlib.CF.dll       66k   DeflateStream and ZlibCodec (Compact Framework)
+
+Ionic.Zip.CF.dll       140k   includes ZLIB but not SFX (Compact Framework)
+
+
+
+The Documentation
+--------------------------------------------
+
+There is a single .chm file for all of the DotNetZip library features,
+including Zip and Zlib stuff.  If you only use the Zlib stuff, then you
+should focus on the doc in the Ionic.Zlib namespace.  If you are
+building apps for mobile devices running the Compact Framework, then
+ignore the SaveSelfExtractor() pieces.
+
+The .chm file is built using the Sandcastle Helpfile Builder tool, also
+available on CodePlex at http://www.codeplex.com/SHFB .  It is built
+from in-code xml documentation. 
+
+
+Testing
+--------------------------------------------
+
+For those of you downloading the source, there are two source projects
+in the VS Solution that contain Unit Tests: one for the zlib library and
+another for the Zip library.
+
+The zlib tests are much thinner than the zip tests at the moment. 
+
+
+
+Examples
+--------------------------------------------
+
+The source solution also includes a number of example applications
+showing how to use the DotNetZip library and all its features - creating
+ZIPs, using Unicode, passwords, comments, and so on.  
+
+
+
+
+Support
+--------------------------------------------
+
+There is no official support for this library.  I try to make a good
+effort to monitor the discussions and work items raised on the project
+portal at:
+http://www.codeplex.com/DotNetZip.
+
+
 
 
 
@@ -166,10 +380,17 @@ paragraph that reads:
 Contact pkware at:  zipformat@pkware.com 
 
 
-This example also uses a CRC utility class, in modified form,
+This library also uses a CRC utility class, in modified form,
 that was published on the internet without an explicit license.
 You can find the original CRC class at:
   http://www.vbaccelerator.com/home/net/code/libraries/CRC32/Crc32_zip_CRC32_CRC32_cs.asp
+
+
+This library uses a ZLIB implementation that is based on a conversion of
+the jzlib project http://www.jcraft.com/jzlib/.  The license and
+disclaimer required by the jzlib source license is included in the
+relevant source files of DotNetZip, specifically in the sources for the
+Zlib module.
 
 
 
@@ -179,14 +400,16 @@ Pre-requisites
 to run:
 .NET Framework 2.0 or later
 
+
 to build:
-.NET Framework 2.0 SDK or later
+.NET Framework 3.5 SDK or later
 or
 Visual Studio 2008 or later
 
 
+
 to run on a smart device:
-  .NET Framework 3.5 or later
+  .NET Framework 2.0 or later
 
 
 
@@ -236,28 +459,54 @@ Then right click on the solution, and select Build.
 Signing the assembly
 -------------------------------------------------------
 
-The binary DLL shipped in the codeplex project is signed by me,
-Ionic Shade.  It is done automatically at build time in the
-vs2008 project. There is a .pfx file that holds the crypto stuff
-for signing the assembly, and that pfx file is itself protected
-by a password. 
+The binary DLL shipped in the codeplex project is signed by me, Ionic
+Shade.  This provides a "strong name" for the assembly, which itself
+provides some assurance as to the integrity of the library, and also
+allows it to be run within restricted sites, like apps running inside
+web hosters.
 
-People opening the project ask me: what's the password?
+For more on strong names, see this article:
+http://msdn.microsoft.com/en-gb/magazine/cc163583.aspx
 
-Here's the problem; if I give everyone the password to the PFX
-file, then anyone can go and build a modified DotNetZip.dll, and
-sign it, and apply the same version number.  This means there
-will be multiple distinct assemblies with the same signature.
-This is obviously not good.  So the signed DLL is from me only,
-and if anyone wants to modify the project and party on it,
-they have a couple options: 
-  - produce a modified, unsigned assembly
+Signing is done automatically at build time in the vs2008 project. There
+is a .pfx file that holds the crypto stuff for signing the assembly, and
+that pfx file is itself protected by a password. There is also an
+Ionic.snk file which is referenced by the project, but which I do not
+distribute.
+
+People opening the project ask me: what's the password to this .pfx
+file?  Where's the .snk file?
+
+Here's the problem; if I give everyone the password to the PFX file or
+the .snk file, then anyone can go and build a modified DotNetZip.dll,
+and sign it with my key, and apply the same version number.  This means
+there could be multiple distinct assemblies with the same signature.
+This is obviously not good.  
+
+Since I don't release the ability to sign DLLs with my key, 
+the DLL signed with my key is guaranteed to be from me only. If
+anyone wants to modify the project and party on it, they have a couple
+options: 
   - sign the assembly themselves, using their own key.
+  - produce a modified, unsigned assembly 
 
 In either case it is not the same as the assembly I am shipping,
 therefore it should not be signed with the same key. 
 
 mmkay? 
+
+As for those options above, here is some more detail:
+
+  1. If you want a strong-named assembly, then create your own PFX file
+     and .snk file and modify the appropriate projects to use those new
+     files. 
+
+  2. If you don't need a strong-named assembly, then remove all the
+     signing from the various projects.
+
+In either case, You will need to modify the "Zip Full DLL" and "Zip CF Full
+DLL" projects, as well as the "Zlib" and "Zlib CF" projects.
+
 
 
 
@@ -276,8 +525,6 @@ There are numerous limitations to this library:
 
  it does not support "multi-disk archives." or "disk spanning"
 
- it does not do varying compression levels. 
-
  The GUI tool for creating zips is pretty basic.
 
  and, I'm sure, many others
@@ -293,8 +540,11 @@ produced by this example library.
 
 Origins
 ---------------------------------
-There is a GPL-licensed library that writes zip files, it is
-called SharpZipLib and can be found at 
+
+This library is mostly original code. 
+
+There is a GPL-licensed library called SharpZipLib that writes zip
+files, it can be found at
 http://www.sharpdevelop.net/OpenSource/SharpZipLib/Default.aspx
 
 This example library is not based on SharpZipLib.  
@@ -302,8 +552,15 @@ This example library is not based on SharpZipLib.
 There is a Zip library as part of the Mono project.  This
 library is also not based on that.
 
-Now that the Java class library is open source, there is at least one
+Now that the Java class library is open source, there is at least bone
 open-source Java implementation for zip.  This implementation is not
-based on a port of any Java code, or any other project.
+based on a port of Sun's JDK code.
 
-This library, except for the CRC32 stuff, is all new code, written by me.
+There is a zlib.net project from ComponentAce.com.  This library is not
+based on that code. 
+
+This library is all new code, written by me, with these exceptions:
+
+ -  the CRC32 class - see above for credit.
+ -  the zlib library - see above for credit.
+
