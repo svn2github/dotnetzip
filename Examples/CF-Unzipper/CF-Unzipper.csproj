@@ -14,7 +14,7 @@
     <PlatformID>f27da329-3269-4191-98e0-c87d3d7f1db9</PlatformID>
     <OSVersion>5.2</OSVersion>
     <DeployDirSuffix>SmartDeviceProject3</DeployDirSuffix>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <NativePlatformName>Windows Mobile 6 Standard SDK</NativePlatformName>
     <FormFactorID>
     </FormFactorID>
@@ -47,7 +47,7 @@
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
-    <Reference Include="System.Core" />
+    <!-- Reference Include="System.Core" / -->
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
@@ -80,9 +80,9 @@
     <EmbeddedResource Include="Images\Folder.gif" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CF-Library\CF-Library.csproj">
-      <Project>{051C2B3B-8CDF-42CB-9EA2-027232BFC395}</Project>
-      <Name>CF-Library</Name>
+    <ProjectReference Include="..\..\Zip CF Full DLL\Zip CF Full DLL.csproj">
+      <Project>{2E4EC7D1-CD92-4CE8-9066-69E3209F6715}</Project>
+      <Name>Zip CF Full DLL</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />

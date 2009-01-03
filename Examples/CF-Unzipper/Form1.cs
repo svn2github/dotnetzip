@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Windows.Forms;
+using Ionic.Zip;
 
 namespace SmartDeviceProject3
 {
@@ -194,7 +195,7 @@ namespace SmartDeviceProject3
                     AddChildren(tvFolders.SelectedNode);
                 }
             }
-            else if (Ionic.Utils.Zip.ZipFile.IsZipFile(_selectedpath))
+            else if (Ionic.Zip.ZipFile.IsZipFile(_selectedpath))
             {
                 menuItemUnzip.Enabled = true;
             }
@@ -217,7 +218,7 @@ namespace SmartDeviceProject3
                 System.IO.Path.GetFileNameWithoutExtension(_selectedpath));
             try
             {
-                using (var zip1 = new Ionic.Utils.Zip.ZipFile(_selectedpath))
+                using (var zip1 = new Ionic.Zip.ZipFile(_selectedpath))
                 {
                     foreach (var entry in zip1)
                     {
