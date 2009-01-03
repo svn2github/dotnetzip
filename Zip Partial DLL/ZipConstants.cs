@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Ionic.Utils.Zip
+namespace Ionic.Zip
 {
   static class ZipConstants
   {      

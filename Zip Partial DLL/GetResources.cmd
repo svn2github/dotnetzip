@@ -2,7 +2,7 @@ REM @echo off
 goto START
 
 -------------------------------------------------------
- GetResources.bat
+ GetResources.cmd
 
  Copy resources from the CreateSelfExtractor Example project to be used in the Zip library.
  This script assumes it will be run by Visual Studio, starting with the 
