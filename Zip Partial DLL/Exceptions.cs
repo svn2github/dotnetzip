@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ionic.Utils.Zip
+namespace Ionic.Zip
 {
     ///// <summary>
     ///// Base exception type for all custom exceptions in the Zip library. It acts as a marker class.

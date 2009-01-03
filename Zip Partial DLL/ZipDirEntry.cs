@@ -12,9 +12,8 @@
 
 using System;
 
-namespace Ionic.Utils.Zip
+namespace Ionic.Zip
 {
-
     /// <summary>
     /// This class models an entry in the directory contained within the zip file.
     /// The class is generally not used from within application code, though it is
@@ -123,7 +122,7 @@ namespace Ionic.Utils.Zip
             e._VersionNeeded = _VersionNeeded;
             e._BitField = _BitField;
             e._CompressionMethod = _CompressionMethod;
-            e._LastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(this._TimeBlob);
+            e._LastModified = Ionic.Zip.SharedUtilities.PackedToDateTime(this._TimeBlob);
 
             e._Crc32 = this._Crc32;
             e._CompressedSize = _CompressedSize;
@@ -156,7 +155,7 @@ namespace Ionic.Utils.Zip
         /// <returns>the entry read from the archive.</returns>
         public static ZipDirEntry Read(System.IO.Stream s, System.Text.Encoding expectedEncoding)
         {
-            int signature = Ionic.Utils.Zip.SharedUtilities.ReadSignature(s);
+            int signature = Ionic.Zip.SharedUtilities.ReadSignature(s);
             // return null if this is not a local file header signature
             if (ZipDirEntry.IsNotValidSig(signature))
             {
@@ -211,11 +210,11 @@ namespace Ionic.Utils.Zip
             if ((zde._BitField & 0x0800) == 0x0800)
             {
                 // UTF-8 is in use
-                zde._FileName = Ionic.Utils.Zip.SharedUtilities.Utf8StringFromBuffer(block, block.Length);
+                zde._FileName = Ionic.Zip.SharedUtilities.Utf8StringFromBuffer(block, block.Length);
             }
             else
             {
-                zde._FileName = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length, expectedEncoding);
+                zde._FileName = Ionic.Zip.SharedUtilities.StringFromBuffer(block, block.Length, expectedEncoding);
             }
 
 
@@ -238,11 +237,11 @@ namespace Ionic.Utils.Zip
                 if ((zde._BitField & 0x0800) == 0x0800)
                 {
                     // UTF-8 is in use
-                    zde._Comment = Ionic.Utils.Zip.SharedUtilities.Utf8StringFromBuffer(block, block.Length);
+                    zde._Comment = Ionic.Zip.SharedUtilities.Utf8StringFromBuffer(block, block.Length);
                 }
                 else
                 {
-                    zde._Comment = Ionic.Utils.Zip.SharedUtilities.StringFromBuffer(block, block.Length, expectedEncoding);
+                    zde._Comment = Ionic.Zip.SharedUtilities.StringFromBuffer(block, block.Length, expectedEncoding);
                 }
             }
             zde._LengthOfDirEntry = bytesRead;

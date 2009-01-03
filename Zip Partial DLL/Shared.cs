@@ -10,7 +10,7 @@
 
 using System;
 
-namespace Ionic.Utils.Zip
+namespace Ionic.Zip
 {
     /// <summary>
     /// Collects general purpose utility methods.

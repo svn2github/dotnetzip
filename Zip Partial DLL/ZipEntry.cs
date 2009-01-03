@@ -12,10 +12,9 @@
 
 using System;
 using System.IO;
-using System.IO.Compression;
 using RE = System.Text.RegularExpressions;
 
-namespace Ionic.Utils.Zip
+namespace Ionic.Zip
 {
     /// <summary>
     /// An enum that provides the various encryption algorithms supported by this library.
@@ -172,7 +171,7 @@ namespace Ionic.Utils.Zip
         /// the archive.  For example, the application might want to set flag to <c>true</c>
         /// this when zipping up JPG or MP3 files, which are already compressed.
         /// </summary>
-        /// <seealso cref="Ionic.Utils.Zip.ZipFile.ForceNoCompression"/>
+        /// <seealso cref="Ionic.Zip.ZipFile.ForceNoCompression"/>
         ///
         public bool ForceNoCompression
         {
@@ -530,7 +529,7 @@ namespace Ionic.Utils.Zip
         /// one of the overloads of the Extract() method that accepts a boolean flag
         /// to indicate explicitly whether you want overwrite.
         /// </remarks>
-        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.Extract(bool)"/>
+        /// <seealso cref="Ionic.Zip.ZipEntry.Extract(bool)"/>
         public bool OverwriteOnExtract
         {
             get { return _OverwriteOnExtract; }
@@ -579,8 +578,8 @@ namespace Ionic.Utils.Zip
         /// </para>
         ///
         /// </remarks>
-        /// <seealso cref="Ionic.Utils.Zip.ZipFile.WillReadTwiceOnInflation"/>
-        /// <seealso cref="Ionic.Utils.Zip.ReReadApprovalCallback"/>
+        /// <seealso cref="Ionic.Zip.ZipFile.WillReadTwiceOnInflation"/>
+        /// <seealso cref="Ionic.Zip.ReReadApprovalCallback"/>
         public ReReadApprovalCallback WillReadTwiceOnInflation
         {
             get;
@@ -624,7 +623,7 @@ namespace Ionic.Utils.Zip
             }
             set
             {
-                _provisionalAlternateEncoding = (value) ? System.Text.Encoding.GetEncoding("UTF-8") : Ionic.Utils.Zip.ZipFile.DefaultEncoding;
+                _provisionalAlternateEncoding = (value) ? System.Text.Encoding.GetEncoding("UTF-8") : Ionic.Zip.ZipFile.DefaultEncoding;
             }
         }
 
@@ -685,29 +684,6 @@ namespace Ionic.Utils.Zip
             }
         }
 
-#if NOTUSED
-
-        private System.IO.Compression.DeflateStream CompressedStream
-        {
-            get
-            {
-                if (_CompressedStream == null)
-                {
-                    // we read from the underlying memory stream after data is written to the compressed stream
-                    _UnderlyingMemoryStream = new System.IO.MemoryStream();
-                    bool LeaveUnderlyingStreamOpen = true;
-
-                    // we write to the compressed stream, and compression happens as we write.
-                    _CompressedStream = new System.IO.Compression.DeflateStream(_UnderlyingMemoryStream,
-										System.IO.Compression.CompressionMode.Compress,
-										LeaveUnderlyingStreamOpen);
-                }
-                return _CompressedStream;
-            }
-        }
-#endif
-
-
 
 
         private static bool ReadHeader(ZipEntry ze, System.Text.Encoding defaultEncoding)
@@ -716,7 +692,7 @@ namespace Ionic.Utils.Zip
 
             ze._RelativeOffsetOfHeader = (int)ze.ArchiveStream.Position;
 
-            int signature = Ionic.Utils.Zip.SharedUtilities.ReadSignature(ze.ArchiveStream);
+            int signature = Ionic.Zip.SharedUtilities.ReadSignature(ze.ArchiveStream);
             bytesRead += 4;
 
             // Return false if this is not a local file header signature.
@@ -749,7 +725,7 @@ namespace Ionic.Utils.Zip
             ze._CompressionMethod = (short)(block[i++] + block[i++] * 256);
             ze._TimeBlob = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
             // transform the time data into something usable (a DateTime)
-            ze._LastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(ze._TimeBlob);
+            ze._LastModified = Ionic.Zip.SharedUtilities.PackedToDateTime(ze._TimeBlob);
 
             // The PKZIP spec says that if bit 3 is set (0x0008) in the General Purpose BitField, then the CRC,
             // Compressed size, and uncompressed size come directly after the file data.  The only way to find
@@ -803,7 +779,7 @@ namespace Ionic.Utils.Zip
                 ? System.Text.Encoding.UTF8
                 : defaultEncoding;
 
-	    // need to use this form of GetString() for .NET CF
+            // need to use this form of GetString() for .NET CF
             ze._FileNameInArchive = ze._actualEncoding.GetString(block, 0, block.Length);
 
             // when creating an entry by reading, the LocalFileName is the same as the FileNameInArchive
@@ -847,7 +823,7 @@ namespace Ionic.Utils.Zip
 
                     ze._zipfile.OnReadBytes(ze);
 
-                    long d = Ionic.Utils.Zip.SharedUtilities.FindSignature(ze.ArchiveStream, ZipConstants.ZipEntryDataDescriptorSignature);
+                    long d = Ionic.Zip.SharedUtilities.FindSignature(ze.ArchiveStream, ZipConstants.ZipEntryDataDescriptorSignature);
                     if (d == -1) return false;
 
                     // total size of data read (through all loops of this). 
@@ -1017,7 +993,7 @@ namespace Ionic.Utils.Zip
         {
             // in some cases, the zip file begins with "PK00".  This is a throwback and is rare,
             // but we handle it anyway. We do not change behavior based on it.
-            uint datum = (uint)Ionic.Utils.Zip.SharedUtilities.ReadInt(s);
+            uint datum = (uint)Ionic.Zip.SharedUtilities.ReadInt(s);
             if (datum != ZipConstants.PackedToRemovableMedia)
             {
                 s.Seek(-4, System.IO.SeekOrigin.Current); // unread the block
@@ -1034,13 +1010,13 @@ namespace Ionic.Utils.Zip
             //    by the compressed length and the uncompressed length (4 bytes for each 
             //    of those three elements).  Need to check that here.             
             //
-            uint datum = (uint)Ionic.Utils.Zip.SharedUtilities.ReadInt(s);
+            uint datum = (uint)Ionic.Zip.SharedUtilities.ReadInt(s);
             if (datum == entry._Crc32)
             {
-                int sz = Ionic.Utils.Zip.SharedUtilities.ReadInt(s);
+                int sz = Ionic.Zip.SharedUtilities.ReadInt(s);
                 if (sz == entry._CompressedSize)
                 {
-                    sz = Ionic.Utils.Zip.SharedUtilities.ReadInt(s);
+                    sz = Ionic.Zip.SharedUtilities.ReadInt(s);
                     if (sz == entry._UncompressedSize)
                     {
                         // ignore everything and discard it.
@@ -1098,7 +1074,7 @@ namespace Ionic.Utils.Zip
         internal static ZipEntry Create(String filename, string nameInArchive, System.IO.Stream stream)
         {
             if (String.IsNullOrEmpty(filename))
-                throw new Ionic.Utils.Zip.ZipException("The entry name must be non-null and non-empty.");
+                throw new Ionic.Zip.ZipException("The entry name must be non-null and non-empty.");
 
             ZipEntry entry = new ZipEntry();
             if (stream != null)
@@ -1147,8 +1123,8 @@ namespace Ionic.Utils.Zip
         /// <c>ExtractWithPassword()</c> methods.
         /// </overloads>
         ///         
-        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.OverwriteOnExtract"/>
-        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.Extract(bool)"/>
+        /// <seealso cref="Ionic.Zip.ZipEntry.OverwriteOnExtract"/>
+        /// <seealso cref="Ionic.Zip.ZipEntry.Extract(bool)"/>
         ///
         /// <remarks>
         /// <para>
@@ -1209,9 +1185,9 @@ namespace Ionic.Utils.Zip
         /// 
         /// <param name="baseDirectory">the pathname of the base directory</param>
         /// 
-        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.OverwriteOnExtract"/>
-        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.Extract(string, bool)"/>
-        /// <seealso cref="Ionic.Utils.Zip.ZipFile.Extract(string)"/>
+        /// <seealso cref="Ionic.Zip.ZipEntry.OverwriteOnExtract"/>
+        /// <seealso cref="Ionic.Zip.ZipEntry.Extract(string, bool)"/>
+        /// <seealso cref="Ionic.Zip.ZipFile.Extract(string)"/>
         /// 
         /// <example>
         /// This example extracts only the entries in a zip file that are .txt files, into a directory called "textfiles".
@@ -1289,8 +1265,8 @@ namespace Ionic.Utils.Zip
         /// the right one for you...
         /// </overloads>
         ///         
-        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.OverwriteOnExtract"/>
-        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.ExtractWithPassword(bool, string)"/>
+        /// <seealso cref="Ionic.Zip.ZipEntry.OverwriteOnExtract"/>
+        /// <seealso cref="Ionic.Zip.ZipEntry.ExtractWithPassword(bool, string)"/>
         ///
         /// <remarks>
         /// <para>
@@ -1316,8 +1292,8 @@ namespace Ionic.Utils.Zip
         /// and using the specified password. 
         /// </summary>
         /// 
-        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.OverwriteOnExtract"/>
-        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.ExtractWithPassword(string, bool, string)"/>
+        /// <seealso cref="Ionic.Zip.ZipEntry.OverwriteOnExtract"/>
+        /// <seealso cref="Ionic.Zip.ZipEntry.ExtractWithPassword(string, bool, string)"/>
         ///
         /// <remarks>
         /// <para>
@@ -1465,7 +1441,7 @@ namespace Ionic.Utils.Zip
         ///   End Using
         /// </code>
         /// </example>
-        /// <seealso cref="Ionic.Utils.Zip.ZipEntry.Extract(System.IO.Stream)"/>
+        /// <seealso cref="Ionic.Zip.ZipEntry.Extract(System.IO.Stream)"/>
         /// <returns>The Stream for reading.</returns>
         public CrcCalculatorStream OpenReader()
         {
@@ -1491,22 +1467,6 @@ namespace Ionic.Utils.Zip
         }
 
 
-        private System.IO.Stream ArchiveStream
-        {
-            get
-            {
-                if (_archiveStream == null)
-                {
-                    if (_zipfile != null)
-                    {
-                        _zipfile.Reset();
-                        _archiveStream = _zipfile.ReadStream;
-                    }
-                }
-                return _archiveStream;
-            }
-        }
-
 
         private CrcCalculatorStream InternalOpenReader(string password)
         {
@@ -1521,10 +1481,31 @@ namespace Ionic.Utils.Zip
                 ? new ZipCipherStream(this.ArchiveStream, cipher, CryptoMode.Decrypt)
                 : this.ArchiveStream;
 
-            return new CrcCalculatorStream((CompressionMethod == 0x08) ?
-                       new DeflateStream(instream, CompressionMode.Decompress, true) :
-                       instream, _UncompressedSize);
+            //return new CrcCalculatorStream((CompressionMethod == 0x08) ?
+            //           new DeflateStream(instream, CompressionMode.Decompress, true) :
+            //           instream, _UncompressedSize);
 
+            return new CrcCalculatorStream((CompressionMethod == 0x08)
+                ? new Ionic.Zlib.DeflateStream(instream, Ionic.Zlib.CompressionMode.Decompress, true)
+                : instream,
+                _UncompressedSize);
+        }
+
+
+        private System.IO.Stream ArchiveStream
+        {
+            get
+            {
+                if (_archiveStream == null)
+                {
+                    if (_zipfile != null)
+                    {
+                        _zipfile.Reset();
+                        _archiveStream = _zipfile.ReadStream;
+                    }
+                }
+                return _archiveStream;
+            }
         }
         #endregion
 
@@ -1650,10 +1631,10 @@ namespace Ionic.Utils.Zip
                     // workitem 6191
                     DateTime AdjustedLastModified = LastModified;
                     if (DateTime.Now.IsDaylightSavingTime() && !LastModified.IsDaylightSavingTime())
-                            AdjustedLastModified = LastModified - new System.TimeSpan(1, 0, 0);
+                        AdjustedLastModified = LastModified - new System.TimeSpan(1, 0, 0);
 
                     //if (!DateTime.Now.IsDaylightSavingTime() && LastModified.IsDaylightSavingTime())
-		    //AdjustedLastModified = LastModified + new System.TimeSpan(1, 0, 0);
+                    //AdjustedLastModified = LastModified + new System.TimeSpan(1, 0, 0);
 
                     System.IO.File.SetLastWriteTime(TargetFile, AdjustedLastModified);
 #endif
@@ -1846,8 +1827,12 @@ namespace Ionic.Utils.Zip
                 : input;
 
             // using the above, now we get a stream that either decompresses or not.
+            //Stream input3 = (CompressionMethod == 0x08)
+            //    ? new DeflateStream(input2, CompressionMode.Decompress, true)
+            //    : input2;
+
             Stream input3 = (CompressionMethod == 0x08)
-                ? new DeflateStream(input2, CompressionMode.Decompress, true)
+                ? new Ionic.Zlib.DeflateStream(input2, Ionic.Zlib.CompressionMode.Decompress, true)
                 : input2;
 
             //var out2 = new CrcCalculatorStream(output, LeftToRead);
@@ -2106,7 +2091,7 @@ namespace Ionic.Utils.Zip
         private System.Text.Encoding GenerateCommentBytes()
         {
             _CommentBytes = ibm437.GetBytes(_Comment);
-	    // need to use this form of GetString() for .NET CF
+            // need to use this form of GetString() for .NET CF
             string s1 = ibm437.GetString(_CommentBytes, 0, _CommentBytes.Length);
             if (s1 == _Comment)
                 return ibm437;
@@ -2157,8 +2142,8 @@ namespace Ionic.Utils.Zip
 
             // workitem 6513: when writing, use the alternative encoding only when ibm437 will not do.
             result = ibm437.GetBytes(s1);
-	    // need to use this form of GetString() for .NET CF
-            string s2 = ibm437.GetString(result,0, result.Length);
+            // need to use this form of GetString() for .NET CF
+            string s2 = ibm437.GetString(result, 0, result.Length);
             _CommentBytes = null;
             if (s2 == s1)
             {
@@ -2458,7 +2443,7 @@ namespace Ionic.Utils.Zip
             bytes[i++] = (byte)((CompressionMethod & 0xFF00) >> 8);
 
             // LastMod
-            _TimeBlob = Ionic.Utils.Zip.SharedUtilities.DateTimeToPacked(LastModified);
+            _TimeBlob = Ionic.Zip.SharedUtilities.DateTimeToPacked(LastModified);
 
             // (i==10) time blob
             bytes[i++] = (byte)(_TimeBlob & 0x000000FF);
@@ -2559,7 +2544,10 @@ namespace Ionic.Utils.Zip
                 if (_sourceStream == null)
                 {
                     input.Close();
+#if !NETCF20
                     input.Dispose();
+#endif
+
                 }
                 _crcCalculated = true;
             }
@@ -2615,15 +2603,18 @@ namespace Ionic.Utils.Zip
                 outputCounter = new CountingStream(s);
 
                 // maybe wrap an encrypting stream around that:
-                Stream output1 = (Encryption == EncryptionAlgorithm.PkzipWeak) ?
-            (Stream)(new ZipCipherStream(outputCounter, cipher, CryptoMode.Encrypt)) : outputCounter;
+                Stream output1 = (Encryption == EncryptionAlgorithm.PkzipWeak)
+                    ? (Stream)(new ZipCipherStream(outputCounter, cipher, CryptoMode.Encrypt))
+                    : outputCounter;
 
                 // maybe wrap a DeflateStream around that
                 Stream output2 = null;
                 bool mustCloseDeflateStream = false;
                 if (CompressionMethod == 0x08)
                 {
-                    output2 = new DeflateStream(output1, CompressionMode.Compress, true);
+                    output2 = new Ionic.Zlib.DeflateStream(output1, Ionic.Zlib.CompressionMode.Compress, Ionic.Zlib.CompressionLevel.BEST_COMPRESSION, true);
+                    //output2 = new DeflateStream(output1, CompressionMode.Compress, true);
+
                     mustCloseDeflateStream = true;
                 }
                 else
@@ -2660,7 +2651,9 @@ namespace Ionic.Utils.Zip
                 if (_sourceStream == null && input != null)
                 {
                     input.Close();
+#if !NETCF20
                     input.Dispose();
+#endif
                 }
             }
 

@@ -1,9 +1,8 @@
-﻿// ZipFile.CreateSelfExtractor.cs
+// ZipFile.CreateSelfExtractor.cs
 // ------------------------------------------------------------------
 //
 // ZipFile is set up as a "partial class" - defined in multiple .cs source modules.
 //
-
 // This is a the source module that implements the stuff for saving to a
 // self-extracting Zip archive.
 // 
@@ -18,7 +17,6 @@
 // ZipFile class.  This source module provides that capability. The method is
 // SaveSelfExtractor().
 //
-
 // The way the method works: it uses the programmatic interface to the csc.exe
 // compiler, Microsoft.CSharp.CSharpCodeProvider, to compile "boilerplate" extraction
 // logic into a new assembly.  As part of that compile, we embed within that assembly the zip archive
@@ -54,8 +52,9 @@ using System.IO;
 using System.Collections.Generic;
 
 
-namespace Ionic.Utils.Zip
+namespace Ionic.Zip
 {
+#if !NO_SFX
     /// <summary>
     /// An enum that provides the different self-extractor flavors
     /// </summary>
@@ -84,29 +83,29 @@ namespace Ionic.Utils.Zip
         }
 
 
-        private ExtractorSettings[] SettingsList = {
+        private static ExtractorSettings[] SettingsList = {
             new ExtractorSettings() {
                 Flavor = SelfExtractorFlavor.WinFormsApplication,
                 ReferencedAssemblies= new List<string>{
                     "System.Windows.Forms.dll", "System.dll", "System.Drawing.dll"},
                 CopyThroughResources = new List<string>{
-                    "Ionic.Utils.Zip.WinFormsSelfExtractorStub.resources",
-                    "Ionic.Utils.Zip.PasswordDialog.resources",
-                    "Ionic.Utils.Zip.ZipContentsDialog.resources"},
+                    "Ionic.Zip.WinFormsSelfExtractorStub.resources",
+                    "Ionic.Zip.PasswordDialog.resources",
+                    "Ionic.Zip.ZipContentsDialog.resources"},
                 ResourcesToCompile = new List<string>{
-                    "Ionic.Utils.Zip.Resources.WinFormsSelfExtractorStub.cs",
-                    "Ionic.Utils.Zip.WinFormsSelfExtractorStub", // .Designer.cs
-                    "Ionic.Utils.Zip.Resources.PasswordDialog.cs",
-                    "Ionic.Utils.Zip.PasswordDialog",             //.Designer.cs"
-                    "Ionic.Utils.Zip.Resources.ZipContentsDialog.cs",
-                    "Ionic.Utils.Zip.ZipContentsDialog"             //.Designer.cs"
+                    "Ionic.Zip.Resources.WinFormsSelfExtractorStub.cs",
+                    "Ionic.Zip.WinFormsSelfExtractorStub", // .Designer.cs
+                    "Ionic.Zip.Resources.PasswordDialog.cs",
+                    "Ionic.Zip.PasswordDialog",             //.Designer.cs"
+                    "Ionic.Zip.Resources.ZipContentsDialog.cs",
+                    "Ionic.Zip.ZipContentsDialog"             //.Designer.cs"
                 }
             },
             new ExtractorSettings() {
                 Flavor = SelfExtractorFlavor.ConsoleApplication,
                 ReferencedAssemblies= null,
                 CopyThroughResources = null,
-                ResourcesToCompile = new List<string>{"Ionic.Utils.Zip.Resources.CommandLineSelfExtractorStub.cs"}
+                ResourcesToCompile = new List<string>{"Ionic.Zip.Resources.CommandLineSelfExtractorStub.cs"}
             }
         };
 
@@ -396,4 +395,5 @@ namespace Ionic.Utils.Zip
             return candidate;
         }
     }
+#endif
 }

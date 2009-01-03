@@ -18,7 +18,7 @@
 
 using System;
 
-namespace Ionic.Utils.Zip
+namespace Ionic.Zip
 {
     /// <summary> 
     /// This class implements the "traditional" or "classic" PKZip encryption,
@@ -327,7 +327,7 @@ namespace Ionic.Utils.Zip
 
         public override void Flush()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public override long Length

@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ionic.Utils.Zip
+namespace Ionic.Zip
 {
-
     /// <summary>
     /// Delegate for the callback by which the application gives approval for multiple
     /// reads of the file stream. This callback is called only when the initial 

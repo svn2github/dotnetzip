@@ -19,7 +19,7 @@
 
 using System;
 
-namespace Ionic.Utils.Zip
+namespace Ionic.Zip
 {
     /// <summary>
     /// Calculates a 32bit Cyclic Redundancy Checksum (CRC) using the
