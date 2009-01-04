@@ -860,8 +860,8 @@ namespace Ionic.Zip
 
                         i = 0;
                         ze._Crc32 = (Int32)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
-			ze._CompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
-			ze._UncompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
+                        ze._CompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
+                        ze._UncompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
 
                     }
 
@@ -1476,7 +1476,7 @@ namespace Ionic.Zip
             ZipCrypto cipher = SetupCipher(password);
 
             // seek to the beginning of the file data in the stream
-            this.ArchiveStream.Seek(this.__FileDataPosition, System.IO.SeekOrigin.Begin);
+            this.ArchiveStream.Seek(this.FileDataPosition, System.IO.SeekOrigin.Begin);
 
             var instream = (Encryption == EncryptionAlgorithm.PkzipWeak)
                 ? new ZipCipherStream(this.ArchiveStream, cipher, CryptoMode.Decrypt)
@@ -1683,7 +1683,7 @@ namespace Ionic.Zip
 
                 if (_WeakEncryptionHeader == null)
                 {
-                    this.ArchiveStream.Seek(__FileDataPosition - 12, SeekOrigin.Begin);
+                    this.ArchiveStream.Seek(this.FileDataPosition - 12, SeekOrigin.Begin);
                     ReadWeakEncryptionHeader(this);
                 }
 
@@ -1788,27 +1788,7 @@ namespace Ionic.Zip
         {
             System.IO.Stream input = this.ArchiveStream;
 
-#if OPTIMIZE_WI6612
-            // seek to the beginning of the file data in the stream
-            if (this.__FileDataPosition == 0)
-            {
-                input.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
-
-                byte[] block = new byte[30];
-                input.Read(block, 0, block.Length);
-
-                Int16 filenameLength = (short)(block[26] + block[27] * 256);
-                Int16 extraFieldLength = (short)(block[28] + block[29] * 256);
-
-                input.Seek(filenameLength + extraFieldLength, System.IO.SeekOrigin.Current);
-                this._LengthOfHeader = 30 + extraFieldLength + filenameLength;
-                this.__FileDataPosition = _RelativeOffsetOfHeader + 30 +
-                filenameLength + extraFieldLength;
-            }
-            else
-#endif
-                input.Seek(this.__FileDataPosition, System.IO.SeekOrigin.Begin);
-
+            input.Seek(this.FileDataPosition, System.IO.SeekOrigin.Begin);
 
             // to validate the CRC. 
             Int32 CrcResult = 0;
@@ -2613,10 +2593,10 @@ namespace Ionic.Zip
                 bool mustCloseDeflateStream = false;
                 if (CompressionMethod == 0x08)
                 {
-                    output2 = new Ionic.Zlib.DeflateStream(output1, Ionic.Zlib.CompressionMode.Compress, 
-							   _zipfile.CompressionLevel, 
-							   // Ionic.Zlib.CompressionLevel.BEST_COMPRESSION, 
-							   true);
+                    output2 = new Ionic.Zlib.DeflateStream(output1, Ionic.Zlib.CompressionMode.Compress,
+                               _zipfile.CompressionLevel,
+                        // Ionic.Zlib.CompressionLevel.BEST_COMPRESSION, 
+                               true);
                     //output2 = new DeflateStream(output1, CompressionMode.Compress, true);
 
                     mustCloseDeflateStream = true;
@@ -2956,6 +2936,8 @@ namespace Ionic.Zip
                 || (!_IsZip64Format && _zipfile.UseZip64WhenSaving == Zip64Option.Always))
             {
                 long origRelativeOffsetOfHeader = _RelativeOffsetOfHeader;
+                if (this._LengthOfHeader == 0)
+                    throw new ZipException("Bad header length.");
                 int origLengthOfHeader = _LengthOfHeader;
                 WriteHeader(outstream, 0);
                 // seek to the beginning of the entry data in the input stream
@@ -2982,6 +2964,9 @@ namespace Ionic.Zip
             {
                 // seek to the beginning of the entry data (header + file data) in the stream
                 input.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
+
+                if (this._LengthOfHeader == 0)
+                    throw new ZipException("Bad header length.");
 
                 // Here, we need to grab-n-cache the header - it is used later when 
                 // writing the Central Directory Structure.
@@ -3058,6 +3043,34 @@ namespace Ionic.Zip
         private Int64 _TotalEntrySize;
         internal int _LengthOfHeader;
         private bool _IsZip64Format;
+
+        private long FileDataPosition
+        {
+            get
+            {
+                if (__FileDataPosition == 0)
+                {
+                    // Indicates that the value has not yet been set. 
+                    // Therefore, seek to the local header, figure the start of file data.
+                    long origPosition = this.ArchiveStream.Position;
+                    this.ArchiveStream.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
+
+                    byte[] block = new byte[30];
+                    this.ArchiveStream.Read(block, 0, block.Length);
+
+                    Int16 filenameLength = (short)(block[26] + block[27] * 256);
+                    Int16 extraFieldLength = (short)(block[28] + block[29] * 256);
+
+                    this.ArchiveStream.Seek(filenameLength + extraFieldLength, System.IO.SeekOrigin.Current);
+                    this._LengthOfHeader = 30 + extraFieldLength + filenameLength;
+                    this.__FileDataPosition = _RelativeOffsetOfHeader + 30 + filenameLength + extraFieldLength;
+
+                    // restore file position:
+                    this.ArchiveStream.Seek(origPosition, System.IO.SeekOrigin.Begin);
+                }
+                return __FileDataPosition;
+            }
+        }
 
         private string _Password;
         internal EntrySource _Source = EntrySource.None;

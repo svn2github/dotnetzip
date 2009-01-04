@@ -130,7 +130,14 @@ namespace Ionic.Zip
             e._UncompressedSize = _UncompressedSize;
             e._RelativeOffsetOfHeader = _RelativeOffsetOfLocalHeader;
             e._LocalFileName = e.FileName;
-            e.__FileDataPosition = e._RelativeOffsetOfHeader + 30 + _filenameLength + _extraFieldLength;
+
+            // The length of the "local header" for the ZipEntry is not necessarily the same as
+            // the length of the header in the ZipDirEntry, therefore we cannot know the __FileDataPosition 
+            // until we read the local header.
+            //e._LengthOfHeader = 30 + _filenameLength + _extraFieldLength;
+
+            //e.__FileDataPosition = e._RelativeOffsetOfHeader + 30 + _filenameLength + _extraFieldLength;
+            e.__FileDataPosition = 0;
 
             if ((e._BitField & 0x01) == 0x01)
             {
@@ -138,8 +145,11 @@ namespace Ionic.Zip
                 e.__FileDataPosition += 12;
                 e._CompressedFileDataSize -= 12;
             }
-
-            e._LengthOfHeader = 30 + _filenameLength + _extraFieldLength;
+            
+            // The length of the "local header" for the ZipEntry is not necessarily the same as
+            // the length of the header in the ZipDirEntry.  
+            //e._LengthOfHeader = 30 + _filenameLength + _extraFieldLength;
+            e._LengthOfHeader = 0; 
 
             return e;
         }
