@@ -175,10 +175,19 @@ namespace Ionic.Zlib
     /// </summary>
     public class ZlibException : System.Exception
     {
+        /// <summary>
+        /// The ZlibException class captures exception information generated
+        /// by the Zlib library. 
+        /// </summary>
         public ZlibException()
             : base()
         {
         }
+
+        /// <summary>
+        /// This ctor collects a message attached to the exception.
+        /// </summary>
+        /// <param name="s"></param>
         public ZlibException(System.String s)
             : base(s)
         {

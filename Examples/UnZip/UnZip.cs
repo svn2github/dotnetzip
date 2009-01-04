@@ -9,11 +9,13 @@
 //
 // ----------------------------------------------------------------------
 //
-// This command-line utility unzips a zipfile into the specified directory. 
+// This command-line utility unzips a zipfile into the specified directory,
+// or lists the entries in a zipfile without unzipping. 
 //
 // compile with:
-//     csc /target:exe /r:Ionic.Utils.Zip.dll /out:UnZip.exe UnZip.cs 
+//     csc /target:exe /r:Ionic.Zip.dll /out:UnZip.exe UnZip.cs 
 //
+// created
 // Wed, 29 Mar 2006  14:36
 //
 
@@ -29,22 +31,22 @@ namespace Ionic.Zip.Examples
         private static void Usage()
         {
             Console.WriteLine("UnZip.exe:  extract or list the entries in a zip file.");
-            Console.WriteLine("            Depends on Ionic's DotNetZip. This is version {0} of the utility.",
+            Console.WriteLine("            Depends on Ionic's DotNetZip library. This is version {0} of the utility.",
                   System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
             Console.WriteLine("usage:\n" +
                   "  unzip  [-p <password>] <zipfile> <options>  [<entryToUnzip>]\n" +
                   "     unzips all files in the archive to the specified directory, which should exist.\n" +
-                  "     If no directory is provided, this utility uses the current directory. UTF-8\n" + 
-                  "     encoding is used if the zip file wants it.\n" + 
-		  "\narguments:\n"+
-		  "  -o                overwrite existing files if necessary.\n" +
-		  "  -q                operate quietly (no verbose messages). \n" +
+                  "     If no directory is provided, this utility uses the current directory. UTF-8\n" +
+                  "     encoding is used if the zip file wants it.\n\n" +
+                  "arguments:\n" +
+                  "  -o                overwrite existing files if necessary.\n" +
+                  "  -q                operate quietly (no verbose messages). \n" +
                   "  -cp <codepage>    extract with the specified numeric codepage.  Only do this if you\n" +
                   "                    know the codepage. If UTF-8 is required you don't need this switch.\n" +
-                  "                    If the codepage you specify here is different than the codepage of \n"+
+                  "                    If the codepage you specify here is different than the codepage of \n" +
                   "                    the cmd.exe, then the verbose messages will look odd, but the files\n" +
                   "                    will be extracted properly.\n" +
-                  "  -d <directory>    unpack to the specified directory. \n\n"+
+                  "  -d <directory>    unpack to the specified directory. \n\n" +
                   "  unzip -l <zipfile>\n" +
                   "     lists the entries in the zip archive.\n" +
                   "  unzip -?\n" +
@@ -58,7 +60,7 @@ namespace Ionic.Zip.Examples
         {
             int startArgs = 0;
             int i;
-            int codePage= 0;
+            int codePage = 0;
             string zipfile = null;
             string targdir = null;
             string password = null;
@@ -95,7 +97,6 @@ namespace Ionic.Zip.Examples
                         WantQuiet = true;
                         break;
 
-
                     case "-o":
                         WantOverwrite = true;
                         break;
@@ -106,7 +107,6 @@ namespace Ionic.Zip.Examples
                         if (targdir != null) Usage();
                         if (extractToConsole) Usage();
                         targdir = args[i];
-
                         break;
 
                     case "-cp":
@@ -157,7 +157,7 @@ namespace Ionic.Zip.Examples
 
             try
             {
-                using (ZipFile zip = (codePage!=0)? ZipFile.Read(zipfile, System.Text.Encoding.GetEncoding(codePage)) : ZipFile.Read(zipfile) )
+                using (ZipFile zip = (codePage != 0) ? ZipFile.Read(zipfile, System.Text.Encoding.GetEncoding(codePage)) : ZipFile.Read(zipfile))
                 {
 
                     if (entryToExtract != null)

@@ -71,6 +71,24 @@ namespace Ionic.Zip
             get { return _name; }
         }
 
+
+        /// <summary>
+        /// Sets the compression level to be used for entries when saving the zip archive.
+        /// </summary>
+	/// <remarks>
+	/// The compression level setting is used at the time of Save(). The
+	/// same level is applied to all ZipEntry instances contained in the ZipFile during the save.  
+	/// If you do not set this property, the default compression level is used, which normally gives 
+	/// a good balance of compression efficiency and compression speed.  In some tests, using 
+	/// BEST_COMPRESSION can double the time it takes to compress, while delivering just a small
+	/// increase in compression efficiency.  This behavior will vary with the type of data you 
+	/// compress.  If you are in doubt, just leave this setting alone, and accept the default.
+	/// </remarks>
+        public Ionic.Zlib.CompressionLevel CompressionLevel
+        {
+            get ; set ; 
+        }
+
         /// <summary>
         /// A comment attached to the zip archive.
         /// </summary>
@@ -1612,6 +1630,7 @@ namespace Ionic.Zip
             _name = zipFileName;
             _StatusMessageTextWriter = statusMessageWriter;
             _contentsChanged = true;
+	    CompressionLevel = Ionic.Zlib.CompressionLevel.DEFAULT;
 
             if (System.IO.File.Exists(_name))
             {

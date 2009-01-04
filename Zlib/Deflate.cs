@@ -1,3 +1,12 @@
+// Copyright (c) 2009, Dino Chiesa.  
+// This code is licensed under the Microsoft public license.  See the license.txt file in the source
+// distribution for details. 
+//
+// The zlib code is derived from the jzlib implementation, but significantly modified.
+// The object model is not the same, and many of the behaviors are different.
+// Nonetheless, in keeping with the license for jzlib, I am reproducing the copyright to that code here.
+// 
+// -----------------------------------------------------------------------
 // Copyright (c) 2000,2001,2002,2003 ymnk, JCraft,Inc. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without

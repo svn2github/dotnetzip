@@ -258,7 +258,40 @@ namespace Ionic.Zlib
         /// <remarks>
         /// The codec will use the MAX window bits and the default level of compression.
         /// </remarks>
-        /// <returns>Z_OK if all goes well.</returns>
+        /// <example>
+        /// <code>
+        ///  int bufferSize = 40000;
+        ///  byte[] CompressedBytes = new byte[bufferSize];
+        ///  byte[] DecompressedBytes = new byte[bufferSize];
+        ///  
+        ///  ZlibCodec compressor = new ZlibCodec();
+        ///  
+        ///  compressor.InitializeDeflate(CompressionLevel.DEFAULT);
+        ///  
+        ///  compressor.InputBuffer = System.Text.ASCIIEncoding.ASCII.GetBytes(TextToCompress);
+        ///  compressor.NextIn = 0;
+        ///  compressor.AvailableBytesIn = compressor.InputBuffer.Length;
+        ///  
+        ///  compressor.OutputBuffer = CompressedBytes;
+        ///  compressor.NextOut = 0;
+        ///  compressor.AvailableBytesOut = CompressedBytes.Length;
+        ///  
+        ///  while (compressor.TotalBytesIn != TextToCompress.Length &amp;&amp; compressor.TotalBytesOut &lt; bufferSize)
+        ///  {
+        ///    compressor.Deflate(ZlibConstants.Z_NO_FLUSH);
+        ///  }
+        ///  
+        ///  while (true)
+        ///  {
+        ///    int rc= compressor.Deflate(ZlibConstants.Z_FINISH);
+        ///    if (rc == ZlibConstants.Z_STREAM_END) break;
+        ///  }
+        ///  
+        ///  compressor.EndDeflate();
+        ///   
+        /// </code>
+        /// </example>
+        /// <returns>Z_OK if all goes well. You generally don't need to check the return code.</returns>
         public int InitializeDeflate()
         {
             return InitializeDeflate(CompressionLevel.LEVEL6_DEFAULT, ZlibConstants.WINDOW_BITS_MAX);

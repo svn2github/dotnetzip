@@ -130,17 +130,14 @@ namespace Ionic.Zlib
 
         #region Zlib properties
 
+        /// <summary>
+        /// This property sets the flush behavior on the stream.  
+        /// Sorry, though, not sure exactly how to describe all the various settings.
+        /// </summary>
         virtual public int FlushMode
         {
-            get
-            {
-                return (this._baseStream._flushMode);
-            }
-
-            set
-            {
-                this._baseStream._flushMode = value;
-            }
+            get { return (this._baseStream._flushMode); }
+            set { this._baseStream._flushMode = value; }
         }
 
         /// <summary>
@@ -409,17 +406,14 @@ namespace Ionic.Zlib
 
         #region Zlib properties
 
+        /// <summary>
+        /// This property sets the flush behavior on the stream.  
+        /// Sorry, though, not sure exactly how to describe all the various settings.
+        /// </summary>
         virtual public int FlushMode
         {
-            get
-            {
-                return (this._baseStream._flushMode);
-            }
-
-            set
-            {
-                this._baseStream._flushMode = value;
-            }
+            get { return (this._baseStream._flushMode); }
+            set { this._baseStream._flushMode = value; }
         }
 
         /// <summary>
@@ -447,19 +441,13 @@ namespace Ionic.Zlib
         /// <summary> Returns the total number of bytes input so far.</summary>
         virtual public long TotalIn
         {
-            get
-            {
-                return this._baseStream._z.TotalBytesIn;
-            }
+            get { return this._baseStream._z.TotalBytesIn; }
         }
 
         /// <summary> Returns the total number of bytes output so far.</summary>
         virtual public long TotalOut
         {
-            get
-            {
-                return this._baseStream._z.TotalBytesOut;
-            }
+            get { return this._baseStream._z.TotalBytesOut; }
         }
 
         #endregion
@@ -606,7 +594,7 @@ namespace Ionic.Zlib
     internal class ZlibBaseStream : System.IO.Stream
     {
         protected internal ZlibCodec _z = new ZlibCodec();
-        protected internal readonly int WORKING_BUFFER_SIZE_DEFAULT = 1024;
+        protected internal readonly int WORKING_BUFFER_SIZE_DEFAULT = 16384; // 1024;
         protected internal readonly int WORKING_BUFFER_SIZE_MIN = 128;
 
         protected internal StreamMode _streamMode = StreamMode.Undefined;
@@ -823,34 +811,22 @@ namespace Ionic.Zlib
 
         public override System.Boolean CanRead
         {
-            get
-            {
-                return this._stream.CanRead;
-            }
+            get { return this._stream.CanRead; }
         }
 
         public override System.Boolean CanSeek
         {
-            get
-            {
-                return this._stream.CanSeek;
-            }
+            get { return this._stream.CanSeek; }
         }
 
         public override System.Boolean CanWrite
         {
-            get
-            {
-                return this._stream.CanWrite;
-            }
+            get { return this._stream.CanWrite; }
         }
 
         public override System.Int64 Length
         {
-            get
-            {
-                return _stream.Length;
-            }
+            get { return _stream.Length; }
         }
 
         public override long Position
@@ -858,7 +834,6 @@ namespace Ionic.Zlib
             get { throw new NotImplementedException(); }
             set { throw new NotImplementedException(); }
         }
-
 
         internal enum StreamMode
         {

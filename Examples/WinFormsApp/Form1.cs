@@ -10,12 +10,15 @@ namespace WinFormsExample
     {
         delegate void SaveEntryProgress(SaveProgressEventArgs e);
         delegate void ButtonClick(object sender, EventArgs e);
+            HiResTimer _hrt;
 
         public Form1()
         {
             InitializeComponent();
 
             InitEncodingsList();
+
+            InitCompressionLevelList();
 
             FixTitle();
 
@@ -52,6 +55,19 @@ namespace WinFormsExample
             comboBox1.SelectedIndex = 0;
         }
 
+        private void InitCompressionLevelList()
+        {
+            _CompressionLevelNames = new List<string>(Enum.GetNames(typeof(Ionic.Zlib.CompressionLevel)));
+            _CompressionLevelNames.Sort();
+            foreach (var name in _CompressionLevelNames)
+            {
+                comboBox2.Items.Add(name);
+            }
+
+            // select the first item: 
+            comboBox2.SelectedIndex = 0;
+        }
+
 
 
 
@@ -69,6 +85,10 @@ namespace WinFormsExample
                 if (dlgResult != DialogResult.Yes) return;
                 System.IO.File.Delete(this.tbZipName.Text);
             }
+
+
+            _hrt= new HiResTimer();
+            _hrt.Start();
 
             _saveCanceled = false;
             _nFilesCompleted = 0;
@@ -90,6 +110,9 @@ namespace WinFormsExample
             {
                 options.Encoding = this.comboBox1.SelectedItem.ToString();
             }
+
+            options.CompressionLevel = (Ionic.Zlib.CompressionLevel) Enum.Parse(typeof(Ionic.Zlib.CompressionLevel),
+                this.comboBox2.SelectedItem.ToString());
 
             if (this.radioFlavorSfxCmd.Checked)
                 options.ZipFlavor = 2;
@@ -191,6 +214,7 @@ namespace WinFormsExample
                     zip1.SaveProgress += this.zip1_SaveProgress;
 
                     zip1.UseZip64WhenSaving = options.Zip64;
+                    zip1.CompressionLevel = options.CompressionLevel;
 
                     if (options.ZipFlavor == 1)
                         zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.WinFormsApplication);
@@ -254,9 +278,11 @@ namespace WinFormsExample
             }
             else
             {
-                lblStatus.Text = String.Format("Done, Compressed {0} files, {1:N0}% of original.",
-                    _nFilesCompleted, (100.00 * _totalBytesAfterCompress) / _totalBytesBeforeCompress);
-
+                _hrt.Stop();
+                System.TimeSpan ts = new System.TimeSpan(0, 0, (int) _hrt.Seconds);
+                lblStatus.Text = String.Format("Done, Compressed {0} files, {1:N0}% of original, time: {2}",
+                    _nFilesCompleted, (100.00 * _totalBytesAfterCompress) / _totalBytesBeforeCompress,
+                    ts.ToString());
                 ResetState();
             }
         }
@@ -299,6 +325,7 @@ namespace WinFormsExample
                     else if (_entriesToZip < 75)
                         Thread.Sleep(40);
                     // more than 75 entries, don't sleep at all.
+
                 }
             }
         }
@@ -494,6 +521,12 @@ namespace WinFormsExample
                     SelectNamedEncoding(s);
                 }
 
+                s = (string)AppCuKey.GetValue(_rvn_Compression);
+                if (s != null)
+                {
+                    SelectNamedCompressionLevel(s);
+                }
+
                 int x = (Int32)AppCuKey.GetValue(_rvn_ZipFlavor, 0);
                 if (x == 2)
                     this.radioFlavorSfxCmd.Checked = true;
@@ -528,6 +561,17 @@ namespace WinFormsExample
             }
         }
 
+        private void SelectNamedCompressionLevel(string s)
+        {
+            for (int i = 0; i < this.comboBox2.Items.Count; i++)
+            {
+                if (this.comboBox2.Items[i].ToString() == s)
+                {
+                    this.comboBox2.SelectedIndex = i;
+                    break;
+                }
+            }
+        }
 
         private void SaveFormToRegistry()
         {
@@ -536,6 +580,7 @@ namespace WinFormsExample
                 AppCuKey.SetValue(_rvn_DirectoryToZip, this.tbDirName.Text);
                 AppCuKey.SetValue(_rvn_ZipTarget, this.tbZipName.Text);
                 AppCuKey.SetValue(_rvn_Encoding, this.comboBox1.SelectedItem.ToString());
+                AppCuKey.SetValue(_rvn_Compression, this.comboBox2.SelectedItem.ToString());
 
                 int x = 0;
                 if (this.radioFlavorSfxCmd.Checked)
@@ -591,6 +636,7 @@ namespace WinFormsExample
         private Thread _workerThread;
         private static string TB_COMMENT_NOTE = "-zip file comment here-";
         private List<String> _EncodingNames;
+        private List<String> _CompressionLevelNames;
         private string _mostRecentEncoding;
         private Nullable<Zip64Option> _mostRecentZip64;
 
@@ -599,6 +645,7 @@ namespace WinFormsExample
         private static string _rvn_DirectoryToZip = "DirectoryToZip";
         private static string _rvn_ZipTarget = "ZipTarget";
         private static string _rvn_Encoding = "Encoding";
+        private static string _rvn_Compression = "Compression";
         private static string _rvn_ZipFlavor = "ZipFlavor";
         private static string _rvn_Zip64Option = "Zip64Option";
         private static string _rvn_LastRun = "LastRun";
@@ -613,6 +660,74 @@ namespace WinFormsExample
         public string Encoding;
         public string Comment;
         public int ZipFlavor;
+        public Ionic.Zlib.CompressionLevel CompressionLevel;
         public Zip64Option Zip64;
     }
+
+
+    internal class HiResTimer
+    {
+        // usage: 
+        // 
+        //  hrt= new HiResTimer();
+        //  hrt.Start();
+        //     ... do work ... 
+        //  hrt.Stop();
+        //  System.Console.WriteLine("elapsed time: {0:N4}", hrt.Seconds);
+        //
+
+        [System.Runtime.InteropServices.DllImport("KERNEL32")]
+        private static extern bool QueryPerformanceCounter(ref long lpPerformanceCount);
+
+        [System.Runtime.InteropServices.DllImport("KERNEL32")]
+        private static extern bool QueryPerformanceFrequency(ref long lpFrequency);
+
+        private long m_TickCountAtStart = 0;
+        private long m_TickCountAtStop = 0;
+        private long m_ElapsedTicks = 0;
+
+        public HiResTimer()
+        {
+            m_Frequency = 0;
+            QueryPerformanceFrequency(ref m_Frequency);
+        }
+
+        public void Start()
+        {
+            m_TickCountAtStart = 0;
+            QueryPerformanceCounter(ref m_TickCountAtStart);
+        }
+
+        public void Stop()
+        {
+            m_TickCountAtStop = 0;
+            QueryPerformanceCounter(ref m_TickCountAtStop);
+            m_ElapsedTicks = m_TickCountAtStop - m_TickCountAtStart;
+        }
+
+        public void Reset()
+        {
+            m_TickCountAtStart = 0;
+            m_TickCountAtStop = 0;
+            m_ElapsedTicks = 0;
+        }
+
+        public long Elapsed
+        {
+            get { return m_ElapsedTicks; }
+        }
+
+        public float Seconds
+        {
+            get { return ((float)m_ElapsedTicks / (float)m_Frequency); }
+        }
+
+        private long m_Frequency = 0;
+        public long Frequency
+        {
+            get { return m_Frequency; }
+        }
+
+    }
+
 }

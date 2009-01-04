@@ -9,7 +9,7 @@
     <AssemblyKeyContainerName>
     </AssemblyKeyContainerName>
     <AssemblyName>Ionic.Zlib</AssemblyName>
-    <AssemblyOriginatorKeyFile>Ionic.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\Ionic.pfx</AssemblyOriginatorKeyFile>
     <DefaultClientScript>JScript</DefaultClientScript>
     <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
     <DefaultTargetSchema>IE50</DefaultTargetSchema>
@@ -129,7 +129,6 @@
     <None Include="examples\test_flush_sync.cs" />
     <None Include="examples\test_large_deflate_inflate.cs" />
     <None Include="examples\test_stream_deflate_inflate.cs" />
-    <None Include="Ionic.pfx" />
     <Content Include="LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>

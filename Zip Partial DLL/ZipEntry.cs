@@ -1812,7 +1812,7 @@ namespace Ionic.Zip
             // to validate the CRC. 
             Int32 CrcResult = 0;
 
-            byte[] bytes = new byte[READBLOCK_SIZE];
+            byte[] bytes = new byte[WORKING_BUFFER_SIZE];
 
             // The extraction process varies depending on how the entry was stored.
             // It could have been encrypted, and it coould have been compressed, or both, or
@@ -2311,7 +2311,7 @@ namespace Ionic.Zip
             var counter = s as CountingStream;
             _RelativeOffsetOfHeader = (counter != null) ? counter.BytesWritten : s.Position;
 
-            byte[] bytes = new byte[READBLOCK_SIZE];
+            byte[] bytes = new byte[WORKING_BUFFER_SIZE];
 
             int i = 0;
             // signature
@@ -2612,7 +2612,10 @@ namespace Ionic.Zip
                 bool mustCloseDeflateStream = false;
                 if (CompressionMethod == 0x08)
                 {
-                    output2 = new Ionic.Zlib.DeflateStream(output1, Ionic.Zlib.CompressionMode.Compress, Ionic.Zlib.CompressionLevel.BEST_COMPRESSION, true);
+                    output2 = new Ionic.Zlib.DeflateStream(output1, Ionic.Zlib.CompressionMode.Compress, 
+							   _zipfile.CompressionLevel, 
+							   // Ionic.Zlib.CompressionLevel.BEST_COMPRESSION, 
+							   true);
                     //output2 = new DeflateStream(output1, CompressionMode.Compress, true);
 
                     mustCloseDeflateStream = true;
@@ -2630,15 +2633,15 @@ namespace Ionic.Zip
                 }
 
                 // as we emit the file, we maybe deflate, then maybe encrypt, then write the bytes. 
-                byte[] buffer = new byte[READBLOCK_SIZE];
-                int n = input1.Read(buffer, 0, READBLOCK_SIZE);
+                byte[] buffer = new byte[WORKING_BUFFER_SIZE];
+                int n = input1.Read(buffer, 0, WORKING_BUFFER_SIZE);
                 while (n > 0)
                 {
                     output2.Write(buffer, 0, n);
                     OnWriteBlock(input1.TotalBytesSlurped, fileLength);  // outputCounter.BytesWritten
                     if (_ioOperationCanceled)
                         break;
-                    n = input1.Read(buffer, 0, READBLOCK_SIZE);
+                    n = input1.Read(buffer, 0, WORKING_BUFFER_SIZE);
                 }
 
                 // by calling Close() on the deflate stream, we write the footer bytes, as necessary.
@@ -2943,7 +2946,7 @@ namespace Ionic.Zip
         private void CopyThroughOneEntry(System.IO.Stream outstream)
         {
             int n;
-            byte[] bytes = new byte[READBLOCK_SIZE];
+            byte[] bytes = new byte[WORKING_BUFFER_SIZE];
 
             // just read from the existing input zipfile and write to the output
             System.IO.Stream input = this.ArchiveStream;
@@ -3065,6 +3068,6 @@ namespace Ionic.Zip
         private bool _ioOperationCanceled;
         private bool _presumeZip64;
 
-        private const int READBLOCK_SIZE = 0x2200;
+        private const int WORKING_BUFFER_SIZE = 0x4400;
     }
 }

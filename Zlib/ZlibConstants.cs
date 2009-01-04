@@ -1,4 +1,12 @@
-
+// Copyright (c) 2009, Dino Chiesa.  
+// This code is licensed under the Microsoft public license.  See the license.txt file in the source
+// distribution for details. 
+//
+// The zlib code is derived from the jzlib implementation, but significantly modified.
+// The object model is not the same, and many of the behaviors are different.
+// Nonetheless, in keeping with the license for jzlib, I am reproducing the copyright to that code here.
+// 
+// -----------------------------------------------------------------------
 // Copyright (c) 2000,2001,2002,2003 ymnk, JCraft,Inc. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -27,10 +35,11 @@
 // 
 
 /*
-* This program is based on zlib-1.1.3, so all credit should go authors
+* This program is based on zlib-1.1.3; credit to authors
 * Jean-loup Gailly(jloup@gzip.org) and Mark Adler(madler@alumni.caltech.edu)
 * and contributors of zlib.
 */
+
 
 using System;
 
@@ -41,26 +50,71 @@ namespace Ionic.Zlib
     /// </summary>
     public static class ZlibConstants
     {
-        public const int Z_DEFLATED = 8;
-
+        /// <summary>
+        /// No flush at all.
+        /// </summary>
         public const int Z_NO_FLUSH = 0;
+
+        /// <summary>
+        /// A little bit of flush?
+        /// </summary>
         public const int Z_PARTIAL_FLUSH = 1;
+
+        /// <summary>
+        /// Sync flush?
+        /// </summary>
         public const int Z_SYNC_FLUSH = 2;
+
+        /// <summary>
+        /// Full flush?
+        /// </summary>
         public const int Z_FULL_FLUSH = 3;
+
+        /// <summary>
+        /// Finish?
+        /// </summary>
         public const int Z_FINISH = 4;
 
+        /// <summary>
+        /// The maximum number of window bits for the Deflate algorithm.
+        /// </summary>
         public const int WINDOW_BITS_MAX = 15; // 32K LZ77 window
+
+        /// <summary>
+        /// The default number of window bits for the Deflate algorithm.
+        /// </summary>
         public const int WINDOW_BITS_DEFAULT = WINDOW_BITS_MAX;
 
+        /// <summary>
+        /// indicates everything is A-OK
+        /// </summary>
         public const int Z_OK = 0;
+
+        /// <summary>
+        /// Indicates that the last operation reached the end of the stream.
+        /// </summary>
         public const int Z_STREAM_END = 1;
+
+        /// <summary>
+        /// The operation ended in need of a dictionary. 
+        /// </summary>
         public const int Z_NEED_DICT = 2;
-        public const int Z_ERRNO = -1;
+
+        /// <summary>
+        /// There was an error with the stream - not enough data, not open and readable, etc.
+        /// </summary>
         public const int Z_STREAM_ERROR = -2;
+
+        /// <summary>
+        /// There was an error with the data - not enough data, bad data, etc.
+        /// </summary>
         public const int Z_DATA_ERROR = -3;
-        public const int Z_MEM_ERROR = -4;
+
+        /// <summary>
+        /// There was an error with the working buffer.
+        /// </summary>
         public const int Z_BUF_ERROR = -5;
-        private const int Z_VERSION_ERROR = -6;
+
     }
 
 }
