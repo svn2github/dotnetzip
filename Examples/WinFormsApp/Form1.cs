@@ -126,9 +126,10 @@ namespace WinFormsExample
                 options.Zip64 = Zip64Option.Always;
             else options.Zip64 = Zip64Option.Never;
 
-            options.Comment = String.Format("Encoding:{0} || Flavor:{1} || ZIP64:{2}\r\nCreated at {3} || {4}\r\n",
+            options.Comment = String.Format("Encoding:{0} || Flavor:{1} || Compression:{2} || ZIP64:{3}\r\nCreated at {4} || {5}\r\n",
                         options.Encoding,
                         FlavorToString(options.ZipFlavor),
+                        options.CompressionLevel.ToString(),
                         options.Zip64.ToString(),
                         System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss"),
                         this.Text);
@@ -344,14 +345,16 @@ namespace WinFormsExample
                     if (this.progressBar2.Maximum == 1)
                     {
                         // reset
-                        Int64 max = e.TotalBytesToTransfer;
+                        Int64 entryMax = e.TotalBytesToTransfer;
+                        Int64 absoluteMax = System.Int32.MaxValue;
                         _progress2MaxFactor = 0;
-                        while (max > System.Int32.MaxValue)
+                        while (entryMax > absoluteMax)
                         {
-                            max /= 2;
+                            entryMax /= 2;
                             _progress2MaxFactor++;
                         }
-                        this.progressBar2.Maximum = (int)max;
+			if ((int)entryMax < 0) entryMax *= -1;
+                        this.progressBar2.Maximum = (int)entryMax;
                         lblStatus.Text = String.Format("{0} of {1} files...({2})",
                             _nFilesCompleted + 1, _entriesToZip, e.CurrentEntry.FileName);
                     }

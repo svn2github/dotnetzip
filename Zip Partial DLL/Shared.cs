@@ -217,17 +217,17 @@ namespace Ionic.Zip
                         if (DataSize > 28)
                             throw new BadReadException(String.Format("  Inconsistent ZIP64 datasize (0x{0:X4}) at position 0x{1:X16}", DataSize, s.Position - additionalBytesRead));
 
-                        if (Uncompressed == -1)
+                        if (Uncompressed == 0xFFFFFFFF)
                         {
                             Uncompressed = BitConverter.ToInt64(Buffer, j);
                             j += 8;
                         }
-                        if (Compressed == -1)
+                        if (Compressed == 0xFFFFFFFF)
                         {
                             Compressed = BitConverter.ToInt64(Buffer, j);
                             j += 8;
                         }
-                        if (RelativeOffset == -1)
+                        if (RelativeOffset == 0xFFFFFFFF)
                         {
                             RelativeOffset = BitConverter.ToInt64(Buffer, j);
                             j += 8;

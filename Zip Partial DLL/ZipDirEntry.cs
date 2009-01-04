@@ -187,8 +187,9 @@ namespace Ionic.Zip
             zde._CompressionMethod = (short)(block[i++] + block[i++] * 256);
             zde._TimeBlob = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
             zde._Crc32 = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
-            zde._CompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
-            zde._UncompressedSize = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+
+	    zde._CompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
+	    zde._UncompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
 
             //DateTime lastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(lastModDateTime);
             //i += 24;
@@ -202,7 +203,7 @@ namespace Ionic.Zip
             zde._InternalFileAttrs = (short)(block[i++] + block[i++] * 256);
             zde._ExternalFileAttrs = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
 
-            zde._RelativeOffsetOfLocalHeader = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+            zde._RelativeOffsetOfLocalHeader = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
 
             block = new byte[zde._filenameLength];
             n = s.Read(block, 0, block.Length);
@@ -220,8 +221,9 @@ namespace Ionic.Zip
 
             if (zde._extraFieldLength > 0)
             {
-                bool IsZip64Format = ((uint)zde._CompressedSize == 0xFFFFFFFF &&
-                              (uint)zde._UncompressedSize == 0xFFFFFFFF);
+                bool IsZip64Format = ((uint)zde._CompressedSize == 0xFFFFFFFF ||
+				      (uint)zde._UncompressedSize == 0xFFFFFFFF ||
+				      (uint)zde._RelativeOffsetOfLocalHeader == 0xFFFFFFFF);
 
                 bytesRead += SharedUtilities.ProcessExtraField(zde._extraFieldLength, s, IsZip64Format,
                                            ref zde._Extra,
