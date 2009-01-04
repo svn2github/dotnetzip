@@ -12,7 +12,7 @@
 // This utility zips up a set of files and directories specified on the command line.
 //
 // compile with:
-//     csc /debug+ /target:exe /r:Ionic.Utils.Zip.dll /out:ZipIt.exe ZipIt.cs 
+//     csc /debug+ /target:exe /r:Ionic.Zip.dll /out:ZipIt.exe ZipIt.cs 
 //
 // Fri, 23 Feb 2007  11:51
 //
@@ -124,7 +124,7 @@ namespace Ionic.Zip.Examples
                             case "-c":
                                 i++;
                                 if (args.Length <= i) Usage();
-				entryComment = args[i];  // for the next entry
+                                entryComment = args[i];  // for the next entry
                                 break;
 
                             case "-zc":
