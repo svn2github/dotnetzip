@@ -61,7 +61,10 @@ namespace WinFormsExample
             _CompressionLevelNames.Sort();
             foreach (var name in _CompressionLevelNames)
             {
-                comboBox2.Items.Add(name);
+                if (name.StartsWith("LEVEL"))
+                {
+                    comboBox2.Items.Add(name);
+                }
             }
 
             // select the first item: 
