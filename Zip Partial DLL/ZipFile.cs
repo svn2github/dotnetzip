@@ -1874,7 +1874,7 @@ namespace Ionic.Zip
         /// In this example, three files are added to a Zip archive. The ReadMe.txt file
         /// will be placed in the root of the archive. The .png file will be placed in a folder 
         /// within the zip called images.  The pdf file will be included into a
-        /// folder within the zip called files\documents, and will be encrypted with the 
+        /// folder within the zip called files\docs, and will be encrypted with the 
         /// given password.
         /// </para>
         /// <code>
@@ -1882,10 +1882,14 @@ namespace Ionic.Zip
         /// {
         ///   using (ZipFile zip = new ZipFile("Archive.zip",System.Console.Out))
         ///   {
+	///     // the following entry will be inserted at the root in the archive.
         ///     zip.AddFile("c:\\datafiles\\ReadMe.txt", "");
+	///     // this image file will be inserted into the "images" directory in the archive.
         ///     zip.AddFile("c:\\photos\\personal\\7440-N49th.png", "images");
+	///     // the following will result in a password-protected file called 
+	///     // files\\docs\\2005_Annual_Report.pdf  in the archive.
         ///     zip.Password = "EncryptMe!";
-        ///     zip.AddFile("c:\\Desktop\\2005_Annual_Report.pdf", "files\\documents");
+        ///     zip.AddFile("c:\\Desktop\\2005_Annual_Report.pdf", "files\\docs");
         ///     zip.Save();
         ///   }
         /// }
@@ -1898,8 +1902,12 @@ namespace Ionic.Zip
         /// <code lang="VB">
         ///   Try 
         ///       Using zip As ZipFile = New ZipFile("Archive.zip", Console.Out)
+	///           ' the following entry will be inserted at the root in the archive.
         ///           zip.AddFile("c:\datafiles\ReadMe.txt", "")
+	///           ' this image file will be inserted into the "images" directory in the archive.
         ///           zip.AddFile("c:\photos\personal\7440-N49th.png", "images")
+	///           ' the following will result in a password-protected file called 
+	///           ' files\\docs\\2005_Annual_Report.pdf  in the archive.
         ///           zip.Password = "EncryptMe!"
         ///           zip.AddFile("c:\Desktop\2005_Annual_Report.pdf", "files\documents")
         ///           zip.Save
