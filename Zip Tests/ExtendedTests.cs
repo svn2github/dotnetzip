@@ -378,6 +378,45 @@ namespace Ionic.Zip.Tests.Extended
 
 
 
+
+
+
+        [TestMethod]
+        public void ReadZip_DirectoryBitSetForEmptyDirectories()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "ReadZip_DirectoryBitSetForEmptyDirectories.zip");
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddDirectoryByName("Directory1");
+                ZipEntry e1 = zip1["Directory1"];
+                Assert.AreNotEqual<ZipEntry>(null, e1);
+                Assert.IsTrue(e1.IsDirectory,
+                      "The IsDirectory property was not set as expected.");
+                zip1.AddDirectoryByName("Directory2");
+                zip1.AddFileFromString("Readme.txt", "Directory2", "This is the content");
+                Assert.IsTrue(zip1["Directory2"].IsDirectory,
+                      "The IsDirectory property was not set as expected.");
+                zip1.Save(ZipFileToCreate);
+                Assert.IsTrue(zip1["Directory1"].IsDirectory,
+                      "The IsDirectory property was not set as expected.");
+
+            }
+
+
+            using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+            {
+                Assert.IsTrue(zip2["Directory1"].IsDirectory,
+                      "The IsDirectory property was not set as expected.");
+
+                Assert.IsTrue(zip2["Directory2"].IsDirectory,
+                      "The IsDirectory property was not set as expected.");
+            }
+
+        }
+
+
+
         [TestMethod]
         public void Extract_AfterSaveNoDispose()
         {
@@ -941,7 +980,6 @@ namespace Ionic.Zip.Tests.Extended
 
                 var Files = TestUtilities.GenerateFilesFlat(DirToZip);
                 string[] Passwords = new string[Files.Length];
-
 
                 using (ZipFile zip1 = new ZipFile())
                 {

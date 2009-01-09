@@ -2936,9 +2936,9 @@ namespace Ionic.Zip
                 || (!_IsZip64Format && _zipfile.UseZip64WhenSaving == Zip64Option.Always))
             {
                 long origRelativeOffsetOfHeader = _RelativeOffsetOfHeader;
-                if (this._LengthOfHeader == 0)
+                if (this.LengthOfHeader == 0)
                     throw new ZipException("Bad header length.");
-                int origLengthOfHeader = _LengthOfHeader;
+                int origLengthOfHeader = LengthOfHeader;
                 WriteHeader(outstream, 0);
                 // seek to the beginning of the entry data in the input stream
                 input.Seek(origRelativeOffsetOfHeader + origLengthOfHeader, System.IO.SeekOrigin.Begin);
@@ -2962,11 +2962,11 @@ namespace Ionic.Zip
             }
             else
             {
+                if (this.LengthOfHeader == 0)
+                    throw new ZipException("Bad header length.");
+
                 // seek to the beginning of the entry data (header + file data) in the stream
                 input.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
-
-                if (this._LengthOfHeader == 0)
-                    throw new ZipException("Bad header length.");
 
                 // Here, we need to grab-n-cache the header - it is used later when 
                 // writing the Central Directory Structure.
@@ -3011,6 +3011,60 @@ namespace Ionic.Zip
         }
 
 
+        private void SetFdpLoh()
+        {
+            // Indicates that the value has not yet been set. 
+            // Therefore, seek to the local header, figure the start of file data.
+            long origPosition = this.ArchiveStream.Position;
+            this.ArchiveStream.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
+
+            byte[] block = new byte[30];
+            this.ArchiveStream.Read(block, 0, block.Length);
+
+            // At this point we could verify the contents read from the local header
+            // with the contents read from the central header.  We could, but don't need to. 
+            // So we won't.
+
+            Int16 filenameLength = (short) (block[26] + block[27] * 256);
+            Int16 extraFieldLength = (short) (block[28] + block[29] * 256);
+
+            this.ArchiveStream.Seek(filenameLength + extraFieldLength, System.IO.SeekOrigin.Current);
+            this._LengthOfHeader = 30 + extraFieldLength + filenameLength;
+            this.__FileDataPosition = _RelativeOffsetOfHeader + 30 + filenameLength + extraFieldLength;
+
+            if (this._Encryption == EncryptionAlgorithm.PkzipWeak)
+            {
+                this.__FileDataPosition += 12;
+            }
+
+            // restore file position:
+            this.ArchiveStream.Seek(origPosition, System.IO.SeekOrigin.Begin);
+        }
+
+
+        private long FileDataPosition
+        {
+            get
+            {
+                if (__FileDataPosition == 0)
+                    SetFdpLoh();
+
+                return __FileDataPosition;
+            }
+        }
+
+        private int LengthOfHeader
+        {
+            get
+            {
+                if (_LengthOfHeader == 0)
+                    SetFdpLoh();
+
+                return _LengthOfHeader;
+            }
+        }
+
+
         internal DateTime _LastModified;
         private bool _TrimVolumeFromFullyQualifiedPaths = true;  // by default, trim them.
         private bool _ForceNoCompression;  // by default, false: do compression if it makes sense.
@@ -3043,34 +3097,6 @@ namespace Ionic.Zip
         private Int64 _TotalEntrySize;
         internal int _LengthOfHeader;
         private bool _IsZip64Format;
-
-        private long FileDataPosition
-        {
-            get
-            {
-                if (__FileDataPosition == 0)
-                {
-                    // Indicates that the value has not yet been set. 
-                    // Therefore, seek to the local header, figure the start of file data.
-                    long origPosition = this.ArchiveStream.Position;
-                    this.ArchiveStream.Seek(this._RelativeOffsetOfHeader, System.IO.SeekOrigin.Begin);
-
-                    byte[] block = new byte[30];
-                    this.ArchiveStream.Read(block, 0, block.Length);
-
-                    Int16 filenameLength = (short)(block[26] + block[27] * 256);
-                    Int16 extraFieldLength = (short)(block[28] + block[29] * 256);
-
-                    this.ArchiveStream.Seek(filenameLength + extraFieldLength, System.IO.SeekOrigin.Current);
-                    this._LengthOfHeader = 30 + extraFieldLength + filenameLength;
-                    this.__FileDataPosition = _RelativeOffsetOfHeader + 30 + filenameLength + extraFieldLength;
-
-                    // restore file position:
-                    this.ArchiveStream.Seek(origPosition, System.IO.SeekOrigin.Begin);
-                }
-                return __FileDataPosition;
-            }
-        }
 
         private string _Password;
         internal EntrySource _Source = EntrySource.None;

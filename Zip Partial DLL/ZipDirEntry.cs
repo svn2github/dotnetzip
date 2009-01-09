@@ -118,7 +118,7 @@ namespace Ionic.Zip
             ZipEntry e = new ZipEntry();
             e._Comment = this.Comment;
             e.FileName = this.FileName;
-            if (this.IsDirectory) e.MarkAsDirectory();
+            if (this.IsDirectory) e.MarkAsDirectory();  // may append a slash to filename if nec.
             e._VersionNeeded = _VersionNeeded;
             e._BitField = _BitField;
             e._CompressionMethod = _CompressionMethod;
@@ -142,14 +142,13 @@ namespace Ionic.Zip
             if ((e._BitField & 0x01) == 0x01)
             {
                 e._Encryption = EncryptionAlgorithm.PkzipWeak;
-                e.__FileDataPosition += 12;
                 e._CompressedFileDataSize -= 12;
             }
-            
+
             // The length of the "local header" for the ZipEntry is not necessarily the same as
             // the length of the header in the ZipDirEntry.  
             //e._LengthOfHeader = 30 + _filenameLength + _extraFieldLength;
-            e._LengthOfHeader = 0; 
+            e._LengthOfHeader = 0;  // mark as zero to indicate we need to read later
 
             return e;
         }
@@ -198,8 +197,8 @@ namespace Ionic.Zip
             zde._TimeBlob = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
             zde._Crc32 = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
 
-	    zde._CompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
-	    zde._UncompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
+            zde._CompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
+            zde._UncompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
 
             //DateTime lastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(lastModDateTime);
             //i += 24;
@@ -232,8 +231,8 @@ namespace Ionic.Zip
             if (zde._extraFieldLength > 0)
             {
                 bool IsZip64Format = ((uint)zde._CompressedSize == 0xFFFFFFFF ||
-				      (uint)zde._UncompressedSize == 0xFFFFFFFF ||
-				      (uint)zde._RelativeOffsetOfLocalHeader == 0xFFFFFFFF);
+                      (uint)zde._UncompressedSize == 0xFFFFFFFF ||
+                      (uint)zde._RelativeOffsetOfLocalHeader == 0xFFFFFFFF);
 
                 bytesRead += SharedUtilities.ProcessExtraField(zde._extraFieldLength, s, IsZip64Format,
                                            ref zde._Extra,

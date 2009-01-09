@@ -2134,7 +2134,6 @@ namespace Ionic.Zip
         public ZipEntry UpdateDirectory(string directoryName, String directoryPathInArchive)
         {
             // ideally this would be transactional!
-            //xxx
             //var key = ZipEntry.NameInArchive(directoryName, directoryPathInArchive);
             //if (this[key] != null)
             //    this.RemoveEntry(key);
@@ -2582,7 +2581,7 @@ namespace Ionic.Zip
             {
                 AddOrUpdateDirectoryImpl(dir, rootDirectoryPathInArchive, action, level + 1);
             }
-            _contentsChanged = true;
+            //_contentsChanged = true;
 
             return baseDir;
         }
@@ -4841,6 +4840,9 @@ namespace Ionic.Zip
 
                 throw; // new Ionic.Utils.Zip.ZipException("Exception while reading", e1);
             }
+
+            // the instance has been read in
+            zf._contentsChanged = false;
         }
 
 
@@ -5559,13 +5561,22 @@ namespace Ionic.Zip
         /// </para>
         /// <para>
         /// This property is read-write. When setting the value, the
-        /// only legal value is null. If you assign a non-null value
-        /// (non Nothing in VB), the setter will throw an exception.
+        /// only legal value is null. Setting the value to null is
+        /// equivalent to calling <see
+        /// cref="ZipFile.RemoveEntry(String)"/> with the filename.
         /// </para>
         /// <para>
-        /// Setting the value to null is equivalent to calling <see cref="ZipFile.RemoveEntry(String)"/> 
-        /// with the filename.
+	/// If you assign a non-null value
+        /// (non Nothing in VB), the setter will throw an exception.
         /// </para>
+	/// <para>
+	/// It is not always the case that <c>this[value].FileName == value</c>.  In
+	/// the case of directory entries in the archive, you may retrieve them with
+	/// the name of the directory with no trailing slash, even though in the
+	/// entry itself, the actual <see cref="ZipEntry.FileName"/> property may
+	/// include a trailing slash.  In other words, for a directory entry named
+	/// "dir1", you may find <c>this["dir1"].FileName == "dir1/"</c>.
+	/// </para>
         /// </remarks>
         /// 
         /// <example>
@@ -5622,6 +5633,17 @@ namespace Ionic.Zip
                         // also check for equivalence
                         if (fileName.Replace("\\", "/") == e.FileName) return e;
                         if (e.FileName.Replace("\\", "/") == fileName) return e;
+
+			// check for a difference only in trailing slash
+			if (e.FileName.EndsWith("/"))
+			{
+			    var FileNameNoSlash = e.FileName.Trim("/".ToCharArray());
+			    if (FileNameNoSlash == fileName) return e;
+			    // also check for equivalence
+			    if (fileName.Replace("\\", "/") == FileNameNoSlash) return e;
+			    if (FileNameNoSlash.Replace("\\", "/") == fileName) return e;
+			}
+
                     }
                     else
                     {
@@ -5630,6 +5652,19 @@ namespace Ionic.Zip
                         // also check for equivalence
                         if (String.Compare(fileName.Replace("\\", "/"), e.FileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
                         if (String.Compare(e.FileName.Replace("\\", "/"), fileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
+
+			// check for a difference only in trailing slash
+			if (e.FileName.EndsWith("/"))
+			{
+			    var FileNameNoSlash = e.FileName.Trim("/".ToCharArray());
+
+                        if (String.Compare(FileNameNoSlash, fileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
+                        // also check for equivalence
+                        if (String.Compare(fileName.Replace("\\", "/"), FileNameNoSlash, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
+                        if (String.Compare(FileNameNoSlash.Replace("\\", "/"), fileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
+
+			}
+
                     }
 
                 }
