@@ -785,6 +785,9 @@ namespace Ionic.Zip
             // when creating an entry by reading, the LocalFileName is the same as the FileNameInArchive
             ze._LocalFileName = ze._FileNameInArchive;
 
+            // workitem 6898
+            if (ze._LocalFileName.EndsWith("/")) ze.MarkAsDirectory();
+
             bytesRead += SharedUtilities.ProcessExtraField(extraFieldLength, ze.ArchiveStream, ze._IsZip64Format,
                        ref ze._Extra,
                        ref ze._UncompressedSize,
@@ -1906,7 +1909,7 @@ namespace Ionic.Zip
             bytes[i++] = 0;
 
             // internal file attrs
-            bytes[i++] = (byte)((IsDirectory) ? 0 : 1);
+            bytes[i++] = 0; // resrvd PKWARE.  filetype hint.  0=bin, 1=txt.   // (byte)((IsDirectory) ? 0 : 1);
             bytes[i++] = 0;
 
             // external file attrs
