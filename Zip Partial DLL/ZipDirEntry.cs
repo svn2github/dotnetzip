@@ -131,6 +131,9 @@ namespace Ionic.Zip
             e._RelativeOffsetOfHeader = _RelativeOffsetOfLocalHeader;
             e._LocalFileName = e.FileName;
 
+            // workitem 6898
+            if (e._LocalFileName.EndsWith("/")) e.MarkAsDirectory();
+
             // The length of the "local header" for the ZipEntry is not necessarily the same as
             // the length of the header in the ZipDirEntry, therefore we cannot know the __FileDataPosition 
             // until we read the local header.
