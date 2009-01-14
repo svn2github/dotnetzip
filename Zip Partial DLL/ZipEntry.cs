@@ -1260,8 +1260,8 @@ namespace Ionic.Zip
         }
 
         /// <summary>
-        /// Extract the entry to the filesystem, using the current working directory,
-        /// and using the specified password. 
+        /// Extract the entry to the filesystem, using the current working directory
+        /// and the specified password. 
         /// </summary>
         ///
         /// <overloads>
@@ -1277,14 +1277,29 @@ namespace Ionic.Zip
         /// Existing entries in the filesystem will not be overwritten. If you would like to 
         /// force the overwrite of existing files, see the <c>OverwriteOnExtract</c> property, 
         /// or try one of the overloads of the ExtractWithPassword method that accept a boolean flag
-        /// to indicate explicitly whether you want overwrite.
+        /// to indicate explicitly that you want overwrite.
         /// </para>
         /// <para>
-        /// See the remarks on the LastModified property, for some details 
-        /// about how the last modified time of the created file is set.
+        /// See the remarks on the <see cref="LastModified"/> property for some details 
+        /// about how the "last modified" time of the created file is set.
         /// </para>
         /// </remarks>
-        ///
+        /// 
+        /// <example>
+	/// In this example, entries that use encryption are extracted using a particular password.
+        /// <code lang="VB">
+        /// Using zip As new ZipFile(FilePath)
+        ///     Dim e As ZipEntry
+        ///     For Each e In zip
+        ///         If (e.UsesEncryption)
+        ///           e.ExtractWithPassword("Secret!")
+        ///         Else
+        ///           e.Extract
+        ///         End If 
+        ///     Next
+        /// End Using
+        /// </code>
+        /// </example>
         /// <param name="password">The Password to use for decrypting the entry.</param>
         public void ExtractWithPassword(string password)
         {

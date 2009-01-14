@@ -28,7 +28,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 
 <pre lang="VB" numberLines="true" outlining="true"
   title="Create a Zip">
-Try 
+ Try 
      Using zip As ZipFile = New ZipFile("MyZipFile.zip")
          zip.AddFile("c:\photos\personal\7440-N49th.png")
          zip.AddFile("c:\Desktop\2005_Annual_Report.pdf")
@@ -39,6 +39,38 @@ Try
      Console.Error.WriteLine("exception: {0}", ex1.ToString)
  End Try
 </pre>
+
+
+<hr>
+<p>Extract items from a zip file: </p>
+
+<pre lang="VB" numberLines="true" outlining="true"
+  title="Extract entries from a Zip">
+ Try 
+     Using zip As ZipFile = ZipFile.Read(ZipFileToExtract)
+        Dim e As ZipEntry
+        For Each e In zip
+            e.Extract
+        Next
+     End Using
+ Catch ex1 As Exception
+     Console.Error.WriteLine("exception: {0}", ex1.ToString)
+ End Try
+</pre>
+
+
+<hr>
+<p>Extract all entries, and set the StatusMessageTextWriter so that verbose messages are generated:</p>
+
+<pre lang="VB" numberLines="true" outlining="true"
+  title="ExtractAll, and use the status TextWriter">
+Using zip As new ZipFile(FilePath)
+  zip.StatusMessageTextWriter= System.Console.Out
+  'Status Messages will be sent to the console during extraction
+  zip.ExtractAll()
+End Using
+</pre>
+
 
 
 <hr>
@@ -60,6 +92,26 @@ Catch ex1 As System.Exception
   System.Console.Error.WriteLine("exception: {0}", ex1)
 End Try
 </pre>
+
+
+
+<hr>
+<p>Extract entries using a password:</p>
+
+<pre lang="VB" numberLines="true" outlining="true"
+  title="Extract entries using a password">
+Using zip As new ZipFile(FilePath)
+    Dim e As ZipEntry
+    For Each e In zip
+        If (e.UsesEncryption)
+          e.ExtractWithPassword("Secret!")
+        Else
+          e.Extract
+        End If 
+    Next
+End Using
+</pre>
+
 
 
 <hr>
@@ -106,18 +158,6 @@ Using zip As ZipFile = ZipFile.Read("PackedDocuments.zip", sw)
 End Using
 </pre>
 
-
-<hr>
-<p>Set the StatusMessageTextWriter so that verbose messages are generated:</p>
-
-<pre lang="VB" numberLines="true" outlining="true"
-  title="Use the status TextWriter">
-Using zip As new ZipFile(FilePath)
-  zip.StatusMessageTextWriter= System.Console.Out
-  'Status Messages will be sent to the console during extraction
-  zip.ExtractAll()
-End Using
-</pre>
 
 
 <hr>

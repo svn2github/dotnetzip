@@ -3,15 +3,15 @@ Fri, 19 Dec 2008  06:03
 Zip Library 
 ---------------------------------
 
-This library allows applications to create and read ZIP files. 
+This library allows .NET applications to read, create and modify ZIP files. 
 
 The Microsoft .NET Framework, starting with v2.0 for the desktop
 Framework and v3.5 for the Compact Framework, includes new base class
 libraries supporting compression within streams - both the Deflate and
-Gzip formats are supported. But the System.IO.Compression namespace is
-not directly useful for creating compressed zip archives.  The built-in
-compression library does not know how to format zip archive headers and
-so on.
+Gzip formats are supported. But the classes in the System.IO.Compression 
+namespace are not directly useful for creating compressed zip archives.  
+The built-in compression library is not able to read or write zip archive 
+headers and other meta data.
 
 This is a simple class library that provides ZIP file support.  Using
 this library, you can write .NET applications that read and write
@@ -50,6 +50,35 @@ As a result, this library depends only on the .NET Framework v2.0, or the
 
 
 
+The Documentation
+--------------------------------------------
+
+There is a single .chm file for all of the DotNetZip library features,
+including Zip and Zlib stuff.  If you only use the Zlib stuff, then you
+should focus on the doc in the Ionic.Zlib namespace.  If you are
+building apps for mobile devices running the Compact Framework, then
+ignore the SaveSelfExtractor() pieces.
+
+The .chm file is built using the Sandcastle Helpfile Builder tool, also
+available on CodePlex at http://www.codeplex.com/SHFB .  It is built
+from in-code xml documentation. 
+
+
+About the Help file
+--------------------------------
+
+The .chm file contains help generated from the code.
+
+In some cases, upon opening the .chm file for DotNetZip, the help
+items tree loads, but the contents are empty. You may see an error:
+"This program cannot display the webpage."  or, "Address is invalid."
+If this happens, it's likely that you've encountered a problem with Windows
+protection of files downloaded from less trusted locations. To work around 
+this, within Windows Explorer, right-click on the CHM file, select properties, 
+and Unblock it, using the button in lower part of properties window.
+
+
+
 
 The Zip Format
 ---------------------------------
@@ -66,8 +95,8 @@ header and "directory" information - you might call this
 all the compressed files in the archive. The zipfile also
 contains CRC checksums, and can also contain comments, and other
 optional attributes for each file.  These are things the
-DeflateStream class, included in the .NET Framework Class
-Library, does not read or write.
+DeflateStream class - either the one included in the .NET Framework Class
+Library, or the one embedded in this library - does not read or write.
 
 
 This Package
@@ -78,6 +107,7 @@ depends upon the capabilities included in the former.
 
 For each DLL, there is a version for the regular .NET
 Framework and another for the Compact Framework. 
+
 
 
 The Zlib Class Library
@@ -98,8 +128,8 @@ The key classes are:
         levels and other options.
 
 
-If you want to simply compress raw block data, this library is the thing
-you want.  
+If you want to simply compress (deflate) raw block or stream data, this 
+library is the thing you want.  
 
 When building apps that do zlib stuff, you need to add a reference to
 the Ionic.Zlib.dll in Visual Studio, or specify Ionic.Zlib.dll with the
@@ -145,17 +175,18 @@ in Ionic.Zlib.dll.
 
 
 
-Using the Zip Class Library
----------------------------------
+Using the Zip Class Library: The Basics
+----------------------------------------
 
-Check the examples included in this package for simple apps that
-show how to read and write zip files.  The simplest way to
-create a zipfile looks like this: 
+Check the examples included in the source package, or in the class 
+reference documentation in the .CHM file, for code that illustrates
+how to read and write zip files.  The simplest way to create 
+a zipfile looks like this: 
 
-      using(ZipFile zip= new ZipFile(NameOfZipFileTocreate))
+      using(ZipFile zip= new ZipFile())
       {
         zip.AddFile(filename);
-	zip.Save(); 
+        zip.Save(NameOfZipFileTocreate); 
       }
 
 
@@ -166,14 +197,38 @@ like this:
         zip.ExtractAll(args[1]);
       }
 
+But you could also do something like this: 
+
+      using (ZipFile zip = ZipFile.Read(NameOfExistingZipFile))
+      {
+        foreach (ZipEntry e in zip)
+        {
+          e.Extract();
+        }
+      }
+      
+
+Or in VB, it would be like this: 
+     Using zip As ZipFile = ZipFile.Read(NameOfExistingZipFile)
+         zip.ExtractAll
+     End Using
+
+Or this: 
+     Using zip As ZipFile = ZipFile.Read(NameOfExistingZipFile)
+        Dim e As ZipEntry
+        For Each e In zip
+            e.Extract
+        Next
+     End Using
+
 
 There are a number of other options for using the class
 library.  For example, you can read zip archives from streams,
-or you can create (write) zip archives to streams.  You can apply
-passwords for weak encryption.  You can specify a code page for the
-filenames and metadata of entries in an archive.  Check the
-doc for complete information. 
-
+or you can create (write) zip archives to streams, or you can extract 
+into streams.  You can apply passwords for weak encryption.  You can 
+specify a code page for the filenames and metadata of entries in an archive.  
+You can rename entries in  archives, and you can add or remove entries from 
+archives.  Check the doc for complete information. 
 
 
 
@@ -190,7 +245,8 @@ The new namespace drops the "Utils" segment, and is now Ionic.Zip.
 Classes are 
   Ionic.Zip.ZipFile
   Ionic.Zip.ZipEntry
-
+  etc
+  
 In addition, v1.7 adds the zlib capability, so that there are classes
 like:
   Ionic.Zlib.DeflateStream
@@ -206,9 +262,9 @@ About Directory Paths
 One important note: the ZipFile.AddXxx methods add the file or
 directory you specify, including the directory.  In other words,
 logic like this:
-    
-        zip.AddFile("c:\\a\\b\\c\\Hello.doc");
-	zip.Save(); 
+    ZipFile zip = new ZipFile();
+    zip.AddFile("c:\\a\\b\\c\\Hello.doc");
+    zip.Save(); 
 
 ...will produce a zip archive that contains a single file, which
 is stored with the relative directory information.  When you
@@ -218,27 +274,17 @@ package, all those directories will be created, and the file
 will be written into that directory hierarchy.  
 
 If you don't want that directory information in your archive,
-then you need to use the overload of the AddFile() method: 
+then you need to use the overload of the AddFile() method that 
+allows you to explicitly specify the directory used for the entry 
+within the archive: 
 
     zip.AddFile("c:\\a\\b\\c\\Hello.doc", "files");
+    zip.Save();
+    
+This will create an archive with an entry called "files\Hello.doc", 
+which contains the contents of the on-disk file called 
+c:\a\b\c\Hello.doc .  
 
-This will place the Hello.doc into the "files" directory in the archive
-itself.
-
-
-
-About the Help file
---------------------------------
-
-The .chm file contains help generated from the code.
-
-In some cases, Upon opening the .chm file for DotNetZipLib, the help
-items tree loads, but the contents are empty. You may see an Error:
-"This program cannot display the webpage."  or, "Address is invalid."
-If this happens, it's probable that you encounter problem with Windows
-protection of files downloaded from less trusted location. Within
-Windows Explorer, right-click on the CHM file, select properties, and
-Unblock it (button in lower part of properties window).
 
 
 
@@ -247,7 +293,8 @@ The use of ILMerge
 
 This section is mostly interesting to developers who will work on the
 source code of DotNetZip, to extend or re-purpose it.  If you only plan
-to use DotNetZip, you probably don't need to care about this information.
+to use DotNetZip in applications of your own, you probably don't need 
+to concern yourself with this information.
 
 Microsoft makes available a tool called ILMerge which is effectively a
 managed library manager, similar to the lib tool in C toolkits.
@@ -267,7 +314,7 @@ It works like this:
   The "partial" zip library is built and signed (Ionic.Zip.Partial.dll)
   ILmerge is used to combine those two into a single assembly (Ionic.Zip.dll) 
 
-In other words, Ionic.Zip.dll is a strict superset of Ionic.Zlib.dll.  
+In other words,  Ionic.Zip.dll is a strict superset of Ionic.Zlib.dll.  
 
 This is true for the desktop DLL as well as the DLL for the Compact
 Framework.  See the "Zip Full DLL" project and the "Zip CF Full DLL"
@@ -277,7 +324,42 @@ The implication for users of this library is that you should never
 reference both Ionic.Zlib.dll and Ionic.Zip.dll in the same application.
 If your application does both Zlib and Zip stuff, you need only add a
 reference to Ionic.Zip.dll.  Ionic.Zip.dll includes all the capability
-in Ionic.Zlib.dll.
+in Ionic.Zlib.dll.  You need to references only one Ionic DLL, regardless 
+whether you use Zlib or Zip or both. 
+
+Use case                                       Reference this DLL
+------------------------------------------------------------------
+block or stream compression                    Ionic.Zlib.dll
+reading or writing Zip files                   Ionic.Zip.dll
+both raw compression as well as reading 
+   or writing Zip files                        Ionic.Zip.dll
+
+raw compression on Compact Framework           Ionic.Zlib.CF.dll
+reading or writing Zip files on Compact 
+     Framework                                 Ionic.Zip.CF.dll
+both raw compression as well as reading 
+   or writing Zip files on CF                  Ionic.Zip.CF.dll
+
+
+
+
+Self-Extracting Archive support
+--------------------------------
+
+The Self-Extracting Archive (SFX) support in the library allows you to 
+create a self-extracting zip archive.  Essentially it is a standard EXE file
+that contains boilerplate unzip code, as well as a zip file embedded as a
+resource.  When the SFX runs, the application extracts the zip file resource 
+and then unzips the file. 
+
+This implies that running the SFX, unpacking from the SFX, requires the 
+.NET Framework.  
+
+There is no support for reading SFX files.  Once created, they are not readable 
+by DotNetZip.  This may be added in a future release if users demand it. 
+
+NB: Creation of SFX is not supported in the Compact Framework version of 
+the library.
 
 
 
@@ -285,9 +367,8 @@ in Ionic.Zlib.dll.
 The Reduced ZIP library
 --------------------------------
 
-The Self-Extracting Archive (SFX) support in the library implies a large
-increase in the size of the library.  (NB: SFX  is not supported in the
-Compact Framework version of the library.)  Some deployments may
+SFX support implies a large
+increase in the size of the library.  Some deployments may
 wish to omit the SFX support in order to get a smaller DLL. For that you can
 rely on the Ionic.Zip.Reduced.dll.  It provides everything the normal
 library does, except the SaveSelfExtractor() method on the ZipFile
@@ -313,19 +394,6 @@ Ionic.Zlib.CF.dll       66k   DeflateStream and ZlibCodec (Compact Framework)
 Ionic.Zip.CF.dll       140k   includes ZLIB but not SFX (Compact Framework)
 
 
-
-The Documentation
---------------------------------------------
-
-There is a single .chm file for all of the DotNetZip library features,
-including Zip and Zlib stuff.  If you only use the Zlib stuff, then you
-should focus on the doc in the Ionic.Zlib namespace.  If you are
-building apps for mobile devices running the Compact Framework, then
-ignore the SaveSelfExtractor() pieces.
-
-The .chm file is built using the Sandcastle Helpfile Builder tool, also
-available on CodePlex at http://www.codeplex.com/SHFB .  It is built
-from in-code xml documentation. 
 
 
 Testing

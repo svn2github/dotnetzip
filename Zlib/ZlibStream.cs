@@ -770,7 +770,7 @@ namespace Ionic.Zlib
             // set up the output of the deflate/inflate codec:
             _z.OutputBuffer = buffer;
             _z.NextOut = offset;
-            _z.AvailableBytesOut = buffer.Length;
+            _z.AvailableBytesOut = count;
 
             // this is not always necessary, but is helpful in case _workingBuffer has been resized. (new byte[])
             _z.InputBuffer = _workingBuffer;
@@ -799,12 +799,12 @@ namespace Ionic.Zlib
                     return (-1);
                 if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
                     throw new ZlibException((_wantCompress ? "de" : "in") + "flating: " + _z.Message);
-                if ((nomoreinput || rc == ZlibConstants.Z_STREAM_END) && (_z.AvailableBytesOut == buffer.Length))
+                if ((nomoreinput || rc == ZlibConstants.Z_STREAM_END) && (_z.AvailableBytesOut == count))
                     return (-1);
             }
-            while (_z.AvailableBytesOut == buffer.Length && rc == ZlibConstants.Z_OK);
+            while (_z.AvailableBytesOut == count && rc == ZlibConstants.Z_OK);
 
-            return (buffer.Length - _z.AvailableBytesOut);
+            return (count - _z.AvailableBytesOut);
         }
 
 
