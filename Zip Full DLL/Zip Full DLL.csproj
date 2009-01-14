@@ -14,6 +14,10 @@
     <FileAlignment>512</FileAlignment>
     <StartupObject>
     </StartupObject>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -72,18 +76,10 @@
     <!-- produce the merged assembly - putting the output in the "IntermediateOutputPath" eg obj\Debug. -->
     <!-- it will be copied later by the CopyFilestoOutputDirectory task defined in Microsoft.Common.Targets -->
     <Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot;   /keyfile:..\Ionic.snk    /t:library  /xmldocs /out:&quot;$(IntermediateOutputPath)$(TargetFileName)&quot;  @(AssembliesToMerge -> '&quot;%(Fullpath)&quot;', ' ') " />
-
-        <!-- for some reason the XML doc file does not get copied automatically from obj\Debug to bin\Debug. -->
-        <!-- we do it here explicitly. -->
-        <Copy
-            SourceFiles="$(IntermediateOutputPath)$(AssemblyName).XML"
-            DestinationFolder="$(OutDir)"
-            SkipUnchangedFiles="true"
-            OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" />
-
+    <!-- for some reason the XML doc file does not get copied automatically from obj\Debug to bin\Debug. -->
+    <!-- we do it here explicitly. -->
+    <Copy SourceFiles="$(IntermediateOutputPath)$(AssemblyName).XML" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" />
   </Target>
-
-
   <!--
     Output group to allow the merged DLL to be consumed by other projects
     borrowed from http://eminentprojects.com/svn/eminent/tools/trunk/MsBuildTasks/Microsoft/WebDeployment/v8.0/Microsoft.WebDeployment.targets

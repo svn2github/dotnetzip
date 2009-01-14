@@ -21,6 +21,10 @@
     </StartupObject>
     <FormFactorID>
     </FormFactorID>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -57,8 +61,7 @@
   <Target Name="BeforeBuild">
     <MakeDir Directories="$(OutputPath)" />
   </Target>
-  <Target Name="Build"
-            DependsOnTargets="BeforeBuild">
+  <Target Name="Build" DependsOnTargets="BeforeBuild">
     <Exec Command="echo This is an ilmerge project." />
     <CreateItem Include="@(ProjectReference)" Condition="'%(ProjectReference.CopyLocal)'=='true'">
       <Output TaskParameter="Include" ItemName="AssembliesToMerge" />
