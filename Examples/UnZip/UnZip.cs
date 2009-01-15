@@ -106,6 +106,10 @@ namespace Ionic.Zip.Examples
                         if (args.Length <= i) Usage();
                         if (targdir != null) Usage();
                         if (extractToConsole) Usage();
+                        if (!WantExtract)
+                        {
+                            Console.WriteLine("Warning: Ignoring -d option when listing contents.\n");
+                        }
                         targdir = args[i];
                         break;
 
