@@ -108,7 +108,7 @@ namespace Ionic.Zip.Examples
                         if (extractToConsole) Usage();
                         if (!WantExtract)
                         {
-                            Console.WriteLine("Warning: Ignoring -d option when listing contents.\n");
+                            Console.WriteLine("unzip: Warning: Ignoring -d option when listing contents.\n");
                         }
                         targdir = args[i];
                         break;
@@ -147,13 +147,13 @@ namespace Ionic.Zip.Examples
             }
             if (zipfile == null)
             {
-                Console.WriteLine("No zipfile specified.\n");
+                Console.WriteLine("unzip: No zipfile specified.\n");
                 Usage();
             }
 
             if (!System.IO.File.Exists(zipfile))
             {
-                Console.WriteLine("That zip file does not exist!\n");
+                Console.WriteLine("unzip: That zip file does not exist!\n");
                 Usage();
             }
 

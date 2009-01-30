@@ -183,69 +183,7 @@ namespace Ionic.Zip
         }
 
 
-        internal static int ProcessExtraField(Int16 extraFieldLength, System.IO.Stream s, bool isZip64,
-                          ref byte[] Buffer,
-                          ref Int64 Uncompressed,
-                          ref Int64 Compressed,
-                          ref Int64 RelativeOffset)
-        {
-            int additionalBytesRead = 0;
-            //Buffer= null;
-            //Uncompressed= Compressed= RelativeOffset= 0;
-            if (extraFieldLength > 0)
-            {
-                Buffer = new byte[extraFieldLength];
-                additionalBytesRead = s.Read(Buffer, 0, Buffer.Length);
-
-                int j = 0;
-                while (j < Buffer.Length)
-                {
-                    int start = j;
-
-                    Int16 HeaderId = (short)(Buffer[j] + Buffer[j + 1] * 256);
-                    Int16 DataSize = (short)(Buffer[j + 2] + Buffer[j + 3] * 256);
-
-                    j += 4;
-
-                    if (HeaderId == 0x0001) // ZIP64
-                    {
-                        // This flag is true IFF the prior compressed/uncompressed size values were 0xFFFFFFFF
-                        // We don't need to be rigid about this.  
-                        //if (!isZip64)
-                        //throw new BadReadException(String.Format("  Found zip64 metadata when none expected at position 0x{0:X16}", s.Position - additionalBytesRead));
-
-                        if (DataSize > 28)
-                            throw new BadReadException(String.Format("  Inconsistent ZIP64 datasize (0x{0:X4}) at position 0x{1:X16}", DataSize, s.Position - additionalBytesRead));
-
-                        if (Uncompressed == 0xFFFFFFFF)
-                        {
-                            Uncompressed = BitConverter.ToInt64(Buffer, j);
-                            j += 8;
-                        }
-                        if (Compressed == 0xFFFFFFFF)
-                        {
-                            Compressed = BitConverter.ToInt64(Buffer, j);
-                            j += 8;
-                        }
-                        if (RelativeOffset == 0xFFFFFFFF)
-                        {
-                            RelativeOffset = BitConverter.ToInt64(Buffer, j);
-                            j += 8;
-                        }
-                        // ignore the potential last 4 bytes - I don't know what to do with them anyway.
-                    }
-
-                    // move to the next Header in the extra field
-                    j = start + DataSize + 4;
-                }
-            }
-            return additionalBytesRead;
-        }
-
-
-
-        internal
-         static DateTime PackedToDateTime(Int32 packedDateTime)
+        internal static DateTime PackedToDateTime(Int32 packedDateTime)
         {
             Int16 packedTime = (Int16)(packedDateTime & 0x0000ffff);
             Int16 packedDate = (Int16)((packedDateTime & 0xffff0000) >> 16);

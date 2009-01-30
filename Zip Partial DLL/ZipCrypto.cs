@@ -1,4 +1,4 @@
-// ZipCrypto_Traditional.cs
+// ZipCrypto.cs
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2006, 2007, 2008 Microsoft Corporation.  All rights reserved.
@@ -11,7 +11,7 @@
 // Created Tue Apr 15 17:39:56 2008
 //
 // last saved: 
-// Time-stamp: <2008-December-19 21:20:59>
+// Time-stamp: <2009-January-25 08:50:18>
 //
 // ------------------------------------------------------------------
 
@@ -34,18 +34,81 @@ namespace Ionic.Zip
     /// better off using one of the built-in strong encryption libraries in the 
     /// .NET Framework, like the AES algorithm or SHA. 
     /// </remarks>
-    public class ZipCrypto
+    internal class ZipCrypto
     {
         /// <summary>
         /// The default constructor for ZipCrypto.
         /// </summary>
-	///
-	/// <remarks>
-	/// This class is intended for internal use by the library only. It's probably not useful to you. Seriously.
+        ///
+        /// <remarks>
+        /// This class is intended for internal use by the library only. It's probably not useful to you. Seriously.
         /// Stop reading this documentation.  It's a waste of your time.  Go do something else.
         /// Check the football scores. Go get an ice cream with a friend.  Seriously.
-	/// </remarks>
-        public ZipCrypto() { }
+        /// </remarks>
+        /// 
+        private ZipCrypto() { }
+
+        public static ZipCrypto ForWrite(string password)
+        {
+            ZipCrypto z = new ZipCrypto();
+            if (password == null)
+                throw new BadPasswordException("This entry requires a password.");
+            z.InitCipher(password);
+            return z;
+        }
+
+
+        public static ZipCrypto ForRead(string password, ZipEntry e)
+        {
+            System.IO.Stream s = e._archiveStream;
+            e._WeakEncryptionHeader = new byte[12];
+            byte[] eh = e._WeakEncryptionHeader;
+            ZipCrypto z = new ZipCrypto();
+
+            if (password == null)
+                throw new BadPasswordException("This entry requires a password.");
+
+            z.InitCipher(password);
+
+            ZipEntry.ReadWeakEncryptionHeader(s, eh);
+
+            // Decrypt the header.  This has a side effect of "further initializing the
+            // encryption keys" in the traditional zip encryption. 
+            byte[] DecryptedHeader = z.DecryptMessage(eh, eh.Length);
+
+            // CRC check
+            // According to the pkzip spec, the final byte in the decrypted header 
+            // is the highest-order byte in the CRC. We check it here. 
+            if (DecryptedHeader[11] != (byte)((e._Crc32 >> 24) & 0xff))
+            {
+                // In the case that bit 3 of the general purpose bit flag is set to indicate
+                // the presence of an 'Extended File Header', the last byte of the decrypted
+                // header is sometimes compared with the high-order byte of the lastmodified 
+                // time, and not the CRC, to verify the password. 
+                //
+                // This is not documented in the PKWare Appnote.txt.  
+                // This was discovered this by analysis of the Crypt.c source file in the InfoZip library
+                // http://www.info-zip.org/pub/infozip/
+
+                if ((e._BitField & 0x0008) != 0x0008)
+                {
+                    throw new BadPasswordException("The password did not match.");
+                }
+                else if (DecryptedHeader[11] != (byte)((e._TimeBlob >> 8) & 0xff))
+                {
+                    throw new BadPasswordException("The password did not match.");
+                }
+
+                // We have a good password. 
+            }
+            else
+            {
+                // A-OK
+            }
+            return z;
+        }
+
+
 
 
         /// <summary> 

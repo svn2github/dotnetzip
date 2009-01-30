@@ -57,8 +57,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="WinZipAes.cs" />
     <Compile Include="ZipConstants.cs" />
     <Compile Include="Crc32.cs" />
     <Compile Include="Exceptions.cs" />

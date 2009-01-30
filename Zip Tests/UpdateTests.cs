@@ -354,6 +354,7 @@ namespace Ionic.Zip.Tests.Update
 
                 // create a bunch of files
                 int NumFilesToCreate = _rnd.Next(13) + 24;
+                //int NumFilesToCreate = 3;
 
                 TestContext.WriteLine("\n-----------------------------\r\n{0}: Trial {1}, adding {2} files into '{3}'...",
                     DateTime.Now.ToString("HH:mm:ss"),
@@ -366,7 +367,10 @@ namespace Ionic.Zip.Tests.Update
                     filename = String.Format("file{0:D3}.txt", j);
                     repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                                      filename);
-                    TestUtilities.CreateAndFillFileText(System.IO.Path.Combine(Subdir, filename), repeatedLine, _rnd.Next(34000) + 5000);
+                    int filesize = _rnd.Next(34000) + 2200;
+                    //int filesize = 2200;
+
+                    TestUtilities.CreateAndFillFileText(System.IO.Path.Combine(Subdir, filename), repeatedLine, filesize);
                     entriesToBeAdded++;
                 }
 
@@ -466,7 +470,8 @@ namespace Ionic.Zip.Tests.Update
                 System.IO.Directory.CreateDirectory(Subdir);
 
                 // create a bunch of files
-                int NumFilesToCreate = _rnd.Next(13) + 24;
+                int NumFilesToCreate = _rnd.Next(15) + 18;
+                //int NumFilesToCreate = 4;
 
                 TestContext.WriteLine("\n-----------------------------\r\n{0}: Trial {1}, adding {2} files into '{3}'...",
                     DateTime.Now.ToString("HH:mm:ss"),
@@ -479,7 +484,11 @@ namespace Ionic.Zip.Tests.Update
                     filename = String.Format("file{0:D3}.txt", j);
                     repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                                      filename);
-                    TestUtilities.CreateAndFillFileText(System.IO.Path.Combine(Subdir, filename), repeatedLine, _rnd.Next(34000) + 5000);
+
+                    int filesize = _rnd.Next(34000) + 800;
+                    //int filesize = 1200;
+
+                    TestUtilities.CreateAndFillFileText(System.IO.Path.Combine(Subdir, filename), repeatedLine, filesize);
                     entriesToBeAdded++;
                 }
 

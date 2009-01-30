@@ -606,6 +606,7 @@ namespace Ionic.Zlib
 
         protected internal System.IO.Stream _stream;
 
+
         public ZlibBaseStream(System.IO.Stream stream, CompressionMode compressionMode, CompressionLevel level, bool wantRfc1950Header, bool leaveOpen)
             : base()
         {

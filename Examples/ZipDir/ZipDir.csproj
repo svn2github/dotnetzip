@@ -46,9 +46,9 @@
     <Compile Include="ZipDir.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Zip Partial DLL\Zip Partial DLL.csproj">
-      <Project>{D3B0AD67-44D8-4B3D-BED9-CE1FD6DE2C5A}</Project>
-      <Name>Ionic.Zip Partial DLL</Name>
+    <ProjectReference Include="..\..\Zip Full DLL\Zip Full DLL.csproj">
+      <Project>{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}</Project>
+      <Name>Zip Full DLL</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

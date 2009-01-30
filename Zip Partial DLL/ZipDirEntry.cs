@@ -19,10 +19,8 @@ namespace Ionic.Zip
     /// The class is generally not used from within application code, though it is
     /// used by the ZipFile class.
     /// </summary>
-    internal class ZipDirEntry
+    partial class ZipEntry
     {
-        private ZipDirEntry() { }
-
         ///// <summary>
         ///// The time at which the file represented by the given entry was last modified.
         ///// </summary>
@@ -31,21 +29,21 @@ namespace Ionic.Zip
         //    get { return _LastModified; }
         //}
 
-        /// <summary>
-        /// The filename of the file represented by the given entry.
-        /// </summary>
-        public string FileName
-        {
-            get { return _FileName; }
-        }
+        ///// <summary>
+        ///// The filename of the file represented by the given entry.
+        ///// </summary>
+        //public string FileName
+        //{
+        //    get { return _FileName; }
+        //}
 
-        /// <summary>
-        /// Any comment associated to the given entry. Comments are generally optional.
-        /// </summary>
-        public string Comment
-        {
-            get { return _Comment; }
-        }
+        ///// <summary>
+        ///// Any comment associated to the given entry. Comments are generally optional.
+        ///// </summary>
+        //public string Comment
+        //{
+        //    get { return _Comment; }
+        //}
 
         ///// <summary>
         ///// The version of the zip engine this archive was made by.  
@@ -92,7 +90,7 @@ namespace Ionic.Zip
         /// <summary>
         /// True if the referenced entry is a directory.  
         /// </summary>
-        public bool IsDirectory
+        internal bool AttributesIndicateDirectory
         {
             get { return ((_InternalFileAttrs == 0) && ((_ExternalFileAttrs & 0x0010) == 0x0010)); }
         }
@@ -113,47 +111,23 @@ namespace Ionic.Zip
         //internal ZipDirEntry(ZipEntry ze) { }
 
 #if OPTIMIZE_WI6612
-        public ZipEntry AsZipEntry()
+        internal void ResetDirEntry()
         {
-            ZipEntry e = new ZipEntry();
-            e._Comment = this.Comment;
-            e.FileName = this.FileName;
-            if (this.IsDirectory) e.MarkAsDirectory();  // may append a slash to filename if nec.
-            e._VersionNeeded = _VersionNeeded;
-            e._BitField = _BitField;
-            e._CompressionMethod = _CompressionMethod;
-            e._LastModified = Ionic.Zip.SharedUtilities.PackedToDateTime(this._TimeBlob);
+            // The length of the "local header" for an entry is not necessarily
+            // the same as the length of the record in the central directory.
+            // Therefore we cannot know the __FileDataPosition until we read the
+            // local header.
 
-            e._Crc32 = this._Crc32;
-            e._CompressedSize = _CompressedSize;
-            e._CompressedFileDataSize = _CompressedSize;
-            e._UncompressedSize = _UncompressedSize;
-            e._RelativeOffsetOfHeader = _RelativeOffsetOfLocalHeader;
-            e._LocalFileName = e.FileName;
-
-            // workitem 6898
-            if (e._LocalFileName.EndsWith("/")) e.MarkAsDirectory();
-
-            // The length of the "local header" for the ZipEntry is not necessarily the same as
-            // the length of the header in the ZipDirEntry, therefore we cannot know the __FileDataPosition 
-            // until we read the local header.
             //e._LengthOfHeader = 30 + _filenameLength + _extraFieldLength;
 
             //e.__FileDataPosition = e._RelativeOffsetOfHeader + 30 + _filenameLength + _extraFieldLength;
-            e.__FileDataPosition = 0;
+	    // mark as -1 to indicate we need to read this later
+            this.__FileDataPosition = -1;
 
-            if ((e._BitField & 0x01) == 0x01)
-            {
-                e._Encryption = EncryptionAlgorithm.PkzipWeak;
-                e._CompressedFileDataSize -= 12;
-            }
-
-            // The length of the "local header" for the ZipEntry is not necessarily the same as
-            // the length of the header in the ZipDirEntry.  
+            // The length of the "local header" for an entry is not necessarily the same as
+            // the length of the record in the central directory.  
             //e._LengthOfHeader = 30 + _filenameLength + _extraFieldLength;
-            e._LengthOfHeader = 0;  // mark as zero to indicate we need to read later
-
-            return e;
+            this._LengthOfHeader = 0;  // mark as zero to indicate we need to read later
         }
 #endif
 
@@ -165,11 +139,11 @@ namespace Ionic.Zip
         /// The text encoding to use if the entry is not marked UTF-8.
         /// </param>
         /// <returns>the entry read from the archive.</returns>
-        public static ZipDirEntry Read(System.IO.Stream s, System.Text.Encoding expectedEncoding)
+        public static ZipEntry ReadDirEntry(System.IO.Stream s, System.Text.Encoding expectedEncoding)
         {
             int signature = Ionic.Zip.SharedUtilities.ReadSignature(s);
             // return null if this is not a local file header signature
-            if (ZipDirEntry.IsNotValidSig(signature))
+            if (IsNotValidZipDirEntrySig(signature))
             {
                 s.Seek(-4, System.IO.SeekOrigin.Current);
 
@@ -180,7 +154,7 @@ namespace Ionic.Zip
                 if (signature != ZipConstants.EndOfCentralDirectorySignature &&
                     signature != ZipConstants.Zip64EndOfCentralDirectoryRecordSignature)
                 {
-                    throw new BadReadException(String.Format("  ZipDirEntry::Read(): Bad signature (0x{0:X8}) at position 0x{1:X8}", signature, s.Position));
+                    throw new BadReadException(String.Format("  ZipEntry::ReadDirEntry(): Bad signature (0x{0:X8}) at position 0x{1:X8}", signature, s.Position));
                 }
                 return null;
             }
@@ -191,20 +165,25 @@ namespace Ionic.Zip
             if (n != block.Length) return null;
 
             int i = 0;
-            ZipDirEntry zde = new ZipDirEntry();
+            ZipEntry zde = new ZipEntry();
+            zde._archiveStream = s;
 
             zde._VersionMadeBy = (short)(block[i++] + block[i++] * 256);
             zde._VersionNeeded = (short)(block[i++] + block[i++] * 256);
             zde._BitField = (short)(block[i++] + block[i++] * 256);
             zde._CompressionMethod = (short)(block[i++] + block[i++] * 256);
             zde._TimeBlob = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+            zde._LastModified = Ionic.Zip.SharedUtilities.PackedToDateTime(zde._TimeBlob);
             zde._Crc32 = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+
 
             zde._CompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
             zde._UncompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
 
             //DateTime lastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(lastModDateTime);
             //i += 24;
+
+
 
             zde._filenameLength = (short)(block[i++] + block[i++] * 256);
             zde._extraFieldLength = (short)(block[i++] + block[i++] * 256);
@@ -223,26 +202,64 @@ namespace Ionic.Zip
             if ((zde._BitField & 0x0800) == 0x0800)
             {
                 // UTF-8 is in use
-                zde._FileName = Ionic.Zip.SharedUtilities.Utf8StringFromBuffer(block, block.Length);
+                zde._LocalFileName = Ionic.Zip.SharedUtilities.Utf8StringFromBuffer(block, block.Length);
             }
             else
             {
-                zde._FileName = Ionic.Zip.SharedUtilities.StringFromBuffer(block, block.Length, expectedEncoding);
+                zde._LocalFileName = Ionic.Zip.SharedUtilities.StringFromBuffer(block, block.Length, expectedEncoding);
             }
 
+// 	    Console.WriteLine("\nEntry : {0}", zde._LocalFileName);
+// 	    Console.WriteLine("  V Madeby:    0x{0:X4}", zde._VersionMadeBy);
+// 	    Console.WriteLine("  V Needed:    0x{0:X4}", zde._VersionNeeded);
+// 	    Console.WriteLine("  BitField:    0x{0:X4}", zde._BitField);
+// 	    Console.WriteLine("  Compression: 0x{0:X4}", zde._CompressionMethod);
+// 	    Console.WriteLine("  Lastmod:     {0}", zde._LastModified.ToString("u"));
+// 	    Console.WriteLine("  CRC:         0x{0:X8}", zde._Crc32);
+// 	    Console.WriteLine("  Comp:        0x{0:X8} ({0})", zde._CompressedSize);
+// 	    Console.WriteLine("  Uncomp:      0x{0:X8} ({0})", zde._UncompressedSize);
+
+            zde._FileNameInArchive = zde._LocalFileName;
+
+            if (zde.AttributesIndicateDirectory) zde.MarkAsDirectory();  // may append a slash to filename if nec.
+
+            // workitem 6898
+            if (zde._LocalFileName.EndsWith("/")) zde.MarkAsDirectory();
+
+
+            zde._CompressedFileDataSize = zde._CompressedSize;
+            if ((zde._BitField & 0x01) == 0x01)
+            {
+                zde._Encryption = EncryptionAlgorithm.PkzipWeak; // this may change after processing the Extra field
+            }
 
             if (zde._extraFieldLength > 0)
             {
+		//Console.WriteLine("ZDE Extra Field length: {0}", zde._extraFieldLength);
                 bool IsZip64Format = ((uint)zde._CompressedSize == 0xFFFFFFFF ||
                       (uint)zde._UncompressedSize == 0xFFFFFFFF ||
                       (uint)zde._RelativeOffsetOfLocalHeader == 0xFFFFFFFF);
 
-                bytesRead += SharedUtilities.ProcessExtraField(zde._extraFieldLength, s, IsZip64Format,
-                                           ref zde._Extra,
-                                           ref zde._UncompressedSize,
-                                           ref zde._CompressedSize,
-                                           ref zde._RelativeOffsetOfLocalHeader);
+                bytesRead += zde.ProcessExtraField(zde._extraFieldLength);
+                zde._CompressedFileDataSize = zde._CompressedSize;
+		//Console.WriteLine("  Compressed:  0x{0:X8} ({0})", zde._CompressedSize);
             }
+
+            // we've processed the extra field, so we know the encryption method is set now.
+            if (zde._Encryption == EncryptionAlgorithm.PkzipWeak)
+            {
+                // the "encryption header" of 12 bytes precedes the file data
+                zde._CompressedFileDataSize -= 12;
+            }
+            else if (zde.Encryption == EncryptionAlgorithm.WinZipAes128 ||
+                        zde.Encryption == EncryptionAlgorithm.WinZipAes256)
+            {
+                zde._CompressedFileDataSize = zde.CompressedSize -
+                    ((zde._KeyStrengthInBits / 8 / 2) + 10 + 2);// zde._aesCrypto.SizeOfEncryptionMetadata;
+                zde._LengthOfTrailer = 10;
+		//Console.WriteLine("  CFD:         0x{0:X8} ({0})", zde._CompressedFileDataSize);
+            }
+
             if (zde._commentLength > 0)
             {
                 block = new byte[zde._commentLength];
@@ -267,29 +284,20 @@ namespace Ionic.Zip
         /// </summary>
         /// <param name="signature">the candidate 4-byte signature value.</param>
         /// <returns>true, if the signature is valid according to the PKWare spec.</returns>
-        internal static bool IsNotValidSig(int signature)
+        internal static bool IsNotValidZipDirEntrySig(int signature)
         {
             return (signature != ZipConstants.ZipDirEntrySignature);
         }
 
-        private string _FileName;
-        private string _Comment;
+
         private Int16 _VersionMadeBy;
-        private Int16 _VersionNeeded;
-        private Int16 _CompressionMethod;
-        private Int64 _CompressedSize;
-        private Int64 _UncompressedSize;
-        private Int64 _RelativeOffsetOfLocalHeader;
         private Int16 _InternalFileAttrs;
         private Int32 _ExternalFileAttrs;
-        private Int16 _BitField;
-        private Int32 _TimeBlob;
-        private Int32 _Crc32;
+
         private Int32 _LengthOfDirEntry;
         private Int16 _filenameLength;
         private Int16 _extraFieldLength;
         private Int16 _commentLength;
-        private byte[] _Extra;
     }
 
 

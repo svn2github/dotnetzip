@@ -267,8 +267,8 @@ namespace Ionic.Zlib
             int bytesRead = sourceStream.Read(target, start, count);
 
             // Returns -1 if EOF
-            if (bytesRead == 0)
-                return -1;
+            //if (bytesRead == 0)
+            //    return -1;
 
             //for (int i = start; i < start + bytesRead; i++)
             //    target[i] = (byte)receiver[i];

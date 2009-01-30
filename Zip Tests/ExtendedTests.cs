@@ -200,11 +200,14 @@ namespace Ionic.Zip.Tests.Extended
                     System.IO.Directory.CreateDirectory(Subdir);
                     //var checksums = new Dictionary<string, string>();
 
-                    int fileCount = _rnd.Next(10) + 10;
+                    //int fileCount = _rnd.Next(10) + 10;
+                    int fileCount = 4;
                     for (int i = 0; i < fileCount; i++)
                     {
                         filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D2}.txt", i));
-                        TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
+                        //int filesize = _rnd.Next(34000) + 5000;
+                        int filesize = 2000;
+                        TestUtilities.CreateAndFillFileText(filename, filesize);
                         entriesAdded++;
                         //var chk = TestUtilities.ComputeChecksum(filename);
                         //checksums.Add(filename, TestUtilities.CheckSumToString(chk));
@@ -217,6 +220,7 @@ namespace Ionic.Zip.Tests.Extended
                         zip1.AddDirectory(Subdir, System.IO.Path.GetFileName(Subdir));
                         zip1.Save(ZipFileToCreate);
                     }
+
 
                     // Verify the files are in the zip
                     Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), entriesAdded,
@@ -234,22 +238,31 @@ namespace Ionic.Zip.Tests.Extended
                             {
                                 using (CrcCalculatorStream s = e1.OpenReader(Passwords[k]))
                                 {
-                                    byte[] buffer = new byte[4096];
-                                    int n, totalBytesRead = 0;
-                                    do
+                                    using (var output = System.IO.File.Create(System.IO.Path.Combine(TopLevelDir, eName + ".out")))
                                     {
-                                        n = s.Read(buffer, 0, buffer.Length);
-                                        totalBytesRead += n;
-                                    } while (n > 0);
+                                        byte[] buffer = new byte[4096];
+                                        int n, totalBytesRead = 0;
+                                        do
+                                        {
+                                            n = s.Read(buffer, 0, buffer.Length);
+                                            totalBytesRead += n;
+                                            output.Write(buffer, 0, n);
+                                        } while (n > 0);
 
-                                    Assert.AreEqual<Int32>(s.Crc32, e1.Crc32,
-                               string.Format("The Entry {0} failed the CRC Check.", eName));
-
-                                    Assert.AreEqual<Int32>(totalBytesRead, (int)e1.UncompressedSize,
-                               string.Format("We read an unexpected number of bytes. ({0})", eName));
-
+                                        output.Flush();
+                                        output.Close();
+                                        TestContext.WriteLine("CRC expected({0:X8}) actual({1:X8})",
+                                            e1.Crc32, s.Crc32);
 
 
+                                        Assert.AreEqual<Int32>(s.Crc32, e1.Crc32,
+                                   string.Format("The Entry {0} failed the CRC Check.", eName));
+
+                                        Assert.AreEqual<Int32>(totalBytesRead, (int)e1.UncompressedSize,
+                                   string.Format("We read an unexpected number of bytes. ({0})", eName));
+
+
+                                    }
                                 }
                             }
                         }
@@ -608,6 +621,7 @@ namespace Ionic.Zip.Tests.Extended
                 int T = 3 + _rnd.Next(4);
                 for (int n = 0; n < T; n++)
                 {
+                    // nested directories
                     DirName = (n == 0) ? "root" :
                         System.IO.Path.Combine(DirName, TestUtilities.GenerateRandomAsciiString(8));
 

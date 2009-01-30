@@ -731,6 +731,14 @@ namespace Ionic.Zip
 
 
 
+
+        public EncryptionAlgorithm Encryption
+        {
+	    get; set;
+        }
+
+
+
         /// <summary>
         /// A callback that allows the application to specify whether multiple reads of the
         /// stream should be performed, in the case that a compression operation actually
@@ -1947,6 +1955,7 @@ namespace Ionic.Zip
             ze.ProvisionalAlternateEncoding = ProvisionalAlternateEncoding;
             ze._Source = EntrySource.Filesystem;
             ze._zipfile = this;
+            ze.Encryption = Encryption;
             ze.Password = _Password;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
             InsureUniqueEntry(ze);
@@ -2272,6 +2281,7 @@ namespace Ionic.Zip
             ze.ProvisionalAlternateEncoding = ProvisionalAlternateEncoding;
             ze._Source = EntrySource.Stream;
             ze._zipfile = this;
+            ze.Encryption = Encryption;
             ze.Password = _Password;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
             InsureUniqueEntry(ze);
@@ -4900,24 +4910,24 @@ namespace Ionic.Zip
 
         private static void ReadCentralDirectory(ZipFile zf)
         {
-            zf._direntries = new System.Collections.Generic.List<ZipDirEntry>();
+            //zf._direntries = new System.Collections.Generic.List<ZipDirEntry>();
             zf._entries = new System.Collections.Generic.List<ZipEntry>();
 
-            ZipDirEntry de;
-            while ((de = ZipDirEntry.Read(zf.ReadStream, zf.ProvisionalAlternateEncoding)) != null)
+            ZipEntry de;
+            while ((de = ZipEntry.ReadDirEntry(zf.ReadStream, zf.ProvisionalAlternateEncoding)) != null)
             {
-                zf._direntries.Add(de);
+                //zf._direntries.Add(de);
 
-                ZipEntry e = de.AsZipEntry();
-                e._zipfile = zf;
-                e._Source = EntrySource.Zipfile;
-                e._archiveStream = zf.ReadStream;
+                de.ResetDirEntry();
+                de._zipfile = zf;
+                de._Source = EntrySource.Zipfile;
+                de._archiveStream = zf.ReadStream;
                 zf.OnReadEntry(true, null);
 
                 if (zf.Verbose)
-                    zf.StatusMessageTextWriter.WriteLine("  {0}", e.FileName);
+                    zf.StatusMessageTextWriter.WriteLine("  {0}", de.FileName);
 
-                zf._entries.Add(e);
+                zf._entries.Add(de);
             }
 
             ReadCentralDirectoryFooter(zf);
@@ -4966,12 +4976,12 @@ namespace Ionic.Zip
             }
 
             // read the zipfile's central directory structure here.
-            zf._direntries = new System.Collections.Generic.List<ZipDirEntry>();
+            //zf._direntries = new System.Collections.Generic.List<ZipDirEntry>();
 
-            ZipDirEntry de;
-            while ((de = ZipDirEntry.Read(zf.ReadStream, zf.ProvisionalAlternateEncoding)) != null)
+            ZipEntry de;
+            while ((de = ZipEntry.ReadDirEntry(zf.ReadStream, zf.ProvisionalAlternateEncoding)) != null)
             {
-                zf._direntries.Add(de);
+                //zf._direntries.Add(de);
                 // Housekeeping: Since ZipFile exposes ZipEntry elements in the enumerator, 
                 // we need to copy the comment that we grab from the ZipDirEntry
                 // into the ZipEntry, so the application can access the comment. 
@@ -4982,7 +4992,7 @@ namespace Ionic.Zip
                     if (e1.FileName == de.FileName)
                     {
                         e1._Comment = de.Comment;
-                        if (de.IsDirectory) e1.MarkAsDirectory();
+                        if (de.AttributesIndicateDirectory) e1.MarkAsDirectory();
                         break;
                     }
                 }
@@ -5851,6 +5861,7 @@ namespace Ionic.Zip
 
             _entries.Remove(entry);
 
+#if NOTNEEDED
             if (_direntries != null)
             {
                 bool FoundAndRemovedDirEntry = false;
@@ -5867,7 +5878,7 @@ namespace Ionic.Zip
                 if (!FoundAndRemovedDirEntry)
                     throw new BadStateException("The entry to be removed was not found in the directory.");
             }
-
+#endif
             _contentsChanged = true;
         }
 
@@ -6057,7 +6068,7 @@ namespace Ionic.Zip
         private System.IO.Stream _writestream;
         private bool _disposed;
         private System.Collections.Generic.List<ZipEntry> _entries;
-        private System.Collections.Generic.List<ZipDirEntry> _direntries;
+        //private System.Collections.Generic.List<ZipDirEntry> _direntries;
         private bool _TrimVolumeFromFullyQualifiedPaths = true;
         private bool _ForceNoCompression;
         private string _name;
