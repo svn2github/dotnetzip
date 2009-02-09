@@ -99,8 +99,8 @@ namespace Ionic.Zip.Tests.Zip64
 
                 TestContext.WriteLine("Creating file {0}", ZipFileToCreate);
                 TestContext.WriteLine("  ZIP64 option: {0}", Options[k].ToString());
-                //int entries = _rnd.Next(3) + 13;
-                int entries = 3;
+                int entries = _rnd.Next(5) + 13;
+                //int entries = 3;
 
 
                 var checksums = new Dictionary<string, string>();
@@ -111,15 +111,15 @@ namespace Ionic.Zip.Tests.Zip64
                         if (_rnd.Next(2) == 1)
                         {
                             filename = System.IO.Path.Combine(TopLevelDir, String.Format("Data{0}.bin", i));
-                            //int filesize = _rnd.Next(44000) + 5000;
-                            int filesize = 2000;
+                            int filesize = _rnd.Next(44000) + 5000;
+                            //int filesize = 2000;
                             TestUtilities.CreateAndFillFileBinary(filename, filesize);
                         }
                         else
                         {
                             filename = System.IO.Path.Combine(TopLevelDir, String.Format("Data{0}.txt", i));
-                            //int filesize = _rnd.Next(44000) + 5000;
-                            int filesize = 1000;
+                            int filesize = _rnd.Next(44000) + 5000;
+                            //int filesize = 1000;
                             TestUtilities.CreateAndFillFileText(filename, filesize);
                         }
                         zip1.AddFile(filename, "");
@@ -177,8 +177,8 @@ namespace Ionic.Zip.Tests.Zip64
 
                     string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("CreateZip_ConvertToZip64-{0}.A.zip", k));
 
-                    //int entries = _rnd.Next(13) + 32;
-                    int entries = 2;
+                    int entries = _rnd.Next(13) + 32;
+                    //int entries = 2;
                     TestContext.WriteLine("Creating file {0}, zip64={1}, {2} entries", 
                         System.IO.Path.GetFileName(ZipFileToCreate), z64a[m].ToString(), entries);
 

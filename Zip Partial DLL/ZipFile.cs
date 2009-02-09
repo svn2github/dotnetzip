@@ -75,18 +75,19 @@ namespace Ionic.Zip
         /// <summary>
         /// Sets the compression level to be used for entries when saving the zip archive.
         /// </summary>
-	/// <remarks>
-	/// The compression level setting is used at the time of Save(). The
-	/// same level is applied to all ZipEntry instances contained in the ZipFile during the save.  
-	/// If you do not set this property, the default compression level is used, which normally gives 
-	/// a good balance of compression efficiency and compression speed.  In some tests, using 
-	/// BEST_COMPRESSION can double the time it takes to compress, while delivering just a small
-	/// increase in compression efficiency.  This behavior will vary with the type of data you 
-	/// compress.  If you are in doubt, just leave this setting alone, and accept the default.
-	/// </remarks>
+        /// <remarks>
+        /// The compression level setting is used at the time of Save(). The
+        /// same level is applied to all ZipEntry instances contained in the ZipFile during the save.  
+        /// If you do not set this property, the default compression level is used, which normally gives 
+        /// a good balance of compression efficiency and compression speed.  In some tests, using 
+        /// BEST_COMPRESSION can double the time it takes to compress, while delivering just a small
+        /// increase in compression efficiency.  This behavior will vary with the type of data you 
+        /// compress.  If you are in doubt, just leave this setting alone, and accept the default.
+        /// </remarks>
         public Ionic.Zlib.CompressionLevel CompressionLevel
         {
-            get ; set ; 
+            get;
+            set;
         }
 
         /// <summary>
@@ -591,21 +592,37 @@ namespace Ionic.Zip
 
         /// <summary>
         /// Gets or sets the name for the folder to store the temporary file
-        /// this library writes when saving the zip archive. 
+        /// this library writes when saving a zip archive. 
         /// </summary>
         ///
         /// <remarks>
-        /// The calling application should have write and delete rights on that folder.  By
-        /// default, the temp file folder is the directory referred to by the TEMP
-        /// environment variable.  If that variable is not set, this value defaults to the
-        /// current working directory.  But for some scenarios, such as ASP.NET
-        /// applications, the application may wish to explicitly override this,
-        /// with this public property. This property is used only when calling one of the
+        /// <para>
+        /// This library will create a temporary file when saving a Zip archive.
+        /// By default, the library uses the value of <see cref="System.IO.Path.GetTempPath"/>
+        /// as the location in which to store temporary files. For some scenarios, such as ASP.NET
+        /// applications, the application may wish to explicitly override this default behavior.
+        /// </para>
+        /// <para>
+        /// The temporary file is written when calling one of the
         /// <c>Save()</c> methods, or the <c>SaveSelfExtractor()</c> method.
+        /// </para>
+        /// <para>
+        /// The folder specified must exist; if it does not an exception is thrown.
+        /// The application should have write and delete permissions on the folder. 
+        /// The permissions are 
+        /// never explicitly checked; if the application does not have the appropriate rights, an exception
+        /// will be thrown at the time <c>Save()</c> is called. 
+        /// </para>
+        /// <para>
+        /// There is no temporary file created when reading a zip archive. 
+        /// When saving to a Stream, there is no temporary file created.  For example, if the application 
+        /// is an ASP.NET application and calls <c>Save()</c> specifying the Response.OutStream as the output 
+        /// stream, there is no temporary file created. 
+        /// </para>
         /// </remarks>
         ///
         /// <exception cref="System.IO.FileNotFoundException">
-        /// Thrown upon setting the property if the directory does not exist. 
+        /// Thrown when setting the property if the directory does not exist. 
         /// </exception>
         ///
         public String TempFileFolder
@@ -628,7 +645,6 @@ namespace Ionic.Zip
             {
                 if (value == null)
                     throw new ArgumentException("You may not set the TempFileFolder to a null value.");
-
 
                 if (!System.IO.Directory.Exists(value))
                     throw new System.IO.FileNotFoundException(String.Format("That directory ({0}) does not exist.", value));
@@ -734,7 +750,8 @@ namespace Ionic.Zip
 
         public EncryptionAlgorithm Encryption
         {
-	    get; set;
+            get;
+            set;
         }
 
 
@@ -1127,11 +1144,11 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-	/// After instantiating with this constructor and adding entries to the archive,
-	/// your application should call <see cref="ZipFile.Save(String)"/> or <see
-	/// cref="ZipFile.Save(System.IO.Stream)"/> to save to a file or a stream, respectively. 
+        /// After instantiating with this constructor and adding entries to the archive,
+        /// your application should call <see cref="ZipFile.Save(String)"/> or <see
+        /// cref="ZipFile.Save(System.IO.Stream)"/> to save to a file or a stream, respectively. 
         /// If you call the no-argument <see cref="Save()"/> method, the Save() will throw, as there is no 
-	/// known place to save the file. 
+        /// known place to save the file. 
         /// </para>
         ///
         /// <para>
@@ -1638,7 +1655,7 @@ namespace Ionic.Zip
             _name = zipFileName;
             _StatusMessageTextWriter = statusMessageWriter;
             _contentsChanged = true;
-	    CompressionLevel = Ionic.Zlib.CompressionLevel.DEFAULT;
+            CompressionLevel = Ionic.Zlib.CompressionLevel.DEFAULT;
 
             if (System.IO.File.Exists(_name))
             {
@@ -1890,12 +1907,12 @@ namespace Ionic.Zip
         /// {
         ///   using (ZipFile zip = new ZipFile("Archive.zip",System.Console.Out))
         ///   {
-	///     // the following entry will be inserted at the root in the archive.
+        ///     // the following entry will be inserted at the root in the archive.
         ///     zip.AddFile("c:\\datafiles\\ReadMe.txt", "");
-	///     // this image file will be inserted into the "images" directory in the archive.
+        ///     // this image file will be inserted into the "images" directory in the archive.
         ///     zip.AddFile("c:\\photos\\personal\\7440-N49th.png", "images");
-	///     // the following will result in a password-protected file called 
-	///     // files\\docs\\2005_Annual_Report.pdf  in the archive.
+        ///     // the following will result in a password-protected file called 
+        ///     // files\\docs\\2005_Annual_Report.pdf  in the archive.
         ///     zip.Password = "EncryptMe!";
         ///     zip.AddFile("c:\\Desktop\\2005_Annual_Report.pdf", "files\\docs");
         ///     zip.Save();
@@ -1910,12 +1927,12 @@ namespace Ionic.Zip
         /// <code lang="VB">
         ///   Try 
         ///       Using zip As ZipFile = New ZipFile("Archive.zip", Console.Out)
-	///           ' the following entry will be inserted at the root in the archive.
+        ///           ' the following entry will be inserted at the root in the archive.
         ///           zip.AddFile("c:\datafiles\ReadMe.txt", "")
-	///           ' this image file will be inserted into the "images" directory in the archive.
+        ///           ' this image file will be inserted into the "images" directory in the archive.
         ///           zip.AddFile("c:\photos\personal\7440-N49th.png", "images")
-	///           ' the following will result in a password-protected file called 
-	///           ' files\\docs\\2005_Annual_Report.pdf  in the archive.
+        ///           ' the following will result in a password-protected file called 
+        ///           ' files\\docs\\2005_Annual_Report.pdf  in the archive.
         ///           zip.Password = "EncryptMe!"
         ///           zip.AddFile("c:\Desktop\2005_Annual_Report.pdf", "files\documents")
         ///           zip.Save
@@ -2788,7 +2805,7 @@ namespace Ionic.Zip
                     try
                     {
 #if !NETCF20
-                        _writestream.Dispose(); 
+                        _writestream.Dispose();
 #endif
                     }
                     catch { }
@@ -2844,17 +2861,17 @@ namespace Ionic.Zip
         }
 
 
-	/// <summary>
-	/// Save the zip archive to the specified stream.
-	/// </summary>
+        /// <summary>
+        /// Save the zip archive to the specified stream.
+        /// </summary>
         /// <param name="outputStream">The <c>System.IO.Stream</c> to write to. It must be writable.</param>
         public void Save(System.IO.Stream outputStream)
         {
             if (!outputStream.CanWrite)
                 throw new ArgumentException("The outputStream must be a writable stream.");
 
-	    // if we had a filename to save to, we are now obliterating it. 
-	    _name = null;
+            // if we had a filename to save to, we are now obliterating it. 
+            _name = null;
 
             _writestream = new CountingStream(outputStream);
 
@@ -3215,13 +3232,13 @@ namespace Ionic.Zip
         /// }
         ///
         /// </code>
-	/// <para>
-	/// This is an example of using the SaveProgress events in a WinForms app.
-	/// </para>
+        /// <para>
+        /// This is an example of using the SaveProgress events in a WinForms app.
+        /// </para>
         /// <code>
         /// delegate void SaveEntryProgress(SaveProgressEventArgs e);
         /// delegate void ButtonClick(object sender, EventArgs e);
-	///
+        ///
         /// public class WorkerOptions
         /// {
         ///     public string ZipName;
@@ -3231,20 +3248,20 @@ namespace Ionic.Zip
         ///     public int ZipFlavor;
         ///     public Zip64Option Zip64;
         /// }
-	///
-	/// private int _progress2MaxFactor;
+        ///
+        /// private int _progress2MaxFactor;
         /// private bool _saveCanceled;
         /// private long _totalBytesBeforeCompress;
         /// private long _totalBytesAfterCompress;
         /// private Thread _workerThread;
-	///
-	///
-	/// private void btnZipup_Click(object sender, EventArgs e)
+        ///
+        ///
+        /// private void btnZipup_Click(object sender, EventArgs e)
         /// {
         ///     KickoffZipup();
         /// }
-	///
-	/// private void btnCancel_Click(object sender, EventArgs e)
+        ///
+        /// private void btnCancel_Click(object sender, EventArgs e)
         /// {
         ///     if (this.lblStatus.InvokeRequired)
         ///     {
@@ -3257,25 +3274,25 @@ namespace Ionic.Zip
         ///         ResetState();
         ///     }
         /// }
-	///
-	/// private void KickoffZipup()
+        ///
+        /// private void KickoffZipup()
         /// {
         ///     _folderName = tbDirName.Text;
-	///
-	///     if (_folderName == null || _folderName == "") return;
+        ///
+        ///     if (_folderName == null || _folderName == "") return;
         ///     if (this.tbZipName.Text == null || this.tbZipName.Text == "") return;
-	///
-	///     // check for existence of the zip file:
+        ///
+        ///     // check for existence of the zip file:
         ///     if (System.IO.File.Exists(this.tbZipName.Text))
         ///     {
         ///         var dlgResult = MessageBox.Show(String.Format("The file you have specified ({0}) already exists." + 
-	///                                                       "  Do you want to overwrite this file?", this.tbZipName.Text), 
-	///                                         "Confirmation is Required", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+        ///                                                       "  Do you want to overwrite this file?", this.tbZipName.Text), 
+        ///                                         "Confirmation is Required", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
         ///         if (dlgResult != DialogResult.Yes) return;
         ///         System.IO.File.Delete(this.tbZipName.Text);
         ///     }
-	///
-	///      _saveCanceled = false;
+        ///
+        ///      _saveCanceled = false;
         ///     _nFilesCompleted = 0;
         ///     _totalBytesAfterCompress = 0;
         ///     _totalBytesBeforeCompress = 0;
@@ -3283,49 +3300,49 @@ namespace Ionic.Zip
         ///     this.btnOk.Text = "Zipping...";
         ///     this.btnCancel.Enabled = true;
         ///     lblStatus.Text = "Zipping...";
-	///
-	///     var options = new WorkerOptions
+        ///
+        ///     var options = new WorkerOptions
         ///     {
         ///         ZipName = this.tbZipName.Text,
         ///         Folder = _folderName,
         ///         Encoding = "ibm437"
         ///     };
-	///
-	///     if (this.comboBox1.SelectedIndex != 0)
+        ///
+        ///     if (this.comboBox1.SelectedIndex != 0)
         ///     {
         ///         options.Encoding = this.comboBox1.SelectedItem.ToString();
         ///     }
-	///
-	///     if (this.radioFlavorSfxCmd.Checked)
+        ///
+        ///     if (this.radioFlavorSfxCmd.Checked)
         ///         options.ZipFlavor = 2;
         ///     else if (this.radioFlavorSfxGui.Checked)
         ///         options.ZipFlavor = 1;
         ///     else options.ZipFlavor = 0;
-	///
-	///     if (this.radioZip64AsNecessary.Checked)
+        ///
+        ///     if (this.radioZip64AsNecessary.Checked)
         ///         options.Zip64 = Zip64Option.AsNecessary;
         ///     else if (this.radioZip64Always.Checked)
         ///         options.Zip64 = Zip64Option.Always;
         ///     else options.Zip64 = Zip64Option.Never;
-	///
-	///     options.Comment = String.Format("Encoding:{0} || Flavor:{1} || ZIP64:{2}\r\nCreated at {3} || {4}\r\n",
+        ///
+        ///     options.Comment = String.Format("Encoding:{0} || Flavor:{1} || ZIP64:{2}\r\nCreated at {3} || {4}\r\n",
         ///                 options.Encoding,
         ///                 FlavorToString(options.ZipFlavor),
         ///                 options.Zip64.ToString(),
         ///                 System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss"),
         ///                 this.Text);
-	///
-	///     if (this.tbComment.Text != TB_COMMENT_NOTE)
+        ///
+        ///     if (this.tbComment.Text != TB_COMMENT_NOTE)
         ///         options.Comment += this.tbComment.Text;
-	///
-	///     _workerThread = new Thread(this.DoSave);
+        ///
+        ///     _workerThread = new Thread(this.DoSave);
         ///     _workerThread.Name = "Zip Saver thread";
         ///     _workerThread.Start(options);
         ///     this.Cursor = Cursors.WaitCursor;
-	///  }
-	///
-	///
-	/// private void DoSave(Object p)
+        ///  }
+        ///
+        ///
+        /// private void DoSave(Object p)
         /// {
         ///     WorkerOptions options = p as WorkerOptions;
         ///     try
@@ -3338,10 +3355,10 @@ namespace Ionic.Zip
         ///             _entriesToZip = zip1.EntryFileNames.Count;
         ///             SetProgressBars();
         ///             zip1.SaveProgress += this.zip1_SaveProgress;
-	///
-	///             zip1.UseZip64WhenSaving = options.Zip64;
-	///
-	///             if (options.ZipFlavor == 1)
+        ///
+        ///             zip1.UseZip64WhenSaving = options.Zip64;
+        ///
+        ///             if (options.ZipFlavor == 1)
         ///                 zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.WinFormsApplication);
         ///             else if (options.ZipFlavor == 2)
         ///                 zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.ConsoleApplication);
@@ -3355,10 +3372,10 @@ namespace Ionic.Zip
         ///         btnCancel_Click(null, null);
         ///     }
         /// }
-	///
-	///
-	///
-	/// void zip1_SaveProgress(object sender, SaveProgressEventArgs e)
+        ///
+        ///
+        ///
+        /// void zip1_SaveProgress(object sender, SaveProgressEventArgs e)
         /// {
         ///     switch (e.EventType)
         ///     {
@@ -3379,10 +3396,10 @@ namespace Ionic.Zip
         ///     if (_saveCanceled)
         ///         e.Cancel = true;
         /// }
-	///
-	///
-	///
-	/// private void StepArchiveProgress(SaveProgressEventArgs e)
+        ///
+        ///
+        ///
+        /// private void StepArchiveProgress(SaveProgressEventArgs e)
         /// {
         ///     if (this.progressBar1.InvokeRequired)
         ///     {
@@ -3396,17 +3413,17 @@ namespace Ionic.Zip
         ///             this.progressBar1.PerformStep();
         ///             _totalBytesAfterCompress += e.CurrentEntry.CompressedSize;
         ///             _totalBytesBeforeCompress += e.CurrentEntry.UncompressedSize;
-	///
-	///             // reset the progress bar for the entry:
+        ///
+        ///             // reset the progress bar for the entry:
         ///             this.progressBar2.Value = this.progressBar2.Maximum = 1;
-	///
-	///             this.Update();
+        ///
+        ///             this.Update();
         ///         }
         ///     }
         /// }
-	///
-	///
-	/// private void StepEntryProgress(SaveProgressEventArgs e)
+        ///
+        ///
+        /// private void StepEntryProgress(SaveProgressEventArgs e)
         /// {
         ///     if (this.progressBar2.InvokeRequired)
         ///     {
@@ -3430,19 +3447,19 @@ namespace Ionic.Zip
         ///                 lblStatus.Text = String.Format("{0} of {1} files...({2})",
         ///                     _nFilesCompleted + 1, _entriesToZip, e.CurrentEntry.FileName);
         ///             }
-	///
-	///              int xferred = e.BytesTransferred >> _progress2MaxFactor;
-	///
-	///              this.progressBar2.Value = (xferred >= this.progressBar2.Maximum)
+        ///
+        ///              int xferred = e.BytesTransferred >> _progress2MaxFactor;
+        ///
+        ///              this.progressBar2.Value = (xferred >= this.progressBar2.Maximum)
         ///                 ? this.progressBar2.Maximum
         ///                 : xferred;
-	///
-	///              this.Update();
+        ///
+        ///              this.Update();
         ///         }
         ///     }
         /// }
-	///
-	/// private void SaveCompleted()
+        ///
+        /// private void SaveCompleted()
         /// {
         ///     if (this.lblStatus.InvokeRequired)
         ///     {
@@ -3452,11 +3469,11 @@ namespace Ionic.Zip
         ///     {
         ///         lblStatus.Text = String.Format("Done, Compressed {0} files, {1:N0}% of original.",
         ///             _nFilesCompleted, (100.00 * _totalBytesAfterCompress) / _totalBytesBeforeCompress);
-	///          ResetState();
+        ///          ResetState();
         ///     }
         /// }
-	///
-	/// private void ResetState()
+        ///
+        /// private void ResetState()
         /// {
         ///     this.btnCancel.Enabled = false;
         ///     this.btnOk.Enabled = true;
@@ -3467,8 +3484,8 @@ namespace Ionic.Zip
         ///     if (!_workerThread.IsAlive)
         ///         _workerThread.Join();
         /// }
-	/// </code>
-	///
+        /// </code>
+        ///
         /// <code lang="VB">
         /// Public Sub ZipUp(ByVal targetZip As String, ByVal directory As String)
         /// 	Try 
@@ -4793,7 +4810,7 @@ namespace Ionic.Zip
                 // This implies an archive comment length of 0.
                 // We'll add a margin of safety and start "in front" of that, when 
                 // looking for the EndOfCentralDirectorySignature
-                long posn = s.Length - 64; 
+                long posn = s.Length - 64;
                 do
                 {
                     s.Seek(posn, System.IO.SeekOrigin.Begin);
@@ -5094,7 +5111,7 @@ namespace Ionic.Zip
 
                 // workitem 6513 - only use UTF8 as necessary
                 // test reflexivity
-                string s1 = DefaultEncoding.GetString(block,0, block.Length);
+                string s1 = DefaultEncoding.GetString(block, 0, block.Length);
                 byte[] b2 = DefaultEncoding.GetBytes(s1);
                 if (BlocksAreEqual(block, b2))
                 {
@@ -5108,7 +5125,7 @@ namespace Ionic.Zip
                     System.Text.Encoding e = (zf._provisionalAlternateEncoding.CodePage == 437)
                         ? System.Text.Encoding.UTF8
                         : zf._provisionalAlternateEncoding;
-                    zf.Comment = e.GetString(block,0,block.Length);
+                    zf.Comment = e.GetString(block, 0, block.Length);
                 }
             }
         }
@@ -5584,17 +5601,17 @@ namespace Ionic.Zip
         /// cref="ZipFile.RemoveEntry(String)"/> with the filename.
         /// </para>
         /// <para>
-	/// If you assign a non-null value
+        /// If you assign a non-null value
         /// (non Nothing in VB), the setter will throw an exception.
         /// </para>
-	/// <para>
-	/// It is not always the case that <c>this[value].FileName == value</c>.  In
-	/// the case of directory entries in the archive, you may retrieve them with
-	/// the name of the directory with no trailing slash, even though in the
-	/// entry itself, the actual <see cref="ZipEntry.FileName"/> property may
-	/// include a trailing slash.  In other words, for a directory entry named
-	/// "dir1", you may find <c>this["dir1"].FileName == "dir1/"</c>.
-	/// </para>
+        /// <para>
+        /// It is not always the case that <c>this[value].FileName == value</c>.  In
+        /// the case of directory entries in the archive, you may retrieve them with
+        /// the name of the directory with no trailing slash, even though in the
+        /// entry itself, the actual <see cref="ZipEntry.FileName"/> property may
+        /// include a trailing slash.  In other words, for a directory entry named
+        /// "dir1", you may find <c>this["dir1"].FileName == "dir1/"</c>.
+        /// </para>
         /// </remarks>
         /// 
         /// <example>
@@ -5652,15 +5669,15 @@ namespace Ionic.Zip
                         if (fileName.Replace("\\", "/") == e.FileName) return e;
                         if (e.FileName.Replace("\\", "/") == fileName) return e;
 
-			// check for a difference only in trailing slash
-			if (e.FileName.EndsWith("/"))
-			{
-			    var FileNameNoSlash = e.FileName.Trim("/".ToCharArray());
-			    if (FileNameNoSlash == fileName) return e;
-			    // also check for equivalence
-			    if (fileName.Replace("\\", "/") == FileNameNoSlash) return e;
-			    if (FileNameNoSlash.Replace("\\", "/") == fileName) return e;
-			}
+                        // check for a difference only in trailing slash
+                        if (e.FileName.EndsWith("/"))
+                        {
+                            var FileNameNoSlash = e.FileName.Trim("/".ToCharArray());
+                            if (FileNameNoSlash == fileName) return e;
+                            // also check for equivalence
+                            if (fileName.Replace("\\", "/") == FileNameNoSlash) return e;
+                            if (FileNameNoSlash.Replace("\\", "/") == fileName) return e;
+                        }
 
                     }
                     else
@@ -5671,17 +5688,17 @@ namespace Ionic.Zip
                         if (String.Compare(fileName.Replace("\\", "/"), e.FileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
                         if (String.Compare(e.FileName.Replace("\\", "/"), fileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
 
-			// check for a difference only in trailing slash
-			if (e.FileName.EndsWith("/"))
-			{
-			    var FileNameNoSlash = e.FileName.Trim("/".ToCharArray());
+                        // check for a difference only in trailing slash
+                        if (e.FileName.EndsWith("/"))
+                        {
+                            var FileNameNoSlash = e.FileName.Trim("/".ToCharArray());
 
-                        if (String.Compare(FileNameNoSlash, fileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
-                        // also check for equivalence
-                        if (String.Compare(fileName.Replace("\\", "/"), FileNameNoSlash, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
-                        if (String.Compare(FileNameNoSlash.Replace("\\", "/"), fileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
+                            if (String.Compare(FileNameNoSlash, fileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
+                            // also check for equivalence
+                            if (String.Compare(fileName.Replace("\\", "/"), FileNameNoSlash, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
+                            if (String.Compare(FileNameNoSlash.Replace("\\", "/"), fileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
 
-			}
+                        }
 
                     }
 
@@ -5758,6 +5775,9 @@ namespace Ionic.Zip
         /// <summary>
         /// Returns the readonly collection of entries in the Zip archive.
         /// </summary>
+        /// <remarks>
+        /// If there are no entries in the current ZipFile, the value returned is a non-null zero-element collection.
+        /// </remarks>
         public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> Entries
         {
             get
