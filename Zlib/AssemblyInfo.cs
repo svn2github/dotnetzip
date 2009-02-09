@@ -1,31 +1,25 @@
 using System.Reflection;
+using System.Security;
 using System.Runtime.CompilerServices;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-// TODO: Review the values of the assembly attributes
-
-[assembly: AssemblyTitle("")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("")]
-[assembly: AssemblyCopyright("")]
+[assembly: AssemblyTitle("Ionic's Managed Zlib")]
+[assembly: AssemblyDescription("library for Deflate and ZLIB compression. http://www.codeplex.com/DotNetZip")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyProduct("DotNetZlib Library")]
+[assembly: AssemblyCopyright("Copyright © Dino Chiesa 2009")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
 
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version
-//      Revision
-//      Build Number
-//
-// You can specify all the values or you can default the Revision and Build Numbers
-// by using the '*' as shown below:
+[assembly: AllowPartiallyTrustedCallers] 
 
-[assembly: AssemblyVersion("1.0.1.1")]
+
+[assembly: AssemblyVersion("1.7.2.2")]
+[assembly: AssemblyFileVersion("1.7.2.2")]
 
 

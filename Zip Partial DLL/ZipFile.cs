@@ -513,31 +513,24 @@ namespace Ionic.Zip
         ///
         /// <remarks>
         /// <para> 
-        /// When saving an entry into a zip archive, the DotNetZip first compresses
-        /// the file, then compares the size of the pre-compressed data with the size of the
-        /// post-compressed data. For files that are already compressed, like MP3's or JPGs,
-        /// the deflate algorithm can actually expand the size of the data.  In this case,
-        /// the DotNetZip library uses the pre-compressed data and simply stores the file
-        /// data into the archive. 
-        /// </para> 
-        ///
-        /// <para>
-        /// The DotNetZip library does this optimization automatically.  To avoid the
-        /// unnecessary processing and comparison, the application can explicitly request
-        /// that Compression not be used, by setting this flag.  The default value is false.
+        /// When saving an entry into a zip archive, the DotNetZip by default compresses
+        /// the file. That's what a ZIP archive is all about, isn't it?  
+	/// For files that are already compressed, like MP3's or JPGs,
+        /// the deflate algorithm can actually slightly expand the size of the data.  Setting this
+	/// property to trye allows you to specify that compression should not be used. 
+	/// The default value is false.
         /// </para> 
         ///
         /// <para>
         /// Do not construe setting this flag to false as "Force Compression".  Setting it
-        /// to false merely does NOT force No compression.  Think about it a little bit:
-        /// There's a difference.  If you want to force the use fo deflate algorithm when
+        /// to false merely does NOT force No compression.  
+	/// If you want to force the use of the deflate algorithm when
         /// storing each entry into the zip archive, define a <see
         /// cref="WillReadTwiceOnInflation"/> callback, which always returns false, and a 
         /// <see cref="WantCompression" /> callback that always returns true.  This is
-        /// probably the wrong thing to do, but you could do it.  Forcing the use of the
+        /// probably the wrong thing to do, but you could do it. Forcing the use of the
         /// Deflate algorithm when storing an entry does not guarantee that the data size
-        /// will get smaller. It could increase, as described above.  But if you want to be
-        /// pig-headed about it, go ahead.
+        /// will get smaller. It could increase, as described above.  
         /// </para>
         ///
         /// <para>
@@ -546,17 +539,15 @@ namespace Ionic.Zip
         /// property on each ZipEntry, for more granular control of this capability.
         /// </para>
         ///
-        /// <para>
-        /// By the way, there is no way to set compression level in this library.
-        /// </para>
-        ///
         /// </remarks>
         ///
         /// <seealso cref="Ionic.Zip.ZipEntry.CompressionMethod"/>
+        /// <seealso cref="Ionic.Zip.ZipFile.CompressionLevel"/>
+        /// <seealso cref="Ionic.Zip.ZipFile.WantCompression"/>
         ///
         /// <example>
         /// This example shows how to specify that Compression will not be used when adding files 
-        /// to the zip archive. None of the files added to the archive in this way will use
+        /// to the zip archive. None of the files added to the archive in this example will use
         /// compression.
         /// <code>
         /// using (ZipFile zip = new ZipFile(ZipFileToCreate))
@@ -649,27 +640,28 @@ namespace Ionic.Zip
         }
 
         /// <summary>
-        /// Sets the password to be used for any entry subsequently added 
-        /// to the ZipFile, using one of the AddFile, AddDirectory, or AddItem methods; 
-        /// or any entry subsequently extracted from the ZipFile using one of the Extract methods on the ZipFile class.  
+        /// Sets the password to be used on the ZipFile instance.
         /// </summary>
         /// 
         /// <remarks>
         /// 
         /// <para>
-        /// This password is applied to the entries, not
-        /// to the zip archive itself. 
+        /// When writing a zip archive, this password is applied to the entries, not
+        /// to the zip archive itself. It applies to any ZipEntry subsequently added 
+        /// to the ZipFile, using one of the AddFile, AddDirectory, or AddItem methods. 
+        /// When reading a zip archive, this property applies to any entry subsequently 
+	/// extracted from the ZipFile using one of the Extract methods on the ZipFile class.  
         /// </para>
         /// 
         /// <para>
-        /// Though the password is set on the ZipFile object, according to the Zip spec, the
-	/// "directory" of the archive - in other words the list of entries contained in the
-	/// archive - is not encrypted with the password, or protected in any way.  IF you
-	/// set the Password property, the password actually applies to individual entries
-	/// that are added to the archive, subsequent to the setting of this property.  The
-	/// list of filenames in the archive that is eventually created will appear in clear
-	/// text, but the contents of the individual files are encrypted.  This is how 
-	/// Zip encryption works.
+        /// When writing a zip archive, keep this in mind: though the password is set on the
+	/// ZipFile object, according to the Zip spec, the "directory" of the archive - in
+	/// other words the list of entries contained in the archive - is not encrypted with
+	/// the password, or protected in any way.  IF you set the Password property, the
+	/// password actually applies to individual entries that are added to the archive,
+	/// subsequent to the setting of this property.  The list of filenames in the
+	/// archive that is eventually created will appear in clear text, but the contents
+	/// of the individual files are encrypted.  This is how Zip encryption works.
         /// </para>
         /// 
         /// <para>
@@ -690,11 +682,19 @@ namespace Ionic.Zip
         /// </para>
 	///
         /// <para>
-        /// If you read in an existing ZipFile, then set the Password property, then call
-        /// one of the ZipFile.Extract() overloads, the entry is extracted using the
-        /// Password that is specified on the ZipFile instance. If you have not set the
-        /// Password property, then the password is null, and the entry is extracted with no
-        /// password.
+        /// All of the preceding applies to writing zip archives - when you use one of the
+        /// Save methods.  To use this property when reading or an existing ZipFile -
+        /// calling Extract methods on the ZipFile or the ZipEntry instances - do the
+        /// following: set the Password property, then call one of the ZipFile.Extract()
+        /// overloads. In this case, the entry is extracted using the Password that is
+        /// specified on the ZipFile instance. If you have not set the Password property,
+        /// then the password is null, and the entry is extracted with no password.
+        /// </para>
+	///
+        /// <para>
+	/// If you set Password on the ZipFile, then Extract() an entry that has not been 
+	/// encrypted with a password, then the password is not used for that entry, and
+	/// the ZipEntry is extracted as normal.
         /// </para>
         /// 
         /// </remarks>
@@ -4047,6 +4047,13 @@ namespace Ionic.Zip
         /// <summary>
         /// Checks the given file to see if it appears to be a valid zip file.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Calling this method is equivalent to calling 
+        /// <see cref="IsZipFile(string)"/>.
+        /// </para>
+        /// </remarks>
+        /// 
         /// <param name="fileName">The file to check.</param>
         /// <returns>true if the file appears to be a zip file.</returns>
         public static bool IsZipFile(string fileName)
@@ -4061,15 +4068,16 @@ namespace Ionic.Zip
         ///
         /// <remarks>
         /// <para>
-        /// This method opens the specified zip file, reads in the zip archive, then optionally extracts 
+        /// This method opens the specified zip file, reads in the zip archive, verifying
+	/// the ZIP metadata as it reads.  Then, if testExtract is true, this method extracts 
         /// each entry in the archive, dumping all the bits. 
         /// </para>
         /// 
         /// <para>
         /// If everything succeeds, then the method
         /// returns true.  If anything fails - for example if an incorrect signature or CRC
-        /// is found, the the method returns false.  This method also returns false
-        /// (no exception) for a file that does not exist.  
+        /// is found, indicating a corrupt file, the the method returns false.  This method also returns false
+        /// for a file that does not exist. 
         /// </para>
         ///
         /// <para>

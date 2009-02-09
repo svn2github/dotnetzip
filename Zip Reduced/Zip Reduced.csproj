@@ -99,6 +99,7 @@
     <Compile Include="..\Zlib\ZlibStream.cs">
       <Link>ZlibStream.cs</Link>
     </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

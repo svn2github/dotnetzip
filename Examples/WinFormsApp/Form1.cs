@@ -10,7 +10,7 @@ namespace WinFormsExample
     {
         delegate void SaveEntryProgress(SaveProgressEventArgs e);
         delegate void ButtonClick(object sender, EventArgs e);
-            HiResTimer _hrt;
+        HiResTimer _hrt;
 
         public Form1()
         {
@@ -20,9 +20,25 @@ namespace WinFormsExample
 
             InitCompressionLevelList();
 
+            InitEncryptionList();
+
             FixTitle();
 
             FillFormFromRegistry();
+        }
+
+        private void InitEncryptionList()
+        {
+            _EncryptionNames = new List<string>(Enum.GetNames(typeof(Ionic.Zip.EncryptionAlgorithm)));
+            //_EncryptionNames.Sort();
+            foreach (var name in _EncryptionNames)
+            {
+                comboBox3.Items.Add(name);
+            }
+
+            // select the first item: 
+            comboBox3.SelectedIndex = 0;
+	    this.tbPassword.Text = "";
         }
 
         private void FixTitle()
@@ -90,7 +106,7 @@ namespace WinFormsExample
             }
 
 
-            _hrt= new HiResTimer();
+            _hrt = new HiResTimer();
             _hrt.Start();
 
             _saveCanceled = false;
@@ -114,7 +130,11 @@ namespace WinFormsExample
                 options.Encoding = this.comboBox1.SelectedItem.ToString();
             }
 
-            options.CompressionLevel = (Ionic.Zlib.CompressionLevel) Enum.Parse(typeof(Ionic.Zlib.CompressionLevel),
+	    options.Encryption = (Ionic.Zip.EncryptionAlgorithm) Enum.Parse(typeof(Ionic.Zip.EncryptionAlgorithm),
+                this.comboBox3.SelectedItem.ToString());
+	    options.Password = this.tbPassword.Text;
+
+            options.CompressionLevel = (Ionic.Zlib.CompressionLevel)Enum.Parse(typeof(Ionic.Zlib.CompressionLevel),
                 this.comboBox2.SelectedItem.ToString());
 
             if (this.radioFlavorSfxCmd.Checked)
@@ -129,10 +149,10 @@ namespace WinFormsExample
                 options.Zip64 = Zip64Option.Always;
             else options.Zip64 = Zip64Option.Never;
 
-            options.Comment = String.Format("Encoding:{0} || Flavor:{1} || Compression:{2} || ZIP64:{3}\r\nCreated at {4} || {5}\r\n",
+            options.Comment = String.Format("Encoding:{0} || Compression:{1} || Encrypt:{2} || ZIP64:{3}\r\nCreated at {4} || {5}\r\n",
                         options.Encoding,
-                        FlavorToString(options.ZipFlavor),
                         options.CompressionLevel.ToString(),
+                        options.Encryption.ToString(),
                         options.Zip64.ToString(),
                         System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss"),
                         this.Text);
@@ -212,6 +232,8 @@ namespace WinFormsExample
                 {
                     zip1.ProvisionalAlternateEncoding = System.Text.Encoding.GetEncoding(options.Encoding);
                     zip1.Comment = options.Comment;
+                    zip1.Password = options.Password;
+                    zip1.Encryption = options.Encryption;
                     zip1.AddDirectory(options.Folder);
                     _entriesToZip = zip1.EntryFileNames.Count;
                     SetProgressBars();
@@ -283,7 +305,7 @@ namespace WinFormsExample
             else
             {
                 _hrt.Stop();
-                System.TimeSpan ts = new System.TimeSpan(0, 0, (int) _hrt.Seconds);
+                System.TimeSpan ts = new System.TimeSpan(0, 0, (int)_hrt.Seconds);
                 lblStatus.Text = String.Format("Done, Compressed {0} files, {1:N0}% of original, time: {2}",
                     _nFilesCompleted, (100.00 * _totalBytesAfterCompress) / _totalBytesBeforeCompress,
                     ts.ToString());
@@ -356,7 +378,7 @@ namespace WinFormsExample
                             entryMax /= 2;
                             _progress2MaxFactor++;
                         }
-			if ((int)entryMax < 0) entryMax *= -1;
+                        if ((int)entryMax < 0) entryMax *= -1;
                         this.progressBar2.Maximum = (int)entryMax;
                         lblStatus.Text = String.Format("{0} of {1} files...({2})",
                             _nFilesCompleted + 1, _entriesToZip, e.CurrentEntry.FileName);
@@ -454,7 +476,6 @@ namespace WinFormsExample
                 this.radioZip64Always.Enabled = false;
                 this.radioZip64AsNecessary.Enabled = false;
                 this.radioZip64Never.Enabled = false;
-
             }
         }
 
@@ -493,6 +514,15 @@ namespace WinFormsExample
             }
         }
 
+        private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            this.tbPassword.Enabled = (this.comboBox3.SelectedItem.ToString() != "None"); 
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            this.tbPassword.PasswordChar = (this.checkBox1.Checked) ? '*' : '\0';
+        }
 
         private void ResetState()
         {
@@ -533,6 +563,13 @@ namespace WinFormsExample
                     SelectNamedCompressionLevel(s);
                 }
 
+                s = (string)AppCuKey.GetValue(_rvn_Encryption);
+                if (s != null)
+                {
+                    SelectNamedEncryption(s);
+                }
+
+
                 int x = (Int32)AppCuKey.GetValue(_rvn_ZipFlavor, 0);
                 if (x == 2)
                     this.radioFlavorSfxCmd.Checked = true;
@@ -549,7 +586,6 @@ namespace WinFormsExample
                 else
                     this.radioZip64Never.Checked = true;
 
-
                 AppCuKey.Close();
                 AppCuKey = null;
             }
@@ -557,27 +593,34 @@ namespace WinFormsExample
 
         private void SelectNamedEncoding(string s)
         {
-            for (int i = 0; i < this.comboBox1.Items.Count; i++)
+            _SelectComboBoxItem(this.comboBox2, s);
+        }
+
+        private void SelectNamedCompressionLevel(string s)
+        {
+            _SelectComboBoxItem(this.comboBox2, s);
+        }
+
+        private void SelectNamedEncryption(string s)
+        {
+            _SelectComboBoxItem(this.comboBox3, s);
+            tbPassword.Text = "";
+            comboBox3_SelectedIndexChanged(null, null);        
+        }
+
+        private void _SelectComboBoxItem(ComboBox c, string s)
+        {
+            for (int i = 0; i < c.Items.Count; i++)
             {
-                if (this.comboBox1.Items[i].ToString() == s)
+                if (c.Items[i].ToString() == s)
                 {
-                    this.comboBox1.SelectedIndex = i;
+                    c.SelectedIndex = i;
                     break;
                 }
             }
         }
 
-        private void SelectNamedCompressionLevel(string s)
-        {
-            for (int i = 0; i < this.comboBox2.Items.Count; i++)
-            {
-                if (this.comboBox2.Items[i].ToString() == s)
-                {
-                    this.comboBox2.SelectedIndex = i;
-                    break;
-                }
-            }
-        }
+
 
         private void SaveFormToRegistry()
         {
@@ -587,6 +630,7 @@ namespace WinFormsExample
                 AppCuKey.SetValue(_rvn_ZipTarget, this.tbZipName.Text);
                 AppCuKey.SetValue(_rvn_Encoding, this.comboBox1.SelectedItem.ToString());
                 AppCuKey.SetValue(_rvn_Compression, this.comboBox2.SelectedItem.ToString());
+                AppCuKey.SetValue(_rvn_Encryption, this.comboBox3.SelectedItem.ToString());
 
                 int x = 0;
                 if (this.radioFlavorSfxCmd.Checked)
@@ -643,6 +687,7 @@ namespace WinFormsExample
         private static string TB_COMMENT_NOTE = "-zip file comment here-";
         private List<String> _EncodingNames;
         private List<String> _CompressionLevelNames;
+        private List<String> _EncryptionNames;
         private string _mostRecentEncoding;
         private Nullable<Zip64Option> _mostRecentZip64;
 
@@ -652,6 +697,7 @@ namespace WinFormsExample
         private static string _rvn_ZipTarget = "ZipTarget";
         private static string _rvn_Encoding = "Encoding";
         private static string _rvn_Compression = "Compression";
+        private static string _rvn_Encryption = "Encryption";
         private static string _rvn_ZipFlavor = "ZipFlavor";
         private static string _rvn_Zip64Option = "Zip64Option";
         private static string _rvn_LastRun = "LastRun";
@@ -665,8 +711,10 @@ namespace WinFormsExample
         public string Folder;
         public string Encoding;
         public string Comment;
+        public string Password;
         public int ZipFlavor;
         public Ionic.Zlib.CompressionLevel CompressionLevel;
+        public Ionic.Zip.EncryptionAlgorithm Encryption;
         public Zip64Option Zip64;
     }
 
