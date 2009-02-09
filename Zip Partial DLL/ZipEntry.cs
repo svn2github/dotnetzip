@@ -19,6 +19,9 @@ namespace Ionic.Zip
     /// <summary>
     /// An enum that provides the various encryption algorithms supported by this library.
     /// </summary>
+    /// <remarks>
+    /// The WinZip AES algorithms are not supported on the .NET Compact Framework. 
+    /// </remarks>
     public enum EncryptionAlgorithm
     {
         /// <summary>
@@ -31,6 +34,7 @@ namespace Ionic.Zip
         /// </summary>
         PkzipWeak,
 
+#if AESCRYPTO
         /// <summary>
         /// WinZip AES encryption (128 key bits).
         /// </summary>
@@ -40,6 +44,7 @@ namespace Ionic.Zip
         /// WinZip AES encryption (256 key bits).
         /// </summary>
         WinZipAes256,
+#endif
 
         // others... not implemented (yet?)
     }
@@ -370,12 +375,6 @@ namespace Ionic.Zip
             get { return _CompressionMethod; }
             set
             {
-                if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
-                     Encryption == EncryptionAlgorithm.WinZipAes256)
-                {
-                    if (value != 0x08)
-                        throw new InvalidOperationException("Compression must be on if you use AES Encryption.");
-                }
                 if (value == 0x00 || value == 0x08)
                     _CompressionMethod = value;
                 else throw new InvalidOperationException("Unsupported compression method. Specify 8 or 0.");
@@ -492,18 +491,24 @@ namespace Ionic.Zip
         /// 
         /// <remarks>
         /// <para>
-        /// When setting this property, you must also set a Password on the entry.
-        /// The set of algorithms supported is determined by the authors of this library.  
-        /// The PKZIP specification from PKWare defines a set of encryption algorithms, and the
-        /// data formats for the zip archive that support them. Other vendors of tools and libraries, 
-        /// such as WinZip or Xceed, also specify and support different encryption algorithms and data formats.  
+        /// When setting this property, you must also set a Password on the entry.  The set of
+        /// algorithms supported is determined by the authors of this library.  The PKZIP
+        /// specification from PKWare defines a set of encryption algorithms, and the data formats
+        /// for the zip archive that support them. Other vendors of tools and libraries, such as
+        /// WinZip or Xceed, also specify and support different encryption algorithms and data
+        /// formats.
         /// </para>
+	///
         /// <para>
-        /// There is no common, ubiquitous 
-        /// multi-vendor standard for strong encryption. There is broad support for "traditional" Zip encryption,
-        /// as specified by PKZIP, but this encryption is considered weak. This library currently
-        /// supports AES 128 and 256 in addition to PKZIP's weak encryption.  
+        /// There is no common, ubiquitous multi-vendor standard for strong encryption. There is
+        /// broad support for "traditional" Zip encryption, sometimes called Zip 2.0 encryption,
+        /// as specified by PKWare, but this encryption is considered weak. This library currently
+        /// supports AES 128 and 256 in addition to the Zip 2.0 "weak" encryption.
         /// </para>
+	///
+	/// <para>
+	/// The WinZip AES encryption algorithms are not supported on the .NET Compact Framework. 
+	/// </para>
         /// </remarks>
         public EncryptionAlgorithm Encryption
         {
@@ -514,9 +519,10 @@ namespace Ionic.Zip
             set
             {
                 _Encryption = value;
-                //Console.WriteLine("entry({0}).Encryption= {1}", FileName, Encryption.ToString());
+#if AESCRYPTO
                 if (value == EncryptionAlgorithm.WinZipAes256) this._KeyStrengthInBits = 256;
                 else if (value == EncryptionAlgorithm.WinZipAes128) this._KeyStrengthInBits = 128;
+#endif
             }
         }
 
@@ -933,6 +939,8 @@ namespace Ionic.Zip
             // bit 0 set indicates that some kind of encryption is in use
             if ((ze._BitField & 0x01) == 0x01)
             {
+
+#if AESCRYPTO
                 if (ze.Encryption == EncryptionAlgorithm.WinZipAes128 ||
                     ze.Encryption == EncryptionAlgorithm.WinZipAes256)
                 {
@@ -940,10 +948,10 @@ namespace Ionic.Zip
                     ze._aesCrypto = WinZipAesCrypto.ReadFromStream(null, ze._KeyStrengthInBits, ze.ArchiveStream);
                     bytesRead += ze._aesCrypto.SizeOfEncryptionMetadata - 10;
                     ze._CompressedFileDataSize = ze.CompressedSize - ze._aesCrypto.SizeOfEncryptionMetadata;
-                    //Console.WriteLine("  CFD:     0x{0:X8} ({0})", ze._CompressedFileDataSize);
                     ze._LengthOfTrailer = 10;
                 }
                 else
+#endif
                 {
                     // read in the header data for "weak" encryption
                     ze._WeakEncryptionHeader = new byte[12];
@@ -1551,12 +1559,14 @@ namespace Ionic.Zip
             Stream input2 = input;
             if (Encryption == EncryptionAlgorithm.PkzipWeak)
                 input2 = new ZipCipherStream(input, _zipCrypto, CryptoMode.Decrypt);
+
+#if AESCRYPTO
             else if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
                  Encryption == EncryptionAlgorithm.WinZipAes256)
             {
                 input2 = new WinZipAesCipherStream(input, _aesCrypto, _CompressedFileDataSize, CryptoMode.Decrypt);
             }
-
+#endif
             return new CrcCalculatorStream((CompressionMethod == 0x08)
                 ? new Ionic.Zlib.DeflateStream(input2, Ionic.Zlib.CompressionMode.Decompress, true)
                 : input2,
@@ -1691,15 +1701,19 @@ namespace Ionic.Zip
                 // After extracting, Validate the CRC32
                 if (ActualCrc32 != _Crc32)
                 {
+#if AESCRYPTO
                     // CRC is not meaningful with WinZipAES and AES method 2 (AE-2)
                     if ((Encryption != EncryptionAlgorithm.WinZipAes128 &&
                         Encryption != EncryptionAlgorithm.WinZipAes256)
                         || _WinZipAesMethod != 0x02)
+#endif
+
                         throw new BadCrcException("CRC error: the file being extracted appears to be corrupted. " +
                               String.Format("Expected 0x{0:X8}, Actual 0x{1:X8}", _Crc32, ActualCrc32));
                 }
 
 
+#if AESCRYPTO
                 // Read the MAC if appropriate
                 if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
                     Encryption == EncryptionAlgorithm.WinZipAes256)
@@ -1707,7 +1721,7 @@ namespace Ionic.Zip
                     _aesCrypto.ReadAndVerifyMac(this.ArchiveStream); // throws if MAC is bad
                     // side effect: advances file position.
                 }
-
+#endif
 
 
                 if (TargetFile != null)
@@ -1759,12 +1773,21 @@ namespace Ionic.Zip
 
         private void ValidateEncryption()
         {
+#if AESCRYPTO
             if (Encryption != EncryptionAlgorithm.PkzipWeak &&
                 Encryption != EncryptionAlgorithm.WinZipAes128 &&
                 Encryption != EncryptionAlgorithm.WinZipAes256 &&
                 Encryption != EncryptionAlgorithm.None)
                 throw new ArgumentException(String.Format("Unsupported Encryption algorithm ({0:X2})",
                               Encryption));
+#else
+            if (Encryption != EncryptionAlgorithm.PkzipWeak &&
+                Encryption != EncryptionAlgorithm.None)
+                throw new ArgumentException(String.Format("Unsupported Encryption algorithm ({0:X2})",
+                              Encryption));
+
+#endif
+
         }
 
         private void ValidateCompression()
@@ -1790,29 +1813,27 @@ namespace Ionic.Zip
                 this.ArchiveStream.Seek(this.FileDataPosition - 12, System.IO.SeekOrigin.Begin);
                 _zipCrypto = ZipCrypto.ForRead(password, this);
             }
+
+#if AESCRYPTO
             else if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
                  Encryption == EncryptionAlgorithm.WinZipAes256)
             {
-                //Console.WriteLine("AES");
 
                 // if we already have a WinZipAesCrypto object in place, use it.
                 if (_aesCrypto != null)
                 {
                     _aesCrypto.Password = password;
-                    //Console.WriteLine("setting crypto.Password = {0}", password);
                 }
                 else
                 {
-                    //Console.WriteLine("WinZipAesCrypto.ReadFromStream(password({0}), _KeyStrengthInBits({1}), this.ArchiveStream)",
-		    //password, _KeyStrengthInBits);
                     int sizeOfSaltAndPv = ((_KeyStrengthInBits / 8 / 2) + 2);
                     this.ArchiveStream.Seek(this.FileDataPosition - sizeOfSaltAndPv, System.IO.SeekOrigin.Begin);
                     _aesCrypto = WinZipAesCrypto.ReadFromStream(password, _KeyStrengthInBits, this.ArchiveStream);
-                    //Console.WriteLine("After SetupCrypto(), position({0}), UncompressedSize({1})  _CompressedFileDataSize({2})",
-		    //this.ArchiveStream.Position, this.UncompressedSize, this._CompressedFileDataSize);
 
                 }
             }
+#endif
+
 
         }
 
@@ -1887,9 +1908,14 @@ namespace Ionic.Zip
             Stream input2 = null;
             if (Encryption == EncryptionAlgorithm.PkzipWeak)
                 input2 = new ZipCipherStream(input, _zipCrypto, CryptoMode.Decrypt);
+
+#if AESCRYPTO
+
             else if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
                  Encryption == EncryptionAlgorithm.WinZipAes256)
                 input2 = new WinZipAesCipherStream(input, _aesCrypto, _CompressedFileDataSize, CryptoMode.Decrypt);
+#endif
+
             else
                 input2 = new CrcCalculatorStream(input, _CompressedFileDataSize);
 
@@ -1930,14 +1956,15 @@ namespace Ionic.Zip
                 CrcResult = s1.Crc32;
 
 
+#if AESCRYPTO
                 // Read the MAC if appropriate
                 if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
                     Encryption == EncryptionAlgorithm.WinZipAes256)
                 {
                     var wzs = input2 as WinZipAesCipherStream;
                     _aesCrypto.CalculatedMac = wzs.FinalAuthentication;
-                    //Console.WriteLine("Calculated MAC: {0}", Util.FormatByteArray(_aesCrypto.CalculatedMac));
                 }
+#endif
             }
 
             return CrcResult;
@@ -2121,6 +2148,7 @@ namespace Ionic.Zip
             }
 
 
+#if AESCRYPTO
             if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
             Encryption == EncryptionAlgorithm.WinZipAes256)
             {
@@ -2156,7 +2184,7 @@ namespace Ionic.Zip
                 blockWinZipAes[i++] = (byte)(_CompressionMethod & 0x00FF);
                 blockWinZipAes[i++] = (byte)(_CompressionMethod & 0xFF00);
             }
-
+#endif
 
 
             // concatenate any blocks we've got: 
@@ -2389,8 +2417,7 @@ namespace Ionic.Zip
             // if we've already tried with compression... turn it off this time
             if (cycle > 1)
             {
-                //if (Encryption != EncryptionAlgorithm.WinZipAes128 && Encryption != EncryptionAlgorithm.WinZipAes256)
-                    _CompressionMethod = 0x0;
+		_CompressionMethod = 0x0;
             }
             // compression for directories = 0x00 (No Compression)
             else if (IsDirectory)
@@ -2778,11 +2805,16 @@ namespace Ionic.Zip
                 Stream output1 = outputCounter;
                 if (Encryption == EncryptionAlgorithm.PkzipWeak)
                     output1 = new ZipCipherStream(outputCounter, _zipCrypto, CryptoMode.Encrypt);
+
+#if AESCRYPTO
+
                 else if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
                      Encryption == EncryptionAlgorithm.WinZipAes256)
                 {
                     output1 = new WinZipAesCipherStream(outputCounter, _aesCrypto, CryptoMode.Encrypt);
                 }
+#endif
+
 
                 //Stream output1a = new TraceStream(output1);
 
@@ -2823,13 +2855,13 @@ namespace Ionic.Zip
                 output1.Flush();
                 output1.Close();
 
+#if AESCRYPTO
                 WinZipAesCipherStream wzacs = output1 as WinZipAesCipherStream;
                 if (wzacs != null)
                 {
-                    //Console.WriteLine("WFD: At position {0} (0x{0:X8}), writing MAC: {1}\n",
-		    // s.Position, Util.FormatByteArray(wzcs.FinalAuthentication));
                     s.Write(wzacs.FinalAuthentication, 0, 10);
                 }
+#endif
             }
             finally
             {
@@ -2860,8 +2892,8 @@ namespace Ionic.Zip
                 if (Encryption == EncryptionAlgorithm.PkzipWeak)
                 {
                     _CompressedSize += 12; // 12 extra bytes for the encryption header
-                    //Console.WriteLine("  Compressed (adjusted):  0x{0:X8} ({0})", _CompressedSize);
                 }
+#if AESCRYPTO
                 else if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
                      Encryption == EncryptionAlgorithm.WinZipAes256)
                 {
@@ -2870,8 +2902,9 @@ namespace Ionic.Zip
                     // spec, that metadata is included in the "Compressed Size" figure
                     // when encoding the zip archive.
                     _CompressedSize += _aesCrypto.SizeOfEncryptionMetadata;
-                    //Console.WriteLine("  Compressed (adjusted):  0x{0:X8} ({0})", _CompressedSize);
                 }
+#endif
+
             }
 
 
@@ -2974,6 +3007,8 @@ namespace Ionic.Zip
             }
 
 
+#if AESCRYPTO
+
             if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
             Encryption == EncryptionAlgorithm.WinZipAes256)
             {
@@ -3004,6 +3039,7 @@ namespace Ionic.Zip
                 } while (i < (extraFieldLength - 30 - filenameLength));
 
             }
+#endif
 
 
 
@@ -3132,8 +3168,9 @@ namespace Ionic.Zip
                 {
                     if (nCycles > 1) readAgain = false;
                     else if (!outstream.CanSeek) readAgain = false;
-
+#if AESCRYPTO
                     else if (_aesCrypto != null && (CompressedSize - _aesCrypto.SizeOfEncryptionMetadata) <= UncompressedSize) readAgain = false;
+#endif
                     else if (_zipCrypto != null && (CompressedSize - 12) <= UncompressedSize) readAgain = false;
                     else readAgain = WantReadAgain();
                 }
@@ -3200,6 +3237,8 @@ namespace Ionic.Zip
                 // Write the ciphered bonafide encryption header. 
                 outstream.Write(cipherText, 0, cipherText.Length);
             }
+
+#if AESCRYPTO
             else if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
                 Encryption == EncryptionAlgorithm.WinZipAes256)
             {
@@ -3217,7 +3256,7 @@ namespace Ionic.Zip
                 outstream.Write(_aesCrypto.Salt, 0, _aesCrypto._Salt.Length);
                 outstream.Write(_aesCrypto.GeneratedPV, 0, _aesCrypto.GeneratedPV.Length);
             }
-
+#endif
 
         }
 
@@ -3381,6 +3420,7 @@ namespace Ionic.Zip
                             }
                             break;
 
+#if AESCRYPTO
                         case 0x9901: // WinZip AES encryption is in use.  (workitem 6834)
                             // we will handle this extra field only  if compressionmethod is 0x63
                             //Console.WriteLine("Found WinZip AES Encryption header (compression:0x{0:X2})", this._CompressionMethod);
@@ -3420,6 +3460,7 @@ namespace Ionic.Zip
                                 j += 2; // a formality
                             }
                             break;
+#endif
                     }
 
                     // move to the next Header in the extra field
@@ -3457,11 +3498,13 @@ namespace Ionic.Zip
             {
                 this.__FileDataPosition += 12;
             }
+#if AESCRYPTO
             else if (this.Encryption == EncryptionAlgorithm.WinZipAes128 ||
                     this.Encryption == EncryptionAlgorithm.WinZipAes256)
             {
-                this.__FileDataPosition += ((this._KeyStrengthInBits / 8 / 2) + 2);// zde._aesCrypto.SizeOfEncryptionMetadata;
+                this.__FileDataPosition += ((this._KeyStrengthInBits / 8 / 2) + 2);// _aesCrypto.SizeOfEncryptionMetadata;
             }
+#endif
 
             // restore file position:
             this.ArchiveStream.Seek(origPosition, System.IO.SeekOrigin.Begin);
@@ -3494,9 +3537,12 @@ namespace Ionic.Zip
 
 
         internal ZipCrypto _zipCrypto;
+#if AESCRYPTO
         internal WinZipAesCrypto _aesCrypto;
         internal Int16 _KeyStrengthInBits;
         private Int16 _WinZipAesMethod;
+#endif
+
         internal DateTime _LastModified;
         private bool _TrimVolumeFromFullyQualifiedPaths = true;  // by default, trim them.
         private bool _ForceNoCompression;  // by default, false: do compression if it makes sense.

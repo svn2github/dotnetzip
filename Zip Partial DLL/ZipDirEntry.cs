@@ -252,6 +252,7 @@ namespace Ionic.Zip
                 // the "encryption header" of 12 bytes precedes the file data
                 zde._CompressedFileDataSize -= 12;
             }
+#if !NETCF20
             else if (zde.Encryption == EncryptionAlgorithm.WinZipAes128 ||
                         zde.Encryption == EncryptionAlgorithm.WinZipAes256)
             {
@@ -261,7 +262,7 @@ namespace Ionic.Zip
                 //Console.WriteLine("  CFDS:        0x{0:X8} ({0})", zde._CompressedFileDataSize);
                 //Console.WriteLine("  Actual Compression: 0x{0:X4}", zde._CompressionMethod);
             }
-
+#endif
             if (zde._commentLength > 0)
             {
                 block = new byte[zde._commentLength];
