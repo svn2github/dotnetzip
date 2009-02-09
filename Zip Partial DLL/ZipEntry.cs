@@ -2,7 +2,7 @@
 
 // ZipEntry.cs
 //
-// Copyright (c) 2006, 2007, 2008 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2006, 2007, 2008, 2009 Microsoft Corporation.  All rights reserved.
 //
 // Part of an implementation of a zipfile class library. 
 // See the file ZipFile.cs for the license and for further information.
@@ -169,6 +169,7 @@ namespace Ionic.Zip
             }
         }
 
+#if LEGACY
         /// <summary>
         /// When this is set, this class trims the volume (eg C:\) from any
         /// fully-qualified pathname on the ZipEntry, before writing the ZipEntry into
@@ -181,6 +182,7 @@ namespace Ionic.Zip
             get { return _TrimVolumeFromFullyQualifiedPaths; }
             set { _TrimVolumeFromFullyQualifiedPaths = value; }
         }
+#endif
 
         /// <summary>
         /// When this is set, the entry is not compressed when written to 
@@ -2297,7 +2299,7 @@ namespace Ionic.Zip
 
             string SlashFixed = FileName.Replace("\\", "/");
             string s1 = null;
-            if ((TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3)
+            if ((_TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3)
                 && (FileName[1] == ':') && (SlashFixed[2] == '/'))
             {
                 // trim off volume letter, colon, and slash

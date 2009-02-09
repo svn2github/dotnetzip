@@ -132,6 +132,7 @@ namespace Ionic.Zip
         }
 
 
+#if LEGACY
         /// <summary>
         /// When this is set, any volume name (eg C:) is trimmed 
         /// from fully-qualified pathnames on any ZipEntry, before writing the 
@@ -156,7 +157,7 @@ namespace Ionic.Zip
             get { return _TrimVolumeFromFullyQualifiedPaths; }
             set { _TrimVolumeFromFullyQualifiedPaths = value; }
         }
-
+#endif
 
         /// <summary>
         /// Indicates whether verbose output is sent to the StatusMessageWriter
@@ -2061,7 +2062,7 @@ namespace Ionic.Zip
         {
             string nameInArchive = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
             ZipEntry ze = ZipEntry.Create(fileName, nameInArchive);
-            ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
+            //ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
             ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
             ze.WantCompression = WantCompression;
@@ -2387,7 +2388,7 @@ namespace Ionic.Zip
         {
             string n = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
             ZipEntry ze = ZipEntry.Create(fileName, n, stream);
-            ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
+            //ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
             ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
             ze.WantCompression = WantCompression;
@@ -2615,7 +2616,7 @@ namespace Ionic.Zip
         {
             // add the directory itself.
             ZipEntry baseDir = ZipEntry.Create(directoryNameInArchive, directoryNameInArchive);
-            baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
+            //baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             baseDir._Source = EntrySource.Filesystem;
             baseDir.MarkAsDirectory();
             baseDir._zipfile = this;
@@ -2664,7 +2665,7 @@ namespace Ionic.Zip
             {
                 baseDir = ZipEntry.Create(directoryName, dirForEntries);
                 baseDir.ProvisionalAlternateEncoding = this.ProvisionalAlternateEncoding;  // workitem 6410
-                baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
+                //baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
                 baseDir._Source = EntrySource.Filesystem;
                 baseDir.MarkAsDirectory();
                 baseDir._zipfile = this;
@@ -6193,7 +6194,7 @@ namespace Ionic.Zip
         private bool _disposed;
         private System.Collections.Generic.List<ZipEntry> _entries;
         //private System.Collections.Generic.List<ZipDirEntry> _direntries;
-        private bool _TrimVolumeFromFullyQualifiedPaths = true;
+        //private bool _TrimVolumeFromFullyQualifiedPaths = true;
         private bool _ForceNoCompression;
         private string _name;
         private string _Comment;
