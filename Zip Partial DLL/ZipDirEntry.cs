@@ -121,7 +121,7 @@ namespace Ionic.Zip
             //e._LengthOfHeader = 30 + _filenameLength + _extraFieldLength;
 
             //e.__FileDataPosition = e._RelativeOffsetOfHeader + 30 + _filenameLength + _extraFieldLength;
-	    // mark as -1 to indicate we need to read this later
+            // mark as -1 to indicate we need to read this later
             this.__FileDataPosition = -1;
 
             // The length of the "local header" for an entry is not necessarily the same as
@@ -209,15 +209,16 @@ namespace Ionic.Zip
                 zde._LocalFileName = Ionic.Zip.SharedUtilities.StringFromBuffer(block, block.Length, expectedEncoding);
             }
 
-	    Console.WriteLine("\nEntry : {0}", zde._LocalFileName);
-	    Console.WriteLine("  V Madeby:    0x{0:X4}", zde._VersionMadeBy);
-	    Console.WriteLine("  V Needed:    0x{0:X4}", zde._VersionNeeded);
-	    Console.WriteLine("  BitField:    0x{0:X4}", zde._BitField);
-	    Console.WriteLine("  Compression: 0x{0:X4}", zde._CompressionMethod);
-	    Console.WriteLine("  Lastmod:     {0}", zde._LastModified.ToString("u"));
-	    Console.WriteLine("  CRC:         0x{0:X8}", zde._Crc32);
-	    Console.WriteLine("  Comp:        0x{0:X8} ({0})", zde._CompressedSize);
-	    Console.WriteLine("  Uncomp:      0x{0:X8} ({0})", zde._UncompressedSize);
+
+//             Console.WriteLine("\nEntry : {0}", zde._LocalFileName);
+//             Console.WriteLine("  V Madeby:    0x{0:X4}", zde._VersionMadeBy);
+//             Console.WriteLine("  V Needed:    0x{0:X4}", zde._VersionNeeded);
+//             Console.WriteLine("  BitField:    0x{0:X4}", zde._BitField);
+//             Console.WriteLine("  Compression: 0x{0:X4}", zde._CompressionMethod);
+//             Console.WriteLine("  Lastmod:     {0}", zde._LastModified.ToString("u"));
+//             Console.WriteLine("  CRC:         0x{0:X8}", zde._Crc32);
+//             Console.WriteLine("  Comp:        0x{0:X8} ({0})", zde._CompressedSize);
+//             Console.WriteLine("  Uncomp:      0x{0:X8} ({0})", zde._UncompressedSize);
 
             zde._FileNameInArchive = zde._LocalFileName;
 
@@ -235,14 +236,14 @@ namespace Ionic.Zip
 
             if (zde._extraFieldLength > 0)
             {
-		Console.WriteLine("ZDE Extra Field length: {0}", zde._extraFieldLength);
+                //Console.WriteLine("ZDE Extra Field length: {0}", zde._extraFieldLength);
                 bool IsZip64Format = ((uint)zde._CompressedSize == 0xFFFFFFFF ||
                       (uint)zde._UncompressedSize == 0xFFFFFFFF ||
                       (uint)zde._RelativeOffsetOfLocalHeader == 0xFFFFFFFF);
 
                 bytesRead += zde.ProcessExtraField(zde._extraFieldLength);
                 zde._CompressedFileDataSize = zde._CompressedSize;
-		Console.WriteLine("  Compressed:  0x{0:X8} ({0})", zde._CompressedSize);
+                //Console.WriteLine("  Compressed:  0x{0:X8} ({0})", zde._CompressedSize);
             }
 
             // we've processed the extra field, so we know the encryption method is set now.
@@ -257,8 +258,8 @@ namespace Ionic.Zip
                 zde._CompressedFileDataSize = zde.CompressedSize -
                     ((zde._KeyStrengthInBits / 8 / 2) + 10 + 2);// zde._aesCrypto.SizeOfEncryptionMetadata;
                 zde._LengthOfTrailer = 10;
-		Console.WriteLine("  CFDS:        0x{0:X8} ({0})", zde._CompressedFileDataSize);
-	    Console.WriteLine("  Actual Compression: 0x{0:X4}", zde._CompressionMethod);
+                //Console.WriteLine("  CFDS:        0x{0:X8} ({0})", zde._CompressedFileDataSize);
+                //Console.WriteLine("  Actual Compression: 0x{0:X4}", zde._CompressionMethod);
             }
 
             if (zde._commentLength > 0)

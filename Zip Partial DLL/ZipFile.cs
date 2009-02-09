@@ -2,15 +2,15 @@
 
 // ZipFile.cs
 //
-// Copyright (c) 2006, 2007, 2008 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2006, 2007, 2008, 2009Microsoft Corporation.  All rights reserved.
 //
 // This class library reads and writes zip files, according to the format
 // described by pkware, at:
 // http://www.pkware.com/business_and_developers/developer/popups/appnote.txt
 //
-// This implementation is based on the
+// This implementation was originally based on the
 // System.IO.Compression.DeflateStream base class in the .NET Framework
-// v2.0 base class library.
+// v2.0 base class library, but now includes a managed-code port of Zlib.
 //
 // There are other Zip class libraries available.  For example, it is
 // possible to read and write zip files within .NET via the J# runtime.
@@ -22,20 +22,15 @@
 // XCeed, etc).  But some people don't want to incur the cost.
 //
 // This alternative implementation is not GPL licensed, is free of cost,
-// and does not require J#. It does require .NET 2.0 (for the DeflateStream 
-// class).  
+// and does not require J#. It does require .NET 2.0 .
 // 
 // This code is released under the Microsoft Public License . 
 // See the License.txt for details.  
 //
 // Bugs:
-// 1. does not do 0..9 compression levels (not supported by DeflateStream)
-// 2. does only PKZIP encryption, which is weak.  No Strong Encryption (yet?)
-// 3. no support for reading or writing multi-disk zip archives
-// 4. no support for asynchronous operation
+// 1. no support for reading or writing multi-disk zip archives
+// 2. no support for asynchronous operation
 // 
-// But it does read and write basic zip files, and it gets reasonable compression. 
-//
 // Fri, 31 Mar 2006  14:43
 //
 
@@ -662,13 +657,19 @@ namespace Ionic.Zip
         /// <remarks>
         /// 
         /// <para>
-        /// Though the password is set on the ZipFile object, the password
-        /// actually does not apply to the archive as a whole.  Instead, it
-        /// applies to individual entries that are added to the archive, from
-        /// that point in time onward.  The "directory" of the archive - in other
-        /// words the list of files - is not encrypted with the password, The
-        /// list of filenames in the archive is in clear text.  but the contents
-        /// of the individual files are encrypted.
+        /// This password is applied to the entries, not
+        /// to the zip archive itself. 
+        /// </para>
+        /// 
+        /// <para>
+        /// Though the password is set on the ZipFile object, according to the Zip spec, the
+	/// "directory" of the archive - in other words the list of entries contained in the
+	/// archive - is not encrypted with the password, or protected in any way.  IF you
+	/// set the Password property, the password actually applies to individual entries
+	/// that are added to the archive, subsequent to the setting of this property.  The
+	/// list of filenames in the archive that is eventually created will appear in clear
+	/// text, but the contents of the individual files are encrypted.  This is how 
+	/// Zip encryption works.
         /// </para>
         /// 
         /// <para>
@@ -680,15 +681,20 @@ namespace Ionic.Zip
         /// </para>
         /// 
         /// <para>
-        /// If you read in an existing ZipFile, then set the Password property, then call
-        /// one of the ZipFile.Extract() overloads, the entry is extracted using the Password that is 
-        /// specified on the ZipFile instance. If you have not set the Password property, then
-        /// the password is null, and the entry is extracted with no password.
+	/// When setting the Password, you may also want to explicitly set the <see
+	/// cref="Encryption"/> property, to specify how to encrypt the entries added to the
+	/// ZipFile.  If you set the Password to a non-null value and do not set <see
+	/// cref="Encryption"/>, then PKZip 2.0 ("Weak") encryption is used.  This
+	/// encryption is relatively weak but is very interoperable. If you set the password
+	/// to a null value (<c>Nothing</c> in VB), Encryption is reset to None.
         /// </para>
-        /// 
+	///
         /// <para>
-        /// This password is applied to the entries, not
-        /// to the zip archive itself. 
+        /// If you read in an existing ZipFile, then set the Password property, then call
+        /// one of the ZipFile.Extract() overloads, the entry is extracted using the
+        /// Password that is specified on the ZipFile instance. If you have not set the
+        /// Password property, then the password is null, and the entry is extracted with no
+        /// password.
         /// </para>
         /// 
         /// </remarks>
@@ -703,7 +709,7 @@ namespace Ionic.Zip
         /// <code>
         ///    try
         ///    {
-        ///      using (ZipFile zip = new ZipFile("test3.zip",System.Console.Out))
+        ///      using (ZipFile zip = new ZipFile())
         ///      {
         ///        zip.AddFile("ReadMe.txt");
         ///        zip.Password= "123456!";
@@ -711,7 +717,7 @@ namespace Ionic.Zip
         ///        zip.Password= "!Secret1";
         ///        zip.AddFile("2005_Annual_Report.pdf");
         ///
-        ///        zip.Save();
+        ///        zip.Save("EncryptedArchive.zip");
         ///      }
         ///    }
         ///    catch (System.Exception ex1)
@@ -722,13 +728,13 @@ namespace Ionic.Zip
         ///
         /// <code lang="VB">
         ///  Try 
-        ///    Using zip As New ZipFile("test2.zip", System.Console.Out)
-        ///      zip.AddFile("c:\datafiles\ReadMe.txt", "")
+        ///    Using zip As New ZipFile()
+        ///      zip.AddFile("ReadMe.txt")
         ///      zip.Password = "123456!"
-        ///      zip.AddFile("c:\photos\personal\7440-N49th.png", "images")
+        ///      zip.AddFile("7440-N49th.png")
         ///      zip.Password= "!Secret1";
-        ///      zip.AddFile("c:\Desktop\2005_Annual_Report.pdf", "files\documents")
-        ///      zip.Save
+        ///      zip.AddFile("2005_Annual_Report.pdf")
+        ///      zip.Save("EncryptedArchive.zip")
         ///    End Using
         ///  Catch ex1 As System.Exception
         ///    System.Console.Error.WriteLine("exception: {0}", ex1)
@@ -737,17 +743,89 @@ namespace Ionic.Zip
         ///
         /// </example>
         /// 
+        /// <seealso cref="Ionic.Zip.ZipFile.Encryption"/>
         public String Password
         {
             set
             {
                 _Password = value;
+                if (_Password == null)
+                {
+                    Encryption = EncryptionAlgorithm.None;
+                }
+                else if (Encryption == EncryptionAlgorithm.None)
+                {
+                    Encryption = EncryptionAlgorithm.PkzipWeak;
+                }
             }
         }
 
 
 
 
+        /// <summary>
+        /// The Encryption to use for entries added to the ZipFile.
+        /// </summary>
+        ///
+	/// <remarks>
+        /// <para>
+        /// The specified Encryption is applied to the entries subsequently added to the ZipFile instance.  
+        /// </para>
+        /// 
+        /// <para>
+        /// If you set this to something other than EncryptionAlgorithm.None, you will also need to set 
+	/// the <see cref="Password"/>.
+	/// </para>
+	///
+        /// <para>
+        /// As with other properties (like <see cref="Password"/> and <see cref="ForceNoCompression"/>),
+        /// setting this property a ZipFile instance will cause that EncryptionAlgorithm to be used on
+        /// all ZipEntry items that are subsequently added to the ZipFile instance. In other words, if
+        /// you set this property after you have added items to the ZipFile, but before you have called
+        /// Save(), those items will not be encrypted or protected with a password in the resulting zip
+        /// archive. To get a zip archive with encrypted entries, set this property, along with the <see cref="Password"/>
+        /// property, before calling <c>AddFile</c>, <c>AddItem</c>, or <c>AddDirectory</c> on the ZipFile instance.
+        /// </para>
+	/// </remarks>
+        ///
+        /// <example>
+        /// <code>
+        ///    try
+        ///    {
+        ///      using (ZipFile zip = new ZipFile())
+        ///      {
+        ///        zip.Encryption= EncryptionAlgorithm.WinZipAes256;
+        ///        zip.Password= "Some.Like.It.Hot.1959!";
+        ///        zip.AddFile("ReadMe.txt");
+        ///        zip.AddFile("7440-N49th.png");
+        ///        zip.AddFile("2005_Annual_Report.pdf");
+        ///        zip.Save("EncryptedArchive.zip");
+        ///      }
+        ///    }
+        ///    catch (System.Exception ex1)
+        ///    {
+        ///      System.Console.Error.WriteLine("exception: {0}", ex1);
+        ///    }
+        /// </code>
+        ///
+        /// <code lang="VB">
+        ///  Try 
+        ///    Using zip As New ZipFile()
+        ///      zip.Encryption= EncryptionAlgorithm.WinZipAes256
+        ///      zip.Password= "Some.Like.It.Hot.1959!"
+        ///      zip.AddFile("ReadMe.txt")
+        ///      zip.AddFile("7440-N49th.png")
+        ///      zip.AddFile("2005_Annual_Report.pdf")
+        ///      zip.Save("EncryptedArchive.zip")
+        ///    End Using
+        ///  Catch ex1 As System.Exception
+        ///    System.Console.Error.WriteLine("exception: {0}", ex1)
+        ///  End Try
+        /// </code>
+        ///
+        /// </example>
+        /// 
+        /// <seealso cref="Ionic.Zip.ZipFile.Password"/>
         public EncryptionAlgorithm Encryption
         {
             get;
@@ -797,7 +875,7 @@ namespace Ionic.Zip
         ///
         /// <para>
         /// As with other properties (like <see cref="Password"/> and <see cref="ForceNoCompression"/>),
-        /// setting the corresponding delegate on the ZipFile class itself will set it on all ZipEntry
+        /// setting the corresponding delegate on a ZipFile instance will caused it to be applied to all ZipEntry
         /// items that are subsequently added to the ZipFile instance. In other words, if you set this
         /// callback after you have added files to the ZipFile, but before you have called Save(), those
         /// items will not be governed by the callback when you do call Save(). Your best bet is to 
@@ -850,63 +928,81 @@ namespace Ionic.Zip
 
         /// <summary>
         /// A callback that allows the application to specify whether compression should
-        /// be used for a given entry that is about to be added to the zip archive.
+        /// be used for entries subsequently added to the zip archive.
         /// </summary>
         ///
         /// <remarks>
         /// <para>
-        /// In some cases, applying the Deflate compression algorithm to an entry can
-        /// result an increase in the size of the data.  This "inflation" can happen with
-        /// previously compressed files, such as a zip, jpg, png, mp3, and so on.  In a few
-        /// tests, inflation on zip files can be as large as 60%!  Inflation can also happen
-        /// with very small files.  
+        /// In some cases, applying the Deflate compression algorithm to an entry *may*
+        /// result a slight increase in the size of the data.  This "inflation" can
+        /// happen with previously compressed files, such as a zip, jpg, png, mp3, and
+        /// so on; it results from adding DEFLATE framing data around incompressible data.
+        /// Inflation can also happen with very small files. Applications may wish to
+        /// avoid the use of compression in these cases. As well, applications may wish
+        /// to avoid compression to save time.
         /// </para>
         ///
         /// <para>
-        /// To handle these cases, the DotNetZip library takes this approach: first it
-        /// applies a heuristic, to determine whether it should try to compress a file or
-        /// not.  The library checks the extension of the entry, and if it is one of a
-        /// known list of uncompressible file types (mp3, zip, docx, and others), the
-        /// library will not attempt to compress the entry.  The library does not actually
-        /// check the content of the entry.  If you name a text file "Text.zip", and then
-        /// attempt to add it to a zip archive, this library will, by default, not attempt
-        /// to compress the entry.
+        /// By default, the DotNetZip library takes this approach to decide whether to
+        /// apply compression: first it applies a heuristic, to determine whether it
+        /// should try to compress a file or not.  The library checks the extension of
+        /// the entry, and if it is one of a known list of uncompressible file types
+        /// (mp3, zip, docx, and others), the library will not attempt to compress the
+        /// entry.  The library does not actually check the content of the entry.  If
+        /// you name a text file "Text.mp3", and then attempt to add it to a zip
+        /// archive, this library will, by default, not attempt to compress the entry,
+	/// based on the extension of the filename.
         /// </para>
         ///
         /// <para>
-        /// For filetypes not covered by that heuristic, the library attempts to compress
-        /// the entry, and then checks the size of the result.  If applying the Deflate
-        /// algorithm increases the size of the data, then the library discards the
-        /// compressed bytes, and stores the uncompressed file data into the zip archive,
-        /// in compliance with the zip spec.  This is an optimization where smaller size is
-        /// preferred over longer run times.
+        /// If this default behavior is not satisfactory, there are two options. First,
+	/// the application can override it by setting this <see
+	/// cref="ZipFile.WantCompression"/> callback.  This affords maximum control to
+	/// the application.  With this callback, the application can supply its own
+	/// logic for determining whether to apply the Deflate algorithm or not.  For
+	/// example, an application may desire that files over 40mb in size are never
+	/// compressed, or always compressed.  An application may desire that the first
+	/// 7 entries added to an archive are compressed, and the remaining ones are
+	/// not.  The WantCompression callback allows the application full control, on
+	/// an entry-by-entry basis.
         /// </para>
         ///
         /// <para>
-        /// Next, the library exposes this <see cref="ZipFile.WantCompression"/> callback, to
-        /// afford maximum control to the application.  With
-        /// this callback, the application can supply its own logic for determining whether
-        /// to apply the Deflate algorithm or not.  For example, an application may desire
-        /// that files over 40mb in size are never compressed, or always compressed.  An
-        /// application may desire that the first 7 entries added to an archive are
-        /// compressed, and the remaining ones are not.  The WantCompression callback
-        /// allows the application full control, on an entry-by-entry basis.
+        /// The second option for overriding the default logic regarding whether to
+        /// apply compression is the ForceNoCompression flag.  If this flag is set to
+        /// true, the compress-and-check-sizes process as decribed above, is not done,
+        /// nor is the callback invoked.  In other words, if you set ForceNoCompression
+        /// to true, andalso set the WantCompression callback, only the
+        /// ForceNoCompression flag is considered.
         /// </para>
         ///
         /// <para>
-        /// Finally, the application can specify that compression is not even tried, by setting the
-        /// ForceNoCompression flag.  In this case, the compress-and-check-sizes process as
-        /// decribed above, is not done, nor is the callback invoked.
+        /// This is how the library determines whether compression will be attempted for 
+	/// an entry.  If it is to be attempted, the library reads the entry, runs it through
+        /// the deflate algorithm, and then checks the size of the result.  If applying
+        /// the Deflate algorithm increases the size of the data, then the library
+        /// discards the compressed bytes, re-reads the raw entry data, and stores the
+        /// uncompressed file data into the zip archive, in compliance with the zip
+        /// spec.  This is an optimization where smaller size is preferred over longer
+        /// run times. The re-reading is gated on the <see
+        /// cref="WillReadTwiceOnInflation"/> callback, if it is set. This callback applies
+	/// independently of the WantCompression callback.
         /// </para>
         ///
         /// <para>
-        /// And, if you have read this far, I would like to point out that a single person 
-        /// wrote all the code and documentation for this library, and it is about time you
-        /// donated $5 to the cause.  See http://cheeso.members.winisp.net/DotNetZipDonate.aspx.
+	/// If by the logic described above, compression is not to be attempted for an entry, 
+	/// the library reads the entry, and simply stores the entry data uncompressed. 
+        /// </para>
+	///
+        /// <para>
+        /// And, if you have read this far, I would like to point out that a single
+        /// person wrote all the code that does what is described above, and also wrote
+        /// the description.  Isn't it about time you donated $5 in appreciation?  The
+        /// money goes to a charity. See
+        /// http://cheeso.members.winisp.net/DotNetZipDonate.aspx.
         /// </para>
         ///
         /// </remarks>
-        /// <seealso cref="Ionic.Zip.ReReadApprovalCallback"/>
         /// <seealso cref="Ionic.Zip.ZipFile.WillReadTwiceOnInflation"/>
         public WantCompressionCallback WantCompression
         {

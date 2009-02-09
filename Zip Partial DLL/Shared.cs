@@ -104,12 +104,12 @@ namespace Ionic.Zip
 
         internal static int ReadSignature(System.IO.Stream s)
         {
-            return _ReadFourBytes(s, "Could not read signature - no data!");
+            return _ReadFourBytes(s, "Could not read signature - no data!  (position 0x{0:X8})");
         }
 
         internal static int ReadInt(System.IO.Stream s)
         {
-            return _ReadFourBytes(s, "Could not read block - no data!");
+            return _ReadFourBytes(s, "Could not read block - no data!  (position 0x{0:X8})");
         }
 
         private static int _ReadFourBytes(System.IO.Stream s, string message)
@@ -117,7 +117,7 @@ namespace Ionic.Zip
             int n = 0;
             byte[] block = new byte[4];
             n = s.Read(block, 0, block.Length);
-            if (n != block.Length) throw new BadReadException(message);
+            if (n != block.Length) throw new BadReadException(String.Format(message, s.Position));
             int data = (((block[3] * 256 + block[2]) * 256) + block[1]) * 256 + block[0];
             return data;
         }

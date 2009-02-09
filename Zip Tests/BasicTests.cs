@@ -273,7 +273,7 @@ namespace Ionic.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_AddFile_OnlyZeroLengthFiles()
         {
-            _Internal_ZeroLengthFiles(_rnd.Next(3) + 3, "CreateZip_AddFile_OnlyZeroLengthFiles");
+            _Internal_ZeroLengthFiles(_rnd.Next(33) + 3, "CreateZip_AddFile_OnlyZeroLengthFiles");
         }
 
         [TestMethod]
@@ -293,7 +293,7 @@ namespace Ionic.Zip.Tests.Basic
             for (i = 0; i < fileCount; i++)
                 FilesToZip[i] = TestUtilities.CreateUniqueFile("zerolength", TopLevelDir);
 
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            using (ZipFile zip = new ZipFile())
             {
                 //zip.StatusMessageTextWriter = System.Console.Out;
                 for (i = 0; i < FilesToZip.Length; i++)
@@ -302,7 +302,7 @@ namespace Ionic.Zip.Tests.Basic
                         System.IO.Path.GetFileName(FilesToZip[i]));
                     zip.AddFile(pathToUse);
                 }
-                zip.Save();
+                zip.Save(ZipFileToCreate);
             }
 
             Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), FilesToZip.Length,
@@ -381,7 +381,7 @@ namespace Ionic.Zip.Tests.Basic
             TestContext.WriteLine("\n------------\nExtracting and validating checksums...");
 
             // validate all the checksums
-            using (ZipFile zip2 = new ZipFile(ZipFileToCreate))
+            using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
             {
                 foreach (ZipEntry e in zip2)
                 {
@@ -587,10 +587,10 @@ namespace Ionic.Zip.Tests.Basic
 
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);
 
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            using (ZipFile zip = new ZipFile())
             {
                 zip.AddDirectory(System.IO.Path.GetFileName(DirToZip));
-                zip.Save();
+                zip.Save(ZipFileToCreate);
             }
 
             Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), entries,
@@ -767,17 +767,17 @@ namespace Ionic.Zip.Tests.Basic
                 int i, j;
                 int entries = 0;
 
-                int subdirCount = _rnd.Next(3) + 2;
+                int subdirCount = _rnd.Next(23) + 7;
                 for (i = 0; i < subdirCount; i++)
                 {
                     string Subdir = System.IO.Path.Combine(dirToZip, String.Format("dir{0:D3}", i));
                     System.IO.Directory.CreateDirectory(Subdir);
 
-                    int fileCount = _rnd.Next(4);  // sometimes zero
+                    int fileCount = _rnd.Next(8);  // sometimes zero
                     for (j = 0; j < fileCount; j++)
                     {
                         String file = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.ext", j));
-                        TestUtilities.CreateAndFillFile(file, _rnd.Next(750) + 500);
+                        TestUtilities.CreateAndFillFile(file, _rnd.Next(10750) + 50);
                         entries++;
                     }
                 }

@@ -166,7 +166,7 @@ namespace Ionic.Zip.Tests.Extended
 
                         if (j != 1)
                             Assert.IsTrue(e.CompressedSize <= e.UncompressedSize,
-                      "The zip entry {0} has expanded ({1} > {2}).", e.FileName, e.CompressedSize, e.UncompressedSize);
+                      "In trial {0}, Entry '{1}'  has expanded ({2} > {3}).", j, e.FileName, e.CompressedSize, e.UncompressedSize);
 
                         e.Extract(extractDir);
                         filename = System.IO.Path.Combine(extractDir, e.FileName);
@@ -200,13 +200,13 @@ namespace Ionic.Zip.Tests.Extended
                     System.IO.Directory.CreateDirectory(Subdir);
                     //var checksums = new Dictionary<string, string>();
 
-                    //int fileCount = _rnd.Next(10) + 10;
-                    int fileCount = 4;
+                    int fileCount = _rnd.Next(10) + 10;
+                    //int fileCount = 4;
                     for (int i = 0; i < fileCount; i++)
                     {
                         filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D2}.txt", i));
-                        //int filesize = _rnd.Next(34000) + 5000;
-                        int filesize = 2000;
+                        int filesize = _rnd.Next(34000) + 5000;
+                        //int filesize = 2000;
                         TestUtilities.CreateAndFillFileText(filename, filesize);
                         entriesAdded++;
                         //var chk = TestUtilities.ComputeChecksum(filename);

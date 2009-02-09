@@ -155,7 +155,7 @@ namespace Ionic.Zip.Tests.Zip64
 
 
         [TestMethod]
-        public void CreateZip_ConvertToZip64()
+        public void CreateZip_Zip64_Convert()
         {
             string trialDescription = "Trial {0}/{1}:  save archive as 'zip64={2}', then open it and re-save with 'zip64={3}'";
             Zip64Option[] z64a = { 

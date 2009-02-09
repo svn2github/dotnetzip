@@ -278,7 +278,7 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal static string GenerateRandomPassword()
         {
-            int length = _rnd.Next(5) + 5;
+            int length = _rnd.Next(22) + 12;
             return GenerateRandomPassword(length);
         }
 
