@@ -20,7 +20,41 @@ namespace Ionic.Zip
     /// An enum that provides the various encryption algorithms supported by this library.
     /// </summary>
     /// <remarks>
-    /// The WinZip AES algorithms are not supported on the .NET Compact Framework. 
+    /// <para>
+    /// PkzipWeak implies the use of Zip 2.0 encryption, which is known to be weak and subvertible. 
+    /// </para>
+    /// <para>
+    /// A note on interoperability: Values of PkzipWeak and None are specified in the PKWare AppNote.txt document, are 
+    /// considered to be "standard".  Zip archives produced using these options will be interoperable with many other
+    /// zip tools and libraries, including Windows Explorer.
+    /// </para>
+    /// <para>
+    /// Values of WinZipAes128 and WinZipAes256 are not part of the Zip specification, but rather imply the use of a 
+    /// vendor-specific extension from WinZip. If you want to produce interoperable Zip archives, do not use these values. 
+    /// For example, if you
+    /// produce a zip archive using WinZipAes256, you will be able to open it in Windows Explorer on Windows XP and Vista, 
+    /// but you will not be able to extract entries; trying this will lead to an "unspecified error". For this reason, 
+    /// some people have said that a zip archive that uses WinZip's AES encryption is not actually a zip archive at all.
+    /// A zip archive produced this way will be readable with the WinZip tool
+    /// (Version 11 and beyond).
+    /// </para>
+    /// <para>
+    /// There are other third-party tools and libraries, both commercial and otherwise, that support WinZip's 
+    /// AES encryption. These will be able to read AES-encrypted zip archives produced by DotNetZip, and conversely applications 
+    /// that use DotNetZip to read zip archives will be able to read AES-encrypted archives produced by those tools
+    /// or libraries.  Consult the documentation for those other tools and libraries to find out if WinZip's AES 
+    /// encryption is supported. 
+    /// </para>
+    /// <para>
+    /// In case you care: According to the WinZip specification, the actual key used is derived from the 
+    /// <see cref="Password"/> via an algorithm that complies with RFC 2898, using an iteration count of 1000.
+    /// I am no security expert, but I think you should use a long-ish password if you employ 256-bit AES
+    /// encryption.  Make it 16 characters or more.  
+    /// </para>
+    /// <para>
+    /// The WinZip AES algorithms are not supported with the version of DotNetZip that runs on the .NET Compact Framework. 
+    /// This is because .NET CF lacks the HMACSHA1 class that is required for producing the archive.
+    /// </para>
     /// </remarks>
     public enum EncryptionAlgorithm
     {
