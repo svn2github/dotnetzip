@@ -47,7 +47,7 @@ namespace Ionic.Zip
     /// </para>
     /// <para>
     /// In case you care: According to the WinZip specification, the actual key used is derived from the 
-    /// <see cref="Password"/> via an algorithm that complies with RFC 2898, using an iteration count of 1000.
+    /// <see cref="ZipEntry.Password"/> via an algorithm that complies with RFC 2898, using an iteration count of 1000.
     /// I am no security expert, but I think you should use a long-ish password if you employ 256-bit AES
     /// encryption.  Make it 16 characters or more.  
     /// </para>

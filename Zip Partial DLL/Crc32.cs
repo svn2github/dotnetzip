@@ -48,7 +48,7 @@ namespace Ionic.Zip
             get
             {
                 // return one's complement of the running result
-                return (Int32)(~_RunningCrc32Result);
+                return unchecked((Int32)(~_RunningCrc32Result));
             }
         }
 
