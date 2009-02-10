@@ -29,11 +29,11 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 <pre lang="VB" numberLines="true" outlining="true"
   title="Create a Zip">
  Try 
-     Using zip As ZipFile = New ZipFile("MyZipFile.zip")
-         zip.AddFile("c:\photos\personal\7440-N49th.png")
-         zip.AddFile("c:\Desktop\2005_Annual_Report.pdf")
+     Using zip As ZipFile = New ZipFile
+         zip.AddFile("c:\photos\personal\7440-N49th.png", "")
+         zip.AddFile("c:\Desktop\2005_Annual_Report.pdf", "")
          zip.AddFile("ReadMe.txt")
-         zip.Save
+         zip.Save("MyZipFile.zip")
      End Using
  Catch ex1 As Exception
      Console.Error.WriteLine("exception: {0}", ex1.ToString)
@@ -64,7 +64,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 
 <pre lang="VB" numberLines="true" outlining="true"
   title="ExtractAll, and use the status TextWriter">
-Using zip As new ZipFile(FilePath)
+Using zip As  ZipFile = ZipFile.Read(FilePath)
   zip.StatusMessageTextWriter= System.Console.Out
   'Status Messages will be sent to the console during extraction
   zip.ExtractAll()
@@ -79,20 +79,38 @@ End Using
 <pre lang="VB" numberLines="true" outlining="true"
   title="Create a Zip, entries get passwords">
 Try 
-  Using zip As New ZipFile("Secret.zip")
+  Using zip As New ZipFile
     'the first entry is not protected by a password
     zip.AddFile("c:\datafiles\ReadMe.txt", "")
     zip.Password = "123456!"
     zip.AddFile("c:\photos\personal\7440-N49th.png", "images")
     zip.Password= "!Secret1";
     zip.AddFile("c:\Desktop\2005_Annual_Report.pdf", "files\documents")
-    zip.Save
+    zip.Save("Secret.zip")
   End Using
 Catch ex1 As System.Exception
   System.Console.Error.WriteLine("exception: {0}", ex1)
 End Try
 </pre>
 
+<hr>
+<p>Add a few files to a zip file, using WinZip-compatible AES encryption on the entries: </p>
+
+<pre lang="VB" numberLines="true" outlining="true"
+  title="Create a Zip, using AES encryption for the entries">
+Try 
+  Using zip As New ZipFile
+    zip.Password = "The.Silvertones.Box.Set!"
+    zip.Encryption = EncryptionAlgorithm.WinZipAes256
+    zip.AddFile("c:\datafiles\RawData-2008-12-20.csv", "")
+    zip.AddFile("c:\photos\personal\7440-N49th.png", "images")
+    zip.AddFile("c:\Desktop\2005_Annual_Report.pdf", "files\documents")
+    zip.Save("AES-Encrypted-Secret.zip")
+  End Using
+Catch ex1 As System.Exception
+  System.Console.Error.WriteLine("exception: {0}", ex1)
+End Try
+</pre>
 
 
 <hr>
@@ -111,6 +129,25 @@ Using zip As new ZipFile(FilePath)
     Next
 End Using
 </pre>
+
+
+<hr>
+<p>Create a zip using ZIP64 extensions: </p>
+
+<pre lang="VB" numberLines="true" outlining="true"
+  title="Create a Zip that uses ZIP64 extensions">
+ Try 
+     Using zip As ZipFile = New ZipFile
+         zip.UseZip64WhenSaving = Zip64Option.AsNecessary
+         zip.AddFile("c:\datafiles\RawData-2009-02-12.csv", "")
+         zip.AddFile("ReadMe.txt")
+         zip.Save(String.Format("backup-{0}.zip", DateTime.Now.ToString("yyyyMMMdd")))
+     End Using
+ Catch ex1 As Exception
+     Console.Error.WriteLine("exception: {0}", ex1.ToString)
+ End Try
+</pre>
+
 
 
 

@@ -23,7 +23,7 @@ namespace Ionic.Zip
 {
     /// <summary>
     /// Calculates a 32bit Cyclic Redundancy Checksum (CRC) using the
-    /// same polynomial used by Zip. This type ie generally not used directly
+    /// same polynomial used by Zip. This type is used internally by DotNetZip; it is generally not used directly
     /// by applications wishing to create, read, or manipulate zip archive files.
     /// </summary>
     public class CRC32
@@ -186,15 +186,18 @@ namespace Ionic.Zip
 
 
     /// <summary>
-    /// A read-only, forward-only Stream that calculates a CRC, a checksum, on all bytes read, 
+    /// A Stream that calculates a CRC32 (a checksum) on all bytes read, 
     /// or on all bytes written.
     /// </summary>
     ///
     /// <remarks>
+    /// <para>
     /// This class can be used to verify the CRC of a ZipEntry when reading from a stream, 
     /// or to calculate a CRC when writing to a stream.  The stream should be used to either 
     /// read, or write, but not both.  If you intermix reads and writes, the results are
-    /// not defined.
+    /// not defined. 
+    /// </para>
+    /// <para>This class is intended primarily for use internally by the DotNetZip library.</para>
     /// </remarks>
     public class CrcCalculatorStream : System.IO.Stream
     {
@@ -292,35 +295,35 @@ namespace Ionic.Zip
         }
 
         /// <summary>
-        /// Indicates whether the stream supports reading. Always returns true.
+        /// Indicates whether the stream supports reading. 
         /// </summary>
         public override bool CanRead
         {
-            get { return true; }
+            get { return _InnerStream.CanRead; }
         }
 
         /// <summary>
-        /// Indicates whether the stream supports seeking. Always returns false.
+        /// Indicates whether the stream supports seeking. 
         /// </summary>
         public override bool CanSeek
         {
-            get { return false; }
+            get { return _InnerStream.CanSeek; }
         }
 
         /// <summary>
-        /// Indicates whether the stream supports writing. Always returns true.
+        /// Indicates whether the stream supports writing. 
         /// </summary>
         public override bool CanWrite
         {
-            get { return true; }
+            get { return _InnerStream.CanWrite; }
         }
 
         /// <summary>
-        /// Not implemented.
+        /// Flush the stream.
         /// </summary>
         public override void Flush()
         {
-            throw new NotImplementedException();
+	    _InnerStream.Flush(); 
         }
 
         /// <summary>

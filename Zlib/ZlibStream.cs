@@ -272,14 +272,18 @@ namespace Ionic.Zlib
         /// <param name="buffer">The buffer into which the read data should be placed.</param>
         /// <param name="offset">the offset within that data array to put the first byte read.</param>
         /// <param name="count">the number of bytes to read.</param>
+        /// <returns>the number of bytes actually read</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
             return _baseStream.Read(buffer, offset, count);
         }
 
         /// <summary>
-        /// Calling this method always throws a NotImplementedException.
+        /// Calling this method always throws a <see cref="NotImplementedException"/>.
         /// </summary>
+        /// <param name="offset">this is irrelevant, since it will always throw!</param>
+        /// <param name="origin">this is irrelevant, since it will always throw!</param>
+        /// <returns>irrelevant!</returns>
         public override long Seek(long offset, System.IO.SeekOrigin origin)
         {
             throw new NotImplementedException();
@@ -288,6 +292,7 @@ namespace Ionic.Zlib
         /// <summary>
         /// Calling this method always throws a NotImplementedException.
         /// </summary>
+        /// <param name="value">this is irrelevant, since it will always throw!</param>
         public override void SetLength(long value)
         {
             throw new NotImplementedException();

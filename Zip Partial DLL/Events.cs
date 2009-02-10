@@ -13,11 +13,18 @@ namespace Ionic.Zip
 
     /// <summary>
     /// Delegate for the callback by which the application tells the libraary whether
-    /// to use compression on the file or not.  Using this callback, the application can 
+    /// to use compression on the file or not.  
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Using this callback, the application can 
     /// specify that previously-compressed files (.mp3, .png, .docx, etc) should 
     /// not be compressed, for example, or can turn on or off compression based on any 
     /// other factor.
-    /// </summary>
+    /// </para>
+    /// </remarks>
+    /// <seealso cref="Ionic.Zip.ZipFile.WantCompression"/>
+
     public delegate bool WantCompressionCallback(string localFilename, string filenameInArchive);
 
 
@@ -131,7 +138,8 @@ namespace Ionic.Zip
 
 
     /// <summary>
-    /// Provides information about the progress of a save or extract operation.
+    /// Provides information about the progress of a save, read, or extract operation. 
+    /// This is a base class; you will probably use one of the classes derived from this one.
     /// </summary>
     public class ZipProgressEventArgs : EventArgs
     {
@@ -190,7 +198,7 @@ namespace Ionic.Zip
         }
 
         /// <summary>
-        /// Returns the archive name.
+        /// Returns the archive name associated to this event.
         /// </summary>
         public String ArchiveName
         {

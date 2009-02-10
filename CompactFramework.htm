@@ -18,9 +18,8 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 <body>
 <h1>DotNetZip works with the .NET Compact Framework</h1>
 
-<p>As of v1.7.1.10, DotNetZip runs on the .NET Compact Framework v3.5.
-There is a special reduced version of the library that runs on smart
-devices.  </p>
+<p>As of v1.7.1.10, there is a special version of DotNetZip that runs on the .NET Compact Framework v2.0 or v3.5.
+</p>
 
 <p>The programming model is exactly the same as for the regular
 DotNetZip library. There are a few differences in operation.</p>
@@ -35,6 +34,8 @@ set properly.
 <li>The CF version of DotNetZip is not able to produce Self-extracting
 archives.  The ZipFile.SaveSelfExtractor() method is not available in
 the CF version of DotNetZip.
+
+<li>The CF version does not support encryption using WinZipAes128 or  WinZipAes256. 
 
 </ol>
 
@@ -51,11 +52,11 @@ need to use Visual Studio 2008 or later.  </p>
 </li>
 
 <li>Create a smart device project.  Specify that it will use the .NET
-Compact Framework v3.5.  This is required in order to get the
-Compression libraries. </li>
+Compact Framework v2.0 or v3.5. 
+</li>
 
 <li>Add a Reference to the CF Library for DotNetZip.  
-The filename is Ionic.Utils.Zip.CF.dll </li>
+The filename is Ionic.Zip.CF.dll </li>
 
 <li>Build your application as normal. </li>
 
@@ -63,6 +64,10 @@ The filename is Ionic.Utils.Zip.CF.dll </li>
 
 
 <h2>About the Project Design</h2>
+
+<p>If you are a developer who wants to modify or extend the DotNetZip library itself, 
+the following may be of interest. 
+</p>
 
 <p> The CF-Library project in the DotNetZip source distribution includes
 all of the source files as <i>Links</i> to the original files in the

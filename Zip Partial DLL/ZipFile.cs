@@ -44,9 +44,10 @@ namespace Ionic.Zip
     /// <summary>
     /// The ZipFile type represents a zip archive file.  This is the main type in the 
     /// DotNetZip class library.  This class reads and writes zip files, as defined in the format
-    /// for zip described by PKWare.  The compression for this implementation is based on the
+    /// for zip described by PKWare.  The compression for this implementation was, at one time, based on the
     /// System.IO.Compression.DeflateStream base class in the .NET Framework
-    /// base class library, for v2.0 and later.
+    /// base class library, available in v2.0 and later of the .NET Framework. As of v1.7 of DotNetZip,
+    /// the compression is provided by a managed-code version of Zlib, included with DotNetZip. 
     /// </summary>
     public partial class ZipFile : System.Collections.Generic.IEnumerable<ZipEntry>,
     IDisposable
@@ -215,7 +216,7 @@ namespace Ionic.Zip
         /// However, because the UTF-8 portion of the PKWare specification is not broadly
         /// supported by other zip libraries and utilities, such zip files may not
         /// be readable by your favorite zip tool or archiver. In other words, interoperability
-        /// will suffer if you set this flag to true. 
+        /// will decrease if you set this flag to true. 
         /// </para>
         /// <para>
         /// In particular, Zip files created with strict adherence to the PKWare 
@@ -232,9 +233,11 @@ namespace Ionic.Zip
         /// implement the PKWare specification in this regard.
         /// </para>
         /// <para>
-        /// As a result, we have the curious situation that "correct" 
-        /// behavior by the DotNetZip library during zip creation will result 
-        /// in zip files that are not able to be read by various other tools.
+        /// As a result, we have the unfortunate situation that "correct" 
+        /// behavior by the DotNetZip library with regard to Unicode during zip creation will result 
+        /// in zip files that are readable by strictly compliant and current tools (for example the most 
+	/// recent release of the commercial WinZip tool); but these zip files will
+	/// not  be readable by various other tools or libraries, including Windows Explorer.
         /// </para>
         /// <para>
         /// The DotNetZip library can read and write zip files 
@@ -280,7 +283,7 @@ namespace Ionic.Zip
         /// neither IBM437 nor UTF-8.   Therefore 
         /// if you set the encoding explicitly when creating a zip archive, you must take care upon 
         /// reading the zip archive to use the same code page.  If you get it wrong, the behavior is 
-        /// undefined and may result in incorrect filenames, exceptions, and acne.  
+        /// undefined and may result in incorrect filenames, exceptions, stomach upset, hair loss, and acne.  
         /// </para>
         /// </remarks>
         /// <seealso cref="ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</seealso>
@@ -395,8 +398,8 @@ namespace Ionic.Zip
         /// cref="ZipEntry.FileName"/> and <see cref="ZipEntry.Comment"/> for each ZipEntry in the zip file,
         /// for values that cannot be encoded with the default codepage for zip files, IBM437.
         /// This is why this property is "provisional".  In all cases, IBM437 is used where
-        /// possible (where no loss of data would result). It is possible, therefore, to have a given 
-        /// entry with a Comment encoded in IBM437 and a FileName encoded with the specified codepage. 
+        /// possible, in other words, where no loss of data would result. It is possible, therefore, to have a given 
+        /// entry with a Comment encoded in IBM437 and a FileName encoded with the specified "provisional" codepage. 
         /// </para>
         ///
         /// <para>
@@ -421,7 +424,7 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        /// When using DotNetZip to read zip archives that have been created by a different
+        /// When using DotNetZip to read a zip archive that has been created by a different
         /// tool or library, and the zip archive uses an arbitrary code page, you must
         /// specify the encoding to use before or when the zipfile is READ.  This means you
         /// must use a ZipFile.Read() method that allows you to specify a
@@ -432,7 +435,7 @@ namespace Ionic.Zip
         ///
         /// <para>
         /// When using an arbitrary, non-UTF8 code page for encoding, there is no standard
-        /// way for the creator application - whether DotNetZip, WinRar, or something else -
+        /// way for the creator application - whether DotNetZip, WinZip, WinRar, or something else -
         /// to specify in the zip file which codepage has been used for the entries. As a result, readers of
         /// zip files are not able to inspect the zip file and determine the codepage that
         /// was used for the entries contained within it.  It is left to the application to
@@ -440,7 +443,8 @@ namespace Ionic.Zip
         /// use an incorrect codepage when reading a zipfile, you will get entries with
         /// filenames that are incorrect, and the incorrect filenames may even contain characters that are not
         /// legal for use within filenames in Windows. Extracting entries with illegal
-        /// characters in the filenames will lead to exceptions. Caveat Emptor.
+        /// characters in the filenames will lead to exceptions. It's too bad, but this is just the
+	/// way things are with code pages in zip files. Caveat Emptor.
         /// </para>
         /// </remarks>
         /// 
@@ -2087,11 +2091,12 @@ namespace Ionic.Zip
         /// <remarks>
         /// <para>
         /// This method adds a file to a zip archive, or, if the file already exists in the zip archive, 
-        /// this method Updates the content of that given filename in the zip archive.
+        /// this method Updates the content of that given filename in the zip archive.  
+	/// The <c>UpdateFile</c> method might more accurately be called "AddOrUpdateFile".
         /// </para>
         ///
         /// <para>
-        /// Upon success, there is no way for the application to learn whether the file was added or updated. 
+        /// Upon success, there is no way for the application to learn  whether the file was added versus updated. 
         /// </para>
         ///
         /// </remarks>
