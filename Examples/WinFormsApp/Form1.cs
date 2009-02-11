@@ -384,7 +384,8 @@ namespace WinFormsExample
                             _nFilesCompleted + 1, _entriesToZip, e.CurrentEntry.FileName);
                     }
 
-                    int xferred = e.BytesTransferred >> _progress2MaxFactor;
+                    // downcast should be safe because we have shifted e.BytesTransferred
+                    int xferred = (int) (e.BytesTransferred >> _progress2MaxFactor);
 
                     this.progressBar2.Value = (xferred >= this.progressBar2.Maximum)
                         ? this.progressBar2.Maximum

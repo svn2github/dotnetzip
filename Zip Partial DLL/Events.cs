@@ -148,7 +148,7 @@ namespace Ionic.Zip
         private ZipEntry _latestEntry;
         private ZipProgressEventType _flavor;
         private String _archiveName;
-        private int _bytesTransferred;
+        private Int64 _bytesTransferred;
         private Int64 _totalBytesToTransfer;
 
 
@@ -210,7 +210,7 @@ namespace Ionic.Zip
         /// <summary>
         /// The number of bytes read or written so far for this entry.  
         /// </summary>
-        public int BytesTransferred
+        public Int64 BytesTransferred
         {
             get { return _bytesTransferred; }
             set { _bytesTransferred = value; }
@@ -263,7 +263,7 @@ namespace Ionic.Zip
             return x;
         }
 
-        internal static ReadProgressEventArgs ByteUpdate(string archiveName, ZipEntry entry, int bytesXferred, int totalBytes)
+        internal static ReadProgressEventArgs ByteUpdate(string archiveName, ZipEntry entry, Int64 bytesXferred, Int64 totalBytes)
         {
             var x = new ReadProgressEventArgs(archiveName, ZipProgressEventType.Reading_ArchiveBytesRead);
             x.CurrentEntry = entry;
@@ -310,7 +310,7 @@ namespace Ionic.Zip
         { }
 
 
-        internal static SaveProgressEventArgs ByteUpdate(string archiveName, ZipEntry entry, int bytesXferred, int totalBytes)
+        internal static SaveProgressEventArgs ByteUpdate(string archiveName, ZipEntry entry, Int64 bytesXferred, Int64 totalBytes)
         {
             var x = new SaveProgressEventArgs(archiveName, ZipProgressEventType.Saving_EntryBytesRead);
             x.ArchiveName = archiveName;

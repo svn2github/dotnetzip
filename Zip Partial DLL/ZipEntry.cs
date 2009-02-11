@@ -1651,7 +1651,7 @@ namespace Ionic.Zip
             }
         }
 
-        private void OnWriteBlock(int bytesXferred, int totalBytesToXfer)
+        private void OnWriteBlock(Int64 bytesXferred, Int64 totalBytesToXfer)
         {
             _ioOperationCanceled = _zipfile.OnSaveBlock(this, bytesXferred, totalBytesToXfer);
         }
@@ -2824,11 +2824,11 @@ namespace Ionic.Zip
                     input = System.IO.File.OpenRead(LocalFileName);
                 }
 
-                int fileLength = 0;
+                long fileLength = 0;
                 if (_sourceStream == null)
                 {
                     System.IO.FileInfo fi = new System.IO.FileInfo(LocalFileName);
-                    fileLength = (int)fi.Length;
+                    fileLength = fi.Length;
                 }
 
                 // wrap a CRC Calculator Stream around the raw input stream. 

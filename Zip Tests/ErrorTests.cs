@@ -197,7 +197,7 @@ namespace Ionic.Zip.Tests.Error
                 Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe");
 
             // try reading the invalid zipfile - this should fail
-            using (ZipFile zip = new ZipFile(filename))
+            using (ZipFile zip = ZipFile.Read(filename))
             {
                 foreach (ZipEntry e in zip)
                 {

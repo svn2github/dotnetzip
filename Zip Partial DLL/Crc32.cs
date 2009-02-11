@@ -32,7 +32,7 @@ namespace Ionic.Zip
         /// indicates the total number of bytes read on the CRC stream.
         /// This is used when writing the ZipDirEntry when compressing files.
         /// </summary>
-        public Int32 TotalBytesRead
+        public Int64 TotalBytesRead
         {
             get
             {
@@ -175,7 +175,7 @@ namespace Ionic.Zip
 
 
         // private member vars
-        private Int32 _TotalBytesRead;
+        private Int64 _TotalBytesRead;
         private static UInt32[] crc32Table;
         private const int BUFFER_SIZE = 8192;
         private UInt32 _RunningCrc32Result = 0xFFFFFFFF;
@@ -213,7 +213,7 @@ namespace Ionic.Zip
         /// This is either the total number of bytes read, or the total number
         /// of bytes written, depending on the direction of this stream.
         /// </remarks>
-        public int TotalBytesSlurped
+        public Int64 TotalBytesSlurped
         {
             get { return _Crc32.TotalBytesRead; }
         }
