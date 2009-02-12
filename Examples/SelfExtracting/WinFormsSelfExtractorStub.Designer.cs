@@ -47,7 +47,7 @@
             // btnExtract
             // 
             this.btnExtract.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnExtract.Location = new System.Drawing.Point(398, 237);
+            this.btnExtract.Location = new System.Drawing.Point(328, 239);
             this.btnExtract.Name = "btnExtract";
             this.btnExtract.Size = new System.Drawing.Size(60, 23);
             this.btnExtract.TabIndex = 0;
@@ -58,7 +58,7 @@
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCancel.Location = new System.Drawing.Point(464, 237);
+            this.btnCancel.Location = new System.Drawing.Point(394, 239);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(60, 23);
             this.btnCancel.TabIndex = 1;
@@ -70,16 +70,16 @@
             // 
             this.txtExtractDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtExtractDirectory.Location = new System.Drawing.Point(8, 137);
+            this.txtExtractDirectory.Location = new System.Drawing.Point(8, 139);
             this.txtExtractDirectory.Name = "txtExtractDirectory";
-            this.txtExtractDirectory.Size = new System.Drawing.Size(483, 20);
+            this.txtExtractDirectory.Size = new System.Drawing.Size(413, 20);
             this.txtExtractDirectory.TabIndex = 2;
             // 
             // label1
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(5, 121);
+            this.label1.Location = new System.Drawing.Point(5, 123);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(100, 13);
             this.label1.TabIndex = 3;
@@ -88,7 +88,7 @@
             // btnDirBrowse
             // 
             this.btnDirBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDirBrowse.Location = new System.Drawing.Point(497, 134);
+            this.btnDirBrowse.Location = new System.Drawing.Point(427, 136);
             this.btnDirBrowse.Name = "btnDirBrowse";
             this.btnDirBrowse.Size = new System.Drawing.Size(25, 23);
             this.btnDirBrowse.TabIndex = 4;
@@ -100,7 +100,7 @@
             // 
             this.chk_Overwrite.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.chk_Overwrite.AutoSize = true;
-            this.chk_Overwrite.Location = new System.Drawing.Point(11, 163);
+            this.chk_Overwrite.Location = new System.Drawing.Point(11, 165);
             this.chk_Overwrite.Name = "chk_Overwrite";
             this.chk_Overwrite.Size = new System.Drawing.Size(130, 17);
             this.chk_Overwrite.TabIndex = 6;
@@ -113,7 +113,7 @@
             this.chk_OpenExplorer.AutoSize = true;
             this.chk_OpenExplorer.Checked = true;
             this.chk_OpenExplorer.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chk_OpenExplorer.Location = new System.Drawing.Point(11, 182);
+            this.chk_OpenExplorer.Location = new System.Drawing.Point(11, 184);
             this.chk_OpenExplorer.Name = "chk_OpenExplorer";
             this.chk_OpenExplorer.Size = new System.Drawing.Size(152, 17);
             this.chk_OpenExplorer.TabIndex = 7;
@@ -139,13 +139,13 @@
             this.txtComment.Name = "txtComment";
             this.txtComment.ReadOnly = true;
             this.txtComment.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtComment.Size = new System.Drawing.Size(514, 91);
+            this.txtComment.Size = new System.Drawing.Size(444, 93);
             this.txtComment.TabIndex = 9;
             // 
             // btnContents
             // 
             this.btnContents.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnContents.Location = new System.Drawing.Point(302, 237);
+            this.btnContents.Location = new System.Drawing.Point(232, 239);
             this.btnContents.Name = "btnContents";
             this.btnContents.Size = new System.Drawing.Size(90, 23);
             this.btnContents.TabIndex = 10;
@@ -155,23 +155,27 @@
             // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(8, 205);
+            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar1.Location = new System.Drawing.Point(8, 207);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(513, 11);
+            this.progressBar1.Size = new System.Drawing.Size(442, 11);
             this.progressBar1.TabIndex = 11;
             // 
             // progressBar2
             // 
-            this.progressBar2.Location = new System.Drawing.Point(8, 220);
+            this.progressBar2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar2.Location = new System.Drawing.Point(8, 222);
             this.progressBar2.Name = "progressBar2";
-            this.progressBar2.Size = new System.Drawing.Size(513, 11);
+            this.progressBar2.Size = new System.Drawing.Size(442, 11);
             this.progressBar2.TabIndex = 12;
             // 
             // lblStatus
             // 
             this.lblStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(9, 241);
+            this.lblStatus.Location = new System.Drawing.Point(9, 243);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(0, 13);
             this.lblStatus.TabIndex = 13;
@@ -180,7 +184,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(534, 267);
+            this.ClientSize = new System.Drawing.Size(464, 269);
             this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.progressBar2);
             this.Controls.Add(this.progressBar1);
@@ -197,6 +201,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(480, 200);
             this.Name = "WinFormsSelfExtractorStub";
             this.Text = "DotNetZip Self-extractor (www.codeplex.com/DotNetZip)";
             this.ResumeLayout(false);

@@ -1,26 +1,55 @@
-﻿namespace Ionic.Zip
+namespace Ionic.Zip
 {
+    // The using statements must be inside the namespace scope, because when the SFX is being 
+    // generated, this module gets concatenated with other source code and then compiled.
+
     using System;
     using System.Reflection;
     using System.IO;
     using System.Windows.Forms;
-
 
     public partial class WinFormsSelfExtractorStub : Form
     {
         //const string IdString = "DotNetZip Self Extractor, see http://www.codeplex.com/DotNetZip";
         const string DllResourceName = "Ionic.Zip.dll";
 
+	int entryCount;
+
         delegate void ExtractEntryProgress(ExtractProgressEventArgs e);
+
+        void _SetDefaultExtractLocation()
+	{
+	    // ok, this looks odd, I know. First we set the Textbox to contain a 
+	    // particular string.  Then we test to see if the value begins with 
+	    // the first part of the string and ends with the last part, and if it
+	    // does, then we change the value.  When would that not get replaced? 
+	    //
+
+	    // Well, here's the thing.  This module has to compile as it is, as a
+	    // standalone sample.  But then, inside DotNetZip, when generating an SFX, 
+	    // we do a text.Replace on @@VALUE and insert a different value. 
+
+	    // So the effect is, with a straight compile, the value gets SpecialFolder.Personal. 
+	    // If you replace @@VALUE with something else, it stays and does not get replaced. 
+
+            this.txtExtractDirectory.Text = "@@VALUE";
+
+            if (this.txtExtractDirectory.Text.StartsWith("@@") && 
+		this.txtExtractDirectory.Text.EndsWith("VALUE"))
+	    {
+		this.txtExtractDirectory.Text = 
+		    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal),
+					   ZipName);
+	    }
+	}
+
 
         public WinFormsSelfExtractorStub()
         {
             InitializeComponent();
             _setCancel = true;
-
-            txtExtractDirectory.Text =
-                System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal),
-                ZipName);
+	    entryCount= 0;
+	    _SetDefaultExtractLocation();
 
             try
             {
@@ -30,26 +59,27 @@
                 }
                 else
                 {
-                    //label2.Text = "";
-                    //txtComment.Text = "";
                     label2.Visible = false;
                     txtComment.Visible = false;
                     this.Size = new System.Drawing.Size(this.Width, this.Height - 113);
                 }
-
             }
             catch
             {
+		// why would this ever fail?  Not sure. 
                 label2.Visible = false;
                 txtComment.Visible = false;
                 this.Size = new System.Drawing.Size(this.Width, this.Height - 113);
             }
         }
 
+
         static WinFormsSelfExtractorStub()
         {
+	    // This is important to resolve the Ionic.Zip.dll inside the extractor. 
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(Resolver);
         }
+
 
         static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
         {
@@ -138,6 +168,7 @@
                         try
                         {
                             entry.Extract(targetDirectory, WantOverwrite);
+		    entryCount++;
                         }
                         catch (Exception ex1)
                         {
@@ -172,6 +203,7 @@
                             try
                             {
                                 entry.ExtractWithPassword(targetDirectory, WantOverwrite, currentPassword);
+		    entryCount++;
                             }
                             catch (Exception ex2)
                             {
@@ -212,7 +244,6 @@
                 }
                 catch { }
             }
-            //Application.Exit();
         }
 
         private void SetUiDone()
@@ -223,7 +254,7 @@
             }
             else
             {
-                this.lblStatus.Text = "Done.";
+                this.lblStatus.Text = String.Format("Finished extracting {0} entries.", entryCount);
                 btnExtract.Text = "Extracted.";
                 btnExtract.Enabled = false;
                 btnCancel.Text = "Quit";
@@ -274,24 +305,24 @@
             {
                 if (this.progressBar2.Maximum == 1)
                 {
-                        // reset
-                        Int64 max = e.TotalBytesToTransfer;
-                        _progress2MaxFactor = 0;
-                        while (max > System.Int32.MaxValue)
-                        {
-                            max /= 2;
-                            _progress2MaxFactor++;
-                        }
-                        this.progressBar2.Maximum = (int)max;
+                    // reset
+                    Int64 max = e.TotalBytesToTransfer;
+                    _progress2MaxFactor = 0;
+                    while (max > System.Int32.MaxValue)
+                    {
+                        max /= 2;
+                        _progress2MaxFactor++;
+                    }
+                    this.progressBar2.Maximum = (int)max;
                     this.lblStatus.Text = String.Format("Extracting {0}/{1}: {2} ...",
                         this.progressBar1.Value, zip.Entries.Count, e.CurrentEntry.FileName);
                 }
 
-                    int xferred = e.BytesTransferred >> _progress2MaxFactor;
+                int xferred = (int)(e.BytesTransferred >> _progress2MaxFactor);
 
-                    this.progressBar2.Value = (xferred >= this.progressBar2.Maximum)
-                        ? this.progressBar2.Maximum
-                        : xferred;
+                this.progressBar2.Value = (xferred >= this.progressBar2.Maximum)
+                    ? this.progressBar2.Maximum
+                    : xferred;
 
                 this.Update();
             }
@@ -320,7 +351,7 @@
         {
             get
             {
-               return System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
+                return System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
             }
         }
 
@@ -340,7 +371,7 @@
                 {
                     if ((name != DllResourceName) && (name.EndsWith(".zip")))
                     {
-                        _s = a.GetManifestResourceStream(name);                        
+                        _s = a.GetManifestResourceStream(name);
                         break;
                     }
                 }

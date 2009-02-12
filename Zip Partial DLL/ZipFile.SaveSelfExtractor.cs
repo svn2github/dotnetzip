@@ -110,8 +110,6 @@ namespace Ionic.Zip
         };
 
 
-
-
         private string SfxSaveTemporary()
         {
             var tempFileName = System.IO.Path.Combine(TempFileFolder, System.IO.Path.GetRandomFileName() + ".zip");
@@ -158,6 +156,48 @@ namespace Ionic.Zip
         }
 
 
+        string _defaultExtractLocation = null;
+//         string _SetDefaultLocationCode =
+//         "namespace Ionic.Zip { public partial class WinFormsSelfExtractorStub { partial void _SetDefaultExtractLocation() {" +
+//         " txtExtractDirectory.Text = \"@@VALUE\"; } }}";
+
+        /// <summary>
+        /// Saves the ZipFile instance to a self-extracting zip archive, using the specified 
+        /// default extract directory. 
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This method saves a self extracting archive, 
+        /// with a specified default extracting location.  Actually, the 
+	/// default extract directory applies only if the flavor is 
+	///  <see cref="SelfExtractorFlavor.WinFormsApplication"/>.  
+	/// See the documentation for 
+        /// <see cref="SaveSelfExtractor(string , SelfExtractorFlavor)"/>
+        /// for more details.  
+        /// </para>
+        /// <para>
+        /// The user who runs the SFX will have the opportunity to change the extract
+        /// directory before extracting. 
+        /// If at the time of extraction, the specified directory does not exist, 
+        /// the SFX will create the directory before extracting the files. 
+        /// </para>
+        /// </remarks>
+        /// <param name="exeToGenerate">The name of the EXE to generate.</param>
+        /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
+        /// <param name="defaultExtractDirectory">
+	/// The default extract directory the user will see when running the self-extracting 
+	/// archive. Passing null (or Nothing in VB) here will cause the Self Extractor to 
+	/// use the the user's personal directory 
+        /// (<see cref="Environment.SpecialFolder.Personal"/>) for the default extract 
+	/// location.
+	/// </param>
+        public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor, string defaultExtractDirectory)
+        {
+            this._defaultExtractLocation = defaultExtractDirectory;
+            SaveSelfExtractor(exeToGenerate, flavor);
+            this._defaultExtractLocation = null;
+        }
+
 
         /// <summary>
         /// Saves the ZipFile instance to a self-extracting zip archive.
@@ -183,15 +223,23 @@ namespace Ionic.Zip
         /// 
         /// <para>
         /// There are a few temporary files created during the saving to a self-extracting zip. 
-        /// These files are normally stored in the directory pointed to by 
-	/// System.IO.Path.GetTempPath()
-        /// and they are removed upon successful completion of this method. 
+        /// These files are created in the directory pointed to by 
+        /// <see cref="ZipFile.TempFileFolder"/>, which defaults to  <see cref="System.IO.Path.GetTempPath"/>.
+        /// These temporary files are removed upon successful completion of this method. 
         /// </para>
-        /// 
+        ///
+        /// <para>
+        /// When a user runs the SFX, the user's personal directory 
+        /// (<see cref="Environment.SpecialFolder.Personal"/>) 
+        /// will be used as the default extract location.
+        /// The user who runs the SFX will have the opportunity to change the extract
+        /// directory before extracting. 
+        /// </para>
+        ///
         /// <para>
         /// NB: This method is not available in the version of DotNetZip
-        /// build for the .NET Compact Framework.  
-	/// </para>
+        /// build for the .NET Compact Framework, nor in the "Reduced" DotNEtZip library.  
+        /// </para>
         /// 
         /// </remarks>
         /// 
@@ -240,7 +288,10 @@ namespace Ionic.Zip
 
             Microsoft.CSharp.CSharpCodeProvider csharp = new Microsoft.CSharp.CSharpCodeProvider();
 
-            // I'd like to do linq query, but the resulting image has to run on .NET 2.0!! 
+            // Perfect opportunity for a linq query, but I cannot use it.
+	    // The DotNetZip library can compile into 2.0, but needs to run on .NET 2.0.
+	    // Using LINQ would break that. Here's what it would look like: 
+	    // 
             // 	var settings = (from x in SettingsList
             // 			where x.Flavor == flavor
             // 			select x).First();
@@ -312,21 +363,34 @@ namespace Ionic.Zip
             //Console.WriteLine();
 
             //Console.WriteLine("reading source code resources:");
+
+
             // concatenate all the source code resources into a single module
             var sb = new System.Text.StringBuilder();
+
+            // set the default extract location if it is available
+            bool wantCodeReplace = (flavor == SelfExtractorFlavor.WinFormsApplication && _defaultExtractLocation != null);
+	    if (wantCodeReplace)
+                _defaultExtractLocation = _defaultExtractLocation.Replace("\"", "");
+
             foreach (string rc in settings.ResourcesToCompile)
             {
                 //Console.WriteLine("  trying to read stream: ({0})", rc);
                 Stream s = a2.GetManifestResourceStream(rc);
                 using (StreamReader sr = new StreamReader(s))
                 {
-                    while (sr.Peek() >= 0)
-                        sb.Append(sr.ReadLine()).Append("\n");
+                    while (sr.Peek() >= 0) 
+		    {
+			string line = sr.ReadLine();
+			if (wantCodeReplace)
+			    line= line.Replace("@@VALUE", _defaultExtractLocation);
+                        sb.Append(line).Append("\n");
+		    }
                 }
                 sb.Append("\n\n");
             }
-            string LiteralSource = sb.ToString();
 
+            string LiteralSource = sb.ToString();
 
             System.CodeDom.Compiler.CompilerResults cr = csharp.CompileAssemblyFromSource(cp, LiteralSource);
             if (cr == null)

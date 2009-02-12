@@ -4970,7 +4970,7 @@ namespace Ionic.Zip
 #endif
 
             }
-            catch (Exception e1)
+            catch //(Exception e1)
             {
                 if (zf._ReadStreamIsOurs && zf._readstream != null)
                 {
