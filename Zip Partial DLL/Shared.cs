@@ -185,6 +185,10 @@ namespace Ionic.Zip
 
         internal static DateTime PackedToDateTime(Int32 packedDateTime)
         {
+            // workitem 7074
+            if (packedDateTime == 0xFFFF)
+                return DateTime.Now;
+ 
             Int16 packedTime = (Int16)(packedDateTime & 0x0000ffff);
             Int16 packedDate = (Int16)((packedDateTime & 0xffff0000) >> 16);
 
