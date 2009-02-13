@@ -70,12 +70,12 @@ namespace Ionic.Zlib
         /// The DeflateStream will use the default compression level.
         /// </remarks>
         /// <example>
-	/// This example shows how to use a DeflateStream to compress data.
-	/// <code>
-	/// using (System.IO.Stream input = System.IO.File.OpenRead(fileToCompress))
-	/// {
-	///     using (var raw = System.IO.File.Create(outputFile))
-	///     {
+        /// This example shows how to use a DeflateStream to compress data.
+        /// <code>
+        /// using (System.IO.Stream input = System.IO.File.OpenRead(fileToCompress))
+        /// {
+        ///     using (var raw = System.IO.File.Create(outputFile))
+        ///     {
         ///         using (Stream compressor = new DeflateStream(raw, CompressionMode.Compress))
         ///         {
         ///             byte[] buffer = new byte[WORKING_BUFFER_SIZE];
@@ -89,24 +89,24 @@ namespace Ionic.Zlib
         ///         }
         ///     }
         /// }
-	/// </code>
+        /// </code>
         /// <code lang="VB">
-	/// Dim outputFile As String = (fileToCompress & ".compressed")
-	/// Using input As Stream = File.OpenRead(fileToCompress)
-	///     Using raw As FileStream = File.Create(outputFile)
-	/// 	Using compressor As Stream = New DeflateStream(raw, CompressionMode.Compress)
-	/// 	    Dim buffer As Byte() = New Byte(4096) {}
-	/// 	    Dim n As Integer = -1
-	/// 	    Do While (n &lt;&gt; 0)
-	/// 		If (n &gt; 0) Then
-	/// 		    compressor.Write(buffer, 0, n)
-	/// 		End If
-	/// 		n = input.Read(buffer, 0, buffer.Length)
-	/// 	    Loop
-	/// 	End Using
-	///     End Using
-	/// End Using
-	/// </code>
+        /// Dim outputFile As String = (fileToCompress &amp; ".compressed")
+        /// Using input As Stream = File.OpenRead(fileToCompress)
+        ///     Using raw As FileStream = File.Create(outputFile)
+        /// 	Using compressor As Stream = New DeflateStream(raw, CompressionMode.Compress)
+        /// 	    Dim buffer As Byte() = New Byte(4096) {}
+        /// 	    Dim n As Integer = -1
+        /// 	    Do While (n &lt;&gt; 0)
+        /// 		If (n &gt; 0) Then
+        /// 		    compressor.Write(buffer, 0, n)
+        /// 		End If
+        /// 		n = input.Read(buffer, 0, buffer.Length)
+        /// 	    Loop
+        /// 	End Using
+        ///     End Using
+        /// End Using
+        /// </code>
         /// </example>
         /// <param name="stream">The stream which will be read or written.</param>
         /// <param name="mode">Indicates whether the DeflateStream will compress or decompress.</param>
@@ -119,46 +119,45 @@ namespace Ionic.Zlib
         /// Create a DeflateStream using the specified CompressionMode and the specified CompressionLevel.
         /// </summary>
         /// <example>
-	/// This example shows how to use a DeflateStream to compress data.
-	/// <code>
-	/// using (System.IO.Stream input = System.IO.File.OpenRead(fileToCompress))
-	/// {
-	///     using (var raw = System.IO.File.Create(outputFile))
-	///     {
+        /// This example shows how to use a DeflateStream to compress data.
+        /// <code>
+        /// using (System.IO.Stream input = System.IO.File.OpenRead(fileToCompress))
+        /// {
+        ///     using (var raw = System.IO.File.Create(outputFile))
+        ///     {
         ///         using (Stream compressor = new DeflateStream(raw,
-	///                                                      CompressionMode.Compress, 
-	///                                                      CompressionLevel.BEST_COMPRESSION))
+        ///                                                      CompressionMode.Compress, 
+        ///                                                      CompressionLevel.BEST_COMPRESSION))
         ///         {
         ///             byte[] buffer = new byte[WORKING_BUFFER_SIZE];
         ///             int n= -1;
         ///             while (n != 0)
         ///             {
-        ///                 if (n &gt 0) 
+        ///                 if (n &gt; 0) 
         ///                     compressor.Write(buffer, 0, n);
         ///                 n= input.Read(buffer, 0, buffer.Length);
         ///             }
         ///         }
         ///     }
         /// }
-	/// </code>
+        /// </code>
         /// <code lang="VB">
-	/// Dim outputFile As String = (fileToCompress & ".compressed")
-	/// Using input As Stream = File.OpenRead(fileToCompress)
-	///     Using raw As FileStream = File.Create(outputFile)
-	/// 	Using compressor As Stream = New DeflateStream(raw, CompressionMode.Compress, CompressionLevel.BEST_COMPRESSION)
-
-	/// 	    Dim buffer As Byte() = New Byte(4096) {}
-	/// 	    Dim n As Integer = -1
-	/// 	    Do While (n &lt;&gt; 0)
-	/// 		If (n &gt; 0) Then
-	/// 		    compressor.Write(buffer, 0, n)
-	/// 		End If
-	/// 		n = input.Read(buffer, 0, buffer.Length)
-	/// 	    Loop
-	/// 	End Using
-	///     End Using
-	/// End Using
-	/// </code>
+        /// Dim outputFile As String = (fileToCompress &amp; ".compressed")
+        /// Using input As Stream = File.OpenRead(fileToCompress)
+        ///     Using raw As FileStream = File.Create(outputFile)
+        /// 	Using compressor As Stream = New DeflateStream(raw, CompressionMode.Compress, CompressionLevel.BEST_COMPRESSION)
+        /// 	    Dim buffer As Byte() = New Byte(4096) {}
+        /// 	    Dim n As Integer = -1
+        /// 	    Do While (n &lt;&gt; 0)
+        /// 		If (n &gt; 0) Then
+        /// 		    compressor.Write(buffer, 0, n)
+        /// 		End If
+        /// 		n = input.Read(buffer, 0, buffer.Length)
+        /// 	    Loop
+        /// 	End Using
+        ///     End Using
+        /// End Using
+        /// </code>
         /// </example>
         /// <param name="stream">The stream to be read or written while deflating or inflating.</param>
         /// <param name="mode">Indicates whether the DeflateStream will compress or decompress.</param>
@@ -211,12 +210,12 @@ namespace Ionic.Zlib
         /// </para>
         /// </remarks>
         /// <example>
-	/// This example shows how to use a DeflateStream to compress data.
-	/// <code>
-	/// using (System.IO.Stream input = System.IO.File.OpenRead(fileToCompress))
-	/// {
-	///     using (var raw = System.IO.File.Create(outputFile))
-	///     {
+        /// This example shows how to use a DeflateStream to compress data.
+        /// <code>
+        /// using (System.IO.Stream input = System.IO.File.OpenRead(fileToCompress))
+        /// {
+        ///     using (var raw = System.IO.File.Create(outputFile))
+        ///     {
         ///         using (Stream compressor = new DeflateStream(raw, CompressionMode.Compress, true))
         ///         {
         ///             byte[] buffer = new byte[WORKING_BUFFER_SIZE];
@@ -230,24 +229,24 @@ namespace Ionic.Zlib
         ///         }
         ///     }
         /// }
-	/// </code>
+        /// </code>
         /// <code lang="VB">
-	/// Dim outputFile As String = (fileToCompress & ".compressed")
-	/// Using input As Stream = File.OpenRead(fileToCompress)
-	///     Using raw As FileStream = File.Create(outputFile)
-	/// 	Using compressor As Stream = New DeflateStream(raw, CompressionMode.Compress, True)
-	/// 	    Dim buffer As Byte() = New Byte(4096) {}
-	/// 	    Dim n As Integer = -1
-	/// 	    Do While (n &lt;&gt; 0)
-	/// 		If (n &gt; 0) Then
-	/// 		    compressor.Write(buffer, 0, n)
-	/// 		End If
-	/// 		n = input.Read(buffer, 0, buffer.Length)
-	/// 	    Loop
-	/// 	End Using
-	///     End Using
-	/// End Using
-	/// </code>
+        /// Dim outputFile As String = (fileToCompress &amp; ".compressed")
+        /// Using input As Stream = File.OpenRead(fileToCompress)
+        ///     Using raw As FileStream = File.Create(outputFile)
+        /// 	Using compressor As Stream = New DeflateStream(raw, CompressionMode.Compress, True)
+        /// 	    Dim buffer As Byte() = New Byte(4096) {}
+        /// 	    Dim n As Integer = -1
+        /// 	    Do While (n &lt;&gt; 0)
+        /// 		If (n &gt; 0) Then
+        /// 		    compressor.Write(buffer, 0, n)
+        /// 		End If
+        /// 		n = input.Read(buffer, 0, buffer.Length)
+        /// 	    Loop
+        /// 	End Using
+        ///     End Using
+        /// End Using
+        /// </code>
         /// </example>
         /// <param name="stream">The stream which will be read or written.</param>
         /// <param name="mode">Indicates whether the DeflateStream will compress or decompress.</param>
@@ -479,12 +478,12 @@ namespace Ionic.Zlib
         /// Create a ZlibStream using the specified CompressionMode.
         /// </summary>
         /// <remarks>
-	/// <para>
+        /// <para>
         /// The ZlibStream will use the default compression level.
-	/// </para>
-	/// <para>
-	/// See the documentation for the <see cref="DeflateStream"/> constructors for example code.
-	/// </para>
+        /// </para>
+        /// <para>
+        /// See the documentation for the <see cref="DeflateStream"/> constructors for example code.
+        /// </para>
         /// </remarks>
         /// <param name="stream">The stream which will be read or written.</param>
         /// <param name="mode">Indicates whether the ZlibStream will compress or decompress.</param>
@@ -496,9 +495,9 @@ namespace Ionic.Zlib
         /// <summary>
         /// Create a ZlibStream using the specified CompressionMode and the specified CompressionLevel.
         /// </summary>
-	/// <remarks>
-	/// See the documentation for the <see cref="DeflateStream"/> constructors for example code.
-	/// </remarks>
+        /// <remarks>
+        /// See the documentation for the <see cref="DeflateStream"/> constructors for example code.
+        /// </remarks>
         /// <param name="stream">The stream to be read or written while deflating or inflating.</param>
         /// <param name="mode">Indicates whether the ZlibStream will compress or decompress.</param>
         /// <param name="level">A tuning knob to trade speed for effectiveness.</param>
@@ -523,7 +522,7 @@ namespace Ionic.Zlib
         /// The ZlibStream will use the default compression level.
         /// </para>
         /// <para>
-	/// See the documentation for the <see cref="DeflateStream"/> constructors for example code.
+        /// See the documentation for the <see cref="DeflateStream"/> constructors for example code.
         /// </para>
         /// </remarks>
         /// <param name="stream">The stream which will be read or written. This is called the 
@@ -549,7 +548,7 @@ namespace Ionic.Zlib
         /// leaveOpen parameter to leave the stream open. 
         /// </para>
         /// <para>
-	/// See the documentation for the <see cref="DeflateStream"/> constructors for example code.
+        /// See the documentation for the <see cref="DeflateStream"/> constructors for example code.
         /// </para>
         /// </remarks>
         /// <param name="stream">The stream which will be read or written.</param>
