@@ -2760,7 +2760,8 @@ namespace Ionic.Zip
                 }
                 else
                 {
-                    input = System.IO.File.OpenRead(LocalFileName);
+                    //input = System.IO.File.OpenRead(LocalFileName);
+                    input = System.IO.File.Open(LocalFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 }
                 var crc32 = new CRC32();
 
@@ -2821,7 +2822,8 @@ namespace Ionic.Zip
                 }
                 else
                 {
-                    input = System.IO.File.OpenRead(LocalFileName);
+                    //input = System.IO.File.OpenRead(LocalFileName);
+                    input = System.IO.File.Open(LocalFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 }
 
                 long fileLength = 0;

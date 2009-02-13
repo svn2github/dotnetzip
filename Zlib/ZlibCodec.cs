@@ -131,7 +131,9 @@ namespace Ionic.Zlib
         /// <summary>
         /// Create a ZlibCodec that either compresses or decompresses.
         /// </summary>
-        /// <param name="mode">Indicates whether the codec should compress (deflate) or decompress (inflate).</param>
+        /// <param name="mode">
+        /// Indicates whether the codec should compress (deflate) or decompress (inflate).
+        /// </param>
         public ZlibCodec(CompressionMode mode)
         {
             if (mode == CompressionMode.Compress)
