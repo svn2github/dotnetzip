@@ -35,13 +35,16 @@ namespace Ionic.Zip.Examples
             "  -utf8                 - use UTF-8 encoding for entries with comments or\n" +
             "                          filenames that cannot be encoded with the default IBM437\n" +
             "                          code page.\n" +
+            "  -aes                  - use WinZip-compatible AES 256-bit encryption for entries\n" +
+            "                          subsequently added to the archive. Requires a password.\n" +
             "  -64                   - use ZIP64 extensions, for large files or large numbers of files.\n" +
             "  -cp <codepage         - use the specified numeric codepage for entries with comments \n" +
             "                          or filenames that cannot be encoded with the default IBM437\n" +
             "                          code page.\n" +
             "  -p <password>         - apply the specified password for all succeeding files added.\n" +
             "                          use \"\" to reset the password to nil.\n" +
-            "  -c <comment>          - use the given comment for the archive or, on \n" +
+            "  -c <comment>          - use the given comment for the next file added to the archive.\n" +
+            "  -zc <comment>         - use the given comment for the archive.\n" +
             "  -d <path>             - use the given directory path in the archive for\n" +
             "                          succeeding items added to the archive.\n" +
             "  -s <entry> 'string'   - insert an entry of the given name into the \n" +
@@ -96,6 +99,10 @@ namespace Ionic.Zip.Examples
 
                             case "-flat":
                                 entryDirectoryPathInArchive = "";
+                                break;
+
+                            case "-aes":
+                                zip.Encryption = EncryptionAlgorithm.WinZipAes256;
                                 break;
 
                             case "-utf8":
