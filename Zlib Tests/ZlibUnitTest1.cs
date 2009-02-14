@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Ionic.Zlib;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.IO;
 
 namespace Ionic.Zlib.Tests
 {
@@ -58,10 +59,73 @@ namespace Ionic.Zlib.Tests
         // [TestCleanup()]
         // public void MyTestCleanup() { }
         //
+
+        private string CurrentDir = null;
+        private string TopLevelDir = null;
+
+        // Use TestInitialize to run code before running each test 
+        [TestInitialize()]
+        public void MyTestInitialize()
+        {
+            CurrentDir = System.IO.Directory.GetCurrentDirectory();
+            TopLevelDir = System.IO.Path.Combine(CurrentDir, String.Format("ZlibTest-{0}.tmp", System.DateTime.Now.ToString("yyyyMMMdd-HHmmss")));
+            System.IO.Directory.CreateDirectory(TopLevelDir);
+            System.IO.Directory.SetCurrentDirectory(System.IO.Path.GetDirectoryName(TopLevelDir));
+        }
+        // Use TestCleanup to run code after each test has run
+        [TestCleanup()]
+        public void MyTestCleanup()
+        {
+            System.IO.Directory.SetCurrentDirectory(CurrentDir);
+            System.IO.Directory.Delete(TopLevelDir, true);
+        }
+
+
         #endregion
 
+        #region Helpers
+        /// <summary>
+        /// Converts a string to a MemoryStream.
+        /// </summary>
+        static System.IO.MemoryStream StringToMemoryStream(string s)
+        {
+            System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+            int byteCount = enc.GetByteCount(s.ToCharArray(), 0, s.Length);
+            byte[] ByteArray = new byte[byteCount];
+            int bytesEncodedCount = enc.GetBytes(s, 0, s.Length, ByteArray, 0);
+            System.IO.MemoryStream ms = new System.IO.MemoryStream(ByteArray);
+            return ms;
+        }
+
+        /// <summary>
+        /// Converts a MemoryStream to a string. Makes some assumptions about the content of the stream. 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        static String MemoryStreamToString(System.IO.MemoryStream ms)
+        {
+            byte[] ByteArray = ms.ToArray();
+            System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+            var s = enc.GetString(ByteArray);
+            return s;
+        }
+
+        private static void CopyStream(System.IO.Stream src, System.IO.Stream dest)
+        {
+            byte[] buffer = new byte[1024];
+            int len = src.Read(buffer, 0, buffer.Length);
+            while (len > 0)
+            {
+                dest.Write(buffer, 0, len);
+                len = src.Read(buffer, 0, buffer.Length);
+            }
+            dest.Flush();
+        }
+        #endregion
+
+
         [TestMethod]
-        public void BasicDeflateAndInflate()
+        public void Zlib_BasicDeflateAndInflate()
         {
             string TextToCompress = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Integer vulputate, nibh non rhoncus euismod, erat odio pellentesque lacus, sit amet convallis mi augue et odio. Phasellus cursus urna facilisis quam. Suspendisse nec metus et sapien scelerisque euismod. Nullam molestie sem quis nisl. Fusce pellentesque, ante sed semper egestas, sem nulla vestibulum nulla, quis sollicitudin leo lorem elementum wisi. Aliquam vestibulum nonummy orci. Sed in dolor sed enim ullamcorper accumsan. Duis vel nibh. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Sed faucibus, enim sit amet venenatis laoreet, nisl elit posuere est, ut sollicitudin tortor velit ut ipsum. Aliquam erat volutpat. Phasellus tincidunt vehicula eros. Curabitur vitae erat.";
 
@@ -74,7 +138,6 @@ namespace Ionic.Zlib.Tests
 
             rc = compressingStream.InitializeDeflate(CompressionLevel.DEFAULT);
             Assert.AreEqual<int>(ZlibConstants.Z_OK, rc, String.Format("at InitializeDeflate() [{0}]", compressingStream.Message));
-
 
             compressingStream.InputBuffer = System.Text.ASCIIEncoding.ASCII.GetBytes(TextToCompress);
             compressingStream.NextIn = 0;
@@ -153,7 +216,7 @@ namespace Ionic.Zlib.Tests
 
 
         [TestMethod]
-        public void BasicDictionaryDeflateInflate()
+        public void Zlib_BasicDictionaryDeflateInflate()
         {
 
             int rc;
@@ -247,7 +310,7 @@ namespace Ionic.Zlib.Tests
         }
 
         [TestMethod]
-        public void TestFlushSync()
+        public void Zlib_TestFlushSync()
         {
             int rc;
             int bufferSize = 40000;
@@ -325,7 +388,7 @@ namespace Ionic.Zlib.Tests
         }
 
         [TestMethod]
-        public void TestLargeDeflateInflate()
+        public void Zlib_TestLargeDeflateInflate()
         {
             int rc;
             int j;
@@ -434,7 +497,7 @@ namespace Ionic.Zlib.Tests
         }
 
         [TestMethod]
-        public void TestStreamCompression()
+        public void Zlib_TestStreamCompression()
         {
             System.IO.MemoryStream msSinkCompressed;
             System.IO.MemoryStream msSinkDecompressed;
@@ -455,50 +518,218 @@ namespace Ionic.Zlib.Tests
             msSinkCompressed.Position = 0;
             CopyStream(msSinkCompressed, zOut);
 
-            string result= MemoryStreamToString(msSinkDecompressed);
+            string result = MemoryStreamToString(msSinkDecompressed);
             TestContext.WriteLine("decompressed: {0}", result);
             Assert.AreEqual<String>(helloOriginal, result);
         }
 
-        #region Helpers
-        /// <summary>
-        /// Converts a string to a MemoryStream.
-        /// </summary>
-        static System.IO.MemoryStream StringToMemoryStream(string s)
-        {
-            System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
-            int byteCount = enc.GetByteCount(s.ToCharArray(), 0, s.Length);
-            byte[] ByteArray = new byte[byteCount];
-            int bytesEncodedCount = enc.GetBytes(s, 0, s.Length, ByteArray, 0);
-            System.IO.MemoryStream ms = new System.IO.MemoryStream(ByteArray);
-            return ms;
-        }
 
-        /// <summary>
-        /// Converts a MemoryStream to a string. Makes some assumptions about the content of the stream. 
-        /// </summary>
-        /// <param name="s"></param>
-        /// <returns></returns>
-        static String MemoryStreamToString(System.IO.MemoryStream ms)
-        {
-            byte[] ByteArray = ms.ToArray();
-            System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
-            var s = enc.GetString(ByteArray);
-            return s;
-        }
+        string FileName = null;
+        Stream _readStream;
+        byte[] UncompressedBytes;
+        byte[] DecompressedBytes;
+        byte[] CompressedBytes;
+        int _bytesRead = 0;
 
-        private static void CopyStream(System.IO.Stream src, System.IO.Stream dest)
+        Stream ReadStream
         {
-            byte[] buffer = new byte[1024];
-            int len = src.Read(buffer, 0, buffer.Length);
-            while (len > 0)
+            get
             {
-                dest.Write(buffer, 0, len);
-                len = src.Read(buffer, 0, buffer.Length);
+                if (_readStream == null)
+                    _readStream = System.IO.File.OpenRead(FileName);
+                return _readStream;
+
             }
-            dest.Flush();
         }
-        #endregion
+
+        [TestMethod]
+        public void Zlib_Run()
+        {
+            string SourceDir = CurrentDir;
+            for (int i = 0; i < 3; i++)
+                SourceDir = System.IO.Path.GetDirectoryName(SourceDir);
+
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            // This is a SFX (Self-Extracting Archive) produced by WinZip
+            FileName = System.IO.Path.Combine(SourceDir, "Zip Tests\\bin\\Debug\\zips\\winzip-sfx.exe");
+
+            ReadFile();
+            var levels = new List<string>(Enum.GetNames(typeof(Ionic.Zlib.CompressionLevel)));
+            foreach (var level in levels)
+            {
+                TestContext.WriteLine("\n\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+                TestContext.WriteLine("trying compression level '{0}'", level.ToString());
+                DeflateBuffer((Ionic.Zlib.CompressionLevel)Enum.Parse(typeof(Ionic.Zlib.CompressionLevel), level));
+                InflateBuffer();
+                CompareBuffers();
+            }
+        }
+
+
+
+        private void ReadFile()
+        {
+            System.IO.FileInfo fi = new System.IO.FileInfo(FileName);
+
+            UncompressedBytes = new byte[fi.Length];
+            DecompressedBytes = new byte[fi.Length];
+
+            _bytesRead = ReadStream.Read(UncompressedBytes, 0, UncompressedBytes.Length);
+        }
+
+
+
+        private void InflateBuffer()
+        {
+            int bufferSize = 1024;
+            byte[] buffer = new byte[bufferSize];
+            ZlibCodec decompressor = new ZlibCodec();
+
+            TestContext.WriteLine("\n============================================");
+            TestContext.WriteLine("Size of Buffer to Inflate: {0} bytes.", CompressedBytes.Length);
+            MemoryStream ms = new MemoryStream(DecompressedBytes);
+
+            int rc = decompressor.InitializeInflate();
+
+            decompressor.InputBuffer = CompressedBytes;
+            decompressor.NextIn = 0;
+            decompressor.AvailableBytesIn = CompressedBytes.Length;
+
+            decompressor.OutputBuffer = buffer;
+
+            // pass 1: deflate 
+            do
+            {
+                decompressor.NextOut = 0;
+                decompressor.AvailableBytesOut = buffer.Length;
+                rc = decompressor.Inflate(ZlibConstants.Z_NO_FLUSH);
+
+                if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
+                    throw new Exception("inflating: " + decompressor.Message);
+
+                TestContext.WriteLine("got {0} decompressed bytes.", buffer.Length - decompressor.AvailableBytesOut);
+                ms.Write(decompressor.OutputBuffer, 0, buffer.Length - decompressor.AvailableBytesOut);
+
+                TestContext.WriteLine("TBO({0}).", decompressor.TotalBytesOut);
+                // at this point the OutputBuffer contains a batch of compressed bytes.
+            }
+            while (decompressor.AvailableBytesIn > 0 || decompressor.AvailableBytesOut == 0);
+
+            // pass 2: finish and flush
+            do
+            {
+                decompressor.NextOut = 0;
+                decompressor.AvailableBytesOut = buffer.Length;
+                rc = decompressor.Inflate(ZlibConstants.Z_FINISH);
+
+                if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
+                    throw new Exception("inflating: " + decompressor.Message);
+
+                TestContext.WriteLine("got {0} decompressed bytes.", buffer.Length - decompressor.AvailableBytesOut);
+                if (buffer.Length - decompressor.AvailableBytesOut > 0)
+                {
+                    ms.Write(buffer, 0, buffer.Length - decompressor.AvailableBytesOut);
+                }
+
+                TestContext.WriteLine("TBO({0}).", decompressor.TotalBytesOut);
+            }
+            while (decompressor.AvailableBytesIn > 0 || decompressor.AvailableBytesOut == 0);
+
+
+            decompressor.EndInflate();
+            TestContext.WriteLine("TBO({0}).", decompressor.TotalBytesOut);
+        }
+
+
+
+
+        private void CompareBuffers()
+        {
+            TestContext.WriteLine("\n============================================");
+            TestContext.WriteLine("Comparing...");
+
+            if (UncompressedBytes.Length != DecompressedBytes.Length)
+                throw new Exception(String.Format("not equal size ({0}!={1})", UncompressedBytes.Length, DecompressedBytes.Length));
+
+            for (int i = 0; i < UncompressedBytes.Length; i++)
+            {
+                if (UncompressedBytes[i] != DecompressedBytes[i])
+                    throw new Exception("not equal");
+            }
+        }
+
+
+
+        private void DeflateBuffer(CompressionLevel level)
+        {
+            int bufferSize = 1024;
+            byte[] buffer = new byte[bufferSize];
+            ZlibCodec compressor = new ZlibCodec();
+
+            TestContext.WriteLine("\n============================================");
+            TestContext.WriteLine("Size of Buffer to Deflate: {0} bytes.", UncompressedBytes.Length);
+            MemoryStream ms = new MemoryStream();
+
+            int rc = compressor.InitializeDeflate(level);
+
+            compressor.InputBuffer = UncompressedBytes;
+            compressor.NextIn = 0;
+            compressor.AvailableBytesIn = UncompressedBytes.Length;
+
+            compressor.OutputBuffer = buffer;
+
+            // pass 1: deflate 
+            do
+            //&&  < bufferSize)
+            {
+                compressor.NextOut = 0;
+                compressor.AvailableBytesOut = buffer.Length;
+                rc = compressor.Deflate(ZlibConstants.Z_NO_FLUSH);
+
+                if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
+                    throw new Exception("deflating: " + compressor.Message);
+
+                //totalBytes += (CompressedBytes.Length - compressor.AvailableBytesOut);
+                Console.WriteLine("got {0} compressed bytes.", buffer.Length - compressor.AvailableBytesOut);
+                ms.Write(compressor.OutputBuffer, 0, buffer.Length - compressor.AvailableBytesOut);
+
+                Console.WriteLine("TBO({0}).", compressor.TotalBytesOut);
+                // at this point the OutputBuffer contains a batch of compressed bytes.
+            }
+            while (compressor.AvailableBytesIn > 0 || compressor.AvailableBytesOut == 0);
+
+            // pass 2: finish and flush
+            do
+            {
+                compressor.NextOut = 0;
+                compressor.AvailableBytesOut = buffer.Length;
+                rc = compressor.Deflate(ZlibConstants.Z_FINISH);
+
+                if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
+                    throw new Exception("deflating: " + compressor.Message);
+
+                Console.WriteLine("got {0} compressed bytes.", buffer.Length - compressor.AvailableBytesOut);
+                if (buffer.Length - compressor.AvailableBytesOut > 0)
+                {
+                    ms.Write(buffer, 0, buffer.Length - compressor.AvailableBytesOut);
+                }
+
+                Console.WriteLine("TBO({0}).", compressor.TotalBytesOut);
+            }
+            while (compressor.AvailableBytesIn > 0 || compressor.AvailableBytesOut == 0);
+
+
+            compressor.EndDeflate();
+            Console.WriteLine("TBO({0}).", compressor.TotalBytesOut);
+
+            ms.Seek(0, SeekOrigin.Begin);
+            CompressedBytes = new byte[compressor.TotalBytesOut];
+            ms.Read(CompressedBytes, 0, CompressedBytes.Length);
+        }
+
+
+
 
     }
 }

@@ -547,10 +547,66 @@ namespace Ionic.Zlib
         /// is a memory stream that will be re-read after compression.  Specify true for the 
         /// leaveOpen parameter to leave the stream open. 
         /// </para>
-        /// <para>
-        /// See the documentation for the <see cref="DeflateStream"/> constructors for example code.
-        /// </para>
         /// </remarks>
+	/// 
+        /// <example>
+        /// <code>
+        /// public void TestStreamCompression()
+        /// {
+        ///     System.IO.MemoryStream msSinkCompressed;
+        ///     System.IO.MemoryStream msSinkDecompressed;
+        ///     ZlibStream zOut;
+        ///     String helloOriginal = "Hello, World!  This String will be compressed...";
+        /// 
+        ///     // first, compress:
+        ///     msSinkCompressed = new System.IO.MemoryStream();
+        ///     zOut = new ZlibStream(msSinkCompressed, CompressionMode.Compress, CompressionLevel.LEVEL9_BEST_COMPRESSION, true);
+        ///     CopyStream(StringToMemoryStream(helloOriginal), zOut);
+        ///     zOut.Close();
+        /// 
+        ///     // at this point, msSinkCompressed contains the compressed bytes
+        /// 
+        ///     // now, decompress:
+        ///     msSinkDecompressed = new System.IO.MemoryStream();
+        ///     zOut = new ZlibStream(msSinkDecompressed, CompressionMode.Decompress);
+        ///     msSinkCompressed.Position = 0;
+        ///     CopyStream(msSinkCompressed, zOut);
+        /// 
+        ///     string result = MemoryStreamToString(msSinkDecompressed);
+        ///     Console.WriteLine("decompressed: {0}", result);
+        /// }
+        /// 
+        /// private static void CopyStream(System.IO.Stream src, System.IO.Stream dest)
+        /// {
+        ///     byte[] buffer = new byte[1024];
+        ///     int len = src.Read(buffer, 0, buffer.Length);
+        ///     while (len &gt; 0)
+        ///     {
+        ///         dest.Write(buffer, 0, len);
+        ///         len = src.Read(buffer, 0, buffer.Length);
+        ///     }
+        ///     dest.Flush();
+        /// }
+        /// 
+        /// static System.IO.MemoryStream StringToMemoryStream(string s)
+        /// {
+        ///     System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+        ///     int byteCount = enc.GetByteCount(s.ToCharArray(), 0, s.Length);
+        ///     byte[] ByteArray = new byte[byteCount];
+        ///     int bytesEncodedCount = enc.GetBytes(s, 0, s.Length, ByteArray, 0);
+        ///     System.IO.MemoryStream ms = new System.IO.MemoryStream(ByteArray);
+        ///     return ms;
+        /// }
+        /// 
+        /// static String MemoryStreamToString(System.IO.MemoryStream ms)
+        /// {
+        ///     byte[] ByteArray = ms.ToArray();
+        ///     System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+        ///     var s = enc.GetString(ByteArray);
+        ///     return s;
+        /// }
+        /// </code>
+        /// </example>
         /// <param name="stream">The stream which will be read or written.</param>
         /// <param name="mode">Indicates whether the ZlibStream will compress or decompress.</param>
         /// <param name="leaveOpen">true if the application would like the stream to remain open after inflation/deflation.</param>

@@ -214,7 +214,62 @@ namespace Ionic.Zlib
         /// </summary>
         /// <remarks>
         /// You must have set InputBuffer and OutputBuffer, NextIn and NextOut, and AvailableBytesIn and 
-        /// AvailableBytesOut  before calling this method.</remarks>
+        /// AvailableBytesOut  before calling this method.
+	/// </remarks>
+	/// <example>
+	/// <code>
+	/// private void InflateBuffer()
+	/// {
+	///     int bufferSize = 1024;
+	///     byte[] buffer = new byte[bufferSize];
+	///     ZlibCodec decompressor = new ZlibCodec();
+	/// 
+	///     Console.WriteLine("\n============================================");
+	///     Console.WriteLine("Size of Buffer to Inflate: {0} bytes.", CompressedBytes.Length);
+	///     MemoryStream ms = new MemoryStream(DecompressedBytes);
+	/// 
+	///     int rc = decompressor.InitializeInflate();
+	/// 
+	///     decompressor.InputBuffer = CompressedBytes;
+	///     decompressor.NextIn = 0;
+	///     decompressor.AvailableBytesIn = CompressedBytes.Length;
+	/// 
+	///     decompressor.OutputBuffer = buffer;
+	/// 
+	///     // pass 1: inflate 
+	///     do
+	///     {
+	///         decompressor.NextOut = 0;
+	///         decompressor.AvailableBytesOut = buffer.Length;
+	///         rc = decompressor.Inflate(ZlibConstants.Z_NO_FLUSH);
+	/// 
+	///         if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
+	///             throw new Exception("inflating: " + decompressor.Message);
+	/// 
+	///         ms.Write(decompressor.OutputBuffer, 0, buffer.Length - decompressor.AvailableBytesOut);
+	///     }
+	///     while (decompressor.AvailableBytesIn &gt; 0 || decompressor.AvailableBytesOut == 0);
+	/// 
+	///     // pass 2: finish and flush
+	///     do
+	///     {
+	///         decompressor.NextOut = 0;
+	///         decompressor.AvailableBytesOut = buffer.Length;
+	///         rc = decompressor.Inflate(ZlibConstants.Z_FINISH);
+	/// 
+	///         if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
+	///             throw new Exception("inflating: " + decompressor.Message);
+	/// 
+	///         if (buffer.Length - decompressor.AvailableBytesOut &gt; 0)
+	///             ms.Write(buffer, 0, buffer.Length - decompressor.AvailableBytesOut);
+	///     }
+	///     while (decompressor.AvailableBytesIn &gt; 0 || decompressor.AvailableBytesOut == 0);
+	/// 
+	///     decompressor.EndInflate();
+	/// }
+	///
+	/// </code>
+	/// </example>
         /// <param name="f">I think you want to set this to Z_NO_FLUSH.</param>
         /// <returns>Z_OK if everything goes well.</returns>
         public int Inflate(int f)
@@ -366,6 +421,63 @@ namespace Ionic.Zlib
         /// <remarks>
         /// You must have set InputBuffer and OutputBuffer before calling this method.
         /// </remarks>
+        /// <example>
+        /// <code>
+        /// private void DeflateBuffer(CompressionLevel level)
+        /// {
+        ///     int bufferSize = 1024;
+        ///     byte[] buffer = new byte[bufferSize];
+        ///     ZlibCodec compressor = new ZlibCodec();
+        /// 
+        ///     Console.WriteLine("\n============================================");
+        ///     Console.WriteLine("Size of Buffer to Deflate: {0} bytes.", UncompressedBytes.Length);
+        ///     MemoryStream ms = new MemoryStream();
+        /// 
+        ///     int rc = compressor.InitializeDeflate(level);
+        /// 
+        ///     compressor.InputBuffer = UncompressedBytes;
+        ///     compressor.NextIn = 0;
+        ///     compressor.AvailableBytesIn = UncompressedBytes.Length;
+        /// 
+        ///     compressor.OutputBuffer = buffer;
+        /// 
+        ///     // pass 1: deflate 
+        ///     do
+        ///     {
+        ///         compressor.NextOut = 0;
+        ///         compressor.AvailableBytesOut = buffer.Length;
+        ///         rc = compressor.Deflate(ZlibConstants.Z_NO_FLUSH);
+        /// 
+        ///         if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
+        ///             throw new Exception("deflating: " + compressor.Message);
+        /// 
+        ///         ms.Write(compressor.OutputBuffer, 0, buffer.Length - compressor.AvailableBytesOut);
+        ///     }
+        ///     while (compressor.AvailableBytesIn &gt; 0 || compressor.AvailableBytesOut == 0);
+        /// 
+        ///     // pass 2: finish and flush
+        ///     do
+        ///     {
+        ///         compressor.NextOut = 0;
+        ///         compressor.AvailableBytesOut = buffer.Length;
+        ///         rc = compressor.Deflate(ZlibConstants.Z_FINISH);
+        /// 
+        ///         if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
+        ///             throw new Exception("deflating: " + compressor.Message);
+        /// 
+        ///         if (buffer.Length - compressor.AvailableBytesOut &gt; 0)
+        ///             ms.Write(buffer, 0, buffer.Length - compressor.AvailableBytesOut);
+        ///     }
+        ///     while (compressor.AvailableBytesIn &gt; 0 || compressor.AvailableBytesOut == 0);
+        /// 
+        ///     compressor.EndDeflate();
+        /// 
+        ///     ms.Seek(0, SeekOrigin.Begin);
+        ///     CompressedBytes = new byte[compressor.TotalBytesOut];
+        ///     ms.Read(CompressedBytes, 0, CompressedBytes.Length);
+        /// }
+        /// </code>
+        /// </example>
         /// <param name="flush">whether to flush all data as you deflate. Generally you will want to 
         /// use Z_NO_FLUSH here, in a series of calls to Deflate(), and then call EndDeflate() to 
         /// flush everything. 
