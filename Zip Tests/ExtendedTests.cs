@@ -1200,14 +1200,14 @@ namespace Ionic.Zip.Tests.Extended
 
             TestContext.WriteLine("Current Dir: {0}", CurrentDir);
 
-	    // This is a SFX (Self-Extracting Archive) produced by WinZip
-            string filename = System.IO.Path.Combine(SourceDir, "Zip Tests\\bin\\Debug\\winzip-sfx.exe");
+            // This is a SFX (Self-Extracting Archive) produced by WinZip
+            string filename = System.IO.Path.Combine(SourceDir, "Zip Tests\\bin\\Debug\\zips\\winzip-sfx.exe");
 
             // try reading the WinZip SFX zipfile - this should succeed
             TestContext.WriteLine("Reading WinZip SFX file: '{0}'", filename);
             using (ZipFile zip = ZipFile.Read(filename))
             {
-		string extractDir = "extract";
+                string extractDir = "extract";
                 foreach (ZipEntry e in zip)
                 {
 
@@ -1219,7 +1219,7 @@ namespace Ionic.Zip.Tests.Extended
                                                                          e.CompressedSize,
                                                                          (e.UsesEncryption) ? "Y" : "N",
                                                                          e.Crc32);
-		    e.Extract(extractDir);
+                    e.Extract(extractDir);
                 }
             }
         }

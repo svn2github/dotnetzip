@@ -96,7 +96,7 @@ namespace Ionic.Zip
             {
                 c.PasswordVerificationGenerated = (Int16)(c.GeneratedPV[0] + c.GeneratedPV[1] * 256);
                 if (c.PasswordVerificationGenerated != c.PasswordVerificationStored)
-                    throw new Exception("bad password");
+                    throw new BadPasswordException("bad password");
             }
 
             return c;
@@ -372,6 +372,9 @@ namespace Ionic.Zip
             _s = s;
             _mode = mode;
             _nonce = 1;
+
+            if (_params == null)
+                throw new BadPasswordException("Supply a password to use AES encryption.");
 
             int keySizeInBits = _params.KeyBytes.Length * 8;
             if (keySizeInBits != 256 && keySizeInBits != 128 && keySizeInBits != 192)

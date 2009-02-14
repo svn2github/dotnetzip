@@ -314,6 +314,73 @@ namespace Ionic.Zip.Tests.WinZipAes
 
 
         [TestMethod]
+        public void ReadZip_WinZipAes_Success()
+        {
+            _Internal_ReadZip_WinZipAes("winzip-AES256-multifiles-pw-BarbieDoll.zip", "BarbieDoll", 10);
+            _Internal_ReadZip_WinZipAes("winzip-aes128-pw-ThunderScalpXXX$.zip", "ThunderScalpXXX$", 34);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
+        public void ReadZip_WinZipAes_Fail_BadPassword()
+        {
+            _Internal_ReadZip_WinZipAes("winzip-AES256-multifiles-pw-BarbieDoll.zip", "WrongPassword!!##", 99);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
+        public void ReadZip_WinZipAes_Fail_NoPassword()
+        {
+            _Internal_ReadZip_WinZipAes("winzip-AES256-multifiles-pw-BarbieDoll.zip", null, 99);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
+        public void ReadZip_WinZipAes_Fail_WrongMethod()
+        {
+            _Internal_ReadZip_WinZipAes("winzip-AES256-multifiles-pw-BarbieDoll.zip", "-null-", 99);
+        }
+
+
+        int zipCount = 0;
+        public void _Internal_ReadZip_WinZipAes(string zipfile, string password, int expectedFilesExtracted)
+        {
+            string SourceDir = CurrentDir;
+            for (int i = 0; i < 3; i++)
+                SourceDir = System.IO.Path.GetDirectoryName(SourceDir);
+
+            // This is an AES-encrypted zip produced by WinZip
+            string ZipFileToRead = System.IO.Path.Combine(SourceDir, 
+                String.Format("Zip Tests\\bin\\Debug\\zips\\{0}", zipfile));
+
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            Assert.IsTrue(System.IO.File.Exists(ZipFileToRead), "The zip file '{0}' does not exist.", ZipFileToRead);
+
+            // extract all the files 
+            int actualFilesExtracted=0;
+            string extractDir = String.Format("Extract{0}", zipCount++);
+
+            using (ZipFile zip2 = ZipFile.Read(ZipFileToRead))
+            {
+                //zip2.Password = password;
+                foreach (ZipEntry e in zip2)
+                {
+                    if (!e.IsDirectory)
+                    {
+                        if (password == "-null-")
+e.Extract(extractDir);
+                        else
+                        e.ExtractWithPassword(extractDir, password);
+                        actualFilesExtracted++;
+                    }
+                }
+            }
+            Assert.AreEqual<int>(expectedFilesExtracted, actualFilesExtracted);
+        }
+
+
+        [TestMethod]
         public void CreateZip_WinZipAes_NoCompression()
         {
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);

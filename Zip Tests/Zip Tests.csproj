@@ -59,7 +59,17 @@
     <Compile Include="Zip64Tests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="winzip-sfx.exe">
+    <Content Include="zips\winzip-sfx.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="zips\winzip-AES256-multifiles-pw-BarbieDoll.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="zips\winzip-AES128-pw-ThunderScalpXXX%24.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
