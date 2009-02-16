@@ -243,7 +243,7 @@ namespace Ionic.Zlib
 	///         decompressor.AvailableBytesOut = buffer.Length;
 	///         rc = decompressor.Inflate(ZlibConstants.Z_NO_FLUSH);
 	/// 
-	///         if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
+	///         if (rc != ZlibConstants.Z_OK &amp;&amp; rc != ZlibConstants.Z_STREAM_END)
 	///             throw new Exception("inflating: " + decompressor.Message);
 	/// 
 	///         ms.Write(decompressor.OutputBuffer, 0, buffer.Length - decompressor.AvailableBytesOut);
@@ -257,7 +257,7 @@ namespace Ionic.Zlib
 	///         decompressor.AvailableBytesOut = buffer.Length;
 	///         rc = decompressor.Inflate(ZlibConstants.Z_FINISH);
 	/// 
-	///         if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
+	///         if (rc != ZlibConstants.Z_STREAM_END &amp;&amp; rc != ZlibConstants.Z_OK)
 	///             throw new Exception("inflating: " + decompressor.Message);
 	/// 
 	///         if (buffer.Length - decompressor.AvailableBytesOut &gt; 0)
@@ -448,7 +448,7 @@ namespace Ionic.Zlib
         ///         compressor.AvailableBytesOut = buffer.Length;
         ///         rc = compressor.Deflate(ZlibConstants.Z_NO_FLUSH);
         /// 
-        ///         if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
+        ///         if (rc != ZlibConstants.Z_OK &amp;&amp; rc != ZlibConstants.Z_STREAM_END)
         ///             throw new Exception("deflating: " + compressor.Message);
         /// 
         ///         ms.Write(compressor.OutputBuffer, 0, buffer.Length - compressor.AvailableBytesOut);
@@ -462,7 +462,7 @@ namespace Ionic.Zlib
         ///         compressor.AvailableBytesOut = buffer.Length;
         ///         rc = compressor.Deflate(ZlibConstants.Z_FINISH);
         /// 
-        ///         if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
+        ///         if (rc != ZlibConstants.Z_STREAM_END &amp;&amp; rc != ZlibConstants.Z_OK)
         ///             throw new Exception("deflating: " + compressor.Message);
         /// 
         ///         if (buffer.Length - compressor.AvailableBytesOut &gt; 0)
