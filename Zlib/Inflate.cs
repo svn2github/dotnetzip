@@ -1491,7 +1491,6 @@ namespace Ionic.Zlib
             r = ZlibConstants.Z_BUF_ERROR;
             while (true)
             {
-                //System.out.println("mode: "+z.istate.mode);
                 switch (z.istate.mode)
                 {
                     case METHOD:
@@ -1501,17 +1500,18 @@ namespace Ionic.Zlib
                         r = f;
 
                         z.AvailableBytesIn--; z.TotalBytesIn++;
+                        
                         if (((z.istate.method = z.InputBuffer[z.NextIn++]) & 0xf) != Z_DEFLATED)
                         {
                             z.istate.mode = BAD;
-                            z.Message = "unknown compression method";
+                            z.Message = String.Format("unknown compression method (0x{0:X2})", z.istate.method);
                             z.istate.marker = 5; // can't try inflateSync
                             break;
                         }
                         if ((z.istate.method >> 4) + 8 > z.istate.wbits)
                         {
                             z.istate.mode = BAD;
-                            z.Message = "invalid window size";
+                            z.Message = String.Format("invalid window size ({0})", (z.istate.method >> 4) + 8);
                             z.istate.marker = 5; // can't try inflateSync
                             break;
                         }
