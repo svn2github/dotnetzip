@@ -306,54 +306,74 @@ namespace Ionic.Zip
         /// <remarks>
         ///
         /// <para>
-        /// The original zip specification from PKWARE allowed for 32-bit quantities
-        /// for the compressed and uncompressed sizes of files, as well as a 32-bit
-        /// quantity for specifying the length of the zip archive itself, and a
-        /// maximum number of entries of 65535.  These limits are now regularly
-        /// exceeded in many backup and archival scenarios.  PKWare added extensions
-        /// to the original zip spec, called "ZIP64 extensions", to raise those
-        /// limitations.  This property governs whether the DotNetZip library will use those extensions
-        /// when saving zip archives.
+        /// Designed many years ago, the original zip specification from PKWARE allowed for 32-bit
+        /// quantities for the compressed and uncompressed sizes of zip entries, as well as a
+        /// 32-bit quantity for specifying the length of the zip archive itself, and a maximum of
+        /// 65535 entries.  These limits are now regularly exceeded in many backup and archival
+        /// scenarios.  Recently, PKWare added extensions to the original zip spec, called "ZIP64
+        /// extensions", to raise those limitations.  This property governs whether the ZipFile
+        /// instance will use those extensions when writing zip archives within a call to one of
+        /// the Save() methods.  The use of these extensions is optional and explicit in DotNetZip
+        /// because, despite the status of ZIP64 as a bona fide standard, not all other zip tools
+        /// support ZIP64.
+        /// </para>
+        /// 
+        /// <para>
+        /// Set this property to <see cref="Zip64Option.Always"/> to always use ZIP64 extensions
+        /// when saving, regardless of whether your zip archive needs it.  Suppose you add 5 files,
+        /// each under 100k, to a ZipFile.  If you specify Always for this flag before calling the
+        /// Save() method, you will get a ZIP64 archive, though you do not need to use ZIP64
+        /// because none of the original zip limits had been exceeded.
         /// </para>
         ///
         /// <para>
-        /// Set this property to <see cref="Zip64Option.Always"/> to always use ZIP64 extensions, regardless of 
-        /// whether your zip archive needs it.  Suppose you have 5 files, each under 100k.  If you 
-        /// specify Always for this flag before zipping them up, you will get a zip64 archive, though 
-        /// none of the original zip limits had been exceeded.
+        /// Set this property to <see cref="Zip64Option.Never"/> to tell the DotNetZip library to
+        /// never use ZIP64 extensions.  This is useful for maximum compatibility and
+        /// interoperability, at the expense of the capability of handling large files or large
+        /// archives.  NB: Windows Explorer in Windows XP and Windows Vista cannot currently
+        /// extract files from a zip64 archive, so if you want to guarantee that a zip archive
+        /// produced by this library will work in Windows Explorer, use <c>Never</c>. If you set
+        /// this property to <see cref="Zip64Option.Never"/>, and your application creates a zip
+        /// that would exceed one of the ZIP limits, the library will throw an exception during the
+        /// Save().
         /// </para>
         ///
         /// <para>
-        /// Set this property to <see cref="Zip64Option.Never"/> to tell the DotNetZip library to never use
-        /// ZIP64 extensions.  This is useful for maximum compatibility and interoperability, at the
-        /// expense of the capability of handling large archives.  NB: Windows Explorer in Windows
-        /// XP and Windows Vista cannot currently extract files from a zip64 archive, so if you want
-        /// to always produce zip archives that work in Windows Explorer, use <c>Never</c>. If your 
-        /// application creates a zip that would exceed one of the ZIP64 limits, the library will 
-        /// throw  an exception.
+        /// Set this property to <see cref="Zip64Option.AsNecessary"/> to tell the DotNetZip
+        /// library to use the zip64 extensions when required by the entry. After the file is
+        /// compressed, the original and compressed sizes are checked, and if they exceed the
+        /// limits described above, then zip64 can be used. That is the general idea, but there is
+        /// an additional wrinkle when saving to a non-seekable device, like the ASP.NET
+        /// <c>Response.OutputStream</c>, or <c>Console.Out</c>.  When using non-seekable streams
+        /// for output, the entry header - which indicates whether zip64 is in use - is emitted
+        /// before it is known if zip64 is necessary.  It is only after all entries have been saved
+        /// that it can be known if ZIP64 will be required.  On seekable output streams, after
+        /// saving all entries, the library can seek backward and re-emit the zip file header to be
+        /// consistent with the actual ZIP64 requirement.  But using a non-seekable output stream,
+        /// the library cannot seek backward, so the header can never be changed. In other words,
+        /// the archive's use of ZIP64 extensions is not alterable after the header is emitted.
+        /// Therefore, when saving to non-seekable streams, using <see
+        /// cref="Zip64Option.AsNecessary"/> is the same as using <see cref="Zip64Option.Always"/>:
+        /// it will always produce a zip archive that uses zip64 extensions.
         /// </para>
         ///
         /// <para>
-        /// Set this property to <see cref="Zip64Option.AsNecessary"/> to tell the DotNetZip library to use
-        /// the zip64 extensions when required by the entry. After the file is compressed, the
-        /// original and compressed sizes are checked, and if they exceed the oxFFFFFFFF limits,
-        /// then zip64 can be used. That is the general idea, but there is an additional wrinkle
-        /// when saving to a non-seekable device, like the ASP.NET Response.Output stream, or
-        /// Console.Out.  When using non-seekable devices for output, the entry header is emitted
-        /// and must indicate whether zip64 is in use, before we know if zip64 is necessary.  By definition, 
-        /// the library cannot seek backward on such a device, so the header can never be changed. 
-        /// The use of ZIP64 extensions is final after the header is emitted.  Therefore, when saving
-        /// to non-seekable devices, using <see cref="Zip64Option.AsNecessary"/> is the same as using 
-        /// <see cref="Zip64Option.Always"/>.
+        /// The default value for the property is <see cref="Zip64Option.Never"/>. <see
+        /// cref="Zip64Option.AsNecessary"/> is safest, in the sense that you will not get an
+        /// Exception if a pre-ZIP64 limit is exceeded.
         /// </para>
         ///
         /// <para>
-        /// The default value is <see cref="Zip64Option.Never"/>.
+        /// The ZipFile.Read() method will properly read ZIP64-endowed zip archives, regardless of the value of this 
+        /// property.  ZIP64 archives can always be read, but this property governs whether they can be written. 
+        /// Therefore, when updating archives, be careful about setting this property after reading an archive that
+        /// may use ZIP64 extensions.
         /// </para>
         ///
         /// <para>
-        /// There is no need to specify whether to use ZIP64 when reading an existing zip archive.
-        /// The library will use ZIP64 if and when appropriate.
+        /// An interesting question is, if you have set this property to <c>AsNecessary</c>, and
+        /// then successfully saved, does the resulting archive use ZIP64 extensions or not?  To learn this, 
+        /// check the <see cref="OutputUsedZip64"/> property, after calling Save().
         /// </para>
         ///
         /// <para>
@@ -361,6 +381,7 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// </remarks>
+        /// <seealso cref="RequiresZip64"/>
         public Zip64Option UseZip64WhenSaving
         {
             get
@@ -373,6 +394,90 @@ namespace Ionic.Zip
             }
         }
 
+
+
+        /// <summary>
+        /// Indicates whether the archive requires ZIP64 extensions.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This property is null (or Nothing in VB) if the archive has not been saved, and there are 
+        /// fewer than 65334 ZipEntry items contained in the archive. 
+        /// </para>
+        /// <para>
+        /// The Value is true if any of the following four conditions holds: the uncompressed size
+        /// of any entry is larger than 0xFFFFFFFF; the compressed size of any entry is larger than
+        /// 0xFFFFFFFF; the relative offset of any entry within the zip archive is larger than
+        /// 0xFFFFFFFF; or there are more than 65534 entries in the archive.  (0xFFFFFFFF =
+        /// 4,294,967,295).  The result may not be known until a Save() is attempted on the zip
+        /// archive.  The Value of this Nullable property may be set only AFTER one of the Save()
+        /// methods has been called.
+        /// </para>
+        /// <para>
+	/// If none of the four conditions holds, and the archive has been saved, then the Value is false.
+	/// </para>
+        /// <para>
+        /// A Value of false does not indicate that the zip archive, as saved, does not use ZIP64.
+        /// It merely indicates that ZIP64 is not required.  An archive may use ZIP64 even when not
+        /// required if the <see cref="ZipFile.UseZip64WhenSaving"/> property is set to <see
+        /// cref="Zip64Option.Always"/>, or if the <see cref="ZipFile.UseZip64WhenSaving"/>
+        /// property is set to <see cref="Zip64Option.AsNecessary"/> and the output stream was not
+        /// seekable. Use the <see cref="OutputUsedZip64"/> property to determine if the most
+        /// recent Save() method resulted in an archive that utilized the ZIP64 extensions.
+        /// </para>
+        /// </remarks>
+        /// <seealso cref="UseZip64WhenSaving"/>
+        /// <seealso cref="OutputUsedZip64"/>
+        public Nullable<bool> RequiresZip64
+        {
+            get
+            {
+                if (_entries.Count > 65534)
+                    return new Nullable<bool>(true);
+
+                // If the ZipFile has not been saved or if the contents have changed, then
+                // it is not known if ZIP64 is required.
+                if (!_hasBeenSaved || _contentsChanged) return null;
+
+                // Whether ZIP64 is required is knowable.
+                foreach (ZipEntry e in _entries)
+                {
+                    if (e.RequiresZip64.Value) return new Nullable<bool>(true);
+                }
+
+                return new Nullable<bool>(false);
+            }
+        }
+
+
+        /// <summary>
+        /// Describes whether the most recent Save() operation used ZIP64 extensions.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The value is null (or Nothing in VB) if the archive has not been saved.
+        /// </para>
+        /// <para>
+        /// Non-null values (HasValue is true) indicate whether ZIP64 extensions were used during
+        /// the most recent Save() operation.  The ZIP64 extensions may have been used as required
+        /// by any particular entry because of its uncompressed or compressed size, or because
+        /// the archive is larger than 4294967295 bytes, or because there are more than
+        /// 65534 entries in the archive, or because the <c>UseZip64WhenSaving</c> property was set 
+        /// to <see cref="Zip64Option.Always"/>, or because the <c>UseZip64WhenSaving</c> property was set 
+        /// to <see cref="Zip64Option.AsNecessary"/> and the output stream was not seekable. 
+        /// The value of this property does not indicate the reason
+        /// the ZIP64 extensions were used.
+        /// </para>
+        /// </remarks>
+        /// <seealso cref="UseZip64WhenSaving"/>
+        /// <seealso cref="RequiresZip64"/>
+        public Nullable<bool> OutputUsedZip64
+        {
+            get
+            {
+                return _OutputUsesZip64;
+            }
+        }
 
 
         /// <summary>
@@ -403,49 +508,58 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        /// Be aware that a zip file created after you've explicitly set the
-        /// <see cref="ProvisionalAlternateEncoding" /> property to a value other than IBM437 may not be compliant
-        /// to the PKWare specification, and may not be readable by compliant archivers.  On
-        /// the other hand, many (most?) archivers are non-compliant and can read zip files
-        /// created in arbitrary code pages.  The trick is to use or specify the proper codepage when
-        /// reading the zip.
+        /// Be aware that a zip file created after you've explicitly set the <see
+        /// cref="ProvisionalAlternateEncoding" /> property to a value other than IBM437 may not be
+        /// compliant to the PKWare specification, and may not be readable by compliant archivers.
+        /// On the other hand, many (most?) archivers are non-compliant and can read zip files
+        /// created in arbitrary code pages.  The trick is to use or specify the proper codepage
+        /// when reading the zip.
         /// </para>
         ///
         /// <para>
-        /// When creating a zip archive using this library, it is possible to change the value of 
-        /// <see cref="ProvisionalAlternateEncoding" /> between each entry you add, and between adding entries and the 
-        /// call to Save(). Don't do this. It will likely result in a zipfile that is not readable. 
-        /// For best interoperability, either leave <see cref="ProvisionalAlternateEncoding" /> alone, or 
-        /// specify it only once, before adding any entries to the ZipFile instance.  
-        /// If you want to add a comment to the ZipFile, and you would the comment to be encoded 
-        /// in a code page that is different than the code page you use for the filenames of the entries in the archive, 
-        /// then you can specify ProvisionalAlternateEncoding once before adding entries and then 
-        /// reset ProvisionalAlternateEncoding to IBM437 before calling Save().
+        /// When creating a zip archive using this library, it is possible to change the value of
+        /// <see cref="ProvisionalAlternateEncoding" /> between each entry you add, and between
+        /// adding entries and the call to Save(). Don't do this. It will likely result in a
+        /// zipfile that is not readable.  For best interoperability, either leave <see
+        /// cref="ProvisionalAlternateEncoding" /> alone, or specify it only once, before adding
+        /// any entries to the ZipFile instance.  There is one exception to this recommendation,
+        /// described later.
         /// </para>
         ///
         /// <para>
-        /// When using DotNetZip to read a zip archive that has been created by a different
-        /// tool or library, and the zip archive uses an arbitrary code page, you must
-        /// specify the encoding to use before or when the zipfile is READ.  This means you
-        /// must use a ZipFile.Read() method that allows you to specify a
-        /// System.Text.Encoding parameter.  Setting the ProvisionalAlternateEncoding property after
-        /// your application has read in the zip archive will not affect the entry names of
+        /// When using an arbitrary, non-UTF8 code page for encoding, there is no standard way for
+        /// the creator application - whether DotNetZip, WinZip, WinRar, or something else - to
+        /// formally specify in the zip file which codepage has been used for the entries. As a
+        /// result, readers of zip files are not able to inspect the zip file and determine the
+        /// codepage that was used for the entries contained within it.  It is left to the
+        /// application or user to determine the necessary codepage when reading zipfiles encoded
+        /// this way.  If you use an incorrect codepage when reading a zipfile, you will get
+        /// entries with filenames that are incorrect, and the incorrect filenames may even contain
+        /// characters that are not legal for use within filenames in Windows. Extracting entries
+        /// with illegal characters in the filenames will lead to exceptions. It's too bad, but
+        /// this is just the way things are with code pages in zip files. Caveat Emptor.
+        /// </para>
+	///
+        /// <para>
+        /// When using DotNetZip to read a zip archive, and the zip archive uses an arbitrary code
+        /// page, you must specify the encoding to use before or when the zipfile is READ.  This
+        /// means you must use a ZipFile.Read() method that allows you to specify a
+        /// System.Text.Encoding parameter.  Setting the ProvisionalAlternateEncoding property
+        /// after your application has read in the zip archive will not affect the entry names of
         /// entries that have already been read in, and is probably not what you want.
         /// </para>
-        ///
-        /// <para>
-        /// When using an arbitrary, non-UTF8 code page for encoding, there is no standard
-        /// way for the creator application - whether DotNetZip, WinZip, WinRar, or something else -
-        /// to specify in the zip file which codepage has been used for the entries. As a result, readers of
-        /// zip files are not able to inspect the zip file and determine the codepage that
-        /// was used for the entries contained within it.  It is left to the application to
-        /// determine the necessary codepage when reading zipfiles encoded this way.  If you
-        /// use an incorrect codepage when reading a zipfile, you will get entries with
-        /// filenames that are incorrect, and the incorrect filenames may even contain characters that are not
-        /// legal for use within filenames in Windows. Extracting entries with illegal
-        /// characters in the filenames will lead to exceptions. It's too bad, but this is just the
-        /// way things are with code pages in zip files. Caveat Emptor.
-        /// </para>
+        ///	
+	/// <para>
+        /// And now, the exception to the rule described above.  One strategy for specifying the
+        /// code page for a given zip file is to describe the code page in a human-readable form in
+        /// the Zip comment. For example, the comment may read "Entries in this archive are encoded
+        /// in the Big5 code page".  For maximum interoperability, the Zip comment in this case
+        /// should be encoded in the default, IBM437 code page.  In this case, the zip comment is
+        /// encoded using a different page than the filenames.  To do this, specify
+        /// ProvisionalAlternateEncoding to your desired region-specific code page, once before
+        /// adding any entries, and then reset ProvisionalAlternateEncoding to IBM437 before
+        /// setting the <see cref="Comment"/> property and calling Save().
+	/// </para>
         /// </remarks>
         /// 
         /// <seealso cref="Ionic.Zip.ZipFile.DefaultEncoding">DefaultEncoding</seealso>
@@ -489,7 +603,7 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <code lang="C#">
-        /// using (ZipFile zip= new ZipFile(FilePath))
+        /// using (ZipFile zip= ZipFile.Read(FilePath))
         /// {
         ///   zip.StatusMessageTextWriter= System.Console.Out;
         ///   // messages are sent to the console during extraction
@@ -498,7 +612,7 @@ namespace Ionic.Zip
         /// </code>
         ///
         /// <code lang="VB">
-        /// Using zip As new ZipFile(FilePath)
+        /// Using zip As ZipFile = ZipFile.Read(FilePath)
         ///   zip.StatusMessageTextWriter= System.Console.Out
         ///   'Status Messages will be sent to the console during extraction
         ///   zip.ExtractAll()
@@ -555,21 +669,21 @@ namespace Ionic.Zip
         /// to the zip archive. None of the files added to the archive in this example will use
         /// compression.
         /// <code>
-        /// using (ZipFile zip = new ZipFile(ZipFileToCreate))
+        /// using (ZipFile zip = new ZipFile())
         /// {
         ///   zip.ForceNoCompression = true;
         ///   zip.AddDirectory(@"c:\temp\Foo");
         ///   zip.Comment = "All files in this archive will be uncompressed.";
-        ///   zip.Save();
+        ///   zip.Save(ZipFileToCreate);
         /// }
         /// </code>
         ///
         /// <code lang="VB">
-        /// Using zip As New ZipFile(ZipFileToCreate)
+        /// Using zip As New ZipFile()
         ///   zip.ForceNoCompression = true
         ///   zip.AddDirectory("c:\temp\Foo")
         ///   zip.Comment = "All files in this archive will be uncompressed."
-        ///   zip.Save()
+        ///   zip.Save(ZipFileToCreate)
         /// End Using
         /// </code>
         ///
@@ -733,7 +847,7 @@ namespace Ionic.Zip
         ///
         /// <code lang="VB">
         ///  Try 
-        ///    Using zip As New ZipFile()
+        ///    Using zip As New ZipFile
         ///      zip.AddFile("ReadMe.txt")
         ///      zip.Password = "123456!"
         ///      zip.AddFile("7440-N49th.png")
@@ -1144,7 +1258,7 @@ namespace Ionic.Zip
         /// <example>
         /// This example shows how to create a zipfile, and add a few files into it. 
         /// <code>
-        /// using (ZipFile zip = new ZipFile(args[0]))
+        /// using (ZipFile zip = new ZipFile())
         /// { 
         ///   // Store all files found in the top level directory, into the zip archive.
         ///   String[] filenames = System.IO.Directory.GetFiles(args[1]);
@@ -1153,21 +1267,21 @@ namespace Ionic.Zip
         ///     Console.WriteLine("Adding {0}...", filename);
         ///     zip.AddFile(filename);
         ///   }  
-        ///   zip.Save();
+        ///   zip.Save(ZipFileToCreate);
         /// }
         /// </code>
         /// 
         /// <code lang="VB">
         /// Dim ZipToCreate As String = "ex1.zip"
         /// Dim DirectoryToZip As String = "c:\temp"
-        /// Using zip As ZipFile = New ZipFile(ZipToCreate)
+        /// Using zip As ZipFile = New ZipFile()
         ///     Dim filenames As String() = System.IO.Directory.GetFiles(DirectoryToZip)
         ///     Dim filename As String
         ///     For Each filename In filenames
         ///         Console.WriteLine("Adding {0}...", filename)
         ///         zip.AddFile(filename)
         ///     Next
-        ///     zip.Save
+        ///     zip.Save(ZipToCreate)
         /// End Using
         /// </code>
         /// </example>
@@ -1358,7 +1472,7 @@ namespace Ionic.Zip
         ///
         /// <example>
         /// <code>
-        /// using (ZipFile zip = new ZipFile("Backup.zip", System.Console.Out))
+        /// using (ZipFile zip = new ZipFile())
         /// { 
         ///   // Store all files found in the top level directory, into the zip archive.
         ///   // note: this code does not recurse subdirectories!
@@ -1368,12 +1482,12 @@ namespace Ionic.Zip
         ///     Console.WriteLine("Adding {0}...", filename);
         ///     zip.AddFile(filename);
         ///   }  
-        ///   zip.Save();
+        ///   zip.Save("Backup.zip");
         /// }
         /// </code>
         ///
         /// <code lang="VB">
-        /// Using zip As New ZipFile("Backup.zip", System.Console.Out)
+        /// Using zip As New ZipFile
         ///     ' Store all files found in the top level directory, into the zip archive.
         ///     ' note: this code does not recurse subdirectories!
         ///     Dim filenames As String() = System.IO.Directory.GetFiles(DirectoryToZip)
@@ -1382,7 +1496,7 @@ namespace Ionic.Zip
         ///         Console.WriteLine("Adding {0}...", filename)
         ///         zip.AddFile(filename)
         ///     Next
-        ///     zip.Save
+        ///     zip.Save("Backup.zip")
         /// End Using
         /// </code>
         /// </example>
@@ -1526,11 +1640,11 @@ namespace Ionic.Zip
         ///    // write to the memory stream:
         ///    try
         ///    {
-        ///      using (ZipFile zip = new ZipFile(ms,System.Console.Out))
+        ///      using (ZipFile zip = new ZipFile())
         ///      {
         ///        zip.Comment= "This is the comment attached to the archive.";
         ///        zip.AddItem(directoryName);  // and recurse
-        ///        zip.Save(); // write all the data to the stream and close it
+        ///        zip.Save(ms); // write all the data to the stream and close it
         ///      }
         ///    }
         ///    catch (System.Exception ex1)
@@ -1543,12 +1657,12 @@ namespace Ionic.Zip
         ///   Dim ms As New System.IO.MemoryStream(buffer)
         ///   ' write to the memory stream:
         ///   Try 
-        ///       Using zip As ZipFile = New ZipFile(ms, Console.Out)
+        ///       Using zip As ZipFile = New ZipFile
         ///           zip.Comment = "This is the comment attached to the archive."
         ///           ' Add directory and recurse
         ///           zip.AddItem(NameOfDirectoryToZip)
         ///           ' now, write all the data to the stream and close it:
-        ///           zip.Save
+        ///           zip.Save(ms)
         ///       End Using
         ///   Catch ex1 As Exception
         ///       Console.Error.WriteLine("exception: {0}", ex1.ToString())
@@ -1864,14 +1978,14 @@ namespace Ionic.Zip
         ///
         /// try
         /// {
-        ///   using (ZipFile zip = new ZipFile(ZipToCreate,System.Console.Out))
+        ///   using (ZipFile zip = new ZipFile())
         ///   {
         ///     for (int i = 1; i &lt; itemnames.Length; i++)
         ///     {
         ///       // will add Files or Dirs, recurses and flattens subdirectories
         ///       zip.AddItem(itemnames[i],"flat"); 
         ///     }
-        ///     zip.Save();
+        ///     zip.Save(ZipToCreate);
         ///   }
         /// }
         /// catch (System.Exception ex1)
@@ -1887,13 +2001,13 @@ namespace Ionic.Zip
         ///                    "SupportFiles", _
         ///                    "images\Image1.jpg" }
         ///   Try 
-        ///       Using zip As New ZipFile(ZipToCreate, Console.Out)
+        ///       Using zip As New ZipFile
         ///           Dim i As Integer
         ///           For i = 1 To itemnames.Length - 1
         ///               ' will add Files or Dirs, recursing and flattening subdirectories.
         ///               zip.AddItem(itemnames(i), "flat")
         ///           Next i
-        ///           zip.Save
+        ///           zip.Save(ZipToCreate)
         ///       End Using
         ///   Catch ex1 As Exception
         ///       Console.Error.WriteLine("exception: {0}", ex1.ToString())
@@ -1930,13 +2044,13 @@ namespace Ionic.Zip
         /// <code>
         ///    try
         ///    {
-        ///      using (ZipFile zip = new ZipFile("test2.zip",System.Console.Out))
+        ///      using (ZipFile zip = new ZipFile())
         ///      {
         ///        zip.AddFile("c:\\photos\\personal\\7440-N49th.png");
         ///        zip.AddFile("c:\\Desktop\\2005_Annual_Report.pdf");
         ///        zip.AddFile("ReadMe.txt");
         ///
-        ///        zip.Save();
+        ///        zip.Save("Package.zip");
         ///      }
         ///    }
         ///    catch (System.Exception ex1)
@@ -1947,11 +2061,11 @@ namespace Ionic.Zip
         /// 
         /// <code lang="VB">
         ///  Try 
-        ///       Using zip As ZipFile = New ZipFile("test2.zip", Console.Out)
+        ///       Using zip As ZipFile = New ZipFile
         ///           zip.AddFile("c:\photos\personal\7440-N49th.png")
         ///           zip.AddFile("c:\Desktop\2005_Annual_Report.pdf")
         ///           zip.AddFile("ReadMe.txt")
-        ///           zip.Save
+        ///           zip.Save("Package.zip")
         ///       End Using
         ///   Catch ex1 As Exception
         ///       Console.Error.WriteLine("exception: {0}", ex1.ToString)
@@ -2006,7 +2120,7 @@ namespace Ionic.Zip
         /// <code>
         /// try
         /// {
-        ///   using (ZipFile zip = new ZipFile("Archive.zip",System.Console.Out))
+        ///   using (ZipFile zip = new ZipFile())
         ///   {
         ///     // the following entry will be inserted at the root in the archive.
         ///     zip.AddFile("c:\\datafiles\\ReadMe.txt", "");
@@ -2016,7 +2130,7 @@ namespace Ionic.Zip
         ///     // files\\docs\\2005_Annual_Report.pdf  in the archive.
         ///     zip.Password = "EncryptMe!";
         ///     zip.AddFile("c:\\Desktop\\2005_Annual_Report.pdf", "files\\docs");
-        ///     zip.Save();
+        ///     zip.Save("Archive.zip");
         ///   }
         /// }
         /// catch (System.Exception ex1)
@@ -2027,7 +2141,7 @@ namespace Ionic.Zip
         /// 
         /// <code lang="VB">
         ///   Try 
-        ///       Using zip As ZipFile = New ZipFile("Archive.zip", Console.Out)
+        ///       Using zip As ZipFile = New ZipFile
         ///           ' the following entry will be inserted at the root in the archive.
         ///           zip.AddFile("c:\datafiles\ReadMe.txt", "")
         ///           ' this image file will be inserted into the "images" directory in the archive.
@@ -2036,7 +2150,7 @@ namespace Ionic.Zip
         ///           ' files\\docs\\2005_Annual_Report.pdf  in the archive.
         ///           zip.Password = "EncryptMe!"
         ///           zip.AddFile("c:\Desktop\2005_Annual_Report.pdf", "files\documents")
-        ///           zip.Save
+        ///           zip.Save("Archive.zip")
         ///       End Using
         ///   Catch ex1 As Exception
         ///       Console.Error.WriteLine("exception: {0}", ex1)
@@ -2357,23 +2471,23 @@ namespace Ionic.Zip
         /// <code lang="C#">
         /// String ZipToCreate = "Content.zip";
         /// String FileNameInArchive = "Content-From-Stream.bin";
-        /// using (ZipFile zip = new ZipFile(ZipToCreate))
+        /// using (ZipFile zip = new ZipFile())
         /// {
         ///   ZipEntry entry= zip.AddFileStream(FileNameInArchive, "basedirectory", StreamToRead);
         ///   entry.Comment = "The content for entry in the zip file was obtained from a stream";
         ///   zip.AddFile("Readme.txt");
-        ///   zip.Save();
+        ///   zip.Save(ZipToCreate);
         /// }
         /// 
         /// </code>
         /// <code lang="VB">
         /// Dim ZipToCreate As String = "Content.zip"
         /// Dim FileNameInArchive As String = "Content-From-Stream.bin"
-        /// Using zip As ZipFile = New ZipFile(ZipToCreate)
+        /// Using zip As ZipFile = New ZipFile()
         ///   Dim entry as ZipEntry = zip.AddFileStream(FileNameInArchive, "basedirectory", Me.StreamToRead)
         ///   entry.Comment = "The content for entry in the zip file was obtained from a stream"
         ///   zip.AddFile("Readme.txt")
-        ///   zip.Save
+        ///   zip.Save(ZipToCreate)
         /// End Using
         /// </code>
         /// </example>
@@ -2777,6 +2891,7 @@ namespace Ionic.Zip
         {
             try
             {
+                bool _thisSaveUsedZip64 = false;
                 _saveOperationCanceled = false;
                 OnSaveStarted();
 
@@ -2803,6 +2918,8 @@ namespace Ionic.Zip
                     OnSaveEntry(n, e, false);
                     if (_saveOperationCanceled)
                         break;
+
+                    _thisSaveUsedZip64 |= e.OutputUsedZip64.Value;
                 }
 
                 if (_saveOperationCanceled)
@@ -2811,6 +2928,13 @@ namespace Ionic.Zip
                 WriteCentralDirectoryStructure(WriteStream);
 
                 OnSaveEvent(ZipProgressEventType.Saving_AfterSaveTempArchive);
+
+                _hasBeenSaved = true;
+                _contentsChanged = false;
+
+
+                _thisSaveUsedZip64 |= _NeedZip64CentralDirectory;
+                _OutputUsesZip64 = new Nullable<bool>(_thisSaveUsedZip64);
 
                 // do the rename as necessary
                 if ((_temporaryFileName != null) && (_name != null))
@@ -2989,6 +3113,11 @@ namespace Ionic.Zip
         {
             // The Central Directory Structure.
             // We need to keep track of the start and Finish of the Central Directory Structure. 
+
+            // Cannot always use WriteStream.Length or Position; some streams do not 
+            // support these. (eg, ASP.NET Response.OutputStream)
+            // In those cases we have a CountingStream.
+
             var output = s as CountingStream;
             long Start = (output != null) ? output.BytesWritten : s.Position;
 
@@ -2997,21 +3126,24 @@ namespace Ionic.Zip
                 e.WriteCentralDirectoryEntry(s);  // this writes a ZipDirEntry corresponding to the ZipEntry
             }
 
-            //long Finish = WriteStream.Length; // Position;  ditto - for ASP.NET
             long Finish = (output != null) ? output.BytesWritten : s.Position;
-
 
             Int64 SizeOfCentralDirectory = Finish - Start;
 
-            bool NeedZip64CentralDirectory =
-            _zip64 == Zip64Option.Always ||
-            _entries.Count >= 0xFFFF ||
-            SizeOfCentralDirectory > 0xFFFFFFFF ||
-            Start > 0xFFFFFFFF;
+            _NeedZip64CentralDirectory =
+        _zip64 == Zip64Option.Always ||
+        _entries.Count >= 0xFFFF ||
+        SizeOfCentralDirectory > 0xFFFFFFFF ||
+        Start > 0xFFFFFFFF;
 
             // emit ZIP64 extensions as required
-            if (NeedZip64CentralDirectory)
+            if (_NeedZip64CentralDirectory)
+            {
+                if (_zip64 == Zip64Option.Never)
+                    throw new ZipException("The archive requires a ZIP64 Central Directory. Consider setting the UseZip64WhenSaving property.");
+
                 WriteZip64EndOfCentralDirectory(s, Start, Finish);
+            }
 
             // now, the footer
             WriteCentralDirectoryFooter(s, Start, Finish);
@@ -3980,7 +4112,7 @@ namespace Ionic.Zip
 
 
         // Can be called from within ZipEntry._ExtractOne.
-        internal bool OnExtractBlock(ZipEntry entry, int bytesWritten, Int64 totalBytesToWrite)
+        internal bool OnExtractBlock(ZipEntry entry, Int64 bytesWritten, Int64 totalBytesToWrite)
         {
             if (ExtractProgress != null)
             {
@@ -4056,7 +4188,7 @@ namespace Ionic.Zip
         /// <remarks>
         /// <para>
         /// Calling this method is equivalent to calling 
-        /// <see cref="IsZipFile(string)"/>.
+        /// <see cref="IsZipFile(string, bool)"/> with the testExtract parameter set to false.
         /// </para>
         /// </remarks>
         /// 
@@ -4932,7 +5064,7 @@ namespace Ionic.Zip
                     {
                         nTries++;
                         //weird - with NETCF, negative offsets from SeekOrigin.End DO NOT WORK
-                        posn -= (32 * (nTries+1) * nTries); // increasingly larger
+                        posn -= (32 * (nTries + 1) * nTries); // increasingly larger
                         if (posn < 0) posn = 0;
                     }
                 }
@@ -6178,8 +6310,8 @@ namespace Ionic.Zip
                 {
                     if (_name != null)
                     {
-                        _temporaryFileName = (TempFileFolder != ".") ?
-                System.IO.Path.Combine(TempFileFolder, SharedUtilities.GetTempFilename())
+                        _temporaryFileName = (TempFileFolder != ".")
+                ? System.IO.Path.Combine(TempFileFolder, SharedUtilities.GetTempFilename())
                 : SharedUtilities.GetTempFilename();
                         _writestream = new System.IO.FileStream(_temporaryFileName, System.IO.FileMode.CreateNew);
                     }
@@ -6211,12 +6343,15 @@ namespace Ionic.Zip
         private bool _fileAlreadyExists;
         private string _temporaryFileName;
         private bool _contentsChanged;
+        private bool _hasBeenSaved;
         private String _TempFileFolder;
         private bool _ReadStreamIsOurs = true;
         private object LOCK = new object();
         private bool _saveOperationCanceled;
         private bool _extractOperationCanceled;
         private bool _JustSaved;
+        private bool _NeedZip64CentralDirectory;
+        private Nullable<bool> _OutputUsesZip64;
         internal bool _inExtractAll = false;
         //private System.Text.Encoding _encoding = System.Text.Encoding.GetEncoding("IBM437"); // default = IBM437
         private System.Text.Encoding _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437"); // default = IBM437

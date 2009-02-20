@@ -479,7 +479,7 @@ namespace Ionic.Zip.Tests.Basic
 
 
 
-        [TestMethod]
+        [Timeout(0), TestMethod]
         public void CreateZip_AddDirectory_LargeNumberOfSmallFiles()
         {
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_AddDirectory_LargeNumberOfSmallFiles.zip");

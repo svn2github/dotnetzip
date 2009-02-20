@@ -237,7 +237,7 @@ namespace Ionic.Zip
             if (zde._extraFieldLength > 0)
             {
                 //Console.WriteLine("ZDE Extra Field length: {0}", zde._extraFieldLength);
-                bool IsZip64Format = ((uint)zde._CompressedSize == 0xFFFFFFFF ||
+                zde._InputUsesZip64 = ((uint)zde._CompressedSize == 0xFFFFFFFF ||
                       (uint)zde._UncompressedSize == 0xFFFFFFFF ||
                       (uint)zde._RelativeOffsetOfLocalHeader == 0xFFFFFFFF);
 

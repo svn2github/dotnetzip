@@ -419,7 +419,7 @@ namespace Ionic.Zip
         }
 
 
-        internal static ExtractProgressEventArgs ByteUpdate(string archiveName, ZipEntry entry, int bytesWritten, Int64 totalBytes)
+        internal static ExtractProgressEventArgs ByteUpdate(string archiveName, ZipEntry entry, Int64 bytesWritten, Int64 totalBytes)
         {
             var x = new ExtractProgressEventArgs(archiveName, ZipProgressEventType.Extracting_EntryBytesWritten);
             x.ArchiveName = archiveName;

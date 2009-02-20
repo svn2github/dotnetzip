@@ -52,12 +52,15 @@ namespace Ionic.Zip.Examples
                 Usage();
             }
 
+            string ZipFileToCreate = args[0];
+            string DirectoryToZip = args[1];
             try
             {
-                using (ZipFile zip = new ZipFile(args[0], System.Console.Out))
+                using (ZipFile zip = new ZipFile())
                 {
-                    zip.AddDirectory(args[1]); // recurses subdirectories
-                    zip.Save();
+                    zip.StatusMessageTextWriter = System.Console.Out;
+                    zip.AddDirectory(DirectoryToZip); // recurses subdirectories
+                    zip.Save(ZipFileToCreate);
                 }
             }
             catch (System.Exception ex1)

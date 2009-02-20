@@ -257,8 +257,8 @@ namespace Ionic.Zip.Tests.Error
                 entriesAdded++;
             }
 
-
             String TempFileFolder = "Error_Save_NonExistentFile-Temp";
+            _FilesToRemove.Add(TempFileFolder);
             System.IO.Directory.CreateDirectory(TempFileFolder);
             TestContext.WriteLine("Using {0} as the temp file folder....", TempFileFolder);
             String[] tfiles = System.IO.Directory.GetFiles(TempFileFolder);

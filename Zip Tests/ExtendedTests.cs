@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Ionic.Zip;
 using Ionic.Zip.Tests.Utilities;
+using System.IO;
 
 
 /// Tests for more advanced scenarios.
@@ -718,32 +719,52 @@ namespace Ionic.Zip.Tests.Extended
 
         int _progressEventCalls;
         int _cancelIndex;
+        Int64 maxBytesXferred = 0;
         public void SaveProgress(object sender, SaveProgressEventArgs e)
         {
-            if (e.EventType == ZipProgressEventType.Saving_AfterWriteEntry)
+            switch (e.EventType)
             {
-                _progressEventCalls++;
-                TestContext.WriteLine("{0}: {1} ({2}/{3})", e.EventType.ToString(), e.CurrentEntry.FileName, e.EntriesSaved, e.EntriesTotal);
-                if (_cancelIndex == _progressEventCalls)
-                {
-                    e.Cancel = true;
-                    TestContext.WriteLine("Cancelling...");
-                }
+                case ZipProgressEventType.Saving_AfterWriteEntry:
+                    _progressEventCalls++;
+                    TestContext.WriteLine("{0}: {1} ({2}/{3})", e.EventType.ToString(), e.CurrentEntry.FileName, e.EntriesSaved, e.EntriesTotal);
+                    if (_cancelIndex == _progressEventCalls)
+                    {
+                        e.Cancel = true;
+                        TestContext.WriteLine("Cancelling...");
+                    }
+                    break;
+
+                case ZipProgressEventType.Saving_EntryBytesRead:
+                    maxBytesXferred = e.BytesTransferred;
+                    break;
+
+                default:
+                    break;
             }
         }
 
 
         public void ExtractProgress(object sender, ExtractProgressEventArgs e)
         {
-            if (e.EventType == ZipProgressEventType.Extracting_AfterExtractEntry)
+            switch (e.EventType)
             {
-                _progressEventCalls++;
-                TestContext.WriteLine("Extracted: {0} ({1}/{2})", e.CurrentEntry.FileName, e.EntriesExtracted, e.EntriesTotal);
-                if (_cancelIndex == _progressEventCalls)
-                {
-                    e.Cancel = true;
-                    TestContext.WriteLine("Cancelling...");
-                }
+                case ZipProgressEventType.Extracting_AfterExtractEntry:
+                    _progressEventCalls++;
+                    TestContext.WriteLine("Extracted: {0} ({1}/{2})", e.CurrentEntry.FileName, e.EntriesExtracted, e.EntriesTotal);
+                    // synthetic cancellation
+                    if (_cancelIndex == _progressEventCalls)
+                    {
+                        e.Cancel = true;
+                        TestContext.WriteLine("Cancelling...");
+                    }
+                    break;
+
+                case ZipProgressEventType.Extracting_EntryBytesWritten:
+                    maxBytesXferred = e.BytesTransferred;
+                    break;
+
+                default:
+                    break;
             }
         }
 
@@ -769,6 +790,7 @@ namespace Ionic.Zip.Tests.Extended
                 zip1.Save(ZipFileToCreate);
             }
 
+            // why entriesAdded + subdirCount + 1?  
             Assert.AreEqual<Int32>(_progressEventCalls, entriesAdded + subdirCount + 1,
                    "The number of Entries added is not equal to the number of entries saved.");
 
@@ -783,6 +805,65 @@ namespace Ionic.Zip.Tests.Extended
             Assert.AreEqual<Int32>(_progressEventCalls, entriesAdded + subdirCount + 1,
                    "The number of Entries added is not equal to the number of entries extracted.");
 
+        }
+
+
+        [Timeout(1500000), TestMethod]
+        public void LargeFile_WithProgress()
+        {
+            // This test checks the Int64 limits in progress events (Save + Extract)
+            TestContext.WriteLine("Test beginning {0}", System.DateTime.Now.ToString("G"));
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "LargeFile_WithProgress.zip");
+            string TargetDirectory = System.IO.Path.Combine(TopLevelDir, "unpack");
+
+            string DirToZip = System.IO.Path.Combine(TopLevelDir, "LargeFile");
+            System.IO.Directory.CreateDirectory(DirToZip);
+
+            Int64 filesize = 2147483649 + _rnd.Next(1000000);  // larger than max-int 
+            TestContext.WriteLine("Creating a large file, size({0})", filesize);
+            string filename = System.IO.Path.Combine(DirToZip, "LargeFile.bin");
+            TestUtilities.CreateAndFillFileBinaryZeroes(filename, filesize);
+            TestContext.WriteLine("File Create complete {0}", System.DateTime.Now.ToString("G"));
+
+            _progressEventCalls = 0;
+            maxBytesXferred = 0;
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.SaveProgress += SaveProgress;
+                zip1.Comment = "This is the comment on the zip archive.";
+                zip1.AddDirectory(DirToZip, System.IO.Path.GetFileName(DirToZip));
+                zip1.Save(ZipFileToCreate);
+            }
+
+            TestContext.WriteLine("Save complete {0}", System.DateTime.Now.ToString("G"));
+
+            Assert.AreEqual<Int32>(_progressEventCalls, 1 + 1,
+                   "The number of Entries added is not equal to the number of entries saved.");
+
+            Assert.AreEqual<Int64>(filesize, maxBytesXferred,
+                "The number of bytes saved is not the expected value.");
+
+            // remove the very large file before extracting
+            Directory.Delete(DirToZip, true);
+
+            _progressEventCalls = 0;
+            _cancelIndex = -1; // don't cancel this Extract
+            maxBytesXferred = 0;
+            using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+            {
+                zip2.ExtractProgress += ExtractProgress;
+                zip2.ExtractAll(TargetDirectory);
+            }
+
+            TestContext.WriteLine("Extract complete {0}", System.DateTime.Now.ToString("G"));
+
+            Assert.AreEqual<Int32>(_progressEventCalls, 1 + 1,
+                   "The number of Entries added is not equal to the number of entries extracted.");
+
+            Assert.AreEqual<Int64>(filesize, maxBytesXferred,
+                   "The number of bytes extracted is not the expected value.");
+
+            TestContext.WriteLine("Test complete {0}", System.DateTime.Now.ToString("G"));
         }
 
 

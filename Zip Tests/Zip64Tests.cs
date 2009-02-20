@@ -131,6 +131,12 @@ namespace Ionic.Zip.Tests.Zip64
                     zip1.UseZip64WhenSaving = Options[k];
                     zip1.Comment = String.Format("This archive uses zip64 option: {0}", Options[k].ToString());
                     zip1.Save(ZipFileToCreate);
+
+                    if (Options[k] == Zip64Option.Always)                    
+                        Assert.IsTrue(zip1.OutputUsedZip64.Value);                    
+                    else if (Options[k] == Zip64Option.Never)     
+                        Assert.IsFalse(zip1.OutputUsedZip64.Value);
+
                 }
 
                 TestContext.WriteLine("---------------Reading {0}...", ZipFileToCreate);

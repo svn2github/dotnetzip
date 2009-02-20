@@ -52,12 +52,19 @@ namespace Ionic.Zip.Examples
                 Usage();
             }
 
+            string ZipFileToCreate = args[0];
+            string DirectoryToZip = args[1];
             try
             {
-                using (ZipFile zip = new ZipFile(args[0]))
+                using (ZipFile zip = new ZipFile())
                 {
                     // note: this does not recurse directories! 
-                    String[] filenames = System.IO.Directory.GetFiles(args[1]);
+                    String[] filenames = System.IO.Directory.GetFiles(DirectoryToZip);
+
+                    // This is just a sample, provided to illustrate the DotNetZip interface.  
+                    // This logic does not recurse through sub-directories.
+                    // If you are zipping up a directory, you may want to see the AddDirectory() method, 
+                    // which operates recursively. 
                     foreach (String filename in filenames)
                     {
                         Console.WriteLine("Adding {0}...", filename);
@@ -65,10 +72,10 @@ namespace Ionic.Zip.Examples
                         e.Comment = "Added by Cheeso's CreateZip utility."; 
                     }
 
-                    zip.Comment= String.Format("This zip archive was created by the CreateZip utility on machine '{0}'",
-                       System.Net.Dns.GetHostName());  
+                    zip.Comment= String.Format("This zip archive was created by the CreateZip example application on machine '{0}'",
+                       System.Net.Dns.GetHostName());
 
-                    zip.Save();
+                    zip.Save(ZipFileToCreate);
                 }
 
             }

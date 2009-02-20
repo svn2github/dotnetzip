@@ -146,6 +146,7 @@ namespace Ionic.Zip.Tests.WinZipAes
 
 
                 TestContext.WriteLine("---------------Reading {0}...", ZipFileToCreate);
+                System.Threading.Thread.Sleep(1200); // seems to be a race condition?  sometimes?
                 using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
                 {
                     string extractDir = String.Format("extract{0}", k);

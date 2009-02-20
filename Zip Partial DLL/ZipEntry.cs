@@ -325,6 +325,66 @@ namespace Ionic.Zip
             }
         }
 
+
+        /// <summary>
+        /// Indicates whether the entry requires ZIP64 extensions.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This property is null (Nothing in VB) until a Save() method on the containing 
+        /// <see cref="ZipFile"/> instance has been called. The property is non-null (HasValue is true)
+        /// only after a Save() method has been called. 
+        /// </para>
+        /// <para>
+        /// After the containing ZipFile  has been saved. the Value of this property is true if any of the following 
+        /// three conditions holds:  the uncompressed size of the entry is larger than 0xFFFFFFFF; 
+        /// the compressed size of the entry is larger than 0xFFFFFFFF; the relative offset of the entry within the 
+        /// zip archive is larger than 0xFFFFFFFF.  These quantities are not known until a Save() is attempted on the 
+        /// zip archive and the compression is applied.  
+        /// </para>
+        /// <para>If none of the three conditions holds, then the Value is false.</para>
+        /// <para>
+        /// A value of false does not indicate that the entry, as saved in the zip archive, does not use
+        /// ZIP64.  It merely indicates that ZIP64 is not required.  An entry may use ZIP64 even when not
+        /// required if the <see cref="ZipFile.UseZip64WhenSaving"/> property on the containing ZipFile
+        /// instance is set to <see cref="Zip64Option.Always"/>, or if
+        /// the <see cref="ZipFile.UseZip64WhenSaving"/> property on the containing ZipFile
+        /// instance is set to <see cref="Zip64Option.AsNecessary"/> and the output stream was not seekable.
+        /// </para>
+        /// </remarks>
+        /// <seealso cref="OutputUsedZip64"/>
+        public Nullable<bool> RequiresZip64
+        {
+            get
+            {
+                return _entryRequiresZip64;
+            }
+        }
+
+        /// <summary>
+        /// Indicates whether the entry actually used ZIP64 extensions, as it was most recently written 
+        /// to the output file or stream.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This Nullable property is null (Nothing in VB) until a Save() method on the containing 
+        /// <see cref="ZipFile"/> instance has been called. HasValue is true only after a Save() method
+        /// has been called. 
+        /// </para>
+        /// <para>
+        /// The value of this property for a particular ZipEntry may change over successive calls to
+        /// Save() methods on the containing ZipFile, even if the file that corresponds to the ZipEntry does
+        /// not. This may happen if other entries contained in the ZipFile expand, causing the offset 
+        /// for this particular entry to exceed 0xFFFFFFFF. 
+        /// </para>
+        /// </remarks>
+        /// <seealso cref="RequiresZip64"/>
+        public Nullable<bool> OutputUsedZip64
+        {
+            get { return _OutputUsesZip64; }
+        }
+
+
         /// <summary>
         /// The bitfield as defined in the zip spec. You probably never need to look at this.
         /// </summary>
@@ -534,17 +594,17 @@ namespace Ionic.Zip
         /// WinZip or Xceed, also specify and support different encryption algorithms and data
         /// formats.
         /// </para>
-	///
+        ///
         /// <para>
         /// There is no common, ubiquitous multi-vendor standard for strong encryption. There is
         /// broad support for "traditional" Zip encryption, sometimes called Zip 2.0 encryption,
         /// as specified by PKWare, but this encryption is considered weak. This library currently
         /// supports AES 128 and 256 in addition to the Zip 2.0 "weak" encryption.
         /// </para>
-	///
-	/// <para>
-	/// The WinZip AES encryption algorithms are not supported on the .NET Compact Framework. 
-	/// </para>
+        ///
+        /// <para>
+        /// The WinZip AES encryption algorithms are not supported on the .NET Compact Framework. 
+        /// </para>
         /// </remarks>
         public EncryptionAlgorithm Encryption
         {
@@ -828,7 +888,7 @@ namespace Ionic.Zip
                 ze._CompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
                 ze._UncompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
 
-                // validate ZIP64 - no.  we don't need to be pedantic about it. 
+                // validate ZIP64?  No.  We don't need to be pedantic about it. 
                 //if (((uint)ze._CompressedSize == 0xFFFFFFFF &&
                 //    (uint)ze._UncompressedSize != 0xFFFFFFFF) ||
                 //    ((uint)ze._CompressedSize != 0xFFFFFFFF &&
@@ -838,7 +898,7 @@ namespace Ionic.Zip
                 if ((uint)ze._CompressedSize == 0xFFFFFFFF ||
                     (uint)ze._UncompressedSize == 0xFFFFFFFF)
 
-                    ze._IsZip64Format = true;
+                    ze._InputUsesZip64 = true;
 
 
                 //throw new BadReadException("  DotNetZip does not currently support reading the ZIP64 format.");
@@ -912,7 +972,7 @@ namespace Ionic.Zip
                     // total size of data read (through all loops of this). 
                     SizeOfDataRead += d;
 
-                    if (ze._IsZip64Format == true)
+                    if (ze._InputUsesZip64 == true)
                     {
                         // read 1x 4-byte (CRC) and 2x 8-bytes (Compressed Size, Uncompressed Size)
                         block = new byte[20];
@@ -1072,7 +1132,8 @@ namespace Ionic.Zip
             // finally, seek past the (already read) Data descriptor if necessary
             if (((entry._BitField & 0x0008) == 0x0008) && !entry.FileName.EndsWith("/"))
             {
-                int DescriptorSize = (entry._IsZip64Format) ? 24 : 16;
+                // _InputUsesZip64 is set in ReadHeader()
+                int DescriptorSize = (entry._InputUsesZip64) ? 24 : 16;
                 s.Seek(DescriptorSize, System.IO.SeekOrigin.Current);
             }
 
@@ -1629,7 +1690,7 @@ namespace Ionic.Zip
 
 
 
-        private void OnExtractProgress(int bytesWritten, Int64 totalBytesToWrite)
+        private void OnExtractProgress(Int64 bytesWritten, Int64 totalBytesToWrite)
         {
             _ioOperationCanceled = _zipfile.OnExtractBlock(this, bytesWritten, totalBytesToWrite);
         }
@@ -1963,7 +2024,7 @@ namespace Ionic.Zip
                 ? new Ionic.Zlib.DeflateStream(input2, Ionic.Zlib.CompressionMode.Decompress, true)
                 : input2;
 
-            int bytesWritten = 0;
+            Int64 bytesWritten = 0;
             // As we read, we maybe decrypt, and then we maybe decompress. Then we write.
             using (var s1 = new CrcCalculatorStream(input3))
             {
@@ -1971,10 +2032,13 @@ namespace Ionic.Zip
                 {
                     //Console.WriteLine("ExtractOne: LeftToRead {0}", LeftToRead);
 
+                    // Casting LeftToRead down to an int is ok here in the else clause, because 
+                    // that only happens when it is less than bytes.Length, which is much less
+                    // than MAX_INT.
                     int len = (LeftToRead > bytes.Length) ? bytes.Length : (int)LeftToRead;
                     int n = s1.Read(bytes, 0, len);
-                    //Console.WriteLine("ExtractOne: Read {0} bytes\n{1}", n,
-		    //Util.FormatByteArray(bytes,n));
+
+                    //Console.WriteLine("ExtractOne: Read {0} bytes\n{1}", n, Util.FormatByteArray(bytes,n));
 
                     _CheckRead(n);
                     output.Write(bytes, 0, n);
@@ -2077,13 +2141,15 @@ namespace Ionic.Zip
             bytes[i++] = 0xb6; // ?? not sure, this might also be zero
             bytes[i++] = 0x81; // ?? ditto
 
-            if (_IsZip64Format)
+            // relative offset of local header
+            if (_OutputUsesZip64.Value)
             {
+                // Value==true means it used Zip64.  
+                // write 0xFFFFFFFF, which is the placeholder for ZIP64.
                 for (j = 0; j < 4; j++) bytes[i++] = 0xFF;
             }
             else
             {
-                // relative offset of local header (I think this can be zero)
                 bytes[i++] = (byte)(_RelativeOffsetOfLocalHeader & 0x000000FF);
                 bytes[i++] = (byte)((_RelativeOffsetOfLocalHeader & 0x0000FF00) >> 8);
                 bytes[i++] = (byte)((_RelativeOffsetOfLocalHeader & 0x00FF0000) >> 16);
@@ -2141,6 +2207,10 @@ namespace Ionic.Zip
             byte[] blockZip64 = null;
             byte[] blockWinZipAes = null;
 
+            // Always emit an extra field with zip64 information.
+            // Later, if we don't need it, we'll set the header ID to rubbish and
+            // the data will be ignored.  This results in additional overhead metadata
+            // in the zip file, but it will be small in comparison to the entry data.
             if (_zipfile._zip64 != Zip64Option.Never)
             {
                 // add extra field for zip64 here
@@ -2453,7 +2523,7 @@ namespace Ionic.Zip
             // if we've already tried with compression... turn it off this time
             if (cycle > 1)
             {
-		_CompressionMethod = 0x0;
+                _CompressionMethod = 0x0;
             }
             // compression for directories = 0x00 (No Compression)
             else if (IsDirectory)
@@ -2481,7 +2551,7 @@ namespace Ionic.Zip
 
                 long fileLength = 0;
 
-		if (_sourceStream != null)
+                if (_sourceStream != null)
                 {
                     fileLength = _sourceStream.Length;
                 }
@@ -2920,10 +2990,10 @@ namespace Ionic.Zip
 
             _Crc32 = input1.Crc32;
 
-//             Console.WriteLine("\nWriting Entry :  {0}", _LocalFileName);
-//             Console.WriteLine("  CRC:          0x{0:X8}", _Crc32);
-//             Console.WriteLine("  Compressed:   0x{0:X8} ({0})", _CompressedSize);
-//             Console.WriteLine("  Uncompressed: 0x{0:X8} ({0})", _UncompressedSize);
+            //             Console.WriteLine("\nWriting Entry :  {0}", _LocalFileName);
+            //             Console.WriteLine("  CRC:          0x{0:X8}", _Crc32);
+            //             Console.WriteLine("  Compressed:   0x{0:X8} ({0})", _CompressedSize);
+            //             Console.WriteLine("  Uncompressed: 0x{0:X8} ({0})", _UncompressedSize);
 
             if (_Password != null)
             {
@@ -2942,10 +3012,7 @@ namespace Ionic.Zip
                     _CompressedSize += _aesCrypto.SizeOfEncryptionMetadata;
                 }
 #endif
-
             }
-
-
 
 
             int i = 8;
@@ -2959,27 +3026,22 @@ namespace Ionic.Zip
             _EntryHeader[i++] = (byte)((_Crc32 & 0x00FF0000) >> 16);
             _EntryHeader[i++] = (byte)((_Crc32 & 0xFF000000) >> 24);
 
+            // zip64 housekeeping
+            _entryRequiresZip64 = new Nullable<bool>
+                (_CompressedSize >= 0xFFFFFFFF || _UncompressedSize >= 0xFFFFFFFF || _RelativeOffsetOfLocalHeader >= 0xFFFFFFFF);
 
             // validate the ZIP64 usage
-            if (_zipfile._zip64 == Zip64Option.Never &&
-            ((uint)_CompressedSize >= System.UInt32.MaxValue ||
-             (uint)_UncompressedSize >= System.UInt32.MaxValue))
-                throw new ZipException("Compressed or Uncompressed size exceeds maximum value. Consider setting the UseZip64WhenSaving property on the ZipFile instance.");
+            if (_zipfile._zip64 == Zip64Option.Never && _entryRequiresZip64.Value)
+                throw new ZipException("Compressed or Uncompressed size, or offset exceeds the maximum value. Consider setting the UseZip64WhenSaving property on the ZipFile instance.");
 
-            bool actuallyUseZip64 =
-        _IsZip64Format =
-            (_zipfile._zip64 == Zip64Option.Always ||
-             (uint)_CompressedSize >= 0xFFFFFFFF ||
-             (uint)_UncompressedSize >= 0xFFFFFFFF ||
-             (uint)_RelativeOffsetOfLocalHeader >= 0xFFFFFFFF
-             );
 
+            _OutputUsesZip64 = new Nullable<bool>(_zipfile._zip64 == Zip64Option.Always || _entryRequiresZip64.Value);
 
             // (i==26) filename length (Int16)
             Int16 filenameLength = (short)(_EntryHeader[26] + _EntryHeader[27] * 256);
             Int16 extraFieldLength = (short)(_EntryHeader[28] + _EntryHeader[29] * 256);
 
-            if (actuallyUseZip64)
+            if (_OutputUsesZip64.Value)
             {
                 // VersionNeededToExtract - set to 45 to indicate zip64
                 _EntryHeader[4] = (byte)(45 & 0x00FF);
@@ -3194,7 +3256,13 @@ namespace Ionic.Zip
                 WriteHeader(outstream, nCycles);
                 //Console.WriteLine("done calling WriteHeader({0}): 0x{1:X8}..", FileName, _CompressionMethod);
 
-                if (IsDirectory) return;  // nothing more to do! 
+                if (IsDirectory)
+                {
+                    // nothing more to write, but we need to do some housekeeping.
+                    _entryRequiresZip64 = new Nullable<bool>(_RelativeOffsetOfLocalHeader >= 0xFFFFFFFF);
+                    _OutputUsesZip64 = new Nullable<bool>(_zipfile._zip64 == Zip64Option.Always || _entryRequiresZip64.Value);
+                    return;
+                }
 
                 // now, write the actual file data. (incl the encrypted header)
                 _EmitOne(outstream);
@@ -3308,14 +3376,17 @@ namespace Ionic.Zip
             // just read from the existing input zipfile and write to the output
             System.IO.Stream input = this.ArchiveStream;
 
-            if (_metadataChanged || (_IsZip64Format && _zipfile.UseZip64WhenSaving == Zip64Option.Never)
-                || (!_IsZip64Format && _zipfile.UseZip64WhenSaving == Zip64Option.Always))
+            if (_metadataChanged || (_InputUsesZip64 && _zipfile.UseZip64WhenSaving == Zip64Option.Never)
+                || (!_InputUsesZip64 && _zipfile.UseZip64WhenSaving == Zip64Option.Always))
             {
                 long origRelativeOffsetOfHeader = _RelativeOffsetOfLocalHeader;
                 if (this.LengthOfHeader == 0)
                     throw new ZipException("Bad header length.");
                 int origLengthOfHeader = LengthOfHeader;
+
+                // WriteHeader has the side effect of changing _RelativeOffsetOfLocalHeader
                 WriteHeader(outstream, 0);
+
                 if (origLengthOfHeader != 0)
                 {
                     // seek to the beginning of the entry data in the input stream
@@ -3337,6 +3408,8 @@ namespace Ionic.Zip
                     }
                 }
                 _TotalEntrySize = _LengthOfHeader + _CompressedSize;
+
+
             }
             else
             {
@@ -3388,7 +3461,17 @@ namespace Ionic.Zip
                     outstream.Write(bytes, 0, n);
                     Remaining -= n;
                 }
+
             }
+
+            // zip64 housekeeping
+            _entryRequiresZip64 = new Nullable<bool>
+                (_CompressedSize >= 0xFFFFFFFF ||
+         _UncompressedSize >= 0xFFFFFFFF ||
+         _RelativeOffsetOfLocalHeader >= 0xFFFFFFFF
+                );
+
+            _OutputUsesZip64 = new Nullable<bool>(_zipfile._zip64 == Zip64Option.Always || _entryRequiresZip64.Value);
 
         }
 
@@ -3613,7 +3696,7 @@ namespace Ionic.Zip
         private Int64 _TotalEntrySize;
         internal int _LengthOfHeader;
         internal int _LengthOfTrailer;
-        private bool _IsZip64Format;
+        private bool _InputUsesZip64;
 
         internal string _Password;
         internal EntrySource _Source = EntrySource.None;
@@ -3624,6 +3707,8 @@ namespace Ionic.Zip
         private object LOCK = new object();
         private bool _ioOperationCanceled;
         private bool _presumeZip64;
+        private Nullable<bool> _entryRequiresZip64;
+        private Nullable<bool> _OutputUsesZip64;
 
         private const int WORKING_BUFFER_SIZE = 0x4400;
         private const int Rfc2898KeygenIterations = 1000;

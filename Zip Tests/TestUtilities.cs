@@ -85,9 +85,9 @@ namespace Ionic.Zip.Tests.Utilities
         }
 
 
-        internal static void CreateAndFillFileText(string Filename, int size)
+        internal static void CreateAndFillFileText(string Filename, Int64 size)
         {
-            int bytesRemaining = size;
+            Int64 bytesRemaining = size;
 
             // fill the file with text data
             using (System.IO.StreamWriter sw = System.IO.File.CreateText(Filename))
@@ -98,7 +98,7 @@ namespace Ionic.Zip.Tests.Utilities
                     string selectedWord = LoremIpsumWords[_rnd.Next(LoremIpsumWords.Length)];
                     if (bytesRemaining < selectedWord.Length + 1)
                     {
-                        sw.Write(selectedWord.Substring(0, bytesRemaining));
+                        sw.Write(selectedWord.Substring(0, (int)bytesRemaining));
                         bytesRemaining = 0;
                     }
                     else
@@ -112,9 +112,9 @@ namespace Ionic.Zip.Tests.Utilities
             }
         }
 
-        internal static void CreateAndFillFileText(string Filename, string Line, int size)
+        internal static void CreateAndFillFileText(string Filename, string Line, Int64 size)
         {
-            int bytesRemaining = size;
+            Int64 bytesRemaining = size;
             // fill the file by repeatedly writing out the same line
             using (System.IO.StreamWriter sw = System.IO.File.CreateText(Filename))
             {
@@ -127,7 +127,7 @@ namespace Ionic.Zip.Tests.Utilities
                         else if (bytesRemaining == 1)
                             sw.WriteLine();
                         else
-                            sw.WriteLine(Line.Substring(0, bytesRemaining - 2));
+                            sw.WriteLine(Line.Substring(0, (int)bytesRemaining - 2));
                         bytesRemaining = 0;
                     }
                     else
@@ -140,17 +140,26 @@ namespace Ionic.Zip.Tests.Utilities
             }
         }
 
-        internal static void CreateAndFillFileBinary(string Filename, int size)
+        internal static void CreateAndFillFileBinary(string Filename, Int64 size)
         {
-            int bytesRemaining = size;
+            _CreateAndFillBinary(Filename, size, false); 
+        }
+        internal static void CreateAndFillFileBinaryZeroes(string Filename, Int64 size)
+        {
+            _CreateAndFillBinary(Filename, size, true); 
+        }
+
+        private static void _CreateAndFillBinary(string Filename, Int64 size, bool zeroes)
+        {
+            Int64 bytesRemaining = size;
             // fill with binary data
-            byte[] Buffer = new byte[2000];
+            byte[] Buffer = new byte[20000];
             using (System.IO.Stream fileStream = new System.IO.FileStream(Filename, System.IO.FileMode.Create, System.IO.FileAccess.Write))
             {
                 while (bytesRemaining > 0)
                 {
-                    int sizeOfChunkToWrite = (bytesRemaining > Buffer.Length) ? Buffer.Length : bytesRemaining;
-                    _rnd.NextBytes(Buffer);
+                    int sizeOfChunkToWrite = (bytesRemaining > Buffer.Length) ? Buffer.Length : (int)bytesRemaining;
+                    if (!zeroes) _rnd.NextBytes(Buffer);
                     fileStream.Write(Buffer, 0, sizeOfChunkToWrite);
                     bytesRemaining -= sizeOfChunkToWrite;
                 }
@@ -158,8 +167,8 @@ namespace Ionic.Zip.Tests.Utilities
             }
         }
 
-
-        internal static void CreateAndFillFile(string Filename, int size)
+ 
+        internal static void CreateAndFillFile(string Filename, Int64 size)
         {
             //Assert.IsTrue(size > 0, "File size should be greater than zero.");
             if (size == 0)
@@ -184,12 +193,12 @@ namespace Ionic.Zip.Tests.Utilities
             return CreateUniqueFile(extension, null);
         }
 
-        internal static string CreateUniqueFile(string extension, int size)
+        internal static string CreateUniqueFile(string extension, Int64 size)
         {
             return CreateUniqueFile(extension, null, size);
         }
 
-        internal static string CreateUniqueFile(string extension, string ContainingDirectory, int size)
+        internal static string CreateUniqueFile(string extension, string ContainingDirectory, Int64 size)
         {
             //string fileToCreate = GenerateUniquePathname(extension, ContainingDirectory);
             string nameOfFileToCreate = System.IO.Path.Combine(ContainingDirectory, String.Format("{0}.{1}", System.IO.Path.GetRandomFileName(), extension));
@@ -371,7 +380,7 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal static int GenerateFilesOneLevelDeep(TestContext TC, string TestName, string DirToZip, out int subdirCount)
         {
-            int[] settings = { 7, 6, 17, 23 };
+            int[] settings = { 7, 6, 17, 23, 4000, 4000 }; // to randomly set dircount, filecount, and filesize
             return GenerateFilesOneLevelDeep(TC, TestName, DirToZip, settings, out subdirCount);
         }
 
@@ -393,7 +402,7 @@ namespace Ionic.Zip.Tests.Utilities
                 {
                     filename = String.Format("file{0:D4}.x", j);
                     TestUtilities.CreateAndFillFile(System.IO.Path.Combine(SubDir, filename),
-                        _rnd.Next(2000) + 200);
+                        _rnd.Next(settings[4]) + settings[5]);
                     entriesAdded++;
                 }
             }
