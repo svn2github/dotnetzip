@@ -161,9 +161,7 @@ namespace Ionic.Zip.Tests.Extended
                     string extractDir = String.Format("extract{0}", j);
                     foreach (var e in zip3)
                     {
-                        TestContext.WriteLine(" Entry: {0}", e.FileName);
-                        TestContext.WriteLine("        compressed size: {0} bytes", e.CompressedSize);
-                        TestContext.WriteLine("      uncompressed size: {0} bytes", e.UncompressedSize);
+                        TestContext.WriteLine(" Entry: {0}  c({1})  u({2})", e.FileName, e.CompressedSize, e.UncompressedSize);
 
                         if (j != 1)
                             Assert.IsTrue(e.CompressedSize <= e.UncompressedSize,
@@ -656,11 +654,77 @@ namespace Ionic.Zip.Tests.Extended
         }
 
 
+        [TestMethod]
+        public void Extract_SelfExtractor_CanRead()
+        {
+            SelfExtractorFlavor[] trials = { SelfExtractorFlavor.ConsoleApplication, SelfExtractorFlavor.WinFormsApplication };
+            for (int k = 0; k < trials.Length; k++)
+            {
+                string SfxFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("Extract_SelfExtractor_{0}.exe", trials[k].ToString()));
+                string UnpackDirectory = System.IO.Path.Combine(TopLevelDir, "unpack");
+                if (Directory.Exists(UnpackDirectory))
+                    Directory.Delete(UnpackDirectory, true);
+                string ReadmeString = "Hey there!  This zipfile entry was created directly from a string in application code.";
+
+                int entriesAdded = 0;
+                String filename = null;
+
+                string Subdir = System.IO.Path.Combine(TopLevelDir, String.Format("A{0}", k));
+                System.IO.Directory.CreateDirectory(Subdir);
+                var checksums = new Dictionary<string, string>();
+
+                int fileCount = _rnd.Next(50) + 30;
+                for (int j = 0; j < fileCount; j++)
+                {
+                    filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
+                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
+                    entriesAdded++;
+                    var chk = TestUtilities.ComputeChecksum(filename);
+                    checksums.Add(filename.Replace(TopLevelDir+"\\","").Replace('\\','/'), TestUtilities.CheckSumToString(chk));
+                }
+
+                using (ZipFile zip1 = new ZipFile())
+                {
+                    zip1.AddDirectory(Subdir, System.IO.Path.GetFileName(Subdir));
+                    zip1.Comment = "This will be embedded into a self-extracting exe";
+                    System.IO.MemoryStream ms1 = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes(ReadmeString));
+                    zip1.AddFileStream("Readme.txt", "", ms1);
+                    zip1.SaveSelfExtractor(SfxFileToCreate, trials[k]);
+                }
+
+                TestContext.WriteLine("---------------Reading {0}...", SfxFileToCreate);
+                using (ZipFile zip2 = ZipFile.Read(SfxFileToCreate))
+                {
+                    //string extractDir = String.Format("extract{0}", j);
+                    foreach (var e in zip2)
+                    {
+                        TestContext.WriteLine(" Entry: {0}  c({1})  u({2})", e.FileName, e.CompressedSize, e.UncompressedSize);
+                        e.Extract(UnpackDirectory);
+                        if (!e.IsDirectory)
+                        {
+                            if (checksums.ContainsKey(e.FileName))
+                            {
+                                filename = System.IO.Path.Combine(UnpackDirectory, e.FileName);
+                                string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filename));
+                                Assert.AreEqual<string>(checksums[e.FileName], actualCheckString, "In trial {0}, Checksums for ({1}) do not match.", k, e.FileName);
+                                //TestContext.WriteLine("     Checksums match ({0}).\n", actualCheckString);
+                            }
+                            else
+                            {
+                                Assert.AreEqual<string>("Readme.txt", e.FileName, String.Format("trial {0}",k));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
 
         [TestMethod]
         public void Extract_SelfExtractor_Console()
         {
-            string ExeFileToCreate = System.IO.Path.Combine(TopLevelDir, "TestSelfExtractor.exe");
+            string ExeFileToCreate = System.IO.Path.Combine(TopLevelDir, "Extract_SelfExtractor_Console.exe");
             string TargetDirectory = System.IO.Path.Combine(TopLevelDir, "unpack");
             string ReadmeString = "Hey there!  This zipfile entry was created directly from a string in application code.";
 
@@ -715,6 +779,7 @@ namespace Ionic.Zip.Tests.Extended
 
             }
         }
+
 
 
         int _progressEventCalls;
@@ -1163,7 +1228,6 @@ namespace Ionic.Zip.Tests.Extended
                 foreach (string fileName in ZipFileToCreate)
                 {
                     TestContext.WriteLine("queueing unzip for file: {0}", fileName);
-
                     System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(processZip), fileName);
                 }
 

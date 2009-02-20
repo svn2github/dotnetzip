@@ -110,6 +110,7 @@ namespace Ionic.Zip
         };
 
 
+#if OLDSTYLE
         private string SfxSaveTemporary()
         {
             var tempFileName = System.IO.Path.Combine(TempFileFolder, System.IO.Path.GetRandomFileName() + ".zip");
@@ -154,12 +155,13 @@ namespace Ionic.Zip
             }
             return tempFileName;
         }
+#endif
 
 
         string _defaultExtractLocation = null;
-//         string _SetDefaultLocationCode =
-//         "namespace Ionic.Zip { public partial class WinFormsSelfExtractorStub { partial void _SetDefaultExtractLocation() {" +
-//         " txtExtractDirectory.Text = \"@@VALUE\"; } }}";
+        //         string _SetDefaultLocationCode =
+        //         "namespace Ionic.Zip { public partial class WinFormsSelfExtractorStub { partial void _SetDefaultExtractLocation() {" +
+        //         " txtExtractDirectory.Text = \"@@VALUE\"; } }}";
 
         /// <summary>
         /// Saves the ZipFile instance to a self-extracting zip archive, using the specified 
@@ -169,9 +171,9 @@ namespace Ionic.Zip
         /// <para>
         /// This method saves a self extracting archive, 
         /// with a specified default extracting location.  Actually, the 
-	/// default extract directory applies only if the flavor is 
-	///  <see cref="SelfExtractorFlavor.WinFormsApplication"/>.  
-	/// See the documentation for 
+        /// default extract directory applies only if the flavor is 
+        ///  <see cref="SelfExtractorFlavor.WinFormsApplication"/>.  
+        /// See the documentation for 
         /// <see cref="SaveSelfExtractor(string , SelfExtractorFlavor)"/>
         /// for more details.  
         /// </para>
@@ -185,12 +187,12 @@ namespace Ionic.Zip
         /// <param name="exeToGenerate">The name of the EXE to generate.</param>
         /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
         /// <param name="defaultExtractDirectory">
-	/// The default extract directory the user will see when running the self-extracting 
-	/// archive. Passing null (or Nothing in VB) here will cause the Self Extractor to 
-	/// use the the user's personal directory 
+        /// The default extract directory the user will see when running the self-extracting 
+        /// archive. Passing null (or Nothing in VB) here will cause the Self Extractor to 
+        /// use the the user's personal directory 
         /// (<see cref="Environment.SpecialFolder.Personal"/>) for the default extract 
-	/// location.
-	/// </param>
+        /// location.
+        /// </param>
         public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor, string defaultExtractDirectory)
         {
             this._defaultExtractLocation = defaultExtractDirectory;
@@ -207,7 +209,8 @@ namespace Ionic.Zip
         /// 
         /// <para>
         /// The generated exe image will execute on any machine that has the .NET Framework 2.0
-        /// installed on it.
+        /// installed on it.  The generated exe image is also a valid ZIP file, readable with DotNetZip
+        /// or another Zip library or tool such as WinZip. 
         /// </para>
         /// 
         /// <para>
@@ -229,11 +232,12 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        /// When a user runs the SFX, the user's personal directory 
+        /// When a user runs the WinForms SFX, the user's personal directory 
         /// (<see cref="Environment.SpecialFolder.Personal"/>) 
         /// will be used as the default extract location.
         /// The user who runs the SFX will have the opportunity to change the extract
-        /// directory before extracting. 
+        /// directory before extracting. When the user runs the Command-Line SFX, the user must explicitly specify
+        /// the directory to which to extract. 
         /// </para>
         ///
         /// <para>
@@ -266,6 +270,7 @@ namespace Ionic.Zip
         /// <param name="exeToGenerate">a pathname, possibly fully qualified, to be created. Typically it will end in an .exe extension.</param>
         /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
         public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor)
+#if OLDSTYLE
         {
             if (File.Exists(exeToGenerate))
             {
@@ -434,6 +439,227 @@ namespace Ionic.Zip
             //       }
             //       return;
         }
+#else
+        {
+            // Save an SFX that is both an EXE and a ZIP.
+
+            // Check for the case where we are re-saving a zip archive 
+            // that was originally instantiated with a stream.  In that case, 
+            // the _name will be null. If so, we set _writestream to null, 
+            // which insures that we'll cons up a new WriteStream (with a filesystem
+            // file backing it) in the Save() method.
+            if (_name == null)
+                _writestream = null;
+
+            _name = exeToGenerate;
+            if (Directory.Exists(_name))
+                throw new ZipException("Bad Directory", new System.ArgumentException("That name specifies an existing directory. Please specify a filename.", "zipFileName"));
+            _contentsChanged = true;
+            _fileAlreadyExists = File.Exists(_name);
+
+            _SaveSfxStub(exeToGenerate, flavor);
+
+            Save();
+        }
+
+
+
+
+        private void _SaveSfxStub(string exeToGenerate, SelfExtractorFlavor flavor)
+        {
+            string StubExe = null;
+            string TempDir = null;
+            try
+            {
+
+                if (File.Exists(exeToGenerate))
+                {
+                    if (Verbose) StatusMessageTextWriter.WriteLine("The existing file ({0}) will be overwritten.", exeToGenerate);
+                }
+                if (!exeToGenerate.EndsWith(".exe"))
+                {
+                    if (Verbose) StatusMessageTextWriter.WriteLine("Warning: The generated self-extracting file will not have an .exe extension.");
+                }
+
+
+                StubExe = GenerateUniquePathname("exe", null);
+
+
+                // look for myself (ZipFile will be present in the Ionic.Utils.Zip assembly)
+                Assembly a1 = typeof(ZipFile).Assembly;
+                //Console.WriteLine("DotNetZip assembly loc: {0}", a1.Location);
+
+                Microsoft.CSharp.CSharpCodeProvider csharp = new Microsoft.CSharp.CSharpCodeProvider();
+
+                // Perfect opportunity for a linq query, but I cannot use it.
+                // The DotNetZip library can compile into 2.0, but needs to run on .NET 2.0.
+                // Using LINQ would break that. Here's what it would look like: 
+                // 
+                // 	var settings = (from x in SettingsList
+                // 			where x.Flavor == flavor
+                // 			select x).First();
+
+                ExtractorSettings settings = null;
+                foreach (var x in SettingsList)
+                {
+                    if (x.Flavor == flavor)
+                    {
+                        settings = x;
+                        break;
+                    }
+                }
+
+                if (settings == null)
+                    throw new BadStateException(String.Format("While saving a Self-Extracting Zip, Cannot find that flavor ({0})?", flavor));
+
+                // This is the list of referenced assemblies.  Ionic.Utils.Zip is needed here.
+                // Also if it is the winforms (gui) extractor, we need other referenced assemblies.
+                System.CodeDom.Compiler.CompilerParameters cp = new System.CodeDom.Compiler.CompilerParameters();
+                cp.ReferencedAssemblies.Add(a1.Location);
+                if (settings.ReferencedAssemblies != null)
+                    foreach (string ra in settings.ReferencedAssemblies)
+                        cp.ReferencedAssemblies.Add(ra);
+
+                cp.GenerateInMemory = false;
+                cp.GenerateExecutable = true;
+                cp.IncludeDebugInformation = false;
+                cp.OutputAssembly = StubExe;
+
+                Assembly a2 = Assembly.GetExecutingAssembly();
+
+                TempDir = GenerateUniquePathname("tmp", null);
+                if ((settings.CopyThroughResources != null) && (settings.CopyThroughResources.Count != 0))
+                {
+                    System.IO.Directory.CreateDirectory(TempDir);
+                    int n = 0;
+                    byte[] bytes = new byte[1024];
+                    foreach (string re in settings.CopyThroughResources)
+                    {
+                        string filename = Path.Combine(TempDir, re);
+                        using (Stream instream = a2.GetManifestResourceStream(re))
+                        {
+                            using (FileStream outstream = File.OpenWrite(filename))
+                            {
+                                do
+                                {
+                                    n = instream.Read(bytes, 0, bytes.Length);
+                                    outstream.Write(bytes, 0, n);
+                                } while (n > 0);
+                            }
+                        }
+                        // add the embedded resource in our own assembly into the target assembly as an embedded resource
+                        cp.EmbeddedResources.Add(filename);
+                    }
+                }
+
+                // add the zip file as an embedded resource
+                //cp.EmbeddedResources.Add(TempZipFile);
+
+                // add the Ionic.Utils.Zip DLL as an embedded resource
+                cp.EmbeddedResources.Add(a1.Location);
+
+                //Console.WriteLine("Resources in this assembly:");
+                //foreach (string rsrc in a2.GetManifestResourceNames())
+                //{
+                //    Console.WriteLine(rsrc);
+                //}
+                //Console.WriteLine();
+
+                //Console.WriteLine("reading source code resources:");
+
+
+                // concatenate all the source code resources into a single module
+                var sb = new System.Text.StringBuilder();
+
+                // set the default extract location if it is available
+                bool wantCodeReplace = (flavor == SelfExtractorFlavor.WinFormsApplication && _defaultExtractLocation != null);
+                if (wantCodeReplace)
+                    _defaultExtractLocation = _defaultExtractLocation.Replace("\"", "");
+
+                foreach (string rc in settings.ResourcesToCompile)
+                {
+                    //Console.WriteLine("  trying to read stream: ({0})", rc);
+                    Stream s = a2.GetManifestResourceStream(rc);
+                    using (StreamReader sr = new StreamReader(s))
+                    {
+                        while (sr.Peek() >= 0)
+                        {
+                            string line = sr.ReadLine();
+                            if (wantCodeReplace)
+                                line = line.Replace("@@VALUE", _defaultExtractLocation);
+                            sb.Append(line).Append("\n");
+                        }
+                    }
+                    sb.Append("\n\n");
+                }
+
+                string LiteralSource = sb.ToString();
+
+                System.CodeDom.Compiler.CompilerResults cr = csharp.CompileAssemblyFromSource(cp, LiteralSource);
+                if (cr == null)
+                    throw new SfxGenerationException("Cannot compile the extraction logic!");
+
+                if (Verbose)
+                    foreach (string output in cr.Output)
+                        StatusMessageTextWriter.WriteLine(output);
+
+                if (cr.Errors.Count != 0)
+                    throw new SfxGenerationException("Errors compiling the extraction logic!");
+
+                OnSaveEvent(ZipProgressEventType.Saving_AfterCompileSelfExtractor);
+
+                // now, copy the resulting EXE image to the _writestream
+                using (System.IO.Stream input = System.IO.File.OpenRead(StubExe))
+                {
+                    byte[] buffer = new byte[4000];
+                    int n = 1;
+                    while (n != 0)
+                    {
+                        n = input.Read(buffer, 0, buffer.Length);
+                        if (n != 0)
+                            WriteStream.Write(buffer, 0, n);
+                    }
+                }
+
+                OnSaveEvent(ZipProgressEventType.Saving_AfterSaveTempArchive);
+            }
+            finally
+            {
+
+                try
+                {
+                    if (Directory.Exists(TempDir))
+                    {
+                        try { Directory.Delete(TempDir, true); }
+                        catch { }
+                    }
+                    if (File.Exists(StubExe))
+                    {
+                        try { File.Delete(StubExe); }
+                        catch { }
+                    }
+
+                }
+                catch { }
+
+            }
+
+            return;
+
+
+            //       catch (Exception e1)
+            //       {
+            // 	StatusMessageTextWriter.WriteLine("****Exception: " + e1);
+            // 	throw;
+            //       }
+            //       return;
+
+
+        }
+
+
+
+#endif
 
 
         internal static string GenerateUniquePathname(string extension, string ContainingDirectory)
@@ -442,7 +668,7 @@ namespace Ionic.Zip
             String AppName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
 
             string parentDir = (ContainingDirectory == null) ?
-                System.Environment.GetEnvironmentVariable("TEMP") : ContainingDirectory;
+        System.IO.Path.GetTempPath() : ContainingDirectory;
 
             if (parentDir == null) return null;
 

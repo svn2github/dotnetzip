@@ -360,11 +360,12 @@ namespace Ionic.Zip
             get
             {
                 if (_s != null) return _s;
+                Assembly a = Assembly.GetExecutingAssembly();
 
+#if OLDSTYLE
                 // There are only two embedded resources.
                 // One of them is the zip dll.  The other is the zip archive.
                 // We load the resouce that is NOT the DLL, as the zip archive.
-                Assembly a = Assembly.GetExecutingAssembly();
                 string[] x = a.GetManifestResourceNames();
                 _s = null;
                 foreach (string name in x)
@@ -382,6 +383,11 @@ namespace Ionic.Zip
                            "Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
                     Application.Exit();
                 }
+#else
+		// workitem 7067
+		_s= System.IO.File.OpenRead(a.Location);
+#endif
+
                 return _s;
             }
         }
