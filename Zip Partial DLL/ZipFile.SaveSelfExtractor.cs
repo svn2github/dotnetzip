@@ -271,176 +271,6 @@ namespace Ionic.Zip
         /// <param name="exeToGenerate">a pathname, possibly fully qualified, to be created. Typically it will end in an .exe extension.</param>
         /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
         public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor)
-#if OLDSTYLE
-        {
-            if (File.Exists(exeToGenerate))
-            {
-                if (Verbose) StatusMessageTextWriter.WriteLine("The existing file ({0}) will be overwritten.", exeToGenerate);
-            }
-            if (!exeToGenerate.EndsWith(".exe"))
-            {
-                if (Verbose) StatusMessageTextWriter.WriteLine("Warning: The generated self-extracting file will not have an .exe extension.");
-            }
-
-            string TempZipFile = SfxSaveTemporary();
-            OnSaveEvent(ZipProgressEventType.Saving_AfterSaveTempArchive);
-
-            if (TempZipFile == null)
-                return; // cancelled
-
-            // look for myself (ZipFile will be present in the Ionic.Utils.Zip assembly)
-            Assembly a1 = typeof(ZipFile).Assembly;
-            //Console.WriteLine("DotNetZip assembly loc: {0}", a1.Location);
-
-            Microsoft.CSharp.CSharpCodeProvider csharp = new Microsoft.CSharp.CSharpCodeProvider();
-
-            // Perfect opportunity for a linq query, but I cannot use it.
-	    // The DotNetZip library can compile into 2.0, but needs to run on .NET 2.0.
-	    // Using LINQ would break that. Here's what it would look like: 
-	    // 
-            // 	var settings = (from x in SettingsList
-            // 			where x.Flavor == flavor
-            // 			select x).First();
-
-            ExtractorSettings settings = null;
-            foreach (var x in SettingsList)
-            {
-                if (x.Flavor == flavor)
-                {
-                    settings = x;
-                    break;
-                }
-            }
-
-            if (settings == null)
-                throw new BadStateException(String.Format("While saving a Self-Extracting Zip, Cannot find that flavor ({0})?", flavor));
-
-            // This is the list of referenced assemblies.  Ionic.Utils.Zip is needed here.
-            // Also if it is the winforms (gui) extractor, we need other referenced assemblies.
-            System.CodeDom.Compiler.CompilerParameters cp = new System.CodeDom.Compiler.CompilerParameters();
-            cp.ReferencedAssemblies.Add(a1.Location);
-            if (settings.ReferencedAssemblies != null)
-                foreach (string ra in settings.ReferencedAssemblies)
-                    cp.ReferencedAssemblies.Add(ra);
-
-            cp.GenerateInMemory = false;
-            cp.GenerateExecutable = true;
-            cp.IncludeDebugInformation = false;
-            cp.OutputAssembly = exeToGenerate;
-
-            Assembly a2 = Assembly.GetExecutingAssembly();
-
-            string TempDir = GenerateUniquePathname("tmp", null);
-            if ((settings.CopyThroughResources != null) && (settings.CopyThroughResources.Count != 0))
-            {
-                System.IO.Directory.CreateDirectory(TempDir);
-                int n = 0;
-                byte[] bytes = new byte[1024];
-                foreach (string re in settings.CopyThroughResources)
-                {
-                    string filename = Path.Combine(TempDir, re);
-                    using (Stream instream = a2.GetManifestResourceStream(re))
-                    {
-                        using (FileStream outstream = File.OpenWrite(filename))
-                        {
-                            do
-                            {
-                                n = instream.Read(bytes, 0, bytes.Length);
-                                outstream.Write(bytes, 0, n);
-                            } while (n > 0);
-                        }
-                    }
-                    // add the embedded resource in our own assembly into the target assembly as an embedded resource
-                    cp.EmbeddedResources.Add(filename);
-                }
-            }
-
-            // add the zip file as an embedded resource
-            cp.EmbeddedResources.Add(TempZipFile);
-
-            // add the Ionic.Utils.Zip DLL as an embedded resource
-            cp.EmbeddedResources.Add(a1.Location);
-
-            //Console.WriteLine("Resources in this assembly:");
-            //foreach (string rsrc in a2.GetManifestResourceNames())
-            //{
-            //    Console.WriteLine(rsrc);
-            //}
-            //Console.WriteLine();
-
-            //Console.WriteLine("reading source code resources:");
-
-
-            // concatenate all the source code resources into a single module
-            var sb = new System.Text.StringBuilder();
-
-            // set the default extract location if it is available
-            bool wantCodeReplace = (flavor == SelfExtractorFlavor.WinFormsApplication && _defaultExtractLocation != null);
-	    if (wantCodeReplace)
-                _defaultExtractLocation = _defaultExtractLocation.Replace("\"", "");
-
-            foreach (string rc in settings.ResourcesToCompile)
-            {
-                //Console.WriteLine("  trying to read stream: ({0})", rc);
-                Stream s = a2.GetManifestResourceStream(rc);
-                using (StreamReader sr = new StreamReader(s))
-                {
-                    while (sr.Peek() >= 0) 
-		    {
-			string line = sr.ReadLine();
-			if (wantCodeReplace)
-			    line= line.Replace("@@VALUE", _defaultExtractLocation);
-                        sb.Append(line).Append("\n");
-		    }
-                }
-                sb.Append("\n\n");
-            }
-
-            string LiteralSource = sb.ToString();
-
-            System.CodeDom.Compiler.CompilerResults cr = csharp.CompileAssemblyFromSource(cp, LiteralSource);
-            if (cr == null)
-                throw new SfxGenerationException("Cannot compile the extraction logic!");
-
-            if (Verbose)
-                foreach (string output in cr.Output)
-                    StatusMessageTextWriter.WriteLine(output);
-
-            if (cr.Errors.Count != 0)
-                throw new SfxGenerationException("Errors compiling the extraction logic!");
-
-            OnSaveEvent(ZipProgressEventType.Saving_AfterCompileSelfExtractor);
-
-            try
-            {
-                if (Directory.Exists(TempDir))
-                {
-                    try { Directory.Delete(TempDir, true); }
-                    catch { }
-                }
-
-                if (File.Exists(TempZipFile))
-                {
-                    try { File.Delete(TempZipFile); }
-                    catch { }
-                }
-            }
-            catch { }
-
-            OnSaveCompleted();
-
-            if (Verbose) StatusMessageTextWriter.WriteLine("Created self-extracting zip file {0}.", cr.PathToAssembly);
-            return;
-
-
-            //       catch (Exception e1)
-            //       {
-            // 	StatusMessageTextWriter.WriteLine("****Exception: " + e1);
-            // 	throw;
-            //       }
-            //       return;
-        }
-#else
         {
             // Save an SFX that is both an EXE and a ZIP.
 
@@ -482,13 +312,10 @@ namespace Ionic.Zip
                     if (Verbose) StatusMessageTextWriter.WriteLine("Warning: The generated self-extracting file will not have an .exe extension.");
                 }
 
+                StubExe = GenerateTempPathname("exe", null);
 
-                StubExe = GenerateUniquePathname("exe", null);
-
-
-                // look for myself (ZipFile will be present in the Ionic.Utils.Zip assembly)
+                // get the Ionic.Zip assembly
                 Assembly a1 = typeof(ZipFile).Assembly;
-                //Console.WriteLine("DotNetZip assembly loc: {0}", a1.Location);
 
                 Microsoft.CSharp.CSharpCodeProvider csharp = new Microsoft.CSharp.CSharpCodeProvider();
 
@@ -513,8 +340,9 @@ namespace Ionic.Zip
                 if (settings == null)
                     throw new BadStateException(String.Format("While saving a Self-Extracting Zip, Cannot find that flavor ({0})?", flavor));
 
-                // This is the list of referenced assemblies.  Ionic.Utils.Zip is needed here.
-                // Also if it is the winforms (gui) extractor, we need other referenced assemblies.
+                // This is the list of referenced assemblies.  Ionic.Zip is needed here.
+                // Also if it is the winforms (gui) extractor, we need other referenced assemblies,
+		// like System.Windows.Forms.dll, etc.
                 System.CodeDom.Compiler.CompilerParameters cp = new System.CodeDom.Compiler.CompilerParameters();
                 cp.ReferencedAssemblies.Add(a1.Location);
                 if (settings.ReferencedAssemblies != null)
@@ -528,7 +356,7 @@ namespace Ionic.Zip
 
                 Assembly a2 = Assembly.GetExecutingAssembly();
 
-                TempDir = GenerateUniquePathname("tmp", null);
+                TempDir = GenerateTempPathname("tmp", null);
                 if ((settings.CopyThroughResources != null) && (settings.CopyThroughResources.Count != 0))
                 {
                     System.IO.Directory.CreateDirectory(TempDir);
@@ -556,9 +384,6 @@ namespace Ionic.Zip
                     }
                 }
 
-                // add the zip file as an embedded resource
-                //cp.EmbeddedResources.Add(TempZipFile);
-
                 // add the Ionic.Utils.Zip DLL as an embedded resource
                 cp.EmbeddedResources.Add(a1.Location);
 
@@ -574,6 +399,13 @@ namespace Ionic.Zip
 
                 // concatenate all the source code resources into a single module
                 var sb = new System.Text.StringBuilder();
+
+                // assembly attributes
+                sb.Append("[assembly: System.Reflection.AssemblyTitle(\"DotNetZip SFX Archive\")]\n");
+                sb.Append("[assembly: System.Reflection.AssemblyProduct(\"ZipLibrary\")]\n");
+                sb.Append("[assembly: System.Reflection.AssemblyCopyright(\"Copyright © Dino Chiesa 2008, 2009\")]\n");
+                sb.Append(String.Format("[assembly: System.Reflection.AssemblyVersion(\"{0}\")]\n\n", ZipFile.LibraryVersion.ToString()));
+ 
 
                 // set the default extract location if it is available
                 bool wantCodeReplace = (flavor == SelfExtractorFlavor.WinFormsApplication && _defaultExtractLocation != null);
@@ -592,7 +424,7 @@ namespace Ionic.Zip
                         {
                             string line = sr.ReadLine();
                             if (wantCodeReplace)
-                                line = line.Replace("@@VALUE", _defaultExtractLocation);
+                                line = line.Replace("@@EXTRACTLOCATION", _defaultExtractLocation);
                             sb.Append(line).Append("\n");
                         }
                     }
@@ -610,7 +442,15 @@ namespace Ionic.Zip
                         StatusMessageTextWriter.WriteLine(output);
 
                 if (cr.Errors.Count != 0)
-                    throw new SfxGenerationException("Errors compiling the extraction logic!");
+                {
+                    //Console.ReadLine();
+                    string sourcefile = GenerateTempPathname("cs", null);
+                    using (TextWriter tw = new StreamWriter(sourcefile))
+                    {
+                        tw.Write(LiteralSource);
+                    }
+                    throw new SfxGenerationException(String.Format("Errors compiling the extraction logic!  {0}", sourcefile));
+                }
 
                 OnSaveEvent(ZipProgressEventType.Saving_AfterCompileSelfExtractor);
 
@@ -665,16 +505,15 @@ namespace Ionic.Zip
 
 
 
-#endif
 
-
-        internal static string GenerateUniquePathname(string extension, string ContainingDirectory)
+        internal static string GenerateTempPathname(string extension, string ContainingDirectory)
         {
             string candidate = null;
             String AppName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
 
-            string parentDir = (ContainingDirectory == null) ?
-        System.IO.Path.GetTempPath() : ContainingDirectory;
+            string parentDir = (ContainingDirectory == null)
+                ? System.IO.Path.GetTempPath() 
+                : ContainingDirectory;
 
             if (parentDir == null) return null;
 

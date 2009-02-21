@@ -27,15 +27,15 @@ namespace Ionic.Zip
 
 	    // Well, here's the thing.  This module has to compile as it is, as a
 	    // standalone sample.  But then, inside DotNetZip, when generating an SFX, 
-	    // we do a text.Replace on @@VALUE and insert a different value. 
+	    // we do a text.Replace on @@EXTRACTLOCATION and insert a different value. 
 
 	    // So the effect is, with a straight compile, the value gets SpecialFolder.Personal. 
-	    // If you replace @@VALUE with something else, it stays and does not get replaced. 
+	    // If you replace @@EXTRACTLOCATION with something else, it stays and does not get replaced. 
 
-            this.txtExtractDirectory.Text = "@@VALUE";
+            this.txtExtractDirectory.Text = "@@EXTRACTLOCATION";
 
             if (this.txtExtractDirectory.Text.StartsWith("@@") && 
-		this.txtExtractDirectory.Text.EndsWith("VALUE"))
+		this.txtExtractDirectory.Text.EndsWith("EXTRACTLOCATION"))
 	    {
 		this.txtExtractDirectory.Text = 
 		    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal),
@@ -167,273 +167,305 @@ namespace Ionic.Zip
                 {
                     if (_setCancel) { extractCancelled = true; break; }
                     if (entry.Encryption == global::Ionic.Zip.EncryptionAlgorithm.None)
+		    {
                         try
                         {
                             entry.Extract(targetDirectory, WantOverwrite);
-		    entryCount++;
+			    entryCount++;
                         }
-                        catch (Exception ex1)
-                        {
-                            DialogResult result = MessageBox.Show(String.Format("Failed to extract entry {0} -- {1}", entry.FileName, ex1.Message.ToString()),
-                                 String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+			catch (Exception ex1)
+			{
+			    DialogResult result = MessageBox.Show(String.Format("Failed to extract entry {0} -- {1}", entry.FileName, ex1.Message.ToString()),
+								  String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
 
-                            if (result == DialogResult.Cancel)
-                            {
-                                extractCancelled = true;
-                                break;
-                            }
-                        }
+			    if (result == DialogResult.Cancel)
+			    {
+				_setCancel = true;
+				break;
+			    }
+			}
+		    }
                     else
                     {
-                        if (currentPassword == "")
-                        {
-                            do
-                            {
-                                currentPassword = PromptForPassword(entry.FileName);
-                            }
-                            while (currentPassword == "");
-                        }
+			bool done = false;
+			while (!done)
+			{
+			    if (currentPassword == "")
+			    {
+				string t = PromptForPassword(entry.FileName);
+				if (t == "")
+				{
+				    done = true; // escape ExtractWithPassword loop
+				    continue;
+				}
+				currentPassword = t;
+			    }
 
-                        if (currentPassword == null)
-                        {
-                            extractCancelled = true;
-                            currentPassword = "";
-                            break;
-                        }
-                        else
-                        {
+			    if (currentPassword == null) // cancel all 
+			    {
+				_setCancel = true;
+				currentPassword = "";
+				break;
+			    }
+
                             try
                             {
                                 entry.ExtractWithPassword(targetDirectory, WantOverwrite, currentPassword);
-		    entryCount++;
+				entryCount++;
+				done= true;
                             }
                             catch (Exception ex2)
                             {
-                                // TODO: probably want a retry here in the case of bad password.
-                                DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
-                                    String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+				// Retry here in the case of bad password.
+				if (ex2 as Ionic.Zip.BadPasswordException != null)
+				{
+				    currentPassword = "";
+				    continue; // loop around, ask for password again
+				}
+				else
+				{
+				    DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
+									  String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
 
-                                if (result == DialogResult.Cancel)
-                                {
-                                    extractCancelled = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
+				    done= true;
+				    if (result == DialogResult.Cancel)
+				    {
+					_setCancel = true;
+					break;
+				    }
+				}
+                            } // catch
+                        } // while
+		    } // else (encryption)
+		} // foreach
+	    
+	    }
+	    catch (Exception)
+	    {
+		MessageBox.Show("The self-extracting zip file is corrupted.",
+				"Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+		Application.Exit();
+	    }
 
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("The self-extracting zip file is corrupted.",
-                    "Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-                Application.Exit();
-            }
 
+	    SetUiDone();
 
-            SetUiDone();
+	    if (extractCancelled) return;
 
-            if (extractCancelled) return;
+	    if (chk_OpenExplorer.Checked)
+	    {
+		string w = System.Environment.GetEnvironmentVariable("WINDIR");
+		if (w == null) w = "c:\\windows";
+		try
+		{
+		    System.Diagnostics.Process.Start(Path.Combine(w, "explorer.exe"), targetDirectory);
+		}
+		catch { }
+	    }
+	}
 
-            if (chk_OpenExplorer.Checked)
-            {
-                string w = System.Environment.GetEnvironmentVariable("WINDIR");
-                if (w == null) w = "c:\\windows";
-                try
-                {
-                    System.Diagnostics.Process.Start(Path.Combine(w, "explorer.exe"), targetDirectory);
-                }
-                catch { }
-            }
-        }
+	private void SetUiDone()
+	{
+	    if (this.btnExtract.InvokeRequired)
+	    {
+		this.btnExtract.Invoke(new MethodInvoker(this.SetUiDone));
+	    }
+	    else
+	    {
+		this.lblStatus.Text = String.Format("Finished extracting {0} entries.", entryCount);
+		btnExtract.Text = "Extracted.";
+		btnExtract.Enabled = false;
+		btnCancel.Text = "Quit";
+		_setCancel = true;
+		this.Cursor = Cursors.Default;
+	    }
+	}
 
-        private void SetUiDone()
-        {
-            if (this.btnExtract.InvokeRequired)
-            {
-                this.btnExtract.Invoke(new MethodInvoker(this.SetUiDone));
-            }
-            else
-            {
-                this.lblStatus.Text = String.Format("Finished extracting {0} entries.", entryCount);
-                btnExtract.Text = "Extracted.";
-                btnExtract.Enabled = false;
-                btnCancel.Text = "Quit";
-                _setCancel = true;
-                this.Cursor = Cursors.Default;
-            }
-        }
+	private void ExtractProgress(object sender, ExtractProgressEventArgs e)
+	{
+	    if (e.EventType == ZipProgressEventType.Extracting_EntryBytesWritten)
+	    {
+		StepEntryProgress(e);
+	    }
 
-        private void ExtractProgress(object sender, ExtractProgressEventArgs e)
-        {
-            if (e.EventType == ZipProgressEventType.Extracting_EntryBytesWritten)
-            {
-                StepEntryProgress(e);
-            }
+	    else if (e.EventType == ZipProgressEventType.Extracting_AfterExtractEntry)
+	    {
+		StepArchiveProgress(e);
+	    }
+	    if (_setCancel)
+		e.Cancel = true;
+	}
 
-            else if (e.EventType == ZipProgressEventType.Extracting_AfterExtractEntry)
-            {
-                StepArchiveProgress(e);
-            }
-            if (_setCancel)
-                e.Cancel = true;
-        }
+	private void StepArchiveProgress(ExtractProgressEventArgs e)
+	{
+	    if (this.progressBar1.InvokeRequired)
+	    {
+		this.progressBar2.Invoke(new ExtractEntryProgress(this.StepArchiveProgress), new object[] { e });
+	    }
+	    else
+	    {
+		this.progressBar1.PerformStep();
 
-        private void StepArchiveProgress(ExtractProgressEventArgs e)
-        {
-            if (this.progressBar1.InvokeRequired)
-            {
-                this.progressBar2.Invoke(new ExtractEntryProgress(this.StepArchiveProgress), new object[] { e });
-            }
-            else
-            {
-                this.progressBar1.PerformStep();
+		// reset the progress bar for the entry:
+		this.progressBar2.Value = this.progressBar2.Maximum = 1;
+		this.lblStatus.Text = "";
+		this.Update();
+	    }
+	}
 
-                // reset the progress bar for the entry:
-                this.progressBar2.Value = this.progressBar2.Maximum = 1;
-                this.lblStatus.Text = "";
-                this.Update();
-            }
-        }
+	private void StepEntryProgress(ExtractProgressEventArgs e)
+	{
+	    if (this.progressBar2.InvokeRequired)
+	    {
+		this.progressBar2.Invoke(new ExtractEntryProgress(this.StepEntryProgress), new object[] { e });
+	    }
+	    else
+	    {
+		if (this.progressBar2.Maximum == 1)
+		{
+		    // reset
+		    Int64 max = e.TotalBytesToTransfer;
+		    _progress2MaxFactor = 0;
+		    while (max > System.Int32.MaxValue)
+		    {
+			max /= 2;
+			_progress2MaxFactor++;
+		    }
+		    this.progressBar2.Maximum = (int)max;
+		    this.lblStatus.Text = String.Format("Extracting {0}/{1}: {2} ...",
+							this.progressBar1.Value, zip.Entries.Count, e.CurrentEntry.FileName);
+		}
 
-        private void StepEntryProgress(ExtractProgressEventArgs e)
-        {
-            if (this.progressBar2.InvokeRequired)
-            {
-                this.progressBar2.Invoke(new ExtractEntryProgress(this.StepEntryProgress), new object[] { e });
-            }
-            else
-            {
-                if (this.progressBar2.Maximum == 1)
-                {
-                    // reset
-                    Int64 max = e.TotalBytesToTransfer;
-                    _progress2MaxFactor = 0;
-                    while (max > System.Int32.MaxValue)
-                    {
-                        max /= 2;
-                        _progress2MaxFactor++;
-                    }
-                    this.progressBar2.Maximum = (int)max;
-                    this.lblStatus.Text = String.Format("Extracting {0}/{1}: {2} ...",
-                        this.progressBar1.Value, zip.Entries.Count, e.CurrentEntry.FileName);
-                }
+		int xferred = (int)(e.BytesTransferred >> _progress2MaxFactor);
 
-                int xferred = (int)(e.BytesTransferred >> _progress2MaxFactor);
+		this.progressBar2.Value = (xferred >= this.progressBar2.Maximum)
+		    ? this.progressBar2.Maximum
+		    : xferred;
 
-                this.progressBar2.Value = (xferred >= this.progressBar2.Maximum)
-                    ? this.progressBar2.Maximum
-                    : xferred;
+		this.Update();
+	    }
+	}
 
-                this.Update();
-            }
-        }
+	private void SetProgressBars()
+	{
+	    if (this.progressBar1.InvokeRequired)
+	    {
+		this.progressBar1.Invoke(new MethodInvoker(this.SetProgressBars));
+	    }
+	    else
+	    {
+		this.progressBar1.Value = 0;
+		this.progressBar1.Maximum = zip.Entries.Count;
+		this.progressBar1.Minimum = 0;
+		this.progressBar1.Step = 1;
+		this.progressBar2.Value = 0;
+		this.progressBar2.Minimum = 0;
+		this.progressBar2.Maximum = 1; // will be set later, for each entry.
+		this.progressBar2.Step = 1;
+	    }
+	}
 
-        private void SetProgressBars()
-        {
-            if (this.progressBar1.InvokeRequired)
-            {
-                this.progressBar1.Invoke(new MethodInvoker(this.SetProgressBars));
-            }
-            else
-            {
-                this.progressBar1.Value = 0;
-                this.progressBar1.Maximum = zip.Entries.Count;
-                this.progressBar1.Minimum = 0;
-                this.progressBar1.Step = 1;
-                this.progressBar2.Value = 0;
-                this.progressBar2.Minimum = 0;
-                this.progressBar2.Maximum = 1; // will be set later, for each entry.
-                this.progressBar2.Step = 1;
-            }
-        }
+	private String ZipName
+	{
+	    get
+	    {
+		return System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
+	    }
+	}
 
-        private String ZipName
-        {
-            get
-            {
-                return System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
-            }
-        }
+	private Stream ZipStream
+	{
+	    get
+	    {
+		if (_s != null) return _s;
+		Assembly a = Assembly.GetExecutingAssembly();
 
-        private Stream ZipStream
-        {
-            get
-            {
-                if (_s != null) return _s;
-                Assembly a = Assembly.GetExecutingAssembly();
+		#if OLDSTYLE
+		    // There are only two embedded resources.
+		    // One of them is the zip dll.  The other is the zip archive.
+		    // We load the resouce that is NOT the DLL, as the zip archive.
+		    string[] x = a.GetManifestResourceNames();
+		_s = null;
+		foreach (string name in x)
+		{
+		    if ((name != DllResourceName) && (name.EndsWith(".zip")))
+		    {
+			_s = a.GetManifestResourceStream(name);
+			break;
+		    }
+		}
 
-#if OLDSTYLE
-                // There are only two embedded resources.
-                // One of them is the zip dll.  The other is the zip archive.
-                // We load the resouce that is NOT the DLL, as the zip archive.
-                string[] x = a.GetManifestResourceNames();
-                _s = null;
-                foreach (string name in x)
-                {
-                    if ((name != DllResourceName) && (name.EndsWith(".zip")))
-                    {
-                        _s = a.GetManifestResourceStream(name);
-                        break;
-                    }
-                }
+		if (_s == null)
+		{
+		    MessageBox.Show("No Zip archive found.",
+				    "Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+		    Application.Exit();
+		}
+		#else
+		    // workitem 7067
+		    _s= System.IO.File.OpenRead(a.Location);
+		#endif
 
-                if (_s == null)
-                {
-                    MessageBox.Show("No Zip archive found.",
-                           "Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-                    Application.Exit();
-                }
-#else
-		// workitem 7067
-		_s= System.IO.File.OpenRead(a.Location);
-#endif
+		    return _s;
+	    }
+	}
 
-                return _s;
-            }
-        }
-
-        private ZipFile zip
-        {
-            get
-            {
-                if (_zip == null)
-                    _zip = global::Ionic.Zip.ZipFile.Read(ZipStream);
-                return _zip;
-            }
-        }
+	private ZipFile zip
+	{
+	    get
+	    {
+		if (_zip == null)
+		    _zip = global::Ionic.Zip.ZipFile.Read(ZipStream);
+		return _zip;
+	    }
+	}
 
         private string PromptForPassword(string entryName)
         {
-            PasswordDialog dlg1 = new PasswordDialog();
-            dlg1.EntryName = entryName;
-            dlg1.ShowDialog();
-            return dlg1.Password;
+	    PasswordDialog dlg1 = new PasswordDialog();
+	    dlg1.EntryName = entryName;
+
+	    // ask for password in a loop until user enters a proper one, 
+	    // or clicks skip or cancel.
+	    bool done= false;
+	    do {
+		dlg1.ShowDialog();
+		done = (dlg1.Result != PasswordDialog.PasswordDialogResult.OK || 
+			dlg1.Password != "");
+	    } while (!done);
+
+            if (dlg1.Result == PasswordDialog.PasswordDialogResult.OK)
+                return dlg1.Password;
+
+            else if (dlg1.Result == PasswordDialog.PasswordDialogResult.Skip)
+                return "";
+
+            // cancel
+            return null;
         }
 
-        private void btnCancel_Click(object sender, EventArgs e)
-        {
-            if (_setCancel == false)
-                _setCancel = true;
-            else
-                Application.Exit();
-        }
+	private void btnCancel_Click(object sender, EventArgs e)
+	{
+	    if (_setCancel == false)
+		_setCancel = true;
+	    else
+		Application.Exit();
+	}
 
-        // workitem 6413
-        private void btnContents_Click(object sender, EventArgs e)
-        {
-            ZipContentsDialog dlg1 = new ZipContentsDialog();
-            dlg1.ZipFile = zip;
-            dlg1.ShowDialog();
-            return;
-        }
+	// workitem 6413
+	private void btnContents_Click(object sender, EventArgs e)
+	{
+	    ZipContentsDialog dlg1 = new ZipContentsDialog();
+	    dlg1.ZipFile = zip;
+	    dlg1.ShowDialog();
+	    return;
+	}
 
 
-        private int _progress2MaxFactor;
-        private bool _setCancel;
-        Stream _s;
-        global::Ionic.Zip.ZipFile _zip;
+	private int _progress2MaxFactor;
+	private bool _setCancel;
+	Stream _s;
+	global::Ionic.Zip.ZipFile _zip;
 
     }
 
@@ -441,15 +473,15 @@ namespace Ionic.Zip
 
     class WinFormsSelfExtractorStubProgram
     {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        static void Main()
-        {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new WinFormsSelfExtractorStub());
-        }
+	/// <summary>
+	/// The main entry point for the application.
+	/// </summary>
+	[STAThread]
+	static void Main()
+	{
+	    Application.EnableVisualStyles();
+	    Application.SetCompatibleTextRenderingDefault(false);
+	    Application.Run(new WinFormsSelfExtractorStub());
+	}
     }
 }

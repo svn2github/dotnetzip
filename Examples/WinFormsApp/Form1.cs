@@ -37,7 +37,6 @@ namespace WinFormsExample
         private void InitEncryptionList()
         {
             _EncryptionNames = new List<string>(Enum.GetNames(typeof(Ionic.Zip.EncryptionAlgorithm)));
-            //_EncryptionNames.Sort();
             foreach (var name in _EncryptionNames)
             {
                 comboBox3.Items.Add(name);
@@ -113,14 +112,12 @@ namespace WinFormsExample
             _hrt = new HiResTimer();
             _hrt.Start();
 
+            _working = true;
             _operationCanceled = false;
             _nFilesCompleted = 0;
             _totalBytesAfterCompress = 0;
             _totalBytesBeforeCompress = 0;
-            this.btnZipUp.Text = "Zipping...";
-            this.btnZipUp.Enabled = false;
-            this.btnZipupDirBrowse.Enabled = false;
-            this.btnCancel.Enabled = true;
+            DisableButtons();
             lblStatus.Text = "Zipping...";
 
             var options = new SaveWorkerOptions
@@ -156,14 +153,13 @@ namespace WinFormsExample
             options.Comment = String.Format("Encoding:{0} || Compression:{1} || Encrypt:{2} || ZIP64:{3}\r\nCreated at {4} || {5}\r\n",
                         options.Encoding,
                         options.CompressionLevel.ToString(),
-                        options.Encryption.ToString(),
+                        (this.tbPassword.Text == "") ? "None" : options.Encryption.ToString(),
                         options.Zip64.ToString(),
                         System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss"),
                         this.Text);
 
             if (this.tbComment.Text != TB_COMMENT_NOTE)
                 options.Comment += this.tbComment.Text;
-
 
             _workerThread = new Thread(this.DoSave);
             _workerThread.Name = "Zip Saver thread";
@@ -244,6 +240,7 @@ namespace WinFormsExample
                     zip1.AddDirectory(options.Folder);
                     _totalEntriesToProcess = zip1.EntryFileNames.Count;
                     SetProgressBars();
+                    zip1.TempFileFolder = System.IO.Path.GetDirectoryName(options.ZipName);
                     zip1.SaveProgress += this.zip1_SaveProgress;
 
                     zip1.UseZip64WhenSaving = options.Zip64;
@@ -259,7 +256,7 @@ namespace WinFormsExample
             }
             catch (System.Exception exc1)
             {
-                MessageBox.Show(String.Format("Exception while zipping: {0}", exc1.Message));
+                MessageBox.Show(String.Format("Exception while zipping: {0}", exc1.StackTrace.ToString()));
                 btnCancel_Click(null, null);
             }
         }
@@ -295,9 +292,13 @@ namespace WinFormsExample
             }
             else
             {
-                lblStatus.Text = (this.radioFlavorSfxCmd.Checked || this.radioFlavorSfxGui.Checked)
-                    ? "Temp archive saved...compiling SFX..."
-                    : "Temp archive saved...";
+                System.TimeSpan ts = new System.TimeSpan(0, 0, (int)_hrt.Seconds);
+
+                lblStatus.Text = String.Format("Temp archive saved ({0})...{1}...",
+                    ts.ToString(),
+                    (this.radioFlavorSfxCmd.Checked || this.radioFlavorSfxGui.Checked)
+                    ? "compiling SFX"
+                    : "finishing");
             }
         }
 
@@ -316,7 +317,7 @@ namespace WinFormsExample
                 lblStatus.Text = String.Format("Done, Compressed {0} files, {1:N0}% of original, time: {2}",
                            _nFilesCompleted, (100.00 * _totalBytesAfterCompress) / _totalBytesBeforeCompress,
                            ts.ToString());
-                ResetState();
+                ResetUiState();
             }
         }
 
@@ -428,7 +429,7 @@ namespace WinFormsExample
             }
         }
 
-        private void btnZipToCreateBrowse_Click(object sender, EventArgs e)
+        private void btnCreateZipBrowse_Click(object sender, EventArgs e)
         {
             var dlg1 = new SaveFileDialog
             {
@@ -462,7 +463,7 @@ namespace WinFormsExample
             {
                 _operationCanceled = true;
                 lblStatus.Text = "Canceled...";
-                ResetState();
+                ResetUiState();
             }
         }
 
@@ -470,6 +471,13 @@ namespace WinFormsExample
         {
             if (this.radioFlavorSfxGui.Checked || this.radioFlavorSfxCmd.Checked)
             {
+                // intelligently change the name of the thing to create
+                if (this.tbZipToCreate.Text.ToUpper().EndsWith(".ZIP"))
+                {
+                    tbZipToCreate.Text = System.Text.RegularExpressions.Regex.Replace(tbZipToCreate.Text, "(?i:)\\.zip$", ".exe");
+                }
+
+#if TOO_SMART
                 // Always use UTF-8 when creating a self-extractor.
                 // A zip created with UTF-8 encoding is foolproof when 
                 // extracted with the DotNetZip library.  The only reason you wouldn't
@@ -483,12 +491,6 @@ namespace WinFormsExample
                     _mostRecentEncoding = this.comboBox1.SelectedItem.ToString();
                 this.comboBox1.SelectedIndex = 1; // UTF-8
                 this.comboBox1.Enabled = false;
-
-                // intelligently change the name of the thing to create
-                if (this.tbZipToCreate.Text.ToUpper().EndsWith(".ZIP"))
-                {
-                    tbZipToCreate.Text = System.Text.RegularExpressions.Regex.Replace(tbZipToCreate.Text, "(?i:)\\.zip$", ".exe");
-                }
 
                 // We also do the same thing with the ZIP64 setting, for the same reason. 
                 // Extracting from a ZIP64 is foolproof when DotNetZip is the extractor. 
@@ -507,25 +509,27 @@ namespace WinFormsExample
                 this.radioZip64Always.Enabled = false;
                 this.radioZip64AsNecessary.Enabled = false;
                 this.radioZip64Never.Enabled = false;
+#endif
             }
         }
 
         private void radioFlavorZip_CheckedChanged(object sender, EventArgs e)
         {
+
             if (this.radioFlavorZip.Checked)
             {
+                // intelligently change the name of the thing to create
+                if (this.tbZipToCreate.Text.ToUpper().EndsWith(".EXE"))
+                {
+                    tbZipToCreate.Text = System.Text.RegularExpressions.Regex.Replace(tbZipToCreate.Text, "(?i:)\\.exe$", ".zip");
+                }
+#if TOO_SMART
                 // re-enable the encoding, and set it to what it was most recently
                 this.comboBox1.Enabled = true;
                 if (_mostRecentEncoding != null)
                 {
                     this.SelectNamedEncoding(_mostRecentEncoding);
                     _mostRecentEncoding = null;
-                }
-
-                // intelligently change the name of the thing to create
-                if (this.tbZipToCreate.Text.ToUpper().EndsWith(".EXE"))
-                {
-                    tbZipToCreate.Text = System.Text.RegularExpressions.Regex.Replace(tbZipToCreate.Text, "(?i:)\\.exe$", ".zip");
                 }
 
                 // re-enable the zip64 setting, too.
@@ -542,12 +546,13 @@ namespace WinFormsExample
                         this.radioZip64Never.Checked = true;
                     _mostRecentZip64 = null;
                 }
+#endif
             }
         }
 
         private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
-            this.tbPassword.Enabled = (this.comboBox3.SelectedItem.ToString() != "None");
+            //this.tbPassword.Enabled = (this.comboBox3.SelectedItem.ToString() != "None");
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -555,7 +560,7 @@ namespace WinFormsExample
             this.tbPassword.PasswordChar = (this.chkHidePassword.Checked) ? '*' : '\0';
         }
 
-        private void ResetState()
+        private void ResetUiState()
         {
             this.btnZipUp.Text = "Zip it!";
             this.btnZipUp.Enabled = true;
@@ -564,11 +569,15 @@ namespace WinFormsExample
             this.btnExtract.Text = "Extract";
             this.btnExtractDirBrowse.Enabled = true;
             this.btnZipupDirBrowse.Enabled = true;
+            this.btnReadZipBrowse.Enabled = true;
+
             this.progressBar1.Value = 0;
             this.progressBar2.Value = 0;
             this.Cursor = Cursors.Default;
             if (!_workerThread.IsAlive)
                 _workerThread.Join();
+
+            _working = false;
         }
 
 
@@ -610,6 +619,7 @@ namespace WinFormsExample
                 if (s != null)
                 {
                     SelectNamedEncryption(s);
+                    this.tbPassword.Text = "";
                 }
 
 
@@ -652,47 +662,8 @@ namespace WinFormsExample
 
                 AppCuKey.Close();
                 AppCuKey = null;
-            }
-        }
 
-        private System.Drawing.Rectangle ConstrainToScreen(System.Drawing.Rectangle bounds)
-        {
-            Screen screen = Screen.FromRectangle(bounds);
-            System.Drawing.Rectangle workingArea = screen.WorkingArea;
-            int width = Math.Min(bounds.Width, workingArea.Width);
-            int height = Math.Min(bounds.Height, workingArea.Height);
-            // mmm....minimax            
-            int left = Math.Min(workingArea.Right - width, Math.Max(bounds.Left, workingArea.Left)); 
-            int top = Math.Min(workingArea.Bottom - height, Math.Max(bounds.Top, workingArea.Top));
-            return new System.Drawing.Rectangle(left, top, width, height);
-        }
-
-        private void SelectNamedEncoding(string s)
-        {
-            _SelectComboBoxItem(this.comboBox2, s);
-        }
-
-        private void SelectNamedCompressionLevel(string s)
-        {
-            _SelectComboBoxItem(this.comboBox2, s);
-        }
-
-        private void SelectNamedEncryption(string s)
-        {
-            _SelectComboBoxItem(this.comboBox3, s);
-            tbPassword.Text = "";
-            comboBox3_SelectedIndexChanged(null, null);
-        }
-
-        private void _SelectComboBoxItem(ComboBox c, string s)
-        {
-            for (int i = 0; i < c.Items.Count; i++)
-            {
-                if (c.Items[i].ToString() == s)
-                {
-                    c.SelectedIndex = i;
-                    break;
-                }
+                tbPassword_TextChanged(null, null);
             }
         }
 
@@ -707,7 +678,14 @@ namespace WinFormsExample
                 AppCuKey.SetValue(_rvn_ZipToOpen, this.tbZipToOpen.Text);
                 AppCuKey.SetValue(_rvn_Encoding, this.comboBox1.SelectedItem.ToString());
                 AppCuKey.SetValue(_rvn_Compression, this.comboBox2.SelectedItem.ToString());
-                AppCuKey.SetValue(_rvn_Encryption, this.comboBox3.SelectedItem.ToString());
+                if (this.tbPassword.Text == "")
+                {
+                    if (!String.IsNullOrEmpty(_mostRecentEncryption))
+                        AppCuKey.SetValue(_rvn_Encryption, _mostRecentEncryption);
+                }
+                else
+                    AppCuKey.SetValue(_rvn_Encryption, this.comboBox3.SelectedItem.ToString());
+
                 AppCuKey.SetValue(_rvn_ExtractLoc, this.tbExtractDir.Text);
 
                 int x = 0;
@@ -742,6 +720,49 @@ namespace WinFormsExample
                 AppCuKey.Close();
             }
         }
+
+
+        private System.Drawing.Rectangle ConstrainToScreen(System.Drawing.Rectangle bounds)
+        {
+            Screen screen = Screen.FromRectangle(bounds);
+            System.Drawing.Rectangle workingArea = screen.WorkingArea;
+            int width = Math.Min(bounds.Width, workingArea.Width);
+            int height = Math.Min(bounds.Height, workingArea.Height);
+            // mmm....minimax            
+            int left = Math.Min(workingArea.Right - width, Math.Max(bounds.Left, workingArea.Left));
+            int top = Math.Min(workingArea.Bottom - height, Math.Max(bounds.Top, workingArea.Top));
+            return new System.Drawing.Rectangle(left, top, width, height);
+        }
+
+        private void SelectNamedEncoding(string s)
+        {
+            _SelectComboBoxItem(this.comboBox2, s);
+        }
+
+        private void SelectNamedCompressionLevel(string s)
+        {
+            _SelectComboBoxItem(this.comboBox2, s);
+        }
+
+        private void SelectNamedEncryption(string s)
+        {
+            _SelectComboBoxItem(this.comboBox3, s);
+            //tbPassword.Text = "";
+            comboBox3_SelectedIndexChanged(null, null);
+        }
+
+        private void _SelectComboBoxItem(ComboBox c, string s)
+        {
+            for (int i = 0; i < c.Items.Count; i++)
+            {
+                if (c.Items[i].ToString() == s)
+                {
+                    c.SelectedIndex = i;
+                    break;
+                }
+            }
+        }
+
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -866,14 +887,12 @@ namespace WinFormsExample
             _hrt = new HiResTimer();
             _hrt.Start();
 
+            _working = true;
             _operationCanceled = false;
             _nFilesCompleted = 0;
             _totalBytesAfterCompress = 0;
             _totalBytesBeforeCompress = 0;
-            this.btnExtract.Enabled = false;
-            this.btnExtract.Text = "working...";
-            this.btnExtractDirBrowse.Enabled = false;
-            this.btnCancel.Enabled = true;
+            DisableButtons();
             lblStatus.Text = "Extracting...";
 
             var options = new ExtractWorkerOptions
@@ -885,6 +904,24 @@ namespace WinFormsExample
             _workerThread.Name = "Zip Extractor thread";
             _workerThread.Start(options);
             this.Cursor = Cursors.WaitCursor;
+        }
+
+
+        private void DisableButtons()
+        {
+            // this set for Zipping
+            this.btnZipUp.Text = "Zipping...";
+            this.btnZipUp.Enabled = false;
+            this.btnZipupDirBrowse.Enabled = false;
+            this.btnCreateZipBrowse.Enabled = false;
+            this.btnCancel.Enabled = true;
+
+            // this for Extract
+            this.btnExtract.Enabled = false;
+            this.btnExtract.Text = "working...";
+            this.btnExtractDirBrowse.Enabled = false;
+            this.btnCancel.Enabled = true;
+            this.btnReadZipBrowse.Enabled = false;
         }
 
 
@@ -917,7 +954,7 @@ namespace WinFormsExample
                 lblStatus.Text = String.Format("Done, Extracted {0} files, time: {1}",
                            _nFilesCompleted,
                            ts.ToString());
-                ResetState();
+                ResetUiState();
             }
         }
 
@@ -990,6 +1027,7 @@ namespace WinFormsExample
                                 }
                                 catch (Exception ex2)
                                 {
+				    // Retry here in the case of bad password.
                                     if (ex2 as Ionic.Zip.BadPasswordException != null)
                                     {
                                         currentPassword = "";
@@ -997,13 +1035,12 @@ namespace WinFormsExample
                                     }
                                     else
                                     {
-                                        // TODO: probably want a retry here in the case of bad password.
                                         DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
                                                               String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-
+					
+					done = true;
                                         if (result == DialogResult.Cancel)
                                         {
-                                            done = true;
                                             _setCancel = true;
                                             extractCancelled = true;
                                             break;
@@ -1011,7 +1048,7 @@ namespace WinFormsExample
                                     }
                                 }
                             } // while
-                        } // encryption
+                        } // else (encryption)
                     } // foreach
                 } // using
             }
@@ -1021,7 +1058,6 @@ namespace WinFormsExample
                 "Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
                 Application.Exit();
             }
-
 
             OnExtractDone();
 
@@ -1044,22 +1080,34 @@ namespace WinFormsExample
 
         private string PromptForPassword(string entryName)
         {
-            PasswordDialog dlg1 = new PasswordDialog();
-            dlg1.EntryName = entryName;
-            dlg1.ShowDialog();
+	    PasswordDialog dlg1 = new PasswordDialog();
+	    dlg1.EntryName = entryName;
+
+	    // ask for password in a loop until user enters a proper one, 
+	    // or clicks skip or cancel.
+	    bool done= false;
+	    do {
+		dlg1.ShowDialog();
+		done = (dlg1.Result != PasswordDialog.PasswordDialogResult.OK || 
+			dlg1.Password != "");
+	    } while (!done);
+
             if (dlg1.Result == PasswordDialog.PasswordDialogResult.OK)
                 return dlg1.Password;
-            else
-                if (dlg1.Result == PasswordDialog.PasswordDialogResult.Skip)
-                    return "";
-            //		else 
-            //		    if (dlg1.Result == PasswordDialog.PasswordDialogResult.Cancel)
+
+            else if (dlg1.Result == PasswordDialog.PasswordDialogResult.Skip)
+                return "";
+
+            // cancel
             return null;
         }
 
+
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // recycle the progress bars.
+            // Recycle the progress bars the cancel button, and the status textbox.  
+            // An alternative way to accomplish a similar thing is to visually place 
+            // the progress bars OFF the tabs.
             if (this.tabControl1.SelectedIndex == 0)
             {
                 if (this.tabPage2.Controls.Contains(this.progressBar1))
@@ -1102,6 +1150,12 @@ namespace WinFormsExample
             }
         }
 
+        private void tabControl1_Selecting(object sender, TabControlCancelEventArgs e)
+        {
+            // prevent switching TABs if working
+            if (_working) e.Cancel = true;
+        }
+
 
         private void listView1_ColumnClick(object sender, ColumnClickEventArgs e)
         {
@@ -1139,6 +1193,27 @@ namespace WinFormsExample
         }
 
 
+        private void tbPassword_TextChanged(object sender, EventArgs e)
+        {
+            if (this.tbPassword.Text == "")
+            {
+                if (_mostRecentEncryption == null && this.comboBox3.SelectedItem.ToString()!="None")
+                {
+                    _mostRecentEncryption = this.comboBox3.SelectedItem.ToString();
+                    SelectNamedEncryption("None");
+                }
+            }
+            else
+            {
+                if (_mostRecentEncryption != null && this.comboBox3.SelectedItem.ToString()=="None")
+                {
+                    SelectNamedEncryption(_mostRecentEncryption);
+                }
+                _mostRecentEncryption = null;
+            }
+        }
+
+
         public Microsoft.Win32.RegistryKey AppCuKey
         {
             get
@@ -1157,6 +1232,7 @@ namespace WinFormsExample
         //private string _folderName;
         private int _progress2MaxFactor;
         private int _totalEntriesToProcess;
+        private bool _working;
         private bool _operationCanceled;
         private int _nFilesCompleted;
         private long _totalBytesBeforeCompress;
@@ -1166,8 +1242,9 @@ namespace WinFormsExample
         private List<String> _EncodingNames;
         private List<String> _CompressionLevelNames;
         private List<String> _EncryptionNames;
-        private string _mostRecentEncoding;
-        private Nullable<Zip64Option> _mostRecentZip64;
+        //private string _mostRecentEncoding;
+        //private Nullable<Zip64Option> _mostRecentZip64;
+        private String _mostRecentEncryption;
 
         private Microsoft.Win32.RegistryKey _appCuKey;
         private static string _AppRegyPath = "Software\\Dino Chiesa\\DotNetZip Winforms Tool";
@@ -1186,7 +1263,6 @@ namespace WinFormsExample
         private static string _rvn_LastRun = "LastRun";
         private static string _rvn_Runs = "Runs";
 
-        private int _normalLeft, _normalTop, _normalWidth, _normalHeight, _windowState;
     }
 
 

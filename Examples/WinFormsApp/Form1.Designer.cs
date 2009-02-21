@@ -379,6 +379,7 @@
             this.tbPassword.Size = new System.Drawing.Size(124, 20);
             this.tbPassword.TabIndex = 58;
             this.tbPassword.Text = "c:\\dinoch\\dev\\dotnet\\zip\\test\\U.zip";
+            this.tbPassword.TextChanged += new System.EventHandler(this.tbPassword_TextChanged);
             // 
             // chkHidePassword
             // 
@@ -427,6 +428,7 @@
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(585, 386);
             this.tabControl1.TabIndex = 96;
+            this.tabControl1.Selecting += new System.Windows.Forms.TabControlCancelEventHandler(this.tabControl1_Selecting);
             this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
             // 
             // tabPage1
@@ -567,7 +569,7 @@
             this.btnCreateZipBrowse.TabIndex = 21;
             this.btnCreateZipBrowse.Text = "...";
             this.btnCreateZipBrowse.UseVisualStyleBackColor = true;
-            this.btnCreateZipBrowse.Click += new System.EventHandler(this.btnZipToCreateBrowse_Click);
+            this.btnCreateZipBrowse.Click += new System.EventHandler(this.btnCreateZipBrowse_Click);
             // 
             // Form1
             // 

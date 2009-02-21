@@ -8,7 +8,7 @@
 // Created Fri Jun 06 14:51:31 2008
 //
 // last saved: 
-// Time-stamp: <2009-February-20 11:47:22>
+// Time-stamp: <2009-February-21 12:47:31>
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2008 by Dino Chiesa
@@ -17,15 +17,15 @@
 //
 // ------------------------------------------------------------------
 
+namespace Ionic.Zip
+{
+
 using System;
 using System.Reflection;
 using System.Resources;
 using System.IO;
 using Ionic.Zip;
 
-
-namespace Ionic.Zip
-{
 
     public class SelfExtractor
     {
