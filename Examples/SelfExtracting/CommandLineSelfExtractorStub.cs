@@ -8,7 +8,7 @@
 // Created Fri Jun 06 14:51:31 2008
 //
 // last saved: 
-// Time-stamp: <2009-February-19 21:38:16>
+// Time-stamp: <2009-February-20 11:47:22>
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2008 by Dino Chiesa
@@ -31,59 +31,59 @@ namespace Ionic.Zip
     {
         const string DllResourceName = "Ionic.Zip.dll";
 
-                string TargetDirectory = null;
-                bool WantOverwrite = false;
-                bool ListOnly = false;
-                bool Verbose = false;
-                string Password = null;
+        string TargetDirectory = null;
+        bool WantOverwrite = false;
+        bool ListOnly = false;
+        bool Verbose = false;
+        string Password = null;
 
         // ctor
         private SelfExtractor() { }
 
         // ctor
         public SelfExtractor(string[] args)
-	{
+        {
 
-	    for (int i = 0; i < args.Length; i++)
-	    {
-		switch (args[i])
-		{
-		    case "-p":
-			i++;
-			if (args.Length <= i) Usage();
-			if (Password != null) Usage();
-			Password = args[i];
-			break;
-		    case "-o":
-			WantOverwrite = true;
-			break;
-		    case "-l":
-			ListOnly= true;
-			break;
-		    case "-v":
-			Verbose= true;
-			break;
-		    default:
-			// positional args
-			if (TargetDirectory == null)
-			    TargetDirectory = args[i];
-			else
-			    Usage();
-			break;
-		}
-	    }
+            for (int i = 0; i < args.Length; i++)
+            {
+                switch (args[i])
+                {
+                    case "-p":
+                        i++;
+                        if (args.Length <= i) Usage();
+                        if (Password != null) Usage();
+                        Password = args[i];
+                        break;
+                    case "-o":
+                        WantOverwrite = true;
+                        break;
+                    case "-l":
+                        ListOnly = true;
+                        break;
+                    case "-v":
+                        Verbose = true;
+                        break;
+                    default:
+                        // positional args
+                        if (TargetDirectory == null)
+                            TargetDirectory = args[i];
+                        else
+                            Usage();
+                        break;
+                }
+            }
 
-	    if (!ListOnly && TargetDirectory == null)
-	    {
-		Console.WriteLine("No target directory specified.\n");
-		Usage();
-	    }
-	    if (ListOnly && (WantOverwrite || Verbose))
-	    {
-		Console.WriteLine("Inconsistent options.\n");
-		Usage();
-	    }
-	}
+            if (!ListOnly && TargetDirectory == null)
+            {
+                Console.WriteLine("No target directory specified.\n");
+                Usage();
+            }
+            if (ListOnly && (WantOverwrite || Verbose))
+            {
+                Console.WriteLine("Inconsistent options.\n");
+                Usage();
+            }
+        }
 
 
 
@@ -151,65 +151,70 @@ namespace Ionic.Zip
 #if OLDSTYLE
                 using (global::Ionic.Zip.ZipFile zip = global::Ionic.Zip.ZipFile.Read(s))
 #else
-		// workitem 7067
+                // workitem 7067
                 using (global::Ionic.Zip.ZipFile zip = global::Ionic.Zip.ZipFile.Read(a.Location))
 #endif
                 {
-		    bool header = true;
+                    bool header = true;
                     foreach (global::Ionic.Zip.ZipEntry entry in zip)
                     {
-			if (ListOnly || Verbose)
-			{
-			    if (header)
-			    {
-				System.Console.WriteLine("Zipfile: {0}", zip.Name);
-				if ((zip.Comment != null) && (zip.Comment != ""))
-				    System.Console.WriteLine("Comment: {0}", zip.Comment);
+                        if (ListOnly || Verbose)
+                        {
+                            if (header)
+                            {
+                                System.Console.WriteLine("Extracting Zip file: {0}", zip.Name);
+                                if ((zip.Comment != null) && (zip.Comment != ""))
+                                    System.Console.WriteLine("Comment: {0}", zip.Comment);
 
-				System.Console.WriteLine("\n{1,-22} {2,9}  {3,5}   {4,9}  {5,3} {6,8} {0}",
-							 "Filename", "Modified", "Size", "Ratio", "Packed", "pw?", "CRC");
-				System.Console.WriteLine(new System.String('-', 80));
-				header = false;
-			    }
+                                System.Console.WriteLine("\n{1,-22} {2,9}  {3,5}   {4,9}  {5,3} {6,8} {0}",
+                                             "Filename", "Modified", "Size", "Ratio", "Packed", "pw?", "CRC");
+                                System.Console.WriteLine(new System.String('-', 80));
+                                header = false;
+                            }
 
-			    System.Console.WriteLine("{1,-22} {2,9} {3,5:F0}%   {4,9}  {5,3} {6:X8} {0}",
-						     entry.FileName,
-						     entry.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
-						     entry.UncompressedSize,
-						     entry.CompressionRatio,
-						     entry.CompressedSize,
-						     (entry.UsesEncryption) ? "Y" : "N",
-						     entry.Crc32);
+                            System.Console.WriteLine("{1,-22} {2,9} {3,5:F0}%   {4,9}  {5,3} {6:X8} {0}",
+                                         entry.FileName,
+                                         entry.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
+                                         entry.UncompressedSize,
+                                         entry.CompressionRatio,
+                                         entry.CompressedSize,
+                                         (entry.UsesEncryption) ? "Y" : "N",
+                                         entry.Crc32);
 
 
-			}
+                        }
 
-			if (!ListOnly)
-			{
-			    if (entry.Encryption == global::Ionic.Zip.EncryptionAlgorithm.None)
-			    {
-				try
-				{
-				    entry.Extract(TargetDirectory, WantOverwrite);
-				}
-				catch (Exception ex1)
-				{
-				    Console.WriteLine("Failed to extract entry {0} -- {1}", entry.FileName, ex1.ToString());
-				}
-			    }
-			    else
-			    {
-				try
-				{
-				    entry.ExtractWithPassword(Password, WantOverwrite, TargetDirectory);
-				}
-				catch (Exception ex2)
-				{
-				    // probably want a retry here in the case of bad password.
-				    Console.WriteLine("Failed to extract entry {0} -- {1}", entry.FileName, ex2.ToString());
-				}
-			    }
-			}
+                        if (!ListOnly)
+                        {
+                            if (entry.Encryption == global::Ionic.Zip.EncryptionAlgorithm.None)
+                            {
+                                try
+                                {
+                                    entry.Extract(TargetDirectory, WantOverwrite);
+                                }
+                                catch (Exception ex1)
+                                {
+                                    Console.WriteLine("Failed to extract entry {0} -- {1}", entry.FileName, ex1.ToString());
+                                }
+                            }
+                            else
+                            {
+                                if (Password == null)
+                                    Console.WriteLine("Cannot extract entry {0} without a password.", entry.FileName);
+                                else
+                                {
+                                    try
+                                    {
+                                        entry.ExtractWithPassword(TargetDirectory, WantOverwrite, Password);
+                                    }
+                                    catch (Exception ex2)
+                                    {
+                                        // probably want a retry here in the case of bad password.
+                                        Console.WriteLine("Failed to extract entry {0} -- {1}", entry.FileName, ex2.ToString());
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

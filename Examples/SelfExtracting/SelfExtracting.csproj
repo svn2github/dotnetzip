@@ -66,12 +66,15 @@
     <EmbeddedResource Include="ZipContentsDialog.Designer.cs">
       <DependentUpon>ZipContentsDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PasswordDialog.cs">
+    <Compile Include="FolderBrowserDialogEx.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PasswordDialog.cs">
       <SubType>Form</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="PasswordDialog.Designer.cs">
+    </Compile>
+    <Compile Include="PasswordDialog.Designer.cs">
       <DependentUpon>PasswordDialog.cs</DependentUpon>
-    </EmbeddedResource>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="WinFormsSelfExtractorStub.cs">
       <SubType>Form</SubType>

@@ -37,6 +37,7 @@ namespace Ionic.Zip.Examples
             "                          code page.\n" +
             "  -aes                  - use WinZip-compatible AES 256-bit encryption for entries\n" +
             "                          subsequently added to the archive. Requires a password.\n" +
+            "  -sfx [w|c]            - create a self-extracting archive, either a Windows or console app.\n" +
             "  -64                   - use ZIP64 extensions, for large files or large numbers of files.\n" +
             "  -cp <codepage         - use the specified numeric codepage for entries with comments \n" +
             "                          or filenames that cannot be encoded with the default IBM437\n" +
@@ -64,11 +65,11 @@ namespace Ionic.Zip.Examples
         {
             if (args.Length < 2) Usage();
 
-            if (!args[0].EndsWith(".zip"))
-            {
-                Console.WriteLine("The filename must end with .zip!\n");
-                Usage();
-            }
+            //if (!args[0].EndsWith(".zip"))
+            //{
+            //    Console.WriteLine("The filename must end with .zip!\n");
+            //    Usage();
+            //}
             if (System.IO.File.Exists(args[0]))
             {
                 System.Console.Error.WriteLine("That zip file ({0}) already exists.", args[0]);
@@ -79,12 +80,13 @@ namespace Ionic.Zip.Examples
 
             try
             {
+                Nullable<SelfExtractorFlavor> flavor = null;
                 int codePage = 0;
                 ZipEntry e = null;
                 string entryComment = null;
                 string entryDirectoryPathInArchive = "";
 
-                using (ZipFile zip = new ZipFile(args[0]))
+                using (ZipFile zip = new ZipFile())
                 {
                     zip.StatusMessageTextWriter = System.Console.Out;
                     for (int i = 1; i < args.Length; i++)
@@ -103,6 +105,14 @@ namespace Ionic.Zip.Examples
 
                             case "-aes":
                                 zip.Encryption = EncryptionAlgorithm.WinZipAes256;
+                                break;
+
+                            case "-sfx":
+                                i++;
+                                if (args.Length <= i) Usage();
+                                if (args[i] != "w" && args[i] != "c") Usage();
+                                flavor = new Nullable<SelfExtractorFlavor>
+                                    ((args[i] == "w") ? SelfExtractorFlavor.WinFormsApplication : SelfExtractorFlavor.ConsoleApplication);
                                 break;
 
                             case "-utf8":
@@ -177,7 +187,12 @@ namespace Ionic.Zip.Examples
                                 break;
                         }
                     }
-                    zip.Save();
+
+                    if (!flavor.HasValue)
+                        zip.Save(args[0]);
+                    else 
+                        zip.SaveSelfExtractor(args[0], flavor.Value);
+
                 }
             }
             catch (System.Exception ex1)

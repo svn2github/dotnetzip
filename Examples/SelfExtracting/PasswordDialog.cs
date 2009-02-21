@@ -6,11 +6,20 @@
 
     public partial class PasswordDialog : Form
     {
+        public enum PasswordDialogResult { OK, Skip, Cancel };
+        
         public PasswordDialog()
         {
             InitializeComponent();
         }
-        private bool wasCanceled = false;
+
+        public PasswordDialogResult Result
+    {
+        get
+        {
+            return _result;
+        }
+    }
         public string EntryName
         {
             set
@@ -22,21 +31,30 @@
         {
             get
             {
-                if (wasCanceled) return null;
                 return textBox1.Text;
             }
         }
 
         private void btnOk_Click(object sender, EventArgs e)
         {
+            _result = PasswordDialogResult.OK;
             this.Close();
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            wasCanceled = true;
+            _result = PasswordDialogResult.Cancel;
             this.Close();
         }
+        private void button2_Click(object sender, EventArgs e)
+        {
+            _result = PasswordDialogResult.Skip;
+            this.Close();
+        }
+
+
+        private PasswordDialogResult _result;
+
 
     }
 }

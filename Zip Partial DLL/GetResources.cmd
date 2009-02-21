@@ -6,7 +6,7 @@ goto START
 
  Copy resources from the CreateSelfExtractor Example project to be used in the Zip library.
  This script assumes it will be run by Visual Studio, starting with the 
- current directory of C:\dinoch\dev\dotnet\zip\DotNetZip\Library\bin\Debug
+ current directory of C:\dinoch\dev\dotnet\zip\DotNetZip\Zip Partial DLL\bin\Debug
 
  Sat, 07 Jun 2008  10:39
 
@@ -20,6 +20,7 @@ set ResourceDirectory=Resources
 cd ..\..\
 mkdir %ResourceDirectory%
 copy /y ..\Examples\SelfExtracting\CommandLineSelfExtractorStub.cs        %ResourceDirectory%
+copy /y ..\Examples\SelfExtracting\FolderBrowserDialogEx.cs               %ResourceDirectory%
 copy /y ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.cs           %ResourceDirectory%
 copy /y ..\Examples\SelfExtracting\PasswordDialog.cs                      %ResourceDirectory%
 copy /y ..\Examples\SelfExtracting\ZipContentsDialog.cs                   %ResourceDirectory%

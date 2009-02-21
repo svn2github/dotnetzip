@@ -98,7 +98,8 @@ namespace Ionic.Zip
                     "Ionic.Zip.Resources.PasswordDialog.cs",
                     "Ionic.Zip.PasswordDialog",             //.Designer.cs"
                     "Ionic.Zip.Resources.ZipContentsDialog.cs",
-                    "Ionic.Zip.ZipContentsDialog"             //.Designer.cs"
+                    "Ionic.Zip.ZipContentsDialog",             //.Designer.cs"
+                    "Ionic.Zip.Resources.FolderBrowserDialogEx.cs",
                 }
             },
             new ExtractorSettings() {
@@ -538,6 +539,9 @@ namespace Ionic.Zip
                         string filename = Path.Combine(TempDir, re);
                         using (Stream instream = a2.GetManifestResourceStream(re))
                         {
+                            if (instream == null)
+                                throw new ZipException(String.Format("DotNetZip error: missing resource '{0}'", re));
+
                             using (FileStream outstream = File.OpenWrite(filename))
                             {
                                 do
@@ -580,6 +584,8 @@ namespace Ionic.Zip
                 {
                     //Console.WriteLine("  trying to read stream: ({0})", rc);
                     Stream s = a2.GetManifestResourceStream(rc);
+                    if (s == null)
+                        throw new ZipException(String.Format("DotNetZip error: missing resource '{0}'", rc));
                     using (StreamReader sr = new StreamReader(s))
                     {
                         while (sr.Peek() >= 0)

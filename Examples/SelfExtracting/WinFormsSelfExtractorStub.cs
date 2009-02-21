@@ -110,21 +110,23 @@ namespace Ionic.Zip
 
         private void btnDirBrowse_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            // Default to the My Documents folder.
-            folderBrowserDialog1.RootFolder = Environment.SpecialFolder.Personal;
-            folderBrowserDialog1.SelectedPath = txtExtractDirectory.Text;
-            folderBrowserDialog1.ShowNewFolderButton = true;
-
-            folderBrowserDialog1.Description = "Select the directory for the extracted files.";
+            Ionic.Utils.FolderBrowserDialogEx dlg1 = new Ionic.Utils.FolderBrowserDialogEx();
+	    dlg1.Description = "Select a folder for the extracted files:";
+	    dlg1.ShowNewFolderButton = true;
+	    dlg1.ShowEditBox = true;
+	    //dlg1.NewStyle = false;
+	    dlg1.SelectedPath = txtExtractDirectory.Text;
+	    dlg1.ShowFullPathInEditBox = true;
+	    dlg1.RootFolder = System.Environment.SpecialFolder.MyComputer;
 
             // Show the FolderBrowserDialog.
-            DialogResult result = folderBrowserDialog1.ShowDialog();
+            DialogResult result = dlg1.ShowDialog();
             if (result == DialogResult.OK)
             {
-                txtExtractDirectory.Text = folderBrowserDialog1.SelectedPath;
+                txtExtractDirectory.Text = dlg1.SelectedPath;
             }
         }
+
 
         private void btnExtract_Click(object sender, EventArgs e)
         {

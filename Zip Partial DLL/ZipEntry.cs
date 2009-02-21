@@ -1734,7 +1734,13 @@ namespace Ionic.Zip
                 ValidateCompression();
                 ValidateEncryption();
 
-                if (ValidateOutput(baseDir, outstream, out TargetFile)) return;
+                if (ValidateOutput(baseDir, outstream, out TargetFile)) 
+		{
+		    // if true, then the entry was a directory and has been created.
+		    // We need to fire the Extract Event.
+		    OnAfterExtract(baseDir);
+		    return;
+		}
 
                 // if no password explicitly specified, use the password on the entry itself.
                 if (password == null) password = this._Password;  // may be null
@@ -1840,7 +1846,6 @@ namespace Ionic.Zip
                 }
 
                 OnAfterExtract(baseDir);
-
             }
             catch
             {
