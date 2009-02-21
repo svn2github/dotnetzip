@@ -1032,6 +1032,7 @@ namespace Ionic.Zip
             ze._CompressedFileDataSize = ze._CompressedSize;
 
 
+	    ze._LengthOfTrailer = 0;
             // bit 0 set indicates that some kind of encryption is in use
             if ((ze._BitField & 0x01) == 0x01)
             {

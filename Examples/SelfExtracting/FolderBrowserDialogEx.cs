@@ -92,25 +92,38 @@ using System.Threading;
         public static FolderBrowserDialogEx PrinterBrowser()
         {
             FolderBrowserDialogEx x = new FolderBrowserDialogEx();
-            x._uiFlags += BrowseFlags.BIF_BROWSEFORPRINTER;
-            x.Description = "Select a printer:";
-            PInvoke.Shell32.SHGetSpecialFolderLocation(IntPtr.Zero, CSIDL.PRINTERS, ref x._rootFolderLocation);
-            x.ShowNewFolderButton = false;
-            x.ShowEditBox = false;
+	    // avoid MBRO comppiler warning when passing _rootFolderLocation as a ref:
+	    x.BecomePrinterBrowser();
             return x;
         }
 
-        // Factory Methods
         public static FolderBrowserDialogEx ComputerBrowser()
         {
             FolderBrowserDialogEx x = new FolderBrowserDialogEx();
-            x._uiFlags += BrowseFlags.BIF_BROWSEFORCOMPUTER;
-            x.Description = "Select a computer:";
-            PInvoke.Shell32.SHGetSpecialFolderLocation(IntPtr.Zero, CSIDL.NETWORK, ref x._rootFolderLocation);
-            x.ShowNewFolderButton = false;
-            x.ShowEditBox = false;
+	    // avoid MBRO comppiler warning when passing _rootFolderLocation as a ref:
+	    x.BecomeComputerBrowser();
             return x;
         }
+
+
+	// Helpers
+	private void BecomePrinterBrowser()
+	{
+            _uiFlags += BrowseFlags.BIF_BROWSEFORPRINTER;
+            Description = "Select a printer:";
+            PInvoke.Shell32.SHGetSpecialFolderLocation(IntPtr.Zero, CSIDL.PRINTERS, ref this._rootFolderLocation);
+            ShowNewFolderButton = false;
+            ShowEditBox = false;
+	}       
+
+	private void BecomeComputerBrowser()
+	{
+            _uiFlags += BrowseFlags.BIF_BROWSEFORCOMPUTER;
+            Description = "Select a computer:";
+            PInvoke.Shell32.SHGetSpecialFolderLocation(IntPtr.Zero, CSIDL.NETWORK, ref this._rootFolderLocation);
+            ShowNewFolderButton = false;
+            ShowEditBox = false;
+	}
 
 
         private class CSIDL
