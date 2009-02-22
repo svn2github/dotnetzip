@@ -17,16 +17,23 @@ namespace WinFormsExample
             InitializeComponent();
 
             InitEncodingsList();
-
             InitCompressionLevelList();
-
             InitEncryptionList();
-
             FixTitle();
-
             FillFormFromRegistry();
-
             AdoptProgressBars();
+        }
+
+
+        // This constructor works to load zips from the command line.
+        // It also works to allow "open With..." from Windows Explorer. 
+        public Form1(string[] args)
+            : this()
+        {
+            if (args != null && args.Length >= 1 && args[0] != null)
+            {
+                _initialFileToLoad = args[0];
+            }
         }
 
         private void AdoptProgressBars()
@@ -49,7 +56,7 @@ namespace WinFormsExample
 
         private void FixTitle()
         {
-            this.Text = String.Format("WinForms Zip Creator Example for DotNetZip v{0}",
+            this.Text = String.Format("DotNetZip's WinForms Zip Tool v{0}",
                       System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
         }
 
@@ -1027,7 +1034,7 @@ namespace WinFormsExample
                                 }
                                 catch (Exception ex2)
                                 {
-				    // Retry here in the case of bad password.
+                                    // Retry here in the case of bad password.
                                     if (ex2 as Ionic.Zip.BadPasswordException != null)
                                     {
                                         currentPassword = "";
@@ -1037,8 +1044,8 @@ namespace WinFormsExample
                                     {
                                         DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
                                                               String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-					
-					done = true;
+
+                                        done = true;
                                         if (result == DialogResult.Cancel)
                                         {
                                             _setCancel = true;
@@ -1080,17 +1087,18 @@ namespace WinFormsExample
 
         private string PromptForPassword(string entryName)
         {
-	    PasswordDialog dlg1 = new PasswordDialog();
-	    dlg1.EntryName = entryName;
+            PasswordDialog dlg1 = new PasswordDialog();
+            dlg1.EntryName = entryName;
 
-	    // ask for password in a loop until user enters a proper one, 
-	    // or clicks skip or cancel.
-	    bool done= false;
-	    do {
-		dlg1.ShowDialog();
-		done = (dlg1.Result != PasswordDialog.PasswordDialogResult.OK || 
-			dlg1.Password != "");
-	    } while (!done);
+            // ask for password in a loop until user enters a proper one, 
+            // or clicks skip or cancel.
+            bool done = false;
+            do
+            {
+                dlg1.ShowDialog();
+                done = (dlg1.Result != PasswordDialog.PasswordDialogResult.OK ||
+                    dlg1.Password != "");
+            } while (!done);
 
             if (dlg1.Result == PasswordDialog.PasswordDialogResult.OK)
                 return dlg1.Password;
@@ -1197,7 +1205,7 @@ namespace WinFormsExample
         {
             if (this.tbPassword.Text == "")
             {
-                if (_mostRecentEncryption == null && this.comboBox3.SelectedItem.ToString()!="None")
+                if (_mostRecentEncryption == null && this.comboBox3.SelectedItem.ToString() != "None")
                 {
                     _mostRecentEncryption = this.comboBox3.SelectedItem.ToString();
                     SelectNamedEncryption("None");
@@ -1205,7 +1213,7 @@ namespace WinFormsExample
             }
             else
             {
-                if (_mostRecentEncryption != null && this.comboBox3.SelectedItem.ToString()=="None")
+                if (_mostRecentEncryption != null && this.comboBox3.SelectedItem.ToString() == "None")
                 {
                     SelectNamedEncryption(_mostRecentEncryption);
                 }
@@ -1262,6 +1270,19 @@ namespace WinFormsExample
         private static string _rvn_Zip64Option = "Zip64Option";
         private static string _rvn_LastRun = "LastRun";
         private static string _rvn_Runs = "Runs";
+        private string _initialFileToLoad;
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            if (_initialFileToLoad != null)
+            {
+                // select the page that opens zip files.
+                this.tabControl1.SelectedIndex = 0;
+                //this.tabPage1.Select(); 
+                this.tbZipToOpen.Text = _initialFileToLoad;
+                btnOpen_Click(null, null);
+            }
+        }
 
     }
 

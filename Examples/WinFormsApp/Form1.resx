@@ -117,6 +117,18 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="richTextBox1.Text" xml:space="preserve">
+    <value>This is a sample ZIP tool that ships with DotNetZip.  DotNetZip is a .NET managed-code library for manipulating ZIP archives.  It enables any .NET application to read and write ZIP files, simply and easily. 
+
+DotNetZip supports many advanced ZIP features like ZIP64, WinZip-compatible AES encryption, Unicode or arbitrary code pages, self-extracting archives, archive and entry comments, and more.  DotNetZip has a simple and clean programming interface, and exposes a handy Eventing model for your programming delight.  There is a full helpfile with plenty of code examples to get you started. 
+
+DotNetZip is CLS-compliant, FxCop-approved and low-fat.  It can be used from any .NET programming language.  It runs on the Compact Framework as well as the regular .NET Framework.  DotNetZip requires .NET 2.0 at a minimum.  
+
+The library and this tool are produced in an open source project hosted at CodePlex:  http://www.codeplex.com/DotNetZip.  
+
+DotNetZip is donationware.  This tool and the library that supports it are free to use, but if you like the tool or library and find it them useful, you are encouraged to donate.  Proceeds benefit a local charity.  (which is NOT me).  To learn more: http://cheeso.members.winisp.net/DotNetZipDonate.aspx
+</value>
+  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
