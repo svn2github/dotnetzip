@@ -1226,7 +1226,6 @@ namespace Ionic.Zip.Tests.Basic
                     e.Extract("unpack");
                     DateTime ActualFilesystemLastMod = System.IO.File.GetLastWriteTime(System.IO.Path.Combine("unpack", e.FileName));
                     Assert.AreEqual<DateTime>(Timestamp, ActualFilesystemLastMod, "Unexpected timestamp on extracted filesystem file.");
-
                 }
             }
             Assert.AreEqual<int>(entries, FilesToZip.Length, "Unexpected file count. Expected {0}, got {1}.",
@@ -1288,7 +1287,13 @@ namespace Ionic.Zip.Tests.Basic
                 {
                     var lastWrite = System.IO.File.GetLastWriteTime(filename);
                     var fi = new System.IO.FileInfo(filename);
-                    var tm = TestUtilities.RoundToEvenSecond(lastWrite);
+
+                    // Rounding to nearest even second was necessary when DotNetZip did 
+                    // not process NTFS times in the NTFS Extra field. Since v1.8.0.5, this
+                    // is no longer the case.
+                    // var tm = TestUtilities.RoundToEvenSecond(lastWrite); 
+
+                    var tm = lastWrite;
                     // hop out of the try block if the file is from TODAY.  (heuristic to avoid currently open files)
                     if ((tm.Year == DateTime.Now.Year) && (tm.Month == DateTime.Now.Month) && (tm.Day == DateTime.Now.Day))
                         throw new Exception();
@@ -1341,8 +1346,11 @@ namespace Ionic.Zip.Tests.Basic
                     e.Extract("unpack");
                     string PathToExtractedFile = System.IO.Path.Combine("unpack", e.FileName);
                     DateTime ActualFilesystemLastMod = AdjustTimeForWin32VersusDotnetDiscrepancy(System.IO.File.GetLastWriteTime(PathToExtractedFile));
-                    Assert.AreEqual<DateTime>(timestamps[e.FileName], ActualFilesystemLastMod,
-                        "Unexpected timestamp on extracted filesystem file ({0}).", PathToExtractedFile);
+                    TimeSpan delta = timestamps[e.FileName] - ActualFilesystemLastMod;
+                    TestContext.WriteLine("time delta: {0}", delta.ToString());
+                    // The time delta can be at most, 1 second.
+                    Assert.IsTrue(delta < new TimeSpan(0,0,1),
+                        "Unexpected timestamp on extracted filesystem file ({0}) delta({1}).", PathToExtractedFile, delta.ToString());
 
                     // verify the checksum of the file is correct
                     string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);

@@ -139,12 +139,28 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        /// It is also possible to set the LastModified value on an entry, to an
-        /// arbitrary value.  Be aware that because of the way the PKZip specification
+        /// This property allows the application to retrieve and possibly set the LastModified value
+        /// on an entry, to an arbitrary value.  DateTime values without a DateTimeKind setting are
+        /// assumed to be expressed in Local Time.
+        /// </para>
+        ///
+        /// <para>
+	/// Be aware that because of the way the PKZip specification
         /// describes how times are stored in the zip file, the full precision of the
-        /// <c>System.DateTime</c> datatype is not stored in LastModified when saving
+        /// <c>System.DateTime</c> datatype is not stored for the last modified time when saving
         /// zip files.  For more information on how times are formatted, see the PKZip
-        /// specification.
+        /// specification. 
+        /// </para>
+        ///
+        /// <para>
+	/// The LastModified time is stored in two ways in the zip file: first in the so-called
+	/// "DOS" format, which has a precision to the nearest even second. If the time on the file
+	/// is 12:34:43, then it will be stored as 12:34:44.  Secondly, the LastModified time is
+	/// stored as an 8-byte integer quantity expressed as the number of 1/10 milliseconds since
+	/// January 1, 1601 (UTC).  This is the so-called Win32 time.  Zip tools and libraries will
+	/// always at least handle the DOS time, and may also handle the Win32 time. When reading
+	/// ZIP files, The DotNetZip library handles the Win32 time, if it is stored in the
+	/// entry. When writing ZIP files, the DotNetZip library will write both time quantities.
         /// </para>
         ///
         /// <para>
@@ -157,14 +173,13 @@ namespace Ionic.Zip
         /// context.
         /// </para>
         /// <para>
-        /// In a nutshell: Daylight savings time rules change regularly.  In
-        /// 2007, for example, the inception week of DST changed.  In 1977,
-        /// DST was in place all year round. In 1945, likewise.  And so on.
-        /// Win32 does not attempt to guess which time zone rules were in
-        /// effect at the time in question.  It will render a time as
-        /// "standard time" and allow the app to change to DST as necessary.
-        ///  .NET makes a different choice.
+        /// In a nutshell: Daylight savings time rules change regularly.  In 2007, for example, the
+        /// inception week of DST changed.  In 1977, DST was in place all year round. In 1945,
+        /// likewise.  And so on.  Win32 does not attempt to guess which time zone rules were in
+        /// effect at the time in question.  It will render a time as "standard time" and allow the
+        /// app to change to DST as necessary.  .NET makes a different choice.
         /// </para>
+	///
         /// <para>
         /// Compare the output of FileInfo.LastWriteTime.ToString("f") with what you
         /// see in the Windows Explorer property sheet for a file that was last
@@ -195,8 +210,8 @@ namespace Ionic.Zip
         /// Because of this funkiness, this library adds one hour to the LastModified
         /// time on the extracted file, if necessary.  That is to say, if the time in
         /// question had occurred in what the .NET Base Class Library assumed to be
-        /// DST (an assumption that may be wrong given the constantly changing DST
-        /// rules).
+        /// DST. This assumption may be wrong given the constantly changing DST
+        /// rules, but it is the best we can do.
         /// </para>
         /// </remarks>
         ///
@@ -206,9 +221,39 @@ namespace Ionic.Zip
             set
             {
                 _LastModified = value;
+		if (_ntfsTimesAreSet)
+		{
+		    _Mtime = _LastModified.ToUniversalTime();
+		}
                 //SetLastModDateTimeWithAdjustment(this);
             }
         }
+
+        /// <summary>
+        /// Sets the NTFS Creation, Access, and Modified times for the given entry.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// When adding an entry from a file or directory, these quantities are automatically 
+        /// set from the filesystem values. When adding an entry from a stream or string, 
+        /// the values are implicitly set to DateTime.Now.  The application may wish to set
+        /// these values to some arbitrary value, before saving the archive. 
+        /// </para>
+        /// <para>
+        /// DateTime values provided here without a DateTimeKind are assumed to be Local Time.
+        /// </para>
+        /// </remarks>
+        /// <param name="ctime">the creation time of the entry.</param>
+        /// <param name="atime">the last access time of the entry.</param>
+        /// <param name="mtime">the last modified time of the entry.</param>
+        public void SetNtfsTimes(DateTime ctime, DateTime atime, DateTime mtime)
+        {
+            _ntfsTimesAreSet = true;
+            _Ctime = ctime.ToUniversalTime();
+            _Atime = atime.ToUniversalTime();
+            _Mtime = mtime.ToUniversalTime();
+        }
+
 
 #if LEGACY
         /// <summary>
@@ -1044,7 +1089,7 @@ namespace Ionic.Zip
             ze._CompressedFileDataSize = ze._CompressedSize;
 
 
-	    ze._LengthOfTrailer = 0;
+            ze._LengthOfTrailer = 0;
             // bit 0 set indicates that some kind of encryption is in use
             if ((ze._BitField & 0x01) == 0x01)
             {
@@ -1252,31 +1297,36 @@ namespace Ionic.Zip
             if (stream != null)
             {
                 entry._sourceStream = stream;
-                entry._LastModified = DateTime.Now;
+                entry._Mtime = entry._Atime = entry._Ctime = DateTime.Now;
+            }
+            else if (System.IO.File.Exists(filename) || System.IO.Directory.Exists(filename))
+            {
+                entry._Mtime = System.IO.File.GetLastWriteTime(filename);
+                entry._Ctime = System.IO.File.GetCreationTime(filename);
+                entry._Atime = System.IO.File.GetLastAccessTime(filename);
             }
             else
             {
-                entry._LastModified = (System.IO.File.Exists(filename) || System.IO.Directory.Exists(filename))
-            ? SharedUtilities.RoundToEvenSecond(System.IO.File.GetLastWriteTime(filename))
-            : DateTime.Now;
-
-                if (!entry._LastModified.IsDaylightSavingTime() &&
-            DateTime.Now.IsDaylightSavingTime())
-                {
-                    entry._LastModified = entry._LastModified + new System.TimeSpan(1, 0, 0);
-                }
-
-                if (entry._LastModified.IsDaylightSavingTime() &&
-            !DateTime.Now.IsDaylightSavingTime())
-                {
-                    entry._LastModified = entry._LastModified - new System.TimeSpan(1, 0, 0);
-                }
+                entry._Mtime = entry._Atime = entry._Ctime = DateTime.Now;
             }
+
+            entry._ntfsTimesAreSet = true;
+
+	    // No longer need to round to nearest second as we don't use DOS time.
+	    // In any case, the dataloss had happened at the time we format into DOS time, 
+	    // and should not be necessary here. 
+            //entry._LastModified = SharedUtilities.RoundToEvenSecond(entry._Mtime);
+
+	    entry._LastModified = entry._Mtime;
+            entry._LastModified = Ionic.Zip.SharedUtilities.AdjustForDst(entry._LastModified);
+            entry._Mtime = Ionic.Zip.SharedUtilities.AdjustForDst(entry._Mtime).ToUniversalTime();
+            entry._Atime = Ionic.Zip.SharedUtilities.AdjustForDst(entry._Atime).ToUniversalTime();
+            entry._Ctime = Ionic.Zip.SharedUtilities.AdjustForDst(entry._Ctime).ToUniversalTime();
 
             entry._LocalFileName = filename; // may include a path
             entry._FileNameInArchive = nameInArchive.Replace('\\', '/');
 
-            // we don't actually slurp in the file until the caller invokes Write on this entry.
+            // We don't actually slurp in the file data until the caller invokes Write on this entry.
 
             return entry;
         }
@@ -1326,9 +1376,9 @@ namespace Ionic.Zip
         /// </para>
         /// </remarks>
         /// <param name="overwrite">
-	/// true if the caller wants to overwrite an existing bfile 
-	/// by the same name in the filesystem.
-	/// </param>
+        /// true if the caller wants to overwrite an existing bfile 
+        /// by the same name in the filesystem.
+        /// </param>
         public void Extract(bool overwrite)
         {
             OverwriteOnExtract = overwrite;
@@ -1366,7 +1416,7 @@ namespace Ionic.Zip
         /// 
         /// <example>
         /// This example extracts only the entries in a zip file that are .txt files, 
-	/// into a directory called "textfiles".
+        /// into a directory called "textfiles".
         /// <code lang="C#">
         /// using (ZipFile zip = ZipFile.Read("PackedDocuments.zip"))
         /// {
@@ -1754,13 +1804,13 @@ namespace Ionic.Zip
                 ValidateCompression();
                 ValidateEncryption();
 
-                if (ValidateOutput(baseDir, outstream, out TargetFile)) 
-		{
-		    // if true, then the entry was a directory and has been created.
-		    // We need to fire the Extract Event.
-		    OnAfterExtract(baseDir);
-		    return;
-		}
+                if (ValidateOutput(baseDir, outstream, out TargetFile))
+                {
+                    // if true, then the entry was a directory and has been created.
+                    // We need to fire the Extract Event.
+                    OnAfterExtract(baseDir);
+                    return;
+                }
 
                 // if no password explicitly specified, use the password on the entry itself.
                 if (password == null) password = this._Password;  // may be null
@@ -1853,15 +1903,39 @@ namespace Ionic.Zip
                     output = null;
 
 #if !NETCF
-                    // workitem 6191
-                    DateTime AdjustedLastModified = LastModified;
-                    if (DateTime.Now.IsDaylightSavingTime() && !LastModified.IsDaylightSavingTime())
-                        AdjustedLastModified = LastModified - new System.TimeSpan(1, 0, 0);
 
-                    //if (!DateTime.Now.IsDaylightSavingTime() && LastModified.IsDaylightSavingTime())
-                    //AdjustedLastModified = LastModified + new System.TimeSpan(1, 0, 0);
+                    if (_ntfsTimesAreSet)
+                    {
+                        DateTime adjusted = _Mtime;
+                        if (DateTime.Now.IsDaylightSavingTime() && !_Mtime.IsDaylightSavingTime())
+                            adjusted = _Mtime - new System.TimeSpan(1, 0, 0);
 
-                    System.IO.File.SetLastWriteTime(TargetFile, AdjustedLastModified);
+                        System.IO.File.SetLastWriteTime(TargetFile, adjusted.ToLocalTime());
+
+                        adjusted = _Atime;
+                        if (DateTime.Now.IsDaylightSavingTime() && !_Atime.IsDaylightSavingTime())
+                            adjusted = _Atime - new System.TimeSpan(1, 0, 0);
+
+                        System.IO.File.SetLastAccessTime(TargetFile, adjusted.ToLocalTime());
+                        adjusted = _Ctime;
+                        if (DateTime.Now.IsDaylightSavingTime() && !_Ctime.IsDaylightSavingTime())
+                            adjusted = _Ctime - new System.TimeSpan(1, 0, 0);
+
+                        System.IO.File.SetCreationTime(TargetFile, adjusted.ToLocalTime());
+                    }
+                    else
+                    {
+                        // workitem 6191
+                        DateTime AdjustedLastModified = LastModified;
+                        if (DateTime.Now.IsDaylightSavingTime() && !LastModified.IsDaylightSavingTime())
+                            AdjustedLastModified = LastModified - new System.TimeSpan(1, 0, 0);
+
+                        //if (!DateTime.Now.IsDaylightSavingTime() && LastModified.IsDaylightSavingTime())
+                        //AdjustedLastModified = LastModified + new System.TimeSpan(1, 0, 0);
+
+                        System.IO.File.SetLastWriteTime(TargetFile, AdjustedLastModified);
+                    }
+
 #endif
                 }
 
@@ -2231,6 +2305,7 @@ namespace Ionic.Zip
         {
             byte[] blockZip64 = null;
             byte[] blockWinZipAes = null;
+            byte[] ntfsTime = null;
 
             // Always emit an extra field with zip64 information.
             // Later, if we don't need it, we'll set the header ID to rubbish and
@@ -2283,7 +2358,6 @@ namespace Ionic.Zip
             if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
             Encryption == EncryptionAlgorithm.WinZipAes256)
             {
-
                 blockWinZipAes = new byte[4 + 7];
                 int i = 0;
                 // extra field for WinZip AES 
@@ -2317,37 +2391,47 @@ namespace Ionic.Zip
             }
 #endif
 
-
-            // concatenate any blocks we've got: 
-            byte[] block = null;
-            int totalLength = 0;
-            if (blockZip64 != null)
-                totalLength += blockZip64.Length;
-
-            if (blockWinZipAes != null)
-                totalLength += blockWinZipAes.Length;
-
-            if (totalLength > 0)
+            if (_ntfsTimesAreSet)
             {
-                block = new byte[totalLength];
-                int current = 0;
-                if (blockZip64 != null)
-                {
-                    System.Array.Copy(blockZip64, 0, block, current,
-                              blockZip64.Length);
-                    current += blockZip64.Length;
-                }
+                ntfsTime = new byte[32 + 4];
+                // HeaderId   2 bytes    0x000a == NTFS stuff
+                // Datasize   2 bytes    32
+                // reserved   4 bytes    ?? don't care 
+                // timetag    2 bytes    0x0001 == NTFS time
+                // size       2 bytes    24 == 8 bytes each for ctime, mtime, atime
+                // mtime      8 bytes    win32 ticks since win32epoch
+                // atime      8 bytes    win32 ticks since win32epoch
+                // ctime      8 bytes    win32 ticks since win32epoch
+                int i = 0;
+                // extra field for NTFS times
+                // header id
+                ntfsTime[i++] = 0x0a;
+                ntfsTime[i++] = 0x00;
 
-                if (blockWinZipAes != null)
-                {
-                    System.Array.Copy(blockWinZipAes, 0, block, current,
-                              blockWinZipAes.Length);
-                    current += blockWinZipAes.Length;
-                }
+                // data size
+                ntfsTime[i++] = 32;
+                ntfsTime[i++] = 0;
 
-                _LengthOfHeader = totalLength;
+                i += 4; // reserved
+
+                // time tag
+                ntfsTime[i++] = 0x01;
+                ntfsTime[i++] = 0x00;
+
+                // data size (again)
+                ntfsTime[i++] = 24;
+                ntfsTime[i++] = 0;
+
+                Int64 z = SharedUtilities.DateTime2Win32Ticks(_Mtime);
+                Array.Copy(BitConverter.GetBytes(z), 0, ntfsTime, i, 8);
+                i += 8;
+                z = SharedUtilities.DateTime2Win32Ticks(_Atime);
+                Array.Copy(BitConverter.GetBytes(z), 0, ntfsTime, i, 8);
+                i += 8;
+                z = SharedUtilities.DateTime2Win32Ticks(_Ctime);
+                Array.Copy(BitConverter.GetBytes(z), 0, ntfsTime, i, 8);
+                i += 8;
             }
-
 
 
 #if NOT_USED
@@ -2397,6 +2481,46 @@ namespace Ionic.Zip
 #endif
 
             // could inject other blocks here...
+
+
+
+            // concatenate any blocks we've got: 
+            byte[] block = null;
+            int totalLength = 0;
+            if (blockZip64 != null)
+                totalLength += blockZip64.Length;
+
+            if (blockWinZipAes != null)
+                totalLength += blockWinZipAes.Length;
+
+            if (ntfsTime != null)
+                totalLength += ntfsTime.Length;
+
+            if (totalLength > 0)
+            {
+                block = new byte[totalLength];
+                int current = 0;
+                if (blockZip64 != null)
+                {
+                    System.Array.Copy(blockZip64, 0, block, current, blockZip64.Length);
+                    current += blockZip64.Length;
+                }
+
+                if (blockWinZipAes != null)
+                {
+                    System.Array.Copy(blockWinZipAes, 0, block, current, blockWinZipAes.Length);
+                    current += blockWinZipAes.Length;
+                }
+
+                if (ntfsTime != null)
+                {
+                    System.Array.Copy(ntfsTime, 0, block, current, ntfsTime.Length);
+                    current += ntfsTime.Length;
+                }
+
+                _LengthOfHeader = totalLength;
+            }
+
 
             return block;
         }
@@ -2840,7 +2964,7 @@ namespace Ionic.Zip
             // preserve this header data, we'll use it again later.
             // ..when seeking backward, to write again, after we have the Crc, compressed
             //   and uncompressed sizes.  
-	    // ..and when writing the central directory structure.
+            // ..and when writing the central directory structure.
             _EntryHeader = new byte[i];
             for (j = 0; j < i; j++)
                 _EntryHeader[j] = bytes[j];
@@ -2894,6 +3018,10 @@ namespace Ionic.Zip
             this._UncompressedSize = source._UncompressedSize;
             this._BitField = source._BitField;
             this._LastModified = source._LastModified;
+            this._Mtime = source._Mtime;
+            this._Atime = source._Atime;
+            this._Ctime = source._Ctime;
+            this._ntfsTimesAreSet = source._ntfsTimesAreSet;
         }
 
 
@@ -3543,16 +3671,59 @@ namespace Ionic.Zip
 
                     switch (HeaderId)
                     {
+                        case 0x000a:  // NTFS ctime, atime, mtime
+                            // The NTFS filetimes are 64-bit unsigned integers, stored in Intel
+                            // (least significant byte first) byte order. They are expressed as the
+                            // number of 1.0E-07 seconds (1/10th microseconds!) past WinNT "epoch",
+                            // which is "01-Jan-1601 00:00:00 UTC".
+                            //
+                            // HeaderId   2 bytes    0x000a == NTFS stuff
+                            // Datasize   2 bytes    ?? (usually 32)
+                            // reserved   4 bytes    ?? 
+                            // timetag    2 bytes    0x0001 == time
+                            // size       2 bytes    24 == 8 bytes each for ctime, mtime, atime
+                            // mtime      8 bytes    win32 ticks since win32epoch
+                            // atime      8 bytes    win32 ticks since win32epoch
+                            // ctime      8 bytes    win32 ticks since win32epoch
+                            {
+                                if (DataSize != 32)
+                                    throw new BadReadException(String.Format("  Unexpected datasize (0x{0:X4}) for NTFS extra field at position 0x{1:X16}", DataSize, s.Position - additionalBytesRead));
+
+                                j += 4;  // reserved
+                                Int16 timetag = (Int16)(Buffer[j] + Buffer[j + 1] * 256);
+                                Int16 addlsize = (Int16)(Buffer[j + 2] + Buffer[j + 3] * 256);
+                                j += 4;  // tag and size
+
+                                if (timetag == 0x0001 && addlsize == 24)
+                                {
+				    Int64 z= BitConverter.ToInt64(Buffer, j);
+				    this._Mtime = Ionic.Zip.SharedUtilities.Win32Ticks2DateTime(z);
+                                    j += 8;
+
+				    z= BitConverter.ToInt64(Buffer, j);
+				    this._Atime = Ionic.Zip.SharedUtilities.Win32Ticks2DateTime(z);
+                                    j += 8;
+
+				    z= BitConverter.ToInt64(Buffer, j);
+                                    this._Ctime = Ionic.Zip.SharedUtilities.Win32Ticks2DateTime(z);
+                                    j += 8;
+
+                                    _ntfsTimesAreSet = true;
+                                }
+                            }
+                            break;
+
                         case 0x0001: // ZIP64
                             {
-                                // The _IsZip64Format flag is true IFF the prior compressed/uncompressed size values were 0xFFFFFFFF.
-                                // But we don't need to be rigid about this.  Some zip archives don't behave this way.
+                                // The PKWare spec says that any of {UncompressedSize, CompressedSize, RelativeOffset} 
+                                // exceeding 0xFFFFFFFF can lead to the ZIP64 header, and the ZIP64 header may contain
+                                // one or more of those.  If the values are present, they will be found in the prescribed
+                                // order. 
 
-                                //if (!ze._IsZip64Format)
-                                //throw new BadReadException(String.Format("  Found zip64 metadata when none expected at position 0x{0:X16}", s.Position - additionalBytesRead));
+                                // This means that the DataSize must be 28 bytes or less.  
 
                                 if (DataSize > 28)
-                                    throw new BadReadException(String.Format("  Inconsistent ZIP64 datasize (0x{0:X4}) at position 0x{1:X16}", DataSize, s.Position - additionalBytesRead));
+                                    throw new BadReadException(String.Format("  Inconsistent datasize (0x{0:X4}) for ZIP64 extra field at position 0x{1:X16}", DataSize, s.Position - additionalBytesRead));
 
                                 if (this._UncompressedSize == 0xFFFFFFFF)
                                 {
@@ -3697,6 +3868,8 @@ namespace Ionic.Zip
 #endif
 
         internal DateTime _LastModified;
+        private DateTime _Mtime, _Atime, _Ctime;  // NTFS quantities
+        private bool _ntfsTimesAreSet;
         private bool _TrimVolumeFromFullyQualifiedPaths = true;  // by default, trim them.
         private bool _ForceNoCompression;  // by default, false: do compression if it makes sense.
         internal string _LocalFileName;

@@ -20,6 +20,7 @@ namespace Ionic.Zip
         /// private null constructor
         private SharedUtilities() { }
 
+#if LEGACY
         /// <summary>
         /// Round the given DateTime value to an even second value.  
         /// </summary>
@@ -31,7 +32,7 @@ namespace Ionic.Zip
         /// <para>
         /// This is useful because the Zip spec allows storage of time only to the nearest even second.
         /// So if you want to compare the time of an entry in the archive with it's actual time in the filesystem, you 
-        /// need to round the actual filesystem time, or use a 2-second threshold for the  comparison. 
+        /// need to round the actual filesystem time, or use a 2-second threshold for the comparison. 
         /// </para>
         /// <para>
         /// This is most nautrally an extension method for the DateTime class but this library is 
@@ -50,6 +51,7 @@ namespace Ionic.Zip
             //if (source.Millisecond >= 500) dtRounded = dtRounded.AddSeconds(1);
             return dtRounded;
         }
+#endif
 
         /// <summary>
         /// Utility routine for transforming path names. 
@@ -181,6 +183,33 @@ namespace Ionic.Zip
 
             return bytesRead;
         }
+
+	private static System.DateTime _win32Epoch = new System.DateTime(1601,1,1, 0,0,0, DateTimeKind.Utc);
+
+	internal static Int64 DateTime2Win32Ticks(System.DateTime datetime)
+	{
+	    System.TimeSpan delta =  datetime - _win32Epoch;
+	    Int64 result =  (Int64) (delta.TotalSeconds * 10000000L);
+	    return result;
+	}
+
+	internal static DateTime Win32Ticks2DateTime(Int64 ticks)
+	{
+	    return _win32Epoch.AddSeconds(ticks/10000000);
+	}
+
+
+	internal static DateTime AdjustForDst(DateTime time)
+	{
+	    if (!time.IsDaylightSavingTime() && DateTime.Now.IsDaylightSavingTime())
+		time = time + new System.TimeSpan(1, 0, 0);
+
+	    if (time.IsDaylightSavingTime() && !DateTime.Now.IsDaylightSavingTime())
+		time = time - new System.TimeSpan(1, 0, 0);
+
+	    return time;
+	}
+
 
 
         internal static DateTime PackedToDateTime(Int32 packedDateTime)
