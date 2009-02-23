@@ -8,7 +8,7 @@
 // Created Fri Jun 06 14:51:31 2008
 //
 // last saved: 
-// Time-stamp: <2009-February-21 12:47:31>
+// Time-stamp: <2009-February-22 10:44:20>
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2008 by Dino Chiesa
@@ -95,25 +95,10 @@ using Ionic.Zip;
         static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
         {
             Assembly a1 = Assembly.GetExecutingAssembly();
-            Assembly a2 = null;
-
             Stream s = a1.GetManifestResourceStream("Ionic.Zip.dll");
-            int n = 0;
-            int totalBytesRead = 0;
-            byte[] bytes = new byte[1024];
-            do
-            {
-                n = s.Read(bytes, 0, bytes.Length);
-                totalBytesRead += n;
-            }
-            while (n > 0);
-
-            byte[] block = new byte[totalBytesRead];
-            s.Seek(0, System.IO.SeekOrigin.Begin);
+            byte[] block = new byte[s.Length];
             s.Read(block, 0, block.Length);
-
-            a2 = Assembly.Load(block);
-
+            Assembly a2 = Assembly.Load(block);
             return a2;
         }
 
@@ -127,33 +112,10 @@ using Ionic.Zip;
             // We load the resouce that is NOT the DLL, as the zip archive.
             Assembly a = Assembly.GetExecutingAssembly();
 
-#if OLDSTYLE
-            string[] x = a.GetManifestResourceNames();
-            Stream s = null;
-            foreach (string name in x)
-            {
-                if ((name != DllResourceName) && (name.EndsWith(".zip")))
-                {
-                    s = a.GetManifestResourceStream(name);
-                    break;
-                }
-            }
-
-            if (s == null)
-            {
-                Console.WriteLine("No Zip archive found.");
-                return;
-            }
-#endif
-
             try
             {
-#if OLDSTYLE
-                using (global::Ionic.Zip.ZipFile zip = global::Ionic.Zip.ZipFile.Read(s))
-#else
                 // workitem 7067
                 using (global::Ionic.Zip.ZipFile zip = global::Ionic.Zip.ZipFile.Read(a.Location))
-#endif
                 {
                     bool header = true;
                     foreach (global::Ionic.Zip.ZipEntry entry in zip)

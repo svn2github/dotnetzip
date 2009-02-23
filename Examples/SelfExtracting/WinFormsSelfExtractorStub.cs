@@ -84,25 +84,10 @@ namespace Ionic.Zip
         static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
         {
             Assembly a1 = Assembly.GetExecutingAssembly();
-            Assembly a2 = null;
-
             Stream s = a1.GetManifestResourceStream(DllResourceName);
-            int n = 0;
-            int totalBytesRead = 0;
-            byte[] bytes = new byte[1024];
-            do
-            {
-                n = s.Read(bytes, 0, bytes.Length);
-                totalBytesRead += n;
-            }
-            while (n > 0);
-
-            byte[] block = new byte[totalBytesRead];
-            s.Seek(0, System.IO.SeekOrigin.Begin);
+            byte[] block = new byte[s.Length];
             s.Read(block, 0, block.Length);
-
-            a2 = Assembly.Load(block);
-
+            Assembly a2 = Assembly.Load(block);
             return a2;
         }
 
@@ -380,33 +365,10 @@ namespace Ionic.Zip
 		if (_s != null) return _s;
 		Assembly a = Assembly.GetExecutingAssembly();
 
-		#if OLDSTYLE
-		    // There are only two embedded resources.
-		    // One of them is the zip dll.  The other is the zip archive.
-		    // We load the resouce that is NOT the DLL, as the zip archive.
-		    string[] x = a.GetManifestResourceNames();
-		_s = null;
-		foreach (string name in x)
-		{
-		    if ((name != DllResourceName) && (name.EndsWith(".zip")))
-		    {
-			_s = a.GetManifestResourceStream(name);
-			break;
-		    }
-		}
+		// workitem 7067
+		_s= System.IO.File.OpenRead(a.Location);
 
-		if (_s == null)
-		{
-		    MessageBox.Show("No Zip archive found.",
-				    "Error Extracting", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-		    Application.Exit();
-		}
-		#else
-		    // workitem 7067
-		    _s= System.IO.File.OpenRead(a.Location);
-		#endif
-
-		    return _s;
+		return _s;
 	    }
 	}
 

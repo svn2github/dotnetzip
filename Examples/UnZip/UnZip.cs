@@ -136,11 +136,16 @@ namespace Ionic.Zip.Examples
                         // positional args
                         if (zipfile == null)
                             zipfile = args[i];
+                        else if (!WantExtract)
+                        {
+                            Console.WriteLine("unzip: Warning: Ignoring entry to extract when listing contents.\n");
+                        }
                         else
                         {
                             if (entryToExtract != null) Usage();
                             entryToExtract = args[i];
                         }
+
                         break;
                 }
 
