@@ -60,6 +60,13 @@ namespace WinFormsExample.Properties {
             }
         }
         
+        internal static System.Drawing.Icon ZIP_Folder {
+            get {
+                object obj = ResourceManager.GetObject("ZIP_Folder", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap zippedFile {
             get {
                 object obj = ResourceManager.GetObject("zippedFile", resourceCulture);
