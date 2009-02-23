@@ -654,6 +654,12 @@ namespace WinFormsExample
                 x = (Int32)AppCuKey.GetValue(_rvn_HidePassword, 1);
                 this.chkHidePassword.Checked = (x != 0);
 
+                x = (Int32)AppCuKey.GetValue(_rvn_Overwrite, 1);
+                this.chkOverwrite.Checked = (x != 0);
+
+                x = (Int32)AppCuKey.GetValue(_rvn_OpenExplorer, 1);
+                this.chkOpenExplorer.Checked = (x != 0);
+
                 // set the geometry of the form
                 s = (string)AppCuKey.GetValue(_rvn_Geometry);
                 if (!String.IsNullOrEmpty(s))
@@ -717,6 +723,8 @@ namespace WinFormsExample
                 AppCuKey.SetValue(_rvn_Runs, x);
 
                 AppCuKey.SetValue(_rvn_HidePassword, this.chkHidePassword.Checked ? 1 : 0);
+                AppCuKey.SetValue(_rvn_Overwrite, this.chkOverwrite.Checked ? 1 : 0);
+                AppCuKey.SetValue(_rvn_OpenExplorer, this.chkOpenExplorer.Checked ? 1 : 0);
 
                 // store the size of the form
                 AppCuKey.SetValue(_rvn_Geometry,
@@ -905,7 +913,7 @@ namespace WinFormsExample
             var options = new ExtractWorkerOptions
             {
                 ExtractLocation = this.tbExtractDir.Text,
-                WantOverwrite = true,
+                WantOverwrite = this.chkOverwrite.Checked,
             };
             _workerThread = new Thread(this.DoExtract);
             _workerThread.Name = "Zip Extractor thread";
@@ -993,14 +1001,17 @@ namespace WinFormsExample
                             }
                             catch (Exception ex1)
                             {
-                                DialogResult result = MessageBox.Show(String.Format("Failed to extract entry {0} -- {1}", entry.FileName, ex1.Message.ToString()),
-                                      String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-
-                                if (result == DialogResult.Cancel)
+                                if (options.WantOverwrite || (ex1.Message.ToString() != "The file already exists."))
                                 {
-                                    _setCancel = true;
-                                    extractCancelled = true;
-                                    break;
+                                    DialogResult result = MessageBox.Show(String.Format("Failed to extract entry {0} -- {1}", entry.FileName, ex1.Message.ToString()),
+                                          String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+
+                                    if (result == DialogResult.Cancel)
+                                    {
+                                        _setCancel = true;
+                                        extractCancelled = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -1040,17 +1051,20 @@ namespace WinFormsExample
                                         currentPassword = "";
                                         continue; // loop around, ask for password again
                                     }
-                                    else
+                                    else 
                                     {
-                                        DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
-                                                              String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-
-                                        done = true;
-                                        if (result == DialogResult.Cancel)
+                                        if (options.WantOverwrite || (ex2.Message.ToString() != "The file already exists."))
                                         {
-                                            _setCancel = true;
-                                            extractCancelled = true;
-                                            break;
+                                            DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
+                                                                  String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+
+                                            done = true;
+                                            if (result == DialogResult.Cancel)
+                                            {
+                                                _setCancel = true;
+                                                extractCancelled = true;
+                                                break;
+                                            }
                                         }
                                     }
                                 }
@@ -1069,19 +1083,17 @@ namespace WinFormsExample
             OnExtractDone();
 
             if (extractCancelled) return;
-#if XXX
-            if (chk_OpenExplorer.Checked)
+
+            if (this.chkOpenExplorer.Checked)
             {
-                string w = System.Environment.GetEnvironmentVariable("WINDIR");
+                string w = System.IO.Path.GetDirectoryName(Environment.GetFolderPath(Environment.SpecialFolder.System));
                 if (w == null) w = "c:\\windows";
                 try
                 {
-                    System.Diagnostics.Process.Start(Path.Combine(w, "explorer.exe"), targetDirectory);
+                    System.Diagnostics.Process.Start(System.IO.Path.Combine(w, "explorer.exe"), options.ExtractLocation);
                 }
                 catch { }
             }
-#endif
-
         }
 
 
@@ -1259,6 +1271,8 @@ namespace WinFormsExample
         private static string _rvn_FormTab = "FormTab";
         private static string _rvn_Geometry = "Geometry";
         private static string _rvn_HidePassword = "HidePassword";
+        private static string _rvn_Overwrite = "Overwrite";
+        private static string _rvn_OpenExplorer = "OpenExplorer";
         private static string _rvn_ExtractLoc = "ExtractLoc";
         private static string _rvn_DirectoryToZip = "DirectoryToZip";
         private static string _rvn_ZipTarget = "ZipTarget";

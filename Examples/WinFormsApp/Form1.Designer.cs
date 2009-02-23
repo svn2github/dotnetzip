@@ -64,6 +64,8 @@
             this.btnOpenZip = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.chkOverwrite = new System.Windows.Forms.CheckBox();
+            this.chkOpenExplorer = new System.Windows.Forms.CheckBox();
             this.btnExtractDirBrowse = new System.Windows.Forms.Button();
             this.tbExtractDir = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
@@ -74,8 +76,8 @@
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.btnCreateZipBrowse = new System.Windows.Forms.Button();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -404,9 +406,9 @@
             this.listView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.listView1.Location = new System.Drawing.Point(6, 64);
+            this.listView1.Location = new System.Drawing.Point(6, 90);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(563, 210);
+            this.listView1.Size = new System.Drawing.Size(563, 186);
             this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -439,6 +441,8 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.chkOverwrite);
+            this.tabPage1.Controls.Add(this.chkOpenExplorer);
             this.tabPage1.Controls.Add(this.btnExtractDirBrowse);
             this.tabPage1.Controls.Add(this.tbExtractDir);
             this.tabPage1.Controls.Add(this.label11);
@@ -455,6 +459,28 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Read/Extract";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // chkOverwrite
+            // 
+            this.chkOverwrite.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkOverwrite.AutoSize = true;
+            this.chkOverwrite.Location = new System.Drawing.Point(298, 60);
+            this.chkOverwrite.Name = "chkOverwrite";
+            this.chkOverwrite.Size = new System.Drawing.Size(69, 17);
+            this.chkOverwrite.TabIndex = 26;
+            this.chkOverwrite.Text = "overwrite";
+            this.chkOverwrite.UseVisualStyleBackColor = true;
+            // 
+            // chkOpenExplorer
+            // 
+            this.chkOpenExplorer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkOpenExplorer.AutoSize = true;
+            this.chkOpenExplorer.Location = new System.Drawing.Point(383, 60);
+            this.chkOpenExplorer.Name = "chkOpenExplorer";
+            this.chkOpenExplorer.Size = new System.Drawing.Size(91, 17);
+            this.chkOpenExplorer.TabIndex = 25;
+            this.chkOpenExplorer.Text = "open Explorer";
+            this.chkOpenExplorer.UseVisualStyleBackColor = true;
             // 
             // btnExtractDirBrowse
             // 
@@ -589,15 +615,6 @@
             this.tabPage3.Text = "About";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = global::WinFormsExample.Properties.Resources.zippedFile;
-            this.pictureBox1.Location = new System.Drawing.Point(8, 19);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(42, 51);
-            this.pictureBox1.TabIndex = 1;
-            this.pictureBox1.TabStop = false;
-            // 
             // richTextBox1
             // 
             this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
@@ -609,6 +626,15 @@
             this.richTextBox1.Size = new System.Drawing.Size(510, 325);
             this.richTextBox1.TabIndex = 2;
             this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::WinFormsExample.Properties.Resources.zippedFile;
+            this.pictureBox1.Location = new System.Drawing.Point(8, 19);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(42, 51);
+            this.pictureBox1.TabIndex = 1;
+            this.pictureBox1.TabStop = false;
             // 
             // Form1
             // 
@@ -688,6 +714,8 @@
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.CheckBox chkOverwrite;
+        private System.Windows.Forms.CheckBox chkOpenExplorer;
     }
 }
 

@@ -160,6 +160,8 @@ namespace Ionic.Zip
                         }
 			catch (Exception ex1)
 			{
+                                if (options.WantOverwrite || (ex1.Message.ToString() != "The file already exists."))
+                                {
 			    DialogResult result = MessageBox.Show(String.Format("Failed to extract entry {0} -- {1}", entry.FileName, ex1.Message.ToString()),
 								  String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
 
@@ -168,6 +170,7 @@ namespace Ionic.Zip
 				_setCancel = true;
 				break;
 			    }
+				}
 			}
 		    }
                     else
@@ -209,6 +212,8 @@ namespace Ionic.Zip
 				}
 				else
 				{
+                                if (options.WantOverwrite || (ex2.Message.ToString() != "The file already exists."))
+                                {
 				    DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
 									  String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
 
@@ -218,6 +223,7 @@ namespace Ionic.Zip
 					_setCancel = true;
 					break;
 				    }
+				}
 				}
                             } // catch
                         } // while
