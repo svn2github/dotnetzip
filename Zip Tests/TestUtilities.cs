@@ -41,10 +41,15 @@ namespace Ionic.Zip.Tests.Utilities
                     foreach (string filename in FilesToRemove)
                     {
                         if (System.IO.Directory.Exists(filename))
+                        {
+                            // turn off any ReadOnly attributes
+                            ClearReadOnly(filename);
                             System.IO.Directory.Delete(filename, true);
-
+                        }
                         if (System.IO.File.Exists(filename))
+                        {
                             System.IO.File.Delete(filename);
+                        }
                     }
                     Tries++;
                 }
@@ -56,6 +61,29 @@ namespace Ionic.Zip.Tests.Utilities
                 }
             } while ((GotException != null) && (Tries < 4));
             if (GotException != null) throw GotException;
+        }
+
+        private static void ClearReadOnly(string dirname)
+        {
+            foreach (var d in System.IO.Directory.GetDirectories(dirname))
+            {
+                ClearReadOnly(d); // recurse
+            }
+            foreach (var f in System.IO.Directory.GetFiles(dirname))
+            {
+                // clear ReadOnly and System attributes
+                var a = System.IO.File.GetAttributes(f);
+                if ((a & System.IO.FileAttributes.ReadOnly) == System.IO.FileAttributes.ReadOnly)
+                {
+                    a ^= System.IO.FileAttributes.ReadOnly;
+                    System.IO.File.SetAttributes(f, a);
+                }
+                if ((a & System.IO.FileAttributes.System) == System.IO.FileAttributes.System)
+                {
+                    a ^= System.IO.FileAttributes.System;
+                    System.IO.File.SetAttributes(f, a);
+                }
+            }
         }
 
         #endregion
@@ -142,11 +170,11 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal static void CreateAndFillFileBinary(string Filename, Int64 size)
         {
-            _CreateAndFillBinary(Filename, size, false); 
+            _CreateAndFillBinary(Filename, size, false);
         }
         internal static void CreateAndFillFileBinaryZeroes(string Filename, Int64 size)
         {
-            _CreateAndFillBinary(Filename, size, true); 
+            _CreateAndFillBinary(Filename, size, true);
         }
 
         private static void _CreateAndFillBinary(string Filename, Int64 size, bool zeroes)
@@ -167,7 +195,7 @@ namespace Ionic.Zip.Tests.Utilities
             }
         }
 
- 
+
         internal static void CreateAndFillFile(string Filename, Int64 size)
         {
             //Assert.IsTrue(size > 0, "File size should be greater than zero.");

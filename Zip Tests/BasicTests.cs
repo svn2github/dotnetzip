@@ -1186,7 +1186,6 @@ namespace Ionic.Zip.Tests.Basic
         }
 
 
-
         [TestMethod]
         public void CreateZip_SetFileLastModified()
         {
@@ -1230,6 +1229,166 @@ namespace Ionic.Zip.Tests.Basic
             }
             Assert.AreEqual<int>(entries, FilesToZip.Length, "Unexpected file count. Expected {0}, got {1}.",
                     FilesToZip.Length, entries);
+        }
+
+        [TestMethod]
+        public void CreateAndExtract_VerifyAttributes()
+        {
+
+            try
+            {
+                string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateAndExtract_VerifyAttributes.zip");
+                Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+                string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+                System.IO.Directory.CreateDirectory(Subdir);
+
+                //int fileCount = _rnd.Next(13) + 23;
+                FileAttributes[] attributeCombos = {
+                                                   FileAttributes.ReadOnly,
+                                                   FileAttributes.ReadOnly | FileAttributes.System,
+                                                   FileAttributes.ReadOnly | FileAttributes.System | FileAttributes.Hidden,
+                                                   FileAttributes.ReadOnly | FileAttributes.System | FileAttributes.Hidden | FileAttributes.Archive,
+                                                   FileAttributes.ReadOnly | FileAttributes.Hidden,
+                                                   FileAttributes.ReadOnly | FileAttributes.Hidden| FileAttributes.Archive,
+                                                   FileAttributes.ReadOnly | FileAttributes.Archive,
+                                                   FileAttributes.System,
+                                                   FileAttributes.System | FileAttributes.Hidden,
+                                                   FileAttributes.System | FileAttributes.Hidden | FileAttributes.Archive,
+                                                   FileAttributes.System | FileAttributes.Archive,
+                                                   FileAttributes.Hidden,
+                                                   FileAttributes.Hidden | FileAttributes.Archive,
+                                                   FileAttributes.Archive,
+                                                   FileAttributes.Normal,
+                                                   FileAttributes.NotContentIndexed | FileAttributes.ReadOnly,
+                                                   FileAttributes.NotContentIndexed | FileAttributes.System,
+                                                   FileAttributes.NotContentIndexed | FileAttributes.Hidden,
+                                                   FileAttributes.NotContentIndexed | FileAttributes.Archive,
+                                                   FileAttributes.Temporary,
+                                                   FileAttributes.Temporary | FileAttributes.Archive,
+                                              };
+                int fileCount = attributeCombos.Length;
+                string[] FilesToZip = new string[fileCount];
+                TestContext.WriteLine("============\nCreating.");
+                for (int i = 0; i < fileCount; i++)
+                {
+                    FilesToZip[i] = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.bin", i));
+                    TestUtilities.CreateAndFillFileBinary(FilesToZip[i], _rnd.Next(10000) + 5000);
+                    TestContext.WriteLine("Creating {0}    [{1}]", FilesToZip[i], attributeCombos[i].ToString());
+                    System.IO.File.SetAttributes(FilesToZip[i], attributeCombos[i]);
+                }
+
+                TestContext.WriteLine("============\nZipping.");
+                System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+                using (ZipFile zip = new ZipFile(ZipFileToCreate))
+                {
+                    for (int i = 0; i < FilesToZip.Length; i++)
+                    {
+                        // use the local filename (not fully qualified)
+                        ZipEntry e = zip.AddFile(FilesToZip[i], "");
+                    }
+                    zip.Save();
+                }
+
+                int entries = 0;
+                TestContext.WriteLine("============\nExtracting.");
+                using (ZipFile z2 = ZipFile.Read(ZipFileToCreate))
+                {
+                    foreach (ZipEntry e in z2)
+                    {
+                        TestContext.WriteLine("Extracting {0}", e.FileName);
+                        Assert.AreEqual<FileAttributes>(attributeCombos[entries], e.Attributes,
+                            String.Format("unexpected attributes value in the entry {0} 0x{1:X4}", e.FileName, (int)e.Attributes));
+                        entries++;
+                        e.Extract("unpack");
+                        // now verify that the attributes are set correctly in the filesystem
+
+                        var attrs = System.IO.File.GetAttributes(System.IO.Path.Combine("unpack", e.FileName));
+                        Assert.AreEqual<FileAttributes>(attrs, e.Attributes,
+                            "Unexpected attributes on the extracted filesystem file {0}.", e.FileName);
+                    }
+                }
+                Assert.AreEqual<int>(entries, FilesToZip.Length, "Unexpected file count. Expected {0}, got {1}.",
+                        FilesToZip.Length, entries);
+            }
+            catch (Exception ex1)
+            {
+                TestContext.WriteLine("Exception: " + ex1);
+                throw;
+            }
+        }
+
+
+
+        [TestMethod]
+        public void CreateAndExtract_SetAndVerifyAttributes()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateAndExtract_SetAndVerifyAttributes.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            // Here, we build a list of combinations of FileAttributes to try. 
+            // We cannot simply do an exhaustic combination because (a) not all combinations are valid, and (b)
+            // if you SetAttributes(file,Compressed) (also with Encrypted, ReparsePoint) it does not "work."  So those attributes 
+            // must be excluded.
+            FileAttributes[] attributeCombos = {
+                                                   FileAttributes.ReadOnly,
+                                                   FileAttributes.ReadOnly | FileAttributes.System,
+                                                   FileAttributes.ReadOnly | FileAttributes.System | FileAttributes.Hidden,
+                                                   FileAttributes.ReadOnly | FileAttributes.System | FileAttributes.Hidden | FileAttributes.Archive,
+                                                   FileAttributes.ReadOnly | FileAttributes.Hidden,
+                                                   FileAttributes.ReadOnly | FileAttributes.Hidden| FileAttributes.Archive,
+                                                   FileAttributes.ReadOnly | FileAttributes.Archive,
+                                                   FileAttributes.System,
+                                                   FileAttributes.System | FileAttributes.Hidden,
+                                                   FileAttributes.System | FileAttributes.Hidden | FileAttributes.Archive,
+                                                   FileAttributes.System | FileAttributes.Archive,
+                                                   FileAttributes.Hidden,
+                                                   FileAttributes.Hidden | FileAttributes.Archive,
+                                                   FileAttributes.Archive,
+                                                   FileAttributes.Normal,
+                                                   FileAttributes.NotContentIndexed | FileAttributes.ReadOnly,
+                                                   FileAttributes.NotContentIndexed | FileAttributes.System,
+                                                   FileAttributes.NotContentIndexed | FileAttributes.Hidden,
+                                                   FileAttributes.NotContentIndexed | FileAttributes.Archive,
+                                                   FileAttributes.Temporary,
+                                                   FileAttributes.Temporary | FileAttributes.Archive,
+                                              };
+            int fileCount = attributeCombos.Length;
+
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+            TestContext.WriteLine("============\nZipping.");
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                for (int i = 0; i < fileCount; i++)
+                {
+                    // use the local filename (not fully qualified)
+                    ZipEntry e = zip.AddFileFromString("file" + i.ToString(), "",
+                            "FileContent: This file has these attributes: " + attributeCombos[i].ToString());
+                    TestContext.WriteLine("Adding {0}    [{1}]", e.FileName, attributeCombos[i].ToString());
+                    e.Attributes = attributeCombos[i];
+                }
+                zip.Save();
+            }
+
+            int entries = 0;
+            TestContext.WriteLine("============\nExtracting.");
+            using (ZipFile z2 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (ZipEntry e in z2)
+                {
+                    TestContext.WriteLine("Extracting {0}", e.FileName);
+                    Assert.AreEqual<FileAttributes>(attributeCombos[entries], e.Attributes,
+                        String.Format("unexpected attributes value in the entry {0} 0x{1:X4}", e.FileName, (int)e.Attributes));
+                    entries++;
+                    e.Extract("unpack");
+                    // now verify that the attributes are set correctly in the filesystem
+
+                    var attrs = System.IO.File.GetAttributes(System.IO.Path.Combine("unpack", e.FileName));
+                    Assert.AreEqual<FileAttributes>(e.Attributes, attrs, 
+                        "Unexpected attributes on the extracted filesystem file {0}.", e.FileName);
+                }
+            }
+            Assert.AreEqual<int>(fileCount, entries, "Unexpected file count.");
         }
 
 
@@ -1350,7 +1509,12 @@ namespace Ionic.Zip.Tests.Basic
                     TestContext.WriteLine("time delta: {0}", delta.ToString());
                     // The time delta can be at most, 1 second.
                     Assert.IsTrue(delta < new TimeSpan(0,0,1),
-                        "Unexpected timestamp on extracted filesystem file ({0}) delta({1}).", PathToExtractedFile, delta.ToString());
+                        "Unexpected LastMod timestamp on extracted filesystem file ({0}) expected({1}) actual({2})  delta({3}).", 
+                        PathToExtractedFile, 
+                        timestamps[e.FileName].ToString("F"),
+                        ActualFilesystemLastMod.ToString("F"),
+                        delta.ToString()
+                        );
 
                     // verify the checksum of the file is correct
                     string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
@@ -1360,6 +1524,8 @@ namespace Ionic.Zip.Tests.Basic
             }
             Assert.AreEqual<int>(entries, ActualFilenames.Count, "Unexpected file count.");
         }
+
+
 
         private DateTime AdjustTimeForWin32VersusDotnetDiscrepancy(DateTime dateTime)
         {
