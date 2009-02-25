@@ -72,6 +72,9 @@
     <Compile Include="..\Zip Partial DLL\ZipFile.cs">
       <Link>ZipFile.cs</Link>
     </Compile>
+    <Compile Include="..\Zlib\Crc32.cs">
+      <Link>Crc32.cs</Link>
+    </Compile>
     <Compile Include="..\Zlib\Deflate.cs">
       <Link>Deflate.cs</Link>
     </Compile>
