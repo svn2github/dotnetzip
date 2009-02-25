@@ -81,7 +81,6 @@
     <EmbeddedResource Include="Resources\FolderBrowserDialogEx.cs" />
     <Compile Include="WinZipAes.cs" />
     <Compile Include="ZipConstants.cs" />
-    <Compile Include="Crc32.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shared.cs" />

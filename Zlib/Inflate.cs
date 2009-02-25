@@ -1500,7 +1500,7 @@ namespace Ionic.Zlib
                         r = f;
 
                         z.AvailableBytesIn--; z.TotalBytesIn++;
-                        
+
                         if (((z.istate.method = z.InputBuffer[z.NextIn++]) & 0xf) != Z_DEFLATED)
                         {
                             z.istate.mode = BAD;
@@ -1520,8 +1520,8 @@ namespace Ionic.Zlib
 
                     case FLAG:
 
-                        if (z.AvailableBytesIn == 0) return r; 
-                        
+                        if (z.AvailableBytesIn == 0) return r;
+
                         r = f;
 
                         z.AvailableBytesIn--; z.TotalBytesIn++;
@@ -1595,7 +1595,6 @@ namespace Ionic.Zlib
                         return ZlibConstants.Z_STREAM_ERROR;
 
                     case BLOCKS:
-
                         r = z.istate.blocks.Process(z, r);
                         if (r == ZlibConstants.Z_DATA_ERROR)
                         {

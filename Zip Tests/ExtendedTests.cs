@@ -235,7 +235,7 @@ namespace Ionic.Zip.Tests.Extended
 
                             if (!e1.IsDirectory)
                             {
-                                using (CrcCalculatorStream s = e1.OpenReader(Passwords[k]))
+                                using (Ionic.Zlib.CrcCalculatorStream s = e1.OpenReader(Passwords[k]))
                                 {
                                     using (var output = System.IO.File.Create(System.IO.Path.Combine(TopLevelDir, eName + ".out")))
                                     {

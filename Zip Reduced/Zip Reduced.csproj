@@ -45,9 +45,6 @@
   </Target>
   -->
   <ItemGroup>
-    <Compile Include="..\Zip Partial DLL\Crc32.cs">
-      <Link>Crc32.cs</Link>
-    </Compile>
     <Compile Include="..\Zip Partial DLL\Events.cs">
       <Link>Events.cs</Link>
     </Compile>

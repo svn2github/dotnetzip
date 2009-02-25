@@ -1665,7 +1665,7 @@ namespace Ionic.Zip
         /// </para>
         /// 
         /// <para>
-        /// The <see cref="CrcCalculatorStream"/> that is returned is just a regular read-only
+        /// The <see cref="Ionic.Zlib.CrcCalculatorStream"/> that is returned is just a regular read-only
         /// stream - you can use it as you would any stream.  The one additional feature it
         /// adds is that it calculates a CRC32 on the bytes of the stream as it is read.  This
         /// CRC should be used by the application to validate the content of the ZipEntry, when
@@ -1725,7 +1725,7 @@ namespace Ionic.Zip
         /// </example>
         /// <seealso cref="Ionic.Zip.ZipEntry.Extract(System.IO.Stream)"/>
         /// <returns>The Stream for reading.</returns>
-        public CrcCalculatorStream OpenReader()
+        public Ionic.Zlib.CrcCalculatorStream OpenReader()
         {
             return InternalOpenReader(this._Password);
         }
@@ -1743,14 +1743,14 @@ namespace Ionic.Zip
         /// 
         /// <param name="password">The password to use for decrypting the entry.</param>
         /// <returns>The Stream for reading.</returns>
-        public CrcCalculatorStream OpenReader(string password)
+        public Ionic.Zlib.CrcCalculatorStream OpenReader(string password)
         {
             return InternalOpenReader(password);
         }
 
 
 
-        private CrcCalculatorStream InternalOpenReader(string password)
+        private Ionic.Zlib.CrcCalculatorStream InternalOpenReader(string password)
         {
             ValidateCompression();
             ValidateEncryption();
@@ -1772,7 +1772,7 @@ namespace Ionic.Zip
                 input2 = new WinZipAesCipherStream(input, _aesCrypto, _CompressedFileDataSize, CryptoMode.Decrypt);
             }
 #endif
-            return new CrcCalculatorStream((CompressionMethod == 0x08)
+            return new Ionic.Zlib.CrcCalculatorStream((CompressionMethod == 0x08)
                 ? new Ionic.Zlib.DeflateStream(input2, Ionic.Zlib.CompressionMode.Decompress, true)
                 : input2,
                 _UncompressedSize);
@@ -2180,7 +2180,7 @@ namespace Ionic.Zip
 #endif
 
             else
-                input2 = new CrcCalculatorStream(input, _CompressedFileDataSize);
+                input2 = new Ionic.Zlib.CrcCalculatorStream(input, _CompressedFileDataSize);
 
 
             //Stream input2a = new TraceStream(input2);
@@ -2192,7 +2192,7 @@ namespace Ionic.Zip
 
             Int64 bytesWritten = 0;
             // As we read, we maybe decrypt, and then we maybe decompress. Then we write.
-            using (var s1 = new CrcCalculatorStream(input3))
+            using (var s1 = new Ionic.Zlib.CrcCalculatorStream(input3))
             {
                 while (LeftToRead > 0)
                 {
@@ -3068,7 +3068,7 @@ namespace Ionic.Zip
                     //input = System.IO.File.OpenRead(LocalFileName);
                     input = System.IO.File.Open(LocalFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 }
-                var crc32 = new CRC32();
+                var crc32 = new Ionic.Zlib.CRC32();
 
                 _Crc32 = crc32.GetCrc32(input);
                 if (_sourceStream == null)
@@ -3111,7 +3111,7 @@ namespace Ionic.Zip
             // We will also deflate and encrypt as necessary. 
 
             Stream input = null;
-            CrcCalculatorStream input1 = null;
+            Ionic.Zlib.CrcCalculatorStream input1 = null;
             CountingStream outputCounter = null;
             try
             {
@@ -3144,7 +3144,7 @@ namespace Ionic.Zip
                 }
 
                 // wrap a CRC Calculator Stream around the raw input stream. 
-                input1 = new CrcCalculatorStream(input);
+                input1 = new Ionic.Zlib.CrcCalculatorStream(input);
 
                 // wrap a counting stream around the raw output stream:
                 outputCounter = new CountingStream(s);

@@ -255,12 +255,12 @@ namespace Ionic.Zip
         }
 
 
-        private void UpdateKeys(byte byeValue)
+        private void UpdateKeys(byte byteValue)
         {
-            _Keys[0] = (UInt32)crc32.ComputeCrc32(_Keys[0], byeValue);
+            _Keys[0] = (UInt32)crc32.ComputeCrc32((int)_Keys[0], byteValue);
             _Keys[1] = _Keys[1] + (byte)_Keys[0];
             _Keys[1] = _Keys[1] * 0x08088405 + 1;
-            _Keys[2] = (UInt32)crc32.ComputeCrc32(_Keys[2], (byte)(_Keys[1] >> 24));
+            _Keys[2] = (UInt32)crc32.ComputeCrc32((int)_Keys[2], (byte)(_Keys[1] >> 24));
         }
 
         ///// <summary>
@@ -304,7 +304,7 @@ namespace Ionic.Zip
 
         // private fields for the crypto stuff:
         private UInt32[] _Keys = { 0x12345678, 0x23456789, 0x34567890 };
-        private CRC32 crc32 = new CRC32();
+        private Ionic.Zlib.CRC32 crc32 = new Ionic.Zlib.CRC32();
 
     }
 

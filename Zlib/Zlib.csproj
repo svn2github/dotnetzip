@@ -120,6 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Crc32.cs" />
     <Compile Include="ZlibConstants.cs" />
     <Compile Include="Deflate.cs" />
     <Compile Include="Inflate.cs" />

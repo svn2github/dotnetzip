@@ -55,6 +55,9 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Zlib\Crc32.cs">
+      <Link>Crc32.cs</Link>
+    </Compile>
     <Compile Include="..\Zlib\Deflate.cs">
       <Link>Deflate.cs</Link>
     </Compile>
