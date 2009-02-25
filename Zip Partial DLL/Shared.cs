@@ -200,12 +200,13 @@ namespace Ionic.Zip
 
         internal static DateTime PackedToDateTime(Int32 packedDateTime)
         {
-            // workitem 7074
-            if (packedDateTime == 0xFFFF)
-                return DateTime.Now;
+            // workitem 7074 & workitem 7170
+            if (packedDateTime == 0xFFFF || packedDateTime == 0)
+                return new System.DateTime(1995, 1, 1, 0, 0, 0, 0);  // return a fixed date when none is supplied.
  
             Int16 packedTime = (Int16)(packedDateTime & 0x0000ffff);
             Int16 packedDate = (Int16)((packedDateTime & 0xffff0000) >> 16);
+
 
             int year = 1980 + ((packedDate & 0xFE00) >> 9);
             int month = (packedDate & 0x01E0) >> 5;
@@ -226,7 +227,8 @@ namespace Ionic.Zip
             try { d = new System.DateTime(year, month, day, hour, minute, second, 0); }
             catch (System.ArgumentOutOfRangeException ex1)
             {
-                throw new ZipException("Bad date/time format in the zip file.", ex1);
+                string msg = String.Format("y({0}) m({1}) d({2}) h({3}) m({4}) s({5})", year, month, day, hour, minute, second);
+                throw new ZipException(String.Format("Bad date/time format in the zip file. ({0})", msg), ex1);
                 //Console.WriteLine("exception formatting the date: {0}\n\n", ex1.ToString());
                 //Console.Write("\nInvalid date/time?:\nyear: {0} ", year);
                 //Console.Write("month: {0} ", month);
