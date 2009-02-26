@@ -74,6 +74,7 @@ namespace Ionic.Zlib.Tests
         public void MyTestInitialize()
         {
             CurrentDir = System.IO.Directory.GetCurrentDirectory();
+            Assert.AreNotEqual<string>(System.IO.Path.GetFileName(CurrentDir), "Temp", "at start");
 
             string parentDir = System.Environment.GetEnvironmentVariable("TEMP");
 
@@ -89,6 +90,8 @@ namespace Ionic.Zlib.Tests
         {
             System.IO.Directory.SetCurrentDirectory(System.Environment.GetEnvironmentVariable("TEMP"));
             System.IO.Directory.Delete(TopLevelDir, true);
+            Assert.AreNotEqual<string>(System.IO.Path.GetFileName(CurrentDir), "Temp", "at finish");
+            System.IO.Directory.SetCurrentDirectory(CurrentDir);
         }
 
 
@@ -544,14 +547,14 @@ namespace Ionic.Zlib.Tests
             string FileName = System.IO.Path.Combine(TopLevelDir, "Zlib_CodecTest.txt");
             CreateAndFillFileText(FileName, sz);
 
-            byte[] UncompressedBytes= ReadFile(FileName);
+            byte[] UncompressedBytes = ReadFile(FileName);
 
             foreach (Ionic.Zlib.CompressionLevel level in Enum.GetValues(typeof(Ionic.Zlib.CompressionLevel)))
             {
                 TestContext.WriteLine("\n\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
                 TestContext.WriteLine("trying compression level '{0}'", level.ToString());
                 byte[] CompressedBytes = DeflateBuffer(UncompressedBytes, level);
-                byte[] DecompressedBytes= InflateBuffer(CompressedBytes, UncompressedBytes.Length);
+                byte[] DecompressedBytes = InflateBuffer(CompressedBytes, UncompressedBytes.Length);
                 CompareBuffers(UncompressedBytes, DecompressedBytes);
             }
             System.Threading.Thread.Sleep(2000);
@@ -563,7 +566,7 @@ namespace Ionic.Zlib.Tests
         {
             System.IO.FileInfo fi = new System.IO.FileInfo(f);
 
-            byte[] buffer= new byte[fi.Length];
+            byte[] buffer = new byte[fi.Length];
             //DecompressedBytes = new byte[fi.Length];
 
             using (var readStream = System.IO.File.OpenRead(f))
@@ -721,7 +724,7 @@ namespace Ionic.Zlib.Tests
             Console.WriteLine("TBO({0}).", compressor.TotalBytesOut);
 
             ms.Seek(0, SeekOrigin.Begin);
-            byte[] c= new byte[compressor.TotalBytesOut];
+            byte[] c = new byte[compressor.TotalBytesOut];
             ms.Read(c, 0, c.Length);
             return c;
         }
@@ -763,7 +766,7 @@ namespace Ionic.Zlib.Tests
                         {
                             string CompressedFile = String.Format("{0}.{1}.{2}.compressed", FileToCompress,
                                               (k == 0) ? "GZIP" : "DEFLATE",
-                                              (i == 0) ? "Ionic" : "BCL"); 
+                                              (i == 0) ? "Ionic" : "BCL");
 
                             using (var input = System.IO.File.OpenRead(FileToCompress))
                             {

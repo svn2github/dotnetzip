@@ -207,7 +207,6 @@ namespace Ionic.Zip
             Int16 packedTime = (Int16)(packedDateTime & 0x0000ffff);
             Int16 packedDate = (Int16)((packedDateTime & 0xffff0000) >> 16);
 
-
             int year = 1980 + ((packedDate & 0xFE00) >> 9);
             int month = (packedDate & 0x01E0) >> 5;
             int day = packedDate & 0x001F;
@@ -229,11 +228,6 @@ namespace Ionic.Zip
             {
                 string msg = String.Format("y({0}) m({1}) d({2}) h({3}) m({4}) s({5})", year, month, day, hour, minute, second);
                 throw new ZipException(String.Format("Bad date/time format in the zip file. ({0})", msg), ex1);
-                //Console.WriteLine("exception formatting the date: {0}\n\n", ex1.ToString());
-                //Console.Write("\nInvalid date/time?:\nyear: {0} ", year);
-                //Console.Write("month: {0} ", month);
-                //Console.WriteLine("day: {0} ", day);
-                //Console.WriteLine("HH:MM:SS= {0}:{1}:{2}", hour, minute, second);
             }
 
             return d;

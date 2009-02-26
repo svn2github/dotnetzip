@@ -3133,7 +3133,13 @@ namespace Ionic.Zip
                 else
                 {
                     //input = System.IO.File.OpenRead(LocalFileName);
-                    input = System.IO.File.Open(LocalFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    // workitem 7145
+                    FileShare fs = FileShare.ReadWrite;
+#if !NETCF
+                    // FileShare.Delete is not defined for the Compact Framework
+                    fs |= FileShare.Delete;
+#endif
+                    input = System.IO.File.Open(LocalFileName, FileMode.Open, FileAccess.Read, fs);
                 }
 
                 long fileLength = 0;

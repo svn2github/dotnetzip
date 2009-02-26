@@ -22,6 +22,7 @@ namespace Ionic.Zip.Tests.Utilities
         internal static void Initialize(ref string CurrentDir, ref string TopLevelDir)
         {
             CurrentDir = System.IO.Directory.GetCurrentDirectory();
+            Assert.AreNotEqual<string>(System.IO.Path.GetFileName(CurrentDir), "Temp", "at startup");
             TopLevelDir = TestUtilities.GenerateUniquePathname("tmp");
             System.IO.Directory.CreateDirectory(TopLevelDir);
 
@@ -30,6 +31,7 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal static void Cleanup(string CurrentDir, List<String> FilesToRemove)
         {
+            Assert.AreNotEqual<string>(System.IO.Path.GetFileName(CurrentDir), "Temp", "at finish");
             System.IO.Directory.SetCurrentDirectory(CurrentDir);
             System.IO.IOException GotException = null;
             int Tries = 0;

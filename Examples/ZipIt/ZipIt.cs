@@ -86,7 +86,7 @@ namespace Ionic.Zip.Examples
                 string entryComment = null;
                 string entryDirectoryPathInArchive = "";
 
-                using (ZipFile zip = new ZipFile())
+                using (ZipFile zip = new ZipFile(args[0])) // read existing zip, or create a new one.
                 {
                     zip.StatusMessageTextWriter = System.Console.Out;
                     for (int i = 1; i < args.Length; i++)
@@ -189,7 +189,7 @@ namespace Ionic.Zip.Examples
                     }
 
                     if (!flavor.HasValue)
-                        zip.Save(args[0]);
+                        zip.Save();
                     else 
                         zip.SaveSelfExtractor(args[0], flavor.Value);
 
