@@ -1656,15 +1656,16 @@ namespace Ionic.Zlib
 
                         z.AvailableBytesIn--; z.TotalBytesIn++;
                         z.istate.need += (z.InputBuffer[z.NextIn++] & 0xffL);
-
-                        if (((int)(z.istate.was[0])) != ((int)(z.istate.need)))
+                        unchecked
                         {
-                            z.istate.mode = BAD;
-                            z.Message = "incorrect data check";
-                            z.istate.marker = 5; // can't try inflateSync
-                            break;
+                            if (((int)(z.istate.was[0])) != ((int)(z.istate.need)))
+                            {
+                                z.istate.mode = BAD;
+                                z.Message = "incorrect data check";
+                                z.istate.marker = 5; // can't try inflateSync
+                                break;
+                            }
                         }
-
                         z.istate.mode = DONE;
                         goto case DONE;
 

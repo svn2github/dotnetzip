@@ -573,13 +573,16 @@ namespace Ionic.Zlib
 		}
 		internal void  put_short(int w)
 		{
-			put_byte((byte)w);
-			put_byte((byte) (SharedUtils.URShift(w, 8)));
+            unchecked
+            {
+                put_byte((byte)w);
+                put_byte((byte)(SharedUtils.URShift(w, 8)));
+            }
 		}
 		internal void  putShortMSB(int b)
 		{
 			put_byte((byte) (b >> 8));
-			put_byte((byte) b);
+			put_byte(unchecked((byte) b));
 		}
 		
 		internal void  send_code(int c, short[] tree)
@@ -591,21 +594,25 @@ namespace Ionic.Zlib
 		internal void  send_bits(int value_Renamed, int length)
 		{
 			int len = length;
-			if (bi_valid > (int) Buf_size - len)
-			{
-				int val = value_Renamed;
-				//      bi_buf |= (val << bi_valid);
-				bi_buf |= (short) (((val << bi_valid) & 0xffff));
-				put_short(bi_buf);
-				bi_buf = (short) (SharedUtils.URShift(val, (Buf_size - bi_valid)));
-				bi_valid += len - Buf_size;
-			}
-			else
-			{
-				//      bi_buf |= (value) << bi_valid;
-				bi_buf |= (short) ((((value_Renamed) << bi_valid) & 0xffff));
-				bi_valid += len;
-			}
+            unchecked
+            {
+                if (bi_valid > (int)Buf_size - len)
+                {
+                    int val = value_Renamed;
+                    //      bi_buf |= (val << bi_valid);
+
+                    bi_buf |= (short)(((val << bi_valid) & 0xffff));
+                    put_short(bi_buf);
+                    bi_buf = (short)(SharedUtils.URShift(val, (Buf_size - bi_valid)));
+                    bi_valid += len - Buf_size;
+                }
+                else
+                {
+                    //      bi_buf |= (value) << bi_valid;
+                    bi_buf |= (short)((((value_Renamed) << bi_valid) & 0xffff));
+                    bi_valid += len;
+                }
+            }
 		}
 		
 		// Send one empty static block to give enough lookahead for inflate.
@@ -642,11 +649,11 @@ namespace Ionic.Zlib
 		// the current block must be flushed.
 		internal bool _tr_tally(int dist, int lc)
 		{
-			
-			pending[d_buf + last_lit * 2] = (byte) (SharedUtils.URShift(dist, 8));
-			pending[d_buf + last_lit * 2 + 1] = (byte) dist;
-			
-			pending[l_buf + last_lit] = (byte) lc; last_lit++;
+		
+			pending[d_buf + last_lit * 2] = unchecked((byte) (SharedUtils.URShift(dist, 8)));
+            pending[d_buf + last_lit * 2 + 1] = unchecked((byte)dist);
+			pending[l_buf + last_lit] = unchecked((byte) lc); 
+            last_lit++;
 			
 			if (dist == 0)
 			{
@@ -676,8 +683,9 @@ namespace Ionic.Zlib
 				if ((matches < (last_lit / 2)) && out_length < in_length / 2)
 					return true;
 			}
-			
-			return (last_lit == lit_bufsize - 1);
+
+            return (last_lit == lit_bufsize - 1) || (last_lit == lit_bufsize);
+            // dinoch - wraparound?
 			// We avoid equality with lit_bufsize because of wraparound at 64K
 			// on 16 bit machines and because stored blocks are restricted to
 			// 64K-1 bytes.
@@ -800,7 +808,7 @@ namespace Ionic.Zlib
 			last_eob_len = 8; // enough lookahead for inflate
 			
 			if (header)
-			{
+			unchecked {
 				put_short((short) len);
 				put_short((short) ~ len);
 			}
@@ -1096,7 +1104,7 @@ namespace Ionic.Zlib
 					//	prev[strstart&w_mask]=hash_head=head[ins_h];
 					hash_head = (head[ins_h] & 0xffff);
 					prev[strstart & w_mask] = head[ins_h];
-					head[ins_h] = (short) strstart;
+					head[ins_h] = unchecked((short) strstart);
 				}
 				
 				// Find the longest match, discarding those <= prev_length.
@@ -1134,7 +1142,7 @@ namespace Ionic.Zlib
 							//	    prev[strstart&w_mask]=hash_head=head[ins_h];
 							hash_head = (head[ins_h] & 0xffff);
 							prev[strstart & w_mask] = head[ins_h];
-							head[ins_h] = (short) strstart;
+							head[ins_h] = unchecked((short) strstart);
 							
 							// strstart never exceeds WSIZE-MAX_MATCH, so there are
 							// always MIN_MATCH bytes ahead.
@@ -1218,7 +1226,7 @@ namespace Ionic.Zlib
 					//	prev[strstart&w_mask]=hash_head=head[ins_h];
 					hash_head = (head[ins_h] & 0xffff);
 					prev[strstart & w_mask] = head[ins_h];
-					head[ins_h] = (short) strstart;
+					head[ins_h] = unchecked((short) strstart);
 				}
 				
 				// Find the longest match, discarding those <= prev_length.
@@ -1272,7 +1280,7 @@ namespace Ionic.Zlib
 							//prev[strstart&w_mask]=hash_head=head[ins_h];
 							hash_head = (head[ins_h] & 0xffff);
 							prev[strstart & w_mask] = head[ins_h];
-							head[ins_h] = (short) strstart;
+							head[ins_h] = unchecked((short) strstart);
 						}
 					}
 					while (--prev_length != 0);

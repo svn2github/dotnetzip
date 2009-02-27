@@ -275,7 +275,7 @@ namespace Ionic.Zlib
 				s.heap[--s.heap_max] = m;
 				
 				// Create a new node father of n and m
-				tree[node * 2] = (short) (tree[n * 2] + tree[m * 2]);
+				tree[node * 2] = unchecked((short) (tree[n * 2] + tree[m * 2]));
 				s.depth[node] = (sbyte) (System.Math.Max((byte) s.depth[n], (byte) s.depth[m]) + 1);
 				tree[n * 2 + 1] = tree[m * 2 + 1] = (short) node;
 				
@@ -312,7 +312,7 @@ namespace Ionic.Zlib
 			// The distribution counts are first used to generate the code values
 			// without bit reversal.
 			for (bits = 1; bits <= MAX_BITS; bits++)
-			{
+			unchecked {
 				next_code[bits] = code = (short) ((code + bl_count[bits - 1]) << 1);
 			}
 			
@@ -328,7 +328,7 @@ namespace Ionic.Zlib
 				if (len == 0)
 					continue;
 				// Now reverse the bits
-				tree[n * 2] = (short) (bi_reverse(next_code[len]++, len));
+				tree[n * 2] =  unchecked((short) (bi_reverse(next_code[len]++, len)));
 			}
 		}
 		
