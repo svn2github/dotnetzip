@@ -829,10 +829,10 @@ namespace Ionic
         ///
         /// <remarks>
         /// This is equivalent to calling <see cref="SelectFiles(String, bool)"/> 
-	/// with recurseDirectories = false.
+        /// with recurseDirectories = false.
         /// </remarks>
         ///
-        /// <param name="Directory">
+        /// <param name="directory">
         /// The name of the directory over which to apply the FileFilter criteria.
         /// </param>
         ///
@@ -871,7 +871,7 @@ namespace Ionic
         /// </returns>
         public String[] SelectFiles(String directory, bool recurseDirectories)
         {
-            String[] filenames = System.IO.Directory.GetFiles(Directory);
+            String[] filenames = System.IO.Directory.GetFiles(directory);
             var list = new System.Collections.Generic.List<String>();
 
             // add the files: 
@@ -881,10 +881,10 @@ namespace Ionic
                     list.Add(filename);
             }
 
-            if (RecurseDirectories)
+            if (recurseDirectories)
             {
                 // add the subdirectories:
-                String[] dirnames = System.IO.Directory.GetDirectories(Directory);
+                String[] dirnames = System.IO.Directory.GetDirectories(directory);
                 foreach (String dir in dirnames)
                 {
                     Array.ForEach(SelectFiles(dir), list.Add);

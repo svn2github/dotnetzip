@@ -121,7 +121,7 @@ namespace Ionic.Zip
         /// ZipArchive has been Saved to the disk (the ZipFile class subsequently and
         /// implicitly reads the Zip archive from storage.)  Calling SelectEntries on a
         /// ZipFile that has not yet been saved will deliver undefined results.
-	/// </para>
+        /// </para>
         /// </remarks>
         /// 
         /// <exception cref="System.Exception">
@@ -172,8 +172,8 @@ namespace Ionic.Zip
         /// ZipArchive has been Saved to the disk (the ZipFile class subsequently and
         /// implicitly reads the Zip archive from storage.)  Calling SelectEntries on a
         /// ZipFile that has not yet been saved will deliver undefined results.
-	/// </para>
-	///
+        /// </para>
+        ///
         /// </remarks>
         /// 
         /// <exception cref="System.Exception">
@@ -216,115 +216,115 @@ namespace Ionic.Zip
         }
 
 
-	/// <summary>
-	/// Selects and Extracts a set of Entries from the ZipFile.
-	/// </summary>
-	///
+        /// <summary>
+        /// Selects and Extracts a set of Entries from the ZipFile.
+        /// </summary>
+        ///
         /// <remarks>
-	/// <para>
-	/// The entries are extracted into the current working directory. If 
-	/// any of the files already exist, an exception will be thrown.
-	/// </para>
+        /// <para>
+        /// The entries are extracted into the current working directory. If 
+        /// any of the files already exist, an exception will be thrown.
+        /// </para>
         /// </remarks>
         ///
         /// <param name="selectionCriteria">the selection criteria for entries to extract.</param>
-	public void ExtractSelected(String selectionCriteria)
-	{
-	    foreach (ZipEntry e in SelectEntries(String selectionCriteria))
-	    {
-		e.Password = _Password; // possibly null
-		e.Extract();
-	    }
-	}
+        public void ExtractSelected(String selectionCriteria)
+        {
+            foreach (ZipEntry e in SelectEntries(selectionCriteria))
+            {
+                e.Password = _Password; // possibly null
+                e.Extract();
+            }
+        }
 
 
-	/// <summary>
-	/// Selects and Extracts a set of Entries from the ZipFile.
-	/// </summary>
-	///
+        /// <summary>
+        /// Selects and Extracts a set of Entries from the ZipFile.
+        /// </summary>
+        ///
         /// <remarks>
-	/// <para>
-	/// The entries are extracted into the current working directory. If 
-	/// any of the files already exist, and wantOverwrite is false, an exception will be thrown.
-	/// </para>
+        /// <para>
+        /// The entries are extracted into the current working directory. If 
+        /// any of the files already exist, and wantOverwrite is false, an exception will be thrown.
+        /// </para>
         /// <para>
         /// For information on the syntax of the string describing the entry selection criteria, 
         /// see <see cref="SelectEntries(String)" />.
         /// </para> 
         /// </remarks>
-	///
+        ///
         /// <param name="selectionCriteria">the selection criteria for entries to extract.</param>
         ///
         /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files 
-	/// by the given name. </param>
-	public void ExtractSelected(String selectionCriteria, bool wantOverwrite)
-	{
-	    foreach (ZipEntry e in SelectEntries(String selectionCriteria))
-	    {
-		e.Password = _Password; // possibly null
-		e.Extract(wantOverwrite);
-	    }
-	}
+        /// by the given name. </param>
+        public void ExtractSelected(String selectionCriteria, bool wantOverwrite)
+        {
+            foreach (ZipEntry e in SelectEntries(selectionCriteria))
+            {
+                e.Password = _Password; // possibly null
+                e.Extract(wantOverwrite);
+            }
+        }
 
 
 
-	/// <summary>
-	/// Selects and Extracts a set of Entries from the ZipFile.
-	/// </summary>
-	///
+        /// <summary>
+        /// Selects and Extracts a set of Entries from the ZipFile.
+        /// </summary>
+        ///
         /// <remarks>
-	/// <para>
-	/// The entries are extracted into the specified directory. If 
-	/// any files already exist, an exception will be thrown.
-	/// </para>
+        /// <para>
+        /// The entries are extracted into the specified directory. If 
+        /// any files already exist, an exception will be thrown.
+        /// </para>
         /// <para>
         /// For information on the syntax of the string describing the entry selection criteria, 
         /// see <see cref="SelectEntries(String)" />.
         /// </para> 
         /// </remarks>
-	///
+        ///
         /// <param name="selectionCriteria">the selection criteria for entries to extract.</param>
         ///
         /// <param name="directoryName">the directory into which to extract. It will be created 
-	/// if it does not exist.</param>
-	public void ExtractSelected(String selectionCriteria, string directoryName)
-	{
-	    foreach (ZipEntry e in SelectEntries(String selectionCriteria))
-	    {
-		e.Password = _Password; // possibly null
-		e.Extract(directoryName);
-	    }
-	}
+        /// if it does not exist.</param>
+        public void ExtractSelected(String selectionCriteria, string directoryName)
+        {
+            foreach (ZipEntry e in SelectEntries(selectionCriteria))
+            {
+                e.Password = _Password; // possibly null
+                e.Extract(directoryName);
+            }
+        }
 
-	/// <summary>
-	/// Selects and Extracts a set of Entries from the ZipFile.
-	/// </summary>
-	///
+        /// <summary>
+        /// Selects and Extracts a set of Entries from the ZipFile.
+        /// </summary>
+        ///
         /// <remarks>
-	/// <para>
-	/// The entries are extracted into the specified directory. If 
-	/// any of the files already exist, and wantOVerwrite is false, an exception will be thrown.
-	/// </para>
+        /// <para>
+        /// The entries are extracted into the specified directory. If 
+        /// any of the files already exist, and wantOVerwrite is false, an exception will be thrown.
+        /// </para>
         /// <para>
         /// For information on the syntax of the string describing the entry selection criteria, 
         /// see <see cref="SelectEntries(String)" />.
         /// </para> 
         /// </remarks>
-	///
+        ///
         /// <param name="selectionCriteria">the selection criteria for entries to extract.</param>
         ///
         /// <param name="directoryName">the directory into which to extract. It will be created 
-	/// if it does not exist.</param>
+        /// if it does not exist.</param>
         /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files 
-	/// by the given name. </param>
-	public void ExtractSelected(String selectionCriteria, string directoryName, bool wantOverwrite)
-	{
-	    foreach (ZipEntry e in SelectEntries(String selectionCriteria))
-	    {
-		e.Password = _Password; // possibly null
-		e.Extract(directoryName, wantOverwrite);
-	    }
-	}
+        /// by the given name. </param>
+        public void ExtractSelected(String selectionCriteria, string directoryName, bool wantOverwrite)
+        {
+            foreach (ZipEntry e in SelectEntries(selectionCriteria))
+            {
+                e.Password = _Password; // possibly null
+                e.Extract(directoryName, wantOverwrite);
+            }
+        }
 
 
         /// <summary>
@@ -488,7 +488,7 @@ namespace Ionic
         ///
         /// <para>
         /// Normally, applications would not call this method directly.  This method is used 
-	/// by the ZipFile class.
+        /// by the ZipFile class.
         /// </para>
         ///
         /// <para>
