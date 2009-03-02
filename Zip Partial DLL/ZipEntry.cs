@@ -229,6 +229,34 @@ namespace Ionic.Zip
             }
         }
 
+
+        /// <summary>
+        /// Last Modified time for the file represented by the entry.
+        /// </summary>
+        /// <remarks>
+        /// This value may or may not be meaningful.  If the ZipEntry was read from an existing Zip archive,
+        /// this information may not be available. 
+        /// </remarks>
+        public DateTime Mtime { get { return _Mtime;} }
+
+        /// <summary>
+        /// Last Access time for the file represented by the entry.
+        /// </summary>
+        /// <remarks>
+        /// This value may or may not be meaningful.  If the ZipEntry was read from an existing Zip archive,
+        /// this information may not be available. 
+        /// </remarks>
+        public DateTime Atime { get { return _Atime; } }
+        
+        /// <summary>
+        /// Created time for the file represented by the entry.
+        /// </summary>
+        /// <remarks>
+        /// This value may or may not be meaningful.  If the ZipEntry was read from an existing Zip archive,
+        /// this information may not be available. 
+        /// </remarks>
+        public DateTime Ctime { get { return _Ctime; } }
+
         /// <summary>
         /// Sets the NTFS Creation, Access, and Modified times for the given entry.
         /// </summary>

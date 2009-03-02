@@ -680,7 +680,7 @@ namespace Ionic.Zip.Tests.Extended
                     TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
                     entriesAdded++;
                     var chk = TestUtilities.ComputeChecksum(filename);
-                    checksums.Add(filename.Replace(TopLevelDir+"\\","").Replace('\\','/'), TestUtilities.CheckSumToString(chk));
+                    checksums.Add(filename.Replace(TopLevelDir + "\\", "").Replace('\\', '/'), TestUtilities.CheckSumToString(chk));
                 }
 
                 using (ZipFile zip1 = new ZipFile())
@@ -711,7 +711,7 @@ namespace Ionic.Zip.Tests.Extended
                             }
                             else
                             {
-                                Assert.AreEqual<string>("Readme.txt", e.FileName, String.Format("trial {0}",k));
+                                Assert.AreEqual<string>("Readme.txt", e.FileName, String.Format("trial {0}", k));
                             }
                         }
                     }
@@ -847,6 +847,7 @@ namespace Ionic.Zip.Tests.Extended
             int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "Create_SaveCancellation", DirToZip, out subdirCount);
 
             _progressEventCalls = 0;
+            _cancelIndex = -1; // don't cancel this Save
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.SaveProgress += SaveProgress;
@@ -1368,5 +1369,457 @@ namespace Ionic.Zip.Tests.Extended
                 }
             }
         }
+
+
+        [TestMethod]
+        public void Filter_SelectFiles()
+        {
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Filter_SelectFiles.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            int count1, count2;
+            int entriesAdded = 0;
+            String filename = null;
+
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            int fileCount = _rnd.Next(33) + 33;
+            for (int j = 0; j < fileCount; j++)
+            {
+                if (_rnd.Next(2) == 0)
+                {
+                    filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
+                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(5000) + 5000);
+                }
+                else
+                {
+                    filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.bin", j));
+                    TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(5000) + 5000);
+                }
+                entriesAdded++;
+            }
+
+            Ionic.FileFilter ff = new Ionic.FileFilter("name = *.txt");
+            var list = ff.GetFiles(Subdir);
+            TestContext.WriteLine("=======================================================");
+            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            count1 = 0;
+            foreach (string s in list)
+            {
+                TestContext.WriteLine(System.IO.Path.GetFileName(s));
+                Assert.IsTrue(s.EndsWith(".txt"));
+                count1++;
+            }
+
+            ff = new Ionic.FileFilter("name = *.bin");
+            list = ff.GetFiles(Subdir);
+            TestContext.WriteLine("=======================================================");
+            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            count2 = 0;
+            foreach (string s in list)
+            {
+                TestContext.WriteLine(System.IO.Path.GetFileName(s));
+                Assert.IsTrue(s.EndsWith(".bin"));
+                count2++;
+            }
+            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
+
+
+            // shorthand
+            ff = new Ionic.FileFilter("*.txt");
+            list = ff.GetFiles(Subdir);
+            TestContext.WriteLine("=======================================================");
+            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            count1 = 0;
+            foreach (string s in list)
+            {
+                TestContext.WriteLine(System.IO.Path.GetFileName(s));
+                Assert.IsTrue(s.EndsWith(".txt"));
+                count1++;
+            }
+
+            ff = new Ionic.FileFilter("*.bin");
+            list = ff.GetFiles(Subdir);
+            TestContext.WriteLine("=======================================================");
+            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            count2 = 0;
+            foreach (string s in list)
+            {
+                TestContext.WriteLine(System.IO.Path.GetFileName(s));
+                Assert.IsTrue(s.EndsWith(".bin"));
+                count2++;
+            }
+            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
+
+
+
+            ff = new Ionic.FileFilter("size > 7500");
+            list = ff.GetFiles(Subdir);
+            TestContext.WriteLine("=======================================================");
+            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            count1 = 0;
+            foreach (string s in list)
+            {
+                FileInfo fi = new FileInfo(s);
+                TestContext.WriteLine("{0} size({1})", System.IO.Path.GetFileName(s), fi.Length);
+                Assert.IsTrue(fi.Length > 7500);
+                count1++;
+            }
+
+            ff = new Ionic.FileFilter("size <= 7500");
+            list = ff.GetFiles(Subdir);
+            TestContext.WriteLine("=======================================================");
+            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            count2 = 0;
+            foreach (string s in list)
+            {
+                FileInfo fi = new FileInfo(s);
+                TestContext.WriteLine("{0} size({1})", System.IO.Path.GetFileName(s), fi.Length);
+                Assert.IsTrue(fi.Length <= 7500);
+                count2++;
+            }
+            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
+
+
+            ff = new Ionic.FileFilter("name = *.bin AND size > 7500");
+            list = ff.GetFiles(Subdir);
+            TestContext.WriteLine("=======================================================");
+            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            count1 = 0;
+            foreach (string s in list)
+            {
+                FileInfo fi = new FileInfo(s);
+                TestContext.WriteLine("{0} size({1})", System.IO.Path.GetFileName(s), fi.Length);
+                bool x = s.EndsWith(".bin") && fi.Length > 7500;
+                Assert.IsTrue(x);
+                count1++;
+            }
+
+            ff = new Ionic.FileFilter("name != *.bin  OR  size <= 7500");
+            list = ff.GetFiles(Subdir);
+            TestContext.WriteLine("=======================================================");
+            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            count2 = 0;
+            foreach (string s in list)
+            {
+                FileInfo fi = new FileInfo(s);
+                TestContext.WriteLine("{0} size({1})", System.IO.Path.GetFileName(s), fi.Length);
+                bool x = !s.EndsWith(".bin") || fi.Length <= 7500;
+                Assert.IsTrue(x);
+                count2++;
+            }
+            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
+
+        }
+
+
+
+
+        [TestMethod]
+        public void Filter_AddSelectedFiles()
+        {
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            string[] ZipFileToCreate = {
+		System.IO.Path.Combine(TopLevelDir, "Filter_AddSelectedFiles-1.zip"),
+		System.IO.Path.Combine(TopLevelDir, "Filter_AddSelectedFiles-2.zip")
+	    };
+
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate[0]), "The temporary zip file '{0}' already exists.", ZipFileToCreate[0]);
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate[1]), "The temporary zip file '{0}' already exists.", ZipFileToCreate[1]);
+
+            int count1, count2;
+            int entriesAdded = 0;
+            String filename = null;
+
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            int fileCount = _rnd.Next(95) + 95;
+            TestContext.WriteLine("===============================================");
+            TestContext.WriteLine("Creating {0} files.", fileCount);
+            for (int j = 0; j < fileCount; j++)
+            {
+                if (_rnd.Next(2) == 0)
+                {
+                    filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
+                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(5000) + 5000);
+                }
+                else
+                {
+                    filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.bin", j));
+                    TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(5000) + 5000);
+                }
+
+                // mark one third of the files as Hidden
+                if (j%3 == 0)
+                {
+                    System.IO.File.SetAttributes(filename, System.IO.FileAttributes.Hidden);
+                }
+
+                // set the last mod time on 1/4th of the files
+                if (j%4 == 0)
+                {
+                    DateTime x = new DateTime(1998, 4, 29);
+                    System.IO.File.SetLastWriteTime(filename, x);
+                }
+
+                entriesAdded++;
+            }
+
+
+            TestContext.WriteLine("===============================================");
+            TestContext.WriteLine("Selecting files by name.", fileCount);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("name = *.txt", Subdir);
+                zip1.Save(ZipFileToCreate[0]);
+            }
+            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
+            TestContext.WriteLine("{0} of those files were *.txt", count1);
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("name = *.bin", Subdir);
+                zip1.Save(ZipFileToCreate[1]);
+            }
+            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
+            TestContext.WriteLine("{0} of those files were *.bin", count2);
+            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
+
+
+
+            TestContext.WriteLine("===============================================");
+            TestContext.WriteLine("Selecting files by name (shorthand).", fileCount);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("*.txt", Subdir);
+                zip1.Save(ZipFileToCreate[0]);
+            }
+            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
+            TestContext.WriteLine("{0} of those files were *.txt", count1);
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("*.bin", Subdir);
+                zip1.Save(ZipFileToCreate[1]);
+            }
+            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
+            TestContext.WriteLine("{0} of those files were *.bin", count2);
+            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
+
+
+
+            TestContext.WriteLine("===============================================");
+            TestContext.WriteLine("Selecting files by attribute.", fileCount);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("attributes = H", Subdir);
+                zip1.Save(ZipFileToCreate[0]);
+            }
+            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
+            TestContext.WriteLine("{0} of those files were Hidden", count1);
+            Assert.AreEqual<Int32>((entriesAdded - 1) / 3 + 1, count1);
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("attributes != H", Subdir);
+                zip1.Save(ZipFileToCreate[1]);
+            }
+            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
+            TestContext.WriteLine("{0} of those files were NOT Hidden", count2);
+            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
+
+
+            TestContext.WriteLine("===============================================");
+            TestContext.WriteLine("Selecting files by time.", fileCount);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("mtime < 2007-01-01", Subdir);
+                zip1.Save(ZipFileToCreate[0]);
+            }
+            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
+            TestContext.WriteLine("{0} of those files were from prior to 2007-01-01.", count1);
+            Assert.AreEqual<Int32>((entriesAdded - 1) / 4 + 1, count1);
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("mtime > 2007-01-01", Subdir);
+                zip1.Save(ZipFileToCreate[1]);
+            }
+            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
+            TestContext.WriteLine("{0} of those files were from after 2007-01-01.", count2);
+            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
+
+
+
+            TestContext.WriteLine("===============================================");
+            TestContext.WriteLine("Selecting files by size.", fileCount);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("size <= 7500", Subdir);
+                zip1.Save(ZipFileToCreate[0]);
+            }
+            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
+            TestContext.WriteLine("{0} of those files were less than 7500 bytes in size", count1);
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("size > 7500", Subdir);
+                zip1.Save(ZipFileToCreate[1]);
+            }
+            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
+            TestContext.WriteLine("{0} of those files were 7500 bytes or more in size", count2);
+            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
+
+
+
+            TestContext.WriteLine("===============================================");
+            TestContext.WriteLine("Selecting files by name and size.", fileCount);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("name = *.bin AND size > 7500", Subdir);
+                zip1.Save(ZipFileToCreate[0]);
+            }
+            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
+            TestContext.WriteLine("{0} of those files were in the first set.", count1);
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("name != *.bin  OR  size <= 7500", Subdir);
+                zip1.Save(ZipFileToCreate[1]);
+            }
+            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
+            TestContext.WriteLine("{0} of those files were in the second set.", count2);
+            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
+
+
+            TestContext.WriteLine("===============================================");
+            TestContext.WriteLine("Selecting files by name, size and attributes.", fileCount);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("name = *.bin AND size > 7500 and attributes = H", Subdir);
+                zip1.Save(ZipFileToCreate[0]);
+            }
+            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
+            TestContext.WriteLine("{0} of those files were in the first set.", count1);
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("name != *.bin  OR  size <= 7500 or attributes != H", Subdir);
+                zip1.Save(ZipFileToCreate[1]);
+            }
+            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
+            TestContext.WriteLine("{0} of those files were in the second set.", count2);
+            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
+
+
+            TestContext.WriteLine("===============================================");
+            TestContext.WriteLine("Selecting files by name, size, time and attributes.", fileCount);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("name = *.bin AND size > 7500 and mtime < 2007-01-01 and attributes = H", Subdir);
+                zip1.Save(ZipFileToCreate[0]);
+            }
+            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
+            TestContext.WriteLine("{0} of those files were in the first set.", count1);
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("name != *.bin  OR  size <= 7500 or mtime > 2007-01-01 or attributes != H", Subdir);
+                zip1.Save(ZipFileToCreate[1]);
+            }
+            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
+            TestContext.WriteLine("{0} of those files were in the second set.", count2);
+            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
+
+        }
+
+
+
+
+        [TestMethod]
+        public void Filter_GetSelectedEntries()
+        {
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Filter_GetSelectedFiles.zip");
+
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            //int count1, count2;
+            int entriesAdded = 0;
+            String filename = null;
+
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            int fileCount = _rnd.Next(33) + 33;
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Files being added to the zip:");
+            for (int j = 0; j < fileCount; j++)
+            {
+                if (_rnd.Next(2) == 0)
+                {
+                    filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
+                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(5000) + 5000);
+                }
+                else
+                {
+                    filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.bin", j));
+                    TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(5000) + 5000);
+                }
+                TestContext.WriteLine(System.IO.Path.GetFileName(filename));
+                entriesAdded++;
+            }
+
+
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Creating zip...");
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddDirectory(Subdir, "");
+                zip1.Save(ZipFileToCreate);
+            }
+            Assert.AreEqual<Int32>(entriesAdded, TestUtilities.CountEntries(ZipFileToCreate));
+
+
+
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Reading zip...");
+            using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
+            {
+                var selected1 = zip1.GetSelectedEntries("name = *.txt");
+                var selected2 = zip1.GetSelectedEntries("name = *.bin");
+                TestContext.WriteLine("Text files:");
+                foreach (ZipEntry e in selected1)
+                {
+                    TestContext.WriteLine(e.FileName);
+                }
+                Assert.AreEqual<Int32>(entriesAdded, selected1.Count + selected2.Count);
+            }
+
+
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Reading zip, using shorthand filters...");
+            using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
+            {
+                var selected1 = zip1.GetSelectedEntries("*.txt");
+                var selected2 = zip1.GetSelectedEntries("*.bin");
+                TestContext.WriteLine("Text files:");
+                foreach (ZipEntry e in selected1)
+                {
+                    TestContext.WriteLine(e.FileName);
+                }
+                Assert.AreEqual<Int32>(entriesAdded, selected1.Count + selected2.Count);
+            }
+
+        }
+
+
+
     }
 }

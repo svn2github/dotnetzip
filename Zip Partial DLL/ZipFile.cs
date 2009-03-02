@@ -2,7 +2,7 @@
 
 // ZipFile.cs
 //
-// Copyright (c) 2006, 2007, 2008, 2009Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2006, 2007, 2008, 2009 Microsoft Corporation.  All rights reserved.
 //
 // This class library reads and writes zip files, according to the format
 // described by pkware, at:
@@ -414,8 +414,8 @@ namespace Ionic.Zip
         /// methods has been called.
         /// </para>
         /// <para>
-	/// If none of the four conditions holds, and the archive has been saved, then the Value is false.
-	/// </para>
+        /// If none of the four conditions holds, and the archive has been saved, then the Value is false.
+        /// </para>
         /// <para>
         /// A Value of false does not indicate that the zip archive, as saved, does not use ZIP64.
         /// It merely indicates that ZIP64 is not required.  An archive may use ZIP64 even when not
@@ -539,7 +539,7 @@ namespace Ionic.Zip
         /// with illegal characters in the filenames will lead to exceptions. It's too bad, but
         /// this is just the way things are with code pages in zip files. Caveat Emptor.
         /// </para>
-	///
+        ///
         /// <para>
         /// When using DotNetZip to read a zip archive, and the zip archive uses an arbitrary code
         /// page, you must specify the encoding to use before or when the zipfile is READ.  This
@@ -549,7 +549,7 @@ namespace Ionic.Zip
         /// entries that have already been read in, and is probably not what you want.
         /// </para>
         ///	
-	/// <para>
+        /// <para>
         /// And now, the exception to the rule described above.  One strategy for specifying the
         /// code page for a given zip file is to describe the code page in a human-readable form in
         /// the Zip comment. For example, the comment may read "Entries in this archive are encoded
@@ -559,7 +559,7 @@ namespace Ionic.Zip
         /// ProvisionalAlternateEncoding to your desired region-specific code page, once before
         /// adding any entries, and then reset ProvisionalAlternateEncoding to IBM437 before
         /// setting the <see cref="Comment"/> property and calling Save().
-	/// </para>
+        /// </para>
         /// </remarks>
         /// 
         /// <seealso cref="Ionic.Zip.ZipFile.DefaultEncoding">DefaultEncoding</seealso>
@@ -2079,14 +2079,14 @@ namespace Ionic.Zip
         /// <seealso cref="Ionic.Zip.ZipFile.AddDirectory(string)"/>
         /// <seealso cref="Ionic.Zip.ZipFile.UpdateFile(string)"/>
         ///
-        /// <param name="fileName">
+        /// <param name="Filename">
         /// The name of the file to add. It should refer to a file in the filesystem.  
         /// The name of the file may be a relative path or a fully-qualified path. 
         /// </param>
         /// <returns>The ZipEntry corresponding to the File added.</returns>
-        public ZipEntry AddFile(string fileName)
+        public ZipEntry AddFile(string Filename)
         {
-            return AddFile(fileName, null);
+            return AddFile(Filename, null);
         }
 
 
@@ -2162,12 +2162,12 @@ namespace Ionic.Zip
         /// <seealso cref="Ionic.Zip.ZipFile.AddDirectory(string, string)"/>
         /// <seealso cref="Ionic.Zip.ZipFile.UpdateFile(string,string)"/>
         ///
-        /// <param name="fileName">
+        /// <param name="Filename">
         /// The name of the file to add.  The name of the file may be a relative path or 
         /// a fully-qualified path.
         /// </param>
         ///
-        /// <param name="directoryPathInArchive">
+        /// <param name="DirectoryPathInArchive">
         /// Specifies a directory path to use to override any path in the FileName.
         /// This path may, or may not, correspond to a real directory in the current filesystem.
         /// If the files within the zip are later extracted, this is the path used for the extracted file. 
@@ -2176,10 +2176,10 @@ namespace Ionic.Zip
         /// </param>
         ///
         /// <returns>The ZipEntry corresponding to the file added.</returns>
-        public ZipEntry AddFile(string fileName, String directoryPathInArchive)
+        public ZipEntry AddFile(string Filename, String DirectoryPathInArchive)
         {
-            string nameInArchive = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
-            ZipEntry ze = ZipEntry.Create(fileName, nameInArchive);
+            string nameInArchive = ZipEntry.NameInArchive(Filename, DirectoryPathInArchive);
+            ZipEntry ze = ZipEntry.Create(Filename, nameInArchive);
             //ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
             ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
@@ -2189,11 +2189,47 @@ namespace Ionic.Zip
             ze._zipfile = this;
             ze.Encryption = Encryption;
             ze.Password = _Password;
-            if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
+            if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", Filename);
             InsureUniqueEntry(ze);
             _entries.Add(ze);
             _contentsChanged = true;
             return ze;
+        }
+
+
+
+
+        /// <summary>
+        /// This method adds a set of files to the ZipFile.
+        /// </summary>
+        /// <param name="Filenames">
+        /// The names of the files to add. Each string should refer to a file in the filesystem.  
+        /// The name of the file may be a relative path or a fully-qualified path. 
+        /// </param>
+        public void AddFiles(String[] Filenames)
+        {
+            this.AddFiles(Filenames, null);
+        }
+
+        /// <summary>
+        /// This method adds a set of files to the ZipFile.
+        /// </summary>
+        /// <param name="Filenames">
+        /// The names of the files to add. Each string should refer to a file in the filesystem.  
+        /// The name of the file may be a relative path or a fully-qualified path. 
+        /// </param>
+        /// <param name="DirectoryPathInArchive">
+        /// Specifies a directory path to use to override any path in the FileName.  This path
+        /// may, or may not, correspond to a real directory in the current filesystem.  If the
+        /// files within the zip are later extracted, this is the path used for the extracted
+        /// file.  Passing null (nothing in VB) will use the path on the FileName, if any.
+        /// Passing the empty string ("") will insert the item at the root path within the
+        /// archive.
+        /// </param>
+        public void AddFiles(String[] Filenames, String DirectoryPathInArchive)
+        {
+            foreach (var f in Filenames)
+                this.AddFile(f, DirectoryPathInArchive);
         }
 
 
@@ -3069,7 +3105,7 @@ namespace Ionic.Zip
         /// be overwritten with great prejudice.
         /// </param>
         public void Save(System.String zipFileName)
-	{
+        {
             // Check for the case where we are re-saving a zip archive 
             // that was originally instantiated with a stream.  In that case, 
             // the _name will be null. If so, we set _writestream to null, 

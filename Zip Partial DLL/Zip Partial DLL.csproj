@@ -48,7 +48,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Ionic.Zip.Partial.xml</DocumentationFile>
-    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -80,6 +80,7 @@
       <DependentUpon>ZipContentsDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\FolderBrowserDialogEx.cs" />
+    <Compile Include="FileFilter.cs" />
     <Compile Include="WinZipAes.cs" />
     <Compile Include="ZipConstants.cs" />
     <Compile Include="Exceptions.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="ZipEntry.cs" />
     <Compile Include="Events.cs" />
     <Compile Include="ZipFile.cs" />
+    <Compile Include="ZipFile.Filter.cs" />
     <Compile Include="ZipFile.SaveSelfExtractor.cs" />
   </ItemGroup>
   <ItemGroup>

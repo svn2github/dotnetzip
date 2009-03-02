@@ -168,18 +168,18 @@ namespace Ionic.Zip
             ZipEntry zde = new ZipEntry();
             zde._archiveStream = s;
 
-            zde._VersionMadeBy = (short)(block[i++] + block[i++] * 256);
-            zde._VersionNeeded = (short)(block[i++] + block[i++] * 256);
-            zde._BitField = (short)(block[i++] + block[i++] * 256);
-            zde._CompressionMethod = (short)(block[i++] + block[i++] * 256);
-            zde._TimeBlob = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
-            zde._LastModified = Ionic.Zip.SharedUtilities.PackedToDateTime(zde._TimeBlob);
-            zde._Crc32 = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
-
-
-            zde._CompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
-            zde._UncompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
-
+            unchecked
+            {
+                zde._VersionMadeBy = (short)(block[i++] + block[i++] * 256);
+                zde._VersionNeeded = (short)(block[i++] + block[i++] * 256);
+                zde._BitField = (short)(block[i++] + block[i++] * 256);
+                zde._CompressionMethod = (short)(block[i++] + block[i++] * 256);
+                zde._TimeBlob = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+                zde._LastModified = Ionic.Zip.SharedUtilities.PackedToDateTime(zde._TimeBlob);
+                zde._Crc32 = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+                zde._CompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
+                zde._UncompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
+            }
             //DateTime lastModified = Ionic.Utils.Zip.SharedUtilities.PackedToDateTime(lastModDateTime);
             //i += 24;
 

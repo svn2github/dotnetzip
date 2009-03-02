@@ -120,7 +120,7 @@ namespace Ionic.Zip
             byte[] block = new byte[4];
             n = s.Read(block, 0, block.Length);
             if (n != block.Length) throw new BadReadException(String.Format(message, s.Position));
-            int data = (((block[3] * 256 + block[2]) * 256) + block[1]) * 256 + block[0];
+            int data = unchecked((((block[3] * 256 + block[2]) * 256) + block[1]) * 256 + block[0]);
             return data;
         }
 
@@ -204,8 +204,8 @@ namespace Ionic.Zip
             if (packedDateTime == 0xFFFF || packedDateTime == 0)
                 return new System.DateTime(1995, 1, 1, 0, 0, 0, 0);  // return a fixed date when none is supplied.
  
-            Int16 packedTime = (Int16)(packedDateTime & 0x0000ffff);
-            Int16 packedDate = (Int16)((packedDateTime & 0xffff0000) >> 16);
+            Int16 packedTime = unchecked((Int16)(packedDateTime & 0x0000ffff));
+            Int16 packedDate = unchecked((Int16)((packedDateTime & 0xffff0000) >> 16));
 
             int year = 1980 + ((packedDate & 0xFE00) >> 9);
             int month = (packedDate & 0x01E0) >> 5;
