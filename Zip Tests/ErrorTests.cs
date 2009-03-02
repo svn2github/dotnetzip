@@ -571,113 +571,113 @@ namespace Ionic.Zip.Tests.Error
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
-        public void Filter_SelectFiles_BadNoun()
+        public void Selector_SelectFiles_BadNoun()
         {
             // specify an invalid string 
-            Ionic.FileFilter ff = new Ionic.FileFilter("fame = *.txt");
+            Ionic.FileSelector ff = new Ionic.FileSelector("fame = *.txt");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
-        public void Filter_SelectFiles_BadSyntax01()
+        public void Selector_SelectFiles_BadSyntax01()
         {
             // specify an invalid string 
-            Ionic.FileFilter ff = new Ionic.FileFilter("size = ");
+            Ionic.FileSelector ff = new Ionic.FileSelector("size = ");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
-        public void Filter_SelectFiles_BadSyntax02()
+        public void Selector_SelectFiles_BadSyntax02()
         {
             // specify an invalid string 
-            Ionic.FileFilter ff = new Ionic.FileFilter("name = *.txt and");
+            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt and");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
-        public void Filter_SelectFiles_BadSyntax03()
+        public void Selector_SelectFiles_BadSyntax03()
         {
             // specify an invalid string 
-            Ionic.FileFilter ff = new Ionic.FileFilter("name = *.txt  URF ");
+            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  URF ");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
-        public void Filter_SelectFiles_BadSyntax04()
+        public void Selector_SelectFiles_BadSyntax04()
         {
             // specify an invalid string 
-            Ionic.FileFilter ff = new Ionic.FileFilter("name = *.txt  OR (");
+            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  OR (");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.FormatException))]
-        public void Filter_SelectFiles_BadSyntax05()
+        public void Selector_SelectFiles_BadSyntax05()
         {
             // specify an invalid string 
-            Ionic.FileFilter ff = new Ionic.FileFilter("name = *.txt  OR (size = G)");
+            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  OR (size = G)");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
-        public void Filter_SelectFiles_BadSyntax06()
+        public void Selector_SelectFiles_BadSyntax06()
         {
             // specify an invalid string 
-            Ionic.FileFilter ff = new Ionic.FileFilter("name = *.txt  OR (size > )");
+            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  OR (size > )");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
-        public void Filter_SelectFiles_BadSyntax07()
+        public void Selector_SelectFiles_BadSyntax07()
         {
             // specify an invalid string 
-            Ionic.FileFilter ff = new Ionic.FileFilter("name = *.txt  OR (size > 7800");
+            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  OR (size > 7800");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
-        public void Filter_SelectFiles_BadSyntax08()
+        public void Selector_SelectFiles_BadSyntax08()
         {
             // specify an invalid string 
-            Ionic.FileFilter ff = new Ionic.FileFilter("name = *.txt  OR )size > 7800");
+            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  OR )size > 7800");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
-        public void Filter_SelectFiles_BadSyntax09()
+        public void Selector_SelectFiles_BadSyntax09()
         {
             // specify an invalid string 
-            Ionic.FileFilter ff = new Ionic.FileFilter("name = *.txt and  name =");
+            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt and  name =");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
-        public void Filter_SelectFiles_BadSyntax10()
+        public void Selector_SelectFiles_BadSyntax10()
         {
             // specify an invalid string 
-            Ionic.FileFilter ff = new Ionic.FileFilter("name == *.txt");
+            Ionic.FileSelector ff = new Ionic.FileSelector("name == *.txt");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
-        public void Filter_SelectFiles_BadSyntax11()
+        public void Selector_SelectFiles_BadSyntax11()
         {
             // specify an invalid string 
-            Ionic.FileFilter ff = new Ionic.FileFilter("name ~= *.txt");
+            Ionic.FileSelector ff = new Ionic.FileSelector("name ~= *.txt");
         }
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
-        public void Filter_SelectFiles_BadSyntax12()
+        public void Selector_SelectFiles_BadSyntax12()
         {
             // specify an invalid string 
-            Ionic.FileFilter ff = new Ionic.FileFilter("name @ = *.txt");
+            Ionic.FileSelector ff = new Ionic.FileSelector("name @ = *.txt");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
-        public void Filter_SelectFiles_BadSyntax13()
+        public void Selector_SelectFiles_BadSyntax13()
         {
             // specify an invalid string 
-            Ionic.FileFilter ff = new Ionic.FileFilter("name LIKE  *.txt");
+            Ionic.FileSelector ff = new Ionic.FileSelector("name LIKE  *.txt");
         }
     }
 }

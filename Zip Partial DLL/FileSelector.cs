@@ -1,4 +1,4 @@
-// Filter.cs
+// FileSelector.cs
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2006, 2007, 2008, 2009 Microsoft Corporation.  All rights reserved.
@@ -26,7 +26,7 @@ namespace Ionic
 
     /// <summary>
     /// Enumerates the options for a logical conjunction. This enum is intended for use 
-    /// internally by the FileFilter class.
+    /// internally by the FileSelector class.
     /// </summary>
     internal enum LogicalConjunction
     {
@@ -60,13 +60,13 @@ namespace Ionic
     }
 
 
-    internal abstract partial class FileCriterion
+    internal abstract partial class SelectionCriterion
     {
         internal abstract bool Evaluate(string filename);
     }
 
 
-    internal partial class SizeCriterion : FileCriterion
+    internal partial class SizeCriterion : SelectionCriterion
     {
         internal ComparisonConstraint Constraint;
         internal Int64 Size;
@@ -117,7 +117,7 @@ namespace Ionic
 
 
 
-    internal partial class TimeCriterion : FileCriterion
+    internal partial class TimeCriterion : SelectionCriterion
     {
         internal ComparisonConstraint Constraint;
         internal WhichTime Which;
@@ -187,18 +187,21 @@ namespace Ionic
 
 
 
-    internal partial class NameCriterion : FileCriterion
+    internal partial class NameCriterion : SelectionCriterion
     {
         private Regex _re;
         private String _regexString;
         internal ComparisonConstraint Constraint;
         private string _MatchingFileSpec;
-        internal string MatchingFileSpec
+        internal virtual string MatchingFileSpec
         {
             set
             {
                 _MatchingFileSpec = value;
-                _regexString = Regex.Escape(value).Replace(@"\*", ".*").Replace(@"\?", ".") + "$";
+                _regexString = Regex.Escape(value)
+            .Replace(@"\*", @"[^\\\.]*")
+            .Replace(@"\?", @"[^\\\.]")
+            + "$";
                 _re = new Regex(_regexString, RegexOptions.IgnoreCase);
             }
         }
@@ -219,7 +222,8 @@ namespace Ionic
 
         private bool _Evaluate(string filename)
         {
-            String f = System.IO.Path.GetFileName(filename);
+            //String f = System.IO.Path.GetFileName(filename);
+            String f = filename;
             bool result = _re.IsMatch(f);
             if (Constraint != ComparisonConstraint.EqualTo)
                 result = !result;
@@ -230,7 +234,7 @@ namespace Ionic
 
 
 
-    internal partial class AttributesCriterion : FileCriterion
+    internal partial class AttributesCriterion : SelectionCriterion
     {
         private FileAttributes _Attributes;
         internal ComparisonConstraint Constraint;
@@ -349,13 +353,13 @@ namespace Ionic
 
 
 
-    internal partial class CompoundCriterion : FileCriterion
+    internal partial class CompoundCriterion : SelectionCriterion
     {
         internal LogicalConjunction Conjunction;
-        internal FileCriterion Left;
+        internal SelectionCriterion Left;
 
-        private FileCriterion _Right;
-        internal FileCriterion Right
+        private SelectionCriterion _Right;
+        internal SelectionCriterion Right
         {
             get { return _Right; }
             set
@@ -406,91 +410,66 @@ namespace Ionic
 
 
     /// <summary>
-    /// FileFilter encapsulates logic that selects files from a source based on a set
+    /// FileSelector encapsulates logic that selects files from a source based on a set
     /// of criteria.  
     /// </summary>
     /// <remarks>
     ///
     /// <para>
     /// Typically, an application that creates or manipulates Zip archives will not directly
-    /// interact with the FileFilter class.  The FileFilter class is used internally by the
+    /// interact with the FileSelector class.  The FileSelector class is used internally by the
     /// ZipFile class for selecting files for inclusion into the ZipFile, when the <see
     /// cref="Ionic.Zip.ZipFile.AddSelectedFiles(String,String)"/> method is called.
     /// </para>
     ///
     /// <para>
-    /// But, some applications may wish to use the FileFilter class directly, to select
+    /// But, some applications may wish to use the FileSelector class directly, to select
     /// files from disk volumes based on a set of criteria, without creating or querying Zip
     /// archives.  The file selection criteria include: a pattern to match the filename; the
     /// last modified, created, or last accessed time of the file; the size of the file; and
     /// the attributes of the file.
     /// </para>
     /// </remarks>
-    public partial class FileFilter
+    public partial class FileSelector
     {
-        internal FileCriterion Include;
-        internal FileCriterion Exclude;
+        internal SelectionCriterion _Criterion;
 
         /// <summary>
-        /// Constructor that allows the caller to specify file selection criteria, 
-        /// as well as file exclusion criteria.
+        /// The default constructor.  
         /// </summary>
-        /// 
         /// <remarks>
-        /// <para>
-        /// This constructor allows the caller to specify a set of criteria for inclusion of files, as
-        /// well as a set of criteria for exclusion.  The set of files returned will 
-        /// satisfy the inclusion criteria, but will not satisfy the exclusion criteria. 
-        /// </para>
-        /// 
-        /// <para>
-        /// See <see cref="FileFilter.SelectionCriteria"/> for a description of the syntax of 
-        /// the selectionCriteria string.
-        /// </para>
+        /// If you use this constructor, you'll want to set the
+        /// SelectionCriteria property on the instance before calling
+        /// SelectFiles().
         /// </remarks>
-        /// 
-        /// <param name="selectionCriteria">The criteria for file selection.</param>
-        /// 
-        /// <param name="exclusionCriteria">
-        /// The criteria for exclusion.  Actually, the exclusionCriteria is
-        /// redundant. Any criteria specified in the exclusionCriteria could also be specified in
-        /// the selectionCriteria, just by logically negating the criteria.  In other words, a
-        /// selectionCriteria of "size &gt; 50000" coupled with an exclusionCriteria of "name =
-        /// *.txt" is equivalent to a selectionCriteria of "size &gt; 50000 AND name != *.txt"
-        /// with no exclusionCriteria.  Despite this, this method is provided to allow for
-        /// clarity in the interface for those cases where it makes sense to clearly delineate
-        /// the exclusion criteria in the application code.
-        /// </param>
-        public FileFilter(String selectionCriteria, String exclusionCriteria)
+        public FileSelector()
         {
-            if (String.IsNullOrEmpty(selectionCriteria))
-                throw new ArgumentException("selectionCriteria");
-
-            Include = _ParseCriterion(selectionCriteria);
-            Exclude = _ParseCriterion(exclusionCriteria);
         }
 
 
         /// <summary>
         /// Constructor that allows the caller to specify file selection criteria.
         /// </summary>
+        /// 
         /// <remarks>
         /// <para>
-        /// This constructor allows the caller to specify a set of criteria for inclusion of files. 
+        /// This constructor allows the caller to specify a set of criteria for selection of files.
         /// </para>
         /// 
         /// <para>
-        /// See <see cref="FileFilter.SelectionCriteria"/> for a description of the syntax of 
+        /// See <see cref="FileSelector.SelectionCriteria"/> for a description of the syntax of 
         /// the selectionCriteria string.
         /// </para>
         /// </remarks>
-        public FileFilter(String selectionCriteria)
+        /// 
+        /// <param name="selectionCriteria">The criteria for file selection.</param>
+        public FileSelector(String selectionCriteria)
         {
-            if (String.IsNullOrEmpty(selectionCriteria))
-                throw new ArgumentException("selectionCriteria");
-
-            Include = _ParseCriterion(selectionCriteria);
+            if (!String.IsNullOrEmpty(selectionCriteria))
+                _Criterion = _ParseCriterion(selectionCriteria);
         }
+
+
 
         /// <summary>
         /// The string specifying which files to include when retrieving.
@@ -583,14 +562,15 @@ namespace Ionic
         {
             get
             {
-                return Include.ToString();
+                if (_Criterion == null) return null;
+                return _Criterion.ToString();
             }
             set
             {
-                if (String.IsNullOrEmpty(value))
-                    throw new ArgumentException("value");
-
-                Include = _ParseCriterion(value);
+                if (value == null) _Criterion = null;
+                else if (value.Trim() == "") _Criterion = null;
+                else
+                    _Criterion = _ParseCriterion(value);
             }
         }
 
@@ -606,7 +586,7 @@ namespace Ionic
 
 
 
-        private FileCriterion _ParseCriterion(String s)
+        private SelectionCriterion _ParseCriterion(String s)
         {
             if (s == null) return null;
 
@@ -622,13 +602,13 @@ namespace Ionic
 
             if (elements.Length < 3) throw new ArgumentException();
 
-            FileCriterion current = null;
+            SelectionCriterion current = null;
 
             LogicalConjunction pendingConjunction = LogicalConjunction.NONE;
 
             ParseState state;
             var stateStack = new System.Collections.Generic.Stack<ParseState>();
-            var critStack = new System.Collections.Generic.Stack<FileCriterion>();
+            var critStack = new System.Collections.Generic.Stack<SelectionCriterion>();
             stateStack.Push(ParseState.Start);
 
             for (int i = 0; i < elements.Length; i++)
@@ -799,32 +779,29 @@ namespace Ionic
 
 
         /// <summary>
-        /// Returns a string representation of the FileFilter object.
+        /// Returns a string representation of the FileSelector object.
         /// </summary>
         /// <returns>The string representation of the boolean logic statement of the file
         /// selection criteria for this instance. </returns>
         public override String ToString()
         {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("Include: ").Append(Include.ToString());
-            if (Exclude != null)
-                sb.Append(" and Exclude: ").Append(Exclude.ToString());
-            return sb.ToString();
+            //             StringBuilder sb = new StringBuilder();
+            //             sb.Append("_Criterion: ").Append(
+            //             return sb.ToString();
+            return _Criterion.ToString();
         }
 
 
         private bool Evaluate(string filename)
         {
-            bool result = Include.Evaluate(filename);
-            if (Exclude != null)
-                result = result && !Exclude.Evaluate(filename);
+            bool result = _Criterion.Evaluate(filename);
             return result;
         }
 
 
         /// <summary>
         /// Returns the names of the files in the specified directory
-        /// that fit the selection criteria specified in the FileFilter.
+        /// that fit the selection criteria specified in the FileSelector.
         /// </summary>
         ///
         /// <remarks>
@@ -833,12 +810,12 @@ namespace Ionic
         /// </remarks>
         ///
         /// <param name="directory">
-        /// The name of the directory over which to apply the FileFilter criteria.
+        /// The name of the directory over which to apply the FileSelector criteria.
         /// </param>
         ///
         /// <returns>
         /// An array of strings containing fully-qualified pathnames of files
-        /// that match the criteria specified in the FileFilter instance.
+        /// that match the criteria specified in the FileSelector instance.
         /// </returns>
         public String[] SelectFiles(String directory)
         {
@@ -848,17 +825,17 @@ namespace Ionic
 
         /// <summary>
         /// Returns the names of the files in the specified directory that fit the selection
-        /// criteria specified in the FileFilter, optionally recursing through subdirectories.
+        /// criteria specified in the FileSelector, optionally recursing through subdirectories.
         /// </summary>
         ///
         /// <remarks>
-        /// This method applies the file selection criteria contained in the FileFilter to the 
+        /// This method applies the file selection criteria contained in the FileSelector to the 
         /// files contained in the given directory, and returns the names of files that 
         /// conform to the criteria. 
         /// </remarks>
         ///
         /// <param name="directory">
-        /// The name of the directory over which to apply the FileFilter criteria.
+        /// The name of the directory over which to apply the FileSelector criteria.
         /// </param>
         ///
         /// <param name="recurseDirectories">
@@ -867,10 +844,13 @@ namespace Ionic
         ///
         /// <returns>
         /// An array of strings containing fully-qualified pathnames of files
-        /// that match the criteria specified in the FileFilter instance.
+        /// that match the criteria specified in the FileSelector instance.
         /// </returns>
         public String[] SelectFiles(String directory, bool recurseDirectories)
         {
+            if (_Criterion == null)
+                throw new ArgumentException("SelectionCriteria has not been set");
+
             String[] filenames = System.IO.Directory.GetFiles(directory);
             var list = new System.Collections.Generic.List<String>();
 

@@ -2079,14 +2079,14 @@ namespace Ionic.Zip
         /// <seealso cref="Ionic.Zip.ZipFile.AddDirectory(string)"/>
         /// <seealso cref="Ionic.Zip.ZipFile.UpdateFile(string)"/>
         ///
-        /// <param name="Filename">
+        /// <param name="fileName">
         /// The name of the file to add. It should refer to a file in the filesystem.  
         /// The name of the file may be a relative path or a fully-qualified path. 
         /// </param>
         /// <returns>The ZipEntry corresponding to the File added.</returns>
-        public ZipEntry AddFile(string Filename)
+        public ZipEntry AddFile(string fileName)
         {
-            return AddFile(Filename, null);
+            return AddFile(fileName, null);
         }
 
 
@@ -2162,12 +2162,12 @@ namespace Ionic.Zip
         /// <seealso cref="Ionic.Zip.ZipFile.AddDirectory(string, string)"/>
         /// <seealso cref="Ionic.Zip.ZipFile.UpdateFile(string,string)"/>
         ///
-        /// <param name="Filename">
+        /// <param name="fileName">
         /// The name of the file to add.  The name of the file may be a relative path or 
         /// a fully-qualified path.
         /// </param>
         ///
-        /// <param name="DirectoryPathInArchive">
+        /// <param name="directoryPathInArchive">
         /// Specifies a directory path to use to override any path in the FileName.
         /// This path may, or may not, correspond to a real directory in the current filesystem.
         /// If the files within the zip are later extracted, this is the path used for the extracted file. 
@@ -2176,10 +2176,10 @@ namespace Ionic.Zip
         /// </param>
         ///
         /// <returns>The ZipEntry corresponding to the file added.</returns>
-        public ZipEntry AddFile(string Filename, String DirectoryPathInArchive)
+        public ZipEntry AddFile(string fileName, String directoryPathInArchive)
         {
-            string nameInArchive = ZipEntry.NameInArchive(Filename, DirectoryPathInArchive);
-            ZipEntry ze = ZipEntry.Create(Filename, nameInArchive);
+            string nameInArchive = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
+            ZipEntry ze = ZipEntry.Create(fileName, nameInArchive);
             //ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
             ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
@@ -2189,7 +2189,7 @@ namespace Ionic.Zip
             ze._zipfile = this;
             ze.Encryption = Encryption;
             ze.Password = _Password;
-            if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", Filename);
+            if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
             InsureUniqueEntry(ze);
             _entries.Add(ze);
             _contentsChanged = true;
@@ -2202,41 +2202,41 @@ namespace Ionic.Zip
         /// <summary>
         /// This method adds a set of files to the ZipFile.
         /// </summary>
-	///
-        /// <param name="Filenames">
+        ///
+        /// <param name="fileNames">
         /// The names of the files to add. Each string should refer to a file in the filesystem.  
         /// The name of the file may be a relative path or a fully-qualified path. 
         /// </param>
-	///
+        ///
         /// <seealso cref="Ionic.Zip.ZipFile.AddSelectedFiles(String, String)" />
-        public void AddFiles(String[] Filenames)
+        public void AddFiles(String[] fileNames)
         {
-            this.AddFiles(Filenames, null);
+            this.AddFiles(fileNames, null);
         }
 
         /// <summary>
         /// This method adds a set of files to the ZipFile.
         /// </summary>
-	///
-        /// <param name="Filenames">
+        ///
+        /// <param name="fileNames">
         /// The names of the files to add. Each string should refer to a file in the filesystem.  
         /// The name of the file may be a relative path or a fully-qualified path. 
         /// </param>
-	///
-        /// <param name="DirectoryPathInArchive">
-        /// Specifies a directory path to use to override any path in the FileName.  This path
+        ///
+        /// <param name="directoryPathInArchive">
+        /// Specifies a directory path to use to override any path in the file name.  This path
         /// may, or may not, correspond to a real directory in the current filesystem.  If the
         /// files within the zip are later extracted, this is the path used for the extracted
         /// file.  Passing null (nothing in VB) will use the path on the FileName, if any.
         /// Passing the empty string ("") will insert the item at the root path within the
         /// archive.
         /// </param>
-	///
+        ///
         /// <seealso cref="Ionic.Zip.ZipFile.AddSelectedFiles(String, String)" />
-        public void AddFiles(String[] Filenames, String DirectoryPathInArchive)
+        public void AddFiles(String[] fileNames, String directoryPathInArchive)
         {
-            foreach (var f in Filenames)
-                this.AddFile(f, DirectoryPathInArchive);
+            foreach (var f in fileNames)
+                this.AddFile(f, directoryPathInArchive);
         }
 
 
@@ -5700,7 +5700,7 @@ namespace Ionic.Zip
         /// this behavior.
         /// </param>
         /// <param name="directoryName">the directory into which to extract. It will be created 
-	/// if it does not exist.</param>
+        /// if it does not exist.</param>
         public void Extract(string fileName, string directoryName)
         {
             ZipEntry e = this[fileName];
@@ -5769,9 +5769,9 @@ namespace Ionic.Zip
         /// property to change this behavior. The pathname can use forward-slashes or backward slashes.
         /// </param>
         /// <param name="directoryName">the directory into which to extract. It will be created 
-	/// if it does not exist.</param>
+        /// if it does not exist.</param>
         /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files 
-	/// by the given name. </param>
+        /// by the given name. </param>
         public void Extract(string fileName, string directoryName, bool wantOverwrite)
         {
             ZipEntry e = this[fileName];
