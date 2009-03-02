@@ -323,8 +323,8 @@ namespace Ionic
             FileAttributes fileAttrs = System.IO.File.GetAttributes(filename);
 #endif
 
-	    return _Evaluate(fileAttrs);
-	}
+            return _Evaluate(fileAttrs);
+        }
 
         private bool _Evaluate(FileAttributes fileAttrs)
         {
@@ -407,18 +407,35 @@ namespace Ionic
 
     /// <summary>
     /// FileFilter encapsulates logic that selects files from a source based on a set
-    /// of criteria.  The criteria include: a pattern to match the filename; the last modified, 
-    /// created, or last accessed time of the file; the size of the file; and the attributes
-    /// of the file.  
+    /// of criteria.  
     /// </summary>
+    /// <remarks>
+    ///
+    /// <para>
+    /// Typically, an application that creates or manipulates Zip archives will not directly
+    /// interact with the FileFilter class.  The FileFilter class is used internally by the
+    /// ZipFile class for selecting files for inclusion into the ZipFile, when the <see
+    /// cref="ZipFile.AddSelectedFiles(String,String)"/> method is called.
+    /// </para>
+    ///
+    /// <para>
+    /// But, some applications may wish to use the FileFilter class directly, to select
+    /// files from disk volumes based on a set of criteria, without creating or querying Zip
+    /// archives.  The file selection criteria include: a pattern to match the filename; the
+    /// last modified, created, or last accessed time of the file; the size of the file; and
+    /// the attributes of the file.
+    /// </para>
+    /// </remarks>
     public partial class FileFilter
     {
         internal FileCriterion Include;
         internal FileCriterion Exclude;
 
         /// <summary>
-        /// Constructor that allows the caller to specify inclusion and exclusion criteria. 
+        /// Constructor that allows the caller to specify file selection criteria, 
+        /// as well as file exclusion criteria.
         /// </summary>
+        /// 
         /// <remarks>
         /// <para>
         /// This constructor allows the caller to specify a set of criteria for inclusion of files, as
@@ -431,8 +448,19 @@ namespace Ionic
         /// the FileIncludeSpec string.
         /// </para>
         /// </remarks>
-        /// <param name="FileIncludeSpec">The criteria for inclusion</param>
-        /// <param name="FileExcludeSpec">The criteria for exclusion</param>
+        /// 
+        /// <param name="FileIncludeSpec">The criteria for file selection.</param>
+        /// 
+        /// <param name="FileExcludeSpec">
+        /// The criteria for exclusion.  Actually, the FileExcludeSpec is
+        /// redundant. Any criteria specified in the FileExcludeSpec could also be specified in
+        /// the FileIncludeSpec, just by logically negating the criteria.  In other words, a
+        /// FileIncludeSpec of "size &gt; 50000" coupled with an FileExcludeSpec of "name =
+        /// *.txt" is equivalent to a FileIncludeSpec of "size &gt; 50000 AND name != *.txt"
+        /// with no FileExcludeSpec.  Despite this, this method is provided to allow for
+        /// clarity in the interface for those cases where it makes sense to clearly delineate
+        /// the exclusion criteria in the application code.
+        /// </param>
         public FileFilter(String FileIncludeSpec, String FileExcludeSpec)
         {
             if (String.IsNullOrEmpty(FileIncludeSpec))
@@ -444,7 +472,7 @@ namespace Ionic
 
 
         /// <summary>
-        /// Constructor that allows the caller to specify inclusion and exclusion criteria. 
+        /// Constructor that allows the caller to specify file selection criteria.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -475,7 +503,7 @@ namespace Ionic
         /// implying "Not Equal".  The value is "*.doc".  That criterion, in English, says "all
         /// files with a name that does not end in the .doc extension."
         /// </para> 
-	///
+        ///
         /// <para>
         /// Supported nouns include "name" for the filename; "atime", "mtime", and "ctime" for
         /// last access time, last modfied time, and created time of the file, respectively;
@@ -486,34 +514,34 @@ namespace Ionic
         /// </para> 
         ///
         /// <para>
-	/// Specify values for the file attributes as a string with one or more of the
-	/// characters H,R,S,A in any order, implying Hidden, ReadOnly, System, and Archive,
-	/// respectively.  To specify a time, use YYYY-MM-DD-HH:mm:ss as the format.  If you
-	/// omit the HH:mm:ss portion, it is assumed to be 00:00:00 (midnight). The value for a
-	/// size criterion is expressed in integer quantities of bytes, kilobytes (use k or kb
-	/// after the number), megabytes (m or mb), or gigabytes (g or gb).  The value for a
-	/// name is a pattern to match against the filename, potentially including wildcards.
-	/// The pattern follows CMD.exe glob rules: * implies one or more of any character,
-	/// while ? implies one character.  Currently you cannot specify a pattern that includes
-	/// spaces.
+        /// Specify values for the file attributes as a string with one or more of the
+        /// characters H,R,S,A in any order, implying Hidden, ReadOnly, System, and Archive,
+        /// respectively.  To specify a time, use YYYY-MM-DD-HH:mm:ss as the format.  If you
+        /// omit the HH:mm:ss portion, it is assumed to be 00:00:00 (midnight). The value for a
+        /// size criterion is expressed in integer quantities of bytes, kilobytes (use k or kb
+        /// after the number), megabytes (m or mb), or gigabytes (g or gb).  The value for a
+        /// name is a pattern to match against the filename, potentially including wildcards.
+        /// The pattern follows CMD.exe glob rules: * implies one or more of any character,
+        /// while ? implies one character.  Currently you cannot specify a pattern that includes
+        /// spaces.
         /// </para> 
         ///
         /// <para>
-	/// Some examples: a string like "attributes != H" retrieves all entries whose
-	/// attributes do not include the Hidden bit.  A string like "mtime > 2009-01-01"
-	/// retrieves all entries with a last modified time after January 1st, 2009.  For
-	/// example "size &gt; 2gb" retrieves all entries whose uncompressed size is greater
-	/// than 2gb.
+        /// Some examples: a string like "attributes != H" retrieves all entries whose
+        /// attributes do not include the Hidden bit.  A string like "mtime > 2009-01-01"
+        /// retrieves all entries with a last modified time after January 1st, 2009.  For
+        /// example "size &gt; 2gb" retrieves all entries whose uncompressed size is greater
+        /// than 2gb.
         /// </para> 
-	///
+        ///
         /// <para>
-	/// You can combine criteria with the conjunctions AND or OR. Using a string like "name
+        /// You can combine criteria with the conjunctions AND or OR. Using a string like "name
         /// = *.txt AND size &gt;= 100k" for the FileIncludeSpec retrieves entries whose names
         /// end in  .txt, and whose uncompressed size is greater than or equal to
         /// 100 kilobytes.
         /// </para>
-	///
-	/// <para>
+        ///
+        /// <para>
         /// For more complex combinations of criteria, you can use parenthesis to group clauses
         /// in the boolean logic.  Absent parenthesis, the precedence of the criterion atoms is
         /// determined by order of appearance.  Unlike the C# language, the AND conjunction does
@@ -523,7 +551,7 @@ namespace Ionic
         /// while "attributes = H OR name = *.txt and size &gt; 1000" evaluates to "((attributes
         /// = H OR name = *.txt) AND size &gt; 1000)".  When in doubt, use parenthesis.
         /// </para>
-	///
+        ///
         /// <para>
         /// Using time properties requires some extra care. If you want to retrieve all entries
         /// that were last updated on 2009 February 14, specify "mtime &gt;= 2009-02-14 AND
@@ -547,7 +575,7 @@ namespace Ionic
         /// </para>
         /// 
         /// </remarks>
-	///
+        ///
         /// <exception cref="System.Exception">
         /// Thrown in the setter if the value has an invalid syntax.
         /// </exception>
@@ -773,7 +801,8 @@ namespace Ionic
         /// <summary>
         /// Returns a string representation of the FileFilter object.
         /// </summary>
-        /// <returns>The string representation of the instance.</returns>
+        /// <returns>The string representation of the boolean logic statement of the file
+        /// selection criteria for this instance. </returns>
         public override String ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -794,8 +823,22 @@ namespace Ionic
 
 
         /// <summary>
-        /// Get the files in the specified directory that fit the specified criteria.
+        /// Returns the names of the files in the specified directory
+        /// that fit the selection criteria specified in the FileFilter.
         /// </summary>
+        ///
+        /// <remarks>
+        /// This is equivalent to calling <see cref="GetFiles(String, bool)"/> with RecurseDirectories = false.
+        /// </remarks>
+        ///
+        /// <param name="Directory">
+        /// The name of the directory over which to apply the FileFilter criteria.
+        /// </param>
+        ///
+        /// <returns>
+        /// An array of strings containing fully-qualified pathnames of files
+        /// that match the criteria specified in the FileFilter instance.
+        /// </returns>
         public String[] GetFiles(String Directory)
         {
             return GetFiles(Directory, false);
@@ -803,8 +846,28 @@ namespace Ionic
 
 
         /// <summary>
-        /// Get the files in the specified directory that fit the specified criteria.
+        /// Returns the names of the files in the specified directory that fit the selection
+        /// criteria specified in the FileFilter, optionally recursing through subdirectories.
         /// </summary>
+        ///
+        /// <remarks>
+        /// This method applies the file selection criteria contained in the FileFilter to the 
+        /// files contained in the given directory, and returns the names of files that 
+        /// conform to the criteria. 
+        /// </remarks>
+        ///
+        /// <param name="Directory">
+        /// The name of the directory over which to apply the FileFilter criteria.
+        /// </param>
+        ///
+        /// <param name="RecurseDirectories">
+        /// Whether to recurse through subdirectories when applying the file selection criteria.
+        /// </param>
+        ///
+        /// <returns>
+        /// An array of strings containing fully-qualified pathnames of files
+        /// that match the criteria specified in the FileFilter instance.
+        /// </returns>
         public String[] GetFiles(String Directory, bool RecurseDirectories)
         {
             String[] filenames = System.IO.Directory.GetFiles(Directory);

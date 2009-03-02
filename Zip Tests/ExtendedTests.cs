@@ -1,5 +1,4 @@
 using System;
-//using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -8,7 +7,7 @@ using Ionic.Zip.Tests.Utilities;
 using System.IO;
 
 
-/// Tests for more advanced scenarios.
+/// Tests for more advanced scenarios?
 /// 
 
 namespace Ionic.Zip.Tests.Extended
@@ -1742,11 +1741,11 @@ namespace Ionic.Zip.Tests.Extended
 
 
         [TestMethod]
-        public void Filter_GetSelectedEntries()
+        public void Filter_SelectEntries()
         {
             System.IO.Directory.SetCurrentDirectory(TopLevelDir);
 
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Filter_GetSelectedFiles.zip");
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Filter_SelectFiles.zip");
 
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
@@ -1792,8 +1791,8 @@ namespace Ionic.Zip.Tests.Extended
             TestContext.WriteLine("Reading zip...");
             using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
             {
-                var selected1 = zip1.GetSelectedEntries("name = *.txt");
-                var selected2 = zip1.GetSelectedEntries("name = *.bin");
+                var selected1 = zip1.SelectEntries("name = *.txt");
+                var selected2 = zip1.SelectEntries("name = *.bin");
                 TestContext.WriteLine("Text files:");
                 foreach (ZipEntry e in selected1)
                 {
@@ -1807,8 +1806,8 @@ namespace Ionic.Zip.Tests.Extended
             TestContext.WriteLine("Reading zip, using shorthand filters...");
             using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
             {
-                var selected1 = zip1.GetSelectedEntries("*.txt");
-                var selected2 = zip1.GetSelectedEntries("*.bin");
+                var selected1 = zip1.SelectEntries("*.txt");
+                var selected2 = zip1.SelectEntries("*.bin");
                 TestContext.WriteLine("Text files:");
                 foreach (ZipEntry e in selected1)
                 {

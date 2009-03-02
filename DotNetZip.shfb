@@ -4,6 +4,7 @@
     </assemblies>
     <namespaceSummaries>
         <namespaceSummaryItem name="" isDocumented="False" />
+        <namespaceSummaryItem name="Ionic" isDocumented="True">The Ionic namespace includes supporting classes used in the DotNetZip library.</namespaceSummaryItem>
         <namespaceSummaryItem name="Ionic.Zip" isDocumented="True">Classes in the Ionic.Zip namespace allow applications to read and write zip files according to the format
 described by pkware, at:
 http://www.pkware.com/business_and_developers/developer/popups/appnote.txt.
@@ -12,7 +13,7 @@ This implementation utilizes a DeflateStream class implemented in managed code, 
 v2.0 base class library.
 
 DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Girls Club of King County, in Washington, USA.  http://cheeso.members.winisp.net/DotNetZipDonate.aspx</namespaceSummaryItem>
-        <namespaceSummaryItem name="Ionic.Zlib" isDocumented="True">Ionic.Zlib namespace includes classes for doing ZLIB compression and decompression, according to RFC1950 and RFC1951.</namespaceSummaryItem>
+        <namespaceSummaryItem name="Ionic.Zlib" isDocumented="True">Ionic.Zlib namespace includes classes for doing ZLIB, DEFLATE, and GZIP compression and decompression, according to RFC1950, RFC1951, and RFC 1952.  It includes stream classes that can directly replace the DeflateStream and GZipStream classes that are included in the Base Class Library of the .NET Framework.</namespaceSummaryItem>
     </namespaceSummaries>
     <additionalContent>
         <contentItem sourcePath=".\About.htm" destPath="" excludeItems="False" />

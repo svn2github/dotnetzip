@@ -39,7 +39,7 @@ namespace Ionic.Zip
         /// implying "Not Equal".  The value is "*.doc".  That criterion, in English, says "all
         /// files with a name that does not end in the .doc extension."
         /// </para> 
-	///
+        ///
         /// <para>
         /// Supported nouns include "name" for the filename; "atime", "mtime", and "ctime" for
         /// last access time, last modfied time, and created time of the file, respectively;
@@ -50,34 +50,34 @@ namespace Ionic.Zip
         /// </para> 
         ///
         /// <para>
-	/// Specify values for the file attributes as a string with one or more of the
-	/// characters H,R,S,A in any order, implying Hidden, ReadOnly, System, and Archive,
-	/// respectively.  To specify a time, use YYYY-MM-DD-HH:mm:ss as the format.  If you
-	/// omit the HH:mm:ss portion, it is assumed to be 00:00:00 (midnight). The value for a
-	/// size criterion is expressed in integer quantities of bytes, kilobytes (use k or kb
-	/// after the number), megabytes (m or mb), or gigabytes (g or gb).  The value for a
-	/// name is a pattern to match against the filename, potentially including wildcards.
-	/// The pattern follows CMD.exe glob rules: * implies one or more of any character,
-	/// while ? implies one character.  Currently you cannot specify a pattern that includes
-	/// spaces.
+        /// Specify values for the file attributes as a string with one or more of the
+        /// characters H,R,S,A in any order, implying Hidden, ReadOnly, System, and Archive,
+        /// respectively.  To specify a time, use YYYY-MM-DD-HH:mm:ss as the format.  If you
+        /// omit the HH:mm:ss portion, it is assumed to be 00:00:00 (midnight). The value for a
+        /// size criterion is expressed in integer quantities of bytes, kilobytes (use k or kb
+        /// after the number), megabytes (m or mb), or gigabytes (g or gb).  The value for a
+        /// name is a pattern to match against the filename, potentially including wildcards.
+        /// The pattern follows CMD.exe glob rules: * implies one or more of any character,
+        /// while ? implies one character.  Currently you cannot specify a pattern that includes
+        /// spaces.
         /// </para> 
         ///
         /// <para>
-	/// Some examples: a string like "attributes != H" retrieves all entries whose
-	/// attributes do not include the Hidden bit.  A string like "mtime > 2009-01-01"
-	/// retrieves all entries with a last modified time after January 1st, 2009.  For
-	/// example "size &gt; 2gb" retrieves all entries whose uncompressed size is greater
-	/// than 2gb.
+        /// Some examples: a string like "attributes != H" retrieves all entries whose
+        /// attributes do not include the Hidden bit.  A string like "mtime > 2009-01-01"
+        /// retrieves all entries with a last modified time after January 1st, 2009.  For
+        /// example "size &gt; 2gb" retrieves all entries whose uncompressed size is greater
+        /// than 2gb.
         /// </para> 
-	///
+        ///
         /// <para>
-	/// You can combine criteria with the conjunctions AND or OR. Using a string like "name
+        /// You can combine criteria with the conjunctions AND or OR. Using a string like "name
         /// = *.txt AND size &gt;= 100k" for the FileIncludeSpec retrieves entries whose names
         /// end in  .txt, and whose uncompressed size is greater than or equal to
         /// 100 kilobytes.
         /// </para>
-	///
-	/// <para>
+        ///
+        /// <para>
         /// For more complex combinations of criteria, you can use parenthesis to group clauses
         /// in the boolean logic.  Absent parenthesis, the precedence of the criterion atoms is
         /// determined by order of appearance.  Unlike the C# language, the AND conjunction does
@@ -87,7 +87,7 @@ namespace Ionic.Zip
         /// while "attributes = H OR name = *.txt and size &gt; 1000" evaluates to "((attributes
         /// = H OR name = *.txt) AND size &gt; 1000)".  When in doubt, use parenthesis.
         /// </para>
-	///
+        ///
         /// <para>
         /// Using time properties requires some extra care. If you want to retrieve all entries
         /// that were last updated on 2009 February 14, specify "mtime &gt;= 2009-02-14 AND
@@ -125,7 +125,7 @@ namespace Ionic.Zip
         /// <code>
         /// using (ZipFile zip1 = ZipFile.Read(ZipFileName))
         /// {
-        ///     var txtFiles = zip1.GetSelectedEntries("name = *.txt");
+        ///     var txtFiles = zip1.SelectEntries("name = *.txt");
         ///     foreach (ZipEntry e in txtFiles)
         ///     {
         ///         e.Extract();
@@ -135,9 +135,9 @@ namespace Ionic.Zip
         /// </example>
         /// <param name="FileIncludeSpec">the string that specifies which entries to select</param>
         /// <returns>a collection of ZipEntry objects that conform to the inclusion spec</returns>
-        public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> GetSelectedEntries(String FileIncludeSpec)
+        public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> SelectEntries(String FileIncludeSpec)
         {
-            return GetSelectedEntries(FileIncludeSpec, null);
+            return SelectEntries(FileIncludeSpec, null);
         }
 
         /// <summary>
@@ -153,12 +153,12 @@ namespace Ionic.Zip
         /// created, or last accessed time for the file described by the entry; or the
         /// attributes of the entry.
         /// </para>
-	/// 
+        /// 
         /// <para>
         /// For information on the syntax of the criteria specification, see <see
-        /// cref="GetSelectedEntries(String)" />.
+        /// cref="SelectEntries(String)" />.
         /// </para> 
-	///
+        ///
         /// </remarks>
         /// 
         /// <exception cref="System.Exception">
@@ -171,7 +171,7 @@ namespace Ionic.Zip
         /// <code>
         /// using (ZipFile zip1 = ZipFile.Read(ZipFileName))
         /// {
-        ///     var txtFiles = zip1.GetSelectedEntries("name = *.txt", "size &lt; 100");
+        ///     var txtFiles = zip1.SelectEntries("name = *.txt", "size &lt; 100");
         ///     foreach (ZipEntry e in txtFiles)
         ///     {
         ///         e.Extract();
@@ -179,10 +179,22 @@ namespace Ionic.Zip
         /// }
         /// </code>
         /// </example>
+        ///
         /// <param name="FileIncludeSpec">the string that specifies which entries to select</param>
-        /// <param name="FileExcludeSpec">the string that specifies which entries to exclude</param>
+        ///
+        /// <param name="FileExcludeSpec">
+        /// The criteria for exclusion.  Actually, the FileExcludeSpec is
+        /// redundant. Any criteria specified in the FileExcludeSpec could also be specified in
+        /// the FileIncludeSpec, just by logically negating the criteria.  In other words, a
+        /// FileIncludeSpec of "size &gt; 50000" coupled with an FileExcludeSpec of "name =
+        /// *.txt" is equivalent to a FileIncludeSpec of "size &gt; 50000 AND name != *.txt"
+        /// with no FileExcludeSpec.  Despite this, this method is provided to allow for
+        /// clarity in the interface for those cases where it makes sense to clearly delineate
+        /// the exclusion criteria in the application code.
+        /// </param>
+        ///
         /// <returns>a collection of ZipEntry objects that conform to criteria</returns>
-        public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> GetSelectedEntries(String FileIncludeSpec, String FileExcludeSpec)
+        public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> SelectEntries(String FileIncludeSpec, String FileExcludeSpec)
         {
             Ionic.FileFilter ff = new Ionic.FileFilter(FileIncludeSpec, FileExcludeSpec);
             return ff.GetEntries(this);
@@ -191,11 +203,16 @@ namespace Ionic.Zip
         /// <summary>
         /// Adds to the ZipFile a selection of files from the disk that conform to the specified criteria.
         /// </summary>
+        /// 
         /// <remarks>
-        /// This method looks for files on the disk matching the specified FileIncludeSpec,
+        /// This method selects files from the disk matching the specified criteria,
         /// starting at the specified disk directory, and adds them to the ZipFile.  For details
-        /// on the grammar for the FileIncludeSpec, see <see cref="GetSelectedEntries(String)"/>.
+        /// on the syntax for the file selection criteria, see <see cref="SelectEntries(String)"/>.
         /// </remarks>
+        /// 
+        /// <param name="FileIncludeSpec">The criteria for file selection</param>
+        /// <param name="DirectoryOnDisk">The name of the directory on the disk from which to select files. </param>
+
         public void AddSelectedFiles(String FileIncludeSpec, String DirectoryOnDisk)
         {
             this.AddSelectedFiles(FileIncludeSpec, null, DirectoryOnDisk, null);
@@ -205,17 +222,30 @@ namespace Ionic.Zip
         /// <summary>
         /// Adds to the ZipFile a selection of files from the disk that conform to the specified criteria.
         /// </summary>
+        /// 
         /// <remarks>
-        /// This method looks in the specified Directory on the disk for files matching the
-        /// specified FileIncludeSpec, and not matching the FileExcludeSpec, and adds them to
-        /// the ZipFile using the specified base directory in the archive.  For details on the
-        /// grammar for the file criteria, see <see cref="GetSelectedEntries(String)" />.
+        /// This method selects files from the disk, starting at the specified disk directory,
+        /// that match the specified inclusion criteria, and do not match the exclusion
+        /// criteria, and adds those files to the ZipFile using the specified base directory in
+        /// the archive.  For details on the syntax for the file selection criteria, see <see
+        /// cref="SelectEntries(String)" />.
         /// </remarks>
-        public void AddSelectedFiles(String FileIncludeSpec, String FileExcludeSpec, String DirectoryOnDisk, String DirectoryInArchive)
+        /// 
+        /// <param name="FileIncludeSpec">The criteria for inclusion</param>
+        /// <param name="FileExcludeSpec">The criteria for exclusion</param>
+        /// <param name="DirectoryOnDisk">The name of the directory on the disk from which to select files. </param>
+        /// <param name="DirectoryPathInArchive">
+        /// Specifies a directory path to use to override any path in the FileName.
+        /// This path may, or may not, correspond to a real directory in the current filesystem.
+        /// If the files within the zip are later extracted, this is the path used for the extracted file. 
+        /// Passing null (nothing in VB) will use the path on the FileName, if any.  Passing the empty string ("")
+        /// will insert the item at the root path within the archive. 
+        /// </param>
+        public void AddSelectedFiles(String FileIncludeSpec, String FileExcludeSpec, String DirectoryOnDisk, String DirectoryPathInArchive)
         {
             Ionic.FileFilter ff = new Ionic.FileFilter(FileIncludeSpec, FileExcludeSpec);
             String[] filesToAdd = ff.GetFiles(DirectoryOnDisk);
-            this.AddFiles(filesToAdd, DirectoryInArchive);
+            this.AddFiles(filesToAdd, DirectoryPathInArchive);
         }
 
     }
@@ -321,7 +351,7 @@ namespace Ionic
         /// Retrieve the ZipEntry items in the ZipFile that conform to the specified criteria.
         /// </summary>
         /// <remarks>
-	/// 
+        /// 
         /// <para>
         /// This method applies the criteria set in the FileFilter instance (as described in the
         /// <see cref="FileFilter.InclusionSpec"/>) to the specified ZipFile.  Using this
