@@ -72,7 +72,7 @@ namespace Ionic.Zip
         ///
         /// <para>
         /// You can combine criteria with the conjunctions AND or OR. Using a string like "name
-        /// = *.txt AND size &gt;= 100k" for the SelectionCriteria retrieves entries whose names
+        /// = *.txt AND size &gt;= 100k" for the selectionCriteria retrieves entries whose names
         /// end in  .txt, and whose uncompressed size is greater than or equal to
         /// 100 kilobytes.
         /// </para>
@@ -125,7 +125,7 @@ namespace Ionic.Zip
         /// </remarks>
         /// 
         /// <exception cref="System.Exception">
-        /// Thrown if SelectionCriteria has an invalid syntax.
+        /// Thrown if selectionCriteria has an invalid syntax.
         /// </exception>
         /// 
         /// <example>
@@ -140,11 +140,11 @@ namespace Ionic.Zip
         /// }
         /// </code>
         /// </example>
-        /// <param name="SelectionCriteria">the string that specifies which entries to select</param>
+        /// <param name="selectionCriteria">the string that specifies which entries to select</param>
         /// <returns>a collection of ZipEntry objects that conform to the inclusion spec</returns>
-        public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> SelectEntries(String SelectionCriteria)
+        public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> SelectEntries(String selectionCriteria)
         {
-            return SelectEntries(SelectionCriteria, null);
+            return SelectEntries(selectionCriteria, null);
         }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace Ionic.Zip
         /// </remarks>
         /// 
         /// <exception cref="System.Exception">
-        /// Thrown if SelectionCriteria has an invalid syntax.
+        /// Thrown if selectionCriteria has an invalid syntax.
         /// </exception>
         /// 
         /// <example>
@@ -195,25 +195,137 @@ namespace Ionic.Zip
         /// </code>
         /// </example>
         ///
-        /// <param name="SelectionCriteria">the selection criteria</param>
+        /// <param name="selectionCriteria">the selection criteria</param>
         ///
-        /// <param name="ExclusionCriteria">
-        /// The criteria for exclusion.  Actually, the ExclusionCriteria is
-        /// redundant. Any criteria specified in the ExclusionCriteria could also be specified in
-        /// the SelectionCriteria, just by logically negating the criteria.  In other words, a
-        /// SelectionCriteria of "size &gt; 50000" coupled with an ExclusionCriteria of "name =
-        /// *.txt" is equivalent to a SelectionCriteria of "size &gt; 50000 AND name != *.txt"
-        /// with no ExclusionCriteria.  Despite this, this method is provided to allow for
+        /// <param name="exclusionCriteria">
+        /// The criteria for exclusion.  Actually, the exclusionCriteria is
+        /// redundant. Any criteria specified in the exclusionCriteria could also be specified in
+        /// the selectionCriteria, just by logically negating the criteria.  In other words, a
+        /// selectionCriteria of "size &gt; 50000" coupled with an exclusionCriteria of "name =
+        /// *.txt" is equivalent to a selectionCriteria of "size &gt; 50000 AND name != *.txt"
+        /// with no exclusionCriteria.  Despite this, this method is provided to allow for
         /// clarity in the interface for those cases where it makes sense to clearly delineate
         /// the exclusion criteria in the application code.
         /// </param>
         ///
         /// <returns>a collection of ZipEntry objects that conform to criteria</returns>
-        public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> SelectEntries(String SelectionCriteria, String ExclusionCriteria)
+        public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> SelectEntries(String selectionCriteria, String exclusionCriteria)
         {
-            Ionic.FileFilter ff = new Ionic.FileFilter(SelectionCriteria, ExclusionCriteria);
+            Ionic.FileFilter ff = new Ionic.FileFilter(selectionCriteria, exclusionCriteria);
             return ff.SelectEntries(this);
         }
+
+
+	/// <summary>
+	/// Selects and Extracts a set of Entries from the ZipFile.
+	/// </summary>
+	///
+        /// <remarks>
+	/// <para>
+	/// The entries are extracted into the current working directory. If 
+	/// any of the files already exist, an exception will be thrown.
+	/// </para>
+        /// </remarks>
+        ///
+        /// <param name="selectionCriteria">the selection criteria for entries to extract.</param>
+	public void ExtractSelected(String selectionCriteria)
+	{
+	    foreach (ZipEntry e in SelectEntries(String selectionCriteria))
+	    {
+		e.Password = _Password; // possibly null
+		e.Extract();
+	    }
+	}
+
+
+	/// <summary>
+	/// Selects and Extracts a set of Entries from the ZipFile.
+	/// </summary>
+	///
+        /// <remarks>
+	/// <para>
+	/// The entries are extracted into the current working directory. If 
+	/// any of the files already exist, and wantOverwrite is false, an exception will be thrown.
+	/// </para>
+        /// <para>
+        /// For information on the syntax of the string describing the entry selection criteria, 
+        /// see <see cref="SelectEntries(String)" />.
+        /// </para> 
+        /// </remarks>
+	///
+        /// <param name="selectionCriteria">the selection criteria for entries to extract.</param>
+        ///
+        /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files 
+	/// by the given name. </param>
+	public void ExtractSelected(String selectionCriteria, bool wantOverwrite)
+	{
+	    foreach (ZipEntry e in SelectEntries(String selectionCriteria))
+	    {
+		e.Password = _Password; // possibly null
+		e.Extract(wantOverwrite);
+	    }
+	}
+
+
+
+	/// <summary>
+	/// Selects and Extracts a set of Entries from the ZipFile.
+	/// </summary>
+	///
+        /// <remarks>
+	/// <para>
+	/// The entries are extracted into the specified directory. If 
+	/// any files already exist, an exception will be thrown.
+	/// </para>
+        /// <para>
+        /// For information on the syntax of the string describing the entry selection criteria, 
+        /// see <see cref="SelectEntries(String)" />.
+        /// </para> 
+        /// </remarks>
+	///
+        /// <param name="selectionCriteria">the selection criteria for entries to extract.</param>
+        ///
+        /// <param name="directoryName">the directory into which to extract. It will be created 
+	/// if it does not exist.</param>
+	public void ExtractSelected(String selectionCriteria, string directoryName)
+	{
+	    foreach (ZipEntry e in SelectEntries(String selectionCriteria))
+	    {
+		e.Password = _Password; // possibly null
+		e.Extract(directoryName);
+	    }
+	}
+
+	/// <summary>
+	/// Selects and Extracts a set of Entries from the ZipFile.
+	/// </summary>
+	///
+        /// <remarks>
+	/// <para>
+	/// The entries are extracted into the specified directory. If 
+	/// any of the files already exist, and wantOVerwrite is false, an exception will be thrown.
+	/// </para>
+        /// <para>
+        /// For information on the syntax of the string describing the entry selection criteria, 
+        /// see <see cref="SelectEntries(String)" />.
+        /// </para> 
+        /// </remarks>
+	///
+        /// <param name="selectionCriteria">the selection criteria for entries to extract.</param>
+        ///
+        /// <param name="directoryName">the directory into which to extract. It will be created 
+	/// if it does not exist.</param>
+        /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files 
+	/// by the given name. </param>
+	public void ExtractSelected(String selectionCriteria, string directoryName, bool wantOverwrite)
+	{
+	    foreach (ZipEntry e in SelectEntries(String selectionCriteria))
+	    {
+		e.Password = _Password; // possibly null
+		e.Extract(directoryName, wantOverwrite);
+	    }
+	}
+
 
         /// <summary>
         /// Adds to the ZipFile a set of files from the disk that conform to the specified criteria.
@@ -225,12 +337,12 @@ namespace Ionic.Zip
         /// on the syntax for the file selection criteria, see <see cref="SelectEntries(String)"/>.
         /// </remarks>
         /// 
-        /// <param name="SelectionCriteria">The criteria for file selection</param>
-        /// <param name="DirectoryOnDisk">The name of the directory on the disk from which to select files. </param>
+        /// <param name="selectionCriteria">The criteria for file selection</param>
+        /// <param name="directoryOnDisk">The name of the directory on the disk from which to select files. </param>
 
-        public void AddSelectedFiles(String SelectionCriteria, String DirectoryOnDisk)
+        public void AddSelectedFiles(String selectionCriteria, String directoryOnDisk)
         {
-            this.AddSelectedFiles(SelectionCriteria, null, DirectoryOnDisk, null);
+            this.AddSelectedFiles(selectionCriteria, null, directoryOnDisk, null);
         }
 
 
@@ -246,21 +358,21 @@ namespace Ionic.Zip
         /// cref="SelectEntries(String)" />.
         /// </remarks>
         /// 
-        /// <param name="SelectionCriteria">The criteria for inclusion</param>
-        /// <param name="ExclusionCriteria">The criteria for exclusion</param>
-        /// <param name="DirectoryOnDisk">The name of the directory on the disk from which to select files. </param>
-        /// <param name="DirectoryPathInArchive">
+        /// <param name="selectionCriteria">The criteria for inclusion</param>
+        /// <param name="exclusionCriteria">The criteria for exclusion</param>
+        /// <param name="directoryOnDisk">The name of the directory on the disk from which to select files. </param>
+        /// <param name="directoryPathInArchive">
         /// Specifies a directory path to use to override any path in the FileName.
         /// This path may, or may not, correspond to a real directory in the current filesystem.
         /// If the files within the zip are later extracted, this is the path used for the extracted file. 
         /// Passing null (nothing in VB) will use the path on the FileName, if any.  Passing the empty string ("")
         /// will insert the item at the root path within the archive. 
         /// </param>
-        public void AddSelectedFiles(String SelectionCriteria, String ExclusionCriteria, String DirectoryOnDisk, String DirectoryPathInArchive)
+        public void AddSelectedFiles(String selectionCriteria, String exclusionCriteria, String directoryOnDisk, String directoryPathInArchive)
         {
-            Ionic.FileFilter ff = new Ionic.FileFilter(SelectionCriteria, ExclusionCriteria);
-            String[] filesToAdd = ff.SelectFiles(DirectoryOnDisk);
-            this.AddFiles(filesToAdd, DirectoryPathInArchive);
+            Ionic.FileFilter ff = new Ionic.FileFilter(selectionCriteria, exclusionCriteria);
+            String[] filesToAdd = ff.SelectFiles(directoryOnDisk);
+            this.AddFiles(filesToAdd, directoryPathInArchive);
         }
 
     }

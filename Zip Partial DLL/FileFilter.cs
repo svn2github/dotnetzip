@@ -445,29 +445,29 @@ namespace Ionic
         /// 
         /// <para>
         /// See <see cref="FileFilter.SelectionCriteria"/> for a description of the syntax of 
-        /// the SelectionCriteria string.
+        /// the selectionCriteria string.
         /// </para>
         /// </remarks>
         /// 
-        /// <param name="SelectionCriteria">The criteria for file selection.</param>
+        /// <param name="selectionCriteria">The criteria for file selection.</param>
         /// 
-        /// <param name="ExclusionCriteria">
-        /// The criteria for exclusion.  Actually, the ExclusionCriteria is
-        /// redundant. Any criteria specified in the ExclusionCriteria could also be specified in
-        /// the SelectionCriteria, just by logically negating the criteria.  In other words, a
-        /// SelectionCriteria of "size &gt; 50000" coupled with an ExclusionCriteria of "name =
-        /// *.txt" is equivalent to a SelectionCriteria of "size &gt; 50000 AND name != *.txt"
-        /// with no ExclusionCriteria.  Despite this, this method is provided to allow for
+        /// <param name="exclusionCriteria">
+        /// The criteria for exclusion.  Actually, the exclusionCriteria is
+        /// redundant. Any criteria specified in the exclusionCriteria could also be specified in
+        /// the selectionCriteria, just by logically negating the criteria.  In other words, a
+        /// selectionCriteria of "size &gt; 50000" coupled with an exclusionCriteria of "name =
+        /// *.txt" is equivalent to a selectionCriteria of "size &gt; 50000 AND name != *.txt"
+        /// with no exclusionCriteria.  Despite this, this method is provided to allow for
         /// clarity in the interface for those cases where it makes sense to clearly delineate
         /// the exclusion criteria in the application code.
         /// </param>
-        public FileFilter(String SelectionCriteria, String ExclusionCriteria)
+        public FileFilter(String selectionCriteria, String exclusionCriteria)
         {
-            if (String.IsNullOrEmpty(SelectionCriteria))
-                throw new ArgumentException("includeString");
+            if (String.IsNullOrEmpty(selectionCriteria))
+                throw new ArgumentException("selectionCriteria");
 
-            Include = _ParseCriterion(SelectionCriteria);
-            Exclude = _ParseCriterion(ExclusionCriteria);
+            Include = _ParseCriterion(selectionCriteria);
+            Exclude = _ParseCriterion(exclusionCriteria);
         }
 
 
@@ -481,15 +481,15 @@ namespace Ionic
         /// 
         /// <para>
         /// See <see cref="FileFilter.SelectionCriteria"/> for a description of the syntax of 
-        /// the SelectionCriteria string.
+        /// the selectionCriteria string.
         /// </para>
         /// </remarks>
-        public FileFilter(String SelectionCriteria)
+        public FileFilter(String selectionCriteria)
         {
-            if (String.IsNullOrEmpty(SelectionCriteria))
-                throw new ArgumentException("SelectionCriteria");
+            if (String.IsNullOrEmpty(selectionCriteria))
+                throw new ArgumentException("selectionCriteria");
 
-            Include = _ParseCriterion(SelectionCriteria);
+            Include = _ParseCriterion(selectionCriteria);
         }
 
         /// <summary>
@@ -536,7 +536,7 @@ namespace Ionic
         ///
         /// <para>
         /// You can combine criteria with the conjunctions AND or OR. Using a string like "name
-        /// = *.txt AND size &gt;= 100k" for the SelectionCriteria retrieves entries whose names
+        /// = *.txt AND size &gt;= 100k" for the selectionCriteria retrieves entries whose names
         /// end in  .txt, and whose uncompressed size is greater than or equal to
         /// 100 kilobytes.
         /// </para>
@@ -828,7 +828,8 @@ namespace Ionic
         /// </summary>
         ///
         /// <remarks>
-        /// This is equivalent to calling <see cref="SelectFiles(String, bool)"/> with RecurseDirectories = false.
+        /// This is equivalent to calling <see cref="SelectFiles(String, bool)"/> 
+	/// with recurseDirectories = false.
         /// </remarks>
         ///
         /// <param name="Directory">
@@ -839,9 +840,9 @@ namespace Ionic
         /// An array of strings containing fully-qualified pathnames of files
         /// that match the criteria specified in the FileFilter instance.
         /// </returns>
-        public String[] SelectFiles(String Directory)
+        public String[] SelectFiles(String directory)
         {
-            return SelectFiles(Directory, false);
+            return SelectFiles(directory, false);
         }
 
 
@@ -856,11 +857,11 @@ namespace Ionic
         /// conform to the criteria. 
         /// </remarks>
         ///
-        /// <param name="Directory">
+        /// <param name="directory">
         /// The name of the directory over which to apply the FileFilter criteria.
         /// </param>
         ///
-        /// <param name="RecurseDirectories">
+        /// <param name="recurseDirectories">
         /// Whether to recurse through subdirectories when applying the file selection criteria.
         /// </param>
         ///
@@ -868,7 +869,7 @@ namespace Ionic
         /// An array of strings containing fully-qualified pathnames of files
         /// that match the criteria specified in the FileFilter instance.
         /// </returns>
-        public String[] SelectFiles(String Directory, bool RecurseDirectories)
+        public String[] SelectFiles(String directory, bool recurseDirectories)
         {
             String[] filenames = System.IO.Directory.GetFiles(Directory);
             var list = new System.Collections.Generic.List<String>();

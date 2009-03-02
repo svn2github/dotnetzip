@@ -5699,7 +5699,8 @@ namespace Ionic.Zip
         /// default; you can use the <c>CaseSensitiveRetrieval</c> property to change
         /// this behavior.
         /// </param>
-        /// <param name="directoryName">the directory into which to extract. It should exist.</param>
+        /// <param name="directoryName">the directory into which to extract. It will be created 
+	/// if it does not exist.</param>
         public void Extract(string fileName, string directoryName)
         {
             ZipEntry e = this[fileName];
@@ -5767,8 +5768,10 @@ namespace Ionic.Zip
         /// if any. The filename match is not case-sensitive by default; you can use the <c>CaseSensitiveRetrieval</c> 
         /// property to change this behavior. The pathname can use forward-slashes or backward slashes.
         /// </param>
-        /// <param name="directoryName">the directory into which to extract. It should exist.</param>
-        /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files by the given name.</param>
+        /// <param name="directoryName">the directory into which to extract. It will be created 
+	/// if it does not exist.</param>
+        /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files 
+	/// by the given name. </param>
         public void Extract(string fileName, string directoryName, bool wantOverwrite)
         {
             ZipEntry e = this[fileName];
