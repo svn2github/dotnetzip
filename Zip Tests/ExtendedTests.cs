@@ -1402,9 +1402,9 @@ namespace Ionic.Zip.Tests.Extended
             }
 
             Ionic.FileFilter ff = new Ionic.FileFilter("name = *.txt");
-            var list = ff.GetFiles(Subdir);
+            var list = ff.SelectFiles(Subdir);
             TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
             count1 = 0;
             foreach (string s in list)
             {
@@ -1414,9 +1414,9 @@ namespace Ionic.Zip.Tests.Extended
             }
 
             ff = new Ionic.FileFilter("name = *.bin");
-            list = ff.GetFiles(Subdir);
+            list = ff.SelectFiles(Subdir);
             TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
             count2 = 0;
             foreach (string s in list)
             {
@@ -1429,9 +1429,9 @@ namespace Ionic.Zip.Tests.Extended
 
             // shorthand
             ff = new Ionic.FileFilter("*.txt");
-            list = ff.GetFiles(Subdir);
+            list = ff.SelectFiles(Subdir);
             TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
             count1 = 0;
             foreach (string s in list)
             {
@@ -1441,9 +1441,9 @@ namespace Ionic.Zip.Tests.Extended
             }
 
             ff = new Ionic.FileFilter("*.bin");
-            list = ff.GetFiles(Subdir);
+            list = ff.SelectFiles(Subdir);
             TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
             count2 = 0;
             foreach (string s in list)
             {
@@ -1456,9 +1456,9 @@ namespace Ionic.Zip.Tests.Extended
 
 
             ff = new Ionic.FileFilter("size > 7500");
-            list = ff.GetFiles(Subdir);
+            list = ff.SelectFiles(Subdir);
             TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
             count1 = 0;
             foreach (string s in list)
             {
@@ -1469,9 +1469,9 @@ namespace Ionic.Zip.Tests.Extended
             }
 
             ff = new Ionic.FileFilter("size <= 7500");
-            list = ff.GetFiles(Subdir);
+            list = ff.SelectFiles(Subdir);
             TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
             count2 = 0;
             foreach (string s in list)
             {
@@ -1484,9 +1484,9 @@ namespace Ionic.Zip.Tests.Extended
 
 
             ff = new Ionic.FileFilter("name = *.bin AND size > 7500");
-            list = ff.GetFiles(Subdir);
+            list = ff.SelectFiles(Subdir);
             TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
             count1 = 0;
             foreach (string s in list)
             {
@@ -1498,9 +1498,9 @@ namespace Ionic.Zip.Tests.Extended
             }
 
             ff = new Ionic.FileFilter("name != *.bin  OR  size <= 7500");
-            list = ff.GetFiles(Subdir);
+            list = ff.SelectFiles(Subdir);
             TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.InclusionSpec);
+            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
             count2 = 0;
             foreach (string s in list)
             {
@@ -1511,7 +1511,6 @@ namespace Ionic.Zip.Tests.Extended
                 count2++;
             }
             Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
-
         }
 
 

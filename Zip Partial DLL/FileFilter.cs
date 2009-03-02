@@ -415,7 +415,7 @@ namespace Ionic
     /// Typically, an application that creates or manipulates Zip archives will not directly
     /// interact with the FileFilter class.  The FileFilter class is used internally by the
     /// ZipFile class for selecting files for inclusion into the ZipFile, when the <see
-    /// cref="ZipFile.AddSelectedFiles(String,String)"/> method is called.
+    /// cref="Ionic.Zip.ZipFile.AddSelectedFiles(String,String)"/> method is called.
     /// </para>
     ///
     /// <para>
@@ -444,30 +444,30 @@ namespace Ionic
         /// </para>
         /// 
         /// <para>
-        /// See <see cref="FileFilter.InclusionSpec"/> for a description of the syntax of 
-        /// the FileIncludeSpec string.
+        /// See <see cref="FileFilter.SelectionCriteria"/> for a description of the syntax of 
+        /// the SelectionCriteria string.
         /// </para>
         /// </remarks>
         /// 
-        /// <param name="FileIncludeSpec">The criteria for file selection.</param>
+        /// <param name="SelectionCriteria">The criteria for file selection.</param>
         /// 
-        /// <param name="FileExcludeSpec">
-        /// The criteria for exclusion.  Actually, the FileExcludeSpec is
-        /// redundant. Any criteria specified in the FileExcludeSpec could also be specified in
-        /// the FileIncludeSpec, just by logically negating the criteria.  In other words, a
-        /// FileIncludeSpec of "size &gt; 50000" coupled with an FileExcludeSpec of "name =
-        /// *.txt" is equivalent to a FileIncludeSpec of "size &gt; 50000 AND name != *.txt"
-        /// with no FileExcludeSpec.  Despite this, this method is provided to allow for
+        /// <param name="ExclusionCriteria">
+        /// The criteria for exclusion.  Actually, the ExclusionCriteria is
+        /// redundant. Any criteria specified in the ExclusionCriteria could also be specified in
+        /// the SelectionCriteria, just by logically negating the criteria.  In other words, a
+        /// SelectionCriteria of "size &gt; 50000" coupled with an ExclusionCriteria of "name =
+        /// *.txt" is equivalent to a SelectionCriteria of "size &gt; 50000 AND name != *.txt"
+        /// with no ExclusionCriteria.  Despite this, this method is provided to allow for
         /// clarity in the interface for those cases where it makes sense to clearly delineate
         /// the exclusion criteria in the application code.
         /// </param>
-        public FileFilter(String FileIncludeSpec, String FileExcludeSpec)
+        public FileFilter(String SelectionCriteria, String ExclusionCriteria)
         {
-            if (String.IsNullOrEmpty(FileIncludeSpec))
+            if (String.IsNullOrEmpty(SelectionCriteria))
                 throw new ArgumentException("includeString");
 
-            Include = _ParseCriterion(FileIncludeSpec);
-            Exclude = _ParseCriterion(FileExcludeSpec);
+            Include = _ParseCriterion(SelectionCriteria);
+            Exclude = _ParseCriterion(ExclusionCriteria);
         }
 
 
@@ -480,16 +480,16 @@ namespace Ionic
         /// </para>
         /// 
         /// <para>
-        /// See <see cref="FileFilter.InclusionSpec"/> for a description of the syntax of 
-        /// the FileIncludeSpec string.
+        /// See <see cref="FileFilter.SelectionCriteria"/> for a description of the syntax of 
+        /// the SelectionCriteria string.
         /// </para>
         /// </remarks>
-        public FileFilter(String FileIncludeSpec)
+        public FileFilter(String SelectionCriteria)
         {
-            if (String.IsNullOrEmpty(FileIncludeSpec))
-                throw new ArgumentException("FileIncludeSpec");
+            if (String.IsNullOrEmpty(SelectionCriteria))
+                throw new ArgumentException("SelectionCriteria");
 
-            Include = _ParseCriterion(FileIncludeSpec);
+            Include = _ParseCriterion(SelectionCriteria);
         }
 
         /// <summary>
@@ -536,7 +536,7 @@ namespace Ionic
         ///
         /// <para>
         /// You can combine criteria with the conjunctions AND or OR. Using a string like "name
-        /// = *.txt AND size &gt;= 100k" for the FileIncludeSpec retrieves entries whose names
+        /// = *.txt AND size &gt;= 100k" for the SelectionCriteria retrieves entries whose names
         /// end in  .txt, and whose uncompressed size is greater than or equal to
         /// 100 kilobytes.
         /// </para>
@@ -579,7 +579,7 @@ namespace Ionic
         /// <exception cref="System.Exception">
         /// Thrown in the setter if the value has an invalid syntax.
         /// </exception>
-        public String InclusionSpec
+        public String SelectionCriteria
         {
             get
             {
@@ -828,7 +828,7 @@ namespace Ionic
         /// </summary>
         ///
         /// <remarks>
-        /// This is equivalent to calling <see cref="GetFiles(String, bool)"/> with RecurseDirectories = false.
+        /// This is equivalent to calling <see cref="SelectFiles(String, bool)"/> with RecurseDirectories = false.
         /// </remarks>
         ///
         /// <param name="Directory">
@@ -839,9 +839,9 @@ namespace Ionic
         /// An array of strings containing fully-qualified pathnames of files
         /// that match the criteria specified in the FileFilter instance.
         /// </returns>
-        public String[] GetFiles(String Directory)
+        public String[] SelectFiles(String Directory)
         {
-            return GetFiles(Directory, false);
+            return SelectFiles(Directory, false);
         }
 
 
@@ -868,7 +868,7 @@ namespace Ionic
         /// An array of strings containing fully-qualified pathnames of files
         /// that match the criteria specified in the FileFilter instance.
         /// </returns>
-        public String[] GetFiles(String Directory, bool RecurseDirectories)
+        public String[] SelectFiles(String Directory, bool RecurseDirectories)
         {
             String[] filenames = System.IO.Directory.GetFiles(Directory);
             var list = new System.Collections.Generic.List<String>();
@@ -886,7 +886,7 @@ namespace Ionic
                 String[] dirnames = System.IO.Directory.GetDirectories(Directory);
                 foreach (String dir in dirnames)
                 {
-                    Array.ForEach(GetFiles(dir), list.Add);
+                    Array.ForEach(SelectFiles(dir), list.Add);
                 }
             }
             return list.ToArray();

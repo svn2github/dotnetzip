@@ -2202,10 +2202,13 @@ namespace Ionic.Zip
         /// <summary>
         /// This method adds a set of files to the ZipFile.
         /// </summary>
+	///
         /// <param name="Filenames">
         /// The names of the files to add. Each string should refer to a file in the filesystem.  
         /// The name of the file may be a relative path or a fully-qualified path. 
         /// </param>
+	///
+        /// <seealso cref="Ionic.Zip.ZipFile.AddSelectedFiles(String, String)" />
         public void AddFiles(String[] Filenames)
         {
             this.AddFiles(Filenames, null);
@@ -2214,10 +2217,12 @@ namespace Ionic.Zip
         /// <summary>
         /// This method adds a set of files to the ZipFile.
         /// </summary>
+	///
         /// <param name="Filenames">
         /// The names of the files to add. Each string should refer to a file in the filesystem.  
         /// The name of the file may be a relative path or a fully-qualified path. 
         /// </param>
+	///
         /// <param name="DirectoryPathInArchive">
         /// Specifies a directory path to use to override any path in the FileName.  This path
         /// may, or may not, correspond to a real directory in the current filesystem.  If the
@@ -2226,6 +2231,8 @@ namespace Ionic.Zip
         /// Passing the empty string ("") will insert the item at the root path within the
         /// archive.
         /// </param>
+	///
+        /// <seealso cref="Ionic.Zip.ZipFile.AddSelectedFiles(String, String)" />
         public void AddFiles(String[] Filenames, String DirectoryPathInArchive)
         {
             foreach (var f in Filenames)

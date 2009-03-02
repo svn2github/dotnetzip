@@ -134,8 +134,8 @@
   </TestList>
   <TestList name="Filter" id="b7f21b7c-0fc3-4b2e-8574-5aaa0948e751" parentListId="a506c786-f082-46d4-b960-f75195c63a43">
     <TestLinks>
-      <TestLink id="c5fbe828-e4d8-b932-926c-5a2ddda5c0a4" name="Filter_GetSelectedEntries" storage="zip tests\bin\debug\ionic.zip.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
       <TestLink id="da308202-f838-1fac-ce8b-9d17ec430cc2" name="Filter_SelectFiles" storage="zip tests\bin\debug\ionic.zip.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+      <TestLink id="da9f975d-8dec-e9de-c919-b4a7a2d223f8" name="Filter_SelectEntries" storage="zip tests\bin\debug\ionic.zip.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
       <TestLink id="80c0cca2-fe37-c852-2f4e-c8591522a23a" name="Filter_AddSelectedFiles" storage="zip tests\bin\debug\ionic.zip.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
     </TestLinks>
   </TestList>

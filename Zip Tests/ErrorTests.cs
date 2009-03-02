@@ -247,7 +247,7 @@ namespace Ionic.Zip.Tests.Error
 
             int entriesAdded = 0;
             // create the files
-            int NumFilesToCreate = _rnd.Next(10) + 8;
+            int NumFilesToCreate = _rnd.Next(20) + 18;
             for (j = 0; j < NumFilesToCreate; j++)
             {
                 filename = System.IO.Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
@@ -257,8 +257,7 @@ namespace Ionic.Zip.Tests.Error
                 entriesAdded++;
             }
 
-            String TempFileFolder = "Error_Save_NonExistentFile-Temp";
-            _FilesToRemove.Add(TempFileFolder);
+            string TempFileFolder = System.IO.Path.Combine(TopLevelDir, "Temp");
             System.IO.Directory.CreateDirectory(TempFileFolder);
             TestContext.WriteLine("Using {0} as the temp file folder....", TempFileFolder);
             String[] tfiles = System.IO.Directory.GetFiles(TempFileFolder);
@@ -279,7 +278,7 @@ namespace Ionic.Zip.Tests.Error
                     zip.TempFileFolder = TempFileFolder;
                     zip.ForceNoCompression = true;
 
-                    Console.WriteLine("Zipping {0} files...", filenames.Length);
+                    TestContext.WriteLine("Zipping {0} files...", filenames.Length);
 
                     int count = 0;
                     foreach (string fn in filenames)
@@ -307,11 +306,10 @@ namespace Ionic.Zip.Tests.Error
                 TestContext.WriteLine("Zip Failed (EXPECTED): {0}", ex.Message);
             }
 
-
             tfiles = System.IO.Directory.GetFiles(TempFileFolder);
 
             Assert.AreEqual<int>(nTemp, tfiles.Length,
-                    "There are unexpected temp files remaining in the TempFileFolder.");
+                    "There are unexpected files remaining in the TempFileFolder.");
         }
 
 

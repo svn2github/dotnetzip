@@ -72,7 +72,7 @@ namespace Ionic.Zip
         ///
         /// <para>
         /// You can combine criteria with the conjunctions AND or OR. Using a string like "name
-        /// = *.txt AND size &gt;= 100k" for the FileIncludeSpec retrieves entries whose names
+        /// = *.txt AND size &gt;= 100k" for the SelectionCriteria retrieves entries whose names
         /// end in  .txt, and whose uncompressed size is greater than or equal to
         /// 100 kilobytes.
         /// </para>
@@ -103,7 +103,7 @@ namespace Ionic.Zip
         /// </para>
         /// 
         /// <para>
-        /// The FileExcludeSpec can be used to exclude files from the retrieved set, in the same way.
+        /// The ExclusionCriteria can be used to exclude files from the retrieved set, in the same way.
         /// </para>
         ///
         /// <para>
@@ -115,10 +115,17 @@ namespace Ionic.Zip
         /// for insuring the criteria are sensible.
         /// </para>
         /// 
+        /// <para>
+        /// This method is intended for use with a ZipFile that has been read from
+        /// storage.  When creating a new ZipFile, this method will work only after the
+        /// ZipArchive has been Saved to the disk (the ZipFile class subsequently and
+        /// implicitly reads the Zip archive from storage.)  Calling SelectEntries on a
+        /// ZipFile that has not yet been saved will deliver undefined results.
+	/// </para>
         /// </remarks>
         /// 
         /// <exception cref="System.Exception">
-        /// Thrown if FileIncludeSpec has an invalid syntax.
+        /// Thrown if SelectionCriteria has an invalid syntax.
         /// </exception>
         /// 
         /// <example>
@@ -133,11 +140,11 @@ namespace Ionic.Zip
         /// }
         /// </code>
         /// </example>
-        /// <param name="FileIncludeSpec">the string that specifies which entries to select</param>
+        /// <param name="SelectionCriteria">the string that specifies which entries to select</param>
         /// <returns>a collection of ZipEntry objects that conform to the inclusion spec</returns>
-        public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> SelectEntries(String FileIncludeSpec)
+        public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> SelectEntries(String SelectionCriteria)
         {
-            return SelectEntries(FileIncludeSpec, null);
+            return SelectEntries(SelectionCriteria, null);
         }
 
         /// <summary>
@@ -155,14 +162,22 @@ namespace Ionic.Zip
         /// </para>
         /// 
         /// <para>
-        /// For information on the syntax of the criteria specification, see <see
-        /// cref="SelectEntries(String)" />.
+        /// For information on the syntax of the string describing the entry selection criteria, 
+        /// see <see cref="SelectEntries(String)" />.
         /// </para> 
         ///
+        /// <para>
+        /// This method is intended for use with a ZipFile that has been read from
+        /// storage.  When creating a new ZipFile, this method will work only after the
+        /// ZipArchive has been Saved to the disk (the ZipFile class subsequently and
+        /// implicitly reads the Zip archive from storage.)  Calling SelectEntries on a
+        /// ZipFile that has not yet been saved will deliver undefined results.
+	/// </para>
+	///
         /// </remarks>
         /// 
         /// <exception cref="System.Exception">
-        /// Thrown if FileIncludeSpec has an invalid syntax.
+        /// Thrown if SelectionCriteria has an invalid syntax.
         /// </exception>
         /// 
         /// <example>
@@ -180,28 +195,28 @@ namespace Ionic.Zip
         /// </code>
         /// </example>
         ///
-        /// <param name="FileIncludeSpec">the string that specifies which entries to select</param>
+        /// <param name="SelectionCriteria">the selection criteria</param>
         ///
-        /// <param name="FileExcludeSpec">
-        /// The criteria for exclusion.  Actually, the FileExcludeSpec is
-        /// redundant. Any criteria specified in the FileExcludeSpec could also be specified in
-        /// the FileIncludeSpec, just by logically negating the criteria.  In other words, a
-        /// FileIncludeSpec of "size &gt; 50000" coupled with an FileExcludeSpec of "name =
-        /// *.txt" is equivalent to a FileIncludeSpec of "size &gt; 50000 AND name != *.txt"
-        /// with no FileExcludeSpec.  Despite this, this method is provided to allow for
+        /// <param name="ExclusionCriteria">
+        /// The criteria for exclusion.  Actually, the ExclusionCriteria is
+        /// redundant. Any criteria specified in the ExclusionCriteria could also be specified in
+        /// the SelectionCriteria, just by logically negating the criteria.  In other words, a
+        /// SelectionCriteria of "size &gt; 50000" coupled with an ExclusionCriteria of "name =
+        /// *.txt" is equivalent to a SelectionCriteria of "size &gt; 50000 AND name != *.txt"
+        /// with no ExclusionCriteria.  Despite this, this method is provided to allow for
         /// clarity in the interface for those cases where it makes sense to clearly delineate
         /// the exclusion criteria in the application code.
         /// </param>
         ///
         /// <returns>a collection of ZipEntry objects that conform to criteria</returns>
-        public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> SelectEntries(String FileIncludeSpec, String FileExcludeSpec)
+        public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> SelectEntries(String SelectionCriteria, String ExclusionCriteria)
         {
-            Ionic.FileFilter ff = new Ionic.FileFilter(FileIncludeSpec, FileExcludeSpec);
-            return ff.GetEntries(this);
+            Ionic.FileFilter ff = new Ionic.FileFilter(SelectionCriteria, ExclusionCriteria);
+            return ff.SelectEntries(this);
         }
 
         /// <summary>
-        /// Adds to the ZipFile a selection of files from the disk that conform to the specified criteria.
+        /// Adds to the ZipFile a set of files from the disk that conform to the specified criteria.
         /// </summary>
         /// 
         /// <remarks>
@@ -210,12 +225,12 @@ namespace Ionic.Zip
         /// on the syntax for the file selection criteria, see <see cref="SelectEntries(String)"/>.
         /// </remarks>
         /// 
-        /// <param name="FileIncludeSpec">The criteria for file selection</param>
+        /// <param name="SelectionCriteria">The criteria for file selection</param>
         /// <param name="DirectoryOnDisk">The name of the directory on the disk from which to select files. </param>
 
-        public void AddSelectedFiles(String FileIncludeSpec, String DirectoryOnDisk)
+        public void AddSelectedFiles(String SelectionCriteria, String DirectoryOnDisk)
         {
-            this.AddSelectedFiles(FileIncludeSpec, null, DirectoryOnDisk, null);
+            this.AddSelectedFiles(SelectionCriteria, null, DirectoryOnDisk, null);
         }
 
 
@@ -231,8 +246,8 @@ namespace Ionic.Zip
         /// cref="SelectEntries(String)" />.
         /// </remarks>
         /// 
-        /// <param name="FileIncludeSpec">The criteria for inclusion</param>
-        /// <param name="FileExcludeSpec">The criteria for exclusion</param>
+        /// <param name="SelectionCriteria">The criteria for inclusion</param>
+        /// <param name="ExclusionCriteria">The criteria for exclusion</param>
         /// <param name="DirectoryOnDisk">The name of the directory on the disk from which to select files. </param>
         /// <param name="DirectoryPathInArchive">
         /// Specifies a directory path to use to override any path in the FileName.
@@ -241,10 +256,10 @@ namespace Ionic.Zip
         /// Passing null (nothing in VB) will use the path on the FileName, if any.  Passing the empty string ("")
         /// will insert the item at the root path within the archive. 
         /// </param>
-        public void AddSelectedFiles(String FileIncludeSpec, String FileExcludeSpec, String DirectoryOnDisk, String DirectoryPathInArchive)
+        public void AddSelectedFiles(String SelectionCriteria, String ExclusionCriteria, String DirectoryOnDisk, String DirectoryPathInArchive)
         {
-            Ionic.FileFilter ff = new Ionic.FileFilter(FileIncludeSpec, FileExcludeSpec);
-            String[] filesToAdd = ff.GetFiles(DirectoryOnDisk);
+            Ionic.FileFilter ff = new Ionic.FileFilter(SelectionCriteria, ExclusionCriteria);
+            String[] filesToAdd = ff.SelectFiles(DirectoryOnDisk);
             this.AddFiles(filesToAdd, DirectoryPathInArchive);
         }
 
@@ -353,22 +368,29 @@ namespace Ionic
         /// <remarks>
         /// 
         /// <para>
-        /// This method applies the criteria set in the FileFilter instance (as described in the
-        /// <see cref="FileFilter.InclusionSpec"/>) to the specified ZipFile.  Using this
-        /// method, for example, you can retrieve all entries from the given ZipFile that have
-        /// filenames ending in .txt.
+        /// This method applies the criteria set in the FileFilter instance (as described in
+        /// the <see cref="FileFilter.SelectionCriteria"/>) to the specified ZipFile.  Using this
+        /// method, for example, you can retrieve all entries from the given ZipFile that
+        /// have filenames ending in .txt.
+        /// </para>
+        ///
+        /// <para>
+        /// Normally, applications would not call this method directly.  This method is used 
+	/// by the ZipFile class.
         /// </para>
         ///
         /// <para>
         /// You can also retrieve entries based on size, time, and attributes. See <see
-        /// cref="FileFilter.InclusionSpec"/> for a description of the syntax of the
-        /// FileIncludeSpec string.
+        /// cref="FileFilter.SelectionCriteria"/> for a description of the syntax of the
+        /// SelectionCriteria string.
         /// </para>
         ///
         /// </remarks>
+        ///
         /// <param name="zip">The ZipFile from which to retrieve entries.</param>
+        ///
         /// <returns>a ReadOnly collection of ZipEntry objects that conform to the criteria.</returns>
-        public System.Collections.ObjectModel.ReadOnlyCollection<Ionic.Zip.ZipEntry> GetEntries(Ionic.Zip.ZipFile zip)
+        public System.Collections.ObjectModel.ReadOnlyCollection<Ionic.Zip.ZipEntry> SelectEntries(Ionic.Zip.ZipFile zip)
         {
             var list = new System.Collections.Generic.List<Ionic.Zip.ZipEntry>();
 
