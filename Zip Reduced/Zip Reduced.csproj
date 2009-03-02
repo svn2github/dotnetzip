@@ -52,6 +52,9 @@
     <Compile Include="..\Zip Partial DLL\Exceptions.cs">
       <Link>Exceptions.cs</Link>
     </Compile>
+    <Compile Include="..\Zip Partial DLL\FileFilter.cs">
+      <Link>FileFilter.cs</Link>
+    </Compile>
     <Compile Include="..\Zip Partial DLL\Shared.cs">
       <Link>Shared.cs</Link>
     </Compile>
@@ -72,6 +75,9 @@
     </Compile>
     <Compile Include="..\Zip Partial DLL\ZipFile.cs">
       <Link>ZipFile.cs</Link>
+    </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipFile.Filter.cs">
+      <Link>ZipFile.Filter.cs</Link>
     </Compile>
     <Compile Include="..\Zlib\Crc32.cs">
       <Link>Crc32.cs</Link>
