@@ -198,10 +198,14 @@ namespace Ionic
             set
             {
                 _MatchingFileSpec = value;
-                _regexString = Regex.Escape(value)
-            .Replace(@"\*", @"[^\\\.]*")
-            .Replace(@"\?", @"[^\\\.]")
-            + "$";
+                _regexString = "^" + 
+                    Regex.Escape(value)
+                    .Replace(@"\*", @"[^\\\.]*")
+                    .Replace(@"\?", @"[^\\\.]")
+                    + "$";
+                // neither of these is correct
+                //if (!_regexString.StartsWith(@"\\")) _regexString = @"\\" + _regexString;
+                //if (_regexString.IndexOf("\\") == -1)  _regexString = @"\\" + _regexString;
                 _re = new Regex(_regexString, RegexOptions.IgnoreCase);
             }
         }
@@ -220,10 +224,15 @@ namespace Ionic
             return _Evaluate(filename);
         }
 
-        private bool _Evaluate(string filename)
+        private bool _Evaluate(string fullpath)
         {
             //String f = System.IO.Path.GetFileName(filename);
-            String f = filename;
+
+            // no slash in the pattern implicitly means recurse, which means compare to filename only, not full path.
+            String f = (_MatchingFileSpec.IndexOf('\\') == -1)
+                ? System.IO.Path.GetFileName(fullpath) 
+                : fullpath; // compare to fullpath
+            
             bool result = _re.IsMatch(f);
             if (Constraint != ComparisonConstraint.EqualTo)
                 result = !result;
@@ -501,8 +510,11 @@ namespace Ionic
         /// after the number), megabytes (m or mb), or gigabytes (g or gb).  The value for a
         /// name is a pattern to match against the filename, potentially including wildcards.
         /// The pattern follows CMD.exe glob rules: * implies one or more of any character,
-        /// while ? implies one character.  Currently you cannot specify a pattern that includes
-        /// spaces.
+        /// while ? implies one character.  If the name pattern contains any slashes, it is
+        /// matched to the entire filename, including the path; otherwise, it is matched
+        /// against only the filename without the path.  This means a pattern of "*\*.*" matches 
+        /// all files one directory level deep, while a pattern of "*.*" matches all files in 
+        /// all directories.  Currently you cannot specify a name pattern that includes spaces.
         /// </para> 
         ///
         /// <para>

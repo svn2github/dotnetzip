@@ -57,8 +57,11 @@ namespace Ionic.Zip
         /// after the number), megabytes (m or mb), or gigabytes (g or gb).  The value for a
         /// name is a pattern to match against the filename, potentially including wildcards.
         /// The pattern follows CMD.exe glob rules: * implies one or more of any character,
-        /// while ? implies one character.  Currently you cannot specify a pattern that includes
-        /// spaces.
+        /// while ? implies one character.  If the name pattern contains any slashes, it is
+        /// matched to the entire filename, including the path; otherwise, it is matched
+        /// against only the filename without the path.  This means a pattern of "*\*.*" matches 
+        /// all files one directory level deep, while a pattern of "*.*" matches all files in 
+        /// all directories.  Currently you cannot specify a name pattern that includes spaces.
         /// </para> 
         ///
         /// <para>
@@ -545,8 +548,7 @@ namespace Ionic
         internal override bool Evaluate(Ionic.Zip.ZipEntry entry)
         {
             // swap forward slashes in the entry.FileName for backslashes
-            string transformedFileName = entry.FileName
-            .Replace("/", "\\");
+            string transformedFileName = entry.FileName.Replace("/", "\\");
 
             return _Evaluate(transformedFileName);
         }

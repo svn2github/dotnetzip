@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
   <data name="richTextBox1.Text" xml:space="preserve">
     <value>This is a sample ZIP tool that ships with DotNetZip.  DotNetZip is a .NET managed-code library for manipulating ZIP archives.  It enables any .NET application to read and write ZIP files, simply and easily. 
 

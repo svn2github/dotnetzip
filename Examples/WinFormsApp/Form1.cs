@@ -105,7 +105,14 @@ namespace WinFormsExample
 
         private void KickoffZipup()
         {
-            if (String.IsNullOrEmpty(this.tbDirName.Text)) return;
+            if (String.IsNullOrEmpty(this.tbDirectoryToZip.Text)) return;
+            if (!System.IO.Directory.Exists(this.tbDirectoryToZip.Text))
+            {
+                var dlgResult = MessageBox.Show(String.Format("The directory you have specified ({0}) does not exist.", this.tbZipToCreate.Text), 
+                    "Not gonna happen", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+
             if (this.tbZipToCreate.Text == null || this.tbZipToCreate.Text == "") return;
 
             // check for existence of the zip file:
@@ -115,6 +122,20 @@ namespace WinFormsExample
                 if (dlgResult != DialogResult.Yes) return;
                 System.IO.File.Delete(this.tbZipToCreate.Text);
             }
+
+
+            // check for a valid zip file name:
+            string extension = System.IO.Path.GetExtension(this.tbZipToCreate.Text);
+            if ((extension != ".exe" && (this.radioFlavorSfxCmd.Checked || this.radioFlavorSfxGui.Checked)) ||
+(extension != ".zip" && this.radioFlavorZip.Checked))
+            {
+                var dlgResult = MessageBox.Show(String.Format("The file you have specified ({0}) has a non-standard extension ({1}) for this zip flavor.  Do you want to continue anyway?",
+                    this.tbZipToCreate.Text, extension), "Hold on there, pardner!", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (dlgResult != DialogResult.Yes) return;
+                System.IO.File.Delete(this.tbZipToCreate.Text);
+            }
+
+
 
             _hrt = new HiResTimer();
             _hrt.Start();
@@ -130,7 +151,9 @@ namespace WinFormsExample
             var options = new SaveWorkerOptions
             {
                 ZipName = this.tbZipToCreate.Text,
-                Folder = this.tbDirName.Text,
+                Folder = this.tbDirectoryToZip.Text,
+                Selection = this.tbSelectionToZip.Text,
+                DirInArchive = this.tbDirectoryInArchive.Text,
                 Encoding = "ibm437"
             };
 
@@ -244,7 +267,10 @@ namespace WinFormsExample
                     zip1.Comment = options.Comment;
                     zip1.Password = (options.Password != "") ? options.Password : null;
                     zip1.Encryption = options.Encryption;
-                    zip1.AddDirectory(options.Folder);
+                    if (!String.IsNullOrEmpty(options.Selection))
+                        zip1.AddSelectedFiles(options.Selection, options.Folder, options.DirInArchive, true);
+                    else
+                        zip1.AddDirectory(options.Folder, options.DirInArchive);
                     _totalEntriesToProcess = zip1.EntryFileNames.Count;
                     SetProgressBars();
                     zip1.TempFileFolder = System.IO.Path.GetDirectoryName(options.ZipName);
@@ -423,7 +449,7 @@ namespace WinFormsExample
                 ShowNewFolderButton = false,
                 ShowEditBox = true,
                 //NewStyle = false,
-                SelectedPath = tbDirName.Text,
+                SelectedPath = this.tbDirectoryToZip.Text,
                 ShowFullPathInEditBox = true,
             };
             dlg1.RootFolder = System.Environment.SpecialFolder.MyComputer;
@@ -432,7 +458,8 @@ namespace WinFormsExample
 
             if (result == DialogResult.OK)
             {
-                tbDirName.Text = dlg1.SelectedPath;
+                this.tbDirectoryToZip.Text = dlg1.SelectedPath;
+                this.tbDirectoryInArchive.Text = System.IO.Path.GetFileName(this.tbDirectoryToZip.Text);
             }
         }
 
@@ -597,7 +624,17 @@ namespace WinFormsExample
             if (AppCuKey != null)
             {
                 var s = (string)AppCuKey.GetValue(_rvn_DirectoryToZip);
-                if (s != null) this.tbDirName.Text = s;
+                if (s != null)
+                {
+                    this.tbDirectoryToZip.Text = s;
+                    this.tbDirectoryInArchive.Text = System.IO.Path.GetFileName(this.tbDirectoryToZip.Text);
+                }
+
+                s = (string)AppCuKey.GetValue(_rvn_SelectionToZip);
+                if (s != null) this.tbSelectionToZip.Text = s;
+
+                s = (string)AppCuKey.GetValue(_rvn_SelectionToExtract);
+                if (s != null) this.tbSelectionToExtract.Text = s;
 
                 s = (string)AppCuKey.GetValue(_rvn_ZipTarget);
                 if (s != null) this.tbZipToCreate.Text = s;
@@ -669,7 +706,9 @@ namespace WinFormsExample
                     if (p != null && p.Length == 5)
                     {
                         this.Bounds = ConstrainToScreen(new System.Drawing.Rectangle(p[0], p[1], p[2], p[3]));
-                        this.WindowState = (FormWindowState)p[4];
+                        
+                        // Starting a window minimized is confusing...
+                        //this.WindowState = (FormWindowState)p[4];
                     }
                 }
 
@@ -686,7 +725,9 @@ namespace WinFormsExample
         {
             if (AppCuKey != null)
             {
-                AppCuKey.SetValue(_rvn_DirectoryToZip, this.tbDirName.Text);
+                AppCuKey.SetValue(_rvn_DirectoryToZip, this.tbDirectoryToZip.Text);
+                AppCuKey.SetValue(_rvn_SelectionToZip, this.tbSelectionToZip.Text);
+                AppCuKey.SetValue(_rvn_SelectionToExtract, this.tbSelectionToExtract.Text);
                 AppCuKey.SetValue(_rvn_ZipTarget, this.tbZipToCreate.Text);
                 AppCuKey.SetValue(_rvn_ZipToOpen, this.tbZipToOpen.Text);
                 AppCuKey.SetValue(_rvn_Encoding, this.comboBox1.SelectedItem.ToString());
@@ -727,10 +768,26 @@ namespace WinFormsExample
                 AppCuKey.SetValue(_rvn_OpenExplorer, this.chkOpenExplorer.Checked ? 1 : 0);
 
                 // store the size of the form
+                int w = 0, h = 0, left=0, top= 0;
+                if (this.Bounds.Width < this.MinimumSize.Width || this.Bounds.Height < this.MinimumSize.Height )
+                {
+                    // RestoreBounds is the size of the window prior to last minimize action.
+                    // But the form may have been resized since then!
+                    w = this.RestoreBounds.Width;
+                    h = this.RestoreBounds.Height;
+                    left = this.RestoreBounds.Location.X;
+                    top = this.RestoreBounds.Location.Y;
+                }
+                else
+                {
+                    w = this.Bounds.Width;
+                    h = this.Bounds.Height;
+                    left = this.Location.X;
+                    top = this.Location.Y;
+                }
                 AppCuKey.SetValue(_rvn_Geometry,
                   String.Format("{0},{1},{2},{3},{4}",
-                        this.Left, this.Top, this.RestoreBounds.Width, this.RestoreBounds.Height,
-                        (int)this.WindowState));
+                        left, top, w, h, (int)this.WindowState));
 
                 AppCuKey.Close();
             }
@@ -833,7 +890,7 @@ namespace WinFormsExample
                     ListViewItem item = new ListViewItem(n.ToString());
                     n++;
                     string[] subitems = new string[] {
-                        entry.FileName,
+                        entry.FileName.Replace("/","\\"),
                         entry.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
                         entry.UncompressedSize.ToString(),
                         String.Format("{0,5:F0}%", entry.CompressionRatio),
@@ -913,7 +970,9 @@ namespace WinFormsExample
             var options = new ExtractWorkerOptions
             {
                 ExtractLocation = this.tbExtractDir.Text,
+                Selection = this.tbSelectionToExtract.Text,
                 WantOverwrite = this.chkOverwrite.Checked,
+                OpenExplorer = this.chkOpenExplorer.Checked,
             };
             _workerThread = new Thread(this.DoExtract);
             _workerThread.Name = "Zip Extractor thread";
@@ -987,10 +1046,14 @@ namespace WinFormsExample
             {
                 using (var zip = ZipFile.Read(_DisplayedZip))
                 {
-                    _totalEntriesToProcess = zip.Count;
+                    System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> collection = (String.IsNullOrEmpty(options.Selection))
+                    ? zip.Entries
+                    : zip.SelectEntries(options.Selection);
+
+                    _totalEntriesToProcess = collection.Count;
                     zip.ExtractProgress += zip_ExtractProgress;
                     SetProgressBars();
-                    foreach (global::Ionic.Zip.ZipEntry entry in zip)
+                    foreach (global::Ionic.Zip.ZipEntry entry in collection)
                     {
                         if (_setCancel) { extractCancelled = true; break; }
                         if (entry.Encryption == global::Ionic.Zip.EncryptionAlgorithm.None)
@@ -1084,7 +1147,7 @@ namespace WinFormsExample
 
             if (extractCancelled) return;
 
-            if (this.chkOpenExplorer.Checked)
+            if (options.OpenExplorer)
             {
                 string w = System.IO.Path.GetDirectoryName(Environment.GetFolderPath(Environment.SpecialFolder.System));
                 if (w == null) w = "c:\\windows";
@@ -1249,7 +1312,28 @@ namespace WinFormsExample
             set { _appCuKey = null; }
         }
 
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            if (_initialFileToLoad != null)
+            {
+                // select the page that opens zip files.
+                this.tabControl1.SelectedIndex = 0;
+                //this.tabPage1.Select(); 
+                this.tbZipToOpen.Text = _initialFileToLoad;
+                btnOpen_Click(null, null);
+            }
+        }
+
+        private void tbDirectoryToZip_Leave(object sender, EventArgs e)
+        {
+            this.tbDirectoryInArchive.Text = System.IO.Path.GetFileName(this.tbDirectoryToZip.Text);
+        }
+
+
+
+
         //private string _folderName;
+        //private int _priorLeft, _priorTop;
         private int _progress2MaxFactor;
         private int _totalEntriesToProcess;
         private bool _working;
@@ -1275,6 +1359,8 @@ namespace WinFormsExample
         private static string _rvn_OpenExplorer = "OpenExplorer";
         private static string _rvn_ExtractLoc = "ExtractLoc";
         private static string _rvn_DirectoryToZip = "DirectoryToZip";
+        private static string _rvn_SelectionToZip = "SelectionToZip";
+        private static string _rvn_SelectionToExtract = "SelectionToExtract";
         private static string _rvn_ZipTarget = "ZipTarget";
         private static string _rvn_ZipToOpen = "ZipToOpen";
         private static string _rvn_Encoding = "Encoding";
@@ -1285,18 +1371,6 @@ namespace WinFormsExample
         private static string _rvn_LastRun = "LastRun";
         private static string _rvn_Runs = "Runs";
         private string _initialFileToLoad;
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            if (_initialFileToLoad != null)
-            {
-                // select the page that opens zip files.
-                this.tabControl1.SelectedIndex = 0;
-                //this.tabPage1.Select(); 
-                this.tbZipToOpen.Text = _initialFileToLoad;
-                btnOpen_Click(null, null);
-            }
-        }
 
     }
 
@@ -1401,11 +1475,15 @@ namespace WinFormsExample
     {
         public string ExtractLocation;
         public bool WantOverwrite;
+        public bool OpenExplorer;
+        public String Selection;
     }
     public class SaveWorkerOptions
     {
         public string ZipName;
         public string Folder;
+        public string Selection;
+        public String DirInArchive;
         public string Encoding;
         public string Comment;
         public string Password;
