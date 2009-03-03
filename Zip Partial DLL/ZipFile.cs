@@ -364,6 +364,10 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
+        /// You may set the property at any time before calling Save(). 
+        /// </para>
+        ///
+        /// <para>
         /// The ZipFile.Read() method will properly read ZIP64-endowed zip archives, regardless of the value of this 
         /// property.  ZIP64 archives can always be read, but this property governs whether they can be written. 
         /// Therefore, when updating archives, be careful about setting this property after reading an archive that
