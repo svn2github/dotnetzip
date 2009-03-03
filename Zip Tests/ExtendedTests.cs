@@ -296,7 +296,7 @@ namespace Ionic.Zip.Tests.Extended
             {
                 sw.WriteLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
             }
-            
+
             // 3. make a large text file
             string LargeTextFile = System.IO.Path.Combine(Subdir, "LargeTextFile.txt");
             TestUtilities.CreateAndFillFileText(LargeTextFile, _rnd.Next(64000) + 15000);
@@ -1823,6 +1823,233 @@ namespace Ionic.Zip.Tests.Extended
         }
 
 
+        [TestMethod]
+        public void Selector_SelectEntries_Spaces()
+        {
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Selector_SelectEntries_Spaces.zip");
+
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            //int count1, count2;
+            int entriesAdded = 0;
+            String filename = null;
+
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            int fileCount = _rnd.Next(44) + 44;
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Files being added to the zip:");
+            for (int j = 0; j < fileCount; j++)
+            {
+                string space = (_rnd.Next(2) == 0) ? " " : "";
+                if (_rnd.Next(2) == 0)
+                {
+                    filename = System.IO.Path.Combine(Subdir, String.Format("file{1}{0:D3}.txt", j, space));
+                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(5000) + 5000);
+                }
+                else
+                {
+                    filename = System.IO.Path.Combine(Subdir, String.Format("file{1}{0:D3}.bin", j, space));
+                    TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(5000) + 5000);
+                }
+                TestContext.WriteLine(System.IO.Path.GetFileName(filename));
+                entriesAdded++;
+            }
+
+
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Creating zip...");
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddDirectory(Subdir, "");
+                zip1.Save(ZipFileToCreate);
+            }
+            Assert.AreEqual<Int32>(entriesAdded, TestUtilities.CountEntries(ZipFileToCreate));
+
+
+
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Reading zip...");
+            using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
+            {
+                var selected1 = zip1.SelectEntries("name = *.txt");
+                var selected2 = zip1.SelectEntries("name = *.bin");
+                TestContext.WriteLine("Text files:");
+                foreach (ZipEntry e in selected1)
+                {
+                    TestContext.WriteLine(e.FileName);
+                }
+                Assert.AreEqual<Int32>(entriesAdded, selected1.Count + selected2.Count);
+            }
+
+
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Reading zip, using name patterns that contain spaces...");
+            string[] selectionStrings = { "name = '* *.txt'", 
+                                           "name = '* *.bin'", 
+                                           "name = *.txt and name != '* *.txt'",
+                                           "name = *.bin and name != '* *.bin'",
+                                       };
+            int count = 0;
+            using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
+            {
+                foreach (string selectionCriteria in selectionStrings)
+                {
+                    var selected1 = zip1.SelectEntries(selectionCriteria);
+                    count += selected1.Count;
+                    TestContext.WriteLine("  For criteria ({0}), found {1} files.", selectionCriteria, selected1.Count);
+                }
+            }
+            Assert.AreEqual<Int32>(entriesAdded, count);
+
+        }
+
+        [TestMethod]
+        public void Selector_RemoveSelectedEntries_Spaces()
+        {
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Selector_RemoveSelectedEntries_Spaces.zip");
+
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            //int count1, count2;
+            int entriesAdded = 0;
+            String filename = null;
+
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            int fileCount = _rnd.Next(44) + 44;
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Files being added to the zip:");
+            for (int j = 0; j < fileCount; j++)
+            {
+                string space = (_rnd.Next(2) == 0) ? " " : "";
+                if (_rnd.Next(2) == 0)
+                {
+                    filename = System.IO.Path.Combine(Subdir, String.Format("file{1}{0:D3}.txt", j, space));
+                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(5000) + 5000);
+                }
+                else
+                {
+                    filename = System.IO.Path.Combine(Subdir, String.Format("file{1}{0:D3}.bin", j, space));
+                    TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(5000) + 5000);
+                }
+                TestContext.WriteLine(System.IO.Path.GetFileName(filename));
+                entriesAdded++;
+            }
+
+
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Creating zip...");
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddDirectory(Subdir, "");
+                zip1.Save(ZipFileToCreate);
+            }
+            Assert.AreEqual<Int32>(entriesAdded, TestUtilities.CountEntries(ZipFileToCreate));
+
+
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Reading zip, using name patterns that contain spaces...");
+            string[] selectionStrings = { "name = '* *.txt'", 
+                                           "name = '* *.bin'", 
+                                           "name = *.txt and name != '* *.txt'",
+                                           "name = *.bin and name != '* *.bin'",
+                                       };
+            foreach (string selectionCriteria in selectionStrings)
+            {
+                using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
+                {
+                    var selected1 = zip1.SelectEntries(selectionCriteria);
+                    zip1.RemoveEntries(selected1);
+                    TestContext.WriteLine("for pattern {0}, Removed {1} entries", selectionCriteria, selected1.Count);
+                    zip1.Save();
+                }
+
+            }
+
+            Assert.AreEqual<Int32>(0, TestUtilities.CountEntries(ZipFileToCreate));
+        }
+
+
+        [TestMethod]
+        public void Selector_RemoveSelectedEntries2()
+        {
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Selector_RemoveSelectedEntries2.zip");
+
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            //int count1, count2;
+            int entriesAdded = 0;
+            String filename = null;
+
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            int fileCount = _rnd.Next(44) + 44;
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Files being added to the zip:");
+            for (int j = 0; j < fileCount; j++)
+            {
+                string space = (_rnd.Next(2) == 0) ? " " : "";
+                if (_rnd.Next(2) == 0)
+                {
+                    filename = System.IO.Path.Combine(Subdir, String.Format("file{1}{0:D3}.txt", j, space));
+                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(5000) + 5000);
+                }
+                else
+                {
+                    filename = System.IO.Path.Combine(Subdir, String.Format("file{1}{0:D3}.bin", j, space));
+                    TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(5000) + 5000);
+                }
+                TestContext.WriteLine(System.IO.Path.GetFileName(filename));
+                entriesAdded++;
+            }
+
+
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Creating zip...");
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddDirectory(Subdir, "");
+                zip1.Save(ZipFileToCreate);
+            }
+            Assert.AreEqual<Int32>(entriesAdded, TestUtilities.CountEntries(ZipFileToCreate));
+
+
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Reading zip, using name patterns that contain spaces...");
+            string[] selectionStrings = { "name = '* *.txt'", 
+                                           "name = '* *.bin'", 
+                                           "name = *.txt and name != '* *.txt'",
+                                           "name = *.bin and name != '* *.bin'",
+                                       };
+            foreach (string selectionCriteria in selectionStrings)
+            {
+                using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
+                {
+                    var selected1 = zip1.SelectEntries(selectionCriteria);
+                    ZipEntry[] entries = new ZipEntry[selected1.Count];
+                    selected1.CopyTo(entries, 0);
+                    string[] names = Array.ConvertAll(entries, x => x.FileName);
+                    zip1.RemoveEntries(names);
+                    TestContext.WriteLine("for pattern {0}, Removed {1} entries", selectionCriteria, selected1.Count);
+                    zip1.Save();
+                }
+
+            }
+
+            Assert.AreEqual<Int32>(0, TestUtilities.CountEntries(ZipFileToCreate));
+        }
+
+
 
         [TestMethod]
         public void Selector_SelectEntries_Subdirs()
@@ -2053,6 +2280,23 @@ namespace Ionic.Zip.Tests.Extended
 
         }
 
+
+        [TestMethod]
+        public void Selector_SelectFiles_GoodSyntax01() 
+        {
+            string[] criteria = {
+                                    "name = *.txt  OR (size > 7800)",
+                                    "name = *.harvey  OR  (size > 7800  and attributes = H)",
+                                    "(name = *.harvey)  OR  (size > 7800  and attributes = H)",
+                                    "(name = *.xls)  and (name != *.xls)  OR  (size > 7800  and attributes = H)",
+                                    "(name = '*.xls')",
+                                };
+
+            foreach (string s in criteria)
+            {
+                var ff = new Ionic.FileSelector(s);
+            }
+        }
 
 
     }

@@ -198,7 +198,7 @@ namespace Ionic
             set
             {
                 _MatchingFileSpec = value;
-                _regexString = "^" + 
+                _regexString = "^" +
                     Regex.Escape(value)
                     .Replace(@"\*", @"[^\\\.]*")
                     .Replace(@"\?", @"[^\\\.]")
@@ -230,9 +230,9 @@ namespace Ionic
 
             // no slash in the pattern implicitly means recurse, which means compare to filename only, not full path.
             String f = (_MatchingFileSpec.IndexOf('\\') == -1)
-                ? System.IO.Path.GetFileName(fullpath) 
+                ? System.IO.Path.GetFileName(fullpath)
                 : fullpath; // compare to fullpath
-            
+
             bool result = _re.IsMatch(f);
             if (Constraint != ComparisonConstraint.EqualTo)
                 result = !result;
@@ -514,7 +514,13 @@ namespace Ionic
         /// matched to the entire filename, including the path; otherwise, it is matched
         /// against only the filename without the path.  This means a pattern of "*\*.*" matches 
         /// all files one directory level deep, while a pattern of "*.*" matches all files in 
-        /// all directories.  Currently you cannot specify a name pattern that includes spaces.
+        /// all directories.    
+        /// </para> 
+        ///
+        /// <para>
+        /// To specify a name pattern that includes spaces, use single quotes around the pattern.
+        /// A pattern of "'* *.*'" will match all files that have spaces in the filename.  The full 
+        /// criteria string for that would be "name = '* *.*'" . 
         /// </para> 
         ///
         /// <para>
@@ -606,13 +612,17 @@ namespace Ionic
             if (s.IndexOf(" ") == -1)
                 s = "name = " + s;
 
-            string[] elements = s.Replace("(", " ( ")
-            .Replace(")", " ) ")
-            .Replace("  ", " ")
-            .Trim()
-            .Split(' ', '\t');
+            string[] prPairs = { @"\((\S)", "( $1",  @"(\S)\)", "$1 )",  };
 
-            if (elements.Length < 3) throw new ArgumentException();
+            for (int i = 0; i + 1 < prPairs.Length; i += 2)
+            {
+                Regex rgx = new Regex(prPairs[i]);
+                s = rgx.Replace(s, prPairs[i + 1]);
+            }
+
+            string[] elements = s.Trim().Split(' ', '\t');
+
+            if (elements.Length < 3) throw new ArgumentException(s);
 
             SelectionCriterion current = null;
 
@@ -631,9 +641,11 @@ namespace Ionic
                     case "or":
                         state = stateStack.Peek();
                         if (state != ParseState.CriterionDone)
-                            throw new ArgumentException(elements[i]);
+                            throw new ArgumentException(String.Join(" ", elements, i, elements.Length - i));
 
-                        if (elements.Length <= i + 3) throw new ArgumentException(elements[i]);
+                        if (elements.Length <= i + 3) 
+                            throw new ArgumentException(String.Join(" ", elements, i, elements.Length - i));
+
                         pendingConjunction = (LogicalConjunction)Enum.Parse(typeof(LogicalConjunction), elements[i].ToUpper());
                         current = new CompoundCriterion { Left = current, Right = null, Conjunction = pendingConjunction };
                         //Console.WriteLine("Conjunction: ({0})  push state({1})", elements[i].ToUpper(), state.ToString());
@@ -647,8 +659,11 @@ namespace Ionic
                     case "(":
                         state = stateStack.Peek();
                         if (state != ParseState.Start && state != ParseState.ConjunctionPending && state != ParseState.OpenParen)
-                            throw new ArgumentException(elements[i]);
-                        if (elements.Length <= i + 4) throw new ArgumentException();
+                            throw new ArgumentException(String.Join(" ", elements, i, elements.Length - i));
+
+                        if (elements.Length <= i + 4)
+                            throw new ArgumentException(String.Join(" ", elements, i, elements.Length - i));
+
                         stateStack.Push(ParseState.OpenParen);
                         break;
 
@@ -656,7 +671,8 @@ namespace Ionic
                         state = stateStack.Pop();
                         //Console.WriteLine("openParen  popped state({0})", state.ToString());
                         if (stateStack.Peek() != ParseState.OpenParen)
-                            throw new ArgumentException(elements[i]);
+                            throw new ArgumentException(String.Join(" ", elements, i, elements.Length - i));
+
                         stateStack.Pop(); //?
                         stateStack.Push(ParseState.CriterionDone);
                         break;
@@ -664,7 +680,9 @@ namespace Ionic
                     case "atime":
                     case "ctime":
                     case "mtime":
-                        if (elements.Length <= i + 2) throw new ArgumentException(elements[i]);
+                        if (elements.Length <= i + 2) 
+                            throw new ArgumentException(String.Join(" ", elements, i, elements.Length - i));
+
                         DateTime t;
                         try
                         {
@@ -687,7 +705,9 @@ namespace Ionic
 
 
                     case "size":
-                        if (elements.Length <= i + 2) throw new ArgumentException(elements[i]);
+                        if (elements.Length <= i + 2)
+                            throw new ArgumentException(String.Join(" ", elements, i, elements.Length - i));
+
                         Int64 sz = 0;
                         string v = elements[i + 2];
                         if (v.ToUpper().EndsWith("K"))
@@ -717,14 +737,37 @@ namespace Ionic
 
                     case "name":
                         {
-                            if (elements.Length <= i + 2) throw new ArgumentException(elements[i]);
+                            if (elements.Length <= i + 2)
+				throw new ArgumentException(String.Join(" ", elements, i, elements.Length - i));
+
                             ComparisonConstraint c =
                                 (ComparisonConstraint)EnumUtil.Parse(typeof(ComparisonConstraint), elements[i + 1]);
+
                             if (c != ComparisonConstraint.NotEqualTo && c != ComparisonConstraint.EqualTo)
-                                throw new ArgumentException(elements[i + 1]);
+				throw new ArgumentException(String.Join(" ", elements, i, elements.Length - i));
+
+                            string m = elements[i + 2];
+                            // handle single-quoted filespecs (used to include spaces in filename patterns)
+                            if (m.StartsWith("'"))
+                            {
+				int ix= i;
+                                if (!m.EndsWith("'"))
+                                {
+                                    do
+                                    {
+                                        i++;
+                                        if (elements.Length <= i + 2) 
+					    throw new ArgumentException(String.Join(" ", elements, ix, elements.Length - ix));
+                                        m += " " + elements[i + 2];
+                                    } while (!elements[i + 2].EndsWith("'"));
+                                }
+                                // trim off leading and trailing single quotes
+                                m = m.Substring(1, m.Length - 2);
+                            }
+
                             current = new NameCriterion
                             {
-                                MatchingFileSpec = elements[i + 2],
+                                MatchingFileSpec = m,
                                 Constraint = c
                             };
                             i += 2;
@@ -734,12 +777,16 @@ namespace Ionic
                         break;
                     case "attributes":
                         {
-                            if (elements.Length <= i + 2) throw new ArgumentException(elements[i]);
+                            if (elements.Length <= i + 2)
+				throw new ArgumentException(String.Join(" ", elements, i, elements.Length - i));
+
                             //Console.WriteLine("looking at constraint [{0}]", elements[i+1]);
                             ComparisonConstraint c =
                                 (ComparisonConstraint)EnumUtil.Parse(typeof(ComparisonConstraint), elements[i + 1]);
+
                             if (c != ComparisonConstraint.NotEqualTo && c != ComparisonConstraint.EqualTo)
-                                throw new ArgumentException(elements[i + 1]);
+				throw new ArgumentException(String.Join(" ", elements, i, elements.Length - i));
+
                             current = new AttributesCriterion
                             {
                                 AttributeString = elements[i + 2],

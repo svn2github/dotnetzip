@@ -2201,7 +2201,7 @@ namespace Ionic.Zip
         /// <summary>
         /// This method removes a collection of entries from the ZipFile.
         /// </summary>
-	///
+        ///
         /// <param name="entriesToRemove">
         /// A collection of ZipEntry instances from this zip file to be removed. 
         /// </param>
@@ -2210,12 +2210,29 @@ namespace Ionic.Zip
         /// <seealso cref="Ionic.Zip.ZipFile.RemoveSelectedEntries(String)" />
         public void RemoveEntries(System.Collections.Generic.ICollection<ZipEntry> entriesToRemove)
         {
-	    foreach (ZipEntry e in entriesToRemove)
-	    {
-		this.RemoveEntry(e);
-	    }
+            foreach (ZipEntry e in entriesToRemove)
+            {
+                this.RemoveEntry(e);
+            }
         }
 
+        /// <summary>
+        /// This method removes a collection of entries from the ZipFile.
+        /// </summary>
+        ///
+        /// <param name="entriesToRemove">
+        /// The names that match the FileName property of the ZipEntry instances to be removed from this zip file. 
+        /// </param>
+        ///
+        /// <seealso cref="Ionic.Zip.ZipFile.SelectEntries(String)" />
+        /// <seealso cref="Ionic.Zip.ZipFile.RemoveSelectedEntries(String)" />
+        public void RemoveEntries(string[] entriesToRemove)
+        {
+            foreach (var e in entriesToRemove)
+            {
+                this.RemoveEntry(e);
+            }
+        }
 
 
         /// <summary>

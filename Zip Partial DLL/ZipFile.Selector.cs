@@ -61,7 +61,13 @@ namespace Ionic.Zip
         /// matched to the entire filename, including the path; otherwise, it is matched
         /// against only the filename without the path.  This means a pattern of "*\*.*" matches 
         /// all files one directory level deep, while a pattern of "*.*" matches all files in 
-        /// all directories.  Currently you cannot specify a name pattern that includes spaces.
+        /// all directories.  
+        /// </para> 
+        ///
+        /// <para>
+        /// To specify a name pattern that includes spaces, use single quotes around the pattern.
+        /// A pattern of "'* *.*'" will match all files that have spaces in the filename.  The full 
+        /// criteria string for that would be "name = '* *.*'" . 
         /// </para> 
         ///
         /// <para>
