@@ -367,6 +367,112 @@ namespace Ionic.Zip
         }
 
 
+
+        /// <summary>
+        /// Remove entries from the zipfile by specified criteria.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// This method allows callers to remove the collection of entries from the zipfile
+        /// that fit the specified criteria.  The criteria are described in a string format, and
+        /// can include patterns for the filename; constraints on the size of the entry;
+        /// constraints on the last modified, created, or last accessed time for the file
+        /// described by the entry; or the attributes of the entry.
+        /// </para>
+        ///
+        /// <para>
+        /// For details on the syntax for the selectionCriteria parameter, see <see
+        /// cref="AddSelectedFiles(String)"/>.
+        /// </para>
+        /// 
+        /// <para>
+        /// This method is intended for use with a ZipFile that has been read from storage.
+        /// When creating a new ZipFile, this method will work only after the ZipArchive has
+        /// been Saved to the disk (the ZipFile class subsequently and implicitly reads the Zip
+        /// archive from storage.)  Calling SelectEntries on a ZipFile that has not yet been
+        /// saved will deliver undefined results.
+        /// </para>
+        /// </remarks>
+        /// 
+        /// <exception cref="System.Exception">
+        /// Thrown if selectionCriteria has an invalid syntax.
+        /// </exception>
+        /// 
+        /// <example>
+        /// <code>
+        /// using (ZipFile zip1 = ZipFile.Read(ZipFileName))
+        /// {
+	///     // remove all entries from prior to Jan 1, 2008
+        ///     zip1.RemoveEntries("mtime &lt; 2008-01-01");
+        /// }
+        /// </code>
+        /// </example>
+        /// <param name="selectionCriteria">the string that specifies which entries to select</param>
+	/// <returns>the number of entries removed</returns>
+        public int RemoveSelectedEntries(String selectionCriteria)
+        {
+            var selection = this.SelectEntries(selectionCriteria);
+	    this.RemoveEntries(selection);
+	    return selection.Count;
+        }
+
+
+        /// <summary>
+        /// Remove entries from the zipfile by specified criteria, and within the specified 
+	/// path in the archive.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// This method allows callers to remove the collection of entries from the zipfile
+        /// that fit the specified criteria.  The criteria are described in a string format, and
+        /// can include patterns for the filename; constraints on the size of the entry;
+        /// constraints on the last modified, created, or last accessed time for the file
+        /// described by the entry; or the attributes of the entry.
+        /// </para>
+        ///
+        /// <para>
+        /// For details on the syntax for the selectionCriteria parameter, see <see
+        /// cref="AddSelectedFiles(String)"/>.
+        /// </para>
+        /// 
+        /// <para>
+        /// This method is intended for use with a ZipFile that has been read from storage.
+        /// When creating a new ZipFile, this method will work only after the ZipArchive has
+        /// been Saved to the disk (the ZipFile class subsequently and implicitly reads the Zip
+        /// archive from storage.)  Calling SelectEntries on a ZipFile that has not yet been
+        /// saved will deliver undefined results.
+        /// </para>
+        /// </remarks>
+        /// 
+        /// <exception cref="System.Exception">
+        /// Thrown if selectionCriteria has an invalid syntax.
+        /// </exception>
+        /// 
+        /// <example>
+        /// <code>
+        /// using (ZipFile zip1 = ZipFile.Read(ZipFileName))
+        /// {
+	///     // remove all entries from prior to Jan 1, 2008
+        ///     zip1.RemoveEntries("mtime &lt; 2008-01-01", "documents");
+        /// }
+        /// </code>
+        /// </example>
+        /// <param name="selectionCriteria">the string that specifies which entries to select</param>
+        /// <param name="directoryPathInArchive">
+        /// the directory in the archive from which to select entries. If null, then 
+        /// all directories in the archive are used. 
+        /// </param>
+	/// <returns>the number of entries removed</returns>
+        public int RemoveSelectedEntries(String selectionCriteria, string directoryPathInArchive)
+        {
+            var selection = this.SelectEntries(selectionCriteria, directoryPathInArchive);
+	    this.RemoveEntries(selection);
+	    return selection.Count;
+	}
+
+
         /// <summary>
         /// Selects and Extracts a set of Entries from the ZipFile.
         /// </summary>
@@ -383,7 +489,7 @@ namespace Ionic.Zip
         /// </remarks>
         ///
         /// <param name="selectionCriteria">the selection criteria for entries to extract.</param>
-        public void ExtractSelected(String selectionCriteria)
+        public void ExtractSelectedEntries(String selectionCriteria)
         {
             foreach (ZipEntry e in SelectEntries(selectionCriteria))
             {
@@ -412,7 +518,7 @@ namespace Ionic.Zip
         ///
         /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files 
         /// by the given name. </param>
-        public void ExtractSelected(String selectionCriteria, bool wantOverwrite)
+        public void ExtractSelectedEntries(String selectionCriteria, bool wantOverwrite)
         {
             foreach (ZipEntry e in SelectEntries(selectionCriteria))
             {
@@ -444,7 +550,7 @@ namespace Ionic.Zip
         /// the directory in the archive from which to select entries. If null, then 
         /// all directories in the archive are used. 
         /// </param>
-        public void ExtractSelected(String selectionCriteria, string directoryPathInArchive)
+        public void ExtractSelectedEntries(String selectionCriteria, string directoryPathInArchive)
         {
             foreach (ZipEntry e in SelectEntries(selectionCriteria, directoryPathInArchive))
             {
@@ -480,7 +586,7 @@ namespace Ionic.Zip
         /// the directory on the disk into which to extract. It will be created 
         /// if it does not exist.
         /// </param>
-        public void ExtractSelected(String selectionCriteria, string directoryInArchive, string extractDirectory)
+        public void ExtractSelectedEntries(String selectionCriteria, string directoryInArchive, string extractDirectory)
         {
             foreach (ZipEntry e in SelectEntries(selectionCriteria, directoryInArchive))
             {
@@ -519,7 +625,7 @@ namespace Ionic.Zip
         /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files 
         /// by the given name. </param>
         /// 
-        public void ExtractSelected(String selectionCriteria, string directoryPathInArchive, string extractDirectory, bool wantOverwrite)
+        public void ExtractSelectedEntries(String selectionCriteria, string directoryPathInArchive, string extractDirectory, bool wantOverwrite)
         {
             foreach (ZipEntry e in SelectEntries(selectionCriteria, directoryPathInArchive))
             {
