@@ -79,6 +79,9 @@
     <Compile Include="..\Zip Partial DLL\ZipFile.cs">
       <Link>ZipFile.cs</Link>
     </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipFile.Events.cs">
+      <Link>ZipFile.Events.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

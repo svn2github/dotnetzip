@@ -327,12 +327,30 @@ namespace Ionic.Zip
 #endif
 
         /// <summary>
-        /// When this is set, the entry is not compressed when written to 
-        /// the archive.  For example, the application might want to set flag to <c>true</c>
-        /// this when zipping up JPG or MP3 files, which are already compressed.
+	/// Disables compression for the entry when calling ZipFile.Save().
         /// </summary>
+	///
+	/// <remarks>
+	/// <para>
+        /// By default, the library compresses entries when saving them to archives. 
+	/// When this property is set to true, the entry is not compressed when written to 
+        /// the archive.  For example, the application might want to set flag to <c>true</c>
+        /// this when zipping up JPG or MP3 files, which are already compressed.  The application
+	/// may also want to turn off compression for other reasons.
+	/// </para>
+	///
+        /// <para>
+        /// When updating a ZipFile, you may not turn off compression on an entry that
+        /// has been encrypted.  In other words, if you read an existing ZipFile with one of the
+        /// ZipFile.Read() methods, and then change the CompressionMethod on an entry that has
+        /// Encryption not equal to None, you will receive an exception.  There is no way to
+        /// modify the compression on an encrypted entry, without extracting it and re-adding it
+        /// into the ZipFile.
+        /// </para>
+	/// </remarks>
+	///
         /// <seealso cref="Ionic.Zip.ZipFile.ForceNoCompression"/>
-        ///
+        /// <seealso cref="CompressionMethod"/>
         public bool ForceNoCompression
         {
             get { return _ForceNoCompression; }
@@ -340,12 +358,8 @@ namespace Ionic.Zip
 	    {
                 if (value == _ForceNoCompression) return; // nothing to do.
 
-                // If the source is a zip archive and there was encryption on the 
-                // entry, changing the compression method is not supported. 
-                if (this._Source == EntrySource.Zipfile && _sourceIsEncrypted)
-                    throw new InvalidOperationException("Cannot change compression method on encrypted entries read from archives.");
-
 		_ForceNoCompression = value; 
+                if (_ForceNoCompression) CompressionMethod = 0x0;
 	    }
         }
 
@@ -449,27 +463,33 @@ namespace Ionic.Zip
         /// <summary>
         /// Indicates whether the entry requires ZIP64 extensions.
         /// </summary>
+	///
         /// <remarks>
         /// <para>
         /// This property is null (Nothing in VB) until a Save() method on the containing 
         /// <see cref="ZipFile"/> instance has been called. The property is non-null (HasValue is true)
         /// only after a Save() method has been called. 
         /// </para>
+	///
         /// <para>
-        /// After the containing ZipFile  has been saved. the Value of this property is true if any of the following 
-        /// three conditions holds:  the uncompressed size of the entry is larger than 0xFFFFFFFF; 
-        /// the compressed size of the entry is larger than 0xFFFFFFFF; the relative offset of the entry within the 
-        /// zip archive is larger than 0xFFFFFFFF.  These quantities are not known until a Save() is attempted on the 
-        /// zip archive and the compression is applied.  
+        /// After the containing ZipFile has been saved. the Value of this property is true if
+        /// any of the following three conditions holds: the uncompressed size of the entry is
+        /// larger than 0xFFFFFFFF; the compressed size of the entry is larger than 0xFFFFFFFF;
+        /// the relative offset of the entry within the zip archive is larger than 0xFFFFFFFF.
+        /// These quantities are not known until a Save() is attempted on the zip archive and
+        /// the compression is applied.
         /// </para>
+	///
         /// <para>If none of the three conditions holds, then the Value is false.</para>
+	///
         /// <para>
-        /// A value of false does not indicate that the entry, as saved in the zip archive, does not use
-        /// ZIP64.  It merely indicates that ZIP64 is not required.  An entry may use ZIP64 even when not
-        /// required if the <see cref="ZipFile.UseZip64WhenSaving"/> property on the containing ZipFile
-        /// instance is set to <see cref="Zip64Option.Always"/>, or if
-        /// the <see cref="ZipFile.UseZip64WhenSaving"/> property on the containing ZipFile
-        /// instance is set to <see cref="Zip64Option.AsNecessary"/> and the output stream was not seekable.
+        /// A value of false does not indicate that the entry, as saved in the zip archive, does
+        /// not use ZIP64.  It merely indicates that ZIP64 is not required.  An entry may use
+        /// ZIP64 even when not required if the <see cref="ZipFile.UseZip64WhenSaving"/>
+        /// property on the containing ZipFile instance is set to <see
+        /// cref="Zip64Option.Always"/>, or if the <see cref="ZipFile.UseZip64WhenSaving"/>
+        /// property on the containing ZipFile instance is set to <see
+        /// cref="Zip64Option.AsNecessary"/> and the output stream was not seekable.
         /// </para>
         /// </remarks>
         /// <seealso cref="OutputUsedZip64"/>
@@ -569,11 +589,12 @@ namespace Ionic.Zip
         /// </para>
         /// 
         /// <para>
-        /// When updating a ZipFile, you may not modify the CompressionMethod on an entry that has been encrypted. 
-        /// In other words, if you read an existing ZipFile with one of the ZipFile.Read() methods, and then 
-        /// change the CompressionMethod on an entry that has Encryption not equal to None, you will receive an exception. 
-        /// There is no way to modify the compression on an encrypted entry, without extracting it and re-adding it 
-        /// into the ZipFile.  
+        /// When updating a ZipFile, you may not modify the CompressionMethod on an entry that
+        /// has been encrypted.  In other words, if you read an existing ZipFile with one of the
+        /// ZipFile.Read() methods, and then change the CompressionMethod on an entry that has
+        /// Encryption not equal to None, you will receive an exception.  There is no way to
+        /// modify the compression on an encrypted entry, without extracting it and re-adding it
+        /// into the ZipFile.
         /// </para>
         /// </remarks>
         /// 
@@ -658,7 +679,8 @@ namespace Ionic.Zip
         /// This is a ratio of the compressed size to the uncompressed size of the entry,
         /// expressed as a double in the range of 0 to 100+. A value of 100 indicates no
         /// compression at all.  It could be higher than 100 when the compression algorithm
-        /// actually inflates the data.
+        /// actually inflates the data, as may occur for small files, or uncompressible
+	/// data that is encrypted.
         /// </para>
         ///
         /// <para>
@@ -713,12 +735,12 @@ namespace Ionic.Zip
         /// <summary>
         /// A derived property that is <c>true</c> if the entry uses encryption.  
         /// </summary>
+	///
         /// <remarks>
-        /// This is a readonly property on the entry.
-        /// Upon reading an entry, this bool is determined by
-        /// the data read.  When writing an entry, this bool is
-        /// determined by whether the Encryption property is set to something other than
-        /// EncryptionAlgorithm.None. 
+        /// This is a readonly property on the entry.  Upon reading an entry, this bool is
+        /// determined by the data read.  When writing an entry, this bool is determined by
+        /// whether the Encryption property is set to something other than
+        /// EncryptionAlgorithm.None.
         /// </remarks>
         public bool UsesEncryption
         {
@@ -978,9 +1000,9 @@ namespace Ionic.Zip
         /// support that non-compliant behavior when reading or writing zip files.
         /// </para>
         /// <para>
-        /// When writing zip archives that will be read by one of these other archivers, use this property to 
-        /// specify the code page to use when encoding filenames and comments into the zip
-        /// file, when the IBM437 code page will not suffice.
+        /// When writing zip archives that will be read by one of these other archivers, use
+        /// this property to specify the code page to use when encoding filenames and comments
+        /// into the zip file, when the IBM437 code page will not suffice.
         /// </para>
         /// <para>
         /// Be aware that a zip file created after you've explicitly specified the code page will not 
@@ -989,11 +1011,12 @@ namespace Ionic.Zip
         /// arbitrary code pages. 
         /// </para>
         /// <para>
-        /// When using an arbitrary, non-UTF8 code page for encoding, there is no standard way for the 
-        /// creator (DotNetZip) to specify in the zip file which code page has been used. DotNetZip is not
-        /// able to inspect the zip file and determine the codepage used for the entries within it. Therefore, 
-        /// you, the application author, must determine that.  If you use a codepage which results in filenames
-        /// that are not legal in Windows, you will get exceptions upon extract. Caveat Emptor.
+        /// When using an arbitrary, non-UTF8 code page for encoding, there is no standard way
+        /// for the creator (DotNetZip) to specify in the zip file which code page has been
+        /// used. DotNetZip is not able to inspect the zip file and determine the codepage used
+        /// for the entries within it. Therefore, you, the application author, must determine
+        /// that.  If you use a codepage which results in filenames that are not legal in
+        /// Windows, you will get exceptions upon extract. Caveat Emptor.
         /// </para>
         /// </remarks>
         public System.Text.Encoding ProvisionalAlternateEncoding
@@ -1259,9 +1282,9 @@ namespace Ionic.Zip
             // We've read in the regular entry header, the extra field, and any encryption
             // header.  The pointer in the file is now at the start of the filedata, which is
             // potentially compressed and encrypted.  Just ahead in the file, there are
-            // _CompressedFileDataSize bytes of data, followed by potentially a non-zero
-            // length trailer, consisting of optionally, some encryption stuff (10 byte MAC for AES), and 
-            // the bit-3 trailer (16 or 24 bytes).
+            // _CompressedFileDataSize bytes of data, followed by potentially a non-zero length
+            // trailer, consisting of optionally, some encryption stuff (10 byte MAC for AES),
+            // and the bit-3 trailer (16 or 24 bytes).
 
             return true;
         }
@@ -1424,11 +1447,11 @@ namespace Ionic.Zip
 
         internal static ZipEntry Create(String filename, string nameInArchive)
         {
-            return Create(filename, nameInArchive, null);
+            return Create(filename, nameInArchive, false, null);
         }
 
 
-        internal static ZipEntry Create(String filename, string nameInArchive, System.IO.Stream stream)
+        internal static ZipEntry Create(String filename, string nameInArchive, bool isStream, System.IO.Stream stream)
         {
             if (String.IsNullOrEmpty(filename))
                 throw new Ionic.Zip.ZipException("The entry name must be non-null and non-empty.");
@@ -1438,9 +1461,11 @@ namespace Ionic.Zip
             // workitem 7071
             entry._VersionMadeBy = (10 << 8) + 45; // indicates the attributes are NTFS Attributes, and v4.5 of the spec
 
-            if (stream != null)
+	    // workitem 7192 - late bound streams
+	    entry._sourceIsStream= isStream;
+            if (isStream)
             {
-                entry._sourceStream = stream;
+                entry._sourceStream = stream; // may  or may not be null
                 entry._Mtime = entry._Atime = entry._Ctime = DateTime.Now;
             }
             else if (System.IO.File.Exists(filename) || System.IO.Directory.Exists(filename))
@@ -1460,6 +1485,7 @@ namespace Ionic.Zip
             }
             else
             {
+		// not sure when this would ever occur?
                 entry._Mtime = entry._Atime = entry._Ctime = DateTime.Now;
             }
 
@@ -2901,27 +2927,28 @@ namespace Ionic.Zip
                 // this condition. 
 
                 long fileLength = 0;
-
-                if (_sourceStream != null)
-                {
-                    fileLength = _sourceStream.Length;
-                }
+		
+		if (_sourceIsStream)
+		{
+		    if (_sourceStream != null)
+		    {
+			fileLength = _sourceStream.Length;
+			if (fileLength == 0)
+			    _CompressionMethod = 0x00;
+		    }
+		}
                 else
                 {
                     // special case zero-length files
                     System.IO.FileInfo fi = new System.IO.FileInfo(LocalFileName);
                     fileLength = fi.Length;
+		    if (fileLength == 0)
+			_CompressionMethod = 0x00;
                 }
 
-                if (fileLength == 0)
-                {
+		if (_ForceNoCompression)
                     _CompressionMethod = 0x00;
-                }
 
-                else if (_ForceNoCompression)
-                {
-                    _CompressionMethod = 0x00;
-                }
 
                 // Ok, we're getting the data to be compressed from a non-zero length file
                 // or stream.  In that case we check the callback to see if the app
@@ -3059,7 +3086,11 @@ namespace Ionic.Zip
             // the output.
 
             // workitem 7216 - having trouble formatting a zip64 file that is readable by WinZip.
-            // not sure why!  
+            // not sure why!  What I found is that setting bit 3 and following all the implications,
+	    // the zip64 file is readable by WinZip 12. and Perl's  IO::Compress::Zip . 
+	    // Perl takes an interesting approach - it always sets bit 3 if ZIP64 in use. 
+	    // I do the same, and it gives better compatibility with WinZip 12.
+
             if (!s.CanSeek || _presumeZip64)
                 _BitField |= 0x0008;
 
@@ -3188,8 +3219,15 @@ namespace Ionic.Zip
             {
                 Stream input = null;
                 // get the original stream:
-                if (_sourceStream != null)
+                if (_sourceIsStream)
                 {
+		    if (_sourceStream == null)
+		    {
+			if (_zipfile.StreamDispenser == null)
+			    throw new ZipException(String.Format("No way to obtain the stream for entry {0}.", FileName));
+			_sourceStream = _zipfile.StreamDispenser.Open(FileName);
+			_sourceWasDispensed = true;
+		    }
                     _sourceStream.Position = 0;
                     input = _sourceStream;
                 }
@@ -3255,8 +3293,15 @@ namespace Ionic.Zip
             try
             {
                 // get the original stream:
-                if (_sourceStream != null)
+                if (_sourceIsStream)
                 {
+		    if (_sourceStream == null)
+		    {
+			if (_zipfile.StreamDispenser == null)
+			    throw new ZipException(String.Format("No way to obtain the stream for entry {0}.", FileName));
+			_sourceStream = _zipfile.StreamDispenser.Open(FileName);
+			_sourceWasDispensed = true;
+		    }
                     _sourceStream.Position = 0;
                     input = _sourceStream;
                 }
@@ -3273,7 +3318,7 @@ namespace Ionic.Zip
                 }
 
                 long fileLength = 0;
-                if (_sourceStream == null)
+                if (!_sourceIsStream)
                 {
                     System.IO.FileInfo fi = new System.IO.FileInfo(LocalFileName);
                     fileLength = fi.Length;
@@ -3350,7 +3395,7 @@ namespace Ionic.Zip
             }
             finally
             {
-                if (_sourceStream == null && input != null)
+                if (!_sourceIsStream && input != null)
                 {
                     input.Close();
 #if !NETCF20
@@ -3682,6 +3727,16 @@ namespace Ionic.Zip
                 }
             }
             while (readAgain);
+
+	    // workitem 7192
+	    if (_sourceWasDispensed)
+	    {
+		if (_zipfile.StreamDispenser == null)
+		    throw new ZipException(String.Format("No way to return the stream for entry {0}.", FileName));
+
+		_zipfile.StreamDispenser.Return(_sourceStream, FileName);
+		_sourceStream = null;
+	    }
         }
 
 
@@ -4222,6 +4277,8 @@ namespace Ionic.Zip
         internal byte[] _WeakEncryptionHeader;
         internal System.IO.Stream _archiveStream;
         private System.IO.Stream _sourceStream;
+        private bool _sourceIsStream;
+        private bool _sourceWasDispensed;
         private object LOCK = new object();
         private bool _ioOperationCanceled;
         private bool _presumeZip64;
