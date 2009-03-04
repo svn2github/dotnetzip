@@ -132,9 +132,9 @@ namespace Ionic.Zip.Tests.Zip64
                     zip1.Comment = String.Format("This archive uses zip64 option: {0}", Options[k].ToString());
                     zip1.Save(ZipFileToCreate);
 
-                    if (Options[k] == Zip64Option.Always)                    
-                        Assert.IsTrue(zip1.OutputUsedZip64.Value);                    
-                    else if (Options[k] == Zip64Option.Never)     
+                    if (Options[k] == Zip64Option.Always)
+                        Assert.IsTrue(zip1.OutputUsedZip64.Value);
+                    else if (Options[k] == Zip64Option.Never)
                         Assert.IsFalse(zip1.OutputUsedZip64.Value);
 
                 }
@@ -169,103 +169,120 @@ namespace Ionic.Zip.Tests.Zip64
                         Zip64Option.Always,
                         Zip64Option.AsNecessary};
 
-            for (int m = 0; m < z64a.Length; m++)
+            for (int u = 0; u < 2; u++)
             {
-                for (int n = 0; n < z64a.Length; n++)
+
+                for (int m = 0; m < z64a.Length; m++)
                 {
-                    int k = m * z64a.Length + n;
-
-                    string filename = null;
-                    System.IO.Directory.SetCurrentDirectory(TopLevelDir);
-                    TestContext.WriteLine("\n\n==================Trial {0}...", k);
-
-                    TestContext.WriteLine(trialDescription, k, (z64a.Length * z64a.Length)-1, z64a[m], z64a[n]);
-
-                    string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("CreateZip_ConvertToZip64-{0}.A.zip", k));
-
-                    int entries = _rnd.Next(13) + 32;
-                    //int entries = 2;
-                    TestContext.WriteLine("Creating file {0}, zip64={1}, {2} entries", 
-                        System.IO.Path.GetFileName(ZipFileToCreate), z64a[m].ToString(), entries);
-
-                    var checksums = new Dictionary<string, string>();
-                    using (ZipFile zip1 = new ZipFile())
+                    for (int n = 0; n < z64a.Length; n++)
                     {
-                        for (int i = 0; i < entries; i++)
-                        {
-                            if (_rnd.Next(2) == 1)
-                            {
-                                filename = System.IO.Path.Combine(TopLevelDir, String.Format("Data{0}.bin", i));
-                                TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(44000) + 5000);
-                            }
-                            else
-                            {
-                                filename = System.IO.Path.Combine(TopLevelDir, String.Format("Data{0}.txt", i));
-                                TestUtilities.CreateAndFillFileText(filename, _rnd.Next(44000) + 5000);
-                            }
-                            zip1.AddFile(filename, "");
+                        int k = m * z64a.Length + n;
 
-                            var chk = TestUtilities.ComputeChecksum(filename);
-                            checksums.Add(System.IO.Path.GetFileName(filename), TestUtilities.CheckSumToString(chk));
+                        string filename = null;
+                        System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+                        TestContext.WriteLine("\n\n==================Trial {0}...", k);
+
+                        TestContext.WriteLine(trialDescription, k, (z64a.Length * z64a.Length) - 1, z64a[m], z64a[n]);
+
+                        string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("CreateZip_ConvertToZip64-{0}.A.zip", k));
+
+                        int entries = _rnd.Next(8) + 6;
+                        //int entries = 2;
+                        TestContext.WriteLine("Creating file {0}, zip64={1}, {2} entries",
+                            System.IO.Path.GetFileName(ZipFileToCreate), z64a[m].ToString(), entries);
+
+                        var checksums = new Dictionary<string, string>();
+                        using (ZipFile zip1 = new ZipFile())
+                        {
+                            for (int i = 0; i < entries; i++)
+                            {
+                                if (_rnd.Next(2) == 1)
+                                {
+                                    filename = System.IO.Path.Combine(TopLevelDir, String.Format("Data{0}.bin", i));
+                                    TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(44000) + 5000);
+                                }
+                                else
+                                {
+                                    filename = System.IO.Path.Combine(TopLevelDir, String.Format("Data{0}.txt", i));
+                                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(44000) + 5000);
+                                }
+                                zip1.AddFile(filename, "");
+
+                                var chk = TestUtilities.ComputeChecksum(filename);
+                                checksums.Add(System.IO.Path.GetFileName(filename), TestUtilities.CheckSumToString(chk));
+                            }
+
+                            TestContext.WriteLine("---------------Saving to {0} with Zip64={1}...",
+                                System.IO.Path.GetFileName(ZipFileToCreate), z64a[m].ToString());
+                            zip1.UseZip64WhenSaving = z64a[m];
+                            zip1.Comment = String.Format("This archive uses Zip64Option={0}", z64a[m].ToString());
+                            zip1.Save(ZipFileToCreate);
                         }
 
-                        TestContext.WriteLine("---------------Saving to {0} with Zip64={1}...",
-                            System.IO.Path.GetFileName(ZipFileToCreate), z64a[m].ToString());
-                        zip1.UseZip64WhenSaving = z64a[m];
-                        zip1.Comment = String.Format("This archive uses Zip64Option={0}", z64a[m].ToString());
-                        zip1.Save(ZipFileToCreate);
-                    }
+
+                        Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), entries,
+                            "The Zip file has the wrong number of entries.");
 
 
-                    Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), entries,
-                        "The Zip file has the wrong number of entries.");
-
-
-                    string newFile = ZipFileToCreate.Replace(".A.", ".B.");
-                    using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
-                    {
-                        TestContext.WriteLine("---------------Extracting {0} ...",
-                            System.IO.Path.GetFileName(ZipFileToCreate));
-                        string extractDir = String.Format("extract-{0}.A", k);
-                        foreach (var e in zip2)
+                        string newFile = ZipFileToCreate.Replace(".A.", ".B.");
+                        using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
                         {
-                            TestContext.WriteLine(" {0}  crc({1:X8})  c({2:X8}) unc({3:X8})", e.FileName, e.Crc32, e.CompressedSize, e.UncompressedSize);
+                            TestContext.WriteLine("---------------Extracting {0} ...",
+                                System.IO.Path.GetFileName(ZipFileToCreate));
+                            string extractDir = String.Format("extract-{0}-{1}.A", k, u);
+                            foreach (var e in zip2)
+                            {
+                                TestContext.WriteLine(" {0}  crc({1:X8})  c({2:X8}) unc({3:X8})", e.FileName, e.Crc32, e.CompressedSize, e.UncompressedSize);
 
-                            e.Extract(extractDir);
-                            filename = System.IO.Path.Combine(extractDir, e.FileName);
-                            string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filename));
-                            Assert.IsTrue(checksums.ContainsKey(e.FileName), "Checksum is missing");
-                            Assert.AreEqual<string>(checksums[e.FileName], actualCheckString, "Checksums for ({0}) do not match.", e.FileName);
+                                e.Extract(extractDir);
+                                filename = System.IO.Path.Combine(extractDir, e.FileName);
+                                string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filename));
+                                Assert.IsTrue(checksums.ContainsKey(e.FileName), "Checksum is missing");
+                                Assert.AreEqual<string>(checksums[e.FileName], actualCheckString, "Checksums for ({0}) do not match.", e.FileName);
+                            }
+
+                            if (u==1)
+                            {
+                                TestContext.WriteLine("---------------Updating:  Renaming an entry...");
+                                zip2[4].FileName += ".renamed";
+
+                                string entriesToRemove = (_rnd.Next(2) == 0) ? "*.txt" : "*.bin";
+                                TestContext.WriteLine("---------------Updating:  Removing {0} entries...", entriesToRemove);
+                                zip2.RemoveSelectedEntries(entriesToRemove);
+                            }
+
+                            TestContext.WriteLine("---------------Saving to {0} with Zip64={1}...",
+                                System.IO.Path.GetFileName(newFile), z64a[n].ToString());
+
+                            zip2.UseZip64WhenSaving = z64a[n];
+                            zip2.Comment = String.Format("This archive uses Zip64Option={0}", z64a[n].ToString());
+                            zip2.Save(newFile);
                         }
 
-                        TestContext.WriteLine("---------------Saving to {0} with Zip64={1}...",
-                            System.IO.Path.GetFileName(newFile), z64a[n].ToString());
-                        zip2.UseZip64WhenSaving = z64a[n];
-                        zip2.Comment = String.Format("This archive uses Zip64Option={0}", z64a[n].ToString());
-                        zip2.Save(newFile);
-                    }
 
 
-
-                    using (ZipFile zip3 = ZipFile.Read(newFile))
-                    {
-                        TestContext.WriteLine("---------------Extracting {0} ...",
-                            System.IO.Path.GetFileName(newFile));
-                        string extractDir = String.Format("extract-{0}.B", k);
-                        foreach (var e in zip3)
+                        using (ZipFile zip3 = ZipFile.Read(newFile))
                         {
-                            TestContext.WriteLine(" {0}  crc({1:X8})  c({2:X8}) unc({3:X8})", e.FileName, e.Crc32, e.CompressedSize, e.UncompressedSize);
+                            TestContext.WriteLine("---------------Extracting {0} ...",
+                                System.IO.Path.GetFileName(newFile));
+                            string extractDir = String.Format("extract-{0}-{1}.B", k, u);
+                            foreach (var e in zip3)
+                            {
+                                TestContext.WriteLine(" {0}  crc({1:X8})  c({2:X8}) unc({3:X8})", e.FileName, e.Crc32, e.CompressedSize, e.UncompressedSize);
 
-                            e.Extract(extractDir);
-                            filename = System.IO.Path.Combine(extractDir, e.FileName);
-                            string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filename));
-                            Assert.IsTrue(checksums.ContainsKey(e.FileName), "Checksum is missing");
-                            Assert.AreEqual<string>(checksums[e.FileName], actualCheckString, "Checksums for ({0}) do not match.", e.FileName);
+                                e.Extract(extractDir);
+                                filename = System.IO.Path.Combine(extractDir, e.FileName);
+                                string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filename));
+                                if (!e.FileName.EndsWith(".renamed"))
+                                {
+                                    Assert.IsTrue(checksums.ContainsKey(e.FileName), "Checksum is missing");
+                                    Assert.AreEqual<string>(checksums[e.FileName], actualCheckString, "Checksums for ({0}) do not match.", e.FileName);
+                                }
+                            }
                         }
                     }
                 }
             }
-
         }
 
     }

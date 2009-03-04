@@ -680,7 +680,7 @@ namespace Ionic.Zip.Tests.Update
         [TestMethod]
         public void UpdateZip_RemoveEntry_ViaIndexer_WithPassword()
         {
-            string Password = "Wheeee!!";
+            string Password = TestUtilities.GenerateRandomPassword();
             string filename = null;
             int entriesToBeAdded = 0;
             string repeatedLine = null;
@@ -719,7 +719,7 @@ namespace Ionic.Zip.Tests.Update
             }
 
             // Verify the files are in the zip
-            Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), entriesToBeAdded,
+            Assert.AreEqual<int>(entriesToBeAdded, TestUtilities.CountEntries(ZipFileToCreate), 
                 "The Zip file has the wrong number of entries.");
 
             // selectively remove a few files in the zip archive
@@ -773,6 +773,67 @@ namespace Ionic.Zip.Tests.Update
                 "The updated Zip file has the wrong number of entries.");
         }
 
+
+
+        [TestMethod]
+        public void UpdateZip_RemoveAllEntries()
+        {
+            string Password = "Wheeee!!" + TestUtilities.GenerateRandomLowerString(7);
+            string filename = null;
+            int entriesToBeAdded = 0;
+            string repeatedLine = null;
+            int j;
+
+            // select the name of the zip file
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "UpdateZip_RemoveAllEntries.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            // create the subdirectory
+            string Subdir = System.IO.Path.Combine(TopLevelDir, "A");
+            System.IO.Directory.CreateDirectory(Subdir);
+
+            // create the files
+            int NumFilesToCreate = _rnd.Next(13) + 14;
+            for (j = 0; j < NumFilesToCreate; j++)
+            {
+                filename = String.Format("file{0:D3}.txt", j);
+                repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
+                    filename);
+                TestUtilities.CreateAndFillFileText(System.IO.Path.Combine(Subdir, filename), repeatedLine, _rnd.Next(34000) + 5000);
+                entriesToBeAdded++;
+            }
+
+            // Add the files to the zip, save the zip
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+            using (ZipFile zip = new ZipFile())
+            {
+                String[] filenames = System.IO.Directory.GetFiles("A");
+                zip.Password = Password;
+                foreach (String f in filenames)
+                    zip.AddFile(f, "");
+
+                zip.Comment = "UpdateTests::UpdateZip_RemoveAllEntries(): This archive will be updated.";
+                zip.Save(ZipFileToCreate);
+            }
+
+            // Verify the files are in the zip
+            Assert.AreEqual<int>(entriesToBeAdded, TestUtilities.CountEntries(ZipFileToCreate), 
+                "The Zip file has the wrong number of entries.");
+
+            // remove all the entries from the zip archive
+            using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+            {
+                zip2.RemoveSelectedEntries("*.*");
+                zip2.Comment = "This archive has been modified. All the entries have been removed.";
+                zip2.Save();
+            }
+
+            // Verify the files are in the zip
+            Assert.AreEqual<int>(0, TestUtilities.CountEntries(ZipFileToCreate),
+                "The Zip file has the wrong number of entries.");
+
+
+        }
 
 
         [TestMethod]
