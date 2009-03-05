@@ -437,7 +437,8 @@ namespace Ionic.Zip
         /// provided by the application in this way, the application is also responsible for
         /// closing and disposing the stream.  This would normally be done in the <see
         /// cref="ZipFile.SaveProgress"/> event, when the event type is <see
-        /// cref="ZipProgressEventType.Saving_AfterWriteEntry"/>.
+        /// cref="ZipProgressEventType.Saving_AfterWriteEntry"/>. See the example for how this
+	/// can be done. 
         /// </para>
         ///
         /// <para>
@@ -453,14 +454,39 @@ namespace Ionic.Zip
         /// {
         ///     if (e.EventType == ZipProgressEventType.Saving_BeforeWriteEntry)
         ///     {
-        ///         e.CurrentEntry.InputStream = MyStreamOpener(e.CurrentEntry.FileName);
+        ///         if (e.CurrentEntry.Source == Ionic.Zip.ZipEntry.EntrySource.Stream &&
+        ///             e.CurrentEntry.InputStream == null)
+        ///         {
+        ///             System.IO.Stream s = MyStreamOpener(e.CurrentEntry.FileName);
+        ///             e.CurrentEntry.InputStream = s;
+        ///         }
         ///     }
         ///     else if (e.EventType == ZipProgressEventType.Saving_AfterWriteEntry)
         ///     {
         ///         if (e.CurrentEntry.InputStreamWasJitProvided)
+        ///         {
+        ///             e.CurrentEntry.InputStream.Close();
         ///             e.CurrentEntry.InputStream.Dispose();
+        ///         }
         ///     }
         /// }
+        /// </code>
+        /// <code lang="VB">
+        /// Public Shared Sub SaveProgress(ByVal sender As Object, ByVal e As SaveProgressEventArgs)
+        ///     If (e.EventType = ZipProgressEventType.Saving_BeforeWriteEntry) Then
+        ///         If (e.CurrentEntry.Source = EntrySource.Stream) Then
+	///             If (e.CurrentEntry.InputStream Is Nothing) Then
+        ///                 Dim s As Stream = wi7192.MyStreamOpener(e.CurrentEntry.FileName)
+        ///                 e.CurrentEntry.InputStream = s
+        ///             End If
+        ///         End If
+        ///     ElseIf (e.EventType = ZipProgressEventType.Saving_AfterWriteEntry) Then
+	///         If (e.CurrentEntry.InputStreamWasJitProvided) Then
+        ///             e.CurrentEntry.InputStream.Close
+        ///             e.CurrentEntry.InputStream.Dispose
+        ///         End If
+        ///     End If
+        /// End Sub
         /// </code>
         /// </example>
         ///
@@ -685,8 +711,8 @@ namespace Ionic.Zip
         /// <code>
         /// using (ZipFile zip = new ZipFile(ZipFileToCreate))
         /// {
-        ///   ZipEntry e1= zip.AddFile(@"c:\temp\Readme.txt");
-        ///   ZipEntry e2= zip.AddFile(@"c:\temp\StopThisTrain.mp3");
+        ///   ZipEntry e1= zip.AddFile(@"notes\Readme.txt");
+        ///   ZipEntry e2= zip.AddFile(@"music\StopThisTrain.mp3");
         ///   e2.CompressionMethod = 0;
         ///   zip.Save();
         /// }
@@ -694,8 +720,8 @@ namespace Ionic.Zip
         /// 
         /// <code lang="VB">
         /// Using zip as new ZipFile(ZipFileToCreate)
-        ///   zip.AddFile("c:\temp\Readme.txt")
-        ///   Dim e2 as ZipEntry = zip.AddFile("c:\temp\StopThisTrain.mp3")
+        ///   zip.AddFile("notes\Readme.txt")
+        ///   Dim e2 as ZipEntry = zip.AddFile("music\StopThisTrain.mp3")
         ///   e2.CompressionMethod = 0
         ///   zip.Save
         /// End Using
@@ -1781,8 +1807,20 @@ namespace Ionic.Zip
         /// 
         /// <example>
         /// In this example, entries that use encryption are extracted using a particular password.
+        /// <code>
+        /// using (var zip = ZipFile.Read(FilePath))
+	/// {
+        ///     foreach (ZipEntry e in zip)
+	///     {
+        ///         if (e.UsesEncryption)
+        ///             e.ExtractWithPassword("Secret!");
+        ///         else
+        ///             e.Extract();
+        ///     }
+        /// }
+        /// </code>
         /// <code lang="VB">
-        /// Using zip As new ZipFile(FilePath)
+        /// Using zip As ZipFile = ZipFile.Read(FilePath)
         ///     Dim e As ZipEntry
         ///     For Each e In zip
         ///         If (e.UsesEncryption)
@@ -1920,8 +1958,8 @@ namespace Ionic.Zip
         /// <code>
         /// using (ZipFile zip = new ZipFile(ZipFileToRead))
         /// {
-        ///   ZipEntry e1= zip["Download.mp3"];
-        ///   using (CrcCalculatorStream s = e1.OpenReader())
+        ///   ZipEntry e1= zip["Elevation.mp3"];
+        ///   using (Ionic.Zlib.CrcCalculatorStream s = e1.OpenReader())
         ///   {
         ///     byte[] buffer = new byte[4096];
         ///     int n, totalBytesRead= 0;
@@ -1938,8 +1976,8 @@ namespace Ionic.Zip
         /// </code>
         /// <code lang="VB">
         ///   Using zip As New ZipFile(ZipFileToRead)
-        ///       Dim e1 As ZipEntry = zip.Item("Download.mp3")
-        ///       Using s As CrcCalculatorStream = e1.OpenReader
+        ///       Dim e1 As ZipEntry = zip.Item("Elevation.mp3")
+        ///       Using s As Ionic.Zlib.CrcCalculatorStream = e1.OpenReader
         ///           Dim n As Integer
         ///           Dim buffer As Byte() = New Byte(4096) {}
         ///           Dim totalBytesRead As Integer = 0
