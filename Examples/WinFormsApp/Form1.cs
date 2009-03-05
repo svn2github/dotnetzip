@@ -1046,9 +1046,11 @@ namespace WinFormsExample
             {
                 using (var zip = ZipFile.Read(_DisplayedZip))
                 {
-                    System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> collection = (String.IsNullOrEmpty(options.Selection))
-                    ? zip.Entries
-                    : zip.SelectEntries(options.Selection);
+                    System.Collections.Generic.ICollection<ZipEntry> collection = null;
+		    if (String.IsNullOrEmpty(options.Selection))
+			collection = zip.Entries;
+		    else 
+			collection = zip.SelectEntries(options.Selection);
 
                     _totalEntriesToProcess = collection.Count;
                     zip.ExtractProgress += zip_ExtractProgress;

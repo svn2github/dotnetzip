@@ -104,7 +104,7 @@ namespace Ionic.Zip.Tests.Unicode
                     TestUtilities.CreateAndFillFileBinary(FilesToZip[i], _rnd.Next(5000) + 2000);
                 }
 
-                System.IO.Directory.SetCurrentDirectory(Subdir);
+                //System.IO.Directory.SetCurrentDirectory(Subdir);
 
                 // create a zipfile twice, once using Unicode, once without
                 for (int j = 0; j < 2; j++)
@@ -114,6 +114,7 @@ namespace Ionic.Zip.Tests.Unicode
                     Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The zip file '{0}' already exists.", ZipFileToCreate);
 
                     TestContext.WriteLine("\n\nFormat {0}, trial {1}.  filename: {2}...", k, j, ZipFileToCreate);
+                    string dirInArchive = String.Format("{0}-{1}", System.IO.Path.GetFileName(Subdir), j);
 
                     using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
                     {
@@ -121,8 +122,8 @@ namespace Ionic.Zip.Tests.Unicode
                         for (i = 0; i < FilesToZip.Length; i++)
                         {
                             // use the local filename (not fully qualified)
-                            ZipEntry e = zip1.AddFile(System.IO.Path.GetFileName(FilesToZip[i]));
-                            e.Comment = (j == 0) ? "This entry encoded with unicode" : "This entry encoded with the default code page.";
+                            ZipEntry e = zip1.AddFile(FilesToZip[i], dirInArchive);
+                            e.Comment = String.Format("This entry encoded with {0}", (j == 0) ? "unicode" : "the default code page.");
                         }
                         zip1.Comment = OrigComment;
                         zip1.Save();
@@ -246,7 +247,7 @@ namespace Ionic.Zip.Tests.Unicode
             {
                 codepage = cp;
                 filenameFormat = format;
-                exceptionExpected = except; 
+                exceptionExpected = except;
             }
         }
 

@@ -257,7 +257,7 @@ namespace Ionic.Zip
         public void AddSelectedFiles(String selectionCriteria, String directoryOnDisk, String directoryPathInArchive, bool recurseDirectories)
         {
             Ionic.FileSelector ff = new Ionic.FileSelector(selectionCriteria);
-            String[] filesToAdd = ff.SelectFiles(directoryOnDisk, recurseDirectories);
+	    var filesToAdd = ff.SelectFiles(directoryOnDisk, recurseDirectories);
             this.AddFiles(filesToAdd, directoryPathInArchive);
         }
 
@@ -308,7 +308,7 @@ namespace Ionic.Zip
         /// </example>
         /// <param name="selectionCriteria">the string that specifies which entries to select</param>
         /// <returns>a collection of ZipEntry objects that conform to the inclusion spec</returns>
-        public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> SelectEntries(String selectionCriteria)
+        public System.Collections.Generic.ICollection<ZipEntry> SelectEntries(String selectionCriteria)
         {
             Ionic.FileSelector ff = new Ionic.FileSelector(selectionCriteria);
             return ff.SelectEntries(this);
@@ -366,7 +366,7 @@ namespace Ionic.Zip
         /// </param>
         /// 
         /// <returns>a collection of ZipEntry objects that conform to the inclusion spec</returns>
-        public System.Collections.ObjectModel.ReadOnlyCollection<ZipEntry> SelectEntries(String selectionCriteria, string directoryPathInArchive)
+        public System.Collections.Generic.ICollection<ZipEntry> SelectEntries(String selectionCriteria, string directoryPathInArchive)
         {
             Ionic.FileSelector ff = new Ionic.FileSelector(selectionCriteria);
             return ff.SelectEntries(this, directoryPathInArchive);
@@ -640,7 +640,6 @@ namespace Ionic.Zip
             }
         }
 
-
     }
 
 }
@@ -692,7 +691,7 @@ namespace Ionic
                     x = entry.Ctime;
                     break;
                 default:
-                    throw new ArgumentException("Constraint");
+                    throw new ArgumentException("?time");
             }
             return _Evaluate(x);
         }
@@ -723,6 +722,9 @@ namespace Ionic
                 case LogicalConjunction.OR:
                     if (!result)
                         result = Right.Evaluate(entry);
+                    break;
+                case LogicalConjunction.XOR:
+		    result ^= Right.Evaluate(entry);
                     break;
                 default:
                     throw new ArgumentException("Conjunction");
@@ -768,8 +770,8 @@ namespace Ionic
         ///
         /// <param name="zip">The ZipFile from which to retrieve entries.</param>
         ///
-        /// <returns>a ReadOnly collection of ZipEntry objects that conform to the criteria.</returns>
-        public System.Collections.ObjectModel.ReadOnlyCollection<Ionic.Zip.ZipEntry> SelectEntries(Ionic.Zip.ZipFile zip)
+        /// <returns>a collection of ZipEntry objects that conform to the criteria.</returns>
+        public System.Collections.Generic.ICollection<Ionic.Zip.ZipEntry> SelectEntries(Ionic.Zip.ZipFile zip)
         {
             var list = new System.Collections.Generic.List<Ionic.Zip.ZipEntry>();
 
@@ -779,7 +781,8 @@ namespace Ionic
                     list.Add(e);
             }
 
-            return list.AsReadOnly();
+            //return list.AsReadOnly();
+            return list;
         }
 
 
@@ -820,8 +823,8 @@ namespace Ionic
         /// all directories in the archive are used. 
         /// </param>
         /// 
-        /// <returns>a ReadOnly collection of ZipEntry objects that conform to the criteria.</returns>
-        public System.Collections.ObjectModel.ReadOnlyCollection<Ionic.Zip.ZipEntry> SelectEntries(Ionic.Zip.ZipFile zip, string directoryPathInArchive)
+        /// <returns>a collection of ZipEntry objects that conform to the criteria.</returns>
+        public System.Collections.Generic.ICollection<Ionic.Zip.ZipEntry> SelectEntries(Ionic.Zip.ZipFile zip, string directoryPathInArchive)
         {
             var list = new System.Collections.Generic.List<Ionic.Zip.ZipEntry>();
 
@@ -832,6 +835,7 @@ namespace Ionic
                         list.Add(e);
             }
 
+            //return list.AsReadOnly();
             return list.AsReadOnly();
         }
 

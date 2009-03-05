@@ -167,6 +167,7 @@ namespace Ionic.Zip
 
             int i = 0;
             ZipEntry zde = new ZipEntry();
+	    zde._Source = EntrySource.Zipfile;
             zde._archiveStream = s;
             zde._cdrPosition = cdrPosition;
 

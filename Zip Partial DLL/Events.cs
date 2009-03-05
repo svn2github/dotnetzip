@@ -339,7 +339,6 @@ namespace Ionic.Zip
         {
             get { return _entriesSaved; }
         }
-
     }
 
 
