@@ -121,11 +121,11 @@
     <value>17, 17</value>
   </metadata>
   <data name="richTextBox1.Text" xml:space="preserve">
-    <value>This is a sample ZIP tool that ships with DotNetZip.  DotNetZip is a .NET managed-code library for manipulating ZIP archives.  It enables any .NET application to read and write ZIP files, simply and easily. 
+    <value>This is DotNetZip, a free zip tool built in .NET.  DotNetZip includes a .NET managed-code library for manipulating ZIP archives, as well as command-line tools and this graphical tool.  The DotNetZip library enables any .NET application to read and write ZIP files, simply and easily.  This tool is just one example of the things that are possible with the library.   
 
-DotNetZip supports many advanced ZIP features like ZIP64, WinZip-compatible AES encryption, Unicode or arbitrary code pages, self-extracting archives, archive and entry comments, and more.  DotNetZip has a simple and clean programming interface, and exposes a handy Eventing model for your programming delight.  There is a full helpfile with plenty of code examples to get you started. 
+The DotNetZip library supports many advanced ZIP features like ZIP64, WinZip-compatible AES encryption, Unicode or arbitrary code pages, self-extracting archives, archive and entry comments, and more.  DotNetZip has a simple and clean programming interface, and exposes a handy Eventing model for your programming delight.  There is a full helpfile with plenty of code examples to get you started. 
 
-DotNetZip is CLS-compliant, FxCop-approved and low-fat.  It can be used from any .NET programming language.  It runs on the Compact Framework as well as the regular .NET Framework.  DotNetZip requires .NET 2.0 at a minimum.  
+DotNetZip is CLS-compliant, FxCop-approved, fair-trade, color-blind, kid-friendly, and low-fat.  The library can be used from any .NET programming language.  It runs on the Compact Framework as well as the regular .NET Framework.  DotNetZip requires .NET 2.0 at a minimum.  
 
 The library and this tool are produced in an open source project hosted at CodePlex:  http://www.codeplex.com/DotNetZip.  
 

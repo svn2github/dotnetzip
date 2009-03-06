@@ -103,8 +103,6 @@
             this.tbDirectoryToZip.Name = "tbDirectoryToZip";
             this.tbDirectoryToZip.Size = new System.Drawing.Size(425, 20);
             this.tbDirectoryToZip.TabIndex = 10;
-            this.tbDirectoryToZip.Text = "c:\\dinoch\\dev\\dotnet\\zip\\test\\UnicodeTestCases\\A\\den f¢rste hjemmeside i rækken [" +
-                "DK]";
             this.tbDirectoryToZip.Leave += new System.EventHandler(this.tbDirectoryToZip_Leave);
             // 
             // tbZipToCreate
@@ -116,7 +114,6 @@
             this.tbZipToCreate.Name = "tbZipToCreate";
             this.tbZipToCreate.Size = new System.Drawing.Size(425, 20);
             this.tbZipToCreate.TabIndex = 20;
-            this.tbZipToCreate.Text = "c:\\dinoch\\dev\\dotnet\\zip\\test\\U.zip";
             // 
             // btnZipupDirBrowse
             // 
@@ -533,8 +530,6 @@
             this.tbExtractDir.Name = "tbExtractDir";
             this.tbExtractDir.Size = new System.Drawing.Size(414, 20);
             this.tbExtractDir.TabIndex = 22;
-            this.tbExtractDir.Text = "c:\\dinoch\\dev\\dotnet\\zip\\test\\UnicodeTestCases\\A\\den f¢rste hjemmeside i rækken [" +
-                "DK]";
             // 
             // label11
             // 
@@ -585,8 +580,6 @@
             this.tbZipToOpen.Name = "tbZipToOpen";
             this.tbZipToOpen.Size = new System.Drawing.Size(414, 20);
             this.tbZipToOpen.TabIndex = 12;
-            this.tbZipToOpen.Text = "c:\\dinoch\\dev\\dotnet\\zip\\test\\UnicodeTestCases\\A\\den f¢rste hjemmeside i rækken [" +
-                "DK]";
             // 
             // tabPage2
             // 
@@ -705,6 +698,7 @@
             this.richTextBox1.Size = new System.Drawing.Size(510, 325);
             this.richTextBox1.TabIndex = 2;
             this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
+            this.richTextBox1.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBox1_LinkClicked);
             // 
             // pictureBox1
             // 

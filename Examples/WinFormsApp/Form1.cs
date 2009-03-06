@@ -658,6 +658,7 @@ namespace WinFormsExample
                 {
                     SelectNamedCompressionLevel(s);
                 }
+                else SelectNamedCompressionLevel("LEVEL6_DEFAULT");
 
                 s = (string)AppCuKey.GetValue(_rvn_Encryption);
                 if (s != null)
@@ -1331,7 +1332,10 @@ namespace WinFormsExample
             this.tbDirectoryInArchive.Text = System.IO.Path.GetFileName(this.tbDirectoryToZip.Text);
         }
 
-
+        private void richTextBox1_LinkClicked(object sender, LinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(e.LinkText);
+        }
 
 
         //private string _folderName;
