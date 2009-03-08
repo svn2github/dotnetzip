@@ -196,15 +196,6 @@ namespace Ionic.Zip
 	    else if (!DateTime.Now.IsDaylightSavingTime() && time.IsDaylightSavingTime())
 		adjusted = time + new System.TimeSpan(1, 0, 0);
 
-
-			Console.WriteLine("DotNet-To-Win32");
-			Console.WriteLine("time: {0}    ({1})", 
-					  time.ToString("G"), 
-					  time.IsDaylightSavingTime() ? "isDST" : "NOT DST");
-
-			//Console.WriteLine("_Mtime.Kind: {0}", _Mtime.Kind.ToString());
-			Console.WriteLine("adjusted: {0}", adjusted.ToString("G"));
-
 	    return adjusted;
 	}
 
@@ -265,16 +256,6 @@ namespace Ionic.Zip
         {
             UInt16 packedDate = (UInt16)((time.Day & 0x0000001F) | ((time.Month << 5) & 0x000001E0) | (((time.Year - 1980) << 9) & 0x0000FE00));
             UInt16 packedTime = (UInt16)((time.Second / 2 & 0x0000001F) | ((time.Minute << 5) & 0x000007E0) | ((time.Hour << 11) & 0x0000F800));
-
-            // for debugging only
-            //             int hour = (packedTime & 0xF800) >> 11;
-            //             int minute = (packedTime & 0x07E0) >> 5;
-            //             int second = (packedTime & 0x001F)*2;
-
-            // 	    Console.WriteLine("regly      = {0:D2}:{1:d2}:{2:D2}", time.Hour, time.Minute, time.Second);
-            // 	    Console.WriteLine("msdos-ized = {0:D2}:{1:d2}:{2:D2}", hour, minute, second);
-            // 	    // end debugging stuff
-
 
             Int32 result = (Int32)(((UInt32)(packedDate << 16)) | packedTime);
             return result;
