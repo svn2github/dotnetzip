@@ -222,7 +222,7 @@ namespace SmartDeviceProject3
                 {
                     foreach (var entry in zip1)
                     {
-                        entry.Extract(dir, true);
+                        entry.Extract(dir, ExtractExistingFileAction.OverwriteSilently);
                     }
                 }
 

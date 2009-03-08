@@ -506,39 +506,39 @@ namespace Ionic.Zip.Tests.Basic
 
             TestContext.WriteLine("============================================");
             TestContext.WriteLine("Test beginning - {0}", System.DateTime.Now.ToString("G"));
-	    for (int m = 0; m < 2; m++)
-	    {
-		string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("CreateZip_AddDirectory_LargeNumberOfSmallFiles-{0}.zip", m));
-		Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            for (int m = 0; m < 2; m++)
+            {
+                string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("CreateZip_AddDirectory_LargeNumberOfSmallFiles-{0}.zip", m));
+                Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
-		string DirToZip = System.IO.Path.Combine(TopLevelDir, "zipthis" + m);
-		System.IO.Directory.CreateDirectory(DirToZip);
+                string DirToZip = System.IO.Path.Combine(TopLevelDir, "zipthis" + m);
+                System.IO.Directory.CreateDirectory(DirToZip);
 
-		TestContext.WriteLine("============================================");
-		TestContext.WriteLine("Creating files, cycle {0}...", m);
+                TestContext.WriteLine("============================================");
+                TestContext.WriteLine("Creating files, cycle {0}...", m);
 
-		int subdirCount = 0;
-		int entries = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "LargeNumberOfFiles", DirToZip, settings[m], out subdirCount);
+                int subdirCount = 0;
+                int entries = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "LargeNumberOfFiles", DirToZip, settings[m], out subdirCount);
 
-		TestContext.WriteLine("============================================");
-		TestContext.WriteLine("Total of {0} files in {1} subdirs", entries, subdirCount);
-		TestContext.WriteLine("============================================");
-		TestContext.WriteLine("Creating zip - {0}", System.DateTime.Now.ToString("G"));
-		System.IO.Directory.SetCurrentDirectory(TopLevelDir);
-		using (ZipFile zip = new ZipFile())
-		{
-		    zip.TempFileFolder= TopLevelDir;
-		    zip.AddDirectory(System.IO.Path.GetFileName(DirToZip));
-		    zip.Save(ZipFileToCreate);
-		}
+                TestContext.WriteLine("============================================");
+                TestContext.WriteLine("Total of {0} files in {1} subdirs", entries, subdirCount);
+                TestContext.WriteLine("============================================");
+                TestContext.WriteLine("Creating zip - {0}", System.DateTime.Now.ToString("G"));
+                System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+                using (ZipFile zip = new ZipFile())
+                {
+                    zip.TempFileFolder = TopLevelDir;
+                    zip.AddDirectory(System.IO.Path.GetFileName(DirToZip));
+                    zip.Save(ZipFileToCreate);
+                }
 
-		TestContext.WriteLine("Checking zip - {0}", System.DateTime.Now.ToString("G"));
-		Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), entries,
-				     "The zip file created has the wrong number of entries.");
+                TestContext.WriteLine("Checking zip - {0}", System.DateTime.Now.ToString("G"));
+                Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), entries,
+                             "The zip file created has the wrong number of entries.");
 
-		// clean up for this cycle
-		System.IO.Directory.Delete(DirToZip, true);
-	    }
+                // clean up for this cycle
+                System.IO.Directory.Delete(DirToZip, true);
+            }
             TestContext.WriteLine("============================================");
             TestContext.WriteLine("Test end - {0}", System.DateTime.Now.ToString("G"));
 
@@ -744,7 +744,7 @@ namespace Ionic.Zip.Tests.Basic
                 var sw = new System.IO.StringWriter();
                 using (ZipFile zip = new ZipFile())
                 {
-		    zip.StatusMessageTextWriter = sw;
+                    zip.StatusMessageTextWriter = sw;
                     if (k == 0)
                         zip.AddDirectory(dirToZip);
                     else
@@ -827,7 +827,7 @@ namespace Ionic.Zip.Tests.Basic
                 var sw = new System.IO.StringWriter();
                 using (ZipFile zip = new ZipFile())
                 {
-		    zip.StatusMessageTextWriter = sw;
+                    zip.StatusMessageTextWriter = sw;
                     if (k == 0)
                         zip.AddDirectory(dirToZip);
                     else
@@ -1447,6 +1447,7 @@ namespace Ionic.Zip.Tests.Basic
 
             int maxFiles = _rnd.Next(PotentialFilenames.Length / 2) + PotentialFilenames.Length / 3;
             maxFiles = Math.Min(maxFiles, 145);
+            //maxFiles = Math.Min(maxFiles, 15);
             TestContext.WriteLine("\n-----------------------------\r\n{1}: Finding files in '{0}'...",
                 System.Environment.GetEnvironmentVariable("TEMP"),
                 DateTime.Now.ToString("HH:mm:ss"));
@@ -1505,7 +1506,7 @@ namespace Ionic.Zip.Tests.Basic
                         tm.ToString("yyyy MMM dd HH:mm:ss"),
                         fi.Length,
                         DateTime.Now.ToString("HH:mm:ss"));
-                    timestamps.Add(key, tm);
+                    timestamps.Add(key, this.AdjustTime_Win32ToDotNet(tm));
                     ActualFilenames.Add(filename);
                 }
                 catch
@@ -1545,8 +1546,13 @@ namespace Ionic.Zip.Tests.Basic
                     // verify that the LastMod time on the filesystem file is set correctly
                     e.Extract("unpack");
                     string PathToExtractedFile = System.IO.Path.Combine("unpack", e.FileName);
-                    DateTime ActualFilesystemLastMod = AdjustTimeForWin32VersusDotnetDiscrepancy(System.IO.File.GetLastWriteTime(PathToExtractedFile));
+                    DateTime ActualFilesystemLastMod = AdjustTime_Win32ToDotNet(System.IO.File.GetLastWriteTime(PathToExtractedFile));
                     TimeSpan delta = timestamps[e.FileName] - ActualFilesystemLastMod;
+
+                    // get the delta as an absolute value:
+                    if (delta < new TimeSpan(0, 0, 0))
+                        delta = new TimeSpan(0, 0, 0) - delta;
+
                     TestContext.WriteLine("time delta: {0}", delta.ToString());
                     // The time delta can be at most, 1 second.
                     Assert.IsTrue(delta < new TimeSpan(0, 0, 1),
@@ -1568,17 +1574,18 @@ namespace Ionic.Zip.Tests.Basic
 
 
 
-        private DateTime AdjustTimeForWin32VersusDotnetDiscrepancy(DateTime dateTime)
+        private DateTime AdjustTime_Win32ToDotNet(DateTime time)
         {
-            // does the converse of the adjustment that is done within the DotNetZip lib.
+            // If I read a time from a file with GetLastWriteTime() (etc), I need
+            // to adjust it for display in the .NET environment.  
+            DateTime adjusted = time;
+            if (DateTime.Now.IsDaylightSavingTime() && !time.IsDaylightSavingTime())
+                adjusted = time + new System.TimeSpan(1, 0, 0);
 
-            if (!dateTime.IsDaylightSavingTime() && DateTime.Now.IsDaylightSavingTime())
-                dateTime = dateTime - new System.TimeSpan(1, 0, 0);
+            else if (!DateTime.Now.IsDaylightSavingTime() && time.IsDaylightSavingTime())
+                adjusted = time - new System.TimeSpan(1, 0, 0);
 
-            if (dateTime.IsDaylightSavingTime() && !DateTime.Now.IsDaylightSavingTime())
-                dateTime = dateTime + new System.TimeSpan(1, 0, 0);
-
-            return dateTime;
+            return adjusted;
         }
 
 

@@ -791,13 +791,13 @@ namespace Ionic.Zip
 
 
 
-        private void OnExtractEntry(int current, bool before, ZipEntry currentEntry, string path, bool overwrite)
+        private void OnExtractEntry(int current, bool before, ZipEntry currentEntry, string path)
         {
             if (ExtractProgress != null)
             {
                 lock (LOCK)
                 {
-                    var e = new ExtractProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, currentEntry, path, overwrite);
+                    var e = new ExtractProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, currentEntry, path);
                     ExtractProgress(this, e);
                     if (e.Cancel)
                         _extractOperationCanceled = true;
@@ -825,15 +825,30 @@ namespace Ionic.Zip
 
 
         // Can be called from within ZipEntry.InternalExtract.
-        internal bool OnSingleEntryExtract(ZipEntry entry, string path, bool before, bool overwrite)
+        internal bool OnSingleEntryExtract(ZipEntry entry, string path, bool before)
         {
             if (ExtractProgress != null)
             {
                 lock (LOCK)
                 {
                     var e = (before)
-            ? ExtractProgressEventArgs.BeforeExtractEntry(ArchiveNameForEvent, entry, path, overwrite)
-            : ExtractProgressEventArgs.AfterExtractEntry(ArchiveNameForEvent, entry, path, overwrite);
+            ? ExtractProgressEventArgs.BeforeExtractEntry(ArchiveNameForEvent, entry, path)
+            : ExtractProgressEventArgs.AfterExtractEntry(ArchiveNameForEvent, entry, path);
+                    ExtractProgress(this, e);
+                    if (e.Cancel)
+                        _extractOperationCanceled = true;
+                }
+            }
+            return _extractOperationCanceled;
+        }
+
+        internal bool OnExtractExisting(ZipEntry entry, string path)
+        {
+            if (ExtractProgress != null)
+            {
+                lock (LOCK)
+                {
+                    var e = ExtractProgressEventArgs.ExtractExisting(ArchiveNameForEvent, entry, path);
                     ExtractProgress(this, e);
                     if (e.Cancel)
                         _extractOperationCanceled = true;
@@ -843,30 +858,28 @@ namespace Ionic.Zip
         }
 
 
-        private void OnExtractAllCompleted(string path, bool wantOverwrite)
+        private void OnExtractAllCompleted(string path)
         {
             if (ExtractProgress != null)
             {
                 lock (LOCK)
                 {
                     var e = ExtractProgressEventArgs.ExtractAllCompleted(ArchiveNameForEvent,
-                         path,
-                         wantOverwrite);
+                         path );
                     ExtractProgress(this, e);
                 }
             }
         }
 
 
-        private void OnExtractAllStarted(string path, bool wantOverwrite)
+        private void OnExtractAllStarted(string path)
         {
             if (ExtractProgress != null)
             {
                 lock (LOCK)
                 {
                     var e = ExtractProgressEventArgs.ExtractAllStarted(ArchiveNameForEvent,
-                         path,
-                         wantOverwrite);
+                         path );
                     ExtractProgress(this, e);
                 }
             }

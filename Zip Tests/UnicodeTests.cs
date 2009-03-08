@@ -142,11 +142,11 @@ namespace Ionic.Zip.Tests.Unicode
                             string fname = String.Format(formats[k], i);
                             if (j == 0)
                             {
-                                Assert.AreEqual<String>(fname, e.FileName);
+                                Assert.AreEqual<String>(fname, Path.GetFileName(e.FileName));
                             }
                             else
                             {
-                                Assert.AreNotEqual<String>(fname, e.FileName);
+                                Assert.AreNotEqual<String>(fname, Path.GetFileName(e.FileName));
                             }
                             i++;
                         }

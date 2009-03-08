@@ -67,7 +67,7 @@ namespace Ionic.Zip.Examples
             string entryToExtract = null;
             bool extractToConsole = false;
             bool WantExtract = true;
-            bool WantOverwrite = false;
+            ExtractExistingFileAction behaviorForExistingFile = ExtractExistingFileAction.DontOverwrite;
             bool WantQuiet = false;
             System.IO.Stream outstream = null;
 
@@ -98,7 +98,7 @@ namespace Ionic.Zip.Examples
                         break;
 
                     case "-o":
-                        WantOverwrite = true;
+			behaviorForExistingFile = ExtractExistingFileAction.OverwriteSilently;
                         break;
 
                     case "-d":
@@ -124,7 +124,7 @@ namespace Ionic.Zip.Examples
                         if (password != null) Usage();
                         if (targdir != null) Usage();
                         if (entryToExtract != null) Usage();
-                        if (WantOverwrite) Usage();
+                        if (behaviorForExistingFile == ExtractExistingFileAction.OverwriteSilently) Usage();
                         WantExtract = false;
                         break;
 
@@ -191,14 +191,14 @@ namespace Ionic.Zip.Examples
                                 else if (extractToConsole)
                                     zip[entryToExtract].Extract(outstream);
                                 else
-                                    zip[entryToExtract].Extract(targdir, WantOverwrite);
+                                    zip[entryToExtract].Extract(targdir, behaviorForExistingFile);
                             }
                             else
                             {
                                 if (extractToConsole)
                                     zip[entryToExtract].ExtractWithPassword(outstream, password);
                                 else
-                                    zip[entryToExtract].ExtractWithPassword(targdir, WantOverwrite, password);
+                                    zip[entryToExtract].ExtractWithPassword(targdir, behaviorForExistingFile, password);
                             }
                         }
                     }
@@ -253,14 +253,14 @@ namespace Ionic.Zip.Examples
                                     else if (extractToConsole)
                                         e.ExtractWithPassword(outstream, password);
                                     else
-                                        e.ExtractWithPassword(targdir, WantOverwrite, password);
+                                        e.ExtractWithPassword(targdir, behaviorForExistingFile, password);
                                 }
                                 else
                                 {
                                     if (extractToConsole)
                                         e.Extract(outstream);
                                     else
-                                        e.Extract(targdir, WantOverwrite);
+                                        e.Extract(targdir, behaviorForExistingFile);
 
                                 }
                             }

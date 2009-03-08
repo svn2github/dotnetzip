@@ -139,7 +139,7 @@ namespace Ionic.Zip.Tests.Error
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Error_Extract_ExistingFileWithoutOverwrite()
         {
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "ExtractWithoutOverwrite.zip");
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Error_Extract_ExistingFileWithoutOverwrite.zip");
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
             string SourceDir = CurrentDir;
@@ -175,13 +175,67 @@ namespace Ionic.Zip.Tests.Error
                     zip[Path.GetFileName(filenames[j])].Extract("unpack", false);
             }
 
-            // extract the first time - this should fail
+            // extract the second time - this should fail (overwrite exception)
             using (ZipFile zip = new ZipFile(ZipFileToCreate))
             {
                 for (j = 0; j < filenames.Length; j++)
                     zip[Path.GetFileName(filenames[j])].Extract("unpack", false);
             }
         }
+
+
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        public void Error_Extract_ExistingFileWithoutOverwrite_2()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Error_Extract_ExistingFileWithoutOverwrite_2.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            string SourceDir = CurrentDir;
+            for (int i = 0; i < 3; i++)
+                SourceDir = Path.GetDirectoryName(SourceDir);
+
+            Directory.SetCurrentDirectory(TopLevelDir);
+
+            string[] filenames = 
+            {
+                Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
+                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.dll"),
+                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.pdb"),
+                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
+                //Path.Combine(SourceDir, "AppNote.txt")
+            };
+            int j = 0;
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                for (j = 0; j < filenames.Length; j++)
+                    zip.AddFile(filenames[j], "");
+                zip.Comment = "This is a Comment On the Archive";
+                zip.Save();
+            }
+
+            Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), filenames.Length,
+                "The zip file created has the wrong number of entries.");
+
+            // extract the first time - this should succeed
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                for (j = 0; j < filenames.Length; j++)
+                    zip[Path.GetFileName(filenames[j])].Extract("unpack", ExtractExistingFileAction.Throw);
+            }
+
+            // extract the second time - this should fail (overwrite exception)
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                for (j = 0; j < filenames.Length; j++)
+                    zip[Path.GetFileName(filenames[j])].Extract("unpack", ExtractExistingFileAction.Throw);
+            }
+        }
+
+
+
+
 
         [TestMethod]
         [ExpectedException(typeof(Ionic.Zip.ZipException))]

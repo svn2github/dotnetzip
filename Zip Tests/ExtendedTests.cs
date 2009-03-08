@@ -1270,9 +1270,9 @@ namespace Ionic.Zip.Tests.Extended
 
             TestContext.WriteLine("extracting {0}...", fileName);
 
-            using (var zFile = Ionic.Zip.ZipFile.Read(fileName))
+            using (var zFile = ZipFile.Read(fileName))
             {
-                zFile.ExtractAll(zDir, true);
+                zFile.ExtractAll(zDir, ExtractExistingFileAction.OverwriteSilently);
             }
             completedEntries++;
         }
@@ -1338,6 +1338,64 @@ namespace Ionic.Zip.Tests.Extended
                 }
             }
         }
+
+
+        [TestMethod]
+        public void Extract_ExistingFile()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Extract_ExistingFile.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            string SourceDir = CurrentDir;
+            for (int i = 0; i < 3; i++)
+                SourceDir = Path.GetDirectoryName(SourceDir);
+
+            Directory.SetCurrentDirectory(TopLevelDir);
+
+            string[] filenames = 
+            {
+                Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
+                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.dll"),
+                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.pdb"),
+                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
+                //Path.Combine(SourceDir, "AppNote.txt")
+            };
+
+            int j = 0;
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                for (j = 0; j < filenames.Length; j++)
+                    zip.AddFile(filenames[j], "");
+                zip.Comment = "This is a Comment On the Archive";
+                zip.Save();
+            }
+
+            Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), filenames.Length,
+                "The zip file created has the wrong number of entries.");
+
+            // extract the first time - this should succeed
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                for (j = 0; j < filenames.Length; j++)
+                    zip[Path.GetFileName(filenames[j])].Extract("unpack", ExtractExistingFileAction.Throw);
+            }
+
+            // extract the second time - there will be no overwrites, and no extractions
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                for (j = 0; j < filenames.Length; j++)
+                    zip[Path.GetFileName(filenames[j])].Extract("unpack", ExtractExistingFileAction.DontOverwrite);
+            }
+
+            // extract the third time - there will be overwrites
+            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            {
+                for (j = 0; j < filenames.Length; j++)
+                    zip[Path.GetFileName(filenames[j])].Extract("unpack", ExtractExistingFileAction.OverwriteSilently);
+            }
+        }
+
+
 
         [TestMethod]
         public void Extract_WinZip_SelfExtractor()

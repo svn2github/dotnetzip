@@ -120,6 +120,11 @@ namespace Ionic.Zip
         Extracting_AfterExtractEntry,
 
         /// <summary>
+        /// Indicates that extraction of an entry would overwrite an existing filesystem file. 
+        /// </summary>
+        Extracting_ExtractEntryWouldOverwrite,
+
+        /// <summary>
         /// The given event is reporting the number of bytes written so far for the current entry
         /// during an Extract() operation.
         /// </summary>
@@ -348,7 +353,6 @@ namespace Ionic.Zip
     public class ExtractProgressEventArgs : ZipProgressEventArgs
     {
         private int _entriesExtracted;
-        private bool _overwrite;
         private string _target;
 
         /// <summary>
@@ -360,14 +364,12 @@ namespace Ionic.Zip
         /// <param name="entriesExtracted">Number of entries that have been extracted.</param>
         /// <param name="entry">The entry involved in the event.</param>
         /// <param name="extractLocation">The location to which entries are extracted.</param>
-        /// <param name="wantOverwrite">indicates whether the extract operation will overwrite existing files.</param>
-        internal ExtractProgressEventArgs(string archiveName, bool before, int entriesTotal, int entriesExtracted, ZipEntry entry, string extractLocation, bool wantOverwrite)
+        internal ExtractProgressEventArgs(string archiveName, bool before, int entriesTotal, int entriesExtracted, ZipEntry entry, string extractLocation)
             : base(archiveName, (before) ? ZipProgressEventType.Extracting_BeforeExtractEntry : ZipProgressEventType.Extracting_AfterExtractEntry)
         {
             this.EntriesTotal = entriesTotal;
             this.CurrentEntry = entry;
             this._entriesExtracted = entriesExtracted;
-            this._overwrite = wantOverwrite;
             this._target = extractLocation;
         }
 
@@ -379,40 +381,46 @@ namespace Ionic.Zip
         { }
 
 
-        internal static ExtractProgressEventArgs BeforeExtractEntry(string archiveName, ZipEntry entry, string extractLocation, bool wantOverwrite)
+        internal static ExtractProgressEventArgs BeforeExtractEntry(string archiveName, ZipEntry entry, string extractLocation)
         {
             var x = new ExtractProgressEventArgs();
             x.ArchiveName = archiveName;
             x.EventType = ZipProgressEventType.Extracting_BeforeExtractEntry;
             x.CurrentEntry = entry;
             x._target = extractLocation;
-            x._overwrite = wantOverwrite;
             return x;
         }
 
-        internal static ExtractProgressEventArgs AfterExtractEntry(string archiveName, ZipEntry entry, string extractLocation, bool wantOverwrite)
+        internal static ExtractProgressEventArgs ExtractExisting(string archiveName, ZipEntry entry, string extractLocation)
+        {
+            var x = new ExtractProgressEventArgs();
+            x.ArchiveName = archiveName;
+            x.EventType = ZipProgressEventType.Extracting_BeforeExtractEntry;
+            x.CurrentEntry = entry;
+            x._target = extractLocation;
+            return x;
+        }
+
+        internal static ExtractProgressEventArgs AfterExtractEntry(string archiveName, ZipEntry entry, string extractLocation)
         {
             var x = new ExtractProgressEventArgs();
             x.ArchiveName = archiveName;
             x.EventType = ZipProgressEventType.Extracting_AfterExtractEntry;
             x.CurrentEntry = entry;
             x._target = extractLocation;
-            x._overwrite = wantOverwrite;
             return x;
         }
 
-        internal static ExtractProgressEventArgs ExtractAllStarted(string archiveName, string extractLocation, bool wantOverwrite)
+        internal static ExtractProgressEventArgs ExtractAllStarted(string archiveName, string extractLocation)
         {
             var x = new ExtractProgressEventArgs(archiveName, ZipProgressEventType.Extracting_BeforeExtractAll);
-            x._overwrite = wantOverwrite;
             x._target = extractLocation;
             return x;
         }
 
-        internal static ExtractProgressEventArgs ExtractAllCompleted(string archiveName, string extractLocation, bool wantOverwrite)
+        internal static ExtractProgressEventArgs ExtractAllCompleted(string archiveName, string extractLocation)
         {
             var x = new ExtractProgressEventArgs(archiveName, ZipProgressEventType.Extracting_AfterExtractAll);
-            x._overwrite = wantOverwrite;
             x._target = extractLocation;
             return x;
         }
@@ -438,15 +446,6 @@ namespace Ionic.Zip
         public int EntriesExtracted
         {
             get { return _entriesExtracted; }
-        }
-
-
-        /// <summary>
-        /// True if the extract operation overwrites existing files.
-        /// </summary>
-        public bool Overwrite
-        {
-            get { return _overwrite; }
         }
 
         /// <summary>

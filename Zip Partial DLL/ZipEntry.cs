@@ -1,5 +1,3 @@
-#define OPTIMIZE_WI6612
-
 // ZipEntry.cs
 //
 // Copyright (c) 2006, 2007, 2008, 2009 Microsoft Corporation.  All rights reserved.
@@ -89,6 +87,45 @@ namespace Ionic.Zip
 
         // others... not implemented (yet?)
     }
+
+
+
+    /// <summary>
+    /// An enum for the options when extracting an entry would overwrite an existing file. 
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This enum describes the actions that the library can take when an <c>Extract()</c> or
+    /// <c>ExtractWithPassword()</c> method is called to extract an entry to a filesystem, and the
+    /// extraction would overwrite an existing filesystem file.
+    /// </para>
+    /// </remarks>
+    public enum ExtractExistingFileAction
+    {
+        /// <summary>
+        /// Throw an exception when extraction would overwrite an existing file. 
+        /// </summary>
+        Throw,
+
+        /// <summary>
+        /// When extraction would overwrite an existing file, overwrite the file silently. 
+        /// </summary>
+        OverwriteSilently,
+
+        /// <summary>
+        /// When extraction would overwrite an existing file, don't overwrite the file, silently. 
+        /// </summary>
+        DontOverwrite,
+
+        /// <summary>
+        /// When extraction would overwrite an existing file, invoke the ExtractProgress event,
+        /// using an event type of <see
+        /// cref="ZipProgressEventType.Extracting_ExtractEntryWouldOverwrite"/>.
+        /// </summary>
+        InvokeExtractProgressEvent,
+    }
+
+
 
     /// <summary>
     /// Represents a single entry in a ZipFile. Typically, applications
@@ -438,7 +475,7 @@ namespace Ionic.Zip
         /// closing and disposing the stream.  This would normally be done in the <see
         /// cref="ZipFile.SaveProgress"/> event, when the event type is <see
         /// cref="ZipProgressEventType.Saving_AfterWriteEntry"/>. See the example for how this
-	/// can be done. 
+        /// can be done. 
         /// </para>
         ///
         /// <para>
@@ -454,7 +491,7 @@ namespace Ionic.Zip
         /// {
         ///     if (e.EventType == ZipProgressEventType.Saving_BeforeWriteEntry)
         ///     {
-        ///         if (e.CurrentEntry.Source == Ionic.Zip.ZipEntry.EntrySource.Stream &&
+        ///         if (e.CurrentEntry.Source == Ionic.Zip.ZipEntry.EntrySource.Stream &amp;&amp;
         ///             e.CurrentEntry.InputStream == null)
         ///         {
         ///             System.IO.Stream s = MyStreamOpener(e.CurrentEntry.FileName);
@@ -475,13 +512,13 @@ namespace Ionic.Zip
         /// Public Shared Sub SaveProgress(ByVal sender As Object, ByVal e As SaveProgressEventArgs)
         ///     If (e.EventType = ZipProgressEventType.Saving_BeforeWriteEntry) Then
         ///         If (e.CurrentEntry.Source = EntrySource.Stream) Then
-	///             If (e.CurrentEntry.InputStream Is Nothing) Then
+        ///             If (e.CurrentEntry.InputStream Is Nothing) Then
         ///                 Dim s As Stream = wi7192.MyStreamOpener(e.CurrentEntry.FileName)
         ///                 e.CurrentEntry.InputStream = s
         ///             End If
         ///         End If
         ///     ElseIf (e.EventType = ZipProgressEventType.Saving_AfterWriteEntry) Then
-	///         If (e.CurrentEntry.InputStreamWasJitProvided) Then
+        ///         If (e.CurrentEntry.InputStreamWasJitProvided) Then
         ///             e.CurrentEntry.InputStream.Close
         ///             e.CurrentEntry.InputStream.Dispose
         ///         End If
@@ -988,15 +1025,49 @@ namespace Ionic.Zip
         /// </summary>
         /// <remarks>
         /// This applies only when calling an Extract method. By default this 
-        /// property is false. Generally you will get overwrite behavior by calling 
-        /// one of the overloads of the Extract() method that accepts a boolean flag
-        /// to indicate explicitly whether you want overwrite.
+        /// property is false. 
         /// </remarks>
-        /// <seealso cref="Ionic.Zip.ZipEntry.Extract(bool)"/>
+        /// <seealso cref="Ionic.Zip.ZipEntry.ExtractExistingFile"/>
+        [Obsolete("Please use property ExtractExistingFile")]
         public bool OverwriteOnExtract
         {
-            get { return _OverwriteOnExtract; }
-            set { _OverwriteOnExtract = value; }
+            get
+            {
+                return (ExtractExistingFile == ExtractExistingFileAction.OverwriteSilently);
+            }
+            set
+            {
+                // legacy behavior
+                ExtractExistingFile = (value)
+                    ? ExtractExistingFileAction.OverwriteSilently
+                    : ExtractExistingFileAction.Throw;
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// The action the library should take when extracting a file that already exists.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This property affects the behavior of the Extract methods (one of the <c>Extract()</c>
+        /// or <c>ExtractWithPassword()</c> overloads), when extraction would would overwrite an
+        /// existing filesystem file. If you do not set this property, the library throws an
+        /// exception when extracting an entry would overwrite an existing file.
+        /// </para>
+        ///
+        /// <para>
+        /// This property has no effect when extracting to a stream, or when the file to be
+        /// extracted does not already exist. 
+        /// </para>
+        /// </remarks>
+        /// <seealso cref="Ionic.Zip.ZipFile.ExtractExistingFile"/>
+        public ExtractExistingFileAction ExtractExistingFile
+        {
+            get;
+            set;
         }
 
 
@@ -1582,9 +1653,9 @@ namespace Ionic.Zip
 
                 entry._Source = EntrySource.Filesystem;
                 // workitem 6878
-                entry._Mtime = System.IO.File.GetLastWriteTime(filename);
-                entry._Ctime = System.IO.File.GetCreationTime(filename);
-                entry._Atime = System.IO.File.GetLastAccessTime(filename);
+                entry._Mtime = Ionic.Zip.SharedUtilities.AdjustTime_Win32ToDotNet(System.IO.File.GetLastWriteTime(filename));
+                entry._Ctime = Ionic.Zip.SharedUtilities.AdjustTime_Win32ToDotNet(System.IO.File.GetCreationTime(filename));
+                entry._Atime = Ionic.Zip.SharedUtilities.AdjustTime_Win32ToDotNet(System.IO.File.GetLastAccessTime(filename));
 
 #if NETCF
                 // workitem 7071
@@ -1610,17 +1681,7 @@ namespace Ionic.Zip
 
             entry._ntfsTimesAreSet = true;
 
-            // No longer need to round to nearest second as we don't use DOS time.
-            // In any case, the dataloss had happened at the time we format into DOS time, 
-            // and should not be necessary here. 
-            //entry._LastModified = SharedUtilities.RoundToEvenSecond(entry._Mtime);
-
             entry._LastModified = entry._Mtime;
-            entry._LastModified = Ionic.Zip.SharedUtilities.AdjustForDst(entry._LastModified);
-            entry._Mtime = Ionic.Zip.SharedUtilities.AdjustForDst(entry._Mtime).ToUniversalTime();
-            entry._Atime = Ionic.Zip.SharedUtilities.AdjustForDst(entry._Atime).ToUniversalTime();
-            entry._Ctime = Ionic.Zip.SharedUtilities.AdjustForDst(entry._Ctime).ToUniversalTime();
-
             entry._LocalFileName = filename; // may include a path
             entry._FileNameInArchive = nameInArchive.Replace('\\', '/');
 
@@ -1643,15 +1704,13 @@ namespace Ionic.Zip
         /// <c>ExtractWithPassword()</c> methods.
         /// </overloads>
         ///         
-        /// <seealso cref="Ionic.Zip.ZipEntry.OverwriteOnExtract"/>
+        /// <seealso cref="Ionic.Zip.ZipEntry.ExtractExistingFile"/>
         /// <seealso cref="Ionic.Zip.ZipEntry.Extract(bool)"/>
         ///
         /// <remarks>
         /// <para>
-        /// Existing entries in the filesystem will not be overwritten. If you would like to 
-        /// force the overwrite of existing files, see the <c>OverwriteOnExtract</c> property, 
-        /// or try one of the overloads of the Extract method that accepts a boolean flag
-        /// to indicate explicitly whether you want overwrite.
+        /// The action taken when extraction an entry  would overwrite an existing file
+        /// is determined by the <see cref="ExtractExistingFile" /> property. 
         /// </para>
         /// <para>
         /// See the remarks on the LastModified property, for some details 
@@ -1677,9 +1736,28 @@ namespace Ionic.Zip
         /// true if the caller wants to overwrite an existing bfile 
         /// by the same name in the filesystem.
         /// </param>
+        /// <seealso cref="Extract(ExtractExistingFileAction)"/>
+        [Obsolete("Please use method Extract(ExtractExistingFileAction)")]
         public void Extract(bool overwrite)
         {
             OverwriteOnExtract = overwrite;
+            InternalExtract(".", null, null);
+        }
+
+        /// <summary>
+        /// Extract the entry to a file in the filesystem, using the specified behavior 
+        /// when extraction would overwrite an existing file.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// See the remarks on the LastModified property, for some details 
+        /// about how the last modified time of the created file is set.
+        /// </para>
+        /// </remarks>
+        /// <param name="extractExistingFile">The action to take if extraction would overwrite an existing file.</param>
+        public void Extract(ExtractExistingFileAction extractExistingFile)
+        {
+            ExtractExistingFile = extractExistingFile;
             InternalExtract(".", null, null);
         }
 
@@ -1773,11 +1851,35 @@ namespace Ionic.Zip
         /// 
         /// <param name="baseDirectory">the pathname of the base directory</param>
         /// <param name="overwrite">If true, overwrite any existing files if necessary upon extraction.</param>
+        /// <seealso cref="Extract(String,ExtractExistingFileAction)"/>
+        [Obsolete("Please use method Extract(String,ExtractExistingFileAction)")]
         public void Extract(string baseDirectory, bool overwrite)
         {
             OverwriteOnExtract = overwrite;
             InternalExtract(baseDirectory, null, null);
         }
+
+
+        /// <summary>
+        /// Extract the entry to the filesystem, starting at the specified base directory, and
+        /// using the specified behavior when extraction would overwrite an existing file.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// See the remarks on the LastModified property, for some details 
+        /// about how the last modified time of the created file is set.
+        /// </para>
+        /// </remarks>
+        /// 
+        /// <param name="baseDirectory">the pathname of the base directory</param>
+        /// <param name="extractExistingFile">The action to take if extraction would overwrite an existing file.</param>
+        public void Extract(string baseDirectory, ExtractExistingFileAction extractExistingFile)
+        {
+            ExtractExistingFile = extractExistingFile;
+            InternalExtract(baseDirectory, null, null);
+        }
+
 
         /// <summary>
         /// Extract the entry to the filesystem, using the current working directory
@@ -1809,9 +1911,9 @@ namespace Ionic.Zip
         /// In this example, entries that use encryption are extracted using a particular password.
         /// <code>
         /// using (var zip = ZipFile.Read(FilePath))
-	/// {
+        /// {
         ///     foreach (ZipEntry e in zip)
-	///     {
+        ///     {
         ///         if (e.UsesEncryption)
         ///             e.ExtractWithPassword("Secret!");
         ///         else
@@ -1881,9 +1983,35 @@ namespace Ionic.Zip
         /// <param name="overwrite">true if the caller wants to overwrite an existing 
         /// file by the same name in the filesystem.</param>
         /// <param name="password">The Password to use for decrypting the entry.</param>
+        /// <seealso cref="ExtractWithPassword(ExtractExistingFileAction,String)"/>
+        [Obsolete("Please use method ExtractWithPassword(ExtractExistingFileAction,String)")]
         public void ExtractWithPassword(bool overwrite, string password)
         {
             OverwriteOnExtract = overwrite;
+            InternalExtract(".", null, password);
+        }
+
+
+        /// <summary>
+        /// Extract the entry to a file in the filesystem,
+        /// using the specified behavior when extraction would overwrite an existing file.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// See the remarks on the LastModified property, for some details 
+        /// about how the last modified time of the created file is set.
+        /// </para>
+        /// </remarks>
+        /// 
+        /// <param name="password">The Password to use for decrypting the entry.</param>
+        /// 
+        /// <param name="extractExistingFile">
+        /// The action to take if extraction would overwrite an existing file.
+        /// </param>
+        public void ExtractWithPassword(ExtractExistingFileAction extractExistingFile, string password)
+        {
+            ExtractExistingFile = extractExistingFile;
             InternalExtract(".", null, password);
         }
 
@@ -1900,9 +2028,30 @@ namespace Ionic.Zip
         /// <param name="baseDirectory">the pathname of the base directory</param>
         /// <param name="overwrite">If true, overwrite any existing files if necessary upon extraction.</param>
         /// <param name="password">The Password to use for decrypting the entry.</param>
+        /// <seealso cref="ExtractWithPassword(String,ExtractExistingFileAction,String)"/>
+        [Obsolete("Please use method ExtractWithPassword(String,ExtractExistingFileAction,String)")]
         public void ExtractWithPassword(string baseDirectory, bool overwrite, string password)
         {
             OverwriteOnExtract = overwrite;
+            InternalExtract(baseDirectory, null, password);
+        }
+
+        /// <summary>
+        /// Extract the entry to the filesystem, starting at the specified base directory, and
+        /// using the specified behavior when extraction would overwrite an existing file.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// See the remarks on the LastModified property, for some details 
+        /// about how the last modified time of the created file is set.
+        /// </remarks>
+        ///
+        /// <param name="baseDirectory">the pathname of the base directory</param>
+        /// <param name="extractExistingFile">The action to take if extraction would overwrite an existing file.</param>
+        /// <param name="password">The Password to use for decrypting the entry.</param>
+        public void ExtractWithPassword(string baseDirectory, ExtractExistingFileAction extractExistingFile, string password)
+        {
+            ExtractExistingFile = extractExistingFile;
             InternalExtract(baseDirectory, null, password);
         }
 
@@ -2077,19 +2226,29 @@ namespace Ionic.Zip
 
         private void OnBeforeExtract(string path)
         {
+            // When in the context of a ZipFile.ExtractAll, the events are generated from 
+            // the ZipFile method, not from within the ZipEntry instance. (why?)
+            // Therefore we suppress the events originating from the ZipEntry method.
             if (!_zipfile._inExtractAll)
             {
-                _ioOperationCanceled =
-            _zipfile.OnSingleEntryExtract(this, path, true, OverwriteOnExtract);
+                _ioOperationCanceled = _zipfile.OnSingleEntryExtract(this, path, true);
             }
         }
 
         private void OnAfterExtract(string path)
         {
+            // When in the context of a ZipFile.ExtractAll, the events are generated from 
+            // the ZipFile method, not from within the ZipEntry instance. (why?)
+            // Therefore we suppress the events originating from the ZipEntry method.
             if (!_zipfile._inExtractAll)
             {
-                _zipfile.OnSingleEntryExtract(this, path, false, OverwriteOnExtract);
+                _zipfile.OnSingleEntryExtract(this, path, false);
             }
+        }
+
+        private void OnExtractExisting(string path)
+        {
+            _ioOperationCanceled = _zipfile.OnExtractExisting(this, path);
         }
 
         private void OnWriteBlock(Int64 bytesXferred, Int64 totalBytesToXfer)
@@ -2134,13 +2293,35 @@ namespace Ionic.Zip
                     if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(TargetFile)))
                         System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(TargetFile));
 
-                    // and ensure we can create the file
+                    // Take care of the behavior when extraction would overwrite an existing file
                     if (System.IO.File.Exists(TargetFile))
                     {
                         fileExistsBeforeExtraction = true;
-                        if (OverwriteOnExtract)
-                            System.IO.File.Delete(TargetFile);
-                        else throw new ZipException("The file already exists.");
+                        switch (ExtractExistingFile)
+                        {
+                            case ExtractExistingFileAction.Throw:
+                                throw new ZipException("The file already exists.");
+                            case ExtractExistingFileAction.OverwriteSilently:
+                                System.IO.File.Delete(TargetFile);
+                                break;
+                            case ExtractExistingFileAction.DontOverwrite:
+                                OnAfterExtract(baseDir);
+                                return;
+                            case ExtractExistingFileAction.InvokeExtractProgressEvent:
+                                OnExtractExisting(baseDir);
+                                // Check the ExtractExistingFile property again, it may have been reset.
+                                if (ExtractExistingFile == ExtractExistingFileAction.Throw)
+                                    throw new ZipException("The file already exists.");
+                                else if (ExtractExistingFile == ExtractExistingFileAction.OverwriteSilently)
+                                    System.IO.File.Delete(TargetFile);
+                                else if (ExtractExistingFile == ExtractExistingFileAction.DontOverwrite)
+                                {
+                                    OnAfterExtract(baseDir);
+                                    return;
+                                }
+                                else throw new ZipException("The file already exists.");
+                                break;
+                        }
                     }
                     output = new System.IO.FileStream(TargetFile, System.IO.FileMode.CreateNew);
                 }
@@ -2214,19 +2395,18 @@ namespace Ionic.Zip
 
                     if (_ntfsTimesAreSet)
                     {
-                        DateTime[] adjusted = new DateTime[3];
 
-                        adjusted[0] = _Ctime;
-                        if (DateTime.Now.IsDaylightSavingTime() && !_Ctime.IsDaylightSavingTime())
-                            adjusted[0] = _Ctime - new System.TimeSpan(1, 0, 0);
+                        DateTime[] adjusted = new DateTime[] {
+			    Ionic.Zip.SharedUtilities.AdjustTime_DotNetToWin32(_Ctime),
+			    Ionic.Zip.SharedUtilities.AdjustTime_DotNetToWin32(_Atime),
+			    Ionic.Zip.SharedUtilities.AdjustTime_DotNetToWin32(_Mtime),
+			};
 
-                        adjusted[1] = _Atime;
-                        if (DateTime.Now.IsDaylightSavingTime() && !_Atime.IsDaylightSavingTime())
-                            adjusted[1] = _Atime - new System.TimeSpan(1, 0, 0);
-
-                        adjusted[2] = _Mtime;
-                        if (DateTime.Now.IsDaylightSavingTime() && !_Mtime.IsDaylightSavingTime())
-                            adjusted[2] = _Mtime - new System.TimeSpan(1, 0, 0);
+//                         DateTime[] adjusted = new DateTime[] {
+// 			    _Ctime,
+// 			    _Atime,
+// 			    _Mtime,
+// 			};
 
 
 #if NETCF
@@ -2244,13 +2424,7 @@ namespace Ionic.Zip
                     else
                     {
                         // workitem 6191
-                        DateTime AdjustedLastModified = LastModified;
-                        if (DateTime.Now.IsDaylightSavingTime() && !LastModified.IsDaylightSavingTime())
-                            AdjustedLastModified = LastModified - new System.TimeSpan(1, 0, 0);
-
-                        //if (!DateTime.Now.IsDaylightSavingTime() && LastModified.IsDaylightSavingTime())
-                        //AdjustedLastModified = LastModified + new System.TimeSpan(1, 0, 0);
-
+                        DateTime AdjustedLastModified = Ionic.Zip.SharedUtilities.AdjustTime_DotNetToWin32(LastModified);
 
 #if NETCF
 			NetCfFile.SetLastWriteTime(TargetFile, AdjustedLastModified);
@@ -2292,7 +2466,7 @@ namespace Ionic.Zip
                             // if it did not, or if we were overwriting the file, attempt to remove the target file.
                             if (System.IO.File.Exists(TargetFile))
                             {
-                                if (!fileExistsBeforeExtraction || OverwriteOnExtract)
+                                if (!fileExistsBeforeExtraction || (ExtractExistingFile == ExtractExistingFileAction.OverwriteSilently))
                                     System.IO.File.Delete(TargetFile);
                             }
                         }
@@ -4364,7 +4538,7 @@ namespace Ionic.Zip
         private bool _crcCalculated = false;
         internal Int32 _Crc32;
         internal byte[] _Extra;
-        private bool _OverwriteOnExtract;
+        //private bool _OverwriteOnExtract;
         private bool _metadataChanged;
         private bool _restreamRequiredOnSave;
         private bool _sourceIsEncrypted;

@@ -185,15 +185,41 @@ namespace Ionic.Zip
         }
 
 
-	internal static DateTime AdjustForDst(DateTime time)
+	// If I have a time in the .NET environment, and I want to use it for 
+	// SetWastWriteTime() etc, then I need to adjust it for Win32. 
+	internal static DateTime AdjustTime_DotNetToWin32(DateTime time)
 	{
-	    if (!time.IsDaylightSavingTime() && DateTime.Now.IsDaylightSavingTime())
-		time = time + new System.TimeSpan(1, 0, 0);
+	    DateTime adjusted = time;
+	    if (DateTime.Now.IsDaylightSavingTime() && !time.IsDaylightSavingTime())
+		adjusted = time - new System.TimeSpan(1, 0, 0);
 
-	    if (time.IsDaylightSavingTime() && !DateTime.Now.IsDaylightSavingTime())
-		time = time - new System.TimeSpan(1, 0, 0);
+	    else if (!DateTime.Now.IsDaylightSavingTime() && time.IsDaylightSavingTime())
+		adjusted = time + new System.TimeSpan(1, 0, 0);
 
-	    return time;
+
+			Console.WriteLine("DotNet-To-Win32");
+			Console.WriteLine("time: {0}    ({1})", 
+					  time.ToString("G"), 
+					  time.IsDaylightSavingTime() ? "isDST" : "NOT DST");
+
+			//Console.WriteLine("_Mtime.Kind: {0}", _Mtime.Kind.ToString());
+			Console.WriteLine("adjusted: {0}", adjusted.ToString("G"));
+
+	    return adjusted;
+	}
+
+	// If I read a time from a file with GetLastWriteTime() (etc), I need
+	// to adjust it for display in the .NET environment.  
+	internal static DateTime AdjustTime_Win32ToDotNet(DateTime time)
+	{
+	    DateTime adjusted = time;
+	    if (DateTime.Now.IsDaylightSavingTime() && !time.IsDaylightSavingTime())
+		adjusted = time + new System.TimeSpan(1, 0, 0);
+
+	    else if (!DateTime.Now.IsDaylightSavingTime() && time.IsDaylightSavingTime())
+		adjusted = time - new System.TimeSpan(1, 0, 0);
+
+	    return adjusted;
 	}
 
 

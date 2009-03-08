@@ -485,9 +485,16 @@ namespace Ionic.Zip
         ///
         /// <remarks>
         /// <para>
-        /// The entries are extracted into the current working directory. If 
-        /// any of the files to be extracted already exist, an exception will be thrown.
+        /// The entries are extracted into the current working directory. 
         /// </para>
+	/// 
+        /// <para>
+	/// If any of the files to be extracted already exist, then the action taken is as
+        /// specified in the <see cref="ZipEntry.ExtractExistingFile"/> property on the
+        /// corresponding ZipEntry instance.  By default, the action taken in this case is to
+        /// throw an exception.
+        /// </para>
+	/// 
         /// <para>
         /// For information on the syntax of the selectionCriteria string,
         /// see <see cref="AddSelectedFiles(String)" />.
@@ -495,6 +502,8 @@ namespace Ionic.Zip
         /// </remarks>
         ///
         /// <param name="selectionCriteria">the selection criteria for entries to extract.</param>
+	///
+	/// <seealso cref="ExtractSelectedEntries(String,ExtractExistingFileAction)"/>
         public void ExtractSelectedEntries(String selectionCriteria)
         {
             foreach (ZipEntry e in SelectEntries(selectionCriteria))
@@ -511,9 +520,11 @@ namespace Ionic.Zip
         ///
         /// <remarks>
         /// <para>
-        /// The entries are extracted into the current working directory. If any of the files to be
-        /// extracted already exist, and wantOverwrite is false, an exception will be thrown.
+        /// The entries are extracted into the current working directory. When extraction would would
+        /// overwrite an existing filesystem file, the action taken is as specified in the
+        /// extractExistingFile parameter.
         /// </para>
+	/// 
         /// <para>
         /// For information on the syntax of the string describing the entry selection criteria, 
         /// see <see cref="AddSelectedFiles(String)" />.
@@ -522,14 +533,15 @@ namespace Ionic.Zip
         ///
         /// <param name="selectionCriteria">the selection criteria for entries to extract.</param>
         ///
-        /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files 
-        /// by the given name. </param>
-        public void ExtractSelectedEntries(String selectionCriteria, bool wantOverwrite)
+        /// <param name="extractExistingFile">
+	/// The action to take if extraction would overwrite an existing file.
+	/// </param>
+        public void ExtractSelectedEntries(String selectionCriteria, ExtractExistingFileAction extractExistingFile)
         {
             foreach (ZipEntry e in SelectEntries(selectionCriteria))
             {
                 e.Password = _Password; // possibly null
-                e.Extract(wantOverwrite);
+                e.Extract(extractExistingFile);
             }
         }
 
@@ -541,9 +553,16 @@ namespace Ionic.Zip
         /// <remarks>
         /// <para>
         /// The entries are selected from the specified directory within the archive, and then 
-        /// extracted into the current working directory. If any of the files to be
-        /// extracted already exist, an exception will be thrown.
+        /// extracted into the current working directory. 
         /// </para>
+	/// 
+        /// <para>
+	/// If any of the files to be extracted already exist, then the action taken is as
+        /// specified in the <see cref="ZipEntry.ExtractExistingFile"/> property on the
+        /// corresponding ZipEntry instance.  By default, the action taken in this case is to
+        /// throw an exception.
+        /// </para>
+	/// 
         /// <para>
         /// For information on the syntax of the string describing the entry selection criteria, 
         /// see <see cref="AddSelectedFiles(String)" />.
@@ -556,7 +575,9 @@ namespace Ionic.Zip
         /// the directory in the archive from which to select entries. If null, then 
         /// all directories in the archive are used. 
         /// </param>
-        public void ExtractSelectedEntries(String selectionCriteria, string directoryPathInArchive)
+	///
+	/// <seealso cref="ExtractSelectedEntries(String,String,String,ExtractExistingFileAction)"/>
+        public void ExtractSelectedEntries(String selectionCriteria, String directoryPathInArchive)
         {
             foreach (ZipEntry e in SelectEntries(selectionCriteria, directoryPathInArchive))
             {
@@ -608,9 +629,11 @@ namespace Ionic.Zip
         ///
         /// <remarks>
         /// <para>
-        /// The entries are extracted into the specified directory. If 
-        /// any of the files already exist, and wantOverwrite is false, an exception will be thrown.
+        /// The entries are extracted into the specified directory. When extraction would would
+        /// overwrite an existing filesystem file, the action taken is as specified in the
+        /// extractExistingFile parameter.
         /// </para>
+	/// 
         /// <para>
         /// For information on the syntax of the string describing the entry selection criteria, 
         /// see <see cref="AddSelectedFiles(String)" />.
@@ -620,23 +643,24 @@ namespace Ionic.Zip
         /// <param name="selectionCriteria">the selection criteria for entries to extract.</param>
         ///
         /// <param name="extractDirectory">
-        /// the directory on the disk into which to extract. It will be created if it does not exist.
+        /// The directory on the disk into which to extract. It will be created if it does not exist.
         /// </param>
         /// 
         /// <param name="directoryPathInArchive">
-        /// the directory in the archive from which to select entries. If null, then 
+        /// The directory in the archive from which to select entries. If null, then 
         /// all directories in the archive are used. 
         /// </param>
         /// 
-        /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files 
-        /// by the given name. </param>
+        /// <param name="extractExistingFile">
+	/// The action to take if extraction would overwrite an existing file.
+	/// </param>
         /// 
-        public void ExtractSelectedEntries(String selectionCriteria, string directoryPathInArchive, string extractDirectory, bool wantOverwrite)
+        public void ExtractSelectedEntries(String selectionCriteria, string directoryPathInArchive, string extractDirectory, ExtractExistingFileAction extractExistingFile)
         {
             foreach (ZipEntry e in SelectEntries(selectionCriteria, directoryPathInArchive))
             {
                 e.Password = _Password; // possibly null
-                e.Extract(extractDirectory, wantOverwrite);
+                e.Extract(extractDirectory, extractExistingFile);
             }
         }
 

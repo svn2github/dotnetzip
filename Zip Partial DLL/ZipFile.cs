@@ -1,5 +1,3 @@
-#define OPTIMIZE_WI6612
-
 // ZipFile.cs
 //
 // Copyright (c) 2006, 2007, 2008, 2009 Microsoft Corporation.  All rights reserved.
@@ -893,6 +891,30 @@ namespace Ionic.Zip
 
 
 
+
+        /// <summary>
+        /// The action the library should take when extracting a file that already exists.
+        /// </summary>
+        /// <remarks>
+    /// <para>
+        /// This property affects the behavior of the Extract methods (one of the <c>Extract()</c>
+        /// or <c>ExtractWithPassword()</c> overloads), when extraction would would overwrite an
+        /// existing filesystem file. If you do not set this property, 
+	/// the library throws an exception when extracting
+        /// an entry would overwrite an existing file.  
+    /// </para>
+    /// <para>
+	/// This property has no effect when extracting to a stream, or when the file to be extracted does not already exist. 
+    /// </para>
+        /// </remarks>
+        /// <seealso cref="Ionic.Zip.ZipEntry.ExtractExistingFile"/>
+        public ExtractExistingFileAction ExtractExistingFile
+        {
+            get ;
+            set ;
+        }
+
+
         /// <summary>
         /// The Encryption to use for entries added to the ZipFile.
         /// </summary>
@@ -1668,7 +1690,8 @@ namespace Ionic.Zip
 	    ///
 	/// <para>
 	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
-	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, and <see
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
 	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
 	/// applied to the ZipEntry added.
 	/// </para>
@@ -1718,7 +1741,8 @@ namespace Ionic.Zip
         /// 
 	/// <para>
 	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
-	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, and <see
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
 	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
 	/// applied to the ZipEntry added.
 	/// </para>
@@ -1819,7 +1843,8 @@ namespace Ionic.Zip
 	///
 	/// <para>
 	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
-	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, and <see
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
 	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
 	/// applied to the ZipEntry added.
 	/// </para>
@@ -1908,7 +1933,8 @@ namespace Ionic.Zip
         /// 
 	/// <para>
 	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
-	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, and <see
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
 	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
 	/// applied to the ZipEntry added.
 	/// </para>
@@ -1989,6 +2015,7 @@ namespace Ionic.Zip
             ZipEntry ze = ZipEntry.Create(fileName, nameInArchive);
             //ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
+            ze.ExtractExistingFile = ExtractExistingFile;
             ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
             ze.WantCompression = WantCompression;
             ze.ProvisionalAlternateEncoding = ProvisionalAlternateEncoding;
@@ -2056,7 +2083,8 @@ namespace Ionic.Zip
         /// <remarks>
 	/// <para>
 	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
-	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, and <see
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
 	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
 	/// applied to each ZipEntry added.
 	/// </para>
@@ -2101,14 +2129,45 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// This method adds a set of files to the ZipFile, using the specified directory path 
+        /// Adds or updates a set of files in the ZipFile.
+        /// </summary>
+        ///
+        /// <remarks>
+	/// <para>
+	/// Any files that already exist in the archive are updated. Any files that don't yet
+	/// exist in the archive are added.
+	/// </para>
+	///
+	/// <para>
+	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
+	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
+	/// applied to each ZipEntry added.
+	/// </para>
+        /// </remarks>
+	///
+        /// <param name="fileNames">
+        /// The collection of names of the files to update. Each string should refer to a file in 
+	/// the filesystem. The name of the file may be a relative path or a fully-qualified path. 
+        /// </param>
+        ///
+        public void UpdateFiles(System.Collections.Generic.ICollection<String> fileNames)
+        {
+            this.UpdateFiles(fileNames, null);
+        }
+
+
+	/// <summary>
+        /// Adds a set of files to the ZipFile, using the specified directory path 
 	/// in the archive.
         /// </summary>
         ///
         /// <remarks>
 	/// <para>
 	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
-	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, and <see
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
 	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
 	/// applied to each ZipEntry added.
 	/// </para>
@@ -2136,6 +2195,50 @@ namespace Ionic.Zip
         }
 
 
+	/// <summary>
+        /// Adds or updates a set of files to the ZipFile, using the specified directory path 
+	/// in the archive.
+        /// </summary>
+        ///
+        /// <remarks>
+	///
+	/// <para>
+	/// Any files that already exist in the archive are updated. Any files that don't yet
+	/// exist in the archive are added.
+	/// </para>
+	///
+	/// <para>
+	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
+	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
+	/// applied to each ZipEntry added.
+	/// </para>
+        /// </remarks>
+	///
+        /// <param name="fileNames">
+        /// The names of the files to add or update. Each string should refer to a file in the filesystem.  
+        /// The name of the file may be a relative path or a fully-qualified path. 
+        /// </param>
+        ///
+        /// <param name="directoryPathInArchive">
+        /// Specifies a directory path to use to override any path in the file name.  This path
+        /// may, or may not, correspond to a real directory in the current filesystem.  If the
+        /// files within the zip are later extracted, this is the path used for the extracted
+        /// file.  Passing null (nothing in VB) will use the path on the FileName, if any.
+        /// Passing the empty string ("") will insert the item at the root path within the
+        /// archive.
+        /// </param>
+        ///
+        /// <seealso cref="Ionic.Zip.ZipFile.AddSelectedFiles(String, String)" />
+        public void UpdateFiles(System.Collections.Generic.ICollection<String> fileNames, String directoryPathInArchive)
+        {
+            foreach (var f in fileNames)
+                this.UpdateFile(f, directoryPathInArchive);
+        }
+
+
+
 
         /// <summary>
         /// Adds or Updates a File in a Zip file archive.
@@ -2155,7 +2258,8 @@ namespace Ionic.Zip
         ///
 	/// <para>
 	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
-	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, and <see
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
 	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
 	/// applied to the ZipEntry added.
 	/// </para>
@@ -2241,7 +2345,8 @@ namespace Ionic.Zip
 	///
 	/// <para>
 	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
-	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, and <see
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
 	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
 	/// applied to the ZipEntry added.
 	/// </para>
@@ -2364,7 +2469,8 @@ namespace Ionic.Zip
 	///
 	/// <para>
 	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
-	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, and <see
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
 	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
 	/// applied to the ZipEntry added.
 	/// </para>
@@ -2402,7 +2508,8 @@ namespace Ionic.Zip
 	///
 	/// <para>
 	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
-	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, and <see
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
 	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
 	/// applied to the ZipEntry added.
 	/// </para>
@@ -2449,7 +2556,8 @@ namespace Ionic.Zip
 	/// 
 	/// <para>
 	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
-	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, and <see
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
 	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
 	/// applied to the ZipEntry added.
 	/// </para>
@@ -2500,6 +2608,7 @@ namespace Ionic.Zip
             ZipEntry ze = ZipEntry.Create(fileName, n, true, stream);
             //ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
+            ze.ExtractExistingFile = ExtractExistingFile;
             ze.WillReadTwiceOnInflation = WillReadTwiceOnInflation;
             ze.WantCompression = WantCompression;
             ze.ProvisionalAlternateEncoding = ProvisionalAlternateEncoding;
@@ -2608,7 +2717,8 @@ namespace Ionic.Zip
 	/// 
 	/// <para>
 	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
-	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, and <see
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
 	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
 	/// applied to the ZipEntry added.
 	/// </para>
@@ -2685,7 +2795,8 @@ namespace Ionic.Zip
         /// 
 	/// <para>
 	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
-	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, and <see
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
 	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
 	/// applied to each ZipEntry added.
 	/// </para>
@@ -2727,9 +2838,10 @@ namespace Ionic.Zip
         /// 
 	/// <para>
 	/// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
-	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, and <see
+	/// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
+	    /// <see cref="ExtractExistingFile"/>, and <see
 	/// cref="ForceNoCompression"/>, their respective values at the time of this call will be
-	/// applied to eachthe ZipEntry added.
+	/// applied to each ZipEntry added.
 	/// </para>
 	///
         /// </remarks>
@@ -4246,7 +4358,6 @@ namespace Ionic.Zip
             System.IO.Stream s = zf.ReadStream;
             try
             {
-#if OPTIMIZE_WI6612
                 if (!s.CanSeek)
                 {
                     ReadIntoInstance_Orig(zf);
@@ -4317,11 +4428,6 @@ namespace Ionic.Zip
                     s.Seek(origPosn, System.IO.SeekOrigin.Begin);
                     ReadIntoInstance_Orig(zf);
                 }
-
-#else
-                ReadIntoInstance_Orig(zf);
-#endif
-
             }
             catch //(Exception e1)
             {
@@ -4346,8 +4452,6 @@ namespace Ionic.Zip
         }
 
 
-
-#if OPTIMIZE_WI6612
 
         private static void Zip64SeekToCentralDirectory(System.IO.Stream s)
         {
@@ -4423,8 +4527,6 @@ namespace Ionic.Zip
 
             zf.OnReadCompleted();
         }
-#endif
-
 
         // build the TOC by reading each entry in the file.
         private static void ReadIntoInstance_Orig(ZipFile zf)
@@ -4437,15 +4539,6 @@ namespace Ionic.Zip
                     zf.StatusMessageTextWriter.WriteLine("Reading zip from stream...");
                 else
                     zf.StatusMessageTextWriter.WriteLine("Reading zip {0}...", zf.Name);
-
-#if NO
-            // read the zipfile's central directory structure here.
-            uint sig = VerifyBeginningOfZipFile(zf.ReadStream);
-            if (sig != ZipConstants.PackedToRemovableMedia)
-                zf.ReadStream.Seek(-4, SeekOrigin.Current);
-#endif
-
-
 
             // work item 6647:  PK00 (packed to removable disk)
             bool firstEntry = true;
@@ -4701,13 +4794,27 @@ namespace Ionic.Zip
         /// </summary>
         ///
         /// <remarks>
+	/// <para>
+	/// This method will extract all entries in the ZipFile to the specified path. 
+	/// </para>
+	///
         /// <para>
-        /// If an extraction of a file from the zip archive would overwrite an existing file
-        /// in the filesystem, the file will not be overwritten and an exception will be
-        /// thrown. To avoid this, use the overload that allows you to specify that you want
-        /// to overwrite existing files.
+        /// If an extraction of a file from the zip archive would overwrite an existing file in
+        /// the filesystem, the action taken is dictated by the ExtractExistingFile property,
+        /// which overrides any setting you may have made on individual ZipEntry instances.  By
+        /// default, if you have not set that property on the ZipFile instance, the entry will not
+        /// be extracted, the existing file will not be overwritten and an exception will be
+        /// thrown. To change this, set the property, or use the <see
+        /// cref="ZipFile.ExtractAll(System.String, Ionic.Zip.ExtractExistingFileAction)" /> overload
+        /// that allows you to specify an ExtractExistingFileAction parameter.
         /// </para>
         ///
+	/// <para>
+	/// The action to take when an extract would overwrite an existing file applies to all
+	/// entries.  If you want to set this on a per-entry basis, then you must use one of the
+	/// <see cef="ZipEntry.Extract" /> methods.
+	/// </para>
+	///
         /// <para>
         /// This method will send verbose output messages to the StatusMessageTextWriter, if it 
         /// is set on the ZipFile instance. 
@@ -4719,13 +4826,38 @@ namespace Ionic.Zip
         ///
         /// </remarks>
         ///
-        /// <seealso cref="Ionic.Zip.ZipFile.ExtractAll(string, bool)"/>
+        /// <example>
+        /// This example extracts all the entries in a zip archive file, to the specified target
+        /// directory.  The extraction will overwrite any existing files silently.
+        /// <code>
+        /// String TargetDirectory= "unpack";
+        /// using(ZipFile zip= ZipFile.Read(ZipFileToExtract))
+        /// {
+	///     zip.ExtractExistingFile= ExtractExistingFileAction.OverwriteSilently;
+        ///     zip.ExtractAll(TargetDirectory);
+        /// }
+        /// </code>
+        /// 
+        /// <code lang="VB">
+        /// Dim TargetDirectory As String = "unpack"
+        /// Using zip As ZipFile = ZipFile.Read(ZipFileToExtract)
+	///     zip.ExtractExistingFile= ExtractExistingFileAction.OverwriteSilently
+        ///     zip.ExtractAll(TargetDirectory)
+        /// End Using
+        /// </code>
+        /// </example>
+        /// 
         /// <seealso cref="Ionic.Zip.ZipFile.ExtractProgress"/>
+        /// <seealso cref="Ionic.Zip.ZipFile.ExtractExistingFile"/>
         ///
-        /// <param name="path">The path to which the contents of the zip archive should be extracted.</param>
+        /// <param name="path">
+	/// The path to which the contents of the zipfile will be extracted.
+        /// The path can be relative or fully-qualified. 
+	/// </param>
+	///
         public void ExtractAll(string path)
         {
-            ExtractAll(path, false);
+	    _InternalExtractAll(path, true);
         }
 
         /// <summary>
@@ -4741,44 +4873,104 @@ namespace Ionic.Zip
         /// <example>
         /// This example extracts all the entries in a zip archive file, 
         /// to the specified target directory.  It overwrites any existing files.
-        /// It also handles exceptions that may be thrown, such as unauthorized 
-        /// access exceptions.
         /// <code>
-        /// String TargetDirectory= "c:\\temp\\unpack";
-        /// try 
+        /// String TargetDirectory= "unpack";
+        /// using(ZipFile zip= ZipFile.Read(ZipFileToExtract))
         /// {
-        ///   using(ZipFile zip= ZipFile.Read(ZipFileToExtract))
-        ///   {
         ///     zip.ExtractAll(TargetDirectory, true);
-        ///   }
-        /// }
-        /// catch (System.Exception ex1)
-        /// {
-        ///   System.Console.Error.WriteLine("exception: {0}", ex1);
         /// }
         /// </code>
         /// 
         /// <code lang="VB">
-        ///   Dim TargetDirectory As String = "c:\temp\unpack"
-        ///   Try 
-        ///       Using zip As ZipFile = ZipFile.Read(ZipFileToExtract)
-        ///           zip.ExtractAll(TargetDirectory, True)
-        ///       End Using
-        ///   Catch ex1 As Exception
-        ///       Console.Error.WriteLine("exception: {0}", ex1.ToString)
-        ///   End Try
+        /// Dim TargetDirectory As String = "unpack"
+        /// Using zip As ZipFile = ZipFile.Read(ZipFileToExtract)
+        ///     zip.ExtractAll(TargetDirectory, True)
+        /// End Using
         /// </code>
         /// </example>
         /// 
         /// <param name="path">the path to which the contents of the zipfile are extracted.</param>
         /// <param name="wantOverwrite">true to overwrite any existing files on extraction</param>
+	/// <seealso cref="ExtractAll(String,ExtractExistingFileAction)"/>
+	[Obsolete("Please use property ExtractExistingFile to specify overwrite behavior)")]
         public void ExtractAll(string path, bool wantOverwrite)
+        {
+	    // legacy behavior
+	    ExtractExistingFile = (wantOverwrite) 
+		? ExtractExistingFileAction.OverwriteSilently
+		: ExtractExistingFileAction.Throw;
+
+	    _InternalExtractAll(path, true);
+	}
+
+
+        /// <summary>
+        /// Extracts all of the items in the zip archive, to the specified path in the filesystem,  
+        /// using the specified behavior when extraction would overwrite an existing file.
+        /// </summary>
+        ///
+        /// <remarks>
+	///
+	/// <para>
+	/// This method will extract all entries in the ZipFile to the specified path. 
+	/// For an extraction that would overwrite an existing file, the behavior 
+	/// is dictated by the extractExistingFile parameter, which overrides 
+	/// any setting you may have made on individual ZipEntry instances. 
+	/// </para>
+	///
+	/// <para>
+	/// The action to take when an extract would overwrite an existing file applies to all
+	/// entries.  If you want to set this on a per-entry basis, then you must use one of the
+	/// <see cef="ZipEntry.Extract" /> methods.
+	/// </para>
+	///
+	/// <para>
+        /// This method will send verbose output messages to the StatusMessageTextWriter, if it 
+        /// is set on the ZipFile instance. 
+	/// </para>
+        /// </remarks>
+        ///
+        /// <example>
+        /// This example extracts all the entries in a zip archive file, 
+        /// to the specified target directory.  It does not overwrite any existing files.
+        /// <code>
+        /// String TargetDirectory= "c:\\unpack";
+        /// using(ZipFile zip= ZipFile.Read(ZipFileToExtract))
+        /// {
+        ///   zip.ExtractAll(TargetDirectory, ExtractExistingFileAction.DontOverwrite);
+        /// }
+        /// </code>
+        /// 
+        /// <code lang="VB">
+        /// Dim TargetDirectory As String = "c:\unpack"
+        /// Using zip As ZipFile = ZipFile.Read(ZipFileToExtract)
+        ///     zip.ExtractAll(TargetDirectory, ExtractExistingFileAction.DontOverwrite)
+        /// End Using
+        /// </code>
+        /// </example>
+        /// 
+        /// <param name="path">
+	/// The path to which the contents of the zipfile will be extracted.
+        /// The path can be relative or fully-qualified. 
+	/// </param>
+	///
+        /// <param name="extractExistingFile">
+	/// The action to take if extraction would overwrite an existing file.
+	/// </param>
+        public void ExtractAll(string path, ExtractExistingFileAction extractExistingFile)
+        {
+	    ExtractExistingFile = extractExistingFile;
+	    _InternalExtractAll(path, true);
+	}
+
+
+        private void _InternalExtractAll(string path, bool overrideExtractExistingProperty)
         {
             bool header = Verbose;
             _inExtractAll = true;
             try
             {
-                OnExtractAllStarted(path, wantOverwrite);
+                OnExtractAllStarted(path);
 
                 int n = 0;
                 foreach (ZipEntry e in _entries)
@@ -4802,16 +4994,18 @@ namespace Ionic.Zip
                             StatusMessageTextWriter.WriteLine("  Comment: {0}", e.Comment);
                     }
                     e.Password = _Password;  // this may be null
-                    OnExtractEntry(n, true, e, path, wantOverwrite);
-                    e.Extract(path, wantOverwrite);
+                    OnExtractEntry(n, true, e, path);
+		    if (overrideExtractExistingProperty)
+			e.ExtractExistingFile = this.ExtractExistingFile;
+                    e.Extract(path);
                     n++;
-                    OnExtractEntry(n, false, e, path, wantOverwrite);
+                    OnExtractEntry(n, false, e, path);
                     if (_extractOperationCanceled)
                         break;
 
                 }
 
-                OnExtractAllCompleted(path, wantOverwrite);
+                OnExtractAllCompleted(path);
             }
             finally
             {
@@ -4822,16 +5016,37 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// Extract a single item from the archive.  The file, including any relative
-        /// qualifying path, is created at the current working directory.  
+        /// Extract a single item from the archive to the current working directory.  
         /// </summary>
         /// 
         /// <remarks>
         /// <para>
-        /// Using this method, the entry is extracted using the Password that is specified on
-        /// the ZipFile instance. If you have not set the Password property, then the password
-        /// is null, and the entry is extracted with no password.  The file, including any
-        /// relative qualifying path, is created at the current working directory.
+	/// A file corresponding to the entry named by the fileName parameter, including any
+	/// relative qualifying path for the entry, is created at the specified directory.
+        /// </para>
+	///
+        /// <para>
+        /// An entry that requires a password for extraction is extracted using the <see
+	/// cref="ZipFile.Password"/> that is specified on the ZipFile instance, which overrides
+	/// any Password you may have set directly on the ZipEntry instance. If you have not set
+	/// the <see cref="ZipFile.Password"/> property, or if you have set it to null, and the
+	/// entry requires a password for extraction, an Exception will be thrown.  An exception
+	/// will also be thrown if the entry requires a password for extraction, and the password
+	/// specified on the ZipFile instance does not match that required for the ZipEntry.
+        /// </para>
+        ///
+        /// <para>
+	/// For an extraction that would overwrite an existing file, the action taken is dictated
+	/// by the <see cref="ZipFile.ExtractExistingFile" /> property, which overrides any
+	/// setting you may have made on the individual ZipEntry instance, unless it is not the
+	/// default "Throw" action.  If it is the default "Throw", then the action taken is that
+	/// specified in the <see cref="ZipEntry.ExtractExistingFile" /> property on the ZipEntry
+	/// instance.
+        /// </para>
+        ///
+        /// <para>
+	/// The file, including any relative qualifying path, is extracted to the current working
+        /// directory.
         /// </para>
         ///
         /// <para>
@@ -4848,21 +5063,39 @@ namespace Ionic.Zip
         public void Extract(string fileName)
         {
             ZipEntry e = this[fileName];
+	    if (this.ExtractExistingFile != ExtractExistingFileAction.Throw)
+		e.ExtractExistingFile = this.ExtractExistingFile;
             e.Password = _Password; // possibly null
             e.Extract();
         }
 
         /// <summary>
-        /// Extract a single item from the archive.  The file, including any relative
-        /// qualifying path, is created at the current working directory.  
+        /// Extract a single item from the archive to the specified directory.
         /// </summary>
         ///
         /// <remarks>
         /// <para>
-        /// Calling this method, the entry is extracted using the Password that is specified on
-        /// the ZipFile instance. If you have not set the Password property, then the password
-        /// is null, and the entry is extracted with no password.  The file, including any
-        /// relative qualifying path, is created at the specified directory.
+	/// A file corresponding to the entry named by the fileName parameter, including any
+	/// relative qualifying path for the entry, is created at the specified directory.
+        /// </para>
+	///
+        /// <para>
+        /// An entry that requires a password for extraction is extracted using the <see
+	/// cref="ZipFile.Password"/> that is specified on the ZipFile instance, which overrides
+	/// any Password you may have set directly on the ZipEntry instance. If you have not set
+	/// the <see cref="ZipFile.Password"/> property, or if you have set it to null, and the
+	/// entry requires a password for extraction, an Exception will be thrown.  An exception
+	/// will also be thrown if the entry requires a password for extraction, and the password
+	/// specified on the ZipFile instance does not match that required for the ZipEntry.
+        /// </para>
+        ///
+        /// <para>
+	/// For an extraction that would overwrite an existing file, the action taken is dictated
+	/// by the <see cref="ZipFile.ExtractExistingFile" /> property, which overrides any
+	/// setting you may have made on the individual ZipEntry instance, unless it is not the
+	/// default "Throw" action.  If it is the default "Throw", then the action taken is that
+	/// specified in the <see cref="ZipEntry.ExtractExistingFile" /> property on the ZipEntry
+	/// instance.
         /// </para>
         ///
         /// <para>
@@ -4870,25 +5103,81 @@ namespace Ionic.Zip
         /// </para>
         /// </remarks>
         /// 
-        /// <param name="fileName">
-        /// the file to extract. It must be the exact filename, including the path
-        /// contained in the archive, if any. The filename match is not case-sensitive by
+        /// <param name="entryName">
+        /// the name of the entry to extract. It must be the exact filename, including the path
+        /// specified on the entry in the archive, if any. The match is not case-sensitive by
         /// default; you can use the <c>CaseSensitiveRetrieval</c> property to change
         /// this behavior.
         /// </param>
         /// <param name="directoryName">the directory into which to extract. It will be created 
         /// if it does not exist.</param>
-        public void Extract(string fileName, string directoryName)
+        public void Extract(string entryName, string directoryName)
         {
-            ZipEntry e = this[fileName];
+            ZipEntry e = this[entryName];
+	    if (this.ExtractExistingFile != ExtractExistingFileAction.Throw)
+		e.ExtractExistingFile = this.ExtractExistingFile;
             e.Password = _Password; // possibly null
             e.Extract(directoryName);
         }
 
 
+
         /// <summary>
-        /// Extract a single item from the archive, potentially overwriting  
-        /// any existing file in the filesystem by the same name.
+        /// Extract a single item from the archive to the current working directory, potentially
+        /// overwriting any existing file in the filesystem by the same name.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+	/// A file corresponding to the entry named by the fileName parameter, including any
+	/// relative qualifying path for the entry, is created at the current working directory.
+        /// </para>
+	///
+        /// <para>
+        /// An entry that requires a password for extraction is extracted using the <see
+	/// cref="ZipFile.Password"/> that is specified on the ZipFile instance, which overrides
+	/// any Password you may have set directly on the ZipEntry instance. If you have not set
+	/// the <see cref="ZipFile.Password"/> property, or if you have set it to null, and the
+	/// entry requires a password for extraction, an Exception will be thrown.  An exception
+	/// will also be thrown if the entry requires a password for extraction, and the password
+	/// specified on the ZipFile instance does not match that required for the ZipEntry.
+        /// </para>
+        ///
+        /// <para>
+        /// The ExtractProgress event is invoked before and after extraction, if it has been set. 
+        /// </para>
+        /// </remarks>
+        /// 
+        /// <seealso cref="Ionic.Zip.ZipFile.CaseSensitiveRetrieval"/>
+        /// <seealso cref="Ionic.Zip.ZipFile.Extract(String,ExtractExistingFileAction)"/>
+        ///
+        /// <param name="entryName">
+        /// The name of the entry to extract. It must be the exact name, including the path
+        /// specified on the entry in the archive, if any. The match is not case-sensitive by
+        /// default; you can use the <c>CaseSensitiveRetrieval</c> property to change this
+        /// behavior.  The path, if any, can use forward-slashes or backward slashes.
+        /// </param>
+        ///
+        /// <param name="wantOverwrite">
+	/// True if the caller wants to overwrite any existing files by the given name.
+	/// </param>
+	[Obsolete("Please use method Extract(String,ExtractExistingFileAction)")]
+        public void Extract(string entryName, bool wantOverwrite)
+        {
+            ZipEntry e = this[entryName];
+	    // legacy behavior
+	    e.ExtractExistingFile = (wantOverwrite) 
+		? ExtractExistingFileAction.OverwriteSilently
+		: ExtractExistingFileAction.Throw;  
+            e.Password = _Password; // possibly null
+            e.Extract(System.IO.Directory.GetCurrentDirectory());
+        }
+
+
+
+        /// <summary>
+        /// Extract a single item from the archive to the current working directory, potentially
+        /// overwriting any existing file in the filesystem by the same name.
         /// </summary>
         /// 
         /// <remarks>
@@ -4900,25 +5189,35 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
+	/// For an extraction that would overwrite an existing file, the action taken is dictated
+	/// by the extractExistingFile parameter, which overrides any setting you may have made on
+	/// the individual ZipEntry instance.  To avoid this, use one of the
+	/// <c>ZipEntry.Extract</c> methods.
+        /// </para>
+        ///
+        /// <para>
         /// The ExtractProgress event is invoked before and after extraction, if it has been set. 
         /// </para>
         /// </remarks>
         /// 
-        /// <param name="fileName">
-        /// The file to extract. It must be the exact filename, including the path contained in the 
-        /// archive, if any. The filename match is not case-sensitive by default; you can use the <c>CaseSensitiveRetrieval</c> 
-        /// property to change this behavior.
-        /// The pathname can use forward-slashes or backward slashes.
-        /// </param>
-        ///
         /// <seealso cref="Ionic.Zip.ZipFile.CaseSensitiveRetrieval"/>
         ///
-        /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files by the given name.</param>
-        public void Extract(string fileName, bool wantOverwrite)
+        /// <param name="entryName">
+        /// The name of the entry to extract. It must be the exact name, including the path
+        /// specified on the entry in the archive, if any. The match is not case-sensitive by
+        /// default; you can use the <c>CaseSensitiveRetrieval</c> property to change this
+        /// behavior.  The path, if any, can use forward-slashes or backward slashes.
+        /// </param>
+        ///
+        /// <param name="extractExistingFile">
+	/// The action to take if extraction would overwrite an existing file.
+	/// </param>
+        public void Extract(string entryName, ExtractExistingFileAction extractExistingFile)
         {
-            ZipEntry e = this[fileName];
+            ZipEntry e = this[entryName];
+	    e.ExtractExistingFile = extractExistingFile;
             e.Password = _Password; // possibly null
-            e.Extract(wantOverwrite);
+            e.Extract(System.IO.Directory.GetCurrentDirectory());
         }
 
 
@@ -4929,10 +5228,18 @@ namespace Ionic.Zip
         /// 
         /// <remarks>
         /// <para>
-        /// Calling this method, the entry is extracted using the Password that is specified on
-        /// the ZipFile instance. If you have not set the Password property, then the password
-        /// is null, and the entry is extracted with no password.  The file, including any
-        /// relative qualifying path, is created at the specified directory.
+	/// A file corresponding to the entry named by the fileName parameter, including any
+	/// relative qualifying path for the entry, is created at the specified directory.
+        /// </para>
+	///
+        /// <para>
+        /// An entry that requires a password for extraction is extracted using the <see
+	/// cref="ZipFile.Password"/> that is specified on the ZipFile instance, which overrides
+	/// any Password you may have set directly on the ZipEntry instance. If you have not set
+	/// the <see cref="ZipFile.Password"/> property, or if you have set it to null, and the
+	/// entry requires a password for extraction, an Exception will be thrown.  An exception
+	/// will also be thrown if the entry requires a password for extraction, and the password
+	/// specified on the ZipFile instance does not match that required for the ZipEntry.
         /// </para>
         ///
         /// <para>
@@ -4940,22 +5247,92 @@ namespace Ionic.Zip
         /// </para>
         /// </remarks>
         /// 
-        /// <param name="fileName">
-        /// The file to extract. It must be the exact filename, including the path contained in the archive, 
-        /// if any. The filename match is not case-sensitive by default; you can use the <c>CaseSensitiveRetrieval</c> 
-        /// property to change this behavior. The pathname can use forward-slashes or backward slashes.
+        /// <seealso 
+	/// cref="Ionic.Zip.ZipFile.Extract(String, String, ExtractExistingFileAction)"/>
+	/// 
+        /// <param name="entryName">
+        /// The name of the entry to extract. It must be the exact name, including the path
+        /// specified on the entry in the archive, if any. The match is not case-sensitive by
+        /// default; you can use the <c>CaseSensitiveRetrieval</c> property to change this
+        /// behavior. The path, if any, can use forward-slashes or backward slashes.
         /// </param>
-        /// <param name="directoryName">the directory into which to extract. It will be created 
-        /// if it does not exist.</param>
-        /// <param name="wantOverwrite">True if the caller wants to overwrite any existing files 
-        /// by the given name. </param>
-        public void Extract(string fileName, string directoryName, bool wantOverwrite)
+	/// 
+        /// <param name="directoryName">
+	/// The directory into which to extract. It will be created 
+        /// if it does not exist.
+	/// </param>
+	/// 
+        /// <param name="wantOverwrite">
+	/// True if the caller wants to overwrite any existing files 
+        /// by the given name. 
+	/// </param>
+	[Obsolete("Please use method Extract(String,String,ExtractExistingFileAction)")]
+        public void Extract(string entryName, string directoryName, bool wantOverwrite)
         {
-            ZipEntry e = this[fileName];
+            ZipEntry e = this[entryName];
             e.Password = _Password; // possibly null
-            e.Extract(directoryName, wantOverwrite);
+	    // legacy behavior
+	    e.ExtractExistingFile = (wantOverwrite) 
+		? ExtractExistingFileAction.OverwriteSilently
+		: ExtractExistingFileAction.Throw;  
+            e.Extract(directoryName);
         }
 
+
+        /// <summary>
+        /// Extract a single item from the archive, into the specified directory, 
+        /// using the specified behavior when extraction would overwrite an existing file.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+	/// A file corresponding to the entry named by the fileName parameter, including any
+	/// relative qualifying path for the entry, is created at the specified directory.
+        /// </para>
+	///
+        /// <para>
+        /// An entry that requires a password for extraction is extracted using the <see
+	/// cref="ZipFile.Password"/> that is specified on the ZipFile instance, which overrides
+	/// any Password you may have set directly on the ZipEntry instance. If you have not set
+	/// the <see cref="ZipFile.Password"/> property, or if you have set it to null, and the
+	/// entry requires a password for extraction, an Exception will be thrown.  An exception
+	/// will also be thrown if the entry requires a password for extraction, and the password
+	/// specified on the ZipFile instance does not match that required for the ZipEntry.
+        /// </para>
+        ///
+        /// <para>
+	/// For an extraction that would overwrite an existing file, the action taken is dictated
+	/// by the extractExistingFile parameter, which overrides any setting you may have made on
+	/// the individual ZipEntry instance.  To avoid this, use one of the
+	/// <c>ZipEntry.Extract</c> methods.
+        /// </para>
+        ///
+        /// <para>
+        /// The ExtractProgress event is invoked before and after extraction, if it has been set. 
+        /// </para>
+        /// </remarks>
+        /// 
+        /// <param name="entryName">
+        /// The name of the entry to extract. It must be the exact name, including the path
+        /// specified on the entry in the archive, if any. The match is not case-sensitive by
+        /// default; you can use the <c>CaseSensitiveRetrieval</c> property to change this
+        /// behavior. The path, if any, can use forward-slashes or backward slashes.
+        /// </param>
+	/// 
+        /// <param name="directoryName">
+	/// The directory into which to extract. It will be created if it does not exist.
+	/// </param>
+	///
+        /// <param name="extractExistingFile">
+	/// The action to take if extraction would overwrite an existing file.
+	/// </param>
+        public void Extract(string entryName, string directoryName, ExtractExistingFileAction extractExistingFile)
+        {
+            ZipEntry e = this[entryName];
+	    e.ExtractExistingFile = extractExistingFile;
+            e.Password = _Password; // possibly null
+            e.Extract(directoryName);
+        }
 
 
 
@@ -4965,9 +5342,17 @@ namespace Ionic.Zip
         /// 
         /// <remarks>
         /// <para>
-        /// Calling this method, the entry is extracted using the Password that is 
-        /// specified on the ZipFile instance. If you have not set the Password property, then
-        /// the password is null, and the entry is extracted with no password.
+	/// The entry identified by the entryName parameter is extracted to the given stream.
+        /// </para>
+	///
+        /// <para>
+        /// An entry that requires a password for extraction is extracted using the <see
+	/// cref="ZipFile.Password"/> that is specified on the ZipFile instance, which overrides
+	/// any Password you may have set directly on the ZipEntry instance. If you have not set
+	/// the <see cref="ZipFile.Password"/> property, or if you have set it to null, and the
+	/// entry requires a password for extraction, an Exception will be thrown.  An exception
+	/// will also be thrown if the entry requires a password for extraction, and the password
+	/// specified on the ZipFile instance does not match that required for the ZipEntry.
         /// </para>
         ///
         /// <para>
@@ -4980,26 +5365,26 @@ namespace Ionic.Zip
         /// null or empty. The inner exception is an ArgumentException in each case.
         /// </exception>
         ///
-        /// <param name="fileName">
-        /// the file to extract. It should include pathnames used in the archive, if any.
-        /// The filename match is not case-sensitive by default; you can use the
-        /// <c>CaseSensitiveRetrieval</c> property to change this behavior.The
-        /// application can specify pathnames using forward-slashes or backward slashes.
+        /// <param name="entryName">
+        /// the name of the entry to extract, including the path used in the archive, if
+        /// any.  The match is not case-sensitive by default; you can use the
+        /// <c>CaseSensitiveRetrieval</c> property to change this behavior. The application can
+        /// specify pathnames using forward-slashes or backward slashes.
         /// </param>
         ///
         /// <param name="outputStream">
         /// the stream to which the extacted, decompressed file data is written. 
         /// The stream must be writable.
         /// </param>
-        public void Extract(string fileName, System.IO.Stream outputStream)
+        public void Extract(string entryName, System.IO.Stream outputStream)
         {
             if (outputStream == null || !outputStream.CanWrite)
                 throw new ZipException("Cannot extract.", new ArgumentException("The OutputStream must be a writable stream.", "outputStream"));
 
-            if (String.IsNullOrEmpty(fileName))
-                throw new ZipException("Cannot extract.", new ArgumentException("The file name must be neither null nor empty.", "fileName"));
+            if (String.IsNullOrEmpty(entryName))
+                throw new ZipException("Cannot extract.", new ArgumentException("The file name must be neither null nor empty.", "entryName"));
 
-            ZipEntry e = this[fileName];
+            ZipEntry e = this[entryName];
             e.Password = _Password; // possibly null
             e.Extract(outputStream);
         }

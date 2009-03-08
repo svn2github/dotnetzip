@@ -972,9 +972,12 @@ namespace WinFormsExample
             {
                 ExtractLocation = this.tbExtractDir.Text,
                 Selection = this.tbSelectionToExtract.Text,
-                WantOverwrite = this.chkOverwrite.Checked,
                 OpenExplorer = this.chkOpenExplorer.Checked,
+		ExtractExisting = (this.chkOverwrite.Checked)
+		    ? ExtractExistingFileAction.OverwriteSilently
+		    : ExtractExistingFileAction.DontOverwrite,
             };
+
             _workerThread = new Thread(this.DoExtract);
             _workerThread.Name = "Zip Extractor thread";
             _workerThread.Start(options);
@@ -1063,22 +1066,26 @@ namespace WinFormsExample
                         {
                             try
                             {
-                                entry.Extract(options.ExtractLocation, options.WantOverwrite);
+                                entry.Extract(options.ExtractLocation, options.ExtractExisting);
                             }
                             catch (Exception ex1)
                             {
-                                if (options.WantOverwrite || (ex1.Message.ToString() != "The file already exists."))
-                                {
-                                    DialogResult result = MessageBox.Show(String.Format("Failed to extract entry {0} -- {1}", entry.FileName, ex1.Message.ToString()),
-                                          String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+				string msg = String.Format("Failed to extract entry {0} -- {1}", 
+							   entry.FileName, 
+							   ex1.Message.ToString());
+				DialogResult result = 
+				    MessageBox.Show(msg,
+						    String.Format("Error Extracting {0}", entry.FileName),
+						    MessageBoxButtons.OKCancel, 
+						    MessageBoxIcon.Exclamation, 
+						    MessageBoxDefaultButton.Button1);
 
-                                    if (result == DialogResult.Cancel)
-                                    {
-                                        _setCancel = true;
-                                        extractCancelled = true;
-                                        break;
-                                    }
-                                }
+				if (result == DialogResult.Cancel)
+				{
+				    _setCancel = true;
+				    extractCancelled = true;
+				    break;
+				}
                             }
                         }
                         else
@@ -1106,7 +1113,7 @@ namespace WinFormsExample
 
                                 try
                                 {
-                                    entry.ExtractWithPassword(options.ExtractLocation, options.WantOverwrite, currentPassword);
+                                    entry.ExtractWithPassword(options.ExtractLocation, options.ExtractExisting, currentPassword);
                                     done = true;
                                 }
                                 catch (Exception ex2)
@@ -1119,19 +1126,24 @@ namespace WinFormsExample
                                     }
                                     else 
                                     {
-                                        if (options.WantOverwrite || (ex2.Message.ToString() != "The file already exists."))
-                                        {
-                                            DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
-                                                                  String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+					string msg = 
+					    String.Format("Failed to extract the password-encrypted entry {0} -- {1}", 
+							  entry.FileName, ex2.Message.ToString());
+					DialogResult result = 
+					    MessageBox.Show(msg,
+							    String.Format("Error Extracting {0}", 
+									  entry.FileName), 
+							    MessageBoxButtons.OKCancel, 
+							    MessageBoxIcon.Exclamation, 
+							    MessageBoxDefaultButton.Button1);
 
-                                            done = true;
-                                            if (result == DialogResult.Cancel)
-                                            {
-                                                _setCancel = true;
-                                                extractCancelled = true;
-                                                break;
-                                            }
-                                        }
+					done = true; // done with this entry
+					if (result == DialogResult.Cancel)
+					{
+					    _setCancel = true;
+					    extractCancelled = true;
+					    break;
+					}
                                     }
                                 }
                             } // while
@@ -1480,7 +1492,7 @@ namespace WinFormsExample
     public class ExtractWorkerOptions
     {
         public string ExtractLocation;
-        public bool WantOverwrite;
+        public Ionic.Zip.ExtractExistingFileAction ExtractExisting;
         public bool OpenExplorer;
         public String Selection;
     }

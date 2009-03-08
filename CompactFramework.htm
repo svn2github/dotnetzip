@@ -26,16 +26,20 @@ DotNetZip library. There are a few differences in operation.</p>
 
 <ol>
 
-<li> The .NET Compact Framework lacks a SetLastModifiedTime() method on
-the System.IO.File class. Therefore, when your .NET CF application
-unzips a zip archive, the unzipped files will not have the file times
-set properly.  
-
 <li>The CF version of DotNetZip is not able to produce Self-extracting
 archives.  The ZipFile.SaveSelfExtractor() method is not available in
-the CF version of DotNetZip.
+the CF version of DotNetZip. There's no strong technical reason for this
+limnitation; I just didn't think it would be of mainstream interest, and
+in order to keep the size of the library down, I omitted that part from
+the CF version.  It amounts to about a 220k savings.
 
-<li>The CF version does not support encryption using WinZipAes128 or  WinZipAes256. 
+
+<li>The CF version does not support encryption using WinZipAes128 or
+WinZipAes256.  This is because the crypto classes from the .NET
+Framework are not available on .NET CF.  I would have to write my own
+SHA1HMAC() and so on, which I haven't got 'round to doing, especially
+because no one is clamoring for it.
+
 
 </ol>
 
