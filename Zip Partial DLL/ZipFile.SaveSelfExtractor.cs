@@ -164,6 +164,7 @@ namespace Ionic.Zip
         //         "namespace Ionic.Zip { public partial class WinFormsSelfExtractorStub { partial void _SetDefaultExtractLocation() {" +
         //         " txtExtractDirectory.Text = \"@@VALUE\"; } }}";
 
+
         /// <summary>
         /// Saves the ZipFile instance to a self-extracting zip archive, using the specified 
         /// default extract directory. 
@@ -185,6 +186,29 @@ namespace Ionic.Zip
         /// the SFX will create the directory before extracting the files. 
         /// </para>
         /// </remarks>
+	///
+        /// <example>
+	/// This example saves a self-extracting archive that will use c:\ExtractHere as the default 
+	/// extract location.
+        /// <code>
+        /// string DirectoryPath = "c:\\Documents\\Project7";
+        /// using (ZipFile zip = new ZipFile())
+        /// {
+        ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath));
+        ///     zip.Comment = "This will be embedded into a self-extracting console-based exe";
+        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication, "c:\\ExtractHere");
+        /// }
+        /// </code>
+        /// <code lang="VB">
+        /// Dim DirectoryPath As String = "c:\Documents\Project7"
+        /// Using zip As New ZipFile()
+        ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath))
+        ///     zip.Comment = "This will be embedded into a self-extracting console-based exe"
+        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication, "c:\ExtractHere");
+        /// End Using
+        /// </code>
+        /// </example>
+        /// 
         /// <param name="exeToGenerate">The name of the EXE to generate.</param>
         /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
         /// <param name="defaultExtractDirectory">
@@ -243,7 +267,7 @@ namespace Ionic.Zip
         ///
         /// <para>
         /// NB: This method is not available in the version of DotNetZip
-        /// build for the .NET Compact Framework, nor in the "Reduced" DotNEtZip library.  
+        /// build for the .NET Compact Framework, nor in the "Reduced" DotNetZip library.  
         /// </para>
         /// 
         /// </remarks>

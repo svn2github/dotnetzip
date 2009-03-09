@@ -942,11 +942,9 @@ namespace Ionic
                 String[] dirnames = System.IO.Directory.GetDirectories(directory);
                 foreach (String dir in dirnames)
                 {
-                    //foreach (String filename in this.SelectFiles(dir)) list.Add(filename);
-                    list.AddRange(this.SelectFiles(dir));
+                    list.AddRange(this.SelectFiles(dir, recurseDirectories));
                 }
             }
-            //return list.AsReadOnly();
             return list;
         }
     }
