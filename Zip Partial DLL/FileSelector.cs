@@ -66,12 +66,18 @@ namespace Ionic
 
     internal enum ComparisonOperator
     {
-        [Description(">")]    GreaterThan,
-        [Description(">=")]   GreaterThanOrEqualTo,
-        [Description("<")]    LesserThan,
-        [Description("<=")]   LesserThanOrEqualTo,
-        [Description("=")]    EqualTo,
-        [Description("!=")]   NotEqualTo
+        [Description(">")]
+        GreaterThan,
+        [Description(">=")]
+        GreaterThanOrEqualTo,
+        [Description("<")]
+        LesserThan,
+        [Description("<=")]
+        LesserThanOrEqualTo,
+        [Description("=")]
+        EqualTo,
+        [Description("!=")]
+        NotEqualTo
     }
 
 
@@ -214,10 +220,13 @@ namespace Ionic
             {
                 _MatchingFileSpec = value;
                 _regexString = "^" +
-                    Regex.Escape(value)
-                    .Replace(@"\*", @"[^\\\.]*")
-                    .Replace(@"\?", @"[^\\\.]")
-                    + "$";
+                Regex.Escape(value)
+                .Replace(@"\*\.\*", @"([^\.]+|.*\.[^\\\.]*)")
+                .Replace(@"\.\*", @"\.[^\\\.]*")
+                .Replace(@"\*", @".*")
+                .Replace(@"\?", @"[^\\\.]")
+                + "$";
+
                 // neither of these is correct
                 //if (!_regexString.StartsWith(@"\\")) _regexString = @"\\" + _regexString;
                 //if (_regexString.IndexOf("\\") == -1)  _regexString = @"\\" + _regexString;
@@ -242,7 +251,7 @@ namespace Ionic
         private bool _Evaluate(string fullpath)
         {
             // No slash in the pattern implicitly means recurse, which means compare to 
-	    // filename only, not full path.
+            // filename only, not full path.
             String f = (_MatchingFileSpec.IndexOf('\\') == -1)
                 ? System.IO.Path.GetFileName(fullpath)
                 : fullpath; // compare to fullpath
@@ -409,7 +418,7 @@ namespace Ionic
                         result = Right.Evaluate(filename);
                     break;
                 case LogicalConjunction.XOR:
-		    result ^= Right.Evaluate(filename);
+                    result ^= Right.Evaluate(filename);
                     break;
                 default:
                     throw new ArgumentException("Conjunction");
@@ -464,9 +473,9 @@ namespace Ionic
         /// </summary>
         /// <remarks>
         /// Typically, applications won't use this constructor.  Instead they'll call the
-	/// constructor that accepts a selectionCriteria string.  If you use this constructor,
-	/// you'll want to set the SelectionCriteria property on the instance before calling
-	/// SelectFiles().
+        /// constructor that accepts a selectionCriteria string.  If you use this constructor,
+        /// you'll want to set the SelectionCriteria property on the instance before calling
+        /// SelectFiles().
         /// </remarks>
         protected FileSelector() { }
 
@@ -519,7 +528,7 @@ namespace Ionic
         /// <para>
         /// Specify values for the file attributes as a string with one or more of the
         /// characters H,R,S,A,I in any order, implying Hidden, ReadOnly, System, Archive,
-	/// and NotContextIndexed, 
+        /// and NotContextIndexed, 
         /// respectively.  To specify a time, use YYYY-MM-DD-HH:mm:ss as the format.  If you
         /// omit the HH:mm:ss portion, it is assumed to be 00:00:00 (midnight). The value for a
         /// size criterion is expressed in integer quantities of bytes, kilobytes (use k or kb
@@ -628,15 +637,15 @@ namespace Ionic
             if (s.IndexOf(" ") == -1)
                 s = "name = " + s;
 
-	    // inject spaces after open paren and before close paren
-            string[] prPairs = { @"\((\S)", "( $1",  @"(\S)\)", "$1 )",  };
+            // inject spaces after open paren and before close paren
+            string[] prPairs = { @"\((\S)", "( $1", @"(\S)\)", "$1 )", };
             for (int i = 0; i + 1 < prPairs.Length; i += 2)
             {
                 Regex rgx = new Regex(prPairs[i]);
                 s = rgx.Replace(s, prPairs[i + 1]);
             }
 
-	    // split the expression into tokens 
+            // split the expression into tokens 
             string[] tokens = s.Trim().Split(' ', '\t');
 
             if (tokens.Length < 3) throw new ArgumentException(s);
@@ -661,7 +670,7 @@ namespace Ionic
                         if (state != ParseState.CriterionDone)
                             throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
 
-                        if (tokens.Length <= i + 3) 
+                        if (tokens.Length <= i + 3)
                             throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
 
                         pendingConjunction = (LogicalConjunction)Enum.Parse(typeof(LogicalConjunction), tokens[i].ToUpper());
@@ -694,7 +703,7 @@ namespace Ionic
                     case "atime":
                     case "ctime":
                     case "mtime":
-                        if (tokens.Length <= i + 2) 
+                        if (tokens.Length <= i + 2)
                             throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
 
                         DateTime t;
@@ -717,6 +726,7 @@ namespace Ionic
                         break;
 
 
+                    case "length":
                     case "size":
                         if (tokens.Length <= i + 2)
                             throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
@@ -746,29 +756,30 @@ namespace Ionic
                         stateStack.Push(ParseState.CriterionDone);
                         break;
 
+                    case "filename":
                     case "name":
                         {
                             if (tokens.Length <= i + 2)
-				throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
+                                throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
 
                             ComparisonOperator c =
                                 (ComparisonOperator)EnumUtil.Parse(typeof(ComparisonOperator), tokens[i + 1]);
 
                             if (c != ComparisonOperator.NotEqualTo && c != ComparisonOperator.EqualTo)
-				throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
+                                throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
 
                             string m = tokens[i + 2];
                             // handle single-quoted filespecs (used to include spaces in filename patterns)
                             if (m.StartsWith("'"))
                             {
-				int ix= i;
+                                int ix = i;
                                 if (!m.EndsWith("'"))
                                 {
                                     do
                                     {
                                         i++;
-                                        if (tokens.Length <= i + 2) 
-					    throw new ArgumentException(String.Join(" ", tokens, ix, tokens.Length - ix));
+                                        if (tokens.Length <= i + 2)
+                                            throw new ArgumentException(String.Join(" ", tokens, ix, tokens.Length - ix));
                                         m += " " + tokens[i + 2];
                                     } while (!tokens[i + 2].EndsWith("'"));
                                 }
@@ -785,16 +796,17 @@ namespace Ionic
                             stateStack.Push(ParseState.CriterionDone);
                         }
                         break;
+
                     case "attributes":
                         {
                             if (tokens.Length <= i + 2)
-				throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
+                                throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
 
                             ComparisonOperator c =
                                 (ComparisonOperator)EnumUtil.Parse(typeof(ComparisonOperator), tokens[i + 1]);
 
                             if (c != ComparisonOperator.NotEqualTo && c != ComparisonOperator.EqualTo)
-				throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
+                                throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
 
                             current = new AttributesCriterion
                             {
@@ -807,7 +819,7 @@ namespace Ionic
                         break;
 
                     case "":
-			// NOP
+                        // NOP
                         stateStack.Push(ParseState.Whitespace);
                         break;
 
@@ -930,8 +942,8 @@ namespace Ionic
                 String[] dirnames = System.IO.Directory.GetDirectories(directory);
                 foreach (String dir in dirnames)
                 {
-		    //foreach (String filename in this.SelectFiles(dir)) list.Add(filename);
-		    list.AddRange(this.SelectFiles(dir));
+                    //foreach (String filename in this.SelectFiles(dir)) list.Add(filename);
+                    list.AddRange(this.SelectFiles(dir));
                 }
             }
             //return list.AsReadOnly();
@@ -965,7 +977,7 @@ namespace Ionic
 
         /// <summary>
         /// Converts the string representation of the name or numeric value of one or more 
-	/// enumerated constants to an equivalent enumerated object.
+        /// enumerated constants to an equivalent enumerated object.
         /// Note: use the DescriptionAttribute on enum values to enable this.
         /// </summary>
         /// <param name="enumType">The System.Type of the enumeration.</param>
@@ -978,7 +990,7 @@ namespace Ionic
 
         /// <summary>
         /// Converts the string representation of the name or numeric value of one or more 
-	/// enumerated constants to an equivalent enumerated object.
+        /// enumerated constants to an equivalent enumerated object.
         /// A parameter specified whether the operation is case-sensitive.
         /// Note: use the DescriptionAttribute on enum values to enable this.
         /// </summary>

@@ -108,7 +108,7 @@ namespace WinFormsExample
             if (String.IsNullOrEmpty(this.tbDirectoryToZip.Text)) return;
             if (!System.IO.Directory.Exists(this.tbDirectoryToZip.Text))
             {
-                var dlgResult = MessageBox.Show(String.Format("The directory you have specified ({0}) does not exist.", this.tbZipToCreate.Text), 
+                var dlgResult = MessageBox.Show(String.Format("The directory you have specified ({0}) does not exist.", this.tbZipToCreate.Text),
                     "Not gonna happen", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
             }
@@ -707,7 +707,7 @@ namespace WinFormsExample
                     if (p != null && p.Length == 5)
                     {
                         this.Bounds = ConstrainToScreen(new System.Drawing.Rectangle(p[0], p[1], p[2], p[3]));
-                        
+
                         // Starting a window minimized is confusing...
                         //this.WindowState = (FormWindowState)p[4];
                     }
@@ -769,8 +769,8 @@ namespace WinFormsExample
                 AppCuKey.SetValue(_rvn_OpenExplorer, this.chkOpenExplorer.Checked ? 1 : 0);
 
                 // store the size of the form
-                int w = 0, h = 0, left=0, top= 0;
-                if (this.Bounds.Width < this.MinimumSize.Width || this.Bounds.Height < this.MinimumSize.Height )
+                int w = 0, h = 0, left = 0, top = 0;
+                if (this.Bounds.Width < this.MinimumSize.Width || this.Bounds.Height < this.MinimumSize.Height)
                 {
                     // RestoreBounds is the size of the window prior to last minimize action.
                     // But the form may have been resized since then!
@@ -973,9 +973,9 @@ namespace WinFormsExample
                 ExtractLocation = this.tbExtractDir.Text,
                 Selection = this.tbSelectionToExtract.Text,
                 OpenExplorer = this.chkOpenExplorer.Checked,
-		ExtractExisting = (this.chkOverwrite.Checked)
-		    ? ExtractExistingFileAction.OverwriteSilently
-		    : ExtractExistingFileAction.DontOverwrite,
+                ExtractExisting = (this.chkOverwrite.Checked)
+                    ? ExtractExistingFileAction.OverwriteSilently
+                    : ExtractExistingFileAction.DontOverwrite,
             };
 
             _workerThread = new Thread(this.DoExtract);
@@ -1051,10 +1051,10 @@ namespace WinFormsExample
                 using (var zip = ZipFile.Read(_DisplayedZip))
                 {
                     System.Collections.Generic.ICollection<ZipEntry> collection = null;
-		    if (String.IsNullOrEmpty(options.Selection))
-			collection = zip.Entries;
-		    else 
-			collection = zip.SelectEntries(options.Selection);
+                    if (String.IsNullOrEmpty(options.Selection))
+                        collection = zip.Entries;
+                    else
+                        collection = zip.SelectEntries(options.Selection);
 
                     _totalEntriesToProcess = collection.Count;
                     zip.ExtractProgress += zip_ExtractProgress;
@@ -1070,22 +1070,22 @@ namespace WinFormsExample
                             }
                             catch (Exception ex1)
                             {
-				string msg = String.Format("Failed to extract entry {0} -- {1}", 
-							   entry.FileName, 
-							   ex1.Message.ToString());
-				DialogResult result = 
-				    MessageBox.Show(msg,
-						    String.Format("Error Extracting {0}", entry.FileName),
-						    MessageBoxButtons.OKCancel, 
-						    MessageBoxIcon.Exclamation, 
-						    MessageBoxDefaultButton.Button1);
+                                string msg = String.Format("Faisled to extract entry {0} -- {1}",
+                                               entry.FileName,
+                                               ex1.Message.ToString());
+                                DialogResult result =
+                                    MessageBox.Show(msg,
+                                            String.Format("Error Extracting {0}", entry.FileName),
+                                            MessageBoxButtons.OKCancel,
+                                            MessageBoxIcon.Exclamation,
+                                            MessageBoxDefaultButton.Button1);
 
-				if (result == DialogResult.Cancel)
-				{
-				    _setCancel = true;
-				    extractCancelled = true;
-				    break;
-				}
+                                if (result == DialogResult.Cancel)
+                                {
+                                    _setCancel = true;
+                                    extractCancelled = true;
+                                    break;
+                                }
                             }
                         }
                         else
@@ -1124,26 +1124,26 @@ namespace WinFormsExample
                                         currentPassword = "";
                                         continue; // loop around, ask for password again
                                     }
-                                    else 
+                                    else
                                     {
-					string msg = 
-					    String.Format("Failed to extract the password-encrypted entry {0} -- {1}", 
-							  entry.FileName, ex2.Message.ToString());
-					DialogResult result = 
-					    MessageBox.Show(msg,
-							    String.Format("Error Extracting {0}", 
-									  entry.FileName), 
-							    MessageBoxButtons.OKCancel, 
-							    MessageBoxIcon.Exclamation, 
-							    MessageBoxDefaultButton.Button1);
+                                        string msg =
+                                            String.Format("Failed to extract the password-encrypted entry {0} -- {1}",
+                                                  entry.FileName, ex2.Message.ToString());
+                                        DialogResult result =
+                                            MessageBox.Show(msg,
+                                                    String.Format("Error Extracting {0}",
+                                                          entry.FileName),
+                                                    MessageBoxButtons.OKCancel,
+                                                    MessageBoxIcon.Exclamation,
+                                                    MessageBoxDefaultButton.Button1);
 
-					done = true; // done with this entry
-					if (result == DialogResult.Cancel)
-					{
-					    _setCancel = true;
-					    extractCancelled = true;
-					    break;
-					}
+                                        done = true; // done with this entry
+                                        if (result == DialogResult.Cancel)
+                                        {
+                                            _setCancel = true;
+                                            extractCancelled = true;
+                                            break;
+                                        }
                                     }
                                 }
                             } // while
