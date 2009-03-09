@@ -1014,6 +1014,114 @@ namespace Ionic
         }
     }
 
+
+#if DEMO
+    public class DemonstrateFileSelector
+    {
+	// Fields
+	private string _directory;
+	private bool _recurse;
+	private string _selectionCriteria;
+	private FileSelector f;
+
+	// Methods
+	public DemonstrateFileSelector()
+	{
+	    this._directory = ".";
+	    this._recurse = true;
+	}
+
+	public DemonstrateFileSelector(string[] args)
+	{
+	    this._directory = ".";
+	    this._recurse = true;
+	    for (int i = 0; i < args.Length; i++)
+	    {
+		switch(args[i])
+		{
+		case"-?":
+		    Usage();
+		    Environment.Exit(0);
+		    break;
+		case "-directory":
+		    i++;
+		    if (args.Length <= i)
+		    {
+			throw new ArgumentException("-directory");
+		    }
+		    this._directory = args[i];
+		    break;
+		case "-norecurse":
+		    this._recurse = false;
+		    break;
+
+		default:
+		    if (this._selectionCriteria != null)
+		    {
+			throw new ArgumentException(args[i]);
+		    }
+		    this._selectionCriteria = args[i];
+		    break;
+		}
+
+
+		if (this._selectionCriteria != null)
+		{
+		    this.f = new FileSelector(this._selectionCriteria);
+		}
+	    }
+	}
+
+	public static void Main(string[] args)
+	{
+	    try
+	    {
+		new DemonstrateFileSelector(args).Run();
+	    }
+	    catch (Exception exc1)
+	    {
+		Console.WriteLine("Exception: {0}", exc1.ToString());
+		Usage();
+	    }
+	}
+
+
+	public void Run()
+	{
+	    if (this.f == null)
+	    {
+		this.f = new FileSelector("name = *.jpg AND (size > 1000 OR atime < 2009-02-14-00:00:00)");
+	    }
+	    Console.WriteLine("\nSelecting files:\n" + this.f.ToString());
+	    var files = this.f.SelectFiles(this._directory, this._recurse);
+	    if (files.Count == 0)
+	    {
+		Console.WriteLine("no files.");
+	    }
+	    else
+	    {
+		Console.WriteLine("files: {0}", files.Count);
+		foreach (string file in files)
+		{
+		    Console.WriteLine("  " + file);
+		}
+	    }
+	}
+
+	public static void Usage()
+	{
+	    Console.WriteLine("FileSelector: select files based on selection criteria.\n");
+	    Console.WriteLine("Usage:\n  FileSelector <selectionCriteria>  [-directory <dir>] [-norecurse]");
+	}
+    }
+
+#endif
+ 
+
+
+
+
+
 }
 
 
