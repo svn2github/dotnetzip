@@ -742,22 +742,22 @@ namespace Ionic.Zip
         /// applications, the application may wish to explicitly override this default behavior.
         /// </para>
         /// <para>
-        /// The temporary file is written when calling one of the
-        /// <c>Save()</c> methods, or the <c>SaveSelfExtractor()</c> method.
+        /// The temporary file is written when calling one of the <c>Save()</c> methods that does
+        /// not save to a stream, or one of the <c>SaveSelfExtractor()</c> methods.  
         /// </para>
         ///
         /// <para>
         /// The folder specified must exist; if it does not an exception is thrown.  The
         /// application should have write and delete permissions on the folder.  The permissions
-        /// are never explicitly checked; if the application does not have the appropriate rights,
-        /// an exception will be thrown at the time <c>Save()</c> is called.
+        /// are not explicitly checked ahead of time; if the application does not have the
+        /// appropriate rights, an exception will be thrown at the time <c>Save()</c> is called.
         /// </para>
         ///
         /// <para>
         /// There is no temporary file created when reading a zip archive.  When saving to a
         /// Stream, there is no temporary file created.  For example, if the application is an
-        /// ASP.NET application and calls <c>Save()</c> specifying the Response.OutStream as the
-        /// output stream, there is no temporary file created.
+        /// ASP.NET application and calls <c>Save()</c> specifying the
+        /// <c>Response.OutputStream</c> as the output stream, there is no temporary file created.
         /// </para>
         /// </remarks>
         ///
@@ -4315,11 +4315,13 @@ namespace Ionic.Zip
         /// 
         /// <param name="buffer">
         /// The byte array containing the zip data.  
-        /// (I don't know why, but sometimes the compiled helpfuile (.chm) indicates a 2d 
+        /// (I don't know why, but sometimes the compiled helpfile (.chm) indicates a 2d 
         /// array when it is just one-dimensional.  This is a one-dimensional array.)
         /// </param>
         /// 
         /// <returns>an instance of ZipFile. The name on the ZipFile will be null (nothing in VB)). </returns>
+	///
+	/// <seealso cref="ZipFile.Read(System.IO.Stream)" />
         public static ZipFile Read(byte[] buffer)
         {
             return Read(buffer, null, DefaultEncoding);
@@ -5495,23 +5497,27 @@ namespace Ionic.Zip
         /// by default.  Set the <see cref="CaseSensitiveRetrieval"/> property to use case-sensitive 
         /// comparisons. 
         /// </para>
+	///
         /// <para>
-        /// This property is read-write. When setting the value, the
-        /// only legal value is null. Setting the value to null is
-        /// equivalent to calling <see
+        /// This property is read-write. When setting the value, the only legal value is
+        /// null. Setting the value to null is equivalent to calling <see
         /// cref="ZipFile.RemoveEntry(String)"/> with the filename.
         /// </para>
+	///
         /// <para>
-        /// If you assign a non-null value
-        /// (non Nothing in VB), the setter will throw an exception.
+        /// If you assign a non-null value (non Nothing in VB), the setter will throw an
+        /// exception.
         /// </para>
+	///
         /// <para>
-        /// It is not always the case that <c>this[value].FileName == value</c>.  In
-        /// the case of directory entries in the archive, you may retrieve them with
-        /// the name of the directory with no trailing slash, even though in the
-        /// entry itself, the actual <see cref="ZipEntry.FileName"/> property may
-        /// include a trailing slash.  In other words, for a directory entry named
-        /// "dir1", you may find <c>this["dir1"].FileName == "dir1/"</c>.
+        /// It is not always the case that <c>this[value].FileName == value</c>.  In the case of
+        /// directory entries in the archive, you may retrieve them with the name of the directory
+        /// with no trailing slash, even though in the entry itself, the actual <see
+        /// cref="ZipEntry.FileName"/> property may include a trailing slash.  In other words, for
+        /// a directory entry named "dir1", you may find <c>zip["dir1"].FileName ==
+        /// "dir1/"</c>. Also, for any entry with slashes, they are stored in the zip file as
+        /// forward slashes, but you may retrieve them with either forward or backslashes.  So,
+        /// <c>zip["dir1\\entry1.txt"].FileName == "dir1/entry.txt"</c>.
         /// </para>
         /// </remarks>
         /// 

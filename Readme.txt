@@ -1,22 +1,37 @@
-Fri, 19 Dec 2008  06:03
+Mon, 09 Mar 2009  22:08
 
 Zip Library 
 ---------------------------------
 
 This library allows .NET applications to read, create and modify ZIP files. 
 
-The Microsoft .NET Framework, starting with v2.0 for the desktop
-Framework and v3.5 for the Compact Framework, includes new base class
-libraries supporting compression within streams - both the Deflate and
-Gzip formats are supported. But the classes in the System.IO.Compression 
-namespace are not directly useful for creating compressed zip archives.  
-The built-in compression library is not able to read or write zip archive 
-headers and other meta data.
+The Microsoft .NET Framework lacks a good set of classes for creating
+and reading ZIP files. 
 
-This is a simple class library that provides ZIP file support.  Using
-this library, you can write .NET applications that read and write
-zip-format files, including files with passwords, Unicode filenames, and
-comments.  The library also supports ZIP64 and self-extracting archives.
+Sure, you can do it.  With System.IO.Packaging.ZipPackage, it is
+possible to create a zip file - actually a package file.   But the
+interface is odd and confusing if all you want is a ZIP file.  
+
+You can also create and read zip files with the J# runtime, but J# is
+going out of support, the runtime is huge, and the zip classes have
+bugs and lack features. 
+
+By the way, the System.IO.Compression namespace, starting with v2.0 for
+the desktop Framework and v3.5 for the Compact Framework, includes base
+class libraries supporting compression within streams - both the Deflate
+and Gzip formats are supported. But these classes namespace are not
+directly useful for creating compressed ZIP archives.  GZIP is not ZIP.
+Also, these classes deliver pretty poor compression in practice,
+especially with binary data.
+
+There are other libraries out there than do zip files for .NET, but
+there are compromises with each one.  
+
+DotNetZip addresses that need.  It's a simple-to-use class library that
+provides good ZIP file support.  Using this library, you can write .NET
+applications that read and write zip-format files, including files with
+passwords, Unicode filenames, ZIP64, AES encryption, and comments.  The
+library also supports self-extracting archives.
 
 DotNetZip works with applications running on PCs with Windows.  There is a
 version of this library available for the .NET Compact Framework, too.
@@ -25,8 +40,8 @@ version of this library available for the .NET Compact Framework, too.
 License
 --------
 
-This software is open source. It is released under the Microsoft Public License
-of October 2006.  See the License.txt file for details. 
+This software is open source. It is released under the Microsoft Public
+License of October 2006.  See the License.txt file for details.
 
 
 
@@ -347,51 +362,57 @@ Self-Extracting Archive support
 --------------------------------
 
 The Self-Extracting Archive (SFX) support in the library allows you to 
-create a self-extracting zip archive.  Essentially it is a standard EXE file
-that contains boilerplate unzip code, as well as a zip file embedded as a
-resource.  When the SFX runs, the application extracts the zip file resource 
-and then unzips the file. 
+create a self-extracting zip archive.  An SFX is both a standard EXE
+file *and* a ZIP file.  The exe contains boilerplate program logic to
+unzip the embedded zip file.  When the user executes the SFX runs, the
+boilerplate application logic just reads the zip content and 
+then unzips itself. You can open an SFX in WinZip and other zip tools,
+as well, if you want to view it.  
 
-This implies that running the SFX, unpacking from the SFX, requires the 
-.NET Framework.  
+Running the SFX (unpacking from the SFX) requires the .NET Framework
+installed on the machine, but does not require the DotNetZip library.
 
-There is no support for reading SFX files.  Once created, they are not readable 
-by DotNetZip.  This may be added in a future release if users demand it. 
+There are two versions of the SFX - one that presents a GUI form, and
+another that runs as a console (command line) application.
 
 NB: Creation of SFX is not supported in the Compact Framework version of 
 the library.
 
+Also, there is no way, currently, to produce an SFX file that can run on
+the .NET Compact Framework.
 
 
 
 The Reduced ZIP library
 --------------------------------
 
-SFX support implies a large
-increase in the size of the library.  Some deployments may
-wish to omit the SFX support in order to get a smaller DLL. For that you can
-rely on the Ionic.Zip.Reduced.dll.  It provides everything the normal
-library does, except the SaveSelfExtractor() method on the ZipFile
-class.
+The library is currently about 400k in size.  The SFX support is
+responsible for more than half the total size of the library.  Some
+deployments may wish to omit the SFX support in order to get a smaller
+DLL. For that you can rely on the Ionic.Zip.Reduced.dll.  It provides
+everything the normal library does, except the SaveSelfExtractor()
+method on the ZipFile class.
 
 For size comparisons...
 
+
 assembly              ~size   comment
 -------------------------------------------------------
-Ionic.Zlib.dll          77k   DeflateStream and ZlibCodec
+Ionic.Zlib.dll          86k   {Deflate,GZip,Zlib}Stream and ZlibCodec
 
-Ionic.Zip.dll          335k   includes ZLIB and SFX
+Ionic.Zip.dll          400k   includes ZLIB and SFX, and selector
 
-Ionic.Zip.Partial.dll  258k   includes SFX, depends on a separate Ionic.Zlib.dll
+Ionic.Zip.Partial.dll  278k   includes SFX, depends on a separate Ionic.Zlib.dll
                               You should probably never reference this
                               DLL directly. It is a interim build output.
                               Included here for comparison purposes only.
 
-Ionic.Zip.Reduced.dll  130k   includes ZLIB but not SFX
+Ionic.Zip.Reduced.dll  170k   includes ZLIB but not SFX
 
-Ionic.Zlib.CF.dll       66k   DeflateStream and ZlibCodec (Compact Framework)
+Ionic.Zlib.CF.dll       74k   {Deflate,GZip,Zlib}Stream and ZlibCodec
+                              (Compact Framework)
 
-Ionic.Zip.CF.dll       140k   includes ZLIB but not SFX (Compact Framework)
+Ionic.Zip.CF.dll       160k   includes ZLIB but not SFX (Compact Framework)
 
 
 
@@ -423,7 +444,7 @@ Support
 There is no official support for this library.  I try to make a good
 effort to monitor the discussions and work items raised on the project
 portal at:
-http://www.codeplex.com/DotNetZip.
+http://DotNetZip.codeplex.com.
 
 
 
@@ -446,6 +467,9 @@ paragraph that reads:
   contact PKWARE with regard to acquiring a license.
 
 Contact pkware at:  zipformat@pkware.com 
+
+This library does not do strong encryption as described by PKWare, nor
+does it do patching.  But... I am no lawyer. 
 
 
 This library also uses a CRC utility class, in modified form,
@@ -475,9 +499,9 @@ or
 Visual Studio 2008 or later
 
 
-
 to run on a smart device:
   .NET Framework 2.0 or later
+
 
 
 
@@ -589,7 +613,7 @@ You can get the builder tool at http://www.codeplex.com/SHFB
 Limitations
 ---------------------------------
 
-There are numerous limitations to this library:
+There are a few limitations to this library:
 
  it does not support "multi-disk archives." or "disk spanning"
 
@@ -632,3 +656,14 @@ This library is all new code, written by me, with these exceptions:
  -  the CRC32 class - see above for credit.
  -  the zlib library - see above for credit.
 
+
+
+You can Donate
+--------------------------------
+If you think this library is useful, consider donating to my chosen
+cause: The Boys and Girls Club of Washington State.  I am accepting
+donations on my paypal account.  
+
+http://cheeso.members.winisp.net/DotNetZipDonate.aspx
+
+Thanks. 
