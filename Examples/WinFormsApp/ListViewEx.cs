@@ -6,9 +6,11 @@ using System.Data;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
-// a ListView that allows edit of subitems (items in columns beyond 0)
+// A ListView that allows edit of subitems (items in columns beyond 0)
 
-// from http://www.codeproject.com/KB/list/ListViewCellEditors.aspx
+// From http://www.codeproject.com/KB/list/ListViewCellEditors.aspx .
+
+
 
 // disable compile-time warning: "XXX is never is assigned and will always have its default value"
 #pragma warning disable 649

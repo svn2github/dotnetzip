@@ -21,7 +21,6 @@ namespace Ionic.Zip.WinFormsExample
             FillFormFromRegistry();
             AdoptProgressBars();
             SetListView2();
-            SetDragDrop();
         }
 
 
@@ -31,9 +30,35 @@ namespace Ionic.Zip.WinFormsExample
 
         private void SetListView2()
         {
+
+            // The listview2 is a ListViewEx control, an extension of
+            // System.Windows.Forms.ListView that allows editing of subitems using arbitrary
+            // controls.  You can have a textbox, a datepicker, or other controls.
+            // I want the user to be able to modify the directory-in-archive value in the
+            // list, which is why ListViewEx is interesting. 
+
+            // I also want a checkbox associated to each list item, but I don't want the
+            // checkbox attached to the first subitem, as it normally is in a ListView. So I
+            // put an empty string as the main ListView item (subitem #0), and then the
+            // filename and directory-in-archive value in the 2nd and 3rd columns (subitems 1
+            // and 2).  This way, the checkbox gets its own column.
+
+            // Next twist is I want the checkbox label to be uneditable, which is easy
+            // by just installing a  listView2_BeforeLabelEdit method and always cancelling
+            // it. (e.CancelEdit = true). 
+
+            // And then there is a "master checkbox" at the column header that indicates
+            // whether the state of all checkboxes in the list is the same. With the "check
+            // change" of any item in the list I want to see if the master should be checked
+            // or unchecked.
+
+            // The final thing is I want the checkbox for each item to change state only if I
+            // click on the checkbox itself, rather than "anywhere in the item row".  
+
             this.listView2.SubItemClicked += new ListViewEx.SubItemEventHandler(listView2_SubItemClicked);
             this.listView2.SubItemEndEditing += new ListViewEx.SubItemEndEditingEventHandler(listView2_SubItemEndEditing);
             this.listView2.DoubleClickActivation = true;
+            SetDragDrop();
         }
 
 
@@ -303,7 +328,7 @@ namespace Ionic.Zip.WinFormsExample
 
                     foreach (ListViewItem item in this.listView2.Items)
                         zip1.AddItem(item.Text, item.SubItems[1].Text);
-                    
+
                     _totalEntriesToProcess = zip1.EntryFileNames.Count;
                     SetProgressBars();
                     zip1.TempFileFolder = System.IO.Path.GetDirectoryName(options.ZipName);
@@ -526,6 +551,8 @@ namespace Ionic.Zip.WinFormsExample
             //}
 
 
+            // I put this condition here to avoid starting the zip while editing a textbox 
+            // in listView2. 
             if (!textBox1.Visible)
                 KickoffZipup();
         }
@@ -1375,8 +1402,11 @@ namespace Ionic.Zip.WinFormsExample
                 this.listView2.BeginUpdate();
                 foreach (var f in filePaths)
                 {
-                    var item = new ListViewItem(f);
+                    var item = new ListViewItem();
                     var subitem = new ListViewItem.ListViewSubItem();
+                    subitem.Text = f;
+                    item.SubItems.Add(subitem);
+                    subitem = new ListViewItem.ListViewSubItem();
                     subitem.Text = String.IsNullOrEmpty(_lastDirectory) ? this.tbDirectoryInArchive.Text : _lastDirectory;
                     item.SubItems.Add(subitem);
                     this.listView2.Items.Add(item);
@@ -1390,8 +1420,13 @@ namespace Ionic.Zip.WinFormsExample
         private void listView2_SubItemClicked(object sender, ListViewEx.SubItemEventArgs e)
         {
             //this.AcceptButton = null;
+
+            // Prevent editing the 0th column - it's the checkbox.  We want the checkbox 
+            // label to remain "". 
+            if (e.SubItem == 0) return;
+
             this.listView2.StartEditing(this.textBox1, e.Item, e.SubItem);
-            this.textBox1.Focus(); // to get the RETURN key?  no. this did not work.
+            //this.textBox1.Focus(); // to get the RETURN key?  no. this did not work.
         }
 
 
@@ -1414,12 +1449,12 @@ namespace Ionic.Zip.WinFormsExample
                 this.listView2.EndEditing(true);
                 e.Handled = true;
                 _lastDirectory = this.textBox1.Text;
-                //this.listView2.Focus(); // accept changes with the ENTER key
             }
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
+            //_disableMasterChecking = true;
             PauseUI(null);
             try
             {
@@ -1429,8 +1464,11 @@ namespace Ionic.Zip.WinFormsExample
                 this.listView2.BeginUpdate();
                 foreach (String f in files)
                 {
-                    var item = new ListViewItem(f);
+                    var item = new ListViewItem();
                     var subitem = new ListViewItem.ListViewSubItem();
+                    subitem.Text = f;
+                    item.SubItems.Add(subitem);
+                    subitem = new ListViewItem.ListViewSubItem();
                     var dirInArchive = this.tbDirectoryInArchive.Text;
                     var subDir = System.IO.Path.GetDirectoryName(f.Replace(this.tbDirectoryToZip.Text, ""));
                     subDir = subDir.Substring(1);
@@ -1445,8 +1483,107 @@ namespace Ionic.Zip.WinFormsExample
             catch
             { }
             ResetUiState();
+            //_disableMasterChecking = false;
         }
 
+
+        private void btnClearItemsToZip_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in this.listView2.Items)
+            {
+                if (item.Checked)
+                    this.listView2.Items.Remove(item);
+            }
+
+            // After removing all the checked items, all items  are now unchecked.
+            // We can set the mast checkbox to unchecked.  But, we have to protect
+            // against infinite recursion. 
+            _disableMasterChecking = true;
+            this.checkBox1.Checked = false;
+            _disableMasterChecking = false;
+        }
+
+
+
+        bool _disableMasterChecking = false;
+        private void checkBox1_CheckedChanged_1(object sender, EventArgs e)
+        {
+            // prevent infinite recursion. 
+            if (_disableMasterChecking) return;
+
+            // if we have a mixed state, then it happened programmatically
+            if (this.checkBox1.CheckState == CheckState.Indeterminate) return; 
+
+            _disableListViewCheckedEvent = true;
+            _disableMasterChecking = true;
+            // change state of ALL items
+            foreach (ListViewItem item in this.listView2.Items)
+            {
+                item.Checked = this.checkBox1.Checked;
+            }
+            _disableMasterChecking = false;
+            _disableListViewCheckedEvent = false;
+        }
+
+
+        private bool _disableListViewCheckedEvent;
+        private void listView2_ItemChecked(object sender, ItemCheckedEventArgs e)
+        {
+            // prevent infinite recursion
+            if (_disableListViewCheckedEvent) return;
+
+            System.Drawing.Point p = this.listView2.PointToClient(new System.Drawing.Point(Cursor.Position.X, Cursor.Position.Y));
+            ListViewItem lvi;
+            int ix = this.listView2.GetSubItemAt(p.X, p.Y, out lvi);
+
+            // lvi is null when the checkchange comes from a non-mouse event, like when
+            // a new item is being added to the list.  
+            if (lvi == null) return;
+
+            // ix is 0 when the checkbox is the thing that was tickled with the mouse.
+            if (ix == 0)
+                MaybeSetMasterCheckbox();
+            else
+            {
+                // Revert the checkChange if it was due to a mouse click on a subitem other than the 0th one.
+                // The Checked property has already been changed (in ListView.WndProc?); we need to undo it.
+                // In order to avoid an endless recursion, set the disable flag, first.
+                _disableListViewCheckedEvent = true;
+                lvi.Checked = !lvi.Checked;
+                _disableListViewCheckedEvent = false;
+            }
+        }
+
+
+        private void MaybeSetMasterCheckbox()
+        {
+            if (_disableMasterChecking) return;
+
+            bool uniform = true;
+            // check the state of all the items
+            for (int i = 1; i < this.listView2.Items.Count; i++)
+            {
+                if (this.listView2.Items[i].Checked != this.listView2.Items[i - 1].Checked)
+                {
+                    uniform = false;
+                    break;
+                }
+            }
+
+            _disableMasterChecking = true;
+            if (uniform)
+                this.checkBox1.CheckState = (this.listView2.Items[0].Checked)?CheckState.Checked: CheckState.Unchecked;
+            else            
+                this.checkBox1.CheckState = CheckState.Indeterminate;            
+            _disableMasterChecking = false;
+        }
+
+        private void listView2_BeforeLabelEdit(object sender, LabelEditEventArgs e)
+        {
+            // never let the use edit the label associated to the main listview item,
+            // the label on the item checkbox.  
+            e.CancelEdit = true;
+        }
 
 
         //private string _folderName;
@@ -1490,10 +1627,6 @@ namespace Ionic.Zip.WinFormsExample
         private string _initialFileToLoad;
         private string _lastDirectory;
 
-        private void btnClearItemsToZip_Click(object sender, EventArgs e)
-        {
-            this.listView2.Items.Clear();
-        }
 
 
     }

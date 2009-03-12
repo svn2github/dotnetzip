@@ -69,11 +69,10 @@
             this.btnReadZipBrowse = new System.Windows.Forms.Button();
             this.tbZipToOpen = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.btnClearItemsToZip = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
-            this.listView2 = new ListViewEx.ListViewEx();
-            this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.comboZip64 = new System.Windows.Forms.ComboBox();
             this.comboFlavor = new System.Windows.Forms.ComboBox();
             this.tbDirectoryInArchive = new System.Windows.Forms.TextBox();
@@ -85,7 +84,10 @@
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.btnClearItemsToZip = new System.Windows.Forms.Button();
+            this.listView2 = new ListViewEx.ListViewEx();
+            this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -128,11 +130,11 @@
             // btnZipUp
             // 
             this.btnZipUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnZipUp.Location = new System.Drawing.Point(492, 291);
+            this.btnZipUp.Location = new System.Drawing.Point(499, 291);
             this.btnZipUp.Name = "btnZipUp";
-            this.btnZipUp.Size = new System.Drawing.Size(75, 27);
+            this.btnZipUp.Size = new System.Drawing.Size(68, 27);
             this.btnZipUp.TabIndex = 80;
-            this.btnZipUp.Text = "Zip It!";
+            this.btnZipUp.Text = "Zip All";
             this.btnZipUp.UseVisualStyleBackColor = true;
             this.btnZipUp.Click += new System.EventHandler(this.btnZipup_Click);
             // 
@@ -140,9 +142,9 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.Enabled = false;
-            this.btnCancel.Location = new System.Drawing.Point(492, 362);
+            this.btnCancel.Location = new System.Drawing.Point(499, 362);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(75, 29);
+            this.btnCancel.Size = new System.Drawing.Size(68, 29);
             this.btnCancel.TabIndex = 90;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
@@ -264,7 +266,7 @@
             this.tbComment.ForeColor = System.Drawing.SystemColors.InactiveCaption;
             this.tbComment.Location = new System.Drawing.Point(113, 178);
             this.tbComment.Name = "tbComment";
-            this.tbComment.Size = new System.Drawing.Size(455, 20);
+            this.tbComment.Size = new System.Drawing.Size(453, 20);
             this.tbComment.TabIndex = 70;
             this.tbComment.Text = "-zip file comment here-";
             this.tbComment.Leave += new System.EventHandler(this.tbComment_Leave);
@@ -500,6 +502,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.checkBox1);
             this.tabPage2.Controls.Add(this.btnClearItemsToZip);
             this.tabPage2.Controls.Add(this.textBox1);
             this.tabPage2.Controls.Add(this.button1);
@@ -542,6 +545,27 @@
             this.tabPage2.Text = "Create";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Location = new System.Drawing.Point(15, 208);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(15, 14);
+            this.checkBox1.TabIndex = 102;
+            this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged_1);
+            // 
+            // btnClearItemsToZip
+            // 
+            this.btnClearItemsToZip.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnClearItemsToZip.Location = new System.Drawing.Point(388, 291);
+            this.btnClearItemsToZip.Name = "btnClearItemsToZip";
+            this.btnClearItemsToZip.Size = new System.Drawing.Size(102, 27);
+            this.btnClearItemsToZip.TabIndex = 101;
+            this.btnClearItemsToZip.Text = "Remove Checked";
+            this.btnClearItemsToZip.UseVisualStyleBackColor = true;
+            this.btnClearItemsToZip.Click += new System.EventHandler(this.btnClearItemsToZip_Click);
+            // 
             // textBox1
             // 
             this.textBox1.AcceptsReturn = true;
@@ -563,36 +587,6 @@
             this.toolTip1.SetToolTip(this.button1, "Add Selected files to Zip");
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // listView2
-            // 
-            this.listView2.AllowColumnReorder = true;
-            this.listView2.AllowDrop = true;
-            this.listView2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.listView2.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader2});
-            this.listView2.DoubleClickActivation = false;
-            this.listView2.FullRowSelect = true;
-            this.listView2.LabelEdit = true;
-            this.listView2.Location = new System.Drawing.Point(13, 202);
-            this.listView2.Name = "listView2";
-            this.listView2.Size = new System.Drawing.Size(554, 84);
-            this.listView2.TabIndex = 98;
-            this.listView2.UseCompatibleStateImageBehavior = false;
-            this.listView2.View = System.Windows.Forms.View.Details;
-            this.listView2.DragDrop += new System.Windows.Forms.DragEventHandler(this.listView2_DragDrop);
-            this.listView2.DragEnter += new System.Windows.Forms.DragEventHandler(this.listView_DragEnter);
-            // 
-            // columnHeader1
-            // 
-            this.columnHeader1.Text = "File Name";
-            // 
-            // columnHeader2
-            // 
-            this.columnHeader2.Text = "Directory In Archive";
             // 
             // comboZip64
             // 
@@ -700,16 +694,45 @@
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
             // 
-            // btnClearItemsToZip
+            // listView2
             // 
-            this.btnClearItemsToZip.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClearItemsToZip.Location = new System.Drawing.Point(411, 291);
-            this.btnClearItemsToZip.Name = "btnClearItemsToZip";
-            this.btnClearItemsToZip.Size = new System.Drawing.Size(75, 27);
-            this.btnClearItemsToZip.TabIndex = 101;
-            this.btnClearItemsToZip.Text = "Clear Items";
-            this.btnClearItemsToZip.UseVisualStyleBackColor = true;
-            this.btnClearItemsToZip.Click += new System.EventHandler(this.btnClearItemsToZip_Click);
+            this.listView2.AllowColumnReorder = true;
+            this.listView2.AllowDrop = true;
+            this.listView2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.listView2.CheckBoxes = true;
+            this.listView2.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader3,
+            this.columnHeader1,
+            this.columnHeader2});
+            this.listView2.DoubleClickActivation = false;
+            this.listView2.FullRowSelect = true;
+            this.listView2.GridLines = true;
+            this.listView2.Location = new System.Drawing.Point(8, 202);
+            this.listView2.MultiSelect = false;
+            this.listView2.Name = "listView2";
+            this.listView2.Size = new System.Drawing.Size(559, 84);
+            this.listView2.TabIndex = 98;
+            this.listView2.UseCompatibleStateImageBehavior = false;
+            this.listView2.View = System.Windows.Forms.View.Details;
+            this.listView2.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.listView2_ItemChecked);
+            this.listView2.DragDrop += new System.Windows.Forms.DragEventHandler(this.listView2_DragDrop);
+            this.listView2.DragEnter += new System.Windows.Forms.DragEventHandler(this.listView_DragEnter);
+            this.listView2.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listView2_BeforeLabelEdit);
+            // 
+            // columnHeader3
+            // 
+            this.columnHeader3.Text = "?";
+            this.columnHeader3.Width = 24;
+            // 
+            // columnHeader1
+            // 
+            this.columnHeader1.Text = "File Name";
+            // 
+            // columnHeader2
+            // 
+            this.columnHeader2.Text = "Directory In Archive";
             // 
             // Form1
             // 
@@ -796,6 +819,8 @@
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button btnClearItemsToZip;
+        private System.Windows.Forms.ColumnHeader columnHeader3;
+        private System.Windows.Forms.CheckBox checkBox1;
     }
 }
 
