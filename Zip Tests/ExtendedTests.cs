@@ -119,6 +119,11 @@ namespace Ionic.Zip.Tests.Extended
         [TestMethod]
         public void CreateZip_CheckInflation()
         {
+            // Three trials:
+            // first trial has no callback.
+            // second trial has a callback that always returns false.
+            // third trial has a callback that always returns true. 
+
             for (int j = 0; j < 3; j++)
             {
                 System.IO.Directory.SetCurrentDirectory(TopLevelDir);
@@ -138,8 +143,10 @@ namespace Ionic.Zip.Tests.Extended
                 using (ZipFile zip2 = new ZipFile())
                 {
                     if (j > 0)
+                    {
                         zip2.WillReadTwiceOnInflation = ReadTwiceCallback;
-                    if (j > 1) _callbackAnswer = true;
+                        _callbackAnswer = (j > 1);
+                    }
 
                     for (int i = 0; i < entries; i++)
                     {

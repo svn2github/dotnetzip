@@ -115,6 +115,9 @@ namespace Ionic.Zlib
         /// </summary>
         public const int Z_BUF_ERROR = -5;
 
+        public const int WORKING_BUFFER_SIZE_DEFAULT =  1024; // 8192; // 0x8000;  // 16384; // 1024;
+
+	public const int WORKING_BUFFER_SIZE_MIN = 128;
     }
 
 }

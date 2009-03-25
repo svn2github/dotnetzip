@@ -272,23 +272,49 @@ namespace Ionic.Zlib
         }
 
         /// <summary>
-        /// Callers can set the buffer size of the working buffer with this property.  
+        /// The size of the working buffer for the compression codec. 
         /// </summary>
+	///
         /// <remarks>
-        /// The working buffer is used for all stream operations.
-        /// The default size is 1024 bytes.  The minimum size is 128 bytes. You may get better 
-        /// performance with a larger buffer.  Then again, you might not.  I don't know, I haven't tested it.  
+	/// <para>
+        /// The working buffer is used for all stream operations.  The default size is 1024 bytes.
+        /// The minimum size is 128 bytes. You may get better performance with a larger buffer.
+        /// Then again, you might not.  You would have to test it.
+	/// </para>
+	///
+	/// <para>
+	/// Set this before the first call to Read()  or Write() on the stream. If you try to set it 
+	/// afterwards, it will throw.
+	/// </para>
         /// </remarks>
         public int BufferSize
         {
             get
             {
-                return this._baseStream._workingBuffer.Length;
+                return this._baseStream._bufferSize;
             }
             set
             {
-                if (value < this._baseStream.WORKING_BUFFER_SIZE_MIN) throw new ZlibException("Don't be silly. Use a bigger buffer.");
-                this._baseStream._workingBuffer = new byte[value];
+		if (this._baseStream._workingBuffer != null)
+                    throw new ZlibException("The working buffer is already set.");
+                if (value < ZlibConstants.WORKING_BUFFER_SIZE_MIN)
+                    throw new ZlibException(String.Format("Don't be silly. {0} bytes?? Use a bigger buffer.", value));
+                this._baseStream._bufferSize = value;
+            }
+        }
+
+	/// <summary>The ZLIB strategy to be used during compression.</summary>
+	/// <remarks>By tweaking this parameter, you may be able to optimize the compression for 
+	/// data with particular characteristics.</remarks>
+        public CompressionStrategy Strategy
+        {
+            get
+            {
+                return this._baseStream.Strategy;
+            }
+            set
+            {
+                this._baseStream.Strategy = value;
             }
         }
 
@@ -830,25 +856,37 @@ namespace Ionic.Zlib
         }
 
         /// <summary>
-        /// Callers can set the buffer size of the working buffer with this property.  
+        /// The size of the working buffer for the compression codec. 
         /// </summary>
+	///
         /// <remarks>
-        /// The working buffer is used for all stream operations.
-        /// The default size is 1024 bytes.  The minimum size is 128 bytes. You may get better 
-        /// performance with a larger buffer.  Then again, you might not.  I don't know, I haven't tested it.  
+	/// <para>
+        /// The working buffer is used for all stream operations.  The default size is 1024 bytes.
+        /// The minimum size is 128 bytes. You may get better performance with a larger buffer.
+        /// Then again, you might not.  You would have to test it.
+	/// </para>
+	///
+	/// <para>
+	/// Set this before the first call to Read()  or Write() on the stream. If you try to set it 
+	/// afterwards, it will throw.
+	/// </para>
         /// </remarks>
         public int BufferSize
         {
             get
             {
-                return this._baseStream._workingBuffer.Length;
+                return this._baseStream._bufferSize;
             }
             set
             {
-                if (value < this._baseStream.WORKING_BUFFER_SIZE_MIN) throw new ZlibException("Don't be silly. Use a bigger buffer.");
-                this._baseStream._workingBuffer = new byte[value];
+		if (this._baseStream._workingBuffer != null)
+                    throw new ZlibException("The working buffer is already set.");
+                if (value < ZlibConstants.WORKING_BUFFER_SIZE_MIN)
+                    throw new ZlibException(String.Format("Don't be silly. {0} bytes?? Use a bigger buffer.", value));
+                this._baseStream._bufferSize = value;
             }
         }
+
 
         /// <summary> Returns the total number of bytes input so far.</summary>
         virtual public long TotalIn
@@ -1373,26 +1411,36 @@ namespace Ionic.Zlib
         }
 
         /// <summary>
-        /// Callers can set the buffer size of the working buffer with this property.  
+        /// The size of the working buffer for the compression codec. 
         /// </summary>
+	///
         /// <remarks>
-        /// The working buffer is used for all stream operations.
-        /// The default size is 1024 bytes.  The minimum size is 128 bytes. You may get better 
-        /// performance with a larger buffer.  Then again, you might not.  I don't know, I haven't tested it.  
+	/// <para>
+        /// The working buffer is used for all stream operations.  The default size is 1024 bytes.
+        /// The minimum size is 128 bytes. You may get better performance with a larger buffer.
+        /// Then again, you might not.  You would have to test it.
+	/// </para>
+	///
+	/// <para>
+	/// Set this before the first call to Read()  or Write() on the stream. If you try to set it 
+	/// afterwards, it will throw.
+	/// </para>
         /// </remarks>
         public int BufferSize
         {
             get
             {
-                return this._baseStream._workingBuffer.Length;
+                return this._baseStream._bufferSize;
             }
             set
             {
-                if (value < this._baseStream.WORKING_BUFFER_SIZE_MIN) throw new ZlibException("Don't be silly. Use a bigger buffer.");
-                this._baseStream._workingBuffer = new byte[value];
+		if (this._baseStream._workingBuffer != null)
+                    throw new ZlibException("The working buffer is already set.");
+                if (value < ZlibConstants.WORKING_BUFFER_SIZE_MIN)
+                    throw new ZlibException(String.Format("Don't be silly. {0} bytes?? Use a bigger buffer.", value));
+                this._baseStream._bufferSize = value;
             }
         }
-
 
         /// <summary> Returns the total number of bytes input so far.</summary>
         virtual public long TotalIn
@@ -1550,19 +1598,20 @@ namespace Ionic.Zlib
 
     internal class ZlibBaseStream : System.IO.Stream
     {
-        protected internal ZlibCodec _z = new ZlibCodec();
-        protected internal readonly int WORKING_BUFFER_SIZE_DEFAULT = 16384; // 1024;
-        protected internal readonly int WORKING_BUFFER_SIZE_MIN = 128;
+        protected internal ZlibCodec _z = null; // deferred init... new ZlibCodec();
 
         protected internal StreamMode _streamMode = StreamMode.Undefined;
         protected internal int _flushMode;
         protected internal ZlibStreamFlavor _flavor;
+        protected internal CompressionMode _compressionMode;
+        protected internal CompressionLevel _level;
         protected internal bool _leaveOpen;
         protected internal byte[] _workingBuffer;
+        protected internal int _bufferSize = ZlibConstants.WORKING_BUFFER_SIZE_DEFAULT;
         protected internal byte[] _buf1 = new byte[1];
-        protected internal bool _wantCompress;
 
         protected internal System.IO.Stream _stream;
+        protected internal CompressionStrategy Strategy = CompressionStrategy.DEFAULT;
 
         // workitem 7159
         Ionic.Zlib.CRC32 crc;
@@ -1576,26 +1625,61 @@ namespace Ionic.Zlib
             : base()
         {
             this._flushMode = ZlibConstants.Z_NO_FLUSH;
-            this._workingBuffer = new byte[WORKING_BUFFER_SIZE_DEFAULT];
+            //this._workingBuffer = new byte[WORKING_BUFFER_SIZE_DEFAULT];
             this._stream = stream;
             this._leaveOpen = leaveOpen;
+            this._compressionMode = compressionMode;
             this._flavor = flavor;
-            bool wantRfc1950Header = (flavor == ZlibStreamFlavor.ZLIB);
-            if (compressionMode == CompressionMode.Decompress)
-            {
-                _z.InitializeInflate(wantRfc1950Header);
-                this._wantCompress = false;
-            }
-            else
-            {
-                _z.InitializeDeflate(level, wantRfc1950Header);
-                this._wantCompress = true;
-            }
-
+            this._level = level;
             // workitem 7159
             if (flavor == ZlibStreamFlavor.GZIP)
             {
                 crc = new CRC32();
+            }
+        }
+
+
+        protected internal bool _wantCompress
+        {
+            get
+            {
+                return (this._compressionMode == CompressionMode.Compress);
+            }
+        }
+
+        private ZlibCodec z
+        {
+            get
+            {
+                if (_z == null)
+                {
+                    bool wantRfc1950Header = (this._flavor == ZlibStreamFlavor.ZLIB);
+                    _z = new ZlibCodec();
+                    if (this._compressionMode == CompressionMode.Decompress)
+                    {
+                        _z.InitializeInflate(wantRfc1950Header);
+                        //this._wantCompress = false;
+                    }
+                    else
+                    {
+                        _z.Strategy = Strategy;
+                        _z.InitializeDeflate(this._level, wantRfc1950Header);
+                        //this._wantCompress = true;
+                    }
+                }
+                return _z;
+            }
+        }
+
+
+
+        private byte[] workingBuffer
+        {
+            get
+            {
+                if (_workingBuffer == null)
+                    _workingBuffer = new byte[_bufferSize];
+                return _workingBuffer;
             }
         }
 
@@ -1608,6 +1692,7 @@ namespace Ionic.Zlib
                 crc.SlurpBlock(_buf1, 0, 1);
             Write(_buf1, 0, 1);
         }
+
 
 
         public override void Write(System.Byte[] buffer, int offset, int count)
@@ -1624,13 +1709,13 @@ namespace Ionic.Zlib
             if (count == 0)
                 return;
 
-            _z.InputBuffer = buffer;
+            z.InputBuffer = buffer;
             _z.NextIn = offset;
             _z.AvailableBytesIn = count;
             bool done = false;
             do
             {
-                _z.OutputBuffer = _workingBuffer;
+                _z.OutputBuffer = workingBuffer;
                 _z.NextOut = 0;
                 _z.AvailableBytesOut = _workingBuffer.Length;
                 int rc = (_wantCompress)
@@ -1654,14 +1739,14 @@ namespace Ionic.Zlib
 
         private void finish()
         {
-            if (_z == null) return;
+            if (z == null) return;
 
             if (_streamMode == StreamMode.Writer)
             {
                 bool done = false;
                 do
                 {
-                    _z.OutputBuffer = _workingBuffer;
+                    _z.OutputBuffer = workingBuffer;
                     _z.NextOut = 0;
                     _z.AvailableBytesOut = _workingBuffer.Length;
                     int rc = (_wantCompress)
@@ -1723,7 +1808,7 @@ namespace Ionic.Zlib
 
                         if (_z.AvailableBytesIn != 8)
                             throw new ZlibException(String.Format("Can't handle this! AvailableBytesIn={0}",
-								 _z.AvailableBytesIn ));
+                                 _z.AvailableBytesIn));
 
                         Array.Copy(_z.InputBuffer, _z.NextIn, trailer, 0, trailer.Length);
 
@@ -1756,7 +1841,7 @@ namespace Ionic.Zlib
 
         private void end()
         {
-            if (_z == null)
+            if (z == null)
                 return;
             if (_wantCompress)
             {
@@ -1885,7 +1970,9 @@ namespace Ionic.Zlib
             {
                 // for the first read, set up some controls.
                 _streamMode = StreamMode.Reader;
-                _z.AvailableBytesIn = 0;
+                // (The first reference to _z goes through the private accessor which
+                // may initialize it.)
+                z.AvailableBytesIn = 0;
                 if (_flavor == ZlibStreamFlavor.GZIP)
                     _ReadAndValidateGzipHeader();
             }
@@ -1904,8 +1991,10 @@ namespace Ionic.Zlib
             _z.NextOut = offset;
             _z.AvailableBytesOut = count;
 
-            // this is necessary in case _workingBuffer has been resized. (new byte[])
-            _z.InputBuffer = _workingBuffer;
+            // This is necessary in case _workingBuffer has been resized. (new byte[])
+            // (The first reference to _workingBuffer goes through the private accessor which
+            // may initialize it.)
+            _z.InputBuffer = workingBuffer;
 
             do
             {

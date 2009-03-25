@@ -3,8 +3,10 @@ using System.IO;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
+#if AESCRYPTO
 namespace Ionic.Zip
 {
+
 
     /// <summary> 
     /// This is a helper class supporting WinZip AES encryption.  
@@ -223,10 +225,16 @@ namespace Ionic.Zip
                 }
             }
 
+#if DEBUG
             if (invalid)
                 throw new Exception(String.Format("The MAC does not match '{0}' != '{1}'",
                           Util.FormatByteArray(_StoredMac),
                           Util.FormatByteArray(CalculatedMac)));
+#else
+            if (invalid)
+                throw new Exception("The MAC does not match");
+#endif
+
         }
 
 
@@ -235,7 +243,7 @@ namespace Ionic.Zip
 
 
 
-
+#if DEBUG
     internal class Util
     {
         internal static string FormatByteArray(byte[] b)
@@ -287,7 +295,7 @@ namespace Ionic.Zip
             return FormatByteArray(b2);
         }
     }
-
+#endif
 
 
 
@@ -579,7 +587,7 @@ namespace Ionic.Zip
 
 
 
-
+#if NOTUSED
         public void NotifyFinal()
         {
             // Caller is telling us that the next Read() will be the final Read(),
@@ -610,7 +618,7 @@ namespace Ionic.Zip
             //Console.WriteLine("WinZipAesCipherStream: next xform() will be the last...");
         }
 
-
+#endif
 
 
         private void TransformInPlace(byte[] buffer, int offset, int count)
@@ -859,3 +867,4 @@ namespace Ionic.Zip
 
 
 }
+#endif

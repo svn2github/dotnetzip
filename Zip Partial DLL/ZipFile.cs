@@ -53,6 +53,24 @@ namespace Ionic.Zip
 
         #region public properties
 
+
+public int BufferSize
+{
+    get ;
+    set ;
+}
+public int CodecBufferSize
+{
+    get ;
+    set ;
+}
+private Ionic.Zlib.CompressionStrategy _Strategy= Ionic.Zlib.CompressionStrategy.DEFAULT;
+public Ionic.Zlib.CompressionStrategy Strategy
+{
+    get { return _Strategy;}
+    set { _Strategy = value;}
+}
+
         /// <summary>
         /// This read-only property specifies the name of the zipfile to read or
         /// write. It can be implicitly set when the instance of the ZipFile type is
@@ -1346,11 +1364,11 @@ namespace Ionic.Zip
         ///
         /// <param name="zipFileName">The filename to use for the new zip archive.</param>
         ///
-        public ZipFile(string zipFileName)
+	    public ZipFile(string zipFileName) 
         {
             try
             {
-                InitFile(zipFileName, null);
+                _InitInstance(zipFileName, null);
             }
             catch (Exception e1)
             {
@@ -1395,11 +1413,11 @@ namespace Ionic.Zip
         /// <param name="encoding">The Encoding is used as the default alternate 
         /// encoding for entries with filenames or comments that cannot be encoded 
         /// with the IBM437 code page. </param>
-        public ZipFile(string zipFileName, System.Text.Encoding encoding)
+        public ZipFile(string zipFileName, System.Text.Encoding encoding) 
         {
             try
             {
-                InitFile(zipFileName, null);
+                _InitInstance(zipFileName, null);
                 ProvisionalAlternateEncoding = encoding;
             }
             catch (Exception e1)
@@ -1472,7 +1490,7 @@ namespace Ionic.Zip
         /// </example>
         public ZipFile()
         {
-            InitFile(null, null);
+            _InitInstance(null, null);
         }
 
 
@@ -1496,7 +1514,7 @@ namespace Ionic.Zip
         /// </param>
         public ZipFile(System.Text.Encoding encoding)
         {
-            InitFile(null, null);
+            _InitInstance(null, null);
             ProvisionalAlternateEncoding = encoding;
         }
 
@@ -1578,7 +1596,7 @@ namespace Ionic.Zip
         {
             try
             {
-                InitFile(zipFileName, statusMessageWriter);
+                _InitInstance(zipFileName, statusMessageWriter);
             }
             catch (Exception e1)
             {
@@ -1643,7 +1661,7 @@ namespace Ionic.Zip
         {
             try
             {
-                InitFile(zipFileName, statusMessageWriter);
+                _InitInstance(zipFileName, statusMessageWriter);
                 ProvisionalAlternateEncoding = encoding;
             }
             catch (Exception e1)
@@ -1672,14 +1690,14 @@ namespace Ionic.Zip
             }
         }
 
-        private void InitFile(string zipFileName, System.IO.TextWriter statusMessageWriter)
+        private void _InitInstance(string zipFileName, System.IO.TextWriter statusMessageWriter)
         {
             // create a new zipfile
             _name = zipFileName;
             _StatusMessageTextWriter = statusMessageWriter;
             _contentsChanged = true;
             CompressionLevel = Ionic.Zlib.CompressionLevel.DEFAULT;
-
+	    BufferSize = 8192;  // Default
             if (System.IO.File.Exists(_name))
             {
                 ReadIntoInstance(this);
@@ -2039,6 +2057,7 @@ namespace Ionic.Zip
         {
             string nameInArchive = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
             ZipEntry ze = ZipEntry.Create(fileName, nameInArchive);
+	    ze.BufferSize = BufferSize;
             //ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
             ze.ExtractExistingFile = ExtractExistingFile;
@@ -2632,6 +2651,7 @@ namespace Ionic.Zip
         {
             string n = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
             ZipEntry ze = ZipEntry.Create(fileName, n, true, stream);
+	    ze.BufferSize = BufferSize;
             //ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
             ze.ExtractExistingFile = ExtractExistingFile;
@@ -2941,6 +2961,7 @@ namespace Ionic.Zip
         {
             // add the directory itself.
             ZipEntry baseDir = ZipEntry.Create(directoryNameInArchive, directoryNameInArchive);
+	    baseDir.BufferSize = BufferSize;
             //baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             baseDir.MarkAsDirectory();
             baseDir._zipfile = this;
@@ -2988,6 +3009,7 @@ namespace Ionic.Zip
             if (level > 0 || rootDirectoryPathInArchive != "")
             {
                 baseDir = ZipEntry.Create(directoryName, dirForEntries);
+		baseDir.BufferSize = BufferSize;
                 baseDir.ProvisionalAlternateEncoding = this.ProvisionalAlternateEncoding;  // workitem 6410
                 //baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
                 baseDir.MarkAsDirectory();
@@ -3152,7 +3174,7 @@ namespace Ionic.Zip
                     // _temporaryFileName may remain null if we are writing to a stream
                     // only close the stream if there is a file behind it. 
                     WriteStream.Close();
-#if !NETCF20
+#if !NETCF
                     WriteStream.Dispose();
 #endif
                     WriteStream = null;
@@ -3240,7 +3262,7 @@ namespace Ionic.Zip
                     catch { }
                     try
                     {
-#if !NETCF20
+#if !NETCF
                         _writestream.Dispose();
 #endif
                     }

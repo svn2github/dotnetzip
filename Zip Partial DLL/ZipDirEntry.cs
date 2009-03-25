@@ -257,7 +257,7 @@ namespace Ionic.Zip
                 // the "encryption header" of 12 bytes precedes the file data
                 zde._CompressedFileDataSize -= 12;
             }
-#if !NETCF20
+#if AESCRYPTO
             else if (zde.Encryption == EncryptionAlgorithm.WinZipAes128 ||
                         zde.Encryption == EncryptionAlgorithm.WinZipAes256)
             {

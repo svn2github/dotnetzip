@@ -119,25 +119,33 @@ namespace Ionic.Zlib
     }
 
     /// <summary>
-    /// I honestly don't know what this means, but it is possible to set it in the SetDeflateParameters() call.
+    /// Describes options for how the compression algorithm is executed.  Different strategies
+    /// work better on different sorts of data.  The strategy parameter can affect the compression
+    /// ratio and the speed of compression but not the correctness of the compresssion.
     /// </summary>
     public enum CompressionStrategy
     {
         /// <summary>
-        /// It's probably safest to just leave this alone, or select the default. 
+	/// The default strategy is probably the best for normal data. 
         /// </summary>
         DEFAULT = 0,
 
         /// <summary>
-        /// I don't know what this does. 
+	/// The FILTERED strategy is intended to be used most effectively with data produced by a
+	/// filter or predictor.  By this definition, filtered data consists mostly of small
+	/// values with a somewhat random distribution.  In this case, the compression algorithm
+	/// is tuned to compress them better.  The effect ofFILTERED is to force more Huffman
+	/// coding and less string matching; it is a half-setp between DEFAULT and HUFFMAN_ONLY.
         /// </summary>
         FILTERED = 1,
 
         /// <summary>
-        /// I don't know what this setting does either.
+	/// Using HUFFMAN_ONLY will force the compressor to do Huffman encoding only, with no
+	/// string matching.
         /// </summary>
         HUFFMAN_ONLY = 2,
     }
+
 
     /// <summary>
     /// An enum to specify the direction of transcoding - whether to compress or decompress.

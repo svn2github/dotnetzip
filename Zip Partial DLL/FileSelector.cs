@@ -926,25 +926,31 @@ namespace Ionic
             if (_Criterion == null)
                 throw new ArgumentException("SelectionCriteria has not been set");
 
-            String[] filenames = System.IO.Directory.GetFiles(directory);
             var list = new System.Collections.Generic.List<String>();
-
-            // add the files: 
-            foreach (String filename in filenames)
+            try
             {
-                if (Evaluate(filename))
-                    list.Add(filename);
-            }
+                String[] filenames = System.IO.Directory.GetFiles(directory);
 
-            if (recurseDirectories)
-            {
-                // add the subdirectories:
-                String[] dirnames = System.IO.Directory.GetDirectories(directory);
-                foreach (String dir in dirnames)
+                // add the files: 
+                foreach (String filename in filenames)
                 {
-                    list.AddRange(this.SelectFiles(dir, recurseDirectories));
+                    if (Evaluate(filename))
+                        list.Add(filename);
+                }
+
+                if (recurseDirectories)
+                {
+                    // add the subdirectories:
+                    String[] dirnames = System.IO.Directory.GetDirectories(directory);
+                    foreach (String dir in dirnames)
+                    {
+                        list.AddRange(this.SelectFiles(dir, recurseDirectories));
+                    }
                 }
             }
+            // can get System.UnauthorizedAccessException here 
+            catch { }
+
             return list;
         }
     }

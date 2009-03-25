@@ -218,9 +218,9 @@ namespace Ionic.Zip.WinFormsExample
             var options = new SaveWorkerOptions
             {
                 ZipName = this.tbZipToCreate.Text,
-                Folder = this.tbDirectoryToZip.Text,
+                //Folder = this.tbDirectoryToZip.Text,
                 Selection = this.tbSelectionToZip.Text,
-                DirInArchive = this.tbDirectoryInArchive.Text,
+                //DirInArchive = this.tbDirectoryInArchive.Text,
                 Encoding = "ibm437"
             };
 
@@ -237,6 +237,20 @@ namespace Ionic.Zip.WinFormsExample
 
             options.Zip64 = (Zip64Option)Enum.Parse(typeof(Zip64Option),
                                  this.comboZip64.SelectedItem.ToString());
+
+            //this.listView2.Items.ToList();
+            var entriesList = new System.Collections.ArrayList(this.listView2.Items);
+            options.Entries = System.Array.ConvertAll((ListViewItem[])entriesList.ToArray(typeof(ListViewItem)), (item) =>
+                {
+                    return new ItemToAdd
+                    {
+                        LocalFileName = item.SubItems[1].Text,
+                        DirectoryInArchive = item.SubItems[2].Text,
+                        FileNameInArchive = item.SubItems[3].Text,
+                    };
+                }
+                                    );
+
 
             options.Comment = String.Format("Encoding:{0} || Compression:{1} || Encrypt:{2} || ZIP64:{3}\r\nCreated at {4} || {5}\r\n",
                         options.Encoding,
@@ -326,8 +340,13 @@ namespace Ionic.Zip.WinFormsExample
                     zip1.Password = (options.Password != "") ? options.Password : null;
                     zip1.Encryption = options.Encryption;
 
-                    foreach (ListViewItem item in this.listView2.Items)
-                        zip1.AddItem(item.Text, item.SubItems[1].Text);
+                    foreach (ItemToAdd item in options.Entries)
+                    {
+                        var e = zip1.AddItem(item.LocalFileName, item.DirectoryInArchive);
+                        // use a different name in the archive if appropriate
+                        if (item.FileNameInArchive != null && item.FileNameInArchive != System.IO.Path.GetFileName(item.LocalFileName)) 
+                            e.FileName = item.FileNameInArchive;
+                    }
 
                     _totalEntriesToProcess = zip1.EntryFileNames.Count;
                     SetProgressBars();
@@ -347,7 +366,7 @@ namespace Ionic.Zip.WinFormsExample
             }
             catch (System.Exception exc1)
             {
-                MessageBox.Show(String.Format("Exception while zipping: {0}", exc1.StackTrace.ToString()));
+                MessageBox.Show(String.Format("Exception while zipping:\n{0}\n\n{1}", exc1.ToString(), exc1.StackTrace.ToString()));
                 btnCancel_Click(null, null);
             }
         }
@@ -1403,12 +1422,24 @@ namespace Ionic.Zip.WinFormsExample
                 foreach (var f in filePaths)
                 {
                     var item = new ListViewItem();
+
+                    // first subitem is the local filename  on disk
                     var subitem = new ListViewItem.ListViewSubItem();
                     subitem.Text = f;
                     item.SubItems.Add(subitem);
+
+                    // next subitem is the directory name to use in the archive
                     subitem = new ListViewItem.ListViewSubItem();
-                    subitem.Text = String.IsNullOrEmpty(_lastDirectory) ? this.tbDirectoryInArchive.Text : _lastDirectory;
+                    //subitem.Text = String.IsNullOrEmpty(_lastDirectory) ? this.tbDirectoryInArchive.Text : _lastDirectory;
+                    subitem.Text = String.IsNullOrEmpty(_lastDirectory)
+                        ? System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(f)) 
+                        : _lastDirectory;
                     item.SubItems.Add(subitem);
+
+                    // additional subitem (to be added): new filename in archive, if any
+                    subitem = new ListViewItem.ListViewSubItem();
+                    item.SubItems.Add(subitem);
+
                     this.listView2.Items.Add(item);
                 }
 
@@ -1465,15 +1496,22 @@ namespace Ionic.Zip.WinFormsExample
                 foreach (String f in files)
                 {
                     var item = new ListViewItem();
+                    // first subitem is the filename
                     var subitem = new ListViewItem.ListViewSubItem();
                     subitem.Text = f;
                     item.SubItems.Add(subitem);
+                    // second subitem is the directory name in the archive.
                     subitem = new ListViewItem.ListViewSubItem();
                     var dirInArchive = this.tbDirectoryInArchive.Text;
                     var subDir = System.IO.Path.GetDirectoryName(f.Replace(this.tbDirectoryToZip.Text, ""));
                     subDir = subDir.Substring(1);
                     subitem.Text = System.IO.Path.Combine(dirInArchive, subDir);
                     item.SubItems.Add(subitem);
+
+                    // third subitem is the filename in the archive, if ay
+                     subitem = new ListViewItem.ListViewSubItem();
+                    item.SubItems.Add(subitem);
+
                     this.listView2.Items.Add(item);
                 }
 
@@ -1512,7 +1550,7 @@ namespace Ionic.Zip.WinFormsExample
             if (_disableMasterChecking) return;
 
             // if we have a mixed state, then it happened programmatically
-            if (this.checkBox1.CheckState == CheckState.Indeterminate) return; 
+            if (this.checkBox1.CheckState == CheckState.Indeterminate) return;
 
             _disableListViewCheckedEvent = true;
             _disableMasterChecking = true;
@@ -1572,9 +1610,9 @@ namespace Ionic.Zip.WinFormsExample
 
             _disableMasterChecking = true;
             if (uniform)
-                this.checkBox1.CheckState = (this.listView2.Items[0].Checked)?CheckState.Checked: CheckState.Unchecked;
-            else            
-                this.checkBox1.CheckState = CheckState.Indeterminate;            
+                this.checkBox1.CheckState = (this.listView2.Items[0].Checked) ? CheckState.Checked : CheckState.Unchecked;
+            else
+                this.checkBox1.CheckState = CheckState.Indeterminate;
             _disableMasterChecking = false;
         }
 
@@ -1738,9 +1776,9 @@ namespace Ionic.Zip.WinFormsExample
     public class SaveWorkerOptions
     {
         public string ZipName;
-        public string Folder;
+        //public string Folder;
         public string Selection;
-        public String DirInArchive;
+        //public String DirInArchive;
         public string Encoding;
         public string Comment;
         public string Password;
@@ -1748,6 +1786,14 @@ namespace Ionic.Zip.WinFormsExample
         public Ionic.Zlib.CompressionLevel CompressionLevel;
         public Ionic.Zip.EncryptionAlgorithm Encryption;
         public Zip64Option Zip64;
+        public ItemToAdd[] Entries;
+    }
+
+    public class ItemToAdd
+    {
+        public string LocalFileName;
+        public string DirectoryInArchive;
+        public string FileNameInArchive;
     }
 
 
