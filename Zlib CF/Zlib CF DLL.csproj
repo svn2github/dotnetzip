@@ -62,6 +62,12 @@
     <Compile Include="..\Zlib\Deflate.cs">
       <Link>Deflate.cs</Link>
     </Compile>
+    <Compile Include="..\Zlib\DeflateStream.cs">
+      <Link>DeflateStream.cs</Link>
+    </Compile>
+    <Compile Include="..\Zlib\GZipStream.cs">
+      <Link>GZipStream.cs</Link>
+    </Compile>
     <Compile Include="..\Zlib\Inflate.cs">
       <Link>Inflate.cs</Link>
     </Compile>
