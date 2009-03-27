@@ -50,6 +50,8 @@ namespace Ionic.Zlib
     /// </summary>
     public static class ZlibConstants
     {
+
+#if NOTUSED
         /// <summary>
         /// No flush at all.
         /// </summary>
@@ -74,6 +76,9 @@ namespace Ionic.Zlib
         /// Finish?
         /// </summary>
         public const int Z_FINISH = 4;
+
+#endif
+
 
         /// <summary>
         /// The maximum number of window bits for the Deflate algorithm.
