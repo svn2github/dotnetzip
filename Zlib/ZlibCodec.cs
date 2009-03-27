@@ -113,9 +113,33 @@ namespace Ionic.Zlib
         internal long _Adler32;
 
 
+        /// <summary>
+        /// The compression level to use on the Codec
+        /// </summary>
         public CompressionLevel CompressLevel = CompressionLevel.LEVEL6_DEFAULT;
+
+        /// <summary>
+        /// The number of Window Bits to use.  
+        /// </summary>
+        /// <remarks>
+        /// This gauges the size of the sliding window, and hence the 
+        /// compression effectiveness as well as memory consumption. It's best to just leave this 
+        /// setting alone if you don't know what it is.  The maximum value is 15 bits, which implies
+        /// a 32k window.  
+        /// </remarks>
         public int WindowBits = ZlibConstants.WINDOW_BITS_DEFAULT;
 
+        /// <summary>
+        /// The compression strategy to use.
+        /// </summary>
+        /// <remarks>
+        /// The theory offered by ZLIB is that different strategies could potentially produce significant 
+        /// differences in compression behavior for different data sets.  Unfortunately I don't have any good recommendations
+        /// for how to set it differently.  When I tested changing the strategy I got minimally different compression 
+        /// performance. It's best to leave this property
+        /// alone if you don't have a good feel for it.  Or, you may want to produce a test harness that runs through
+        /// the different strategy options and evaluates them on different file types. If you do that, let me know your results.
+        /// </remarks>
         public CompressionStrategy Strategy = CompressionStrategy.DEFAULT;
 
 

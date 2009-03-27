@@ -69,35 +69,35 @@
             this.btnReadZipBrowse = new System.Windows.Forms.Button();
             this.tbZipToOpen = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.btnClearItemsToZip = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.comboZip64 = new System.Windows.Forms.ComboBox();
             this.comboFlavor = new System.Windows.Forms.ComboBox();
+            this.btnCreateZipBrowse = new System.Windows.Forms.Button();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.tbDirectoryInArchive = new System.Windows.Forms.TextBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.label14 = new System.Windows.Forms.Label();
             this.tbSelectionToZip = new System.Windows.Forms.TextBox();
             this.label12 = new System.Windows.Forms.Label();
-            this.btnCreateZipBrowse = new System.Windows.Forms.Button();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.btnClearItemsToZip = new System.Windows.Forms.Button();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             this.listView2 = new ListViewEx.ListViewEx();
             this.chCheckbox = new System.Windows.Forms.ColumnHeader();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.tabPage3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // tbDirectoryToZip
@@ -565,52 +565,36 @@
             this.tabPage2.Text = "Create";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // checkBox1
+            // groupBox2
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(12, 228);
-            this.checkBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(15, 14);
-            this.checkBox1.TabIndex = 102;
-            this.checkBox1.UseVisualStyleBackColor = true;
-            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged_1);
-            // 
-            // btnClearItemsToZip
-            // 
-            this.btnClearItemsToZip.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClearItemsToZip.Location = new System.Drawing.Point(454, 331);
-            this.btnClearItemsToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.btnClearItemsToZip.Name = "btnClearItemsToZip";
-            this.btnClearItemsToZip.Size = new System.Drawing.Size(102, 26);
-            this.btnClearItemsToZip.TabIndex = 101;
-            this.btnClearItemsToZip.Text = "Remove Checked";
-            this.btnClearItemsToZip.UseVisualStyleBackColor = true;
-            this.btnClearItemsToZip.Click += new System.EventHandler(this.btnClearItemsToZip_Click);
-            // 
-            // textBox1
-            // 
-            this.textBox1.AcceptsReturn = true;
-            this.textBox1.Location = new System.Drawing.Point(192, 333);
-            this.textBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(100, 20);
-            this.textBox1.TabIndex = 100;
-            this.textBox1.Visible = false;
-            this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
-            // 
-            // button1
-            // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(598, 63);
-            this.button1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(24, 20);
-            this.button1.TabIndex = 99;
-            this.button1.Text = "+";
-            this.toolTip1.SetToolTip(this.button1, "Add Selected files to Zip");
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.label2);
+            this.groupBox2.Controls.Add(this.tbZipToCreate);
+            this.groupBox2.Controls.Add(this.label4);
+            this.groupBox2.Controls.Add(this.comboEncoding);
+            this.groupBox2.Controls.Add(this.label5);
+            this.groupBox2.Controls.Add(this.tbComment);
+            this.groupBox2.Controls.Add(this.comboZip64);
+            this.groupBox2.Controls.Add(this.label3);
+            this.groupBox2.Controls.Add(this.comboFlavor);
+            this.groupBox2.Controls.Add(this.label6);
+            this.groupBox2.Controls.Add(this.btnCreateZipBrowse);
+            this.groupBox2.Controls.Add(this.label7);
+            this.groupBox2.Controls.Add(this.chkHidePassword);
+            this.groupBox2.Controls.Add(this.comboCompression);
+            this.groupBox2.Controls.Add(this.tbPassword);
+            this.groupBox2.Controls.Add(this.label8);
+            this.groupBox2.Controls.Add(this.label9);
+            this.groupBox2.Controls.Add(this.comboEncryption);
+            this.groupBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.groupBox2.Location = new System.Drawing.Point(6, 84);
+            this.groupBox2.Margin = new System.Windows.Forms.Padding(0);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.groupBox2.Size = new System.Drawing.Size(628, 136);
+            this.groupBox2.TabIndex = 104;
+            this.groupBox2.TabStop = false;
             // 
             // comboZip64
             // 
@@ -631,6 +615,39 @@
             this.comboFlavor.TabIndex = 96;
             this.comboFlavor.SelectedIndexChanged += new System.EventHandler(this.comboFlavor_SelectedIndexChanged);
             // 
+            // btnCreateZipBrowse
+            // 
+            this.btnCreateZipBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCreateZipBrowse.Location = new System.Drawing.Point(598, 10);
+            this.btnCreateZipBrowse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.btnCreateZipBrowse.Name = "btnCreateZipBrowse";
+            this.btnCreateZipBrowse.Size = new System.Drawing.Size(24, 20);
+            this.btnCreateZipBrowse.TabIndex = 21;
+            this.btnCreateZipBrowse.Text = "...";
+            this.toolTip1.SetToolTip(this.btnCreateZipBrowse, "browse for a file to save to");
+            this.btnCreateZipBrowse.UseVisualStyleBackColor = true;
+            this.btnCreateZipBrowse.Click += new System.EventHandler(this.btnCreateZipBrowse_Click);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.tbDirectoryToZip);
+            this.groupBox1.Controls.Add(this.label1);
+            this.groupBox1.Controls.Add(this.btnZipupDirBrowse);
+            this.groupBox1.Controls.Add(this.tbDirectoryInArchive);
+            this.groupBox1.Controls.Add(this.button1);
+            this.groupBox1.Controls.Add(this.label14);
+            this.groupBox1.Controls.Add(this.tbSelectionToZip);
+            this.groupBox1.Controls.Add(this.label12);
+            this.groupBox1.Location = new System.Drawing.Point(6, -2);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(0);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.groupBox1.Size = new System.Drawing.Size(628, 87);
+            this.groupBox1.TabIndex = 103;
+            this.groupBox1.TabStop = false;
+            // 
             // tbDirectoryInArchive
             // 
             this.tbDirectoryInArchive.AcceptsReturn = true;
@@ -643,6 +660,19 @@
             this.tbDirectoryInArchive.TabIndex = 14;
             this.toolTip1.SetToolTip(this.tbDirectoryInArchive, "Selection criteria.  eg, (name = *.* and size> 1000) etc.  Also use atime/mtime/c" +
                     "time and attributes. (HRSA)");
+            // 
+            // button1
+            // 
+            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button1.Location = new System.Drawing.Point(598, 63);
+            this.button1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(24, 20);
+            this.button1.TabIndex = 99;
+            this.button1.Text = "+";
+            this.toolTip1.SetToolTip(this.button1, "Add Selected files to Zip");
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // label14
             // 
@@ -678,106 +708,39 @@
             this.label12.TabIndex = 95;
             this.label12.Text = "selection:";
             // 
-            // btnCreateZipBrowse
+            // checkBox1
             // 
-            this.btnCreateZipBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCreateZipBrowse.Location = new System.Drawing.Point(598, 10);
-            this.btnCreateZipBrowse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.btnCreateZipBrowse.Name = "btnCreateZipBrowse";
-            this.btnCreateZipBrowse.Size = new System.Drawing.Size(24, 20);
-            this.btnCreateZipBrowse.TabIndex = 21;
-            this.btnCreateZipBrowse.Text = "...";
-            this.toolTip1.SetToolTip(this.btnCreateZipBrowse, "browse for a file to save to");
-            this.btnCreateZipBrowse.UseVisualStyleBackColor = true;
-            this.btnCreateZipBrowse.Click += new System.EventHandler(this.btnCreateZipBrowse_Click);
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Location = new System.Drawing.Point(12, 228);
+            this.checkBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(15, 14);
+            this.checkBox1.TabIndex = 102;
+            this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged_1);
             // 
-            // tabPage3
+            // btnClearItemsToZip
             // 
-            this.tabPage3.Controls.Add(this.richTextBox1);
-            this.tabPage3.Controls.Add(this.pictureBox1);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
-            this.tabPage3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.tabPage3.Size = new System.Drawing.Size(640, 422);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "About";
-            this.tabPage3.UseVisualStyleBackColor = true;
+            this.btnClearItemsToZip.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnClearItemsToZip.Location = new System.Drawing.Point(454, 331);
+            this.btnClearItemsToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.btnClearItemsToZip.Name = "btnClearItemsToZip";
+            this.btnClearItemsToZip.Size = new System.Drawing.Size(102, 26);
+            this.btnClearItemsToZip.TabIndex = 101;
+            this.btnClearItemsToZip.Text = "Remove Checked";
+            this.btnClearItemsToZip.UseVisualStyleBackColor = true;
+            this.btnClearItemsToZip.Click += new System.EventHandler(this.btnClearItemsToZip_Click);
             // 
-            // richTextBox1
+            // textBox1
             // 
-            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.richTextBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.richTextBox1.Location = new System.Drawing.Point(54, 20);
-            this.richTextBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(508, 312);
-            this.richTextBox1.TabIndex = 2;
-            this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
-            this.richTextBox1.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBox1_LinkClicked);
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = global::WinFormsExample.Properties.Resources.zippedFile;
-            this.pictureBox1.Location = new System.Drawing.Point(6, 20);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(42, 52);
-            this.pictureBox1.TabIndex = 1;
-            this.pictureBox1.TabStop = false;
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.tbDirectoryToZip);
-            this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Controls.Add(this.btnZipupDirBrowse);
-            this.groupBox1.Controls.Add(this.tbDirectoryInArchive);
-            this.groupBox1.Controls.Add(this.button1);
-            this.groupBox1.Controls.Add(this.label14);
-            this.groupBox1.Controls.Add(this.tbSelectionToZip);
-            this.groupBox1.Controls.Add(this.label12);
-            this.groupBox1.Location = new System.Drawing.Point(6, -2);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(0);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.groupBox1.Size = new System.Drawing.Size(628, 87);
-            this.groupBox1.TabIndex = 103;
-            this.groupBox1.TabStop = false;
-            // 
-            // groupBox2
-            // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox2.Controls.Add(this.label2);
-            this.groupBox2.Controls.Add(this.tbZipToCreate);
-            this.groupBox2.Controls.Add(this.label4);
-            this.groupBox2.Controls.Add(this.comboEncoding);
-            this.groupBox2.Controls.Add(this.label5);
-            this.groupBox2.Controls.Add(this.tbComment);
-            this.groupBox2.Controls.Add(this.comboZip64);
-            this.groupBox2.Controls.Add(this.label3);
-            this.groupBox2.Controls.Add(this.comboFlavor);
-            this.groupBox2.Controls.Add(this.label6);
-            this.groupBox2.Controls.Add(this.btnCreateZipBrowse);
-            this.groupBox2.Controls.Add(this.label7);
-            this.groupBox2.Controls.Add(this.chkHidePassword);
-            this.groupBox2.Controls.Add(this.comboCompression);
-            this.groupBox2.Controls.Add(this.tbPassword);
-            this.groupBox2.Controls.Add(this.label8);
-            this.groupBox2.Controls.Add(this.label9);
-            this.groupBox2.Controls.Add(this.comboEncryption);
-            this.groupBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox2.Location = new System.Drawing.Point(6, 84);
-            this.groupBox2.Margin = new System.Windows.Forms.Padding(0);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.groupBox2.Size = new System.Drawing.Size(628, 136);
-            this.groupBox2.TabIndex = 104;
-            this.groupBox2.TabStop = false;
+            this.textBox1.AcceptsReturn = true;
+            this.textBox1.Location = new System.Drawing.Point(192, 333);
+            this.textBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(100, 20);
+            this.textBox1.TabIndex = 100;
+            this.textBox1.Visible = false;
+            this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
             // 
             // listView2
             // 
@@ -825,6 +788,43 @@
             // 
             this.columnHeader3.Text = "File name in Archive";
             // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.richTextBox1);
+            this.tabPage3.Controls.Add(this.pictureBox1);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.tabPage3.Size = new System.Drawing.Size(640, 422);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "About";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // richTextBox1
+            // 
+            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.richTextBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.richTextBox1.Location = new System.Drawing.Point(54, 20);
+            this.richTextBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.Size = new System.Drawing.Size(508, 312);
+            this.richTextBox1.TabIndex = 2;
+            this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
+            this.richTextBox1.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBox1_LinkClicked);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::WinFormsExample.Properties.Resources.zippedFile;
+            this.pictureBox1.Location = new System.Drawing.Point(6, 20);
+            this.pictureBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(42, 52);
+            this.pictureBox1.TabIndex = 1;
+            this.pictureBox1.TabStop = false;
+            // 
             // Form1
             // 
             this.AllowDrop = true;
@@ -845,12 +845,12 @@
             this.tabPage1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
-            this.tabPage3.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
+            this.tabPage3.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }

@@ -218,9 +218,7 @@ namespace Ionic.Zip.WinFormsExample
             var options = new SaveWorkerOptions
             {
                 ZipName = this.tbZipToCreate.Text,
-                //Folder = this.tbDirectoryToZip.Text,
                 Selection = this.tbSelectionToZip.Text,
-                //DirInArchive = this.tbDirectoryInArchive.Text,
                 Encoding = "ibm437"
             };
 
@@ -344,7 +342,7 @@ namespace Ionic.Zip.WinFormsExample
                     {
                         var e = zip1.AddItem(item.LocalFileName, item.DirectoryInArchive);
                         // use a different name in the archive if appropriate
-                        if (item.FileNameInArchive != null && item.FileNameInArchive != System.IO.Path.GetFileName(item.LocalFileName)) 
+                        if (!String.IsNullOrEmpty(item.FileNameInArchive) && item.FileNameInArchive != System.IO.Path.GetFileName(item.LocalFileName)) 
                             e.FileName = item.FileNameInArchive;
                     }
 
@@ -629,6 +627,7 @@ namespace Ionic.Zip.WinFormsExample
             this.btnExtractDirBrowse.Enabled = true;
             this.btnZipupDirBrowse.Enabled = true;
             this.btnReadZipBrowse.Enabled = true;
+            this.btnClearItemsToZip.Enabled = true;
 
             this.progressBar1.Value = 0;
             this.progressBar2.Value = 0;
@@ -1018,6 +1017,7 @@ namespace Ionic.Zip.WinFormsExample
             this.btnZipUp.Enabled = false;
             this.btnZipupDirBrowse.Enabled = false;
             this.btnCreateZipBrowse.Enabled = false;
+            this.btnClearItemsToZip.Enabled = false;
             this.btnCancel.Enabled = true;
 
             // this for Extract
@@ -1486,6 +1486,7 @@ namespace Ionic.Zip.WinFormsExample
         private void button1_Click(object sender, EventArgs e)
         {
             //_disableMasterChecking = true;
+            int nAdded = 0;
             PauseUI(null);
             try
             {
@@ -1513,10 +1514,12 @@ namespace Ionic.Zip.WinFormsExample
                     item.SubItems.Add(subitem);
 
                     this.listView2.Items.Add(item);
+                    nAdded++;
                 }
 
                 this.listView2.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
                 this.listView2.EndUpdate();
+                this.lblStatus.Text = String.Format("Added {0} entries;  {1} total entries to save.", nAdded, this.listView2.Items.Count);
             }
             catch
             { }
@@ -1776,7 +1779,6 @@ namespace Ionic.Zip.WinFormsExample
     public class SaveWorkerOptions
     {
         public string ZipName;
-        //public string Folder;
         public string Selection;
         //public String DirInArchive;
         public string Encoding;

@@ -57,6 +57,9 @@
     <Compile Include="..\Zip Partial DLL\FileSelector.cs">
       <Link>FileSelector.cs</Link>
     </Compile>
+    <Compile Include="..\Zip Partial DLL\ParallelSequencedOutputStream.cs">
+      <Link>ParallelSequencedOutputStream.cs</Link>
+    </Compile>
     <Compile Include="..\Zip Partial DLL\Shared.cs">
       <Link>Shared.cs</Link>
     </Compile>
@@ -115,8 +118,5 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Ionic.pfx" />
   </ItemGroup>
 </Project>

@@ -115,9 +115,15 @@ namespace Ionic.Zlib
         /// </summary>
         public const int Z_BUF_ERROR = -5;
 
-        public const int WORKING_BUFFER_SIZE_DEFAULT =  1024; // 8192; // 0x8000;  // 16384; // 1024;
+        /// <summary>
+        /// The size of the working buffer used in the ZlibCodec class. Defaults to 8192 bytes.
+        /// </summary>
+        public const int WORKING_BUFFER_SIZE_DEFAULT = 8192; // 8192; // 0x8000;  // 16384; // 1024;
 
-	public const int WORKING_BUFFER_SIZE_MIN = 128;
+        /// <summary>
+        /// The minimum size of the working buffer used in the ZlibCodec class.  Currently it is 128 bytes.
+        /// </summary>
+        public const int WORKING_BUFFER_SIZE_MIN = 128;
     }
 
 }
