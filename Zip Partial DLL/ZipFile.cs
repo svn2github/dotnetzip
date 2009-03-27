@@ -5044,7 +5044,7 @@ namespace Ionic.Zip
         ///
         /// <para>
         /// Calling this method is equivalent to setting the <see cref="ExtractExistingFile"/>
-        /// property and then calling <see cref="ExtractExistingFiles(String)"/>.
+        /// property and then calling <see cref="ExtractAll(String)"/>.
         /// </para>
 	///
         /// <para>

@@ -62,12 +62,20 @@
   <Target Name="BeforeBuild">
     <MakeDir Directories="$(OutputPath)" />
   </Target>
-  <Target Name="Build" DependsOnTargets="BeforeBuild">
-    <Exec Command="echo This is an ilmerge project." />
-    <CreateItem Include="@(ProjectReference)" Condition="'%(ProjectReference.CopyLocal)'=='true'">
+  <Target Name="Compile">
+    <!-- Outputs="$(IntermediateOutputPath)$(TargetFileName)" -->
+    <!-- Outputs="$(TargetPath)" -->
+    <Message Text="Performing the Ilmerge." />
+    <!-- in this CreateItem stanza, we collect all the DLLs for the referenced projects -->
+    <CreateItem Include="@(_ResolvedProjectReferencePaths)">
       <Output TaskParameter="Include" ItemName="AssembliesToMerge" />
     </CreateItem>
-    <Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot;   /targetplatform:v2,&quot;C:\Program Files\Microsoft.NET\SDK\CompactFramework\v2.0\Debugger\BCL&quot;   /keyfile:..\Ionic.snk    /t:library  /xmldocs /out:bin\Debug\Ionic.Zip.CF.dll &quot;..\Zip CF Partial DLL\bin\Debug\Ionic.Zip.CF.Partial.dll&quot;  &quot;..\Zlib CF\bin\Debug\Ionic.Zlib.CF.dll&quot; " />
+    <Message Text="AssembliesToMerge= @(AssembliesToMerge -> '&quot;%(Fullpath)&quot;', ' ')" />
+    <!-- Message Text="TargetPath= $(TargetPath)" / -->
+    <Message Text="TargetFileName= $(TargetFileName)" />
+    <!-- produce the merged assembly - putting the output in the "IntermediateOutputPath" eg obj\Debug or obj\Release -->
+    <Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot;  /targetplatform:v2,&quot;C:\Program Files\Microsoft.NET\SDK\CompactFramework\v2.0\Debugger\BCL&quot;  /keyfile:..\Ionic.snk    /t:library  /xmldocs /out:&quot;$(IntermediateOutputPath)$(TargetFileName)&quot;  @(AssembliesToMerge -> '&quot;%(Fullpath)&quot;', ' ') " />
+<!--  Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot;   /targetplatform:v2,&quot;C:\Program Files\Microsoft.NET\SDK\CompactFramework\v2.0\Debugger\BCL&quot;   /keyfile:..\Ionic.snk    /t:library  /xmldocs /out:bin\Debug\Ionic.Zip.CF.dll &quot;..\Zip CF Partial DLL\bin\Debug\Ionic.Zip.CF.Partial.dll&quot;  &quot;..\Zlib CF\bin\Debug\Ionic.Zlib.CF.dll&quot; " / -->
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
