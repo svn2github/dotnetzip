@@ -171,19 +171,16 @@ namespace Ionic.Zip
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This method saves a self extracting archive, 
-        /// with a specified default extracting location.  Actually, the 
-        /// default extract directory applies only if the flavor is 
-        ///  <see cref="SelfExtractorFlavor.WinFormsApplication"/>.  
-        /// See the documentation for 
-        /// <see cref="SaveSelfExtractor(string , SelfExtractorFlavor)"/>
-        /// for more details.  
+        /// This method saves a self extracting archive, with a specified default extracting
+        /// location.  Actually, the default extract directory applies only if the flavor is <see
+        /// cref="SelfExtractorFlavor.WinFormsApplication"/>.  See the documentation for <see
+        /// cref="SaveSelfExtractor(string , SelfExtractorFlavor)"/> for more details.
         /// </para>
+	///
         /// <para>
-        /// The user who runs the SFX will have the opportunity to change the extract
-        /// directory before extracting. 
-        /// If at the time of extraction, the specified directory does not exist, 
-        /// the SFX will create the directory before extracting the files. 
+        /// The user who runs the SFX will have the opportunity to change the extract directory
+        /// before extracting.  If at the time of extraction, the specified directory does not
+        /// exist, the SFX will create the directory before extracting the files.
         /// </para>
         /// </remarks>
 	///
@@ -250,19 +247,20 @@ namespace Ionic.Zip
         /// </para>
         /// 
         /// <para>
-        /// There are a few temporary files created during the saving to a self-extracting zip. 
-        /// These files are created in the directory pointed to by 
-        /// <see cref="ZipFile.TempFileFolder"/>, which defaults to  <see cref="System.IO.Path.GetTempPath"/>.
-        /// These temporary files are removed upon successful completion of this method. 
+        /// There are a few temporary files created during the saving to a self-extracting zip.
+        /// These files are created in the directory pointed to by <see
+        /// cref="ZipFile.TempFileFolder"/>, which defaults to <see
+        /// cref="System.IO.Path.GetTempPath"/>.  These temporary files are removed upon
+        /// successful completion of this method.
         /// </para>
         ///
         /// <para>
-        /// When a user runs the WinForms SFX, the user's personal directory 
-        /// (<see cref="Environment.SpecialFolder.Personal"/>) 
-        /// will be used as the default extract location.
-        /// The user who runs the SFX will have the opportunity to change the extract
-        /// directory before extracting. When the user runs the Command-Line SFX, the user must explicitly specify
-        /// the directory to which to extract. 
+        /// When a user runs the WinForms SFX, the user's personal directory (<see
+        /// cref="Environment.SpecialFolder.Personal"/>) will be used as the default extract
+        /// location.  The user who runs the SFX will have the opportunity to change the extract
+        /// directory before extracting. When the user runs the Command-Line SFX, the user must
+        /// explicitly specify the directory to which to extract.  The .NET Framework 2.0 is
+        /// required on the computer when the self-extracting archive is run.
         /// </para>
         ///
         /// <para>
