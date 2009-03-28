@@ -18,25 +18,39 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 <body>
 <h1>DotNetZip can be used from COM Environments</h1>
 
-<p>As of v1.8.2.3, you can use DotNetZip from COM environments, via an IDispatch (late bound) interface.
+<p>As of v1.8.2.3, you can use DotNetZip from COM environments, via an
+IDispatch (late bound) interface. This means you can call into the DotNetZip
+library (the Ionic.Zip.dll assembly) from programming environments like PHP,
+Perl, Javascript, and VBScript, among others.  </p>
+
+<p> Doing this requires you to install the Ionic.Zip.dll (or
+Ionic.Zip.Reduced.dll) for COM use on the computer. There are 2 distinct
+steps: </p>
+
+<ol>
+<li>Install into the GAC: <span style="font-family: Courier;">gacutil -i Ionic.Zip.dll</span></li>
+<li>Register for COM use: <span style="font-family: Courier;">regasm Ionic.Zip.dll</span></li>
+</ol>
+
+<p>You will need to be local administrator in order to perform these steps on
+a computer. You need to perform those steps just once.  In the future I'll
+update the DotNetZip installer tool so that this happens automatically.  </p>
+
+<p>Via the COM exposure, applications written in COM-capable environments
+like VBScript, Javascript, PHP, Perl, and others, can create instances of the
+ZipFile class, add entries, and save archives, as any .NET application could.
+Most of DotNetZip's advanced features are available to these COM environments,
+including ZIP64 support, self-extracting archives, password-protected zip
+files, AES Encryption, and Unicode support.
 </p>
 
 <p>
-Doing this requires you to install the Ionic.Zip.dll (or Ionic.Zip.Reduced.dll) for COM use, with 2 distinct steps: 
+Some of the advanced features of DotNetZip are not available through COM,
+including eventing, and streaming.
 </p>
 
-<ol>
-<li>Install into the GAC: <br/><span style="font-family: Courier;">gacutil -i Ionic.Zip.dll</span></li>
-<li>Register for COM use: <br/><span style="font-family: Courier;">regasm Ionic.Zip.dll</span></li>
-</ol>
-
-<p>You will need to be local administrator in order to perform these steps on a computer. 
-In the future I'll update the DotNetZip installer tool so that this happens automatically. 
-</p>
-
-<p>Via the COM exposure, applications written in COM-capable environments like Javascript, PHP, Perl, and others, can 
-create instances of the ZipFile class, add entries, and Save archives, as any .NET application could. 
-Some of the more advanced features are not available through COM, including eventing, and streaming.
+<p>
+Some examples follow.
 </p>
 
 <hr>
@@ -80,7 +94,6 @@ then downloads it to the requesting client.  The Zip archive will use
 </p>
 
 
-
 <pre lang="Javascript" numberLines="true" outlining="true"
   title="Create a Zip">
 var filename = "C:\\temp\\ZipFile-created-from-javascript-" + generateTimestamp() + ".zip";
@@ -88,34 +101,75 @@ var filename = "C:\\temp\\ZipFile-created-from-javascript-" + generateTimestamp(
 try 
 {
     WScript.echo("Instantiating a ZipFile object...");
-    var zip2 = new ActiveXObject("Ionic.Zip.ZipFile");
+    var zip = new ActiveXObject("Ionic.Zip.ZipFile");
 
     WScript.echo("setting the encryption...");
-    zip2.Encryption = 3;
+    zip.Encryption = 3;
 
     WScript.echo("setting the password...");
-    zip2.Password = "This is the Password.";
+    zip.Password = "This is the Password.";
 
     WScript.echo("adding a selection of files...");
-    zip2.AddSelectedFiles("*.js");
-    zip2.AddSelectedFiles("*.vbs");
+    zip.AddSelectedFiles("*.js");
+    zip.AddSelectedFiles("*.vbs");
 
     WScript.echo("setting the save name...");
-    zip2.Name = filename;
+    zip.Name = filename;
 
     WScript.echo("Saving...");
-    zip2.Save();
+    zip.Save();
 
     WScript.echo("Disposing...");
-    zip2.Dispose();
+    zip.Dispose();
 
     WScript.echo("Done.");
 }
 catch (e2)
 {
-    print(e2.number + ": " + e2.name);
-    print(e2.message);
+    WScript.echo(e2.number + ": " + e2.name);
+    WScript.echo(e2.message);
 }
+</pre>
+
+
+
+<h2>Using DotNetZip in VBScript</h2>
+
+<p> This example dynamically creates a zipfile, using AES 256-bit encryption. 
+</p>
+
+
+<pre lang="VBScript" numberLines="true" outlining="true"
+  title="Create a Zip">
+
+  dim filename 
+  filename = "C:\temp\ZipFile-created-from-VBScript.zip"
+
+  WScript.echo("Instantiating a ZipFile object...")
+  dim zip 
+  set zip = CreateObject("Ionic.Zip.ZipFile")
+
+  WScript.echo("using AES256 encryption...")
+  zip.Encryption = 3
+
+  WScript.echo("setting the password...")
+  zip.Password = "This is the Password."
+
+  WScript.echo("adding a selection of files...")
+  zip.AddSelectedFiles("*.js")
+  zip.AddSelectedFiles("*.vbs")
+
+  WScript.echo("setting the save name...")
+  zip.Name = filename
+
+  WScript.echo("Saving...")
+  zip.Save()
+
+  WScript.echo("Disposing...")
+  zip.Dispose()
+
+  WScript.echo("Done.")
+
 </pre>
 
 
