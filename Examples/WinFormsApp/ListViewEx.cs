@@ -17,7 +17,6 @@ using System.Runtime.InteropServices;
 
 namespace ListViewEx
 {
-
 	///	<summary>
 	///	Inherited ListView to allow in-place editing of subitems
 	///	</summary>

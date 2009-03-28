@@ -82,7 +82,7 @@
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.btnClearItemsToZip = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.listView2 = new ListViewEx.ListViewEx();
+            this.listView2 = new global::ListViewEx.ListViewEx();
             this.chCheckbox = new System.Windows.Forms.ColumnHeader();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
