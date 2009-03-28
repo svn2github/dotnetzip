@@ -39,6 +39,7 @@ function ZipUp-Files ( $directory )
 	$o.Name -ne ".tfs-ignore" -and
 	(!$o.Name.EndsWith("~")) -and
 	(!$o.Name.EndsWith("#")) -and
+	(!$o.Name.EndsWith(".vsp")) -and
 	(!$o.Name.EndsWith(".cache")) 
 	# -and (!$o.Name.EndsWith(".zip"))  # was eliminating test cases
         )
