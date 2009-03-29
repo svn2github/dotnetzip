@@ -50,9 +50,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip CF Full DLL", "Zip CF F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip Reduced", "Zip Reduced\Zip Reduced.csproj", "{49A128D3-C3F2-46B1-8F7A-EECD209EA860}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "RuntimeSetup", "RuntimeSetup\RuntimeSetup.vdproj", "{48F1D606-29B3-4114-8BC4-246E7242EA68}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 19
+		SccNumberOfProjects = 20
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs04.codeplex.com/
 		SccLocalPath0 = .
@@ -118,6 +120,9 @@ Global
 		SccProjectTopLevelParentUniqueName18 = DotNetZip.sln
 		SccProjectName18 = Examples/UnZip
 		SccLocalPath18 = Examples\\UnZip
+		SccProjectUniqueName19 = RuntimeSetup\\RuntimeSetup.vdproj
+		SccProjectName19 = RuntimeSetup
+		SccLocalPath19 = RuntimeSetup
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = DotNetZip.vsmdi
@@ -199,6 +204,8 @@ Global
 		{49A128D3-C3F2-46B1-8F7A-EECD209EA860}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49A128D3-C3F2-46B1-8F7A-EECD209EA860}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49A128D3-C3F2-46B1-8F7A-EECD209EA860}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48F1D606-29B3-4114-8BC4-246E7242EA68}.Debug|Any CPU.ActiveCfg = Debug
+		{48F1D606-29B3-4114-8BC4-246E7242EA68}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
