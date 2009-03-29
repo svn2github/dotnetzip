@@ -5,6 +5,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 //using Ionic.Zip;
 using Ionic.Zip.Tests.Utilities;
 
+// disable compile-time warning: "XXX is obsolete: 'YYY'" 
+#pragma warning disable 618
+
+
 namespace Ionic.Zip.Tests.Error
 {
     /// <summary>
