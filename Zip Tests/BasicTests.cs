@@ -881,7 +881,7 @@ namespace Ionic.Zip.Tests.Basic
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.AddDirectory(dirToZip);
-                zip1.Comment = "This is a Comment On the Archive";
+                zip1.Comment = "This is a Comment On the Archive (AM/PM)";
                 zip1.Save(fileStream);
             }
 
