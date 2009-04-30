@@ -233,12 +233,24 @@ namespace Ionic.Zip.Tests.Basic
         }
 
 
+        private void DumpZipFile(ZipFile z)
+        {
+            TestContext.WriteLine("found {0} entries", z.Entries.Count);
+            TestContext.WriteLine("RequiresZip64: '{0}'", z.RequiresZip64.HasValue ? z.RequiresZip64.Value.ToString() : "not set");
+            TestContext.WriteLine("listing the entries in {0}...", String.IsNullOrEmpty(z.Name) ? "(zipfile)" : z.Name);
+            foreach (var e in z)
+            {
+                TestContext.WriteLine("{0}", e.FileName);
+            }
+        }
+
+
 
         [TestMethod]
-        public void CreateZip_NoEntries()
+        public void CreateZip_ZeroEntries()
         {
             // select the name of the zip file
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_Basic_NoEntries.zip");
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "CreateZip_ZeroEntries.zip");
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
             // Create the zip archive
@@ -246,6 +258,18 @@ namespace Ionic.Zip.Tests.Basic
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.Save(ZipFileToCreate);
+                DumpZipFile(zip1);
+            }
+
+            // workitem 7685
+            using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
+            {
+                DumpZipFile(zip1);
+            }
+
+            using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
+            {
+                DumpZipFile(zip1);
             }
 
             // Verify the number of files in the zip
@@ -891,7 +915,6 @@ namespace Ionic.Zip.Tests.Basic
             Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), filesAdded,
                 "The Zip file has the wrong number of entries.");
         }
-
 
 
         [TestMethod]
