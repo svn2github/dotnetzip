@@ -377,6 +377,10 @@ namespace Ionic.Zip
         public void Adjust(Int64 delta)
         {
             _bytesWritten -= delta;
+            if (_bytesWritten < 0)
+                throw new InvalidOperationException();
+	    if (_s as CountingStream != null)
+		((CountingStream)_s).Adjust(delta);
         }
 
         public override int Read(byte[] buffer, int offset, int count)
