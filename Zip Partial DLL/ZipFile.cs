@@ -53,7 +53,6 @@ namespace Ionic.Zip
 
         #region public properties
 
-
         /// <summary>
         /// Size of the IO Buffer used while saving.
         /// </summary>
@@ -1743,14 +1742,15 @@ namespace Ionic.Zip
             _StatusMessageTextWriter = statusMessageWriter;
             _contentsChanged = true;
             CompressionLevel = Ionic.Zlib.CompressionLevel.DEFAULT;
-            BufferSize = 8192;  // Default
+            BufferSize = 8192;  // Default 
+            // workitem 7685
+            _entries = new System.Collections.Generic.List<ZipEntry>();
             if (System.IO.File.Exists(_name))
             {
                 ReadIntoInstance(this);
                 this._fileAlreadyExists = true;
             }
-            else
-                _entries = new System.Collections.Generic.List<ZipEntry>();
+
             return;
         }
         #endregion
@@ -4708,14 +4708,9 @@ namespace Ionic.Zip
 
         private static void ReadCentralDirectory(ZipFile zf)
         {
-            //zf._direntries = new System.Collections.Generic.List<ZipDirEntry>();
-            zf._entries = new System.Collections.Generic.List<ZipEntry>();
-
             ZipEntry de;
             while ((de = ZipEntry.ReadDirEntry(zf.ReadStream, zf.ProvisionalAlternateEncoding)) != null)
             {
-                //zf._direntries.Add(de);
-
                 de.ResetDirEntry();
                 de._zipfile = zf;
                 de._archiveStream = zf.ReadStream;
