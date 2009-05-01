@@ -249,11 +249,13 @@ namespace SmartDeviceProject3
                 {
                     System.IO.Directory.Delete(_selectedpath, true);
                 }
-                // re-populate the treeview with the extracted files:
+
+                // refresh the treeview 
                 AddChildren(tvFolders.SelectedNode.Parent);
             }
-            catch 
+            catch (Exception ex)
             {
+                MessageBox.Show("Whoops! " + ex);
             }
         }
 
