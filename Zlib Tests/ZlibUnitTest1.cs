@@ -232,7 +232,6 @@ namespace Ionic.Zlib.Tests
         [TestMethod]
         public void Zlib_BasicDictionaryDeflateInflate()
         {
-
             int rc;
             int comprLen = 40000;
             int uncomprLen = comprLen;
@@ -730,8 +729,113 @@ namespace Ionic.Zlib.Tests
         }
 
 
-        private const int WORKING_BUFFER_SIZE = 4000;
+        [TestMethod]
+        public void Zlib_GZipStream_FileName_And_Comments()
+        {
+            // select the name of the zip file
+            string FileToCompress = System.IO.Path.Combine(TopLevelDir, "Zlib_GZipStream.dat");
+            Assert.IsFalse(System.IO.File.Exists(FileToCompress), "The temporary zip file '{0}' already exists.", FileToCompress);
+            byte[] working = new byte[WORKING_BUFFER_SIZE];
+            int n = -1;
 
+            int sz = _rnd.Next(21000) + 15000;
+            TestContext.WriteLine("  Creating file: {0} sz({1})", FileToCompress, sz);
+            CreateAndFillFileText(FileToCompress, sz);
+
+            System.IO.FileInfo fi1 = new System.IO.FileInfo(FileToCompress);
+            int crc1 = DoCrc(FileToCompress);
+
+	    // four trials, all combos of FileName and Comment null or not null.
+            for (int k = 0; k < 4; k++)
+            {
+                string CompressedFile = String.Format("{0}-{1}.compressed", FileToCompress, k);
+
+                using (Stream input = File.OpenRead(FileToCompress))
+                {
+                    using (FileStream raw = new FileStream(CompressedFile, FileMode.Create))
+                    {
+                        using (GZipStream compressor =
+                               new GZipStream(raw, CompressionMode.Compress, CompressionLevel.BEST_COMPRESSION, true))
+                        {
+			    // FileName is optional metadata in the GZip bytestream
+                            if (k % 2 == 1)
+                                compressor.FileName = FileToCompress;
+
+			    // Comment is optional metadata in the GZip bytestream
+                            if (k > 2)
+                                compressor.Comment = "Compressing: " + FileToCompress;
+
+                            byte[] buffer = new byte[1024];
+                            n = -1;
+                            while (n != 0)
+                            {
+                                if (n > 0)
+                                    compressor.Write(buffer, 0, n);
+
+                                n = input.Read(buffer, 0, buffer.Length);
+                            }
+                        }
+                    }
+                }
+
+                System.IO.FileInfo fi2 = new System.IO.FileInfo(CompressedFile);
+
+                Assert.IsTrue(fi1.Length > fi2.Length, String.Format("Compressed File is not smaller, trial {0} ({1}!>{2})", k, fi1.Length, fi2.Length));
+
+
+		// decompress twice:
+		// once with System.IO.Compression.GZipStream and once with Ionic.Zlib.GZipStream
+                for (int j = 0; j < 2; j++)
+                {
+                    using (var input = System.IO.File.OpenRead(CompressedFile))
+                    {
+
+                        Stream decompressor = null;
+                        try
+                        {
+                            switch (j)
+                            {
+                                case 0:
+                                    decompressor = new Ionic.Zlib.GZipStream(input, CompressionMode.Decompress, true);
+                                    break;
+                                case 1:
+                                    decompressor = new System.IO.Compression.GZipStream(input, System.IO.Compression.CompressionMode.Decompress, true);
+                                    break;
+                            }
+
+                            string DecompressedFile =
+                                                        String.Format("{0}.{1}.decompressed", CompressedFile, (j == 0) ? "Ionic" : "BCL");
+
+                            TestContext.WriteLine("........{0} ...", System.IO.Path.GetFileName(DecompressedFile));
+
+                            using (var s2 = System.IO.File.Create(DecompressedFile))
+                            {
+                                n = -1;
+                                while (n != 0)
+                                {
+                                    n = decompressor.Read(working, 0, working.Length);
+                                    if (n > 0)
+                                        s2.Write(working, 0, n);
+                                }
+                            }
+
+                            int crc2 = DoCrc(DecompressedFile);
+                            Assert.AreEqual<Int32>(crc1, crc2);
+
+                        }
+                        finally
+                        {
+                            if (decompressor != null)
+                                decompressor.Dispose();
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+        private const int WORKING_BUFFER_SIZE = 4000;
 
         [TestMethod]
         public void Zlib_Streams()
@@ -764,106 +868,130 @@ namespace Ionic.Zlib.Tests
                         // compress with Ionic and System.IO.Compression
                         for (int i = 0; i < 2; i++)
                         {
-                            string CompressedFile = String.Format("{0}.{1}.{2}.compressed", FileToCompress,
+                            string CompressedFileRoot = String.Format("{0}.{1}.{2}.compressed", FileToCompress,
                                               (k == 0) ? "GZIP" : "DEFLATE",
                                               (i == 0) ? "Ionic" : "BCL");
 
-                            using (var input = System.IO.File.OpenRead(FileToCompress))
+                            int x = k + i * 2;
+                            int z = (x == 0) ? 4 : 1;
+                            for (int h = 0; h < z; h++)
                             {
-                                using (var raw = System.IO.File.Create(CompressedFile))
+                                string CompressedFile = (x == 0)
+                                    ? CompressedFileRoot + ".trial" + h
+                                    : CompressedFileRoot;
+
+                                using (var input = System.IO.File.OpenRead(FileToCompress))
                                 {
-                                    Stream compressor = null;
-                                    try
+                                    using (var raw = System.IO.File.Create(CompressedFile))
                                     {
-                                        int x = k + i * 2;
-                                        switch (x)
+                                        Stream compressor = null;
+                                        try
                                         {
-                                            case 0: // k == 0, i == 0
-                                                compressor = new Ionic.Zlib.GZipStream(raw, CompressionMode.Compress, true);
-                                                break;
-                                            case 1: // k == 1, i == 0
-                                                compressor = new Ionic.Zlib.DeflateStream(raw, CompressionMode.Compress, true);
-                                                break;
-                                            case 2: // k == 0, i == 1
-                                                compressor = new System.IO.Compression.GZipStream(raw, System.IO.Compression.CompressionMode.Compress, true);
-                                                break;
-                                            case 3: // k == 1, i == 1
-                                                compressor = new System.IO.Compression.DeflateStream(raw, System.IO.Compression.CompressionMode.Compress, true);
-                                                break;
-                                        }
-                                        //TestContext.WriteLine("Compress with: {0} ..", compressor.GetType().FullName);
-
-                                        TestContext.WriteLine("........{0} ...", System.IO.Path.GetFileName(CompressedFile));
-
-                                        n = -1;
-                                        while (n != 0)
-                                        {
-                                            if (n > 0)
+                                            switch (x)
                                             {
-                                                compressor.Write(working, 0, n);
+                                                case 0: // k == 0, i == 0
+                                                    compressor = new Ionic.Zlib.GZipStream(raw, CompressionMode.Compress, true);
+                                                    break;
+                                                case 1: // k == 1, i == 0
+                                                    compressor = new Ionic.Zlib.DeflateStream(raw, CompressionMode.Compress, true);
+                                                    break;
+                                                case 2: // k == 0, i == 1
+                                                    compressor = new System.IO.Compression.GZipStream(raw, System.IO.Compression.CompressionMode.Compress, true);
+                                                    break;
+                                                case 3: // k == 1, i == 1
+                                                    compressor = new System.IO.Compression.DeflateStream(raw, System.IO.Compression.CompressionMode.Compress, true);
+                                                    break;
                                             }
-                                            n = input.Read(working, 0, working.Length);
-                                        }
+                                            //TestContext.WriteLine("Compress with: {0} ..", compressor.GetType().FullName);
 
-                                    }
-                                    finally
-                                    {
-                                        if (compressor != null)
-                                            compressor.Dispose();
-                                    }
-                                }
-                            }
+                                            TestContext.WriteLine("........{0} ...", System.IO.Path.GetFileName(CompressedFile));
 
-                            // now, decompress with Ionic and System.IO.Compression
-                            for (int j = 0; j < 2; j++)
-                            {
-                                using (var input = System.IO.File.OpenRead(CompressedFile))
-                                {
-                                    Stream decompressor = null;
-                                    try
-                                    {
-                                        int x = k + j * 2;
-                                        switch (x)
-                                        {
-                                            case 0: // k == 0, j == 0
-                                                decompressor = new Ionic.Zlib.GZipStream(input, CompressionMode.Decompress, true);
-                                                break;
-                                            case 1: // k == 1, j == 0
-                                                decompressor = new Ionic.Zlib.DeflateStream(input, CompressionMode.Decompress, true);
-                                                break;
-                                            case 2: // k == 0, j == 1
-                                                decompressor = new System.IO.Compression.GZipStream(input, System.IO.Compression.CompressionMode.Decompress, true);
-                                                break;
-                                            case 3: // k == 1, j == 1
-                                                decompressor = new System.IO.Compression.DeflateStream(input, System.IO.Compression.CompressionMode.Decompress, true);
-                                                break;
-                                        }
+                                            if (x == 0)
+                                            {
+                                                if (h != 0)
+                                                {
+                                                    Ionic.Zlib.GZipStream gzip = compressor as Ionic.Zlib.GZipStream;
 
-                                        //TestContext.WriteLine("Decompress: {0} ...", decompressor.GetType().FullName);
-                                        string DecompressedFile =
-                                            String.Format("{0}.{1}.decompressed", CompressedFile, (j == 0) ? "Ionic" : "BCL");
+                                                    if (h % 2 == 1)
+                                                        gzip.FileName = FileToCompress;
 
-                                        TestContext.WriteLine("........{0} ...", System.IO.Path.GetFileName(DecompressedFile));
+                                                    if (h > 2)
+                                                        gzip.Comment = "Compressing: " + FileToCompress;
 
-                                        using (var s2 = System.IO.File.Create(DecompressedFile))
-                                        {
+                                                }
+                                            }
+
                                             n = -1;
                                             while (n != 0)
                                             {
-                                                n = decompressor.Read(working, 0, working.Length);
                                                 if (n > 0)
-                                                    s2.Write(working, 0, n);
+                                                {
+                                                    compressor.Write(working, 0, n);
+                                                }
+                                                n = input.Read(working, 0, working.Length);
                                             }
+
                                         }
-
-                                        int crc2 = DoCrc(DecompressedFile);
-                                        Assert.AreEqual<Int32>(crc1, crc2);
-
+                                        finally
+                                        {
+                                            if (compressor != null)
+                                                compressor.Dispose();
+                                        }
                                     }
-                                    finally
+                                }
+
+                                // now, decompress with Ionic and System.IO.Compression
+                                //for (int j = 0; j < 2; j++)
+                                for (int j = 1; j >= 0; j--)
+                                {
+                                    using (var input = System.IO.File.OpenRead(CompressedFile))
                                     {
-                                        if (decompressor != null)
-                                            decompressor.Dispose();
+                                        Stream decompressor = null;
+                                        try
+                                        {
+                                            int w = k + j * 2;
+                                            switch (w)
+                                            {
+                                                case 0: // k == 0, j == 0
+                                                    decompressor = new Ionic.Zlib.GZipStream(input, CompressionMode.Decompress, true);
+                                                    break;
+                                                case 1: // k == 1, j == 0
+                                                    decompressor = new Ionic.Zlib.DeflateStream(input, CompressionMode.Decompress, true);
+                                                    break;
+                                                case 2: // k == 0, j == 1
+                                                    decompressor = new System.IO.Compression.GZipStream(input, System.IO.Compression.CompressionMode.Decompress, true);
+                                                    break;
+                                                case 3: // k == 1, j == 1
+                                                    decompressor = new System.IO.Compression.DeflateStream(input, System.IO.Compression.CompressionMode.Decompress, true);
+                                                    break;
+                                            }
+
+                                            //TestContext.WriteLine("Decompress: {0} ...", decompressor.GetType().FullName);
+                                            string DecompressedFile =
+                                                String.Format("{0}.{1}.decompressed", CompressedFile, (j == 0) ? "Ionic" : "BCL");
+
+                                            TestContext.WriteLine("........{0} ...", System.IO.Path.GetFileName(DecompressedFile));
+
+                                            using (var s2 = System.IO.File.Create(DecompressedFile))
+                                            {
+                                                n = -1;
+                                                while (n != 0)
+                                                {
+                                                    n = decompressor.Read(working, 0, working.Length);
+                                                    if (n > 0)
+                                                        s2.Write(working, 0, n);
+                                                }
+                                            }
+
+                                            int crc2 = DoCrc(DecompressedFile);
+                                            Assert.AreEqual<Int32>(crc1, crc2);
+
+                                        }
+                                        finally
+                                        {
+                                            if (decompressor != null)
+                                                decompressor.Dispose();
+                                        }
                                     }
                                 }
                             }
