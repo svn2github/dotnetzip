@@ -2371,10 +2371,15 @@ namespace Ionic.Zip
             if (preserveDirHierarchy)
             {
                 foreach (var f in fileNames)
+		{
                     if (directoryPathInArchive != null)
-                        this.AddFile(f, Path.Combine(directoryPathInArchive, Path.GetDirectoryName(f)));
+		    {
+			string s = SharedUtilities.NormalizePath(Path.Combine(directoryPathInArchive, Path.GetDirectoryName(f)));
+                        this.AddFile(f, s);
+		    }
                     else
                         this.AddFile(f, null);
+		}
             }
             else
             {
@@ -4761,8 +4766,10 @@ namespace Ionic.Zip
             if (zf.Verbose && !String.IsNullOrEmpty(zf.Comment))
                 zf.StatusMessageTextWriter.WriteLine("Zip file Comment: {0}", zf.Comment);
 
-            // when finished slurping in the zip, close the read stream
-            //zf.ReadStream.Close();
+	    // We keep the read stream open after reading. 
+
+	    if (zf.Verbose)
+		zf.StatusMessageTextWriter.WriteLine("read in {0} entries.", zf._entries.Count);
 
             zf.OnReadCompleted();
         }

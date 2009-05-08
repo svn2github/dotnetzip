@@ -53,6 +53,24 @@ namespace Ionic.Zip
         }
 #endif
 
+	internal static string NormalizePath(string path)
+	{
+	    if (path.StartsWith(".\\")) path = path.Substring(2);
+	    path= path.Replace("\\.\\", "\\");
+	    var re = new System.Text.RegularExpressions.Regex(@"^(.*\\)?([^\\\.]+\\\.\.\\)(.+)$");
+	    path = re.Replace(path, "$1$3");
+	    return path;
+	}
+
+	internal static string NormalizeFwdSlashPath(string path)
+	{
+	    if (path.StartsWith("./")) path = path.Substring(2);
+	    path= path.Replace("/./", "/");
+	    var re = new System.Text.RegularExpressions.Regex(@"^(.*/)?([^/.]+/../)(.+)$");
+	    path = re.Replace(path, "$1$3");
+	    return path;
+	}
+
         /// <summary>
         /// Utility routine for transforming path names. 
         /// </summary>
