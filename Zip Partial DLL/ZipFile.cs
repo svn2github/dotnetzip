@@ -213,7 +213,7 @@ namespace Ionic.Zip
 #endif
 
         /// <summary>
-        /// Indicates whether verbose output is sent to the StatusMessageWriter during
+        /// Indicates whether verbose output is sent to the StatusMessageTextWriter during
         /// <c>AddXxx()</c> and <c>ReadXxx()</c> operations.
         /// </summary>
         ///
@@ -221,7 +221,7 @@ namespace Ionic.Zip
         /// This is a synthetic property.  It returns true if the <see
         /// cref="StatusMessageTextWriter"/> is non-null.
         /// </remarks>
-        private bool Verbose
+        internal bool Verbose
         {
             get { return (_StatusMessageTextWriter != null); }
             //set { _Verbose = value; }
@@ -2836,7 +2836,8 @@ namespace Ionic.Zip
         /// </summary>
         ///
         /// <remarks>
-        /// No file need exist or is created in the filesystem.
+        /// No file need exist or is created in the filesystem. The string is encoded using the default 
+	/// text encoding. 
         /// </remarks>
         ///
         /// <param name="content">The content of the file, should it be extracted from the zip.</param>
@@ -3277,7 +3278,7 @@ namespace Ionic.Zip
                 // check if modified, before saving. 
                 if (!_contentsChanged) return;
 
-                if (Verbose) StatusMessageTextWriter.WriteLine("Saving....");
+                if (Verbose) StatusMessageTextWriter.WriteLine("saving....");
 
                 // validate the number of entries
                 if (_entries.Count >= 0xFFFF && _zip64 == Zip64Option.Never)
@@ -4194,6 +4195,8 @@ namespace Ionic.Zip
             if (readProgress != null)
                 zf.ReadProgress = readProgress;
 
+            if (zf.Verbose) zf._StatusMessageTextWriter.WriteLine("reading from {0}...", zipFileName);
+
             try
             {
                 ReadIntoInstance(zf);
@@ -4486,6 +4489,8 @@ namespace Ionic.Zip
             zf._StatusMessageTextWriter = statusMessageWriter;
             zf._readstream = zipStream;
             zf._ReadStreamIsOurs = false;
+            if (zf.Verbose) zf._StatusMessageTextWriter.WriteLine("reading from stream...");
+
             ReadIntoInstance(zf);
             return zf;
         }
@@ -4585,6 +4590,8 @@ namespace Ionic.Zip
             zf._provisionalAlternateEncoding = encoding;
             zf._readstream = new System.IO.MemoryStream(buffer);
             zf._ReadStreamIsOurs = true;
+            if (zf.Verbose) zf._StatusMessageTextWriter.WriteLine("reading from byte[]...");
+
             ReadIntoInstance(zf);
             return zf;
         }
@@ -4744,7 +4751,7 @@ namespace Ionic.Zip
                 zf.OnReadEntry(true, null);
 
                 if (zf.Verbose)
-                    zf.StatusMessageTextWriter.WriteLine("  {0}", de.FileName);
+                    zf.StatusMessageTextWriter.WriteLine("entry {0}", de.FileName);
 
                 zf._entries.Add(de);
             }

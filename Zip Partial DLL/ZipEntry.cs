@@ -2475,6 +2475,7 @@ namespace Ionic.Zip
 
                 if (ValidateOutput(baseDir, outstream, out TargetFile))
                 {
+		    if (_zipfile.Verbose) _zipfile.StatusMessageTextWriter.WriteLine("extract dir {0}...", TargetFile);
                     // if true, then the entry was a directory and has been created.
                     // We need to fire the Extract Event.
                     OnAfterExtract(baseDir);
@@ -2489,6 +2490,7 @@ namespace Ionic.Zip
                 // set up the output stream
                 if (TargetFile != null)
                 {
+		    if (_zipfile.Verbose) _zipfile.StatusMessageTextWriter.WriteLine("extract file {0}...", TargetFile);
                     // ensure the target path exists
                     if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(TargetFile)))
                         System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(TargetFile));
@@ -2526,7 +2528,11 @@ namespace Ionic.Zip
                     output = new System.IO.FileStream(TargetFile, System.IO.FileMode.CreateNew);
                 }
                 else
+		{
+		    if (_zipfile.Verbose) _zipfile.StatusMessageTextWriter.WriteLine("extract entry {0} to stream...", FileName);
                     output = outstream;
+		    
+		}
 
 
                 if (_ioOperationCanceled)
@@ -3427,13 +3433,13 @@ namespace Ionic.Zip
                 // It is never possible to compress a zero-length file, so we check for 
                 // this condition. 
 
-                long fileLength = 0;
-
                 if (this._Source == ZipEntrySource.Stream)
                 {
-                    if (_sourceStream != null)
+		    // workitem 7742
+                    if (_sourceStream != null && _sourceStream.CanSeek)
                     {
-                        fileLength = _sourceStream.Length;
+			// Length prop will throw if CanSeek is false
+                        long fileLength = _sourceStream.Length;
                         if (fileLength == 0)
                             _CompressionMethod = 0x00;
                     }
@@ -3442,7 +3448,7 @@ namespace Ionic.Zip
                 {
                     // special case zero-length files
                     System.IO.FileInfo fi = new System.IO.FileInfo(LocalFileName);
-                    fileLength = fi.Length;
+                    long fileLength = fi.Length;
                     if (fileLength == 0)
                         _CompressionMethod = 0x00;
                 }

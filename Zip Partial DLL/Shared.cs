@@ -271,7 +271,8 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// Creates a <c>MemoryStream</c> for the given string. This is used internally by Library, specifically by 
+        /// Creates a <c>MemoryStream</c> for the given string, using the default encoding. 
+	/// This is used internally by Library, specifically by 
         /// the ZipFile.AddStringAsFile() method.   But it may be useful in other scenarios. 
         /// </summary>
         /// <param name="s">The string to use as input for the MemoryStream</param>
