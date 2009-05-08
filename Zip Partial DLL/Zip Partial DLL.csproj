@@ -94,6 +94,7 @@
     <Compile Include="ZipFile.Events.cs" />
     <Compile Include="ZipFile.Selector.cs" />
     <Compile Include="ZipFile.SaveSelfExtractor.cs" />
+    <Compile Include="ZipFile.x-IEnumerable.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">

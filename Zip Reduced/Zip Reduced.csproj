@@ -84,6 +84,9 @@
     <Compile Include="..\Zip Partial DLL\ZipFile.Selector.cs">
       <Link>ZipFile.Selector.cs</Link>
     </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipFile.x-IEnumerable.cs">
+      <Link>ZipFile.x-IEnumerable.cs</Link>
+    </Compile>
     <Compile Include="..\Zlib\Crc32.cs">
       <Link>Crc32.cs</Link>
     </Compile>

@@ -82,6 +82,9 @@
     <Compile Include="..\Zip Partial DLL\ZipFile.Events.cs">
       <Link>ZipFile.Events.cs</Link>
     </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipFile.x-IEnumerable.cs">
+      <Link>ZipFile.x-IEnumerable.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

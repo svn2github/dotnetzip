@@ -134,7 +134,13 @@ namespace Ionic.Zip
     /// </summary>
     public partial class ZipEntry
     {
-        internal ZipEntry() { BufferSize = IO_BUFFER_SIZE_DEFAULT; }
+	/// <summary>
+	/// Default constructor.  
+	/// </summary>
+	/// <remarks>Applications should never need to call this directly.  It is exposed to 
+	/// support COM Automation environments.
+	/// </remarks>
+        public ZipEntry() { BufferSize = IO_BUFFER_SIZE_DEFAULT; }
 
         internal ZipEntry(int size) { BufferSize = size; }
 

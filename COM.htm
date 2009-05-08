@@ -45,7 +45,8 @@ like VBScript, Javascript, PHP, Perl, and others, can create instances of the
 ZipFile class, add entries, and save archives, as any .NET application could.
 Most of DotNetZip's advanced features are available to these COM environments,
 including ZIP64 support, self-extracting archives, password-protected zip
-files, AES Encryption, and Unicode support.
+files, AES Encryption, and Unicode support. COM environments can also read zip 
+files and extract files from zip files. 
 </p>
 
 <p>
@@ -135,6 +136,43 @@ catch (e2)
 }
 </pre>
 
+<p> This example lists entries in a zipfile.
+</p>
+
+
+<pre lang="Javascript" numberLines="true" outlining="true"
+  title="Listing entries in a Zip archive">
+
+var filename = "C:\\temp\\CompressedData.zip";
+
+try 
+{
+    WScript.echo("Instantiating a ZipFile object...");
+    var zip = new ActiveXObject("Ionic.Zip.ZipFile");
+
+    WScript.echo("Initialize (Read)...(" + filename + ")");
+    zip.Initialize(filename);
+
+    WScript.echo("listing entries...");
+    var e = new Enumerator(zip);
+    for (; !e.atEnd(); e.moveNext())
+    {
+        var entry= e.item();
+        WScript.Echo ("  " + entry.FileName);
+    }
+
+    WScript.echo("Disposing...")
+    zip.Dispose();
+
+    WScript.echo("Done.");
+}
+catch (e2)
+{
+    WScript.echo(e2.number + ": " + e2.name);
+    WScript.echo(e2.message);
+}
+</pre>
+
 
 
 <h2>Using DotNetZip in VBScript</h2>
@@ -173,6 +211,77 @@ catch (e2)
   zip.Dispose()
 
   WScript.echo("Done.")
+
+</pre>
+
+
+
+<p> This example extracts all entries from  a zipfile.
+</p>
+
+<pre lang="VBScript" numberLines="true" outlining="true"
+  title="Extract all entries from a Zip">
+
+  WScript.echo("Instantiating a ZipFile object...")
+  dim zip 
+  set zip = CreateObject("Ionic.Zip.ZipFile")
+
+  WScript.echo("Initialize (Read)...")
+  zip.Initialize("CompressedData.zip")
+
+  WScript.echo("setting the password for extraction...")
+  zip.Password = "This is the Password."
+
+  WScript.echo("extracting all files...")
+  zip.ExtractAll("DotNetZip-extract")
+
+  WScript.echo("Disposing...")
+  zip.Dispose()
+
+  WScript.echo("Done.")
+
+</pre>
+
+
+<p> This example lists the entries in a zipfile, and extracts some of them.
+</p>
+
+<pre lang="VBScript" numberLines="true" outlining="true"
+  title="List and Maybe extract entries from a Zip">
+
+    WScript.echo("")
+    Dim zip
+    WScript.echo("Instantiating a ZipFile object...")
+    Set zip = CreateObject("Ionic.Zip.ZipFile")
+    
+    WScript.echo("Initialize (Read)...")
+    zip.Initialize(filename)
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    If Not fso.FolderExists("unpack") Then
+        fso.CreateFolder("unpack")
+    End If
+
+    ' Any call to ZipEntry.Extract() will put files into the 
+    ' current working directory.  So set it here:
+    Set objShell = CreateObject("Wscript.Shell")
+    objShell.CurrentDirectory = "unpack"
+
+    WScript.echo("listing...")
+    For Each entry in zip
+       WScript.echo("  " & entry.FileName)
+       ext = Right(entry.FileName,4)
+       If (ext = ".vbs") Then
+          ' set password for extraction if necessary
+          entry.Password = "This is the Password."
+          entry.Extract()
+       End If
+    Next
+
+    WScript.echo("Disposing...")
+    zip.Dispose()
+
+    WScript.echo("Done.")
 
 </pre>
 
