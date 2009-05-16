@@ -132,6 +132,9 @@ The library and this tool are produced in an open source project hosted at CodeP
 DotNetZip is donationware.  This tool and the library that supports it are free to use, but if you like the tool or library and find it them useful, you are encouraged to donate.  Proceeds benefit a local charity.  (which is NOT me).  To learn more: http://cheeso.members.winisp.net/DotNetZipDonate.aspx
 </value>
   </data>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

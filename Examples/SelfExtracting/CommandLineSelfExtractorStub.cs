@@ -8,7 +8,7 @@
 // Created Fri Jun 06 14:51:31 2008
 //
 // last saved: 
-// Time-stamp: <2009-February-22 10:44:20>
+// Time-stamp: <2009-May-15 17:09:03>
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2008 by Dino Chiesa
@@ -32,11 +32,30 @@ using Ionic.Zip;
         const string DllResourceName = "Ionic.Zip.dll";
 
         string TargetDirectory = null;
+        string PostUnpackCmdLine = "@@POST_UNPACK_CMD_LINE";
         bool WantOverwrite = false;
         bool ListOnly = false;
         bool Verbose = false;
+        bool wantUsage = false;
         string Password = null;
+        
+        private bool PostUnpackCmdLineIsSet()
+        {
+            // What is going on here?
+            // The PostUnpackCmdLine is initialized to a particular value, then
+            // we test to see if it begins with the first two chars of that value,
+            // and ends with the last part of the value.  Why?
 
+            // Here's the thing.  In order to insure the code is right, this module has
+            // to compile as it is, as a standalone module.  But then, inside
+            // DotNetZip, when generating an SFX, we do a text.Replace on the source
+            // code, potentially replacing @@POST_UNPACK_CMD_LINE with an actual value.
+            // The test here checks to see if it has been set. 
+
+            return !(PostUnpackCmdLine.StartsWith("@@") && 
+                     PostUnpackCmdLine.EndsWith("POST_UNPACK_CMD_LINE"));
+        }
+        
         // ctor
         private SelfExtractor() { }
 
@@ -60,6 +79,9 @@ using Ionic.Zip;
                     case "-l":
                         ListOnly = true;
                         break;
+                    case "-?":
+                        wantUsage = true;
+                        break;
                     case "-v":
                         Verbose = true;
                         break;
@@ -72,6 +94,9 @@ using Ionic.Zip;
                         break;
                 }
             }
+
+            if (wantUsage)
+                Usage();
 
             if (!ListOnly && TargetDirectory == null)
             {
@@ -105,6 +130,7 @@ using Ionic.Zip;
 
         public void Run()
         {
+            if (wantUsage) return;
             //string currentPassword = null;
 
             // There are only two embedded resources.
@@ -142,7 +168,6 @@ using Ionic.Zip;
                                          entry.CompressedSize,
                                          (entry.UsesEncryption) ? "Y" : "N",
                                          entry.Crc32);
-
 
                         }
 
@@ -186,6 +211,32 @@ using Ionic.Zip;
                 return;
             }
 
+            // potentially execute the embedded command
+            if (PostUnpackCmdLineIsSet())
+            {
+                if (ListOnly)
+                {
+                    Console.WriteLine("\nExecute on unpack: {0}", PostUnpackCmdLine);
+                }
+                else
+                {
+                    try
+                    {
+                        string[] args = PostUnpackCmdLine.Split( new char[] {' '}, 2);
+                    
+                        if (args.Length > 1)
+                            System.Diagnostics.Process.Start(args[0], args[1]);
+                    
+                        else if (args.Length == 1)
+                            System.Diagnostics.Process.Start(args[0]);
+                        // else, nothing.
+                                             
+                    }
+                    catch { }
+                    
+                }
+            }
+                
         }
 
 

@@ -70,6 +70,10 @@
             this.tbZipToOpen = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label16 = new System.Windows.Forms.Label();
+            this.tbExeOnUnpack = new System.Windows.Forms.TextBox();
+            this.label15 = new System.Windows.Forms.Label();
+            this.tbDefaultExtractDirectory = new System.Windows.Forms.TextBox();
             this.comboZip64 = new System.Windows.Forms.ComboBox();
             this.comboFlavor = new System.Windows.Forms.ComboBox();
             this.btnCreateZipBrowse = new System.Windows.Forms.Button();
@@ -82,7 +86,7 @@
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.btnClearItemsToZip = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.listView2 = new global::ListViewEx.ListViewEx();
+            this.listView2 = new ListViewEx.ListViewEx();
             this.chCheckbox = new System.Windows.Forms.ColumnHeader();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
@@ -107,7 +111,7 @@
             this.tbDirectoryToZip.Location = new System.Drawing.Point(108, 13);
             this.tbDirectoryToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbDirectoryToZip.Name = "tbDirectoryToZip";
-            this.tbDirectoryToZip.Size = new System.Drawing.Size(488, 20);
+            this.tbDirectoryToZip.Size = new System.Drawing.Size(499, 20);
             this.tbDirectoryToZip.TabIndex = 10;
             this.tbDirectoryToZip.Leave += new System.EventHandler(this.tbDirectoryToZip_Leave);
             // 
@@ -119,13 +123,13 @@
             this.tbZipToCreate.Location = new System.Drawing.Point(108, 11);
             this.tbZipToCreate.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbZipToCreate.Name = "tbZipToCreate";
-            this.tbZipToCreate.Size = new System.Drawing.Size(488, 20);
-            this.tbZipToCreate.TabIndex = 20;
+            this.tbZipToCreate.Size = new System.Drawing.Size(499, 20);
+            this.tbZipToCreate.TabIndex = 30;
             // 
             // btnZipupDirBrowse
             // 
             this.btnZipupDirBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnZipupDirBrowse.Location = new System.Drawing.Point(598, 13);
+            this.btnZipupDirBrowse.Location = new System.Drawing.Point(609, 13);
             this.btnZipupDirBrowse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnZipupDirBrowse.Name = "btnZipupDirBrowse";
             this.btnZipupDirBrowse.Size = new System.Drawing.Size(24, 20);
@@ -138,11 +142,11 @@
             // btnZipUp
             // 
             this.btnZipUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnZipUp.Location = new System.Drawing.Point(568, 331);
+            this.btnZipUp.Location = new System.Drawing.Point(579, 431);
             this.btnZipUp.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnZipUp.Name = "btnZipUp";
             this.btnZipUp.Size = new System.Drawing.Size(66, 26);
-            this.btnZipUp.TabIndex = 80;
+            this.btnZipUp.TabIndex = 140;
             this.btnZipUp.Text = "Zip All";
             this.btnZipUp.UseVisualStyleBackColor = true;
             this.btnZipUp.Click += new System.EventHandler(this.btnZipup_Click);
@@ -151,7 +155,7 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.Enabled = false;
-            this.btnCancel.Location = new System.Drawing.Point(568, 391);
+            this.btnCancel.Location = new System.Drawing.Point(579, 491);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(66, 26);
@@ -164,20 +168,20 @@
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(6, 361);
+            this.progressBar1.Location = new System.Drawing.Point(6, 461);
             this.progressBar1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(628, 10);
+            this.progressBar1.Size = new System.Drawing.Size(639, 10);
             this.progressBar1.TabIndex = 4;
             // 
             // progressBar2
             // 
             this.progressBar2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar2.Location = new System.Drawing.Point(6, 377);
+            this.progressBar2.Location = new System.Drawing.Point(6, 477);
             this.progressBar2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.progressBar2.Name = "progressBar2";
-            this.progressBar2.Size = new System.Drawing.Size(628, 10);
+            this.progressBar2.Size = new System.Drawing.Size(639, 10);
             this.progressBar2.TabIndex = 17;
             // 
             // label1
@@ -213,7 +217,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(6, 91);
+            this.label4.Location = new System.Drawing.Point(6, 89);
             this.label4.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(54, 13);
@@ -223,7 +227,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(6, 117);
+            this.label5.Location = new System.Drawing.Point(6, 114);
             this.label5.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(53, 13);
@@ -243,7 +247,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(6, 65);
+            this.label7.Location = new System.Drawing.Point(6, 64);
             this.label7.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(69, 13);
@@ -277,7 +281,7 @@
             this.comboEncoding.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.comboEncoding.Name = "comboEncoding";
             this.comboEncoding.Size = new System.Drawing.Size(178, 21);
-            this.comboEncoding.TabIndex = 50;
+            this.comboEncoding.TabIndex = 60;
             // 
             // tbComment
             // 
@@ -289,8 +293,8 @@
             this.tbComment.Location = new System.Drawing.Point(108, 110);
             this.tbComment.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbComment.Name = "tbComment";
-            this.tbComment.Size = new System.Drawing.Size(488, 20);
-            this.tbComment.TabIndex = 70;
+            this.tbComment.Size = new System.Drawing.Size(499, 20);
+            this.tbComment.TabIndex = 100;
             this.tbComment.Text = "-zip file comment here-";
             this.tbComment.Leave += new System.EventHandler(this.tbComment_Leave);
             this.tbComment.Enter += new System.EventHandler(this.tbComment_Enter);
@@ -299,7 +303,7 @@
             // 
             this.lblStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(12, 398);
+            this.lblStatus.Location = new System.Drawing.Point(12, 498);
             this.lblStatus.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(0, 13);
@@ -312,7 +316,7 @@
             this.comboCompression.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.comboCompression.Name = "comboCompression";
             this.comboCompression.Size = new System.Drawing.Size(178, 21);
-            this.comboCompression.TabIndex = 40;
+            this.comboCompression.TabIndex = 50;
             // 
             // comboEncryption
             // 
@@ -321,7 +325,7 @@
             this.comboEncryption.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.comboEncryption.Name = "comboEncryption";
             this.comboEncryption.Size = new System.Drawing.Size(172, 21);
-            this.comboEncryption.TabIndex = 55;
+            this.comboEncryption.TabIndex = 80;
             this.comboEncryption.SelectedIndexChanged += new System.EventHandler(this.comboBox3_SelectedIndexChanged);
             // 
             // tbPassword
@@ -332,7 +336,7 @@
             this.tbPassword.Name = "tbPassword";
             this.tbPassword.PasswordChar = '*';
             this.tbPassword.Size = new System.Drawing.Size(124, 20);
-            this.tbPassword.TabIndex = 58;
+            this.tbPassword.TabIndex = 90;
             this.tbPassword.Text = "c:\\dinoch\\dev\\dotnet\\zip\\test\\U.zip";
             this.tbPassword.TextChanged += new System.EventHandler(this.tbPassword_TextChanged);
             // 
@@ -345,7 +349,7 @@
             this.chkHidePassword.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.chkHidePassword.Name = "chkHidePassword";
             this.chkHidePassword.Size = new System.Drawing.Size(46, 17);
-            this.chkHidePassword.TabIndex = 59;
+            this.chkHidePassword.TabIndex = 91;
             this.chkHidePassword.Text = "hide";
             this.chkHidePassword.UseVisualStyleBackColor = true;
             this.chkHidePassword.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
@@ -390,7 +394,7 @@
             this.tabControl1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(648, 448);
+            this.tabControl1.Size = new System.Drawing.Size(659, 548);
             this.tabControl1.TabIndex = 96;
             this.tabControl1.Selecting += new System.Windows.Forms.TabControlCancelEventHandler(this.tabControl1_Selecting);
             this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
@@ -414,7 +418,7 @@
             this.tabPage1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.tabPage1.Size = new System.Drawing.Size(640, 422);
+            this.tabPage1.Size = new System.Drawing.Size(651, 522);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Read/Extract";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -560,7 +564,7 @@
             this.tabPage2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.tabPage2.Size = new System.Drawing.Size(640, 422);
+            this.tabPage2.Size = new System.Drawing.Size(651, 522);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Create";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -569,6 +573,10 @@
             // 
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.label16);
+            this.groupBox2.Controls.Add(this.tbExeOnUnpack);
+            this.groupBox2.Controls.Add(this.label15);
+            this.groupBox2.Controls.Add(this.tbDefaultExtractDirectory);
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Controls.Add(this.tbZipToCreate);
             this.groupBox2.Controls.Add(this.label4);
@@ -592,9 +600,62 @@
             this.groupBox2.Margin = new System.Windows.Forms.Padding(0);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.groupBox2.Size = new System.Drawing.Size(628, 136);
+            this.groupBox2.Size = new System.Drawing.Size(639, 185);
             this.groupBox2.TabIndex = 104;
             this.groupBox2.TabStop = false;
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(6, 162);
+            this.label16.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(81, 13);
+            this.label16.TabIndex = 100;
+            this.label16.Text = "exe on unpack:";
+            // 
+            // tbExeOnUnpack
+            // 
+            this.tbExeOnUnpack.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbExeOnUnpack.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbExeOnUnpack.ForeColor = System.Drawing.SystemColors.InactiveCaption;
+            this.tbExeOnUnpack.Location = new System.Drawing.Point(108, 158);
+            this.tbExeOnUnpack.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.tbExeOnUnpack.Name = "tbExeOnUnpack";
+            this.tbExeOnUnpack.Size = new System.Drawing.Size(499, 20);
+            this.tbExeOnUnpack.TabIndex = 120;
+            this.tbExeOnUnpack.Text = "-command line to execute here-";
+            this.tbExeOnUnpack.Leave += new System.EventHandler(this.tbExeOnUnpack_Leave);
+            this.tbExeOnUnpack.Enter += new System.EventHandler(this.tbExeOnUnpack_Enter);
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(6, 138);
+            this.label15.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(91, 13);
+            this.label15.TabIndex = 98;
+            this.label15.Text = "default extract dir:";
+            // 
+            // tbDefaultExtractDirectory
+            // 
+            this.tbDefaultExtractDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbDefaultExtractDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbDefaultExtractDirectory.ForeColor = System.Drawing.SystemColors.InactiveCaption;
+            this.tbDefaultExtractDirectory.Location = new System.Drawing.Point(108, 134);
+            this.tbDefaultExtractDirectory.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.tbDefaultExtractDirectory.Name = "tbDefaultExtractDirectory";
+            this.tbDefaultExtractDirectory.Size = new System.Drawing.Size(499, 20);
+            this.tbDefaultExtractDirectory.TabIndex = 110;
+            this.tbDefaultExtractDirectory.Tag = "b";
+            this.tbDefaultExtractDirectory.Text = "-default extract directory-";
+            this.tbDefaultExtractDirectory.Leave += new System.EventHandler(this.tbDefaultExtractDirectory_Leave);
+            this.tbDefaultExtractDirectory.Enter += new System.EventHandler(this.tbDefaultExtractDirectory_Enter);
             // 
             // comboZip64
             // 
@@ -603,7 +664,7 @@
             this.comboZip64.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.comboZip64.Name = "comboZip64";
             this.comboZip64.Size = new System.Drawing.Size(172, 21);
-            this.comboZip64.TabIndex = 97;
+            this.comboZip64.TabIndex = 70;
             // 
             // comboFlavor
             // 
@@ -612,17 +673,17 @@
             this.comboFlavor.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.comboFlavor.Name = "comboFlavor";
             this.comboFlavor.Size = new System.Drawing.Size(178, 21);
-            this.comboFlavor.TabIndex = 96;
+            this.comboFlavor.TabIndex = 40;
             this.comboFlavor.SelectedIndexChanged += new System.EventHandler(this.comboFlavor_SelectedIndexChanged);
             // 
             // btnCreateZipBrowse
             // 
             this.btnCreateZipBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCreateZipBrowse.Location = new System.Drawing.Point(598, 10);
+            this.btnCreateZipBrowse.Location = new System.Drawing.Point(609, 10);
             this.btnCreateZipBrowse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnCreateZipBrowse.Name = "btnCreateZipBrowse";
             this.btnCreateZipBrowse.Size = new System.Drawing.Size(24, 20);
-            this.btnCreateZipBrowse.TabIndex = 21;
+            this.btnCreateZipBrowse.TabIndex = 31;
             this.btnCreateZipBrowse.Text = "...";
             this.toolTip1.SetToolTip(this.btnCreateZipBrowse, "browse for a file to save to");
             this.btnCreateZipBrowse.UseVisualStyleBackColor = true;
@@ -644,7 +705,7 @@
             this.groupBox1.Margin = new System.Windows.Forms.Padding(0);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.groupBox1.Size = new System.Drawing.Size(628, 87);
+            this.groupBox1.Size = new System.Drawing.Size(639, 87);
             this.groupBox1.TabIndex = 103;
             this.groupBox1.TabStop = false;
             // 
@@ -656,7 +717,7 @@
             this.tbDirectoryInArchive.Location = new System.Drawing.Point(108, 38);
             this.tbDirectoryInArchive.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbDirectoryInArchive.Name = "tbDirectoryInArchive";
-            this.tbDirectoryInArchive.Size = new System.Drawing.Size(488, 20);
+            this.tbDirectoryInArchive.Size = new System.Drawing.Size(499, 20);
             this.tbDirectoryInArchive.TabIndex = 14;
             this.toolTip1.SetToolTip(this.tbDirectoryInArchive, "Selection criteria.  eg, (name = *.* and size> 1000) etc.  Also use atime/mtime/c" +
                     "time and attributes. (HRSA)");
@@ -664,11 +725,11 @@
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(598, 63);
+            this.button1.Location = new System.Drawing.Point(609, 63);
             this.button1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(24, 20);
-            this.button1.TabIndex = 99;
+            this.button1.TabIndex = 21;
             this.button1.Text = "+";
             this.toolTip1.SetToolTip(this.button1, "Add Selected files to Zip");
             this.button1.UseVisualStyleBackColor = true;
@@ -692,8 +753,8 @@
             this.tbSelectionToZip.Location = new System.Drawing.Point(108, 63);
             this.tbSelectionToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbSelectionToZip.Name = "tbSelectionToZip";
-            this.tbSelectionToZip.Size = new System.Drawing.Size(488, 20);
-            this.tbSelectionToZip.TabIndex = 12;
+            this.tbSelectionToZip.Size = new System.Drawing.Size(499, 20);
+            this.tbSelectionToZip.TabIndex = 20;
             this.tbSelectionToZip.Text = "*.*";
             this.toolTip1.SetToolTip(this.tbSelectionToZip, "Selection criteria.  eg, (name = *.* and size> 1000) etc.  Also use atime/mtime/c" +
                     "time and attributes. (HRSA)");
@@ -711,22 +772,23 @@
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(12, 228);
+            this.checkBox1.Location = new System.Drawing.Point(11, 278);
             this.checkBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(15, 14);
             this.checkBox1.TabIndex = 102;
+            this.checkBox1.TabStop = false;
             this.checkBox1.UseVisualStyleBackColor = true;
             this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged_1);
             // 
             // btnClearItemsToZip
             // 
             this.btnClearItemsToZip.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClearItemsToZip.Location = new System.Drawing.Point(454, 331);
+            this.btnClearItemsToZip.Location = new System.Drawing.Point(465, 431);
             this.btnClearItemsToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnClearItemsToZip.Name = "btnClearItemsToZip";
             this.btnClearItemsToZip.Size = new System.Drawing.Size(102, 26);
-            this.btnClearItemsToZip.TabIndex = 101;
+            this.btnClearItemsToZip.TabIndex = 130;
             this.btnClearItemsToZip.Text = "Remove Checked";
             this.btnClearItemsToZip.UseVisualStyleBackColor = true;
             this.btnClearItemsToZip.Click += new System.EventHandler(this.btnClearItemsToZip_Click);
@@ -734,7 +796,8 @@
             // textBox1
             // 
             this.textBox1.AcceptsReturn = true;
-            this.textBox1.Location = new System.Drawing.Point(192, 333);
+            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.textBox1.Location = new System.Drawing.Point(192, 433);
             this.textBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(100, 20);
@@ -758,11 +821,11 @@
             this.listView2.DoubleClickActivation = false;
             this.listView2.FullRowSelect = true;
             this.listView2.GridLines = true;
-            this.listView2.Location = new System.Drawing.Point(6, 225);
+            this.listView2.Location = new System.Drawing.Point(6, 273);
             this.listView2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.listView2.MultiSelect = false;
             this.listView2.Name = "listView2";
-            this.listView2.Size = new System.Drawing.Size(628, 104);
+            this.listView2.Size = new System.Drawing.Size(639, 156);
             this.listView2.TabIndex = 98;
             this.listView2.UseCompatibleStateImageBehavior = false;
             this.listView2.View = System.Windows.Forms.View.Details;
@@ -796,7 +859,7 @@
             this.tabPage3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.tabPage3.Size = new System.Drawing.Size(640, 422);
+            this.tabPage3.Size = new System.Drawing.Size(651, 522);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "About";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -830,7 +893,7 @@
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(648, 448);
+            this.ClientSize = new System.Drawing.Size(659, 548);
             this.Controls.Add(this.tabControl1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
@@ -920,6 +983,10 @@
         private System.Windows.Forms.ColumnHeader columnHeader3;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.TextBox tbDefaultExtractDirectory;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.TextBox tbExeOnUnpack;
     }
 }
 

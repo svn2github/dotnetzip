@@ -14,6 +14,9 @@
 //   CommandLineSelfExtractorStub.cs
 //   PasswordDialog.cs
 //   PasswordDialog.Designer.cs
+//   ZipContentsDialog.cs
+//   ZipContentsDialog.Designer.cs
+//   FolderBrowserDialogEx.cs
 //
 // At design time, if you want to modify the way the GUI looks, you have to mark those modules
 // to have a "compile" build action.  Then tweak em, test, etc.  Then again mark them as 
@@ -59,9 +62,29 @@ namespace Ionic.Zip.Examples
                         }
                         ExtractDir = args[++i];
                         break;
+                        
                     case "-cmdline":
                         flavor = Ionic.Zip.SelfExtractorFlavor.ConsoleApplication;
                         break;
+                        
+                case "-comment":
+                    if (i >= args.Length-1 || ZipComment != null)
+                    {
+                        Usage();
+                        return;
+                    }
+                    ZipComment = args[++i];
+                    break;
+                    
+                case "-exeonunpack":
+                    if (i >= args.Length-1 || ExeOnUnpack != null)
+                    {
+                        Usage();
+                        return;
+                    }
+                    ExeOnUnpack = args[++i];
+                    break;
+                    
                     default:
                         // positional args
                         if (ZipFileToConvert == null)
@@ -76,6 +99,8 @@ namespace Ionic.Zip.Examples
             }
         }
 
+        string ExeOnUnpack;
+        string ZipComment;
         string ZipFileToConvert = null;
         string ExtractDir = null;
         SelfExtractorFlavor flavor = Ionic.Zip.SelfExtractorFlavor.WinFormsApplication;
@@ -107,17 +132,27 @@ namespace Ionic.Zip.Examples
 
             Console.WriteLine("Converting file {0} to SFX {1}", ZipFileToConvert, TargetName);
 
-            using (ZipFile zip = ZipFile.Read(ZipFileToConvert))
+            using (ZipFile zip = ZipFile.Read(ZipFileToConvert, Console.Out))
             {
-                zip.StatusMessageTextWriter = Console.Out;
-		zip.SaveSelfExtractor(TargetName, flavor, ExtractDir);
+                zip.Comment = ZipComment;
+                zip.SaveSelfExtractor(TargetName, flavor, ExtractDir, ExeOnUnpack);
             }
         }
 
 
         private static void Usage()
         {
-            Console.WriteLine("usage:\n  CreateSelfExtractor [-cmdline] [-extractdir <xxxx>]  <Zipfile>");
+            Console.WriteLine("usage:");
+            Console.WriteLine("  CreateSelfExtractor [-cmdline]  [-extractdir <xxxx>]  [-comment <xx>]");
+            Console.WriteLine("                      [-exec <xx>] <Zipfile>");
+            Console.WriteLine("  Creates a self-extracting archive (SFX) from an existing zip file.\n");
+            Console.WriteLine("  options:");
+            Console.WriteLine("     -cmdline       - the generated SFX will be a console/command-line exe.");
+            Console.WriteLine("                      The default is that the SFX is a Windows (GUI) app.");
+            Console.WriteLine("     -exec <xx>     - The command line to execute after the SFX runs.");
+            Console.WriteLine("     -comment <xx>  - embed a comment into the self-extracting archive.");
+            Console.WriteLine("                      It is displayed when the SFX is extracted.");
+            Console.WriteLine();
         }
 
 

@@ -39,7 +39,7 @@ namespace Ionic.Zip.Examples
             "                          subsequently added to the archive. Requires a password.\n" +
             "  -sfx [w|c]            - create a self-extracting archive, either a Windows or console app.\n" +
             "  -64                   - use ZIP64 extensions, for large files or large numbers of files.\n" +
-            "  -cp <codepage         - use the specified numeric codepage for entries with comments \n" +
+            "  -cp <codepage>        - use the specified numeric codepage for entries with comments \n" +
             "                          or filenames that cannot be encoded with the default IBM437\n" +
             "                          code page.\n" +
             "  -p <password>         - apply the specified password for all succeeding files added.\n" +
@@ -86,7 +86,7 @@ namespace Ionic.Zip.Examples
                 string entryComment = null;
                 string entryDirectoryPathInArchive = "";
 
-                using (ZipFile zip = new ZipFile(args[0])) // read existing zip, or create a new one.
+                using (ZipFile zip = new ZipFile(args[0])) // read/update an existing zip, or create a new one.
                 {
                     zip.StatusMessageTextWriter = System.Console.Out;
                     for (int i = 1; i < args.Length; i++)

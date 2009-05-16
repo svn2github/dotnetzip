@@ -218,7 +218,7 @@ namespace SmartDeviceProject3
                 System.IO.Path.GetFileNameWithoutExtension(_selectedpath));
             try
             {
-                using (var zip1 = new Ionic.Zip.ZipFile(_selectedpath))
+                using (var zip1 = Ionic.Zip.ZipFile.Read(_selectedpath))
                 {
                     foreach (var entry in zip1)
                     {
@@ -276,7 +276,5 @@ namespace SmartDeviceProject3
         }
 
         #endregion
-
-
     }
 }

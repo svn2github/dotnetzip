@@ -21,12 +21,19 @@ namespace Ionic.Zip.WinFormsExample
             FillFormFromRegistry();
             AdoptProgressBars();
             SetListView2();
+            SetTextBoxes();
         }
 
 
         // in Form1.DragDrop.cs
         partial void SetDragDrop();
 
+        private void SetTextBoxes()
+        {
+            this.tbComment.Text= TB_COMMENT_NOTE;
+            this.tbDefaultExtractDirectory.Text= TB_EXTRACT_DIR_NOTE;
+            this.tbExeOnUnpack.Text= TB_EXE_ON_UNPACK_NOTE;
+        }
 
         private void SetListView2()
         {
@@ -83,7 +90,7 @@ namespace Ionic.Zip.WinFormsExample
         private void FixTitle()
         {
             this.Text = String.Format("DotNetZip's WinForms Zip Tool v{0}",
-                      System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+                                      System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
         }
 
         private void InitializeListboxes()
@@ -178,7 +185,7 @@ namespace Ionic.Zip.WinFormsExample
             if (!System.IO.Directory.Exists(this.tbDirectoryToZip.Text))
             {
                 var dlgResult = MessageBox.Show(String.Format("The directory you have specified ({0}) does not exist.", this.tbZipToCreate.Text),
-                    "Not gonna happen", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                                "Not gonna happen", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
             }
 
@@ -199,7 +206,7 @@ namespace Ionic.Zip.WinFormsExample
                 (extension != ".zip" && this.comboFlavor.SelectedIndex == 0))
             {
                 var dlgResult = MessageBox.Show(String.Format("The file you have specified ({0}) has a non-standard extension ({1}) for this zip flavor.  Do you want to continue anyway?",
-                    this.tbZipToCreate.Text, extension), "Hold on there, pardner!", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                                                              this.tbZipToCreate.Text, extension), "Hold on there, pardner!", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (dlgResult != DialogResult.Yes) return;
                 System.IO.File.Delete(this.tbZipToCreate.Text);
             }
@@ -216,50 +223,56 @@ namespace Ionic.Zip.WinFormsExample
             lblStatus.Text = "Zipping...";
 
             var options = new SaveWorkerOptions
-            {
-                ZipName = this.tbZipToCreate.Text,
-                Selection = this.tbSelectionToZip.Text,
-                Encoding = "ibm437"
-            };
+                {
+                    ZipName = this.tbZipToCreate.Text,
+                    Selection = this.tbSelectionToZip.Text,
+                    Encoding = "ibm437",
+                    ZipFlavor = this.comboFlavor.SelectedIndex,
+                    Password = this.tbPassword.Text,
+                    };
 
             if (this.comboEncoding.SelectedIndex != 0)
                 options.Encoding = this.comboEncoding.SelectedItem.ToString();
 
             options.Encryption = (EncryptionAlgorithm)Enum.Parse(typeof(EncryptionAlgorithm),
-                                  this.comboEncryption.SelectedItem.ToString());
-            options.Password = this.tbPassword.Text;
+                                                                 this.comboEncryption.SelectedItem.ToString());
+            
             options.CompressionLevel = (Ionic.Zlib.CompressionLevel)Enum.Parse(typeof(Ionic.Zlib.CompressionLevel),
-                                     this.comboCompression.SelectedItem.ToString());
-
-            options.ZipFlavor = this.comboFlavor.SelectedIndex;
+                                                                               this.comboCompression.SelectedItem.ToString());
 
             options.Zip64 = (Zip64Option)Enum.Parse(typeof(Zip64Option),
-                                 this.comboZip64.SelectedItem.ToString());
+                                                    this.comboZip64.SelectedItem.ToString());
 
             //this.listView2.Items.ToList();
             var entriesList = new System.Collections.ArrayList(this.listView2.Items);
             options.Entries = System.Array.ConvertAll((ListViewItem[])entriesList.ToArray(typeof(ListViewItem)), (item) =>
                 {
                     return new ItemToAdd
-                    {
-                        LocalFileName = item.SubItems[1].Text,
-                        DirectoryInArchive = item.SubItems[2].Text,
-                        FileNameInArchive = item.SubItems[3].Text,
-                    };
+                        {
+                            LocalFileName = item.SubItems[1].Text,
+                            DirectoryInArchive = item.SubItems[2].Text,
+                            FileNameInArchive = item.SubItems[3].Text,
+                            };
                 }
-                                    );
+                                                      );
 
 
             options.Comment = String.Format("Encoding:{0} || Compression:{1} || Encrypt:{2} || ZIP64:{3}\r\nCreated at {4} || {5}\r\n",
-                        options.Encoding,
-                        options.CompressionLevel.ToString(),
-                        (this.tbPassword.Text == "") ? "None" : options.Encryption.ToString(),
-                        options.Zip64.ToString(),
-                        System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss"),
-                        this.Text);
+                                            options.Encoding,
+                                            options.CompressionLevel.ToString(),
+                                            (this.tbPassword.Text == "") ? "None" : options.Encryption.ToString(),
+                                            options.Zip64.ToString(),
+                                            System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss"),
+                                            this.Text);
 
             if (this.tbComment.Text != TB_COMMENT_NOTE)
                 options.Comment += this.tbComment.Text;
+
+            if (this.tbExeOnUnpack.Text != TB_EXE_ON_UNPACK_NOTE)
+                options.ExeOnUnpack = this.tbExeOnUnpack.Text;
+            
+            if (this.tbDefaultExtractDirectory.Text != TB_EXTRACT_DIR_NOTE)
+                options.ExtractDirectory = this.tbDefaultExtractDirectory.Text;
 
             _workerThread = new Thread(this.DoSave);
             _workerThread.Name = "Zip Saver thread";
@@ -288,12 +301,11 @@ namespace Ionic.Zip.WinFormsExample
             }
         }
 
-
         private void tbComment_Leave(object sender, EventArgs e)
         {
-            string TextToFind = tbComment.Text;
+            string TextInTheBox = tbComment.Text;
 
-            if ((TextToFind == null) || (TextToFind == ""))
+            if ((TextInTheBox == null) || (TextInTheBox == ""))
             {
                 this.tbComment.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
                 this.tbComment.ForeColor = System.Drawing.SystemColors.InactiveCaption;
@@ -303,7 +315,59 @@ namespace Ionic.Zip.WinFormsExample
         }
 
 
-        //delegate void ProgressBarSetup(int count);
+        private bool _firstFocusInExtractDirTextBox = true;
+        private void tbDefaultExtractDirectory_Enter(object sender, EventArgs e)
+        {
+            if (_firstFocusInExtractDirTextBox)
+            {
+                tbDefaultExtractDirectory.Text = "";
+                tbDefaultExtractDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+                tbDefaultExtractDirectory.ForeColor = System.Drawing.SystemColors.WindowText;
+                _firstFocusInExtractDirTextBox = false;
+            }
+        }
+
+        private void tbDefaultExtractDirectory_Leave(object sender, EventArgs e)
+        {
+            string TextInTheBox = tbDefaultExtractDirectory.Text;
+
+            if ((TextInTheBox == null) || (TextInTheBox == ""))
+            {
+                this.tbDefaultExtractDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+                this.tbDefaultExtractDirectory.ForeColor = System.Drawing.SystemColors.InactiveCaption;
+                _firstFocusInExtractDirTextBox = true;
+                this.tbDefaultExtractDirectory.Text = TB_EXTRACT_DIR_NOTE;
+            }
+        }
+
+
+
+        
+        private bool _firstFocusInExeTextBox = true;
+        private void tbExeOnUnpack_Enter(object sender, EventArgs e)
+        {
+            if (_firstFocusInExeTextBox)
+            {
+                tbExeOnUnpack.Text = "";
+                tbExeOnUnpack.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+                tbExeOnUnpack.ForeColor = System.Drawing.SystemColors.WindowText;
+                _firstFocusInExeTextBox = false;
+            }
+        }
+
+        private void tbExeOnUnpack_Leave(object sender, EventArgs e)
+        {
+            string TextInTheBox = tbExeOnUnpack.Text;
+
+            if ((TextInTheBox == null) || (TextInTheBox == ""))
+            {
+                this.tbExeOnUnpack.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+                this.tbExeOnUnpack.ForeColor = System.Drawing.SystemColors.InactiveCaption;
+                _firstFocusInExeTextBox = true;
+                this.tbExeOnUnpack.Text = TB_EXE_ON_UNPACK_NOTE;
+            }
+        }
+
 
         private void SetProgressBars()
         {
@@ -355,9 +419,9 @@ namespace Ionic.Zip.WinFormsExample
                     zip1.CompressionLevel = options.CompressionLevel;
 
                     if (options.ZipFlavor == 1)
-                        zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.WinFormsApplication);
+                        zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.WinFormsApplication, options.ExtractDirectory, options.ExeOnUnpack);
                     else if (options.ZipFlavor == 2)
-                        zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.ConsoleApplication);
+                        zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.ConsoleApplication, options.ExtractDirectory, options.ExeOnUnpack);
                     else
                         zip1.Save(options.ZipName);
                 }
@@ -452,21 +516,21 @@ namespace Ionic.Zip.WinFormsExample
                     this.Update();
 
 #if NOT_SPEEDY
-			// Sleep here just to show the progress bar, when the number of files is small,
-			// or when all done. 
-			// You may not want this for actual use!
-			if (this.progressBar2.Value == this.progressBar2.Maximum)
-			    Thread.Sleep(350);
-			else if (_entriesToZip < 10)
-			    Thread.Sleep(350);
-			else if (_entriesToZip < 20)
-			    Thread.Sleep(200);
-			else if (_entriesToZip < 30)
-			    Thread.Sleep(100);
-			else if (_entriesToZip < 45)
-			    Thread.Sleep(80);
-			else if (_entriesToZip < 75)
-			    Thread.Sleep(40);
+                        // Sleep here just to show the progress bar, when the number of files is small,
+                        // or when all done. 
+                        // You may not want this for actual use!
+                        if (this.progressBar2.Value == this.progressBar2.Maximum)
+                            Thread.Sleep(350);
+                        else if (_entriesToZip < 10)
+                            Thread.Sleep(350);
+                        else if (_entriesToZip < 20)
+                            Thread.Sleep(200);
+                        else if (_entriesToZip < 30)
+                            Thread.Sleep(100);
+                        else if (_entriesToZip < 45)
+                            Thread.Sleep(80);
+                        else if (_entriesToZip < 75)
+                            Thread.Sleep(40);
                     // more than 75 entries, don't sleep at all.
 #endif
 
@@ -566,7 +630,6 @@ namespace Ionic.Zip.WinFormsExample
             //        MessageBox.Show(String.Format("item ='{0}'   folder='{1}' ??={2}", item.Text, item.SubItems[0].Text, item.SubItems[1].Text));
             //    count++;
             //}
-
 
             // I put this condition here to avoid starting the zip while editing a textbox 
             // in listView2. 
@@ -1638,6 +1701,8 @@ namespace Ionic.Zip.WinFormsExample
         private long _totalBytesAfterCompress;
         private Thread _workerThread;
         private static string TB_COMMENT_NOTE = "-zip file comment here-";
+        private static string TB_EXTRACT_DIR_NOTE = "-default extract directory-";
+        private static string TB_EXE_ON_UNPACK_NOTE = "-command line to execute here-";
         private List<String> _EncodingNames;
         private List<String> _CompressionLevelNames;
         private List<String> _EncryptionNames;
@@ -1784,6 +1849,8 @@ namespace Ionic.Zip.WinFormsExample
         public string Encoding;
         public string Comment;
         public string Password;
+        public string ExeOnUnpack;
+        public string ExtractDirectory;
         public int ZipFlavor;
         public Ionic.Zlib.CompressionLevel CompressionLevel;
         public Ionic.Zip.EncryptionAlgorithm Encryption;

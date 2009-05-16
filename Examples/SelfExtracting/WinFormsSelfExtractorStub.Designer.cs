@@ -42,12 +42,14 @@
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.progressBar2 = new System.Windows.Forms.ProgressBar();
             this.lblStatus = new System.Windows.Forms.Label();
+            this.txtPostUnpackCmdLine = new System.Windows.Forms.TextBox();
+            this.chk_ExeAfterUnpack = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btnExtract
             // 
             this.btnExtract.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnExtract.Location = new System.Drawing.Point(328, 239);
+            this.btnExtract.Location = new System.Drawing.Point(331, 269);
             this.btnExtract.Name = "btnExtract";
             this.btnExtract.Size = new System.Drawing.Size(60, 23);
             this.btnExtract.TabIndex = 0;
@@ -58,7 +60,7 @@
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCancel.Location = new System.Drawing.Point(394, 239);
+            this.btnCancel.Location = new System.Drawing.Point(397, 269);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(60, 23);
             this.btnCancel.TabIndex = 1;
@@ -70,16 +72,16 @@
             // 
             this.txtExtractDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtExtractDirectory.Location = new System.Drawing.Point(8, 139);
+            this.txtExtractDirectory.Location = new System.Drawing.Point(8, 147);
             this.txtExtractDirectory.Name = "txtExtractDirectory";
-            this.txtExtractDirectory.Size = new System.Drawing.Size(413, 20);
+            this.txtExtractDirectory.Size = new System.Drawing.Size(416, 20);
             this.txtExtractDirectory.TabIndex = 2;
             // 
             // label1
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(5, 123);
+            this.label1.Location = new System.Drawing.Point(5, 131);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(100, 13);
             this.label1.TabIndex = 3;
@@ -88,7 +90,7 @@
             // btnDirBrowse
             // 
             this.btnDirBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDirBrowse.Location = new System.Drawing.Point(427, 136);
+            this.btnDirBrowse.Location = new System.Drawing.Point(430, 144);
             this.btnDirBrowse.Name = "btnDirBrowse";
             this.btnDirBrowse.Size = new System.Drawing.Size(25, 23);
             this.btnDirBrowse.TabIndex = 4;
@@ -100,7 +102,7 @@
             // 
             this.chk_Overwrite.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.chk_Overwrite.AutoSize = true;
-            this.chk_Overwrite.Location = new System.Drawing.Point(11, 165);
+            this.chk_Overwrite.Location = new System.Drawing.Point(8, 193);
             this.chk_Overwrite.Name = "chk_Overwrite";
             this.chk_Overwrite.Size = new System.Drawing.Size(130, 17);
             this.chk_Overwrite.TabIndex = 6;
@@ -113,7 +115,7 @@
             this.chk_OpenExplorer.AutoSize = true;
             this.chk_OpenExplorer.Checked = true;
             this.chk_OpenExplorer.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chk_OpenExplorer.Location = new System.Drawing.Point(11, 184);
+            this.chk_OpenExplorer.Location = new System.Drawing.Point(8, 173);
             this.chk_OpenExplorer.Name = "chk_OpenExplorer";
             this.chk_OpenExplorer.Size = new System.Drawing.Size(152, 17);
             this.chk_OpenExplorer.TabIndex = 7;
@@ -139,13 +141,13 @@
             this.txtComment.Name = "txtComment";
             this.txtComment.ReadOnly = true;
             this.txtComment.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtComment.Size = new System.Drawing.Size(444, 93);
+            this.txtComment.Size = new System.Drawing.Size(447, 104);
             this.txtComment.TabIndex = 9;
             // 
             // btnContents
             // 
             this.btnContents.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnContents.Location = new System.Drawing.Point(232, 239);
+            this.btnContents.Location = new System.Drawing.Point(235, 269);
             this.btnContents.Name = "btnContents";
             this.btnContents.Size = new System.Drawing.Size(90, 23);
             this.btnContents.TabIndex = 10;
@@ -157,34 +159,59 @@
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(8, 207);
+            this.progressBar1.Location = new System.Drawing.Point(8, 237);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(442, 11);
+            this.progressBar1.Size = new System.Drawing.Size(449, 10);
             this.progressBar1.TabIndex = 11;
             // 
             // progressBar2
             // 
             this.progressBar2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar2.Location = new System.Drawing.Point(8, 222);
+            this.progressBar2.Location = new System.Drawing.Point(8, 252);
             this.progressBar2.Name = "progressBar2";
-            this.progressBar2.Size = new System.Drawing.Size(442, 11);
+            this.progressBar2.Size = new System.Drawing.Size(449, 10);
             this.progressBar2.TabIndex = 12;
             // 
             // lblStatus
             // 
             this.lblStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(9, 243);
+            this.lblStatus.Location = new System.Drawing.Point(9, 273);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(0, 13);
             this.lblStatus.TabIndex = 13;
+            // 
+            // txtPostUnpackCmdLine
+            // 
+            this.txtPostUnpackCmdLine.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtPostUnpackCmdLine.Location = new System.Drawing.Point(145, 211);
+            this.txtPostUnpackCmdLine.Name = "txtPostUnpackCmdLine";
+            this.txtPostUnpackCmdLine.ReadOnly = true;
+            this.txtPostUnpackCmdLine.Size = new System.Drawing.Size(312, 20);
+            this.txtPostUnpackCmdLine.TabIndex = 14;
+            // 
+            // chk_ExeAfterUnpack
+            // 
+            this.chk_ExeAfterUnpack.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.chk_ExeAfterUnpack.AutoSize = true;
+            this.chk_ExeAfterUnpack.Checked = true;
+            this.chk_ExeAfterUnpack.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chk_ExeAfterUnpack.Location = new System.Drawing.Point(8, 213);
+            this.chk_ExeAfterUnpack.Name = "chk_ExeAfterUnpack";
+            this.chk_ExeAfterUnpack.Size = new System.Drawing.Size(131, 17);
+            this.chk_ExeAfterUnpack.TabIndex = 15;
+            this.chk_ExeAfterUnpack.Text = "Execute after unpack:";
+            this.chk_ExeAfterUnpack.UseVisualStyleBackColor = true;
             // 
             // WinFormsSelfExtractorStub
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(464, 269);
+            this.ClientSize = new System.Drawing.Size(467, 299);
+            this.Controls.Add(this.chk_ExeAfterUnpack);
+            this.Controls.Add(this.txtPostUnpackCmdLine);
             this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.progressBar2);
             this.Controls.Add(this.progressBar1);
@@ -213,16 +240,18 @@
 
         private System.Windows.Forms.Button btnExtract;
         private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Button btnDirBrowse;
+        private System.Windows.Forms.Button btnContents;
         private System.Windows.Forms.TextBox txtExtractDirectory;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button btnDirBrowse;
         private System.Windows.Forms.CheckBox chk_Overwrite;
         private System.Windows.Forms.CheckBox chk_OpenExplorer;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txtComment;
-        private System.Windows.Forms.Button btnContents;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.ProgressBar progressBar2;
         private System.Windows.Forms.Label lblStatus;
+        private System.Windows.Forms.TextBox txtPostUnpackCmdLine;
+        private System.Windows.Forms.CheckBox chk_ExeAfterUnpack;
     }
 }

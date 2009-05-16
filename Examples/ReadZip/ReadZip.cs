@@ -1,7 +1,7 @@
 // ReadZip.cs
 // 
 // ----------------------------------------------------------------------
-// Copyright (c) 2006, 2007, 2008 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2006-2009 Microsoft Corporation.  All rights reserved.
 //
 // This example is released under the Microsoft Public License .
 // See the license.txt file accompanying this release for 
@@ -13,7 +13,7 @@
 // all elements in it, to the specified target directory.
 // 
 // compile with:
-//     csc /target:exe /r:Ionic.Utils.Zip.dll /out:ReadZip.exe ReadZip.cs 
+//     csc /target:exe /r:Ionic.Zip.dll /out:ReadZip.exe ReadZip.cs 
 //
 // Wed, 29 Mar 2006  14:36
 //
@@ -45,8 +45,17 @@ namespace Ionic.Zip.Examples
 
             try
             {
+                // Specifying Console.Out here causes diagnostic msgs to be sent to the Console
+                // In a WinForms or WPF or Web app, you could specify nothing, or an alternate
+                // TextWriter to capture diagnostic messages. 
+
                 using (ZipFile zip = ZipFile.Read(args[0], System.Console.Out))
                 {
+                    // This call to ExtractAll() assumes:
+                    //   - none of the entries are password-protected.
+                    //   - want to extract all entries to current working directory
+                    //   - none of the files in the zip already exist in the directory;
+                    //     if they do, the method will throw.
                     zip.ExtractAll(args[1]);
                 }
             }
