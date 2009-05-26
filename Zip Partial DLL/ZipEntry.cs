@@ -1808,7 +1808,9 @@ namespace Ionic.Zip
                 }
 
             }
-            return SharedUtilities.NormalizeFwdSlashPath(SharedUtilities.TrimVolumeAndSwapSlashes(result));
+            result = SharedUtilities.TrimVolumeAndSwapSlashes(result);
+            result = SharedUtilities.NormalizeFwdSlashPath(result);
+            return result;
         }
 
 

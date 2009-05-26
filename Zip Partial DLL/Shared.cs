@@ -55,8 +55,13 @@ namespace Ionic.Zip
 
         internal static string NormalizePath(string path)
         {
+            // remove leading single dot slash
             if (path.StartsWith(".\\")) path = path.Substring(2);
+            
+            // remove intervening dot-slash
             path= path.Replace("\\.\\", "\\");
+            
+            // remove double dot when preceded by a directory name
             var re = new System.Text.RegularExpressions.Regex(@"^(.*\\)?([^\\\.]+\\\.\.\\)(.+)$");
             path = re.Replace(path, "$1$3");
             return path;
@@ -66,7 +71,7 @@ namespace Ionic.Zip
         {
             if (path.StartsWith("./")) path = path.Substring(2);
             path= path.Replace("/./", "/");
-            var re = new System.Text.RegularExpressions.Regex(@"^(.*/)?([^/.]+/../)(.+)$");
+            var re = new System.Text.RegularExpressions.Regex(@"^(.*/)b?([^/\\.]+/\\.\\./)(.+)$");
             path = re.Replace(path, "$1$3");
             return path;
         }
