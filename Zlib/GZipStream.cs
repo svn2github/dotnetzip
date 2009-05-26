@@ -122,18 +122,18 @@ namespace Ionic.Zlib
         /// The Comment on the GZIP stream.
         /// </summary>
         /// <remarks>
-	/// <para>
+        /// <para>
         /// The GZIP format allows for each file to optionally have an associated comment stored with the
         /// file.  The comment is encoded with the ISO-8859-1 code page.  To include a comment in
         /// a GZIP stream you create, set this property before calling Write() for the first time
         /// on the GZipStream.  
-	/// </para>
-	///
-	/// <para>
-	/// When using GZipStream to decompress, you can retrieve this property after the first
+        /// </para>
+        ///
+        /// <para>
+        /// When using GZipStream to decompress, you can retrieve this property after the first
         /// call to Read().  If no comment has been set in the GZIP bytestream, the Comment
         /// property will return null (Nothing in VB).
-	/// </para>
+        /// </para>
         /// </remarks>
         public String Comment;
 
@@ -142,18 +142,18 @@ namespace Ionic.Zlib
         /// The FileName for the GZIP stream.
         /// </summary>
         /// <remarks>
-	/// <para>
+        /// <para>
         /// The GZIP format optionally allows each file to have an associated filename.  When
-	/// compressing data (through Write()), set this FileName before calling Write() the first
-	/// time on the GZipStream.  The actual filename is encoded into the GZIP bytestream with
-	/// the ISO-8859-1 code page, according to RFC 1952. It is the application's responsibility to 
-	/// insure that the FileName can be encoded correctly with this code page. 
-	/// </para>
-	/// <para>
-	/// When decompressing (through Read()), you can retrieve this value any time after the
+        /// compressing data (through Write()), set this FileName before calling Write() the first
+        /// time on the GZipStream.  The actual filename is encoded into the GZIP bytestream with
+        /// the ISO-8859-1 code page, according to RFC 1952. It is the application's responsibility to 
+        /// insure that the FileName can be encoded correctly with this code page. 
+        /// </para>
+        /// <para>
+        /// When decompressing (through Read()), you can retrieve this value any time after the
         /// first Read().  In the case where there was no filename encoded into the GZIP
         /// bytestream, the property will return null (Nothing in VB).
-	/// </para>
+        /// </para>
         /// </remarks>
         public String FileName
         {
@@ -240,16 +240,16 @@ namespace Ionic.Zlib
         /// Dim outputFile As String = (fileToCompress &amp; ".compressed")
         /// Using input As Stream = File.OpenRead(fileToCompress)
         ///     Using raw As FileStream = File.Create(outputFile)
-        /// 	Using compressor As Stream = New GZipStream(raw, CompressionMode.Compress)
-        /// 	    Dim buffer As Byte() = New Byte(4096) {}
-        /// 	    Dim n As Integer = -1
-        /// 	    Do While (n &lt;&gt; 0)
-        /// 		If (n &gt; 0) Then
-        /// 		    compressor.Write(buffer, 0, n)
-        /// 		End If
-        /// 		n = input.Read(buffer, 0, buffer.Length)
-        /// 	    Loop
-        /// 	End Using
+        ///     Using compressor As Stream = New GZipStream(raw, CompressionMode.Compress)
+        ///         Dim buffer As Byte() = New Byte(4096) {}
+        ///         Dim n As Integer = -1
+        ///         Do While (n &lt;&gt; 0)
+        ///             If (n &gt; 0) Then
+        ///                 compressor.Write(buffer, 0, n)
+        ///             End If
+        ///             n = input.Read(buffer, 0, buffer.Length)
+        ///         Loop
+        ///     End Using
         ///     End Using
         /// End Using
         /// </code>
@@ -298,16 +298,16 @@ namespace Ionic.Zlib
         /// Dim outputFile As String = (fileToCompress &amp; ".compressed")
         /// Using input As Stream = File.OpenRead(fileToCompress)
         ///     Using raw As FileStream = File.Create(outputFile)
-        /// 	Using compressor As Stream = New GZipStream(raw, CompressionMode.Compress, CompressionLevel.BEST_COMPRESSION)
-        /// 	    Dim buffer As Byte() = New Byte(4096) {}
-        /// 	    Dim n As Integer = -1
-        /// 	    Do While (n &lt;&gt; 0)
-        /// 		If (n &gt; 0) Then
-        /// 		    compressor.Write(buffer, 0, n)
-        /// 		End If
-        /// 		n = input.Read(buffer, 0, buffer.Length)
-        /// 	    Loop
-        /// 	End Using
+        ///     Using compressor As Stream = New GZipStream(raw, CompressionMode.Compress, CompressionLevel.BEST_COMPRESSION)
+        ///         Dim buffer As Byte() = New Byte(4096) {}
+        ///         Dim n As Integer = -1
+        ///         Do While (n &lt;&gt; 0)
+        ///             If (n &gt; 0) Then
+        ///                 compressor.Write(buffer, 0, n)
+        ///             End If
+        ///             n = input.Read(buffer, 0, buffer.Length)
+        ///         Loop
+        ///     End Using
         ///     End Using
         /// End Using
         /// </code>
@@ -398,16 +398,16 @@ namespace Ionic.Zlib
         /// Dim outputFile As String = (fileToCompress &amp; ".compressed")
         /// Using input As Stream = File.OpenRead(fileToCompress)
         ///     Using raw As FileStream = File.Create(outputFile)
-        /// 	Using compressor As Stream = New GZipStream(raw, CompressionMode.Compress, CompressionLevel.BEST_COMPRESSION, True)
-        /// 	    Dim buffer As Byte() = New Byte(4096) {}
-        /// 	    Dim n As Integer = -1
-        /// 	    Do While (n &lt;&gt; 0)
-        /// 		If (n &gt; 0) Then
-        /// 		    compressor.Write(buffer, 0, n)
-        /// 		End If
-        /// 		n = input.Read(buffer, 0, buffer.Length)
-        /// 	    Loop
-        /// 	End Using
+        ///     Using compressor As Stream = New GZipStream(raw, CompressionMode.Compress, CompressionLevel.BEST_COMPRESSION, True)
+        ///         Dim buffer As Byte() = New Byte(4096) {}
+        ///         Dim n As Integer = -1
+        ///         Do While (n &lt;&gt; 0)
+        ///             If (n &gt; 0) Then
+        ///                 compressor.Write(buffer, 0, n)
+        ///             End If
+        ///             n = input.Read(buffer, 0, buffer.Length)
+        ///         Loop
+        ///     End Using
         ///     End Using
         /// End Using
         /// </code>
@@ -485,18 +485,23 @@ namespace Ionic.Zlib
 
         #endregion
 
-        #region System.IO.Stream methods
-        /// <summary>
-        /// Close the stream.  
-        /// </summary>
-        /// <remarks>
-        /// This may or may not close the captive stream. 
-        /// See the ctor's with leaveOpen parameters for more information.
-        /// </remarks>
-        public override void Close()
+            #region System.IO.Stream methods
+            /// <summary>
+            /// Close the stream.  
+            /// </summary>
+            /// <remarks>
+            /// This may or may not close the captive stream. 
+            /// See the ctor's with leaveOpen parameters for more information.
+            /// </remarks>
+            public override void Close()
         {
             _baseStream.Close();
             this._Crc32 = _baseStream.Crc32;
+        }
+
+        public void Dispose()
+        {
+            this.Close();
         }
 
         /// <summary>

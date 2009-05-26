@@ -508,14 +508,15 @@ namespace Ionic.Zlib
         }
 
 
-        public override void WriteByte(byte b)
-        {
-            _buf1[0] = (byte)b;
-            // workitem 7159
-            if (crc != null)
-                crc.SlurpBlock(_buf1, 0, 1);
-            Write(_buf1, 0, 1);
-        }
+        // workitem 7813 - totally unnecessary
+//         public override void WriteByte(byte b)
+//         {
+//             _buf1[0] = (byte)b;
+//             // workitem 7159
+//             if (crc != null)
+//                 crc.SlurpBlock(_buf1, 0, 1);
+//             Write(_buf1, 0, 1);
+//         }
 
 
 
@@ -684,6 +685,7 @@ namespace Ionic.Zlib
 
         public override void Close()
         {
+            if (_stream == null) return;
             try
             {
                 try
@@ -724,9 +726,9 @@ namespace Ionic.Zlib
         {
             if (Read(_buf1, 0, 1) == 0)
                 return 0;
-	    // calculate CRC after reading
-	    if (crc!=null)
-		crc.SlurpBlock(_buf1,0,1);
+            // calculate CRC after reading
+            if (crc!=null)
+                crc.SlurpBlock(_buf1,0,1);
             return (_buf1[0] & 0xFF);
         }
 #endif
