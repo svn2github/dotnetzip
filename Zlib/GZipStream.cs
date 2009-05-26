@@ -499,10 +499,6 @@ namespace Ionic.Zlib
             this._Crc32 = _baseStream.Crc32;
         }
 
-        public void Dispose()
-        {
-            this.Close();
-        }
 
         /// <summary>
         /// Indicates whether the stream can be read.

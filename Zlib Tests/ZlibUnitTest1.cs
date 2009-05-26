@@ -141,7 +141,7 @@ namespace Ionic.Zlib.Tests
         [TestMethod]
         public void Zlib_BasicDeflateAndInflate()
         {
-            string TextToCompress = LoremIpsum; //  "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Integer vulputate, nibh non rhoncus euismod, erat odio pellentesque lacus, sit amet convallis mi augue et odio. Phasellus cursus urna facilisis quam. Suspendisse nec metus et sapien scelerisque euismod. Nullam molestie sem quis nisl. Fusce pellentesque, ante sed semper egestas, sem nulla vestibulum nulla, quis sollicitudin leo lorem elementum wisi. Aliquam vestibulum nonummy orci. Sed in dolor sed enim ullamcorper accumsan. Duis vel nibh. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Sed faucibus, enim sit amet venenatis laoreet, nisl elit posuere est, ut sollicitudin tortor velit ut ipsum. Aliquam erat volutpat. Phasellus tincidunt vehicula eros. Curabitur vitae erat.";
+            string TextToCompress = LoremIpsum; 
 
             int rc;
             int bufferSize = 40000;
@@ -950,6 +950,68 @@ namespace Ionic.Zlib.Tests
 
 
 
+        [TestMethod]
+        public void Zlib_DeflateStream_InMemory()
+        {
+            string TextToCompress = "This is a test; this is a test; this is a test; this is a test; the quick brown fox jumps over the lazy dog";
+
+            // compress with Ionic and System.IO.Compression
+            for (int i = 0; i < 2; i++)
+            {
+                MemoryStream ms= new MemoryStream();
+
+                Stream compressor = null;
+                switch (i)
+                {
+                case 0:
+                    compressor= new Ionic.Zlib.DeflateStream(ms, CompressionMode.Compress, CompressionLevel.BEST_SPEED, false);
+                    break;
+                case 1:
+                    compressor = new System.IO.Compression.DeflateStream(ms, System.IO.Compression.CompressionMode.Compress, false);
+                    break;                        
+                }
+
+                TestContext.WriteLine("Text to compress is {0} bytes: '{1}'",
+                                      TextToCompress.Length, TextToCompress);
+                TestContext.WriteLine("using compressor: {0}", compressor.GetType().FullName);
+
+                StreamWriter sw = new StreamWriter(compressor, Encoding.ASCII);
+                sw.Write(TextToCompress);
+                sw.Close();
+
+                var a = ms.ToArray();
+                TestContext.WriteLine("Compressed stream is {0} bytes long", a.Length);
+            
+                // de-compress with both Ionic and System.IO.Compression
+                for (int j = 0; j < 2; j++)
+                {
+                    var slow = new MySlowMemoryStream(a); // want to force EOF
+                    Stream decompressor = null;
+
+                    switch (j)
+                    {
+                    case 0:
+                        decompressor = new Ionic.Zlib.DeflateStream(slow, CompressionMode.Decompress, false);
+                        break;
+                    case 1:
+                        decompressor = new System.IO.Compression.DeflateStream(slow, System.IO.Compression.CompressionMode.Decompress, false);
+                        break;
+                    }
+
+                    TestContext.WriteLine("using decompressor: {0}", decompressor.GetType().FullName);
+                        
+                    var sr = new StreamReader(decompressor, Encoding.ASCII);
+                    string DecompressedText = sr.ReadToEnd();
+
+                    TestContext.WriteLine("Read {0} characters: '{1}'", DecompressedText.Length, DecompressedText);
+                    TestContext.WriteLine("\n");
+                    Assert.AreEqual<String>(TextToCompress, DecompressedText);
+                }
+            }
+        }
+
+
+ 
         private const int WORKING_BUFFER_SIZE = 4000;
 
         [TestMethod]
@@ -1256,4 +1318,31 @@ namespace Ionic.Zlib.Tests
 
 
     }
+
+    
+        public class MySlowMemoryStream : MemoryStream
+        {
+            // ctor
+            public MySlowMemoryStream(byte[] bytes) : base(bytes, false) {}
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                if (count < 0)                
+                    throw new ArgumentOutOfRangeException();
+                
+                if (count == 0)                
+                    return 0;
+                
+                // force stream to read just one byte at a time
+                int NextByte = base.ReadByte();
+                if (NextByte == -1)              
+                    return 0;
+                
+                buffer[offset] = (byte) NextByte;
+                return 1;
+            }
+        }
+
+
+
 }

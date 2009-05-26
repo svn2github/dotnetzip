@@ -803,8 +803,15 @@ namespace Ionic.Zlib
 
         public override System.Int32 Read(System.Byte[] buffer, System.Int32 offset, System.Int32 count)
         {
+            // According to MS documentation, any implementation of the IO.Stream.Read function must:
+            // (a) throw an exception if offset & count reference an invalid part of the buffer,
+            //     or if count < 0, or if buffer is null
+            // (b) return 0 only upon EOF, or if count = 0
+            // (c) if not EOF, then return at least 1 byte, up to <count> bytes
+
             if (_streamMode == StreamMode.Undefined)
             {
+                if (!this._stream.CanRead) throw new ZlibException("The stream is not readable.");
                 // for the first read, set up some controls.
                 _streamMode = StreamMode.Reader;
                 // (The first reference to _z goes through the private accessor which
@@ -817,9 +824,11 @@ namespace Ionic.Zlib
             if (_streamMode != StreamMode.Reader)
                 throw new ZlibException("Cannot Read after Writing.");
 
-            if (!this._stream.CanRead) throw new ZlibException("The stream is not readable.");
-            if (count == 0)
-                return 0;
+            if (count == 0) return 0;
+            if (buffer == null) throw new ArgumentNullException("buffer");
+            if (count < 0) throw new ArgumentOutOfRangeException("count");
+            if (offset < buffer.GetLowerBound(0)) throw new ArgumentOutOfRangeException("offset");
+            if ((offset + count) > buffer.GetLength(0)) throw new ArgumentOutOfRangeException("count");
 
             int rc;
 
@@ -840,13 +849,10 @@ namespace Ionic.Zlib
                 {
                     // No data available, so try to Read data from the captive stream.
                     _z.NextIn = 0;
-                    _z.AvailableBytesIn = SharedUtils.ReadInput(_stream, _workingBuffer, 0, _workingBuffer.Length);
-                    //(bufsize<z.avail_out ? bufsize : z.avail_out));
-                    if (_z.AvailableBytesIn == -1)
-                    {
-                        _z.AvailableBytesIn = 0;
+                    _z.AvailableBytesIn = _stream.Read(_workingBuffer, 0, _workingBuffer.Length);
+                    if (_z.AvailableBytesIn == 0)
                         nomoreinput = true;
-                    }
+
                 }
                 // we have data in InputBuffer; now compress or decompress as appropriate
                 rc = (_wantCompress)
@@ -854,8 +860,7 @@ namespace Ionic.Zlib
                     : _z.Inflate(_flushMode);
 
                 if (nomoreinput && (rc == ZlibConstants.Z_BUF_ERROR))
-                    throw new ZlibException((_wantCompress ? "de" : "in") + "flating: unexpected end of stream");
-                //return (-1);  // should I throw here?
+                    return 0;
 
                 if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
                     throw new ZlibException(String.Format("{0}flating:  rc={1}  msg={2}", (_wantCompress ? "de" : "in"), rc, _z.Message));
