@@ -953,7 +953,7 @@ namespace Ionic.Zlib.Tests
         [TestMethod]
         public void Zlib_DeflateStream_InMemory()
         {
-            string TextToCompress = "This is a test; this is a test; this is a test; this is a test; the quick brown fox jumps over the lazy dog";
+            string TextToCompress = "Until he extends the circle of his compassion to all living things, man will not himself find peace. - Albert Schweitzer, early 20th-century German Nobel Peace Prize-winning mission doctor and theologian.";
 
             // compress with Ionic and System.IO.Compression
             for (int i = 0; i < 2; i++)
@@ -1007,6 +1007,76 @@ namespace Ionic.Zlib.Tests
                     TestContext.WriteLine("\n");
                     Assert.AreEqual<String>(TextToCompress, DecompressedText);
                 }
+            }
+        }
+
+
+        
+        [TestMethod]
+        public void Zlib_CloseTwice()
+        {
+            string TextToCompress = "I expect to pass through the world but once. Any good therefore that I can do, or any kindness I can show to any creature, let me do it now. Let me not defer it, for I shall not pass this way again.";
+
+            for (int i = 0; i < 3; i++)
+            {
+                MemoryStream ms1= new MemoryStream();
+
+                Stream compressor = null;
+                switch (i)
+                {
+                case 0:
+                    compressor= new DeflateStream(ms1, CompressionMode.Compress, CompressionLevel.BEST_SPEED, false);
+                    break;
+                case 1:
+                    compressor = new GZipStream(ms1, CompressionMode.Compress, false);
+                    break;                        
+                case 2:
+                    compressor = new ZlibStream(ms1, CompressionMode.Compress, false);
+                    break;                        
+                }
+
+                TestContext.WriteLine("Text to compress is {0} bytes: '{1}'",
+                                      TextToCompress.Length, TextToCompress);
+                TestContext.WriteLine("using compressor: {0}", compressor.GetType().FullName);
+
+                StreamWriter sw = new StreamWriter(compressor, Encoding.ASCII);
+                sw.Write(TextToCompress);
+                sw.Close(); // implicitly closes compressor
+                sw.Close();// implicitly closes compressor, again
+
+                compressor.Close(); // explicitly closes compressor
+                var a = ms1.ToArray();
+                TestContext.WriteLine("Compressed stream is {0} bytes long", a.Length);
+            
+                var ms2 = new MemoryStream(a);
+                Stream decompressor = null;
+
+                switch (i)
+                {
+                case 0:
+                    decompressor = new DeflateStream(ms2, CompressionMode.Decompress, false);
+                    break;
+                case 1:
+                    decompressor = new GZipStream(ms2, CompressionMode.Decompress, false);
+                    break;                        
+                case 2:
+                    decompressor = new ZlibStream(ms2, CompressionMode.Decompress, false);
+                    break;                        
+                }
+
+                TestContext.WriteLine("using decompressor: {0}", decompressor.GetType().FullName);
+                        
+                var sr = new StreamReader(decompressor, Encoding.ASCII);
+                string DecompressedText = sr.ReadToEnd();
+
+                // verify that multiple calls to Close() do not throw
+                sr.Close();
+                sr.Close();
+                decompressor.Close();
+                    
+                TestContext.WriteLine("Read {0} characters: '{1}'", DecompressedText.Length, DecompressedText);
+                TestContext.WriteLine("\n");
+                Assert.AreEqual<String>(TextToCompress, DecompressedText);
             }
         }
 
