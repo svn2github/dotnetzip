@@ -1081,11 +1081,133 @@ namespace Ionic.Zlib.Tests
         }
 
 
+        [TestMethod]
+        [ExpectedException(typeof(System.ObjectDisposedException))]
+        public void Zlib_DisposedException_DeflateStream()
+        {
+            string TextToCompress = "I expect to pass through the world but once. Any good therefore that I can do, or any kindness I can show to any creature, let me do it now. Let me not defer it, for I shall not pass this way again.";
+
+                MemoryStream ms1= new MemoryStream();
+
+                Stream compressor= new DeflateStream(ms1, CompressionMode.Compress, false);
+
+                TestContext.WriteLine("Text to compress is {0} bytes: '{1}'",
+                                      TextToCompress.Length, TextToCompress);
+                TestContext.WriteLine("using compressor: {0}", compressor.GetType().FullName);
+
+                StreamWriter sw = new StreamWriter(compressor, Encoding.ASCII);
+                sw.Write(TextToCompress);
+                sw.Close(); // implicitly closes compressor
+                sw.Close(); // implicitly closes compressor, again
+
+                compressor.Close(); // explicitly closes compressor
+                var a = ms1.ToArray();
+                TestContext.WriteLine("Compressed stream is {0} bytes long", a.Length);
+            
+                var ms2 = new MemoryStream(a);
+                Stream decompressor  = new DeflateStream(ms2, CompressionMode.Decompress, false);
+
+                TestContext.WriteLine("using decompressor: {0}", decompressor.GetType().FullName);
+                        
+                var sr = new StreamReader(decompressor, Encoding.ASCII);
+                string DecompressedText = sr.ReadToEnd();
+                sr.Close();
+
+                TestContext.WriteLine("decompressor.CanRead = {0}",decompressor.CanRead);
+                    
+                TestContext.WriteLine("Read {0} characters: '{1}'", DecompressedText.Length, DecompressedText);
+                TestContext.WriteLine("\n");
+                Assert.AreEqual<String>(TextToCompress, DecompressedText);
+            
+        }
+
+        
+        [TestMethod]
+        [ExpectedException(typeof(System.ObjectDisposedException))]
+        public void Zlib_DisposedException_GZipStream()
+        {
+            string TextToCompress = "I expect to pass through the world but once. Any good therefore that I can do, or any kindness I can show to any creature, let me do it now. Let me not defer it, for I shall not pass this way again.";
+
+            MemoryStream ms1= new MemoryStream();
+
+            Stream compressor= new GZipStream(ms1, CompressionMode.Compress, false);
+
+            TestContext.WriteLine("Text to compress is {0} bytes: '{1}'",
+                                  TextToCompress.Length, TextToCompress);
+            TestContext.WriteLine("using compressor: {0}", compressor.GetType().FullName);
+
+            StreamWriter sw = new StreamWriter(compressor, Encoding.ASCII);
+            sw.Write(TextToCompress);
+            sw.Close(); // implicitly closes compressor
+            sw.Close(); // implicitly closes compressor, again
+
+            compressor.Close(); // explicitly closes compressor
+            var a = ms1.ToArray();
+            TestContext.WriteLine("Compressed stream is {0} bytes long", a.Length);
+            
+            var ms2 = new MemoryStream(a);
+            Stream decompressor  = new GZipStream(ms2, CompressionMode.Decompress, false);
+
+            TestContext.WriteLine("using decompressor: {0}", decompressor.GetType().FullName);
+                        
+            var sr = new StreamReader(decompressor, Encoding.ASCII);
+            string DecompressedText = sr.ReadToEnd();
+            sr.Close();
+
+            TestContext.WriteLine("decompressor.CanRead = {0}",decompressor.CanRead);
+                    
+            TestContext.WriteLine("Read {0} characters: '{1}'", DecompressedText.Length, DecompressedText);
+            TestContext.WriteLine("\n");
+            Assert.AreEqual<String>(TextToCompress, DecompressedText);
+        }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(System.ObjectDisposedException))]
+        public void Zlib_DisposedException_ZlibStream()
+        {
+            string TextToCompress = "I expect to pass through the world but once. Any good therefore that I can do, or any kindness I can show to any creature, let me do it now. Let me not defer it, for I shall not pass this way again.";
+
+            MemoryStream ms1= new MemoryStream();
+
+            Stream compressor= new ZlibStream(ms1, CompressionMode.Compress, false);
+
+            TestContext.WriteLine("Text to compress is {0} bytes: '{1}'",
+                                  TextToCompress.Length, TextToCompress);
+            TestContext.WriteLine("using compressor: {0}", compressor.GetType().FullName);
+
+            StreamWriter sw = new StreamWriter(compressor, Encoding.ASCII);
+            sw.Write(TextToCompress);
+            sw.Close(); // implicitly closes compressor
+            sw.Close(); // implicitly closes compressor, again
+
+            compressor.Close(); // explicitly closes compressor
+            var a = ms1.ToArray();
+            TestContext.WriteLine("Compressed stream is {0} bytes long", a.Length);
+            
+            var ms2 = new MemoryStream(a);
+            Stream decompressor  = new ZlibStream(ms2, CompressionMode.Decompress, false);
+
+            TestContext.WriteLine("using decompressor: {0}", decompressor.GetType().FullName);
+                        
+            var sr = new StreamReader(decompressor, Encoding.ASCII);
+            string DecompressedText = sr.ReadToEnd();
+            sr.Close();
+
+            TestContext.WriteLine("decompressor.CanRead = {0}",decompressor.CanRead);
+                    
+            TestContext.WriteLine("Read {0} characters: '{1}'", DecompressedText.Length, DecompressedText);
+            TestContext.WriteLine("\n");
+            Assert.AreEqual<String>(TextToCompress, DecompressedText);
+        }
+
+
+        
  
         private const int WORKING_BUFFER_SIZE = 4000;
 
         [TestMethod]
-        public void Zlib_Streams()
+        public void Zlib_Streams_VariousSizes()
         {
             byte[] working = new byte[WORKING_BUFFER_SIZE];
             int n = -1;

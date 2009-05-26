@@ -135,8 +135,18 @@ namespace Ionic.Zlib
         /// property will return null (Nothing in VB).
         /// </para>
         /// </remarks>
-        public String Comment;
-
+        public String Comment
+        {
+            get
+            {
+                return _Comment;
+            }
+            set
+            {
+                if (_disposed) throw new ObjectDisposedException("GZipStream");
+                _Comment = value;                
+            }
+        }
 
         /// <summary>
         /// The FileName for the GZIP stream.
@@ -160,6 +170,7 @@ namespace Ionic.Zlib
             get { return _FileName; }
             set
             {
+                if (_disposed) throw new ObjectDisposedException("GZipStream");
                 _FileName = value;
                 if (_FileName == null) return;
                 if (_FileName.IndexOf("/") != -1)
@@ -196,8 +207,10 @@ namespace Ionic.Zlib
 
         private int _headerByteCount;
         internal ZlibBaseStream _baseStream;
+        bool _disposed;
         bool _firstReadDone;
         string _FileName;
+        string _Comment;
         int _Crc32;
 
 
@@ -429,7 +442,10 @@ namespace Ionic.Zlib
         virtual public FlushType FlushMode
         {
             get { return (this._baseStream._flushMode); }
-            set { this._baseStream._flushMode = value; }
+            set {
+                if (_disposed) throw new ObjectDisposedException("GZipStream");
+                this._baseStream._flushMode = value;
+            }
         }
 
         /// <summary>
@@ -456,6 +472,7 @@ namespace Ionic.Zlib
             }
             set
             {
+                if (_disposed) throw new ObjectDisposedException("GZipStream");
                 if (this._baseStream._workingBuffer != null)
                     throw new ZlibException("The working buffer is already set.");
                 if (value < ZlibConstants.WORKING_BUFFER_SIZE_MIN)
@@ -486,19 +503,33 @@ namespace Ionic.Zlib
         #endregion
 
             #region System.IO.Stream methods
+        
             /// <summary>
-            /// Close the stream.  
+            /// Dispose the stream.  
             /// </summary>
             /// <remarks>
-            /// This may or may not close the captive stream. 
+            /// This may or may not result in a Close() call on the captive stream. 
             /// See the ctor's with leaveOpen parameters for more information.
             /// </remarks>
-            public override void Close()
+        //public new void Dispose() 
+        //{
+        //    Dispose(true);
+        //    GC.SuppressFinalize(this);      
+        //}
+        protected override void Dispose(bool disposing)
         {
-            _baseStream.Close();
-            this._Crc32 = _baseStream.Crc32;
-        }
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _baseStream.Dispose();
+                    this._Crc32 = _baseStream.Crc32;
+                }
 
+                _disposed = true;
+            }
+        }
+        
 
         /// <summary>
         /// Indicates whether the stream can be read.
@@ -508,7 +539,11 @@ namespace Ionic.Zlib
         /// </remarks>
         public override bool CanRead
         {
-            get { return _baseStream._stream.CanRead; }
+            get
+            {
+                if (_disposed) throw new ObjectDisposedException("GZipStream");
+                return _baseStream._stream.CanRead;
+            }
         }
 
         /// <summary>
@@ -531,7 +566,11 @@ namespace Ionic.Zlib
         /// </remarks>
         public override bool CanWrite
         {
-            get { return _baseStream._stream.CanWrite; }
+            get
+            {
+                if (_disposed) throw new ObjectDisposedException("GZipStream");
+                return _baseStream._stream.CanWrite;
+            }
         }
 
         /// <summary>
@@ -539,6 +578,7 @@ namespace Ionic.Zlib
         /// </summary>
         public override void Flush()
         {
+            if (_disposed) throw new ObjectDisposedException("GZipStream");
             _baseStream.Flush();
         }
 
@@ -608,6 +648,7 @@ namespace Ionic.Zlib
         /// <returns>the number of bytes actually read</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if (_disposed) throw new ObjectDisposedException("GZipStream");
             int n = _baseStream.Read(buffer, offset, count);
 
             // Console.WriteLine("GZipStream::Read(buffer, off({0}), c({1}) = {2}", offset, count, n);
@@ -664,6 +705,7 @@ namespace Ionic.Zlib
         /// <param name="count">the number of bytes to write.</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
+            if (_disposed) throw new ObjectDisposedException("GZipStream");
             if (_baseStream._streamMode == Ionic.Zlib.ZlibBaseStream.StreamMode.Undefined)
             {
                 //Console.WriteLine("GZipStream: First write");
@@ -685,81 +727,6 @@ namespace Ionic.Zlib
 
         internal static System.DateTime _unixEpoch = new System.DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         internal static System.Text.Encoding iso8859dash1 = System.Text.Encoding.GetEncoding("iso-8859-1");
-
-
-#if NOTUSED
-        private int SlurpHeader(byte[] buffer, int offset)
-        {
-            int totalSlurped = 0;
-
-            byte[] header = new byte[10];
-            Array.Copy(buffer, offset, header, 0, header.Length);
-            totalSlurped += header.Length;
-            offset += header.Length;
-
-            if (header[0] != 0x1F || header[1] != 0x8B || header[2] != 8)
-                throw new ZlibException("Bad GZIP header.");
-
-            if ((header[3] & 0x04) == 0x04)  // There is an extra field
-            {
-                // slurp and discard extra field
-                Int16 extraLength = (Int16)(buffer[10] + buffer[11] * 256);
-
-                offset += 2;
-                byte[] extra = new byte[extraLength];
-
-                Array.Copy(buffer, offset, extra, 0, extra.Length);
-                totalSlurped += extra.Length;
-                offset += extra.Length;
-            }
-
-            int count = 0;
-            if ((header[3] & 0x08) == 0x08)
-            {
-                FileName = SlurpZeroTerminatedString(buffer, offset, out count);
-                totalSlurped += count;
-                offset += count;
-            }
-
-            if ((header[3] & 0x10) == 0x010)
-            {
-                Comment = SlurpZeroTerminatedString(buffer, offset, out count);
-                totalSlurped += count;
-                offset += count;
-            }
-
-            if ((header[3] & 0x02) == 0x02)
-            {
-                // CRC16, ignore the data
-                totalSlurped += 1;
-                offset += 1;
-            }
-
-            return totalSlurped;
-        }
-
-
-
-
-        private string SlurpZeroTerminatedString(byte[] buffer, int offset, out int count)
-        {
-            var list = new System.Collections.Generic.List<byte>();
-            bool done = false;
-            count = 0;
-            do
-            {
-                int ix = offset + count;
-                if (buffer[ix] == 0)
-                    done = true;
-                else
-                    list.Add(buffer[ix]);
-                count++;
-            } while (!done);
-            byte[] a = list.ToArray();
-            return GZipStream.iso8859dash1.GetString(a, 0, a.Length);
-        }
-
-#endif
 
 
         private int EmitHeader()

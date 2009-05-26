@@ -64,6 +64,7 @@ namespace Ionic.Zlib
     public class ZlibStream : System.IO.Stream
     {
         internal ZlibBaseStream _baseStream;
+        bool _disposed;
 
         /// <summary>
         /// Create a ZlibStream using the specified CompressionMode.
@@ -216,7 +217,11 @@ namespace Ionic.Zlib
         virtual public FlushType FlushMode
         {
             get { return (this._baseStream._flushMode); }
-            set { this._baseStream._flushMode = value; }
+            set
+            {
+                if (_disposed) throw new ObjectDisposedException("ZlibStream");
+                this._baseStream._flushMode = value;
+            }
         }
 
         /// <summary>
@@ -243,6 +248,7 @@ namespace Ionic.Zlib
             }
             set
             {
+                if (_disposed) throw new ObjectDisposedException("ZlibStream");
                 if (this._baseStream._workingBuffer != null)
                     throw new ZlibException("The working buffer is already set.");
                 if (value < ZlibConstants.WORKING_BUFFER_SIZE_MIN)
@@ -266,18 +272,20 @@ namespace Ionic.Zlib
         #endregion
 
         #region System.IO.Stream methods
-        /// <summary>
-        /// Close the stream.  
-        /// </summary>
-        /// <remarks>
-        /// This may or may not close the captive stream. 
-        /// See the ctor's with leaveOpen parameters for more information.
-        /// </remarks>
-        public override void Close()
-        {
-            _baseStream.Close();
-        }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _baseStream.Dispose();
+                }
+                _disposed = true;
+            }
+        }
+        
+            
         /// <summary>
         /// Indicates whether the stream can be read.
         /// </summary>
@@ -286,7 +294,11 @@ namespace Ionic.Zlib
         /// </remarks>
         public override bool CanRead
         {
-            get { return _baseStream._stream.CanRead; }
+            get
+            {
+                if (_disposed) throw new ObjectDisposedException("ZlibStream");
+                return _baseStream._stream.CanRead;
+            }
         }
 
         /// <summary>
@@ -308,7 +320,11 @@ namespace Ionic.Zlib
         /// </remarks>
         public override bool CanWrite
         {
-            get { return _baseStream._stream.CanWrite; }
+            get
+            {
+                if (_disposed) throw new ObjectDisposedException("ZlibStream");
+                return _baseStream._stream.CanWrite;
+            }
         }
 
         /// <summary>
@@ -316,6 +332,7 @@ namespace Ionic.Zlib
         /// </summary>
         public override void Flush()
         {
+            if (_disposed) throw new ObjectDisposedException("ZlibStream");
             _baseStream.Flush();
         }
 
@@ -371,6 +388,7 @@ namespace Ionic.Zlib
         /// <param name="count">the number of bytes to read.</param>
         public override int Read(byte[] buffer, int offset, int count)
         {
+                if (_disposed) throw new ObjectDisposedException("ZlibStream");
             return _baseStream.Read(buffer, offset, count);
         }
 
@@ -413,6 +431,7 @@ namespace Ionic.Zlib
         /// <param name="count">the number of bytes to write.</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
+                if (_disposed) throw new ObjectDisposedException("ZlibStream");
             _baseStream.Write(buffer, offset, count);
         }
         #endregion
@@ -535,6 +554,7 @@ namespace Ionic.Zlib
             if (count == 0)
                 return;
 
+            // first reference of z property will initialize the private var _z
             z.InputBuffer = buffer;
             _z.NextIn = offset;
             _z.AvailableBytesIn = count;
@@ -567,7 +587,7 @@ namespace Ionic.Zlib
 
         private void finish()
         {
-            if (z == null) return;
+            if (_z == null) return;
 
             if (_streamMode == StreamMode.Writer)
             {
@@ -630,7 +650,7 @@ namespace Ionic.Zlib
                         byte[] trailer = new byte[8];
 
                         if (_z.AvailableBytesIn != 8)
-                            throw new ZlibException(String.Format("Can't handle this! AvailableBytesIn={0}",
+                            throw new ZlibException(String.Format("Can't handle this! AvailableBytesIn={0}, expected 8",
                                  _z.AvailableBytesIn));
 
                         Array.Copy(_z.InputBuffer, _z.NextIn, trailer, 0, trailer.Length);
