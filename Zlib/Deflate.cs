@@ -1176,7 +1176,7 @@ namespace Ionic.Zlib
                     // To simplify the code, we prevent matches with the string
                     // of window index 0 (in particular we have to avoid a match
                     // of the string with itself at the start of the input file).
-                    if (compressionStrategy != CompressionStrategy.HUFFMAN_ONLY)
+                    if (compressionStrategy != CompressionStrategy.HuffmanOnly)
                     {
                         match_length = longest_match(hash_head);
                     }
@@ -1300,13 +1300,13 @@ namespace Ionic.Zlib
                     // of window index 0 (in particular we have to avoid a match
                     // of the string with itself at the start of the input file).
 
-                    if (compressionStrategy != CompressionStrategy.HUFFMAN_ONLY)
+                    if (compressionStrategy != CompressionStrategy.HuffmanOnly)
                     {
                         match_length = longest_match(hash_head);
                     }
                     // longest_match() sets match_start
 
-                    if (match_length <= 5 && (compressionStrategy == CompressionStrategy.FILTERED ||
+                    if (match_length <= 5 && (compressionStrategy == CompressionStrategy.Filtered ||
 					      (match_length == MIN_MATCH && strstart - match_start > 4096)))
                     {
 
@@ -1500,12 +1500,12 @@ namespace Ionic.Zlib
 
         internal int Initialize(ZlibCodec codec, CompressionLevel level)
         {
-            return Initialize(codec, level, ZlibConstants.WINDOW_BITS_MAX);
+            return Initialize(codec, level, ZlibConstants.WindowBitsMax);
         }
 
         internal int Initialize(ZlibCodec codec, CompressionLevel level, int bits)
         {
-            return Initialize(codec, level, bits, MEM_LEVEL_DEFAULT, CompressionStrategy.DEFAULT);
+            return Initialize(codec, level, bits, MEM_LEVEL_DEFAULT, CompressionStrategy.Default);
         }
 
         internal int Initialize(ZlibCodec codec, CompressionLevel level, int bits, CompressionStrategy compressionStrategy)

@@ -538,7 +538,7 @@ e.Extract(extractDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.Encryption = EncryptionAlgorithm.WinZipAes256;
-                zip1.CompressionLevel = Ionic.Zlib.CompressionLevel.BEST_COMPRESSION;
+                zip1.CompressionLevel = Ionic.Zlib.CompressionLevel.BestCompression;
                 zip1.Password = password;
 
                 for (int i = 0; i < entries; i++)

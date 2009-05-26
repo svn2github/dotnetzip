@@ -150,7 +150,7 @@ namespace Ionic.Zlib.Tests
 
             ZlibCodec compressingStream = new ZlibCodec();
 
-            rc = compressingStream.InitializeDeflate(CompressionLevel.DEFAULT);
+            rc = compressingStream.InitializeDeflate(CompressionLevel.Default);
             Assert.AreEqual<int>(ZlibConstants.Z_OK, rc, String.Format("at InitializeDeflate() [{0}]", compressingStream.Message));
 
             compressingStream.InputBuffer = System.Text.ASCIIEncoding.ASCII.GetBytes(TextToCompress);
@@ -240,12 +240,12 @@ namespace Ionic.Zlib.Tests
             //long dictId;
 
             ZlibCodec compressor = new ZlibCodec();
-            rc = compressor.InitializeDeflate(CompressionLevel.LEVEL9_BEST_COMPRESSION);
+            rc = compressor.InitializeDeflate(CompressionLevel.BestCompression);
             Assert.AreEqual<int>(ZlibConstants.Z_OK, rc, String.Format("at InitializeDeflate() [{0}]", compressor.Message));
 
             string dictionaryWord = "hello ";
             byte[] dictionary = System.Text.ASCIIEncoding.ASCII.GetBytes(dictionaryWord);
-            string TextToCompress = "hello, hello!  How are you, Joe? ";
+            string TextToCompress = "hello, hello!  How are you, Joe? I said hello. ";
             byte[] BytesToCompress = System.Text.ASCIIEncoding.ASCII.GetBytes(TextToCompress);
 
             rc = compressor.SetDictionary(dictionary);
@@ -411,7 +411,7 @@ namespace Ionic.Zlib.Tests
 
             ZlibCodec compressingStream = new ZlibCodec();
 
-            rc = compressingStream.InitializeDeflate(CompressionLevel.LEVEL1_BEST_SPEED);
+            rc = compressingStream.InitializeDeflate(CompressionLevel.Level1);
             Assert.AreEqual<int>(ZlibConstants.Z_OK, rc, String.Format("at InitializeDeflate() [{0}]", compressingStream.Message));
 
             compressingStream.OutputBuffer = compressedBytes;
@@ -429,7 +429,7 @@ namespace Ionic.Zlib.Tests
 
                     case 1:
                         // switch to no compression, keep same workBuffer (all zeroes):
-                        compressingStream.SetDeflateParams(CompressionLevel.NONE, CompressionStrategy.DEFAULT);
+                        compressingStream.SetDeflateParams(CompressionLevel.None, CompressionStrategy.Default);
                         break;
 
                     case 2:
@@ -443,7 +443,7 @@ namespace Ionic.Zlib.Tests
                                 workBuffer[j + i] = b;
                             i += j - 1;
                         }
-                        compressingStream.SetDeflateParams(CompressionLevel.LEVEL9_BEST_COMPRESSION, CompressionStrategy.FILTERED);
+                        compressingStream.SetDeflateParams(CompressionLevel.BestCompression, CompressionStrategy.Filtered);
                         break;
 
                     case 3:
@@ -517,11 +517,11 @@ namespace Ionic.Zlib.Tests
             System.IO.MemoryStream msSinkCompressed;
             System.IO.MemoryStream msSinkDecompressed;
             ZlibStream zOut;
-            String helloOriginal = "Hello, World!  This String will be compressed...";
+            String helloOriginal = "'What would things have been like [in Russia] if during periods of mass arrests people had not simply sat there, paling with terror at every bang on the downstairs door and at every step on the staircase, but understood they had nothing to lose and had boldly set up in the downstairs hall an ambush of half a dozen people?' -- Alexander Solzhenitsyn";
 
             // first, compress:
             msSinkCompressed = new System.IO.MemoryStream();
-            zOut = new ZlibStream(msSinkCompressed, CompressionMode.Compress, CompressionLevel.LEVEL9_BEST_COMPRESSION, true);
+            zOut = new ZlibStream(msSinkCompressed, CompressionMode.Compress, CompressionLevel.BestCompression, true);
             CopyStream(StringToMemoryStream(helloOriginal), zOut);
             zOut.Close();
 
@@ -755,7 +755,7 @@ namespace Ionic.Zlib.Tests
                     using (FileStream raw = new FileStream(CompressedFile, FileMode.Create))
                     {
                         using (GZipStream compressor =
-                               new GZipStream(raw, CompressionMode.Compress, CompressionLevel.BEST_COMPRESSION, true))
+                               new GZipStream(raw, CompressionMode.Compress, CompressionLevel.BestCompression, true))
                         {
                             // FileName is optional metadata in the GZip bytestream
                             if (k % 2 == 1)
@@ -860,7 +860,7 @@ namespace Ionic.Zlib.Tests
                     using (FileStream raw = new FileStream(CompressedFile, FileMode.Create))
                     {
                         using (GZipStream compressor =
-                               new GZipStream(raw, CompressionMode.Compress, CompressionLevel.BEST_COMPRESSION, true))
+                               new GZipStream(raw, CompressionMode.Compress, CompressionLevel.BestCompression, true))
                         {
                             // FileName is optional metadata in the GZip bytestream
                             if (k % 2 == 1)
@@ -955,20 +955,20 @@ namespace Ionic.Zlib.Tests
         {
             string TextToCompress = "Until he extends the circle of his compassion to all living things, man will not himself find peace. - Albert Schweitzer, early 20th-century German Nobel Peace Prize-winning mission doctor and theologian.";
 
-            // compress with Ionic and System.IO.Compression
-            for (int i = 0; i < 2; i++)
+            CompressionLevel[] levels = {CompressionLevel.Level0, CompressionLevel.Level1, CompressionLevel.Default, CompressionLevel.Level7, CompressionLevel.BestCompression};
+            // compress with various Ionic levels, and System.IO.Compression (default level)
+            for (int k= 0; k < levels.Length + 1; k++)
             {
                 MemoryStream ms= new MemoryStream();
 
                 Stream compressor = null;
-                switch (i)
-                {
-                case 0:
-                    compressor= new Ionic.Zlib.DeflateStream(ms, CompressionMode.Compress, CompressionLevel.BEST_SPEED, false);
-                    break;
-                case 1:
+                if (k == levels.Length)
+
                     compressor = new System.IO.Compression.DeflateStream(ms, System.IO.Compression.CompressionMode.Compress, false);
-                    break;                        
+                else
+                {
+                    compressor = new Ionic.Zlib.DeflateStream(ms, CompressionMode.Compress, levels[k], false);
+                    TestContext.WriteLine("using level: {0}", levels[k].ToString());
                 }
 
                 TestContext.WriteLine("Text to compress is {0} bytes: '{1}'",
@@ -1025,7 +1025,7 @@ namespace Ionic.Zlib.Tests
                 switch (i)
                 {
                 case 0:
-                    compressor= new DeflateStream(ms1, CompressionMode.Compress, CompressionLevel.BEST_SPEED, false);
+                    compressor= new DeflateStream(ms1, CompressionMode.Compress, CompressionLevel.BestCompression, false);
                     break;
                 case 1:
                     compressor = new GZipStream(ms1, CompressionMode.Compress, false);

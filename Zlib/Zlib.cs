@@ -51,71 +51,72 @@ namespace Ionic.Zlib
     public enum CompressionLevel
     {
         /// <summary>
-        /// NONE means that the data will be simply stored, with no change at all.
+        /// None means that the data will be simply stored, with no change at all.
         /// </summary>
-        NONE = 0,
+        None= 0,
         /// <summary>
-        /// Same as NONE.
+        /// Same as None.
         /// </summary>
-        LEVEL0_NONE = 0,
+        Level0 = 0,
 
         /// <summary>
         /// The fastest but least effective compression.
         /// </summary>
-        BEST_SPEED = 1,
+        BestSpeed = 1,
+
         /// <summary>
-        /// A synonym for BEST_SPEED.
+        /// A synonym for BestSpeed.
         /// </summary>
-        LEVEL1_BEST_SPEED = 1,
+        Level1 = 1,
 
         /// <summary>
         /// A little slower, but better, than level 1.
         /// </summary>
-        LEVEL2 = 2,
+        Level2 = 2,
+
         /// <summary>
         /// A little slower, but better, than level 2.
         /// </summary>
-        LEVEL3 = 3,
+        Level3 = 3,
 
         /// <summary>
         /// A little slower, but better, than level 3.
         /// </summary>
-        LEVEL4 = 4,
+        LevelL4 = 4,
         /// <summary>
-        /// A little slower, but better, than level 4.
+        /// A little slower than level 4, but with better compression.
         /// </summary>
-        LEVEL5 = 5,
+        Level5 = 5,
 
         /// <summary>
-        /// The default compression level.  Do these levels even matter?  Do people even care?  
-        /// I have never measured the speed difference.  
+        /// The default compression level, with a good balance of speed and compression efficiency.   
         /// </summary>
-        DEFAULT = 6,
+        Default = 6,
         /// <summary>
-        /// A synonym for DEFAULT.
+        /// A synonym for Default.
         /// </summary>
-        LEVEL6_DEFAULT = 6,
+        Level6 = 6,
 
         /// <summary>
         /// Pretty good compression!
         /// </summary>
-        LEVEL7 = 7,
+        Level7 = 7,
 
         /// <summary>
-        ///  Still better compression!
+        ///  Better compression than Level7!
         /// </summary>
-        LEVEL8 = 8,
+        Level8 = 8,
 
         /// <summary>
         /// The "best" compression, where best means greatest reduction in size of the input data stream. 
         /// This is also the slowest compression.
         /// </summary>
-        BEST_COMPRESSION = 9,
+        BestCompression = 9,
 
         /// <summary>
-        /// A synonym for BEST_COMPRESSION.
+        /// A synonym for BestCompression.
         /// </summary>
-        LEVEL9_BEST_COMPRESSION = 9,
+        Level9 = 9,
     }
 
     /// <summary>
@@ -128,22 +129,22 @@ namespace Ionic.Zlib
         /// <summary>
         /// The default strategy is probably the best for normal data. 
         /// </summary>
-        DEFAULT = 0,
+        Default = 0,
 
         /// <summary>
-        /// The FILTERED strategy is intended to be used most effectively with data produced by a
+        /// The <c>Filtered</c> strategy is intended to be used most effectively with data produced by a
         /// filter or predictor.  By this definition, filtered data consists mostly of small
         /// values with a somewhat random distribution.  In this case, the compression algorithm
-        /// is tuned to compress them better.  The effect ofFILTERED is to force more Huffman
-        /// coding and less string matching; it is a half-setp between DEFAULT and HUFFMAN_ONLY.
+        /// is tuned to compress them better.  The effect of <c>Filtered</c> is to force more Huffman
+        /// coding and less string matching; it is a half-setp between <c>Default</c> and <c>HuffmanOnly</c>.
         /// </summary>
-        FILTERED = 1,
+        Filtered = 1,
 
         /// <summary>
-        /// Using HUFFMAN_ONLY will force the compressor to do Huffman encoding only, with no
+        /// Using <c>HuffmanOnly</c> will force the compressor to do Huffman encoding only, with no
         /// string matching.
         /// </summary>
-        HUFFMAN_ONLY = 2,
+        HuffmanOnly = 2,
     }
 
 

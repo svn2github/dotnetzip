@@ -115,7 +115,7 @@ namespace Ionic.Zlib
         /// <summary>
         /// The compression level to use in this codec.  Useful only in compression mode.
         /// </summary>
-        public CompressionLevel CompressLevel = CompressionLevel.LEVEL6_DEFAULT;
+        public CompressionLevel CompressLevel = CompressionLevel.Default;
 
         /// <summary>
         /// The number of Window Bits to use.  
@@ -126,7 +126,7 @@ namespace Ionic.Zlib
         /// setting alone if you don't know what it is.  The maximum value is 15 bits, which implies
         /// a 32k window.  
         /// </remarks>
-        public int WindowBits = ZlibConstants.WINDOW_BITS_DEFAULT;
+        public int WindowBits = ZlibConstants.WindowBitsDefault;
 
         /// <summary>
         /// The compression strategy to use.
@@ -141,7 +141,7 @@ namespace Ionic.Zlib
         /// different strategy options and evaluates them on different file types. If you do that,
         /// let me know your results.
         /// </remarks>
-        public CompressionStrategy Strategy = CompressionStrategy.DEFAULT;
+        public CompressionStrategy Strategy = CompressionStrategy.Default;
 
 
         /// <summary>

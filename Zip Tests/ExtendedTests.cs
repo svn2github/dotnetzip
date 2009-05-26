@@ -317,7 +317,7 @@ namespace Ionic.Zip.Tests.Extended
             {
                 using (var raw = System.IO.File.Create(CompressedFile))
                 {
-                    using (var compressor = new Ionic.Zlib.GZipStream(raw, Ionic.Zlib.CompressionMode.Compress, Ionic.Zlib.CompressionLevel.BEST_COMPRESSION, true))
+                    using (var compressor = new Ionic.Zlib.GZipStream(raw, Ionic.Zlib.CompressionMode.Compress, Ionic.Zlib.CompressionLevel.BestCompression, true))
                     {
                         n = -1;
                         while (n != 0)

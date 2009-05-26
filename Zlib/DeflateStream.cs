@@ -113,7 +113,7 @@ namespace Ionic.Zlib
         /// <param name="stream">The stream which will be read or written.</param>
         /// <param name="mode">Indicates whether the DeflateStream will compress or decompress.</param>
         public DeflateStream(System.IO.Stream stream, CompressionMode mode)
-            : this(stream, mode, CompressionLevel.LEVEL6_DEFAULT, false)
+            : this(stream, mode, CompressionLevel.Default, false)
         {
         }
 
@@ -193,7 +193,7 @@ namespace Ionic.Zlib
         /// <param name="mode">Indicates whether the DeflateStream will compress or decompress.</param>
         /// <param name="leaveOpen">true if the application would like the stream to remain open after inflation/deflation.</param>
         public DeflateStream(System.IO.Stream stream, CompressionMode mode, bool leaveOpen)
-            : this(stream, mode, CompressionLevel.LEVEL6_DEFAULT, leaveOpen)
+            : this(stream, mode, CompressionLevel.Default, leaveOpen)
         {
         }
 
@@ -303,7 +303,7 @@ namespace Ionic.Zlib
             if (_disposed) throw new ObjectDisposedException("DeflateStream");
                 if (this._baseStream._workingBuffer != null)
                     throw new ZlibException("The working buffer is already set.");
-                if (value < ZlibConstants.WORKING_BUFFER_SIZE_MIN)
+                if (value < ZlibConstants.WorkingBufferSizeMin)
                     throw new ZlibException(String.Format("Don't be silly. {0} bytes?? Use a bigger buffer.", value));
                 this._baseStream._bufferSize = value;
             }
@@ -347,28 +347,30 @@ namespace Ionic.Zlib
 
         #region System.IO.Stream methods
         /// <summary>
-        /// Close the stream.  
+        /// Dispose the stream.  
         /// </summary>
         /// <remarks>
-        /// This may or may not close the captive stream. 
-        /// See the ctor's with leaveOpen parameters for more information.
+        /// This may or may not result in a Close() call on the captive stream. 
+        /// See the constructors that have a leaveOpen parameter for more information.
         /// </remarks>
-//         public override void Close()
-//         {
-//             _baseStream.Close();
-//         }
-
         protected override void Dispose(bool disposing)
         {
-            if (!_disposed)
+            try
             {
-                if (disposing)
+                if (!_disposed)
                 {
-                    _baseStream.Dispose();
+                    if (disposing && (this._baseStream != null))
+                        this._baseStream.Close();
+                    _disposed = true;
                 }
-                _disposed = true;
             }
+            finally
+            {
+                base.Dispose(disposing);
+            }
+    
         }
+
         
 
         /// <summary>

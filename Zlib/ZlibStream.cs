@@ -80,7 +80,7 @@ namespace Ionic.Zlib
         /// <param name="stream">The stream which will be read or written.</param>
         /// <param name="mode">Indicates whether the ZlibStream will compress or decompress.</param>
         public ZlibStream(System.IO.Stream stream, CompressionMode mode)
-            : this(stream, mode, CompressionLevel.LEVEL6_DEFAULT, false)
+            : this(stream, mode, CompressionLevel.Default, false)
         {
         }
 
@@ -122,7 +122,7 @@ namespace Ionic.Zlib
         /// <param name="mode">Indicates whether the ZlibStream will compress or decompress.</param>
         /// <param name="leaveOpen">true if the application would like the stream to remain open after inflation/deflation.</param>
         public ZlibStream(System.IO.Stream stream, CompressionMode mode, bool leaveOpen)
-            : this(stream, mode, CompressionLevel.LEVEL6_DEFAULT, leaveOpen)
+            : this(stream, mode, CompressionLevel.Default, leaveOpen)
         {
         }
 
@@ -251,7 +251,7 @@ namespace Ionic.Zlib
                 if (_disposed) throw new ObjectDisposedException("ZlibStream");
                 if (this._baseStream._workingBuffer != null)
                     throw new ZlibException("The working buffer is already set.");
-                if (value < ZlibConstants.WORKING_BUFFER_SIZE_MIN)
+                if (value < ZlibConstants.WorkingBufferSizeMin)
                     throw new ZlibException(String.Format("Don't be silly. {0} bytes?? Use a bigger buffer.", value));
                 this._baseStream._bufferSize = value;
             }
@@ -273,15 +273,27 @@ namespace Ionic.Zlib
 
         #region System.IO.Stream methods
 
+        /// <summary>
+        /// Dispose the stream.  
+        /// </summary>
+        /// <remarks>
+        /// This may or may not result in a Close() call on the captive stream. 
+        /// See the constructors that have a leaveOpen parameter for more information.
+        /// </remarks>
         protected override void Dispose(bool disposing)
         {
-            if (!_disposed)
+            try
             {
-                if (disposing)
+                if (!_disposed)
                 {
-                    _baseStream.Dispose();
+                    if (disposing && (this._baseStream != null))
+                        this._baseStream.Close();
+                    _disposed = true;
                 }
-                _disposed = true;
+            }
+            finally
+            {
+                base.Dispose(disposing);
             }
         }
         
@@ -451,11 +463,11 @@ namespace Ionic.Zlib
         protected internal CompressionLevel _level;
         protected internal bool _leaveOpen;
         protected internal byte[] _workingBuffer;
-        protected internal int _bufferSize = ZlibConstants.WORKING_BUFFER_SIZE_DEFAULT;
+        protected internal int _bufferSize = ZlibConstants.WorkingBufferSizeDefault;
         protected internal byte[] _buf1 = new byte[1];
 
         protected internal System.IO.Stream _stream;
-        protected internal CompressionStrategy Strategy = CompressionStrategy.DEFAULT;
+        protected internal CompressionStrategy Strategy = CompressionStrategy.Default;
 
         // workitem 7159
         Ionic.Zlib.CRC32 crc;

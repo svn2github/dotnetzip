@@ -78,7 +78,7 @@ namespace Ionic.Zip
         }
 
 
-        private Ionic.Zlib.CompressionStrategy _Strategy = Ionic.Zlib.CompressionStrategy.DEFAULT;
+        private Ionic.Zlib.CompressionStrategy _Strategy = Ionic.Zlib.CompressionStrategy.Default;
         /// <summary>
         /// The compression strategy to use for all entries. 
         /// </summary>
@@ -1765,7 +1765,7 @@ namespace Ionic.Zip
             _name = zipFileName;
             _StatusMessageTextWriter = statusMessageWriter;
             _contentsChanged = true;
-            CompressionLevel = Ionic.Zlib.CompressionLevel.DEFAULT;
+            CompressionLevel = Ionic.Zlib.CompressionLevel.Default;
             BufferSize = 8192;  // Default 
             // workitem 7685
             _entries = new System.Collections.Generic.List<ZipEntry>();

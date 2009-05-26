@@ -746,7 +746,7 @@ namespace Ionic.Zip.WinFormsExample
                 {
                     SelectNamedCompressionLevel(s);
                 }
-                else SelectNamedCompressionLevel("LEVEL6_DEFAULT");
+                else SelectNamedCompressionLevel("Default");
 
                 s = (string)AppCuKey.GetValue(_rvn_Encryption);
                 if (s != null)
