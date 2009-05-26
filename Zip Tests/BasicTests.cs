@@ -954,36 +954,104 @@ namespace Ionic.Zip.Tests.Basic
         // [ExpectedException(typeof(System.IO.FileNotFoundException))]
         public void Basic_SaveToFileStream()
         {
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Basic_SaveToFileStream.zip");
-            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-
-            string dirToZip = System.IO.Path.GetRandomFileName();
-            System.IO.Directory.CreateDirectory(dirToZip);
-
-            int filesAdded = _rnd.Next(3) + 3;
-            for (int i = 0; i < filesAdded; i++)
+            // from small numbers of files to larger numbers of files
+            for (int k = 0; k < 3; k++)
             {
-                var s = System.IO.Path.Combine(dirToZip, String.Format("tempfile-{0}.bin", i));
-                int sz = _rnd.Next(10000) + 5000;
-                TestContext.WriteLine("  Creating file: {0} sz({1})", s, sz);
-                TestUtilities.CreateAndFillFileBinary(s, sz);
+                string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("Basic_SaveToFileStream-trial{0}.zip", k));
+                Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+                string dirToZip = System.IO.Path.Combine(TopLevelDir, System.IO.Path.GetRandomFileName());
+                System.IO.Directory.CreateDirectory(dirToZip);
+
+                int filesToAdd = _rnd.Next(k * 10 + 3) + k * 10 + 3;
+                for (int i = 0; i < filesToAdd; i++)
+                {
+                    var s = System.IO.Path.Combine(dirToZip, String.Format("tempfile-{0}.bin", i));
+                    int sz = _rnd.Next(10000) + 5000;
+                    TestContext.WriteLine("  Creating file: {0} sz({1})", s, sz);
+                    TestUtilities.CreateAndFillFileBinary(s, sz);
+                }
+
+                var fileStream = File.Create(ZipFileToCreate);
+
+                using (ZipFile zip1 = new ZipFile())
+                {
+                    zip1.AddDirectory(dirToZip);
+                    zip1.Comment = "This is a Comment On the Archive (AM/PM)";
+                    zip1.Save(fileStream);
+                }
+
+                fileStream.Close();
+
+                // Verify the files are in the zip
+                Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), filesToAdd,
+                    String.Format("In trial {0}, the Zip file {1} has the wrong number of entries.", k, ZipFileToCreate));
             }
+        }
 
-            var fileStream = File.Create(ZipFileToCreate);
 
-            //  this is incorrect usage - should fail with an exception
-            using (ZipFile zip1 = new ZipFile())
+        [TestMethod]
+        public void Basic_IsText()
+        {
+            // from small numbers of files to larger numbers of files
+            for (int k = 0; k < 3; k++)
             {
-                zip1.AddDirectory(dirToZip);
-                zip1.Comment = "This is a Comment On the Archive (AM/PM)";
-                zip1.Save(fileStream);
+                string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("Basic_IsText-trial{0}.zip", k));
+                Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+                string dirToZip = System.IO.Path.Combine(TopLevelDir, System.IO.Path.GetRandomFileName());
+                System.IO.Directory.CreateDirectory(dirToZip);
+
+                int filesToAdd = _rnd.Next(33) + 11;
+                for (int i = 0; i < filesToAdd; i++)
+                {
+                    var s = System.IO.Path.Combine(dirToZip, String.Format("tempfile-{0}.txt", i));
+                    int sz = _rnd.Next(10000) + 5000;
+                    TestContext.WriteLine("  Creating file: {0} sz({1})", s, sz);
+                    TestUtilities.CreateAndFillFileText(s, sz);
+                }
+
+                using (ZipFile zip1 = new ZipFile())
+                {
+                    int count = 0;
+                    var filesToZip = System.IO.Directory.GetFiles(dirToZip);
+                    foreach (var f in filesToZip)
+                    {
+                        var e = zip1.AddFile(f, "files");
+                        switch (k)
+                        {
+                            case 0: break;
+                            case 1: if ((count % 2) == 0) e.IsText = true; break;
+                            case 2: if ((count % 2) != 0) e.IsText = true; break;
+                            case 3: e.IsText = true;  break;
+                        }
+                        count++;
+                    }
+                    zip1.Comment = "This is a Comment On the Archive (AM/PM)";
+                    zip1.Save(ZipFileToCreate);
+                }
+
+                // Verify the files are in the zip
+                Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), filesToAdd,
+                    String.Format("In trial {0}, the Zip file {1} has the wrong number of entries.", k, ZipFileToCreate));
+
+                // verify the isText setting
+                using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+                {
+                    int count = 0;
+                    foreach (var e in zip2)
+                    {
+                        switch (k)
+                        {
+                            case 0: Assert.IsFalse(e.IsText);  break;
+                            case 1: Assert.AreEqual<bool>((count % 2) == 0,e.IsText); break;
+                            case 2: Assert.AreEqual<bool>((count % 2) != 0, e.IsText); break;
+                            case 3: Assert.IsTrue(e.IsText);  break;
+                        }
+                        count++;
+                    }
+                }
             }
-
-            fileStream.Close();
-
-            // Verify the files are in the zip
-            Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), filesAdded,
-                "The Zip file has the wrong number of entries.");
         }
 
 
