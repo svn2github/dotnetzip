@@ -612,14 +612,9 @@ namespace Ionic.Zlib
                         _stream.Write(BitConverter.GetBytes(c1), 0, 4);
                         int c2 = (Int32)(crc.TotalBytesRead & 0x00000000FFFFFFFF);
                         _stream.Write(BitConverter.GetBytes(c2), 0, 4);
-
-                        //Console.WriteLine("GZipStream: Writing trailer  crc(0x{0:X8}) isize({1})", c1, c2);
-
                     }
                     else
                     {
-                        //Console.WriteLine("ZlibBaseStream::finish / Writer / GZIP / decompression");
-                        // should validate the trailer here
                         throw new ZlibException("Writing with decompression is not supported.");
                     }
                 }
@@ -688,14 +683,7 @@ namespace Ionic.Zlib
             if (_stream == null) return;
             try
             {
-                try
-                {
-                    finish();
-                }
-                catch (System.IO.IOException)
-                {
-                    // swallow exceptions?
-                }
+                finish();
             }
             finally
             {
