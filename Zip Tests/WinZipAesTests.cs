@@ -521,6 +521,58 @@ e.Extract(extractDir);
 
 
         [TestMethod]
+        public void RemoveEntryAndSave()
+        {
+            // make a few text files
+            string[] TextFiles = new string[3];
+            for (int i = 0; i < TextFiles.Length; i++)
+            {
+                TextFiles[i] = System.IO.Path.Combine(TopLevelDir, String.Format("TextFile{0}.txt", i));
+                TestUtilities.CreateAndFillFileText(TextFiles[i], _rnd.Next(4000) + 5000);
+            }
+            TestContext.WriteLine(new String('=', 66));
+            TestContext.WriteLine("RemoveEntryAndSave()");
+            for (int k = 0; k < 2; k++)
+            {
+                TestContext.WriteLine(new String('-', 55));
+                TestContext.WriteLine("Trial {0}", k);
+                string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("RemoveEntryAndSave-{0}.zip", k));
+
+                // create the zip: add some files, and Save() it
+                using (ZipFile zip = new ZipFile())
+                {
+                    if (k == 1)
+                    {
+                        TestContext.WriteLine("Specifying a password...");
+                        zip.Password = "password";
+                        zip.Encryption = EncryptionAlgorithm.WinZipAes256;
+                    }
+                    for (int i = 0; i < TextFiles.Length; i++)
+                        zip.AddFile(TextFiles[i], "");
+
+                    zip.AddFileFromString("Readme.txt", "", "This is the content");
+                    TestContext.WriteLine("Save...");
+                    zip.Save(ZipFileToCreate);
+                }
+
+                // remove a file and re-Save
+                using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+                {
+                    int entryToRemove = _rnd.Next(TextFiles.Length);
+                    TestContext.WriteLine("Removing an entry...: {0}", System.IO.Path.GetFileName(TextFiles[entryToRemove]));
+                    zip2.RemoveEntry(System.IO.Path.GetFileName(TextFiles[entryToRemove]));
+                    zip2.Save();
+                }
+
+                // Verify the files are in the zip
+                Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), TextFiles.Length,
+                 String.Format("Trial {0}: The Zip file has the wrong number of entries.", k));
+            }
+        }
+
+
+
+        [TestMethod]
         [ExpectedException(typeof(System.InvalidOperationException))]        
         public void WinZipAes_Update_SwitchCompression()
         {
