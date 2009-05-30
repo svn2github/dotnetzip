@@ -1,9 +1,32 @@
-﻿using System;
-//using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+// WinZipAesTests.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.  
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// last saved (in emacs): 
+// Time-stamp: <2009-May-30 08:40:37>
+//
+// ------------------------------------------------------------------
+//
+// This module defines the tests of the WinZIP AES Encryption capability
+// of DotNetZip.
+//
+// ------------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Ionic.Zip;
 using Ionic.Zip.Tests.Utilities;

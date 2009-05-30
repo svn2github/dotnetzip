@@ -1,14 +1,35 @@
+// Zip64Tests.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.  
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// last saved (in emacs): 
+// Time-stamp: <2009-May-30 08:41:49>
+//
+// ------------------------------------------------------------------
+//
+// This module defines the tests for the ZIP64 capability within DotNetZip.
+//
+// ------------------------------------------------------------------
+
 using System;
-//using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Ionic.Zip;
 using Ionic.Zip.Tests.Utilities;
 
-
-/// Tests for more advanced scenarios.
-/// 
 
 namespace Ionic.Zip.Tests.Zip64
 {

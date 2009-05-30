@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-May-30 08:25:49>
+// Time-stamp: <2009-May-30 08:41:59>
 //
 // ------------------------------------------------------------------
 //
@@ -31,7 +31,6 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 
 using Ionic.Zip;
 using Ionic.Zip.Tests.Utilities;
@@ -333,7 +332,6 @@ namespace Ionic.Zip.Tests
             {
                 zip1.ExtractAll("extract");
             }
-
             
             // check the files in the extract dir
             VerifyChecksums("extract", FilesToZip, checksums);

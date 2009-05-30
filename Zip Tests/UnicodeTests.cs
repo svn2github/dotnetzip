@@ -1,3 +1,28 @@
+// UnicodeTests.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2008, 2009 Dino Chiesa and Microsoft Corporation.  
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// last saved (in emacs): 
+// Time-stamp: <2009-May-30 08:39:31>
+//
+// ------------------------------------------------------------------
+//
+// This module defines the tests for the Unicode features in DotNetZip.
+//
+// ------------------------------------------------------------------
+
 ﻿
 using System;
 using System.Text;
@@ -92,29 +117,29 @@ namespace Ionic.Zip.Tests.Unicode
             for (int k = 0; k < formats.Length; k++)
             {
                 // create the subdirectory
-                string Subdir = System.IO.Path.Combine(TopLevelDir, "files" + k);
-                System.IO.Directory.CreateDirectory(Subdir);
+                string Subdir = Path.Combine(TopLevelDir, "files" + k);
+                Directory.CreateDirectory(Subdir);
 
                 // create a bunch of files
                 int NumFilesToCreate = _rnd.Next(8) + 4;
                 string[] FilesToZip = new string[NumFilesToCreate];
                 for (i = 0; i < NumFilesToCreate; i++)
                 {
-                    FilesToZip[i] = System.IO.Path.Combine(Subdir, String.Format(formats[k], i));
+                    FilesToZip[i] = Path.Combine(Subdir, String.Format(formats[k], i));
                     TestUtilities.CreateAndFillFileBinary(FilesToZip[i], _rnd.Next(5000) + 2000);
                 }
 
-                //System.IO.Directory.SetCurrentDirectory(Subdir);
+                //Directory.SetCurrentDirectory(Subdir);
 
                 // create a zipfile twice, once using Unicode, once without
                 for (int j = 0; j < 2; j++)
                 {
                     // select the name of the zip file
-                    string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("Create_UnicodeEntries_{0}_{1}.zip", k, j));
-                    Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The zip file '{0}' already exists.", ZipFileToCreate);
+                    string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Create_UnicodeEntries_{0}_{1}.zip", k, j));
+                    Assert.IsFalse(File.Exists(ZipFileToCreate), "The zip file '{0}' already exists.", ZipFileToCreate);
 
                     TestContext.WriteLine("\n\nFormat {0}, trial {1}.  filename: {2}...", k, j, ZipFileToCreate);
-                    string dirInArchive = String.Format("{0}-{1}", System.IO.Path.GetFileName(Subdir), j);
+                    string dirInArchive = String.Format("{0}-{1}", Path.GetFileName(Subdir), j);
 
                     using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
                     {
@@ -178,8 +203,8 @@ namespace Ionic.Zip.Tests.Unicode
                                };
 
             // create the subdirectory
-            string Subdir = System.IO.Path.Combine(TopLevelDir, "files");
-            System.IO.Directory.CreateDirectory(Subdir);
+            string Subdir = Path.Combine(TopLevelDir, "files");
+            Directory.CreateDirectory(Subdir);
 
             // create a bunch of files
             int NumFilesToCreate = _rnd.Next(18) + 14;
@@ -187,18 +212,18 @@ namespace Ionic.Zip.Tests.Unicode
             for (i = 0; i < NumFilesToCreate; i++)
             {
                 int k = i % formats.Length;
-                FilesToZip[i] = System.IO.Path.Combine(Subdir, String.Format(formats[k], i));
+                FilesToZip[i] = Path.Combine(Subdir, String.Format(formats[k], i));
                 TestUtilities.CreateAndFillFileBinary(FilesToZip[i], _rnd.Next(5000) + 2000);
             }
 
-            System.IO.Directory.SetCurrentDirectory(Subdir);
+            Directory.SetCurrentDirectory(Subdir);
 
             // create a zipfile twice
             for (int j = 0; j < 2; j++)
             {
                 // select the name of the zip file
-                string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("Create_UnicodeEntries_Mixed{0}.zip", j));
-                Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The zip file '{0}' already exists.", ZipFileToCreate);
+                string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Create_UnicodeEntries_Mixed{0}.zip", j));
+                Assert.IsFalse(File.Exists(ZipFileToCreate), "The zip file '{0}' already exists.", ZipFileToCreate);
 
                 using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
                 {
@@ -206,7 +231,7 @@ namespace Ionic.Zip.Tests.Unicode
                     for (i = 0; i < FilesToZip.Length; i++)
                     {
                         // use the local filename (not fully qualified)
-                        ZipEntry e = zip1.AddFile(System.IO.Path.GetFileName(FilesToZip[i]));
+                        ZipEntry e = zip1.AddFile(Path.GetFileName(FilesToZip[i]));
                     }
                     zip1.Save();
                 }
@@ -268,23 +293,23 @@ namespace Ionic.Zip.Tests.Unicode
                 TestContext.WriteLine("\n---------------------Trial {0}....", k);
                 TestContext.WriteLine("\n---------------------codepage: {0}....", trials[k].codepage);
                 // create the subdirectory
-                string Subdir = System.IO.Path.Combine(TopLevelDir, String.Format("trial{0}-files", k));
-                System.IO.Directory.CreateDirectory(Subdir);
+                string Subdir = Path.Combine(TopLevelDir, String.Format("trial{0}-files", k));
+                Directory.CreateDirectory(Subdir);
 
                 // create a bunch of files
                 int NumFilesToCreate = _rnd.Next(3) + 3;
                 string[] FilesToZip = new string[NumFilesToCreate];
                 for (i = 0; i < NumFilesToCreate; i++)
                 {
-                    FilesToZip[i] = System.IO.Path.Combine(Subdir, String.Format(trials[k].filenameFormat, i));
+                    FilesToZip[i] = Path.Combine(Subdir, String.Format(trials[k].filenameFormat, i));
                     TestUtilities.CreateAndFillFileBinary(FilesToZip[i], _rnd.Next(5000) + 2000);
                 }
 
-                System.IO.Directory.SetCurrentDirectory(Subdir);
+                Directory.SetCurrentDirectory(Subdir);
 
                 // select the name of the zip file
-                string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("Create_WithSpecifiedCodepage_{0}_{1}.zip", k, trials[k].codepage));
-                Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The zip file '{0}' already exists.", ZipFileToCreate);
+                string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Create_WithSpecifiedCodepage_{0}_{1}.zip", k, trials[k].codepage));
+                Assert.IsFalse(File.Exists(ZipFileToCreate), "The zip file '{0}' already exists.", ZipFileToCreate);
 
                 TestContext.WriteLine("\n---------------------Creating zip....");
 
@@ -295,14 +320,14 @@ namespace Ionic.Zip.Tests.Unicode
                     {
                         TestContext.WriteLine("adding entry {0}", FilesToZip[i]);
                         // use the local filename (not fully qualified)
-                        ZipEntry e = zip1.AddFile(System.IO.Path.GetFileName(FilesToZip[i]));
+                        ZipEntry e = zip1.AddFile(Path.GetFileName(FilesToZip[i]));
                         e.Comment = String.Format("This entry was encoded in the {0} codepage", trials[k].codepage);
                     }
                     zip1.Save();
                 }
 
                 TestContext.WriteLine("\n---------------------Extracting....");
-                System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+                Directory.SetCurrentDirectory(TopLevelDir);
 
                 try
                 {

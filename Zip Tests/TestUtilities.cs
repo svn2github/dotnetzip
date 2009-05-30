@@ -1,6 +1,31 @@
+// TestUtilities.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.  
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// last saved (in emacs): 
+// Time-stamp: <2009-May-30 08:37:08>
+//
+// ------------------------------------------------------------------
+//
+// This module defines some utility classes used by the unit tests for
+// DotNetZip.
+//
+// ------------------------------------------------------------------
+
 ﻿using System;
 using System.Collections.Generic;
-//using System.Linq;
 using System.Text;
 using Ionic.Zip;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

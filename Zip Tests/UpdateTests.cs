@@ -1,3 +1,28 @@
+// UpdateTests.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.  
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// last saved (in emacs): 
+// Time-stamp: <2009-May-30 08:41:07>
+//
+// ------------------------------------------------------------------
+//
+// This module defines tests for updating zip files via DotNetZip.
+//
+// ------------------------------------------------------------------
+
 using System;
 using System.Text;
 using System.Collections.Generic;

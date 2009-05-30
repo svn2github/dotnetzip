@@ -1,3 +1,28 @@
+// PasswordTests.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2008, 2009 Dino Chiesa and Microsoft Corporation.  
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// last saved (in emacs): 
+// Time-stamp: <2009-May-30 08:38:09>
+//
+// ------------------------------------------------------------------
+//
+// This module provides tests for password features. 
+//
+// ------------------------------------------------------------------
+
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
@@ -91,12 +116,12 @@ namespace Ionic.Zip.Tests.Password
                 for (int j = 0; j < Passwords.Length; j++)
                 {
                     TestContext.WriteLine("\n\n===================\nTrial ({0}) pw({1})", j, Passwords[j]);
-                    string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, String.Format("Password_BasicAddAndExtract-{0}-{1}.zip", k, j));
-                    Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+                    string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Password_BasicAddAndExtract-{0}-{1}.zip", k, j));
+                    Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
-                    System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+                    Directory.SetCurrentDirectory(TopLevelDir);
                     string DirToZip = String.Format("zipthis-{0}-{1}", k, j);
-                    System.IO.Directory.CreateDirectory(DirToZip);
+                    Directory.CreateDirectory(DirToZip);
 
                     TestContext.WriteLine("\n---------------------creating files and computing checksums...");
                     int NumFilesToCreate = _rnd.Next(10) + 10;
@@ -109,19 +134,19 @@ namespace Ionic.Zip.Tests.Password
                         //int sz = 1000;
                         var repeatedLine = String.Format("Line to Repeat... {0} {1} {2} filename: {3}", i, k, j, filenames[i]);
                         TestUtilities.CreateAndFillFileText(filenames[i], repeatedLine, sz);
-                        string key = System.IO.Path.GetFileName(filenames[i]);
+                        string key = Path.GetFileName(filenames[i]);
                         checksums.Add(key, TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filenames[i])));
                         TestContext.WriteLine("  chk[{0}]={1}", key, checksums[key]);
                     }
 
                     TestContext.WriteLine("\n---------------------adding files to the archive...");
 
-                    var sw = new System.IO.StringWriter();
+                    var sw = new StringWriter();
                     using (ZipFile zip = new ZipFile(ZipFileToCreate, sw))
                     {
                         zip.ForceNoCompression = ForceCompressionOptions[k];
                         zip.Password = Passwords[j];
-                        zip.AddDirectory(System.IO.Path.GetFileName(DirToZip));
+                        zip.AddDirectory(Path.GetFileName(DirToZip));
                         zip.Save();
                     }
                     TestContext.WriteLine(sw.ToString());
@@ -159,8 +184,8 @@ namespace Ionic.Zip.Tests.Password
         [TestMethod]
         public void Password_MultipleEntriesDifferentPasswords()
         {
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Password_MultipleEntriesDifferentPasswords.zip");
-            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            string ZipFileToCreate = Path.Combine(TopLevelDir, "Password_MultipleEntriesDifferentPasswords.zip");
+            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
             string SourceDir = CurrentDir;
             for (int i = 0; i < 3; i++)
@@ -217,8 +242,8 @@ namespace Ionic.Zip.Tests.Password
         [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
         public void Password_Extract_WrongPassword()
         {
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "MultipleEntriesDifferentPasswords.zip");
-            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            string ZipFileToCreate = Path.Combine(TopLevelDir, "MultipleEntriesDifferentPasswords.zip");
+            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
             string SourceDir = CurrentDir;
             for (int i = 0; i < 3; i++)
@@ -261,8 +286,8 @@ namespace Ionic.Zip.Tests.Password
         [TestMethod]
         public void Password_AddEntryWithPasswordToExistingZip()
         {
-            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Password_AddEntryWithPasswordToExistingZip.zip");
-            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            string ZipFileToCreate = Path.Combine(TopLevelDir, "Password_AddEntryWithPasswordToExistingZip.zip");
+            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
             string DirToZip = Path.Combine(TopLevelDir, "zipthis");
             Directory.CreateDirectory(DirToZip);
