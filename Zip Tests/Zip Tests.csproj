@@ -47,6 +47,7 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compatibility.cs" />
     <Compile Include="ErrorTests.cs" />
     <Compile Include="ExtendedTests.cs" />
     <Compile Include="PasswordTests.cs" />
@@ -69,6 +70,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\VbsUnzip.vbs" />
+    <EmbeddedResource Include="Resources\VbsCreateZip.vbs" />
     <Content Include="zips\winzip-AES128-pw-ThunderScalpXXX%24.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

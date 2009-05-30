@@ -1,12 +1,30 @@
 // ZipEntry.cs
+// ------------------------------------------------------------------
 //
-// Copyright (c) 2006, 2007, 2008, 2009 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2006, 2007, 2008, 2009 Dino Chiesa and Microsoft Corporation.  
+// All rights reserved.
 //
-// Part of an implementation of a zipfile class library. 
-// See the file ZipFile.cs for the license and for further information.
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// last saved (in emacs): 
+// Time-stamp: <2009-May-29 17:34:03>
+//
+// ------------------------------------------------------------------
+//
+// This module defines the ZipEntry class, which models the entries within a zip file.
 //
 // Created: Tue, 27 Mar 2007  15:30
 // 
+// ------------------------------------------------------------------
+
 
 using System;
 using System.IO;

@@ -1,13 +1,32 @@
 #define OPTIMIZE_WI6612
 
 // ZipDirEntry.cs
+// ------------------------------------------------------------------
 //
-// Copyright (c) 2006, 2007, 2008 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2006, 2007, 2008, 2009 Dino Chiesa and Microsoft Corporation.  
+// All rights reserved.
 //
-// Part of an implementation of a zipfile class library. 
-// See the file ZipFile.cs for the license and for further information.
+// This code module is part of DotNetZip, a zipfile class library.
 //
-// Tue, 27 Mar 2007  15:30
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// last saved (in emacs): 
+// Time-stamp: <2009-May-29 17:37:01>
+//
+// ------------------------------------------------------------------
+//
+// This module defines members of the ZipEntry class for reading the
+// Zip file central directory.
+//
+// Created: Tue, 27 Mar 2007  15:30
+// 
+// ------------------------------------------------------------------
 
 
 using System;

@@ -1,9 +1,11 @@
 // ZipFile.cs
 //
-// Copyright (c) 2006, 2007, 2008, 2009 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2006, 2007, 2008, 2009 Dino Chiesa and Microsoft Corporation.
+// All rights reserved.
 //
-// This class library reads and writes zip files, according to the format
-// described by pkware, at:
+// This module is part of DotNetZip, a zipfile class library. 
+// The class library reads and writes zip files, according to the format
+// described by PKware, at:
 // http://www.pkware.com/business_and_developers/developer/popups/appnote.txt
 //
 // This implementation was originally based on the
@@ -617,7 +619,7 @@ namespace Ionic.Zip
         /// after your application has read in the zip archive will not affect the entry names of
         /// entries that have already been read in, and is probably not what you want.
         /// </para>
-        ///	
+        ///     
         /// <para>
         /// And now, the exception to the rule described above.  One strategy for specifying the
         /// code page for a given zip file is to describe the code page in a human-readable form in
@@ -2371,15 +2373,15 @@ namespace Ionic.Zip
             if (preserveDirHierarchy)
             {
                 foreach (var f in fileNames)
-		{
+                {
                     if (directoryPathInArchive != null)
-		    {
-			string s = SharedUtilities.NormalizePath(Path.Combine(directoryPathInArchive, Path.GetDirectoryName(f)));
+                    {
+                        string s = SharedUtilities.NormalizePath(Path.Combine(directoryPathInArchive, Path.GetDirectoryName(f)));
                         this.AddFile(f, s);
-		    }
+                    }
                     else
                         this.AddFile(f, null);
-		}
+                }
             }
             else
             {
@@ -2842,7 +2844,7 @@ namespace Ionic.Zip
         ///
         /// <remarks>
         /// No file need exist or is created in the filesystem. The string is encoded using the default 
-	/// text encoding. 
+        /// text encoding. 
         /// </remarks>
         ///
         /// <param name="content">The content of the file, should it be extracted from the zip.</param>
@@ -4766,10 +4768,10 @@ namespace Ionic.Zip
             if (zf.Verbose && !String.IsNullOrEmpty(zf.Comment))
                 zf.StatusMessageTextWriter.WriteLine("Zip file Comment: {0}", zf.Comment);
 
-	    // We keep the read stream open after reading. 
+            // We keep the read stream open after reading. 
 
-	    if (zf.Verbose)
-		zf.StatusMessageTextWriter.WriteLine("read in {0} entries.", zf._entries.Count);
+            if (zf.Verbose)
+                zf.StatusMessageTextWriter.WriteLine("read in {0} entries.", zf._entries.Count);
 
             zf.OnReadCompleted();
         }
@@ -6089,7 +6091,7 @@ namespace Ionic.Zip
                         {
                             // workitem 7704
 #if NETCF20
-			    _readstream.Close();
+                            _readstream.Close();
 #else
                             _readstream.Dispose();
 #endif
@@ -6103,7 +6105,7 @@ namespace Ionic.Zip
                         {
                             // workitem 7704
 #if NETCF20
-			    _writestream.Close();
+                            _writestream.Close();
 #else
                             _writestream.Dispose();
 #endif

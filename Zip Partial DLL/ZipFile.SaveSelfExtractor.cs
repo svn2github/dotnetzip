@@ -1,11 +1,30 @@
-// ZipFile.CreateSelfExtractor.cs
+// ZipFile.saveSelfExtractor.cs
 // ------------------------------------------------------------------
 //
-// ZipFile is set up as a "partial class" - defined in multiple .cs source modules.
+// Copyright (c)  2008, 2009 Dino Chiesa.  
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// last saved (in emacs): 
+// Time-stamp: <2009-May-29 17:38:24>
+//
+// ------------------------------------------------------------------
 //
 // This is a the source module that implements the stuff for saving to a
 // self-extracting Zip archive.
 // 
+// ZipFile is set up as a "partial class" - defined in multiple .cs source modules.
+// This is one of the source modules for the ZipFile class.
+//
 // Here's the design: The self-extracting zip file is just a regular managed EXE
 // file, with embedded resources.  The managed code logic instantiates a ZipFile, and
 // then extracts each entry.  The embedded resources include the zip archive content,
@@ -39,11 +58,6 @@
 // to have a "compile" build action.  Then tweak em, test, etc.  Then again mark them as 
 // "Embedded resource". 
 //
-// ------------------------------------------------------------------
-//
-// Copyright (c) 2008 by Dino Chiesa
-// All rights reserved!
-// 
 // ------------------------------------------------------------------
 
 using System;

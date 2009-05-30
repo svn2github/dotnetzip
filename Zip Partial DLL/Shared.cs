@@ -1,12 +1,28 @@
 // Shared.cs
+// ------------------------------------------------------------------
 //
-// Copyright (c) 2006, 2007 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2006, 2007, 2008, 2009 Dino Chiesa and Microsoft Corporation.  
+// All rights reserved.
 //
-// Part of an implementation of a zipfile class library. 
-// See the file ZipFile.cs for further information.
+// This code module is part of DotNetZip, a zipfile class library.
 //
-// Tue, 27 Mar 2007  15:30
-
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// last saved (in emacs): 
+// Time-stamp: <2009-May-29 17:31:32>
+//
+// ------------------------------------------------------------------
+//
+// This module defines some shared utility classes and methods.
+//
+// Created: Tue, 27 Mar 2007  15:30
+// 
 
 using System;
 
