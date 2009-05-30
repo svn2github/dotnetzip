@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-May-29 23:16:39>
+// Time-stamp: <2009-May-29 23:56:15>
 //
 // ------------------------------------------------------------------
 //
@@ -248,9 +248,8 @@ namespace Ionic.Zip.Tests
             string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Compat_ShellApplication_Zip.zip");
             Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
-                        DiagnoseEmbeddedItems();
+            DiagnoseEmbeddedItems();
             
-
             string Subdir = System.IO.Path.Combine(TopLevelDir, "files");
 
             // create a bunch of files
@@ -313,7 +312,116 @@ namespace Ionic.Zip.Tests
             Assert.AreEqual<Int32>(0, checksums.Count, "Not all of the expected files were found in the extract directory.");
         }
 
+
         
+        [TestMethod]
+        public void Compat_VStudio_Zip()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Compat_VStudio_Zip.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            string Subdir = Path.Combine(TopLevelDir, "files");
+
+            // create a bunch of files
+            string[] FilesToZip = TestUtilities.GenerateFilesFlat(Subdir);
+
+            // get checksums for each one
+            var checksums = new Dictionary<string, byte[]>();
+            foreach (var f in FilesToZip)
+            {
+                var key = System.IO.Path.GetFileName(f);
+                var chk = TestUtilities.ComputeChecksum(f);
+                checksums.Add(key, chk);
+            }
+            
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+            
+            String[] a= Array.ConvertAll(FilesToZip,  x => Path.GetFileName(x) );
+            Microsoft.VisualStudio.Zip.ZipFileCompressor afc = new Microsoft.VisualStudio.Zip.ZipFileCompressor(ZipFileToCreate, "files", a, true);
+
+            // Verify the number of files in the zip
+            Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), FilesToZip.Length,
+                                 "Incorrect number of entries in the zip file.");
+
+            // unzip
+            using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
+            {
+                zip1.ExtractAll("extract");
+            }
+
+            
+            // check the files in the extract dir
+            foreach (var fqPath in FilesToZip)
+            {
+                var f = Path.GetFileName(fqPath);
+                var extractedFile = Path.Combine("extract", f);
+                Assert.IsTrue(File.Exists(extractedFile), "File does not exist ({0})", extractedFile);
+                var chk = TestUtilities.ComputeChecksum(extractedFile);
+                Assert.AreEqual<String>(TestUtilities.CheckSumToString(checksums[f]),
+                                         TestUtilities.CheckSumToString(chk),
+                                         String.Format("Checksums for file {0} do not match.", f));
+                checksums.Remove(f);
+            }
+
+            Assert.AreEqual<Int32>(0, checksums.Count, "Not all of the expected files were found in the extract directory.");
+        }
+
+
+                
+        [TestMethod]
+        public void Compat_VStudio_UnZip()
+        {
+            string ZipFileToCreate = System.IO.Path.Combine(TopLevelDir, "Compat_VStudio_UnZip.zip");
+            Assert.IsFalse(System.IO.File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+            string Subdir = Path.Combine(TopLevelDir, "files");
+
+            // create a bunch of files
+            string[] FilesToZip = TestUtilities.GenerateFilesFlat(Subdir);
+
+            // get checksums for each one
+            var checksums = new Dictionary<string, byte[]>();
+            foreach (var f in FilesToZip)
+            {
+                var key = System.IO.Path.GetFileName(f);
+                var chk = TestUtilities.ComputeChecksum(f);
+                checksums.Add(key, chk);
+            }
+            
+            // Create the zip archive
+            System.IO.Directory.SetCurrentDirectory(TopLevelDir);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                //zip.StatusMessageTextWriter = System.Console.Out;
+                for (int i = 0; i < FilesToZip.Length; i++)
+                    zip1.AddItem(FilesToZip[i], "files");
+                zip1.Save(ZipFileToCreate);
+            }
+
+            // Verify the number of files in the zip
+            Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), FilesToZip.Length,
+                                 "Incorrect number of entries in the zip file.");
+
+            // unzip
+            var decompressor = new Microsoft.VisualStudio.Zip.ZipFileDecompressor(ZipFileToCreate, false, true, false);
+            decompressor.UncompressToFolder("extract", false);
+
+            
+            // check the files in the extract dir
+            foreach (var fqPath in FilesToZip)
+            {
+                var f = Path.GetFileName(fqPath);
+                var extractedFile = Path.Combine("extract", Path.Combine("files", f));
+                Assert.IsTrue(File.Exists(extractedFile), "File does not exist ({0})", extractedFile);
+                var chk = TestUtilities.ComputeChecksum(extractedFile);
+                Assert.AreEqual<String>(TestUtilities.CheckSumToString(checksums[f]),
+                                         TestUtilities.CheckSumToString(chk),
+                                         String.Format("Checksums for file {0} do not match.", f));
+                checksums.Remove(f);
+            }
+
+            Assert.AreEqual<Int32>(0, checksums.Count, "Not all of the expected files were found in the extract directory.");
+        }
 
     }
 
