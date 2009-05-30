@@ -74,8 +74,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\VbsUnzip.vbs" />
-    <EmbeddedResource Include="Resources\VbsCreateZip.vbs" />
+    <EmbeddedResource Include="Resources\VbsUnzip-ShellApp.vbs" />
+    <EmbeddedResource Include="Resources\VbsCreateZip-ShellApp.vbs" />
+    <EmbeddedResource Include="Resources\VbsCreateZip-DotNetZip.vbs" />
+    <EmbeddedResource Include="Resources\VbsUnZip-DotNetZip.vbs" />
     <Content Include="zips\winzip-AES128-pw-ThunderScalpXXX%24.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
