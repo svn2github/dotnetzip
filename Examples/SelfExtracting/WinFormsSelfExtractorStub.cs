@@ -1,3 +1,31 @@
+// WinFormsSelfExtractorStub.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c)  2008, 2009 Dino Chiesa.  
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// last saved (in emacs): 
+// Time-stamp: <2009-June-01 23:54:24>
+//
+// ------------------------------------------------------------------
+//
+// This is a the source module that implements the stub of a
+// WinForms self-extracting Zip archive - the code included in all
+// GUI SFX files.  This code is included as a resource into the
+// DotNetZip DLL, and then is compiled at runtime when a SFX is saved. 
+//
+// ------------------------------------------------------------------
+
 namespace Ionic.Zip
 {
     // The using statements must be inside the namespace scope, because when the SFX is being 
@@ -324,7 +352,7 @@ namespace Ionic.Zip
                     // else, nothing.
                                              
                 }
-                catch { }
+                catch {  }
             }
         }
         

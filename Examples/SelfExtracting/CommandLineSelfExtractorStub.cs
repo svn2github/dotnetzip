@@ -1,37 +1,48 @@
 // CommandLineSelfExtractorStub.cs
 // ------------------------------------------------------------------
 //
-// The stub for the command-line self-extractor....
-// 
-// Author: Dinoch
-// built on host: DINOCH-2
-// Created Fri Jun 06 14:51:31 2008
+// Copyright (c)  2008, 2009 Dino Chiesa.  
+// All rights reserved.
 //
-// last saved: 
-// Time-stamp: <2009-May-15 17:09:03>
-// ------------------------------------------------------------------
-//
-// Copyright (c) 2008 by Dino Chiesa
-// All rights reserved!
-// 
+// This code module is part of DotNetZip, a zipfile class library.
 //
 // ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// last saved (in emacs): 
+// Time-stamp: <2009-June-02 01:31:23>
+//
+// ------------------------------------------------------------------
+//
+// This is a the source module that implements the stub of a
+// command-line self-extracting Zip archive - the code included in all
+// command-line SFX files.  This code is included as a resource into the
+// DotNetZip DLL, and then is compiled at runtime when a SFX is saved. 
+//
+// ------------------------------------------------------------------
+
 
 namespace Ionic.Zip
 {
 
-using System;
-using System.Reflection;
-using System.Resources;
-using System.IO;
-using Ionic.Zip;
-
+    // include the using statements inside the namespace decl, because
+    // source code will be concatenated together before compilation. 
+    using System;
+    using System.Reflection;
+    using System.Resources;
+    using System.IO;
+    using Ionic.Zip;
 
     public class SelfExtractor
     {
         const string DllResourceName = "Ionic.Zip.dll";
 
-        string TargetDirectory = null;
+        string TargetDirectory = "@@EXTRACTLOCATION";
         string PostUnpackCmdLine = "@@POST_UNPACK_CMD_LINE";
         bool WantOverwrite = false;
         bool ListOnly = false;
@@ -55,7 +66,13 @@ using Ionic.Zip;
             return !(PostUnpackCmdLine.StartsWith("@@") && 
                      PostUnpackCmdLine.EndsWith("POST_UNPACK_CMD_LINE"));
         }
-        
+
+        private bool TargetDirectoryIsSet()
+        {
+            return !(TargetDirectory.StartsWith("@@") && 
+                     TargetDirectory.EndsWith("EXTRACTLOCATION"));
+        }
+
         // ctor
         private SelfExtractor() { }
 
@@ -87,7 +104,7 @@ using Ionic.Zip;
                         break;
                     default:
                         // positional args
-                        if (TargetDirectory == null)
+                        if (!TargetDirectoryIsSet())
                             TargetDirectory = args[i];
                         else
                             Usage();
@@ -98,11 +115,9 @@ using Ionic.Zip;
             if (wantUsage)
                 Usage();
 
-            if (!ListOnly && TargetDirectory == null)
-            {
-                Console.WriteLine("No target directory specified.\n");
-                Usage();
-            }
+            if (!ListOnly && !TargetDirectoryIsSet())
+                TargetDirectory = ".";  // cwd
+
             if (ListOnly && (WantOverwrite || Verbose))
             {
                 Console.WriteLine("Inconsistent options.\n");
@@ -128,9 +143,9 @@ using Ionic.Zip;
         }
 
 
-        public void Run()
+        public int Run()
         {
-            if (wantUsage) return;
+            if (wantUsage) return 0;
             //string currentPassword = null;
 
             // There are only two embedded resources.
@@ -138,6 +153,8 @@ using Ionic.Zip;
             // We load the resouce that is NOT the DLL, as the zip archive.
             Assembly a = Assembly.GetExecutingAssembly();
 
+
+            int rc = 0;
             try
             {
                 // workitem 7067
@@ -182,6 +199,8 @@ using Ionic.Zip;
                                 catch (Exception ex1)
                                 {
                                     Console.WriteLine("Failed to extract entry {0} -- {1}", entry.FileName, ex1.ToString());
+                                    rc++;
+                                    break;
                                 }
                             }
                             else
@@ -208,9 +227,11 @@ using Ionic.Zip;
             catch (Exception)
             {
                 Console.WriteLine("The self-extracting zip file is corrupted.");
-                return;
+                return 4;
             }
 
+            if (rc != 0) return rc;
+            
             // potentially execute the embedded command
             if (PostUnpackCmdLineIsSet())
             {
@@ -223,20 +244,32 @@ using Ionic.Zip;
                     try
                     {
                         string[] args = PostUnpackCmdLine.Split( new char[] {' '}, 2);
-                    
+
+                        Directory.SetCurrentDirectory(TargetDirectory);
+                        System.Diagnostics.Process p = null;
                         if (args.Length > 1)
-                            System.Diagnostics.Process.Start(args[0], args[1]);
+                            p = System.Diagnostics.Process.Start(args[0], args[1]);
                     
                         else if (args.Length == 1)
-                            System.Diagnostics.Process.Start(args[0]);
+                            p = System.Diagnostics.Process.Start(args[0]);
                         // else, nothing.
+
+                        if (p!=null)
+                        {
+                            p.WaitForExit();
+                            rc = p.ExitCode;
+                        }
                                              
                     }
-                    catch { }
+                    catch
+                    {
+                        rc = 5;
+                    }
                     
                 }
             }
-                
+
+            return rc;
         }
 
 
@@ -257,17 +290,20 @@ using Ionic.Zip;
 
 
 
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
+            int rc = 0;
             try
             {
                 SelfExtractor me = new SelfExtractor(args);
-                me.Run();
+                rc = me.Run();
             }
             catch (System.Exception exc1)
             {
                 Console.WriteLine("Exception while extracting: {0}", exc1.ToString());
+                rc = 255;
             }
+            return rc;
         }
 
     }

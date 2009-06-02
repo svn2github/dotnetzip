@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-May-29 17:38:24>
+// Time-stamp: <2009-June-02 01:30:35>
 //
 // ------------------------------------------------------------------
 //
@@ -286,14 +286,27 @@ namespace Ionic.Zip
         /// <param name="exeToGenerate">The name of the EXE to generate.</param>
         /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
         /// <param name="defaultExtractDirectory">
-        /// The default extract directory the user will see when running the self-extracting 
-        /// archive. Passing null (or Nothing in VB) here will cause the Self Extractor to 
-        /// use the the user's personal directory 
-        /// (<see cref="Environment.SpecialFolder.Personal"/>) for the default extract 
-        /// location.
+        /// The default extract directory the user will see when running the self-extracting
+        /// archive. Passing null (or Nothing in VB) here, if flavor is
+        /// <c>SelfExtractorFlavor.WinFormsApplication</c>, will cause the Self Extractor to
+        /// use the the user's personal directory (<see
+        /// cref="Environment.SpecialFolder.Personal"/>) for the default extract location.
+        /// Passing null when flavor is <c>SelfExtractorFlavor.ConsoleApplication</c> will
+        /// cause the self-extractor to use the current directory for the default extract
+        /// location; it will also be settable on the command line when the SFX is executed.
         /// </param>
         /// <param name ="postExtractCommandToExecute">
-        /// The command to execute on the user's machine, after unpacking the archive. 
+        /// The command to execute on the user's machine, after unpacking the archive. If the
+        /// flavor is <c>SelfExtractorFlavor.ConsoleApplication</c>, then the SFX changes the
+        /// current directory to the extract directory, and starts the post-extract command
+        /// and waits for it to exit.  The exit code of the post-extract command line is
+        /// returned as the exit code of the self-extractor exe.  A non-zero exit code is
+        /// typically used to indicated a failure by the program. In the case of an SFX, a
+        /// non-zero exit code may indicate a failure during extraction, OR, it may indicate a
+        /// failure of the run-on-extract program if specified. There is no way to distinguish
+        /// these conditions from the calling shell, aside from parsing output.  The GUI self
+        /// extractor simply starts the post-extract command and exits; it does not wait for
+        /// the command to exit first.
         /// </param>
         public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor, string defaultExtractDirectory, string postExtractCommandToExecute)
         {
@@ -516,8 +529,8 @@ namespace Ionic.Zip
  
 
                 // Set the default extract location if it is available, and if supported.
-                // The Console based self-extractor does not support a default extract location. 
-                bool haveLocation = (flavor == SelfExtractorFlavor.WinFormsApplication && _defaultExtractLocation != null);
+
+                bool haveLocation = (_defaultExtractLocation != null);
                 if (haveLocation)
                     _defaultExtractLocation = _defaultExtractLocation.Replace("\"", "").Replace("\\", "\\\\");
 
