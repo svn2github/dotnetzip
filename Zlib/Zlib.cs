@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-May-31 09:21:25>
+// Time-stamp: <2009-June-02 10:48:55>
 //
 // ------------------------------------------------------------------
 //
@@ -237,12 +237,23 @@ namespace Ionic.Zlib
         /// <returns>The resulting number from the shift operation</returns>
         public static int URShift(int number, int bits)
         {
-            if (number >= 0)
-                return number >> bits;
-            else
-                return (number >> bits) + (2 << ~bits);
+            return (int)((uint)number >> bits);
         }
 
+        /// <summary>
+        /// Performs an unsigned bitwise right shift with the specified number
+        /// </summary>
+        /// <param name="number">Number to operate on</param>
+        /// <param name="bits">Ammount of bits to shift</param>
+        /// <returns>The resulting number from the shift operation</returns>
+        public static long URShift(long number, int bits)
+        {
+            return (long) ((UInt64)number >> bits);
+        }
+
+
+        #if NOTUSED
+        
         /// <summary>
         /// Performs an unsigned bitwise right shift with the specified number
         /// </summary>
@@ -260,26 +271,13 @@ namespace Ionic.Zlib
         /// <param name="number">Number to operate on</param>
         /// <param name="bits">Ammount of bits to shift</param>
         /// <returns>The resulting number from the shift operation</returns>
-        public static long URShift(long number, int bits)
-        {
-            if (number >= 0)
-                return number >> bits;
-            else
-                return (number >> bits) + (2L << ~bits);
-        }
-
-        /// <summary>
-        /// Performs an unsigned bitwise right shift with the specified number
-        /// </summary>
-        /// <param name="number">Number to operate on</param>
-        /// <param name="bits">Ammount of bits to shift</param>
-        /// <returns>The resulting number from the shift operation</returns>
         public static long URShift(long number, long bits)
         {
             return URShift(number, (int)bits);
         }
 
-
+        #endif
+        
 #if POINTLESS        
         /*******************************/
         /// <summary>Reads a number of characters from the current source Stream and writes the data to the target array at the specified index.</summary>
