@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-05 08:51:37>
+// Time-stamp: <2009-June-05 11:59:58>
 //
 // ------------------------------------------------------------------
 //
@@ -635,7 +635,7 @@ namespace Ionic.Zip
         ///
         /// <para> This example adds a large number of entries to a ZipFile. The
         /// application uses the just-in-time stream provisioning mechanism to avoid
-        /// keeping all the streams open simultaneiously. /para>
+        /// keeping all the streams open simultaneiously. </para>
         ///
         /// <code lang="C#">
         /// public static void ProvisionStreams(object sender, SaveProgressEventArgs e)
@@ -2348,8 +2348,8 @@ namespace Ionic.Zip
         /// </para>
         /// 
         /// <para>
-        /// If the entry is protected with a password, then you need to set the password on the
-        /// entry prior to calling <see cref="OpenReader()"/>.
+        /// If the entry is protected with a password, then you need to set the password either on the
+        /// entry, or on the ZipFile itself, prior to calling <see cref="OpenReader()"/>.
         /// </para>
         /// 
         /// </remarks>
@@ -2401,7 +2401,8 @@ namespace Ionic.Zip
         /// <returns>The Stream for reading.</returns>
         public Ionic.Zlib.CrcCalculatorStream OpenReader()
         {
-            return InternalOpenReader(this._Password);
+            // use the entry password if it is non-null, else use the zipfile password, which is possibly null
+            return InternalOpenReader(this._Password==null ? this._zipfile._Password : this._Password);
         }
 
         /// <summary>
@@ -2768,16 +2769,11 @@ namespace Ionic.Zip
 
         private void SetupCrypto(string password)
         {
-            //Console.Write("SetupCrypto:");
             if (password == null)
-            {
-                //Console.WriteLine(" -none-");
                 return;
-            }
 
             if (Encryption == EncryptionAlgorithm.PkzipWeak)
             {
-                //Console.WriteLine("Weak");
                 this.ArchiveStream.Seek(this.FileDataPosition - 12, System.IO.SeekOrigin.Begin);
                 _zipCrypto = ZipCrypto.ForRead(password, this);
             }
@@ -4912,7 +4908,7 @@ namespace Ionic.Zip
 
         /// <summary>
         /// The entry was instantiated via <see cref="ZipFile.AddFileFromStream"/> or 
-        /// <see cref="ZipFile.AddFileFromString"/>.
+        /// <see cref="ZipFile.AddFileFromString(String,String,String)"/>.
         /// </summary>
         Stream,
 

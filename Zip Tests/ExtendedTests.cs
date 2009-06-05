@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-02 01:25:27>
+// Time-stamp: <2009-June-05 11:57:40>
 //
 // ------------------------------------------------------------------
 //
@@ -31,7 +31,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ionic.Zip;
 using Ionic.Zip.Tests.Utilities;
 using System.IO;
-
+using System.Text;
 
 /// Tests for more advanced scenarios?
 /// 
@@ -116,23 +116,68 @@ namespace Ionic.Zip.Tests.Extended
         #endregion
 
 
-
-        static System.IO.MemoryStream StringToMemoryStream(string s)
+        private System.Reflection.Assembly _myself;
+        private System.Reflection.Assembly myself
         {
-            System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
-            int byteCount = enc.GetByteCount(s.ToCharArray(), 0, s.Length);
-            byte[] ByteArray = new byte[byteCount];
-            int bytesEncodedCount = enc.GetBytes(s, 0, s.Length, ByteArray, 0);
-            MemoryStream ms = new MemoryStream(ByteArray);
-            return ms;
+            get
+            {
+                if (_myself == null)
+                {
+                    _myself = System.Reflection.Assembly.GetExecutingAssembly();
+                }
+                return _myself;
+            }
         }
 
 
 
-        static String StreamToString(System.IO.Stream s)
+        private void DiagnoseEmbeddedItems()
+        {
+            string[] x = myself.GetManifestResourceNames();
+            TestContext.WriteLine("Listing Embedded Resources:");
+            foreach (var s in x)
+                TestContext.WriteLine("    {0}", s);
+        }
+
+
+
+        private System.IO.Stream GetEmbeddedStream(string name)
+        {
+            string embeddedName = String.Format("Ionic.Zip.Tests.Resources.{0}", name);
+            return myself.GetManifestResourceStream(embeddedName);
+        }
+
+
+        private string ExtractEmbeddedStream(string name)
+        {
+            string fileToCreate = Path.Combine(TopLevelDir, name);
+
+            using (Stream s = GetEmbeddedStream(name))
+            {
+                if (s != null)
+                {
+                    using (FileStream o = File.Create(fileToCreate))
+                    {
+                        byte[] buffer = new byte[1024];
+                        int n = -1;
+                        while (n != 0)
+                        {
+                            n = s.Read(buffer, 0, buffer.Length);
+                            if (n != 0)
+                                o.Write(buffer, 0, n);
+                        }
+                    }
+                }
+            }
+
+            return fileToCreate;
+        }
+
+        static String StreamToStringUTF8(System.IO.Stream s)
         {
             string result = null;
-            using (var f = new StreamReader(s))
+            // UTF-8 is the default, but I want to be explicit here.
+            using (var f = new StreamReader(s, System.Text.Encoding.UTF8))
             {
                 result = f.ReadToEnd();
             }
@@ -140,6 +185,21 @@ namespace Ionic.Zip.Tests.Extended
         }
 
 
+        static bool IsEncodable(String s, Encoding e)
+        {
+            bool result = false;
+            try
+            {
+                byte[] b = e.GetBytes(s);
+                var s2 = e.GetString(b);
+                result = (s == s2);
+            }
+            catch
+            {
+                result = false;
+            }
+            return result;
+        }
 
 
         [TestMethod]
@@ -197,7 +257,7 @@ namespace Ionic.Zip.Tests.Extended
 
                         if (j != 1)
                             Assert.IsTrue(e.CompressedSize <= e.UncompressedSize,
-                      "In trial {0}, Entry '{1}'  has expanded ({2} > {3}).", j, e.FileName, e.CompressedSize, e.UncompressedSize);
+                                          "In trial {0}, Entry '{1}'  has expanded ({2} > {3}).", j, e.FileName, e.CompressedSize, e.UncompressedSize);
 
                         e.Extract(extractDir);
                         filename = Path.Combine(extractDir, e.FileName);
@@ -255,44 +315,67 @@ namespace Ionic.Zip.Tests.Extended
 
                     // Verify the files are in the zip
                     Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), entriesAdded,
-                     String.Format("Trial {0}-{1}: The Zip file has the wrong number of entries.", j, k));
+                                         String.Format("Trial {0}-{1}: The Zip file has the wrong number of entries.", j, k));
 
                     // now extract the files and verify their contents
                     using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
                     {
-                        //zip2.Password = Passwords[k];
-                        foreach (string eName in zip2.EntryFileNames)
+
+                        for (int i = 0; i < 3; i++)
                         {
-                            ZipEntry e1 = zip2[eName];
+                            // try once with Password set on ZipFile,
+                            // another with password on the entry, and
+                            // a third time with password passed into the OpenReader() method.
+                            if (i == 0)
+                                zip2.Password = Passwords[k];
 
-                            if (!e1.IsDirectory)
+                            foreach (string eName in zip2.EntryFileNames)
                             {
-                                using (Ionic.Zlib.CrcCalculatorStream s = e1.OpenReader(Passwords[k]))
+                                ZipEntry e1 = zip2[eName];
+
+                                if (!e1.IsDirectory)
                                 {
-                                    using (var output = File.Create(Path.Combine(TopLevelDir, eName + ".out")))
+
+                                    Ionic.Zlib.CrcCalculatorStream s = null;
+                                    try
                                     {
-                                        byte[] buffer = new byte[4096];
-                                        int n, totalBytesRead = 0;
-                                        do
+                                        if (i == 0)
+                                            s = e1.OpenReader();
+                                        else if (i == 1)
+                                            s = e1.OpenReader(Passwords[k]);
+                                        else
                                         {
-                                            n = s.Read(buffer, 0, buffer.Length);
-                                            totalBytesRead += n;
-                                            output.Write(buffer, 0, n);
-                                        } while (n > 0);
+                                            e1.Password = Passwords[k];
+                                            s = e1.OpenReader();
+                                        }
+                                        string outFile = Path.Combine(TopLevelDir, String.Format("{0}.{1}.out", eName, i));
+                                        using (var output = File.Create(outFile))
+                                        {
+                                            byte[] buffer = new byte[4096];
+                                            int n, totalBytesRead = 0;
+                                            do
+                                            {
+                                                n = s.Read(buffer, 0, buffer.Length);
+                                                totalBytesRead += n;
+                                                output.Write(buffer, 0, n);
+                                            } while (n > 0);
 
-                                        output.Flush();
-                                        output.Close();
-                                        TestContext.WriteLine("CRC expected({0:X8}) actual({1:X8})",
-                                            e1.Crc32, s.Crc32);
+                                            output.Flush();
+                                            output.Close();
+                                            TestContext.WriteLine("CRC expected({0:X8}) actual({1:X8})",
+                                                                  e1.Crc32, s.Crc32);
 
+                                            Assert.AreEqual<Int32>(s.Crc32, e1.Crc32,
+                                                                   string.Format("The Entry {0} failed the CRC Check.", eName));
 
-                                        Assert.AreEqual<Int32>(s.Crc32, e1.Crc32,
-                                   string.Format("The Entry {0} failed the CRC Check.", eName));
-
-                                        Assert.AreEqual<Int32>(totalBytesRead, (int)e1.UncompressedSize,
-                                   string.Format("We read an unexpected number of bytes. ({0})", eName));
-
-
+                                            Assert.AreEqual<Int32>(totalBytesRead, (int)e1.UncompressedSize,
+                                                                   string.Format("We read an unexpected number of bytes. ({0})", eName));
+                                        }
+                                    }
+                                    finally
+                                    {
+                                        if (s != null)
+                                            s.Close();
                                     }
                                 }
                             }
@@ -370,10 +453,10 @@ namespace Ionic.Zip.Tests.Extended
 
             // 6. check results
             Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), 4,
-                 "The Zip file has the wrong number of entries.");
+                                 "The Zip file has the wrong number of entries.");
 
             Assert.IsTrue(ZipFile.IsZipFile(ZipFileToCreate),
-              "The IsZipFile() method returned an unexpected result for an existing zip file.");
+                          "The IsZipFile() method returned an unexpected result for an existing zip file.");
 
             Assert.AreEqual<int>(2, _doubleReadCallbacks);  // 1 for the compressed file, 1 for the small incompressible text file
         }
@@ -411,17 +494,17 @@ namespace Ionic.Zip.Tests.Extended
 
             // Verify the files are in the zip
             Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), entriesAdded,
-                 "The Zip file has the wrong number of entries.");
+                                 "The Zip file has the wrong number of entries.");
 
             Assert.IsTrue(ZipFile.IsZipFile(ZipFileToCreate),
-              "The IsZipFile() method returned an unexpected result for an existing zip file.");
+                          "The IsZipFile() method returned an unexpected result for an existing zip file.");
 
             Assert.IsTrue(!ZipFile.IsZipFile(filename),
-              "The IsZipFile() method returned an unexpected result for a extant file that is not a zip.");
+                          "The IsZipFile() method returned an unexpected result for a extant file that is not a zip.");
 
             filename = Path.Combine(Subdir, String.Format("ThisFileDoesNotExist.{0:D2}.txt", _rnd.Next(2000)));
             Assert.IsTrue(!ZipFile.IsZipFile(filename),
-              "The IsZipFile() method returned an unexpected result for a non-existent file.");
+                          "The IsZipFile() method returned an unexpected result for a non-existent file.");
 
         }
 
@@ -441,14 +524,14 @@ namespace Ionic.Zip.Tests.Extended
                 ZipEntry e1 = zip1["Directory1"];
                 Assert.AreNotEqual<ZipEntry>(null, e1);
                 Assert.IsTrue(e1.IsDirectory,
-                      "The IsDirectory property was not set as expected.");
+                              "The IsDirectory property was not set as expected.");
                 zip1.AddDirectoryByName("Directory2");
                 zip1.AddFileFromString("Readme.txt", "Directory2", "This is the content");
                 Assert.IsTrue(zip1["Directory2"].IsDirectory,
-                      "The IsDirectory property was not set as expected.");
+                              "The IsDirectory property was not set as expected.");
                 zip1.Save(ZipFileToCreate);
                 Assert.IsTrue(zip1["Directory1"].IsDirectory,
-                      "The IsDirectory property was not set as expected.");
+                              "The IsDirectory property was not set as expected.");
 
             }
 
@@ -456,10 +539,10 @@ namespace Ionic.Zip.Tests.Extended
             using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
             {
                 Assert.IsTrue(zip2["Directory1"].IsDirectory,
-                      "The IsDirectory property was not set as expected.");
+                              "The IsDirectory property was not set as expected.");
 
                 Assert.IsTrue(zip2["Directory2"].IsDirectory,
-                      "The IsDirectory property was not set as expected.");
+                              "The IsDirectory property was not set as expected.");
             }
 
         }
@@ -470,7 +553,7 @@ namespace Ionic.Zip.Tests.Extended
         public void Extract_AfterSaveNoDispose()
         {
             string ZipFileToCreate = Path.Combine(TopLevelDir, "Extract_AfterSaveNoDispose.zip");
-            string InputString = "<bob><YourUncle/></bob>";
+            string InputString = "<AAA><bob><YourUncle/></bob><w00t/></AAA>";
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
@@ -494,7 +577,7 @@ namespace Ionic.Zip.Tests.Extended
                 var sw2 = new StringWriter();
                 var w2 = new XTWFND(sw2);
                 var d2 = new System.Xml.XmlDocument();
-                d2.Load(StringToMemoryStream(InputString));
+                d2.Load(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(InputString)));
                 d2.Save(w2);
 
                 Assert.AreEqual<String>(sw2.ToString(), sw1.ToString(), "Unexpected value on extract ({0}).", sw1.ToString());
@@ -511,9 +594,11 @@ namespace Ionic.Zip.Tests.Extended
             for (int k = 0; k < Passwords.Length; k++)
             {
                 string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Test_AddUpdateFileFromStream-{0}.zip", k));
-                string[] InputStrings = new string[] { 
-                    TestUtilities.LoremIpsum.Substring(0, 90),
-                    TestUtilities.LoremIpsum.Substring(240, 80)};
+                string[] InputStrings = new string[]
+                        { 
+                            TestUtilities.LoremIpsum.Substring(_rnd.Next(5), 170 + _rnd.Next(25)),
+                            TestUtilities.LoremIpsum.Substring(100 + _rnd.Next(40), 180+ _rnd.Next(30))
+                        };
 
                 Directory.SetCurrentDirectory(TopLevelDir);
 
@@ -522,12 +607,8 @@ namespace Ionic.Zip.Tests.Extended
                 using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
                 {
                     zip1.Password = Passwords[k];
-                    //_doubleReadCallbacks = 0;
-                    //_callbackAnswer = false;
-                    //zip1.WillReadTwiceOnInflation = ReadTwiceCallback;
                     for (int i = 0; i < InputStrings.Length; i++)
                     {
-                        //var ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(InputStrings[i]));
                         zip1.AddFileFromString(String.Format("Lorem{0}.txt", i + 1), "", InputStrings[i]);
                     }
                     zip1.Save();
@@ -536,20 +617,20 @@ namespace Ionic.Zip.Tests.Extended
                 using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
                 {
                     zip2["Lorem2.txt"].Password = Passwords[k];
-                    string output = StreamToString(zip2["Lorem2.txt"].OpenReader());
+                    string output = StreamToStringUTF8(zip2["Lorem2.txt"].OpenReader());
 
                     Assert.AreEqual<String>(output, InputStrings[1], "Trial {0}: Read entry 2 after create: Unexpected value on extract.", k);
 
                     zip2["Lorem1.txt"].Password = Passwords[k];
                     Stream s = zip2["Lorem1.txt"].OpenReader();
-                    output = StreamToString(s);
+                    output = StreamToStringUTF8(s);
 
                     Assert.AreEqual<String>(output, InputStrings[0], "Trial {0}: Read entry 1 after create: Unexpected value on extract.", k);
                 }
 
 
                 // update an entry in the zipfile.  For this pass, don't use a password. 
-                string UpdateString = "Nothing to see here.  Move along folks!  Move Along!";
+                string UpdateString = "This is the updated content.  It will replace the original content, added from a string.";
                 using (ZipFile zip3 = ZipFile.Read(ZipFileToCreate))
                 {
                     //zip2.Password = password;
@@ -560,11 +641,128 @@ namespace Ionic.Zip.Tests.Extended
 
                 using (ZipFile zip4 = ZipFile.Read(ZipFileToCreate))
                 {
-                    string output = StreamToString(zip4["Lorem1.txt"].OpenReader());
+                    string output = StreamToStringUTF8(zip4["Lorem1.txt"].OpenReader());
                     Assert.AreEqual<String>(output, UpdateString, "Trial {0}: Reading after update: Unexpected value on extract.", k);
                 }
             }
         }
+
+
+        [TestMethod]
+        public void Test_AddFileFromString()
+        {
+
+            EncryptionAlgorithm[] EncOptions = { EncryptionAlgorithm.None, 
+                                                     EncryptionAlgorithm.WinZipAes256,
+                                                     EncryptionAlgorithm.WinZipAes128, 
+                                                     EncryptionAlgorithm.PkzipWeak
+                };
+
+
+            string[] Passwords = { null, "Password", TestUtilities.GenerateRandomPassword(), "A" };
+
+            Encoding[] encodings = { Encoding.UTF8,
+                                         Encoding.Default,
+                                         Encoding.ASCII,
+                                         Encoding.GetEncoding("Big5"),
+                                         Encoding.GetEncoding("iso-8859-1"),
+                                         Encoding.GetEncoding("Windows-1252"),
+                };
+
+            // read in a bunch of text strings
+            List<String> contentStrings = new List<String>();
+            using (var s = GetEmbeddedStream("TestStrings.txt"))
+            {
+                // read in via UTF-8
+                using (var sr = new StreamReader(s))
+                {
+                    string x;
+                    while ((x = sr.ReadLine()) != null)
+                        contentStrings.Add(x);
+                }
+            }
+
+            int[] successfulEncodings = new int[contentStrings.Count];
+
+            for (int a = 0; a < EncOptions.Length; a++)
+            {
+                for (int b = 0; b < Passwords.Length; b++)
+                {
+                    for (int c = 0; c < encodings.Length; c++)
+                    {
+                        string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Test_AddUpdateFileFromString-{0}.{1}.{2}.zip", a, b, c));
+                        Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+
+                        Directory.SetCurrentDirectory(TopLevelDir);
+
+                        // add entries to a zipfile.  
+                        // use a password.(possibly null)
+                        using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
+                        {
+                            zip1.Encryption = EncOptions[a];
+                            zip1.Password = Passwords[b];
+                            for (int d = 0; d < contentStrings.Count; d++)
+                            {
+                                string entryName = String.Format("File{0}.txt", d + 1);
+                                // add each string using the given encoding
+                                zip1.AddFileFromString(entryName, "", contentStrings[d], encodings[c]);
+                            }
+                            zip1.Save();
+                        }
+
+
+                        // Verify the number of files in the zip
+                        Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), contentStrings.Count,
+                                             "Incorrect number of entries in the zip file.");
+
+
+                        using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+                        {
+                            zip2.Password = Passwords[b];
+                            for (int d = 0; d < contentStrings.Count; d++)
+                            {
+                                string entryName = String.Format("File{0}.txt", d + 1);
+                                zip2[entryName].Password = Passwords[b];  // should not be necessary
+                                using (Stream s = zip2[entryName].OpenReader())
+                                {
+                                    using (var sr = new StreamReader(s, encodings[c]))
+                                    {
+                                        try
+                                        {
+                                            Assert.AreNotEqual<StreamReader>(null, sr);
+                                            string retrievedContent = sr.ReadLine();
+                                            if (IsEncodable(contentStrings[d], encodings[c]))
+                                            {
+                                                Assert.AreEqual<String>(contentStrings[d], retrievedContent,
+                                                                        "trial {0}.{1}.{2}, file ({3}): the content did not match.", a, b, c, entryName);
+                                                successfulEncodings[d]++;
+                                            }
+                                            else
+                                            {
+                                                Assert.AreNotEqual<Encoding>(Encoding.UTF8, encodings[c]);
+                                                Assert.AreNotEqual<String>(contentStrings[d], retrievedContent,
+                                                                           "trial {0}.{1}.{2}, file ({3}): the content should not match, but does.", a, b, c, entryName);
+                                            }
+                                        }
+                                        catch (Exception exc1)
+                                        {
+                                            TestContext.WriteLine("Exception: {0}", exc1.Message);
+                                            throw new Exception("broken", exc1);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (int d = 0; d < successfulEncodings.Length; d++)
+                Assert.AreNotEqual<Int32>(0, successfulEncodings[d], "Content item #{0} ({1}) was never encoded successfully.", d, contentStrings[d]);
+
+
+        }
+
 
         [TestMethod]
         public void Test_AddDirectoryByName()
@@ -681,7 +879,7 @@ namespace Ionic.Zip.Tests.Extended
                     else
                     {
                         if ((entryCount - 1) % 4 == 0) e.Password = password;
-                        string output = StreamToString(e.OpenReader());
+                        string output = StreamToStringUTF8(e.OpenReader());
                         Assert.AreEqual<string>("Hello, Dolly!", output);
                     }
                     entryCount++;
@@ -817,7 +1015,7 @@ namespace Ionic.Zip.Tests.Extended
             }
         }
 
-        string programCode= 
+        string programCode =
 
             "using System;\n" +
             "namespace Ionic.Tests.Zip.SelfExtractor\n" +
@@ -842,14 +1040,14 @@ namespace Ionic.Zip.Tests.Extended
             //System.CodeDom.Compiler.ICodeCompiler csharpCompiler = csharp.CreateCompiler();
 
             var cp = new System.CodeDom.Compiler.CompilerParameters();
-            cp.GenerateInMemory= false;
+            cp.GenerateInMemory = false;
             cp.GenerateExecutable = true;
             cp.IncludeDebugInformation = false;
             cp.OutputAssembly = pathToExe;
 
             // set the return code in the app
-            var cr= csharp.CompileAssemblyFromSource(cp,programCode.Replace("@@XXX@@", rc.ToString()));
-            if ( cr == null)
+            var cr = csharp.CompileAssemblyFromSource(cp, programCode.Replace("@@XXX@@", rc.ToString()));
+            if (cr == null)
                 throw new Exception("Errors compiling!");
 
             foreach (string s in cr.Output)
@@ -896,9 +1094,9 @@ namespace Ionic.Zip.Tests.Extended
                 TestContext.WriteLine("Trial {0}", k);
                 string TargetDirectory = "unpack-" + k.ToString();
 
-                if (k!=0)
+                if (k != 0)
                     CompileApp(expectedReturnCode, postExtractExe);
-            
+
                 var sw = new System.IO.StringWriter();
                 using (ZipFile zip = new ZipFile())
                 {
@@ -907,8 +1105,8 @@ namespace Ionic.Zip.Tests.Extended
                     zip.Comment = "This will be embedded into a self-extracting exe";
                     MemoryStream ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ReadmeString));
                     zip.AddFileFromStream("Readme.txt", "", ms1);
-                    if (k!=0) zip.AddFile(postExtractExe);
-                    
+                    if (k != 0) zip.AddFile(postExtractExe);
+
                     zip.SaveSelfExtractor(ExeFileToCreate,
                                           Ionic.Zip.SelfExtractorFlavor.ConsoleApplication,
                                           TargetDirectory,
@@ -916,7 +1114,7 @@ namespace Ionic.Zip.Tests.Extended
                 }
 
                 TestContext.WriteLine("status output: " + sw.ToString());
-            
+
                 TestContext.WriteLine("Running the SFX... ");
                 System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo(ExeFileToCreate);
                 //psi.Arguments = TargetDirectory;
@@ -928,17 +1126,17 @@ namespace Ionic.Zip.Tests.Extended
                 int rc = process.ExitCode;
                 TestContext.WriteLine("SFX exit code: ({0})", rc);
 
-                if (k!=0)
+                if (k != 0)
                     Assert.AreEqual<Int32>(expectedReturnCode, rc, "In trial {0}, the exit code did not match.", k);
                 else
                     Assert.AreEqual<Int32>(5, rc, "In trial {0}, the exit code was unexpected.", k);
 
                 // now, compare the output in TargetDirectory with the original
-                string DirToCheck = Path.Combine(TopLevelDir,Path.Combine(TargetDirectory, "A"));
+                string DirToCheck = Path.Combine(TopLevelDir, Path.Combine(TargetDirectory, "A"));
                 // verify the checksum of each file matches with its brother
                 foreach (string fname in Directory.GetFiles(DirToCheck))
                 {
-                    string originalName = fname.Replace("\\"+TargetDirectory, "");
+                    string originalName = fname.Replace("\\" + TargetDirectory, "");
                     if (checksums.ContainsKey(originalName))
                     {
                         string expectedCheckString = checksums[originalName];
@@ -1567,6 +1765,18 @@ namespace Ionic.Zip.Tests.Extended
         [TestMethod]
         public void Extract_WinZip_SelfExtractor()
         {
+            Extract_ZipFile("winzip-sfx.exe");
+        }
+
+        [TestMethod]
+        public void Extract_Docx()
+        {
+            Extract_ZipFile("Vanishing Oatmeal Cookies.docx");
+        }
+
+
+        public void Extract_ZipFile(string fileName)
+        {
             string SourceDir = CurrentDir;
             for (int i = 0; i < 3; i++)
                 SourceDir = Path.GetDirectoryName(SourceDir);
@@ -1576,10 +1786,10 @@ namespace Ionic.Zip.Tests.Extended
             TestContext.WriteLine("Current Dir: {0}", CurrentDir);
 
             // This is a SFX (Self-Extracting Archive) produced by WinZip
-            string filename = Path.Combine(SourceDir, "Zip Tests\\bin\\Debug\\zips\\winzip-sfx.exe");
+            string filename = Path.Combine(SourceDir, "Zip Tests\\bin\\Debug\\zips\\" + fileName);
 
             // try reading the WinZip SFX zipfile - this should succeed
-            TestContext.WriteLine("Reading WinZip SFX file: '{0}'", filename);
+            TestContext.WriteLine("Reading zip file: '{0}'", filename);
             using (ZipFile zip = ZipFile.Read(filename))
             {
                 string extractDir = "extract";
@@ -2507,7 +2717,7 @@ namespace Ionic.Zip.Tests.Extended
 
 
         [TestMethod]
-        public void Selector_SelectFiles_GoodSyntax01() 
+        public void Selector_SelectFiles_GoodSyntax01()
         {
             string[] criteria = {
                                     "name = *.txt  OR (size > 7800)",
