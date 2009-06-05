@@ -2744,17 +2744,17 @@ namespace Ionic.Zip
         /// will be read during the call to <see cref="ZipFile.Save()"/> or one of its overloads.  </para>
         ///
         /// <para>In cases where a large number of streams will be added to the ZipFile,
-        /// the application may wish to not maintain all of the streams open
-        /// concurrently.  To handle this situation, the application can provide a null
+        /// the application may wish to avoid maintaining all of the streams open
+        /// simultaneously.  To handle this situation, the application can provide a null
         /// value (Nothing in VB) for the stream, and provide a handler for the <see
         /// cref="ZipFile.SaveProgress"/> event.  Later, during the call to
         /// <c>ZipFile.Save</c>, DotNetZip will invoke the SaveProgress event handler,
         /// and within that handler, when the <see
         /// cref="ZipProgressEventArgs.EventType">e.EventType</see> is
         /// <c>ZipProgressEventType.Saving_BeforeWriteEntry</c>, the application can
-        /// dispense the stream on a just-in-time basis by setting the <see
+        /// dispense the stream for each entry on a just-in-time basis by setting the <see
         /// cref="ZipEntry.InputStream"/> property.  The application can close or
-        /// dispose the stream in a similar manner, when the <c>e.EventType</c> is
+        /// dispose the stream for each entry in a similar manner, when the <c>e.EventType</c> is
         /// <c>ZipProgressEventType.Saving_AfterWriteEntry</c>. Check the documentation
         /// of <see cref="ZipEntry.InputStream"/> for more information and a code
         /// sample.  </para>

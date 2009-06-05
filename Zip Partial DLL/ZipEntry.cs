@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-05 11:59:58>
+// Time-stamp: <2009-June-05 13:48:31>
 //
 // ------------------------------------------------------------------
 //
@@ -595,33 +595,38 @@ namespace Ionic.Zip
         ///
         /// <para> The application can use this property to set the input stream for an
         /// entry on a just-in-time basis. Imagine a scenario where the application
-        /// creates a zipfile comprised of content obtained from hundreds of files. The
-        /// DotNetZip library opens streams on these files on a just-in-time basis, only
-        /// when writing the entry out to an external store within the scope of a
-        /// ZipFile.Save() call.  Only one input stream is opened at a time, as each
-        /// entry is being written out.  </para>
+        /// creates a <c>ZipFile</c> comprised of content obtained from hundreds of
+        /// files, via calls to <c>AddFile()</c>. The DotNetZip library opens streams on
+        /// these files on a just-in-time basis, only when writing the entry out to an
+        /// external store within the scope of a <c>ZipFile.Save()</c> call.  Only one
+        /// input stream is opened at a time, as each entry is being written
+        /// out. </para>
         ///
         /// <para> Now imagine a different application that creates a zipfile with
         /// content obtained from hundreds of streams, added through <see
-        /// cref="ZipFile.AddFileFromStream(string, string, System.IO.Stream)"/>.  At
-        /// the time of calling <c>ZipFile.AddFileFromStream</c>, the application can
-        /// supply null (Nothing in VB) as the value of the stream parameter.  </para>
+        /// cref="ZipFile.AddFileFromStream(string, string, System.IO.Stream)"/>.
+        /// Normally the application would supply an open stream to that call.  But when
+        /// large numbers of streams are being added, this can mean many open streams at
+        /// one time, unnecessarily.  </para>
         ///
-        /// <para> The application can then open the stream on a just-in-time basis,
-        /// setting this property, and thus insuring, as with the file example, that
-        /// only one stream need be opened at a time while constructing and saving the
-        /// ZipFile.  </para>
+        /// <para> To avoid this, at the time of calling
+        /// <c>ZipFile.AddFileFromStream</c> for each entry, the application can supply
+        /// null (Nothing in VB) as the value of the stream parameter. The application
+        /// can then open the stream on a just-in-time basis, setting this property, and
+        /// thus insuring, as with the latter example, that only one stream need be
+        /// opened at a time while constructing and saving the ZipFile.  </para>
         ///
-        /// <para> To do this, the application should set the InputStream property
-        /// within the context of the SaveProgress event, when the event type is <see
+        /// <para> To do this, the application should set the <c>InputStream</c>
+        /// property within the context of the <see cref="ZipFile.SaveProgress"/> event,
+        /// when the event type is <see
         /// cref="ZipProgressEventType.Saving_BeforeWriteEntry"/>. The application
-        /// should only set <see cref="InputStream" /> for a ZipEntry which has the
-        /// Source equal to <see cref="ZipEntrySource.Stream"/>.  When the input stream
-        /// is provided by the application in this way, the application is also
-        /// responsible for closing and disposing the stream.  This would normally be
-        /// done in the <see cref="ZipFile.SaveProgress"/> event, when the event type is
-        /// <see cref="ZipProgressEventType.Saving_AfterWriteEntry"/>. See the example
-        /// for how this can be done.  </para>
+        /// should only set <see cref="InputStream" /> for a ZipEntry which has the <see
+        /// cref="ZipEntry.Source"/> equal to <see cref="ZipEntrySource.Stream"/>.  When
+        /// the input stream is provided by the application in this way, the application
+        /// is also responsible for closing or disposing the stream.  This would
+        /// normally be done in the <see cref="ZipFile.SaveProgress"/> event, when the
+        /// event type is <see cref="ZipProgressEventType.Saving_AfterWriteEntry"/>. See
+        /// the example code provided here for how this can be done. </para>
         ///
         /// <para> Setting the value of this property when the entry was not added from
         /// a stream (for example, when the ZipEntry was added with <see
