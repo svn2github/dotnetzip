@@ -2739,46 +2739,63 @@ namespace Ionic.Zip
         /// </summary>
         ///
         /// <remarks>
-        /// <para>
-        /// The stream must be open and readable during the call to 
-        /// <c>ZipFile.Save</c>.  You can dispense the stream on a just-in-time basis using
-        /// the <see cref="ZipEntry.InputStream"/> property. Check the documentation of that
-        /// property for more information. 
-        /// </para>
+        ///
+        /// <para>The application can provide an open, readable stream; in this case it
+        /// will be read during the call to <see cref="ZipFile.Save"/>.  </para>
+        ///
+        /// <para>In cases where a large number of streams will be added to the ZipFile,
+        /// the application may wish to not maintain all of the streams open
+        /// concurrently.  To handle this situation, the application can provide a null
+        /// value (Nothing in VB) for the stream, and provide a handler for the <see
+        /// cref="ZipFile.SaveProgress"/> event.  Later, during the call to
+        /// <c>ZipFile.Save</c>, DotNetZip will invoke the SaveProgress event handler,
+        /// and within that handler, when the <see
+        /// cref="SaveProgressEventArgs.EventType">e.EventType</see> is
+        /// <c>ZipProgressEventType.Saving_BeforeWriteEntry</c>, the application can
+        /// dispense the stream on a just-in-time basis by setting the <see
+        /// cref="ZipEntry.InputStream"/> property.  The application can close or
+        /// dispose the stream in a similar manner, when the <c>e.EventType</c> is
+        /// <c>ZipProgressEventType.Saving_AfterWriteEntry</c>. Check the documentation
+        /// of <see cref="ZipEntry.InputStream"/> for more information and a code
+        /// sample.  </para>
         /// 
-        /// <para>
-        /// For ZipFile properties including <see cref="Encryption"/>, <see cref="Password"/>,
-        /// <see cref="WantCompression"/>, <see cref="ProvisionalAlternateEncoding"/>, 
-        /// <see cref="ExtractExistingFile"/>, and <see
-        /// cref="ForceNoCompression"/>, their respective values at the time of this call will be
-        /// applied to the ZipEntry added.
-        /// </para>
+        /// <para> For ZipFile properties including <see cref="Encryption"/>, <see
+        /// cref="Password"/>, <see cref="WantCompression"/>, <see
+        /// cref="ProvisionalAlternateEncoding"/>, <see cref="ExtractExistingFile"/>,
+        /// and <see cref="ForceNoCompression"/>, their respective values at the time of
+        /// this call will be applied to the ZipEntry added.  </para>
         /// 
         /// </remarks>
         ///
         /// <example>
+        /// <para>
+        /// This example adds a single entry to a ZipFile via a stream. 
+        /// </para>
         /// <code lang="C#">
         /// String ZipToCreate = "Content.zip";
         /// String FileNameInArchive = "Content-From-Stream.bin";
-        /// System.IO.Stream StreamToRead = MyStreamOpener();
-        /// using (ZipFile zip = new ZipFile())
+        /// using (System.IO.Stream StreamToRead = MyStreamOpener())
         /// {
-        ///   ZipEntry entry= zip.AddFileFromStream(FileNameInArchive, "basedirectory", StreamToRead);
-        ///   entry.Comment = "The content for this entry in the zip file was obtained from a stream";
-        ///   zip.AddFile("Readme.txt");
-        ///   zip.Save(ZipToCreate);
+        ///   using (ZipFile zip = new ZipFile())
+        ///   {
+        ///     ZipEntry entry= zip.AddFileFromStream(FileNameInArchive, "basedirectory", StreamToRead);
+        ///     entry.Comment = "The content for this entry in the zip file was obtained from a stream";
+        ///     zip.AddFile("Readme.txt");
+        ///     zip.Save(ZipToCreate);
+        ///   }
         /// }
         /// 
         /// </code>
         /// <code lang="VB">
         /// Dim ZipToCreate As String = "Content.zip"
         /// Dim FileNameInArchive As String = "Content-From-Stream.bin"
-        /// DIm StreamToRead as System.IO.Stream = MyStreamOpener()
-        /// Using zip As ZipFile = New ZipFile()
-        ///   Dim entry as ZipEntry = zip.AddFileFromStream(FileNameInArchive, "basedirectory", StreamToRead)
-        ///   entry.Comment = "The content for this entry in the zip file was obtained from a stream"
-        ///   zip.AddFile("Readme.txt")
-        ///   zip.Save(ZipToCreate)
+        /// Using StreamToRead as System.IO.Stream = MyStreamOpener()
+        ///   Using zip As ZipFile = New ZipFile()
+        ///     Dim entry as ZipEntry = zip.AddFileFromStream(FileNameInArchive, "basedirectory", StreamToRead)
+        ///     entry.Comment = "The content for this entry in the zip file was obtained from a stream"
+        ///     zip.AddFile("Readme.txt")
+        ///     zip.Save(ZipToCreate)
+        ///   End Using
         /// End Using
         /// </code>
         /// </example>
@@ -2834,30 +2851,33 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// Adds an entry into the zip archive using the given filename and directory path within
-        /// the archive, and the given content for the file.  
+        /// Adds an entry into the zip archive using the given filename and
+        /// directory path within the archive, and the given content for the file.
         /// </summary>
         ///
-        /// <remarks>
-        /// No file need exist or is created in the filesystem. The string is encoded using the default 
-        /// text encoding. 
-        /// </remarks>
+        /// <remarks> No file need exist or is created in the filesystem. The string is
+        /// encoded using the default text encoding.  </remarks>
         ///
-        /// <param name="content">The content of the file, should it be extracted from the zip.</param>
+        /// <param name="content">The content of the file, should it be extracted from
+        /// the zip.</param>
+        ///
         /// <param name="fileName">The filename to use within the archive.</param>
-        /// <param name="directoryPathInArchive">
-        /// Specifies a driectory path to use to override any path in the ItemName.  This path
-        /// may, or may not, correspond to a real directory in the current filesystem.  If the
-        /// files within the zip are later extracted, this is the path used for the extracted
-        /// file.  Passing null (nothing in VB) will use the path on the FileName, if any.
-        /// Passing the empty string ("") will insert the item at the root path within the
-        /// archive.
-        /// </param>
+        ///
+        /// <param name="directoryPathInArchive"> Specifies a directory path to use to
+        /// override any path in the fileName.  This path need not correspond to a real
+        /// directory in the current filesystem when creating the zip file.  If the
+        /// files within the zip are later extracted, this is the path used for the
+        /// extracted file.  Passing null (nothing in VB) will use the path on the
+        /// fileName, if any.  Passing the empty string ("") will insert the item at the
+        /// root path within the archive.  </param>
+        ///
         /// <returns>The ZipEntry added.</returns>
         /// 
         /// <example>
-        /// This example shows how to add an entry to the zipfile, using a string as content for
-        /// that entry.
+        ///
+        /// This example shows how to add an entry to the zipfile, using a string as
+        /// content for that entry.
+        ///
         /// <code lang="C#">
         /// string Content = "This string will be the content of the Readme.txt file in the zip archive.";
         /// using (ZipFile zip1 = new ZipFile())
