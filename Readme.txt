@@ -9,8 +9,8 @@ The Microsoft .NET Framework lacks a good set of classes for creating
 and reading ZIP files. 
 
 Many people seem to think, incorrectly, that the classes in the
-System.IO.Compression namespace can create or read zip files.  This is
-not correct.  
+System.IO.Compression namespace, like GZipStream or DeflateStream, can
+create or read zip files.  This is not correct.
 
 The System.IO.Compression namespace, starting with v2.0 for the desktop
 Framework and v3.5 for the Compact Framework, includes base class
@@ -26,13 +26,13 @@ especially with binary data.
 Sure, it is possible to read and write zip files, using the classes in
 the .NET Framework.  
 
- - You can do it with the System.IO.Packaging.ZipPackage class, added in
-   .NET v3.0. Actually this class lets you create a package file, which
-   is a zipfile with a particular internal structure. It includes a
-   manifest and some other things.  But the interface is odd and
-   confusing if all you want is a regular-old ZIP file.  Also, this
-   namespace doesn't provide control for things like passwords,
-   comments, AES encryption, ZIP64, Unicode, and so on.
+  - You can do it with the System.IO.Packaging.ZipPackage class, added
+    in .NET v3.0. Actually this class lets you create a package file,
+    which is a zipfile with a particular internal structure. It includes
+    a manifest and some other things.  But the interface is odd and
+    confusing if all you want is a regular-old ZIP file.  Also, the
+    classes in this namespace do not provide control for things like
+    passwords, comments, AES encryption, ZIP64, Unicode, and so on.
 
   - You can also create and read zip files with the J# runtime, but this
     also has ita drawbacks.  First, J# is going out of support, or may
@@ -41,17 +41,19 @@ the .NET Framework.
     capability.  Also, the J# runtime is based on the java.util.zip
     classes from Java v1.4, dating from 1998.  The runtime hasn't been
     updated in years and still includes bugs in zip file handling. It
-    lacks support for AES, for ZIP64, and Unicode, for example.  It is
-    not accessible from COM.  Finally, the zip classes in the J# runtime
-    are decidedly un-dotnet.  There's no support for events, or
-    enumerators to let you do things like ForEach in VB, or foreach in
-    C#. The interface is clunky. It does not feel like a .NET class
-    library (because it isn't!)  So for all those reasons, J# isn't ideal.
+    lacks support for AES, for ZIP64, and Unicode.  It is not accessible
+    from COM. Finally, the zip classes in the J# runtime are decidedly
+    un-dotnet.  There's no support for events, or enumerators to let you
+    do things like For Each in VB, or foreach in C#. The interface is
+    clunky. It does not feel like a .NET class library, because it isn't
+    a .NET class library.  So for all those reasons, J# isn't ideal.
 
   - You can also rely on P/Invoke to the shell32.dll, and the
-    ShellClass. This works but isn't a very intuitive programming
-    interface.  Again it lacks an easy way to use or access many ZIP
-    features, like encryption or ZIP64 or self-extracting archives.
+    ShellClass. This works but isn't a very intuitive or powerful
+    programming interface.  There are no events, so embedding it into a
+    Winforms app with a progress bar would be difficult.  Again it lacks
+    an easy way to use or access many ZIP features, like encryption or
+    ZIP64 or self-extracting archives.  Also, the
 
 
 There are other libraries out there than do zip files for .NET.  But
@@ -69,11 +71,14 @@ archives.  It is well documented and provides good performance.
 Though DotNetZip is implemented in .NET and was originally intended to
 provide a managed-code library for ZIP files, you can now use it library
 from any COM environment, including Javascript, VBScript, VB6, VBA, PHP,
-Perl, and others.  Using DotNetZip, you could generate an AEs-encrypted
+Perl, and others.  Using DotNetZip, you could generate an AES-encrypted
 zip file from within the code of an Excel macro, for example.
 
 DotNetZip works with applications running on PCs with Windows.  There is a
 version of this library available for the .NET Compact Framework, too.
+
+DotNetZip is not tested for use with Mono, but many people use the
+binary releases with Mono successfully, without change.
 
 
 License
@@ -101,10 +106,16 @@ another for the Compact Framework.
 Using the Zip Class Library: The Basics
 ----------------------------------------
 
-Check the examples included in the source package, or in the class 
-reference documentation in the .CHM file, for code that illustrates
-how to read and write zip files.  The simplest way to create 
-a ZIP file looks like this: 
+First, there are examples included in the source package, and in the
+class reference documentation in the .CHM file, and on the web.  These
+examples illustrate how to read and write zip files, with all the
+various features.  The examples here are just the basics.
+
+The main type you will use to fiddle with zip files is the ZipFile
+class. Full name: Ionic.Zip.ZipFile.  You use this to create, read, or
+update zip files. 
+
+The simplest way to create a ZIP file in C# looks like this:
 
       using(ZipFile zip= new ZipFile())
       {
@@ -160,7 +171,33 @@ or you can create (write) zip archives to streams, or you can extract
 into streams.  You can apply passwords for weak encryption.  You can
 specify a code page for the filenames and metadata of entries in an
 archive.  You can rename entries in archives, and you can add or remove
-entries from archives.  Check the doc for complete information.
+entries from archives.  You can set up save and read progress
+events. You can do LINQ queries on the Entries collection. 
+Check the doc for complete information, or use Visual Studio's
+intellisense to explore some of the properties and methods on the
+ZipFile class.
+
+Another type you may use is ZipEntry. This represents a single entry
+within a ZipFile.  To add an entry to a zip file, you never have to
+directly instantiate a ZipEntry.  But you may wish to modify the
+properties of an entry within a zip file, and you do that by twiddling
+the properties on the ZipEntry instance.  
+
+The following code adds a file as an entry into a ZipFile, then renames
+the entry within the zip file:
+
+      using(ZipFile zip= new ZipFile())
+      {
+        ZipEntry e = zip.AddFile(filename);
+        e.FileName = "RenamedFile.txt";
+        zip.Save(NameOfZipFileTocreate); 
+      }
+
+Extracting a zip file that was created in this way will produce a file
+called "RenamedFile.txt", regardless of the name of the file originally
+added to the ZipFile.
+
+
 
 
 
@@ -191,21 +228,26 @@ and extends it to support reading and writing of the metadata -
 the header, CRC, and other optional data - defined or required
 by the zip format spec.
 
-The key object in the class library is the ZipFile class.  The key methods on it:
+The key object in the class library is the ZipFile class.  Some of the
+important methods on it:
+
       - AddItem - adds a file or a directory to a zip archive
       - AddDirectory - adds a directory to a zip archive
       - AddFile - adds a file to a zip archive
+      - AddFiles - adds a set of files to a zip archive
       - Extract - extract a single element from a zip file
       - Read - static methods to read in an existing zipfile, for
                later extraction
       - Save - save a zipfile to disk
 
-There is also a supporting class, called ZipEntry.  Applications
-can enumerate the entries in a ZipFile, via ZipEntry.  There are
-other supporting classes as well.  Typically apps do not
-directly interact with these other classes.
+There is also a supporting class, called ZipEntry.  Applications can
+enumerate the entries in a ZipFile, via ZipEntry.  There are other
+supporting classes as well.  Typically, 80% of apps will use just the
+ZipFile class, and will not need to directly interact with these other
+classes. But they are there if you need them. 
 
-If you want to create or read zip files, this library is the one you want.
+If you want to create or read zip files, the Ionic.Zip.DLL assembly is
+the one you want.
 
 When building apps that do zip stuff, you need to add a reference to
 the Ionic.Zip.dll in Visual Studio, or specify Ionic.Zip.dll with the
@@ -242,7 +284,7 @@ the Ionic.Zlib.dll in Visual Studio, or specify Ionic.Zlib.dll with the
 
 NB: If your application does both Zlib and Zip stuff, you need only add
 a reference to Ionic.Zip.dll.  Ionic.Zip.dll includes all the capability
-in Ionic.Zlib.dll.
+in Ionic.Zlib.dll.  It's a superset. 
 
 
 
@@ -365,7 +407,6 @@ If this happens, it's likely that you've encountered a problem with Windows
 protection of files downloaded from less trusted locations. To work around 
 this, within Windows Explorer, right-click on the CHM file, select properties, 
 and Unblock it, using the button in lower part of properties window.
-
 
 
 
@@ -617,11 +658,12 @@ To build the library using the .NET Framework SDK v3.5,
        and 
      c:\WINDOWS\Microsoft.NET\Framework\v2.0.50727
 
-   The .NET 3.5 runtime is necessary because DotNetZip depends on the
-   .NET 3.5 compiler.
+   The .NET 3.5 runtime is necessary because building DotNetZip requires
+   the csc.exe compiler from NET 3.5. (Using DotNetZip from within C#
+   requires the v2.0 csc compiler.)
 
 
-3. Modify the .csproj files in "Zip Partial DLL" and ZILB to eliminate 
+3. Modify the .csproj files in "Zip Partial DLL" and ZLIB to eliminate 
    mention of the Ionic.pfx file.  
 
    The various DLLs (Zip Partial, ZLIB, etc.) are signed with my private
@@ -636,13 +678,16 @@ To build the library using the .NET Framework SDK v3.5,
   
 5. msbuild 
    
-   (be sure you are using the .NET 3.5 version of MSBuild)
+   Be sure you are using the .NET 3.5 version of MSBuild.
+   This builds the "Debug" version of the library.  To build the
+   "Release" version, do this: 
+
+   msbuild /t:Release
+
    
 6. to clean and rebuild, do
    msbuild /t:clean
    msbuild
-
-   (be sure you are using the .NET 3.5 version of MSBuild)
 
 
 7. There are two setup directories, which contain the projects
@@ -798,10 +843,10 @@ http://www.sharpdevelop.net/OpenSource/SharpZipLib/Default.aspx
 
 This example library is not based on SharpZipLib.  
 
-There is a Zip library as part of the Mono project.  This
+I think there is a Zip library as part of the Mono project.  This
 library is also not based on that.
 
-Now that the Java class library is open source, there is at least bone
+Now that the Java class library is open source, there is at least one
 open-source Java implementation for zip.  This implementation is not
 based on a port of Sun's JDK code.
 
@@ -817,9 +862,12 @@ This library is all new code, written by me, with these exceptions:
 
 You can Donate
 --------------------------------
+
 If you think this library is useful, consider donating to my chosen
-cause: The Boys and Girls Club of Washington State.  I am accepting
-donations on my paypal account.  
+cause: The Boys and Girls Club of Southwestern Pennsylvania, in the USA.
+(In the past I accepted donations for the Boys and Girls Club of
+Washington State, also in the USA.  I've moved, and so changed the
+charity.)  I am accepting donations on my paypal account.
 
 http://cheeso.members.winisp.net/DotNetZipDonate.aspx
 

@@ -15,13 +15,13 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_5612D1FE78ED87EEAE953653845FDA97"
-        "OwnerKey" = "8:_B2477FC03E79D6E18AFB14184FA64E31"
+        "MsmKey" = "8:_026FA1A09193DE7F761C3B416A289327"
+        "OwnerKey" = "8:_D92520705F8EB940E3AB22A58CCE225B"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_5612D1FE78ED87EEAE953653845FDA97"
+        "MsmKey" = "8:_026FA1A09193DE7F761C3B416A289327"
         "OwnerKey" = "8:_8591E98F51A9419D8E3AED36E87FDAEB"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -33,7 +33,7 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_B2477FC03E79D6E18AFB14184FA64E31"
+        "MsmKey" = "8:_D92520705F8EB940E3AB22A58CCE225B"
         "OwnerKey" = "8:_8591E98F51A9419D8E3AED36E87FDAEB"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -46,13 +46,13 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_B2477FC03E79D6E18AFB14184FA64E31"
+        "OwnerKey" = "8:_D92520705F8EB940E3AB22A58CCE225B"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_5612D1FE78ED87EEAE953653845FDA97"
+        "OwnerKey" = "8:_026FA1A09193DE7F761C3B416A289327"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -80,6 +80,19 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Net.Framework.3.5.SP1"
+                    {
+                    "Name" = "8:.NET Framework 3.5 SP1"
+                    "ProductCode" = "8:Microsoft.Net.Framework.3.5.SP1"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Windows.Installer.3.1"
+                    {
+                    "Name" = "8:Windows Installer 3.1"
+                    "ProductCode" = "8:Microsoft.Windows.Installer.3.1"
+                    }
+                }
             }
         }
         "Release"
@@ -104,6 +117,19 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Net.Framework.3.5.SP1"
+                    {
+                    "Name" = "8:.NET Framework 3.5 SP1"
+                    "ProductCode" = "8:Microsoft.Net.Framework.3.5.SP1"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Windows.Installer.3.1"
+                    {
+                    "Name" = "8:Windows Installer 3.1"
+                    "ProductCode" = "8:Microsoft.Windows.Installer.3.1"
+                    }
+                }
             }
         }
     }
@@ -134,14 +160,14 @@
         }
         "File"
         {
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_5612D1FE78ED87EEAE953653845FDA97"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_026FA1A09193DE7F761C3B416A289327"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Zlib, Version=1.8.2.5, Culture=neutral, PublicKeyToken=c551e179877da246, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zlib, Version=1.8.3.17, Culture=neutral, PublicKeyToken=c551e179877da246, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_5612D1FE78ED87EEAE953653845FDA97"
+                    "_026FA1A09193DE7F761C3B416A289327"
                     {
                     "Name" = "8:Ionic.Zlib.dll"
                     "Attributes" = "3:512"
@@ -165,14 +191,14 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_B2477FC03E79D6E18AFB14184FA64E31"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_D92520705F8EB940E3AB22A58CCE225B"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Zip.Partial, Version=1.8.2.5, Culture=neutral, PublicKeyToken=c551e179877da246, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zip.Partial, Version=1.8.3.17, Culture=neutral, PublicKeyToken=c551e179877da246, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_B2477FC03E79D6E18AFB14184FA64E31"
+                    "_D92520705F8EB940E3AB22A58CCE225B"
                     {
                     "Name" = "8:Ionic.Zip.Partial.dll"
                     "Attributes" = "3:512"
@@ -251,24 +277,24 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:DotNetZip Runtime "
+        "ProductName" = "8:DotNetZip Runtime v1.8"
         "ProductCode" = "8:{A9F6335C-4B6A-4A6A-BE3C-4FA0843319E2}"
         "PackageCode" = "8:{7AC2C0F8-A8F7-4F4C-AC41-E0951AA15B9D}"
         "UpgradeCode" = "8:{FFE64B5A-5286-48BC-908A-C04137C29C94}"
         "RestartWWWService" = "11:FALSE"
-        "RemovePreviousVersions" = "11:FALSE"
+        "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
         "ProductVersion" = "8:1.0.0"
         "Manufacturer" = "8:Dino Chiesa"
         "ARPHELPTELEPHONE" = "8:"
-        "ARPHELPLINK" = "8:"
-        "Title" = "8:DotNetZip Runtime"
+        "ARPHELPLINK" = "8:http://dotnetzip.codeplex.com/Thread/List.aspx"
+        "Title" = "8:DotNetZip Runtime v1.8"
         "Subject" = "8:"
         "ARPCONTACT" = "8:Dino Chiesa"
-        "Keywords" = "8:"
+        "Keywords" = "8:ZIP"
         "ARPCOMMENTS" = "8:"
-        "ARPURLINFOABOUT" = "8:"
+        "ARPURLINFOABOUT" = "8:http://dotnetzip.codeplex.com"
         "ARPPRODUCTICON" = "8:"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-May-30 08:38:09>
+// Time-stamp: <2009-June-05 14:06:36>
 //
 // ------------------------------------------------------------------
 //
@@ -23,7 +23,7 @@
 //
 // ------------------------------------------------------------------
 
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

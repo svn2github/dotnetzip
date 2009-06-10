@@ -28,7 +28,7 @@
         "Entry"
         {
         "MsmKey" = "8:_4ADC6320CB5A23DFF593EA7C95D93FF3"
-        "OwnerKey" = "8:_C761E906187B41B991150E5027BA2F8A"
+        "OwnerKey" = "8:_F7DA600A0D264B64822406B06AD1BFDE"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -40,7 +40,7 @@
         "Entry"
         {
         "MsmKey" = "8:_4ADC6320CB5A23DFF593EA7C95D93FF3"
-        "OwnerKey" = "8:_F7DA600A0D264B64822406B06AD1BFDE"
+        "OwnerKey" = "8:_C761E906187B41B991150E5027BA2F8A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -76,12 +76,6 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_4ADC6320CB5A23DFF593EA7C95D93FF3"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_CB8DB966CAC04B37B66694A2F4A5443F"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -95,6 +89,12 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_1095DCE16DF54952900B158E667C1D5F"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_4ADC6320CB5A23DFF593EA7C95D93FF3"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -191,7 +191,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Zip, Version=1.8.1.13, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zip, Version=1.8.3.17, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_4ADC6320CB5A23DFF593EA7C95D93FF3"
@@ -304,23 +304,23 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:DotNetZip"
+        "ProductName" = "8:DotNetZip Tools v1.8"
         "ProductCode" = "8:{A2CEDD37-3C87-4076-9839-FCA01BA3973D}"
-        "PackageCode" = "8:{2171EDD8-64E1-47FA-B3BD-268C8143EF5F}"
+        "PackageCode" = "8:{79C0E690-2DEB-4A9F-94C7-4198600E0FC3}"
         "UpgradeCode" = "8:{BEF05388-A74D-4383-BD87-61940DF83E20}"
         "RestartWWWService" = "11:FALSE"
-        "RemovePreviousVersions" = "11:FALSE"
+        "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
         "ProductVersion" = "8:1.8"
         "Manufacturer" = "8:Dino Chiesa"
         "ARPHELPTELEPHONE" = "8:"
-        "ARPHELPLINK" = "8:"
-        "Title" = "8:DotNetZip Library & Tools"
+        "ARPHELPLINK" = "8:http://dotnetzip.codeplex.com/Thread/List.aspx"
+        "Title" = "8:DotNetZip Library & Tools v1.8"
         "Subject" = "8:"
         "ARPCONTACT" = "8:Dino Chiesa"
         "Keywords" = "8:ZIP"
-        "ARPCOMMENTS" = "8:DotNetZip Zip Tools and Library"
+        "ARPCOMMENTS" = "8:DotNetZip Zip Tools and Library v1.8"
         "ARPURLINFOABOUT" = "8:http://dotnetzip.codeplex.com"
         "ARPPRODUCTICON" = "8:_C761E906187B41B991150E5027BA2F8A"
         "ARPIconIndex" = "3:101"
