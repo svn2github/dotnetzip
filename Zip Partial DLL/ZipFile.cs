@@ -2243,7 +2243,7 @@ namespace Ionic.Zip
         /// </example>
         /// 
         /// <seealso cref="Ionic.Zip.ZipFile.AddSelectedFiles(String, String)" />
-        public void AddFiles(System.Collections.Generic.ICollection<String> fileNames)
+        public void AddFiles(System.Collections.Generic.IEnumerable<String> fileNames)
         {
             this.AddFiles(fileNames, null);
         }
@@ -2273,7 +2273,7 @@ namespace Ionic.Zip
         /// the filesystem. The name of the file may be a relative path or a fully-qualified path. 
         /// </param>
         ///
-        public void UpdateFiles(System.Collections.Generic.ICollection<String> fileNames)
+        public void UpdateFiles(System.Collections.Generic.IEnumerable<String> fileNames)
         {
             this.UpdateFiles(fileNames, null);
         }
@@ -2315,7 +2315,7 @@ namespace Ionic.Zip
         /// </param>
         ///
         /// <seealso cref="Ionic.Zip.ZipFile.AddSelectedFiles(String, String)" />
-        public void AddFiles(System.Collections.Generic.ICollection<String> fileNames, String directoryPathInArchive)
+        public void AddFiles(System.Collections.Generic.IEnumerable<String> fileNames, String directoryPathInArchive)
         {
             AddFiles(fileNames, false, directoryPathInArchive);
         }
@@ -2364,7 +2364,7 @@ namespace Ionic.Zip
         /// whether the entries in the zip archive will reflect the dir hierarchy that is present in each filename. 
         /// </param>
         /// <seealso cref="Ionic.Zip.ZipFile.AddSelectedFiles(String, String)" />
-        public void AddFiles(System.Collections.Generic.ICollection<String> fileNames, bool preserveDirHierarchy, String directoryPathInArchive)
+        public void AddFiles(System.Collections.Generic.IEnumerable<String> fileNames, bool preserveDirHierarchy, String directoryPathInArchive)
         {
             if (preserveDirHierarchy)
             {
@@ -2423,7 +2423,7 @@ namespace Ionic.Zip
         /// </param>
         ///
         /// <seealso cref="Ionic.Zip.ZipFile.AddSelectedFiles(String, String)" />
-        public void UpdateFiles(System.Collections.Generic.ICollection<String> fileNames, String directoryPathInArchive)
+        public void UpdateFiles(System.Collections.Generic.IEnumerable<String> fileNames, String directoryPathInArchive)
         {
             foreach (var f in fileNames)
                 this.UpdateFile(f, directoryPathInArchive);
