@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-05 13:48:31>
+// Time-stamp: <2009-June-12 06:29:42>
 //
 // ------------------------------------------------------------------
 //
@@ -2407,7 +2407,7 @@ namespace Ionic.Zip
         public Ionic.Zlib.CrcCalculatorStream OpenReader()
         {
             // use the entry password if it is non-null, else use the zipfile password, which is possibly null
-            return InternalOpenReader(this._Password==null ? this._zipfile._Password : this._Password);
+            return InternalOpenReader(this._Password ?? this._zipfile._Password);
         }
 
         /// <summary>
@@ -2541,10 +2541,10 @@ namespace Ionic.Zip
                     return;
                 }
 
-                // if no password explicitly specified, use the password on the entry itself.
-                if (password == null) password = this._Password;  // may be null
-
-                SetupCrypto(password);
+                // if no password explicitly specified, use the password on the entry itself,
+                // or on the zipfile itself.
+                
+                SetupCrypto(password ?? this._Password ?? this._zipfile._Password); // may be null
 
                 // set up the output stream
                 if (TargetFile != null)
