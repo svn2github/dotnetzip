@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-12 06:29:42>
+// Time-stamp: <2009-June-12 13:39:04>
 //
 // ------------------------------------------------------------------
 //
@@ -1472,7 +1472,7 @@ namespace Ionic.Zip
         {
             int bytesRead = 0;
 
-            ze._RelativeOffsetOfLocalHeader = (int)ze.ArchiveStream.Position;
+            ze._RelativeOffsetOfLocalHeader = ze.ArchiveStream.Position;
 
             int signature = Ionic.Zip.SharedUtilities.ReadSignature(ze.ArchiveStream);
             bytesRead += 4;
@@ -2543,8 +2543,13 @@ namespace Ionic.Zip
 
                 // if no password explicitly specified, use the password on the entry itself,
                 // or on the zipfile itself.
-                
-                SetupCrypto(password ?? this._Password ?? this._zipfile._Password); // may be null
+                string p = password ?? this._Password ?? this._zipfile._Password;
+                if (UsesEncryption)
+                {
+                    if (p == null)
+                        throw new BadPasswordException();
+                    SetupCrypto(p); // may be null
+                }
 
                 // set up the output stream
                 if (TargetFile != null)
@@ -4565,7 +4570,7 @@ namespace Ionic.Zip
                 // This may have changed if any of the other entries changed (eg, if a different
                 // entry was removed or added.)
                 var counter = outstream as CountingStream;
-                _RelativeOffsetOfLocalHeader = (int)((counter != null) ? counter.BytesWritten : outstream.Position);
+                _RelativeOffsetOfLocalHeader = (counter != null) ? counter.BytesWritten : outstream.Position;
 
                 // copy through the header, filedata, trailer, everything...
                 long Remaining = this._TotalEntrySize;
@@ -4770,7 +4775,18 @@ namespace Ionic.Zip
             // Indicates that the value has not yet been set. 
             // Therefore, seek to the local header, figure the start of file data.
             long origPosition = this.ArchiveStream.Position;
-            this.ArchiveStream.Seek(this._RelativeOffsetOfLocalHeader, System.IO.SeekOrigin.Begin);
+            // BFJ's Exception:  "An attempt was made to move the file pointer before the beginning of the file."
+            try 
+            {
+                this.ArchiveStream.Seek(this._RelativeOffsetOfLocalHeader, System.IO.SeekOrigin.Begin);
+            }
+            catch (System.Exception exc1)
+            {
+                string description = String.Format("Exception seeking  entry({0}) offset(0x{1:X8}) len(0x{2:X8})",
+                                                   this.FileName, this._RelativeOffsetOfLocalHeader,
+                                                   this.ArchiveStream.Length);
+                throw new Exception(description, exc1);
+            }
 
             byte[] block = new byte[30];
             this.ArchiveStream.Read(block, 0, block.Length);
