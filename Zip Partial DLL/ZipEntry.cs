@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-12 13:39:04>
+// Time-stamp: <2009-June-13 02:20:51>
 //
 // ------------------------------------------------------------------
 //
@@ -4424,8 +4424,9 @@ namespace Ionic.Zip
             byte[] bytes = new byte[BufferSize];
 
             // just read from the existing input zipfile and write to the output
-            System.IO.Stream input = this.ArchiveStream;
-
+             System.IO.Stream input = this.ArchiveStream;
+            var input1 = new Ionic.Zlib.CrcCalculatorStream(input);
+                
             // must re-compute metadata if it changed, or if the Zip64 option changed.
             if (_metadataChanged ||
         (_InputUsesZip64 && _zipfile.UseZip64WhenSaving == Zip64Option.Never) ||
@@ -4458,12 +4459,15 @@ namespace Ionic.Zip
                         int len = (Remaining > bytes.Length) ? bytes.Length : (int)Remaining;
 
                         // read
-                        n = input.Read(bytes, 0, len);
+                        n = input1.Read(bytes, 0, len);
                         _CheckRead(n);
 
                         // write
                         outstream.Write(bytes, 0, n);
                         Remaining -= n;
+                        OnWriteBlock(input1.TotalBytesSlurped, this._CompressedSize);
+                        if (_ioOperationCanceled)
+                            break;
                     }
 
                     _LengthOfTrailer = 0;

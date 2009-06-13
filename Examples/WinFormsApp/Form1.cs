@@ -145,7 +145,7 @@ namespace Ionic.Zip.WinFormsExample
             _CompressionLevelNames.Sort();
             foreach (var name in _CompressionLevelNames)
             {
-                if (name.StartsWith("LEVEL"))
+                if (name.StartsWith("Level"))
                 {
                     comboCompression.Items.Add(name);
                 }
