@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-13 02:20:51>
+// Time-stamp: <2009-June-13 12:54:28>
 //
 // ------------------------------------------------------------------
 //
@@ -4583,12 +4583,15 @@ namespace Ionic.Zip
                     int len = (Remaining > bytes.Length) ? bytes.Length : (int)Remaining;
 
                     // read
-                    n = input.Read(bytes, 0, len);
+                    n = input1.Read(bytes, 0, len);
                     _CheckRead(n);
 
                     // write
                     outstream.Write(bytes, 0, n);
                     Remaining -= n;
+                    OnWriteBlock(input1.TotalBytesSlurped, this._CompressedSize);
+                    if (_ioOperationCanceled)
+                        break;
                 }
 
             }
