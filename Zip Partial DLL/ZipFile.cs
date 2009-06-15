@@ -3531,9 +3531,12 @@ namespace Ionic.Zip
                 if (WriteStream == null)
                     throw new BadStateException("You haven't specified where to save the zip.");
 
+                if (_name != null && _name.EndsWith(".exe") && !_SavingSfx)
+                    throw new BadStateException("You specified an EXE for a plain zip file.");
+                
                 // check if modified, before saving. 
                 if (!_contentsChanged) return;
-
+                
                 if (Verbose) StatusMessageTextWriter.WriteLine("saving....");
 
                 // validate the number of entries
@@ -6431,6 +6434,8 @@ namespace Ionic.Zip
         private System.Text.Encoding _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437"); // default = IBM437
 
         internal Zip64Option _zip64 = Zip64Option.Default;
+        private bool _SavingSfx; 
+
         #endregion
     }
 

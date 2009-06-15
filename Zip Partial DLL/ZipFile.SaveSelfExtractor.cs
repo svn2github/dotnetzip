@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-15 13:45:41>
+// Time-stamp: <2009-June-15 14:22:15>
 //
 // ------------------------------------------------------------------
 //
@@ -404,6 +404,7 @@ namespace Ionic.Zip
             if (_name == null)
                 _writestream = null;
 
+            _SavingSfx = true;
             _name = exeToGenerate;
             if (Directory.Exists(_name))
                 throw new ZipException("Bad Directory", new System.ArgumentException("That name specifies an existing directory. Please specify a filename.", "zipFileName"));
@@ -413,6 +414,7 @@ namespace Ionic.Zip
             _SaveSfxStub(exeToGenerate, flavor);
 
             Save();
+            _SavingSfx = false;
         }
 
 

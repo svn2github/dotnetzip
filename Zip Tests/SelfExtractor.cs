@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-15 14:01:52>
+// Time-stamp: <2009-June-15 14:23:39>
 //
 // ------------------------------------------------------------------
 //
@@ -250,6 +250,7 @@ namespace Ionic.Zip.Tests
             // verify count
             Assert.AreEqual<int>(TestUtilities.CountEntries(SfxFileToCreate), 2, "The Zip file has the wrong number of entries.");
 
+            // create another file
             filename = Path.Combine(Subdir, "file2.txt");
             TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
             chk = TestUtilities.ComputeChecksum(filename);
@@ -588,5 +589,42 @@ namespace Ionic.Zip.Tests
                 }
             }
         }
+
+
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.BadStateException))]
+        public void SelfExtractor_Save_Zip_As_EXE()
+        {
+            string SfxFileToCreate = Path.Combine(TopLevelDir, "SelfExtractor_Save_Zip_As_EXE.exe");
+            
+            Directory.SetCurrentDirectory(TopLevelDir);
+
+            // create a file to zip
+            string Subdir = Path.Combine(TopLevelDir, "files");
+            Directory.CreateDirectory(Subdir);
+            string filename = Path.Combine(Subdir, "file1.txt");
+            TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
+
+            // add an entry to the zipfile, then try saving to a directory. this should fail
+            using (ZipFile zip = new ZipFile())
+            {
+                zip.AddFile(filename, "");
+                zip.SaveSelfExtractor(SfxFileToCreate, SelfExtractorFlavor.ConsoleApplication);
+            }
+
+            // create another file
+            filename = Path.Combine(Subdir, "file2.txt");
+            TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
+
+            // update the SFX, save to a zip format
+            using (ZipFile zip = new ZipFile(SfxFileToCreate))
+            {
+                zip.AddFile(filename, "");
+                zip.Save();  // FAIL
+            }
+
+        }
+        
     }
 }

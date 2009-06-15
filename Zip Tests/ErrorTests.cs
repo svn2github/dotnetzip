@@ -297,7 +297,7 @@ namespace Ionic.Zip.Tests.Error
         [ExpectedException(typeof(ZipException))]
         public void Error_Save_InvalidLocation()
         {
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Error_Save_InvalidLocation.zip");
+            //string ZipFileToCreate = Path.Combine(TopLevelDir, "Error_Save_InvalidLocation.zip");
 
             string SourceDir = CurrentDir;
             for (int i = 0; i < 3; i++)
@@ -308,11 +308,14 @@ namespace Ionic.Zip.Tests.Error
             string filename =
                 Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe");
 
+            string badLocation = "c:\\Windows\\";
+            Assert.IsTrue(Directory.Exists(badLocation));
+
             // add an entry to the zipfile, then try saving to a directory. this should fail
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            using (ZipFile zip = new ZipFile())
             {
                 zip.AddFile(filename, "");
-                zip.Save("c:\\Windows\\");
+                zip.Save(badLocation);  // fail
             }
         }
 
@@ -437,11 +440,10 @@ namespace Ionic.Zip.Tests.Error
 
             string baddirname = Path.Combine(TopLevelDir, "ThisIsAFile");
 
-            // try reading the invalid zipfile - this should fail
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            using (ZipFile zip = new ZipFile())
             {
-                zip.AddDirectory(baddirname);
-                zip.Save();
+                zip.AddDirectory(baddirname); // fail
+                zip.Save(ZipFileToCreate);
             }
         }
 
@@ -458,11 +460,10 @@ namespace Ionic.Zip.Tests.Error
 
             string badfilename = Path.Combine(TopLevelDir, "ThisIsADirectory.txt");
 
-            // try reading the invalid zipfile - this should fail
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            using (ZipFile zip = new ZipFile())
             {
-                zip.AddFile(badfilename);
-                zip.Save();
+                zip.AddFile(badfilename); // should fail
+                zip.Save(ZipFileToCreate);
             }
         }
 
@@ -518,14 +519,14 @@ namespace Ionic.Zip.Tests.Error
 
             // create the zipfile, adding the files
             int j = 0;
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            using (ZipFile zip = new ZipFile())
             {
                 for (j = 0; j < filenames.Length; j++)
                 {
                     zip.Password = passwords[j];
                     zip.AddFile(filenames[j], "");
                 }
-                zip.Save();
+                zip.Save(ZipFileToCreate);
             }
 
             IntroduceCorruption(ZipFileToCreate);
@@ -533,7 +534,7 @@ namespace Ionic.Zip.Tests.Error
             try
             {
                 // read the corrupted zip - this should fail in some way
-                using (ZipFile zip = new ZipFile(ZipFileToCreate))
+                using (ZipFile zip = ZipFile.Read(ZipFileToCreate))
                 {
                     for (j = 0; j < filenames.Length; j++)
                     {
@@ -577,11 +578,11 @@ namespace Ionic.Zip.Tests.Error
             };
 
             // create the zipfile, adding the files
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            using (ZipFile zip = new ZipFile())
             {
                 for (i = 0; i < filenames.Length; i++)
                     zip.AddFile(filenames[i], "");
-                zip.Save();
+                zip.Save(ZipFileToCreate);
             }
 
             // now corrupt the zip archive
