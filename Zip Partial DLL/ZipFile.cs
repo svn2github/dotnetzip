@@ -3517,7 +3517,8 @@ namespace Ionic.Zip
         ///
         /// <exception cref="Ionic.Zip.BadStateException">
         /// Thrown if you haven't specified a location or stream for saving the zip,
-        /// either in the constructor or by setting the Name property. 
+        /// either in the constructor or by setting the Name property, or if you try to
+        /// save a regular zip archive to a filename with a .exe extension.
         /// </exception>
         ///
         public void Save()
@@ -6434,7 +6435,9 @@ namespace Ionic.Zip
         private System.Text.Encoding _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437"); // default = IBM437
 
         internal Zip64Option _zip64 = Zip64Option.Default;
+        #pragma warning disable 649
         private bool _SavingSfx; 
+        #pragma warning restore 649
 
         #endregion
     }
