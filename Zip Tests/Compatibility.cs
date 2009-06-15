@@ -1,4 +1,4 @@
-﻿// Compatibility.cs
+// Compatibility.cs
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.  
@@ -15,13 +15,19 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-May-30 08:41:59>
+// Time-stamp: <2009-June-15 10:03:57>
 //
 // ------------------------------------------------------------------
 //
-// This module defines the tests for compatibility testing for DotNetZip.
-// The idea is to verify that DotNetZip can read the zip files produced by other tools, and
-// that other tools can read the output produced by DotNetZip.
+// This module defines the tests for compatibility for DotNetZip.  The
+// idea is to verify that DotNetZip can read the zip files produced by
+// other tools, and that other tools can read the output produced
+// by DotNetZip. The tools and libraries tested are:
+//  - WinZip,
+//  - 7zip
+//  - zipfldr.dll (via script)
+//  - the Visual Studio DLL
+//  - MS-Word
 //
 // ------------------------------------------------------------------
 
