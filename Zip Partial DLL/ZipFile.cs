@@ -83,6 +83,14 @@ namespace Ionic.Zip
         /// <summary>
         /// The compression strategy to use for all entries.
         /// </summary>
+        ///
+        /// <remarks>
+        /// This refers to the Strategy used by the ZLIB-compatible compressor. Different
+        /// compression strategies work better on different sorts of data. The strategy parameter
+        /// can affect the compression ratio and the speed of compression but not the correctness
+        /// of the compresssion.  For more information see <see
+        /// cref="Ionic.Zlib.CompressionStrategy "/>.
+        /// </remarks>
         public Ionic.Zlib.CompressionStrategy Strategy
         {
             get { return _Strategy; }
@@ -371,16 +379,19 @@ namespace Ionic.Zip
         /// <remarks>
         ///
         /// <para>
-        /// Designed many years ago, the original zip specification from PKWARE allowed for 32-bit
-        /// quantities for the compressed and uncompressed sizes of zip entries, as well as a
-        /// 32-bit quantity for specifying the length of the zip archive itself, and a maximum of
-        /// 65535 entries.  These limits are now regularly exceeded in many backup and archival
-        /// scenarios.  Recently, PKWare added extensions to the original zip spec, called "ZIP64
-        /// extensions", to raise those limitations.  This property governs whether the ZipFile
-        /// instance will use those extensions when writing zip archives within a call to one of
-        /// the Save() methods.  The use of these extensions is optional and explicit in DotNetZip
-        /// because, despite the status of ZIP64 as a bona fide standard, not all other zip tools
-        /// support ZIP64.
+        /// Designed many years ago, the <see
+        /// href="http://www.pkware.com/documents/casestudies/APPNOTE.TXT">original zip
+        /// specification from PKWARE</see> allowed for 32-bit quantities for the compressed and
+        /// uncompressed sizes of zip entries, as well as a 32-bit quantity for specifying the
+        /// length of the zip archive itself, and a maximum of 65535 entries.  These limits are
+        /// now regularly exceeded in many backup and archival scenarios.  Recently, PKWare added
+        /// extensions to the original zip spec, called "ZIP64 extensions", to raise those
+        /// limitations.  This property governs whether the ZipFile instance will use those
+        /// extensions when writing zip archives within a call to one of the Save() methods.  The
+        /// use of these extensions is optional and explicit in DotNetZip because, despite the
+        /// status of ZIP64 as a bona fide standard, many other zip tools and libraries do not
+        /// support ZIP64, and therefore a zip file saved with ZIP64 extensions may be unreadable
+        /// by some of those other tools.
         /// </para>
         /// 
         /// <para>
@@ -434,8 +445,8 @@ namespace Ionic.Zip
         ///
         /// <para>
         /// The ZipFile.Read() method will properly read ZIP64-endowed zip archives, regardless of
-        /// the value of this property.  ZIP64 archives can always be read, but this property
-        /// governs whether they can be written.  Therefore, when updating archives, be careful
+        /// the value of this property.  DotNetZip will always read ZIP64 archives.  This property
+        /// governs whether DotNetZip will write them. Therefore, when updating archives, be careful
         /// about setting this property after reading an archive that may use ZIP64 extensions.
         /// </para>
         ///
@@ -446,8 +457,8 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        /// <see href="http://cheeso.members.winisp.net/DotNetZipDonate.aspx">Have you
-        /// thought about donating?</see>
+        /// Have you thought about
+        /// <see href="http://cheeso.members.winisp.net/DotNetZipDonate.aspx">donating</see>?
         /// </para>
         ///
         /// </remarks>
@@ -525,6 +536,16 @@ namespace Ionic.Zip
         /// </summary>
         ///
         /// <remarks>
+        /// <para>
+        /// The use of ZIP64 extensions within an archive is not always necessary, and for
+        /// interoperability concerns, it may be desired to NOT use ZIP64 if possible.  The
+        /// <see cref="ZipFile.UseZip64WhenSaving"> property can be set to use ZIP64
+        /// extensions only when necessary.  In those cases, Sometimes applications want to
+        /// know whether a Save() actually used ZIP64 extensions.  Applications can query
+        /// this read-only property to learn whether ZIP64 has been used in a just-saved
+        /// ZipFile.
+        /// </para>
+        ///
         /// <para>
         /// The value is null (or Nothing in VB) if the archive has not been saved.
         /// </para>
@@ -814,8 +835,8 @@ namespace Ionic.Zip
         /// Setting this property allows applications to override this default behavior, so
         /// that the library will create the temporary file in the specified folder. For
         /// example, to have the library create the temporary file in the current working
-        /// directory, specfy ".".  To revert to the default behavior, set this property to
-        /// null (Nothing in VB).
+        /// directory, regardless where the ZipFile is saved, specfy ".".  To revert to the
+        /// default behavior, set this property to null (Nothing in VB).
         /// </para>
         ///
         /// <para>
@@ -3096,7 +3117,7 @@ namespace Ionic.Zip
         /// <remarks>
         /// <para>
         /// Calling the method is equivalent to calling RemoveEntry() if an entry by the same name
-        /// already exists, and then calling AddFileFromStream() with the given fileName and stream.
+        /// already exists, and then calling AddEntry() with the given fileName and stream.
         /// </para>
         ///
         /// <para>
@@ -3116,7 +3137,7 @@ namespace Ionic.Zip
         ///
         /// </remarks>
         ///
-        /// <seealso cref="Ionic.Zip.ZipFile.AddFileFromStream(string, string, System.IO.Stream)"/>
+        /// <seealso cref="Ionic.Zip.ZipFile.AddEntry(string, string, System.IO.Stream)"/>
         /// <seealso cref="Ionic.Zip.ZipEntry.InputStream"/>
         ///
         /// <param name="fileName">the name associated to the entry in the zip archive.</param>
@@ -3477,43 +3498,46 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// Saves the Zip archive, using the name given when the ZipFile was instantiated. 
+        /// Saves the Zip archive to a file, specified by the Name property of the ZipFile. 
         /// </summary>
         ///
         /// <remarks>
         /// <para>
-        /// The zip file is written to storage only when the caller calls <c>Save</c>.  
-        /// The Save operation writes the zip content to a temporary file. 
-        /// Then, if the zip file already exists (for example when adding an item to a zip archive)
-        /// this method will replace the existing zip file with this temporary file.
-        /// If the zip file does not already exist, the temporary file is renamed 
-        /// to the desired name.  
+        /// The ZipFile instance is written to storage, typically a zip file in a
+        /// filesystem, only when the caller calls <c>Save</c>.  The Save operation writes
+        /// the zip content to a temporary file, and then renames the temporary file
+        /// to the desired name. If necessary, this method will delete a pre-existing file
+        /// before the rename.
+        /// </para>
+        ///
+        /// <para>
+        /// The <see cref="ZipFile.Name"/> property is specified either explicitly, or
+        /// implicitly using one of the parameterized ZipFile constructors.  For COM
+        /// clients, the Name property must be specified explicitly, because COM does not
+        /// call parameterized constructors.
         /// </para>
         ///
         /// <para>
         /// When using a filesystem file for the Zip output, it is possible to call
-        /// <c>Save</c> multiple times on the ZipFile instance. With each call the zip content
-        /// is written to the output file. When saving to a <c>Stream</c>, after the initial
-        /// call to <c>Save</c>, additional calls to <c>Save</c> will throw. This is because the
-        /// stream is assumed to be a write-only stream, and after the initial <c>Save</c>, it
-        /// is not possible to seek backwards and "unwrite" the zip file data.
+        /// <c>Save</c> multiple times on the ZipFile instance. With each call the zip
+        /// content is re-written to the same output file.
         /// </para>
         ///
         /// <para>
         /// Data for entries that have been added to the <c>ZipFile</c> instance is written
         /// to the output when the <c>Save</c> method is called. This means that the input
-        /// streams for those entries must be available at the time the application
-        /// calls <c>Save</c>.  If, for example, the application adds entries with
-        /// <c>AddFileFromStream</c> using a dynamically-allocated <c>MemoryStream</c>,
-        /// the memory stream must not have been disposed before the call to <c>Save</c>. See
-        /// the <see cref="ZipEntry.InputStream"/> property for more discussion of the 
-        /// availability requirements of the input stream for an entry, and an approach for providing 
+        /// streams for those entries must be available at the time the application calls
+        /// <c>Save</c>.  If, for example, the application adds entries with <c>AddEntry</c>
+        /// using a dynamically-allocated <c>MemoryStream</c>, the memory stream must not
+        /// have been disposed before the call to <c>Save</c>. See the <see
+        /// cref="ZipEntry.InputStream"/> property for more discussion of the availability
+        /// requirements of the input stream for an entry, and an approach for providing
         /// just-in-time stream lifecycle management.
         /// </para>
         ///
         /// </remarks>
         ///
-        /// <seealso cref="Ionic.Zip.ZipFile.AddFileFromStream(String, String, System.IO.Stream)"/>
+        /// <seealso cref="Ionic.Zip.ZipFile.AddEntry(String, String, System.IO.Stream)"/>
         ///
         /// <exception cref="Ionic.Zip.BadStateException">
         /// Thrown if you haven't specified a location or stream for saving the zip,
@@ -3696,16 +3720,24 @@ namespace Ionic.Zip
         /// 
         /// <remarks>
         /// <para>
-        /// This is handy when reading a zip archive from a stream 
-        /// and you want to modify the archive (add a file, change a 
-        /// comment, etc) and then save it to a file. 
+        /// This method allows the application to explicitly specify the name of the zip
+        /// file when saving. Use this when creating a new zip file, or when 
+        /// updating a zip archive.  
         /// </para>
+        /// 
         /// <para>
-        /// It also works if you create a new ZipFile for writing to a 
-        /// stream, and then you also want to write it to a filesystem file. 
-        /// In that case, call the Save() method, and then also call this method with
-        /// a filename. 
+        /// An application can also save a zip archive in several places by calling this method
+        /// multiple times in succession, with different filenames. 
         /// </para>
+        ///
+        /// <para>
+        /// The ZipFile instance is written to storage, typically a zip file in a
+        /// filesystem, only when the caller calls <c>Save</c>.  The Save operation writes
+        /// the zip content to a temporary file, and then renames the temporary file
+        /// to the desired name. If necessary, this method will delete a pre-existing file
+        /// before the rename.
+        /// </para>
+        ///
         /// </remarks>
         /// 
         /// <exception cref="System.ArgumentException">
@@ -3716,6 +3748,44 @@ namespace Ionic.Zip
         /// The name of the zip archive to save to. Existing files will 
         /// be overwritten with great prejudice.
         /// </param>
+        ///
+        /// <example>
+        /// This example shows how to create and Save a zip file.
+        /// <code>
+        /// using (ZipFile zip = new ZipFile())
+        /// {
+        ///   zip.AddDirectory(@"c:\reports\January");
+        ///   zip.Save("January.zip");
+        /// }
+        /// </code>
+        ///
+        /// <code lang="VB">
+        /// Using zip As New ZipFile()
+        ///   zip.AddDirectory("c:\reports\January")
+        ///   zip.Save("January.zip")
+        /// End Using
+        /// </code>
+        ///
+        /// </example>
+        ///
+        /// <example>
+        /// This example shows how to update a zip file.
+        /// <code>
+        /// using (ZipFile zip = ZipFile.Read("ExistingArchive.zip"))
+        /// {
+        ///   zip.AddFile("NewData.csv");
+        ///   zip.Save("UpdatedArchive.zip");
+        /// }
+        /// </code>
+        ///
+        /// <code lang="VB">
+        /// Using zip As ZipFile = ZipFile.Read("ExistingArchive.zip")
+        ///   zip.AddFile("NewData.csv")
+        ///   zip.Save("UpdatedArchive.zip")
+        /// End Using
+        /// </code>
+        ///
+        /// </example>
         public void Save(System.String zipFileName)
         {
             // Check for the case where we are re-saving a zip archive 
@@ -3740,10 +3810,20 @@ namespace Ionic.Zip
         /// </summary>
         /// 
         /// <remarks>
-        /// If you open and manage streams yourself, you can save the zip content to the stream
-        /// directly, with this method.  This is the one you would use, for example, if you were
-        /// writing an ASP.NET application that dynamically generated a zip file and allowed the
-        /// browser to download it. 
+        /// <para>
+        /// The ZipFile instance is written to storage - typically a zip file in a
+        /// filesystem, but using this overload, the storage can eb anything accessible via
+        /// a writable stream - only when the caller calls <c>Save</c>.
+        /// </para>
+        ///
+        /// <para>
+        /// Use this method to save the zip content to a stream directly.  A common scenario
+        /// is an ASP.NET application that dynamically generates a zip file and allows the
+        /// browser to download it. The application can call <c>Save(Response.OutputStream)</c>
+        /// to write a zipfile directly to the output stream, without creating a zip file on the
+        /// disk on the ASP.NET server. 
+        /// </para>
+        ///
         /// </remarks>
         /// 
         /// <param name="outputStream">The <c>System.IO.Stream</c> to write to. It must be writable.</param>
@@ -6449,20 +6529,24 @@ namespace Ionic.Zip
     {
         /// <summary>
         /// The default behavior, which is "Never".
+        /// (For COM clients, this is a 0 (zero).)
         /// </summary>
         Default = 0,
         /// <summary>
         /// Do not use ZIP64 extensions when writing zip archives.
+        /// (For COM clients, this is a 0 (zero).)
         /// </summary>
         Never = 0,
         /// <summary>
         /// Use ZIP64 extensions when writing zip archives, as necessary. 
         /// For example, when a single entry exceeds 0xFFFFFFFF in size, or when the archive as a whole 
         /// exceeds 0xFFFFFFFF in size, or when there are more than 65535 entries in an archive.
+        /// (For COM clients, this is a 1.)
         /// </summary>
         AsNecessary = 1,
         /// <summary>
         /// Always use ZIP64 extensions when writing zip archives, even when unnecessary.
+        /// (For COM clients, this is a 2.)
         /// </summary>
         Always
     }

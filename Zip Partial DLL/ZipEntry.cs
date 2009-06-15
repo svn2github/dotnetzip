@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-14 13:45:56>
+// Time-stamp: <2009-June-15 17:24:21>
 //
 // ------------------------------------------------------------------
 //
@@ -135,24 +135,31 @@ namespace Ionic.Zip
     public enum ExtractExistingFileAction
     {
         /// <summary>
-        /// Throw an exception when extraction would overwrite an existing file. 
+        /// Throw an exception when extraction would overwrite an existing file. (For COM clients, 
+        /// this is a 0 (zero).)
         /// </summary>
         Throw,
 
         /// <summary>
-        /// When extraction would overwrite an existing file, overwrite the file silently. 
+        /// When extraction would overwrite an existing file, overwrite the file silently.
+        /// The overwrite will happen even if the target file is marked as read-only.
+        /// (For COM clients, this is a 1.)
         /// </summary>
         OverwriteSilently,
 
         /// <summary>
         /// When extraction would overwrite an existing file, don't overwrite the file, silently. 
+        /// (For COM clients, this is a 2.)
         /// </summary>
         DontOverwrite,
 
         /// <summary>
         /// When extraction would overwrite an existing file, invoke the ExtractProgress event,
         /// using an event type of <see
-        /// cref="ZipProgressEventType.Extracting_ExtractEntryWouldOverwrite"/>.
+        /// cref="ZipProgressEventType.Extracting_ExtractEntryWouldOverwrite"/>.  In this way, the
+        /// application can decide, just-in-time, whether to overwrite the file. For example, a
+        /// GUI application may wish to pop up a dialog to allow the user to choose.  
+        /// (For COM clients, this is a 3.)
         /// </summary>
         InvokeExtractProgressEvent,
     }
