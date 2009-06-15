@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-02 01:30:35>
+// Time-stamp: <2009-June-15 13:45:41>
 //
 // ------------------------------------------------------------------
 //
@@ -558,8 +558,9 @@ namespace Ionic.Zip
                 }
 
                 string LiteralSource = sb.ToString();
-
+                
                 System.CodeDom.Compiler.CompilerResults cr = csharp.CompileAssemblyFromSource(cp, LiteralSource);
+                    
                 if (cr == null)
                     throw new SfxGenerationException("Cannot compile the extraction logic!");
 
@@ -580,7 +581,9 @@ namespace Ionic.Zip
 
                 OnSaveEvent(ZipProgressEventType.Saving_AfterCompileSelfExtractor);
 
-                // now, copy the resulting EXE image to the _writestream
+                // Now, copy the resulting EXE image to the _writestream.
+                // Because this stub exe is being saved first, the effect will be to
+                // concatenate the exe and the zip data together. 
                 using (System.IO.Stream input = System.IO.File.OpenRead(StubExe))
                 {
                     byte[] buffer = new byte[4000];

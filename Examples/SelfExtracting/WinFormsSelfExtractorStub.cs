@@ -15,14 +15,14 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-01 23:54:24>
+// Time-stamp: <2009-June-15 13:43:45>
 //
 // ------------------------------------------------------------------
 //
-// This is a the source module that implements the stub of a
-// WinForms self-extracting Zip archive - the code included in all
-// GUI SFX files.  This code is included as a resource into the
-// DotNetZip DLL, and then is compiled at runtime when a SFX is saved. 
+// Implements the "stub" of a WinForms self-extracting Zip archive. This
+// code is included in all GUI SFX files.  It is included as a resource
+// into the DotNetZip DLL, and then is compiled at runtime when a SFX is
+// saved.  This code runs when the SFX is run.
 //
 // ------------------------------------------------------------------
 
@@ -220,6 +220,8 @@ namespace Ionic.Zip
                 ? global::Ionic.Zip.ExtractExistingFileAction.OverwriteSilently
                 : global::Ionic.Zip.ExtractExistingFileAction.Throw;
             bool extractCancelled = false;
+            System.Collections.Generic.List<String> didNotOverwrite =
+                new System.Collections.Generic.List<String>();
             _setCancel = false;
             string currentPassword = "";
             SetProgressBars();
@@ -292,20 +294,25 @@ namespace Ionic.Zip
                                     currentPassword = "";
                                     continue; // loop around, ask for password again
                                 }
-                                else
+                                else if (WantOverwrite != global::Ionic.Zip.ExtractExistingFileAction.OverwriteSilently 
+                                        && (ex2.Message.ToString() == "The file already exists."))
                                 {
-                                    if (WantOverwrite == global::Ionic.Zip.ExtractExistingFileAction.OverwriteSilently 
-                                        || (ex2.Message.ToString() != "The file already exists."))
+                                    // The file exists, but the user
+                                    // did not ask for overwrite.
+                                    didNotOverwrite.Add("    " + entry.FileName);
+                                    done = true;
+                                }
+                                else if (WantOverwrite == global::Ionic.Zip.ExtractExistingFileAction.OverwriteSilently 
+                                        && (ex2.Message.ToString() != "The file already exists."))
+                                {
+                                    DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
+                                                                          String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+                                    
+                                    done= true;
+                                    if (result == DialogResult.Cancel)
                                     {
-                                        DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
-                                                                              String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-
-                                        done= true;
-                                        if (result == DialogResult.Cancel)
-                                        {
-                                            _setCancel = true;
-                                            break;
-                                        }
+                                        _setCancel = true;
+                                        break;
                                     }
                                 }
                             } // catch
@@ -321,11 +328,21 @@ namespace Ionic.Zip
                 Application.Exit();
             }
 
+            if (didNotOverwrite.Count > 0)
+            {
+                string msg = String.Format("These files were not extracted because the target files already exist:\n{0}", String.Join("\n", didNotOverwrite.ToArray()));
+                MessageBox.Show(msg,
+                                "DotNetZip: Just so you know...",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Information,
+                                MessageBoxDefaultButton.Button1);
+            }
 
             SetUiDone();
 
             if (extractCancelled) return;
 
+            
             // optionally open explorer
             if (chk_OpenExplorer.Checked)
             {
