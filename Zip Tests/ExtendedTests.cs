@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-05 11:57:40>
+// Time-stamp: <2009-June-14 18:39:07>
 //
 // ------------------------------------------------------------------
 //
@@ -444,7 +444,7 @@ namespace Ionic.Zip.Tests.Extended
             using (ZipFile zip = new ZipFile())
             {
                 zip.WillReadTwiceOnInflation = ReadTwiceCallback;
-                zip.AddFileFromString("ReadMe.txt", "", "This is the content for the Readme file. This is the content. Right here. This is the content. This is it. And this content is compressible.");
+                zip.AddEntry("ReadMe.txt", "", "This is the content for the Readme file. This is the content. Right here. This is the content. This is it. And this content is compressible.");
                 zip.AddFile(SmallIncompressibleTextFile, Path.GetFileName(Subdir));
                 zip.AddFile(LargeTextFile, Path.GetFileName(Subdir));
                 zip.AddFile(CompressedFile, Path.GetFileName(Subdir));
@@ -526,7 +526,7 @@ namespace Ionic.Zip.Tests.Extended
                 Assert.IsTrue(e1.IsDirectory,
                               "The IsDirectory property was not set as expected.");
                 zip1.AddDirectoryByName("Directory2");
-                zip1.AddFileFromString("Readme.txt", "Directory2", "This is the content");
+                zip1.AddEntry("Readme.txt", "Directory2", "This is the content");
                 Assert.IsTrue(zip1["Directory2"].IsDirectory,
                               "The IsDirectory property was not set as expected.");
                 zip1.Save(ZipFileToCreate);
@@ -560,7 +560,7 @@ namespace Ionic.Zip.Tests.Extended
             using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
             {
                 MemoryStream ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(InputString));
-                zip1.AddFileFromStream("Test.xml", "Woo", ms1);
+                zip1.AddEntry("Test.xml", "Woo", ms1);
                 zip1.Save();
 
                 MemoryStream ms2 = new MemoryStream();
@@ -609,7 +609,7 @@ namespace Ionic.Zip.Tests.Extended
                     zip1.Password = Passwords[k];
                     for (int i = 0; i < InputStrings.Length; i++)
                     {
-                        zip1.AddFileFromString(String.Format("Lorem{0}.txt", i + 1), "", InputStrings[i]);
+                        zip1.AddEntry(String.Format("Lorem{0}.txt", i + 1), "", InputStrings[i]);
                     }
                     zip1.Save();
                 }
@@ -635,7 +635,7 @@ namespace Ionic.Zip.Tests.Extended
                 {
                     //zip2.Password = password;
                     var ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(UpdateString));
-                    zip3.UpdateFileFromStream("Lorem1.txt", "", ms1);
+                    zip3.UpdateEntry("Lorem1.txt", "", ms1);
                     zip3.Save();
                 }
 
@@ -649,7 +649,7 @@ namespace Ionic.Zip.Tests.Extended
 
 
         [TestMethod]
-        public void Test_AddFileFromString()
+        public void Test_AddEntry_String()
         {
 
             EncryptionAlgorithm[] EncOptions = { EncryptionAlgorithm.None, 
@@ -690,7 +690,7 @@ namespace Ionic.Zip.Tests.Extended
                 {
                     for (int c = 0; c < encodings.Length; c++)
                     {
-                        string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Test_AddUpdateFileFromString-{0}.{1}.{2}.zip", a, b, c));
+                        string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Test_AddEntry_String-{0}.{1}.{2}.zip", a, b, c));
                         Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
                         Directory.SetCurrentDirectory(TopLevelDir);
@@ -705,7 +705,7 @@ namespace Ionic.Zip.Tests.Extended
                             {
                                 string entryName = String.Format("File{0}.txt", d + 1);
                                 // add each string using the given encoding
-                                zip1.AddFileFromString(entryName, "", contentStrings[d], encodings[c]);
+                                zip1.AddEntry(entryName, "", contentStrings[d], encodings[c]);
                             }
                             zip1.Save();
                         }
@@ -862,7 +862,7 @@ namespace Ionic.Zip.Tests.Extended
                     zip1.AddDirectoryByName(DirName);
                     DirsAdded.Add(DirName.Replace("\\", "/") + "/");
                     if (n % 2 == 0) zip1.Password = password;
-                    zip1.AddFileFromString(new System.String((char)(n + 48), 3) + ".txt", DirName, "Hello, Dolly!");
+                    zip1.AddEntry(new System.String((char)(n + 48), 3) + ".txt", DirName, "Hello, Dolly!");
                     if (n % 2 == 0) zip1.Password = null;
                 }
                 zip1.Save();
@@ -923,7 +923,7 @@ namespace Ionic.Zip.Tests.Extended
                     zip1.AddDirectory(Subdir, Path.GetFileName(Subdir));
                     zip1.Comment = "This will be embedded into a self-extracting exe";
                     MemoryStream ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ReadmeString));
-                    zip1.AddFileFromStream("Readme.txt", "", ms1);
+                    zip1.AddEntry("Readme.txt", "", ms1);
                     zip1.SaveSelfExtractor(SfxFileToCreate, trials[k]);
                 }
 
@@ -985,7 +985,7 @@ namespace Ionic.Zip.Tests.Extended
                 zip.AddDirectory(Subdir, Path.GetFileName(Subdir));
                 zip.Comment = "This will be embedded into a self-extracting exe";
                 MemoryStream ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ReadmeString));
-                zip.AddFileFromStream("Readme.txt", "", ms1);
+                zip.AddEntry("Readme.txt", "", ms1);
                 zip.SaveSelfExtractor(ExeFileToCreate, Ionic.Zip.SelfExtractorFlavor.ConsoleApplication);
             }
 
@@ -1104,7 +1104,7 @@ namespace Ionic.Zip.Tests.Extended
                     zip.AddDirectory(Subdir, Path.GetFileName(Subdir));
                     zip.Comment = "This will be embedded into a self-extracting exe";
                     MemoryStream ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ReadmeString));
-                    zip.AddFileFromStream("Readme.txt", "", ms1);
+                    zip.AddEntry("Readme.txt", "", ms1);
                     if (k != 0) zip.AddFile(postExtractExe);
 
                     zip.SaveSelfExtractor(ExeFileToCreate,

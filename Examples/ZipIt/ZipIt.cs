@@ -130,7 +130,7 @@ namespace Ionic.Zip.Examples
                                 i++;
                                 if (args.Length <= i) Usage();
                                 string content = args[i];
-                                e = zip.AddFileFromString(entryName, entryDirectoryPathInArchive, content);
+                                e = zip.AddEntry(entryName, entryDirectoryPathInArchive, content);
                                 if (entryComment != null)
                                 {
                                     e.Comment = entryComment;

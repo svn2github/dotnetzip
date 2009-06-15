@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-May-30 06:37:23>
+// Time-stamp: <2009-June-14 18:40:50>
 //
 // ------------------------------------------------------------------
 //
@@ -1589,7 +1589,7 @@ namespace Ionic.Zip.Tests.Basic
                 for (int i = 0; i < fileCount; i++)
                 {
                     // use the local filename (not fully qualified)
-                    ZipEntry e = zip.AddFileFromString("file" + i.ToString(), "",
+                    ZipEntry e = zip.AddEntry("file" + i.ToString(), "",
                             "FileContent: This file has these attributes: " + attributeCombos[i].ToString());
                     TestContext.WriteLine("Adding {0}    [{1}]", e.FileName, attributeCombos[i].ToString());
                     e.Attributes = attributeCombos[i];

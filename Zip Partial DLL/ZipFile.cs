@@ -81,7 +81,7 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// The compression strategy to use for all entries. 
+        /// The compression strategy to use for all entries.
         /// </summary>
         public Ionic.Zlib.CompressionStrategy Strategy
         {
@@ -279,7 +279,7 @@ namespace Ionic.Zip
         /// with respect to UTF-8 encoding will not work well with Explorer in Windows XP or
         /// Windows Vista, because Windows compressed folders, as far as I know, do not support
         /// UTF-8 in zip files.  Vista can read the zip files, but shows the filenames
-        /// incorrectly.  Unpacking from Windows Vista Explorer will result in filenames that have
+        /// incorrectly. Unpacking from Windows Vista Explorer will result in filenames that have
         /// rubbish characters in place of the high-order UTF-8 bytes.
         /// </para>
         ///
@@ -291,10 +291,11 @@ namespace Ionic.Zip
         ///
         /// <para>
         /// As a result, we have the unfortunate situation that "correct" behavior by the
-        /// DotNetZip library with regard to Unicode during zip creation will result in zip files
-        /// that are readable by strictly compliant and current tools (for example the most recent
-        /// release of the commercial WinZip tool); but these zip files will not be readable by
-        /// various other tools or libraries, including Windows Explorer.
+        /// DotNetZip library with regard to Unicode encoding of filenames during zip
+        /// creation will result in zip files that are readable by strictly compliant and
+        /// current tools (for example the most recent release of the commercial WinZip
+        /// tool); but these zip files will not be readable by various other tools or
+        /// libraries, including Windows Explorer.
         /// </para>
         ///
         /// <para>
@@ -445,7 +446,8 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        /// <see href="http://cheeso.members.winisp.net/DotNetZipDonate.aspx">Have you thought about donating?</see>
+        /// <see href="http://cheeso.members.winisp.net/DotNetZipDonate.aspx">Have you
+        /// thought about donating?</see>
         /// </para>
         ///
         /// </remarks>
@@ -645,14 +647,14 @@ namespace Ionic.Zip
         /// <code>
         /// using (var zip = ZipFile.Read(zipFileName, System.Text.Encoding.GetEncoding("big5")))
         /// {
-        ///     // retrieve an extract an entry using a name encoded with CP950
+        ///     // retrieve and extract an entry using a name encoded with CP950
         ///     zip[MyDesiredEntry].Extract("unpack");
         /// }
         /// </code>
         ///
         /// <code lang="VB">
         /// Using zip As ZipFile = ZipFile.Read(ZipToExtract, System.Text.Encoding.GetEncoding(950))
-        ///     ' retrieve an extract an entry using a name encoded with CP950
+        ///     ' retrieve and extract an entry using a name encoded with CP950
         ///     zip(MyDesiredEntry).Extract("unpack")
         /// End Using
         /// </code>
@@ -919,38 +921,38 @@ namespace Ionic.Zip
         /// The pdf file will be included, encrypted with "!Secret1" as the password.
         /// </para>
         /// <code>
-        ///    try
-        ///    {
-        ///      using (ZipFile zip = new ZipFile())
-        ///      {
-        ///        zip.AddFile("ReadMe.txt");
-        ///        zip.Password= "123456!";
-        ///        zip.AddFile("MapToTheSite-7440-N49th.png");
-        ///        zip.Password= "!Secret1";
-        ///        zip.AddFile("2008-Regional-Sales-Report.pdf");
+        /// try
+        /// {
+        ///   using (ZipFile zip = new ZipFile())
+        ///   {
+        ///     zip.AddFile("ReadMe.txt");
+        ///     zip.Password= "123456!";
+        ///     zip.AddFile("MapToTheSite-7440-N49th.png");
+        ///     zip.Password= "!Secret1";
+        ///     zip.AddFile("2008-Regional-Sales-Report.pdf");
         ///
-        ///        zip.Save("EncryptedArchive.zip");
-        ///      }
-        ///    }
-        ///    catch (System.Exception ex1)
-        ///    {
-        ///      System.Console.Error.WriteLine("exception: {0}", ex1);
-        ///    }
+        ///     zip.Save("EncryptedArchive.zip");
+        ///   }
+        /// }
+        /// catch (System.Exception ex1)
+        /// {
+        ///   System.Console.Error.WriteLine("exception: {0}", ex1);
+        /// }
         /// </code>
         ///
         /// <code lang="VB">
-        ///  Try 
-        ///    Using zip As New ZipFile
-        ///      zip.AddFile("ReadMe.txt")
-        ///      zip.Password = "123456!"
-        ///      zip.AddFile("MapToTheSite-7440-N49th.png")
-        ///      zip.Password= "!Secret1";
-        ///      zip.AddFile("2008-Regional-Sales-Report.pdf")
-        ///      zip.Save("EncryptedArchive.zip")
-        ///    End Using
-        ///  Catch ex1 As System.Exception
-        ///    System.Console.Error.WriteLine("exception: {0}", ex1)
-        ///  End Try
+        /// Try 
+        ///   Using zip As New ZipFile
+        ///     zip.AddFile("ReadMe.txt")
+        ///     zip.Password = "123456!"
+        ///     zip.AddFile("MapToTheSite-7440-N49th.png")
+        ///     zip.Password= "!Secret1";
+        ///     zip.AddFile("2008-Regional-Sales-Report.pdf")
+        ///     zip.Save("EncryptedArchive.zip")
+        ///   End Using
+        /// Catch ex1 As System.Exception
+        ///   System.Console.Error.WriteLine("exception: {0}", ex1)
+        /// End Try
         /// </code>
         ///
         /// </example>
@@ -983,12 +985,13 @@ namespace Ionic.Zip
         /// <para>
         /// This property affects the behavior of the Extract methods (one of the <c>Extract()</c>
         /// or <c>ExtractWithPassword()</c> overloads), when extraction would would overwrite an
-        /// existing filesystem file. If you do not set this property, 
-        /// the library throws an exception when extracting
-        /// an entry would overwrite an existing file.  
+        /// existing filesystem file. If you do not set this property, the library throws an
+        /// exception when extracting an entry would overwrite an existing file.
         /// </para>
+        ///
         /// <para>
-        /// This property has no effect when extracting to a stream, or when the file to be extracted does not already exist. 
+        /// This property has no effect when extracting to a stream, or when the file to be
+        /// extracted does not already exist. 
         /// </para>
         /// </remarks>
         /// <seealso cref="Ionic.Zip.ZipEntry.ExtractExistingFile"/>
@@ -1022,43 +1025,43 @@ namespace Ionic.Zip
         /// encrypted or protected with a password in the resulting zip archive. To get a zip
         /// archive with encrypted entries, set this property, along with the <see
         /// cref="Password"/> property, before calling <c>AddFile</c>, <c>AddItem</c>, or
-        /// <c>AddDirectory</c> (etc) on the ZipFile instance.
+        /// <c>AddDirectory</c> (etc.) on the ZipFile instance.
         /// </para>
         /// </remarks>
         ///
         /// <example>
         /// <code>
-        ///    try
-        ///    {
-        ///      using (ZipFile zip = new ZipFile())
-        ///      {
-        ///        zip.Encryption= EncryptionAlgorithm.WinZipAes256;
-        ///        zip.Password= "Top.Secret.No.Peeking!";
-        ///        zip.AddFile("ReadMe.txt");
-        ///        zip.AddFile("7440-N49th.png");
-        ///        zip.AddFile("2008-Regional-Sales-Report.pdf");
-        ///        zip.Save("EncryptedArchive.zip");
-        ///      }
-        ///    }
-        ///    catch (System.Exception ex1)
-        ///    {
-        ///      System.Console.Error.WriteLine("exception: {0}", ex1);
-        ///    }
+        /// try
+        /// {
+        ///   using (ZipFile zip = new ZipFile())
+        ///   {
+        ///     zip.Encryption= EncryptionAlgorithm.WinZipAes256;
+        ///     zip.Password= "Top.Secret.No.Peeking!";
+        ///     zip.AddFile("ReadMe.txt");
+        ///     zip.AddFile("7440-N49th.png");
+        ///     zip.AddFile("2008-Regional-Sales-Report.pdf");
+        ///     zip.Save("EncryptedArchive.zip");
+        ///   }
+        /// }
+        /// catch (System.Exception ex1)
+        /// {
+        ///   System.Console.Error.WriteLine("exception: {0}", ex1);
+        /// }
         /// </code>
         ///
         /// <code lang="VB">
-        ///  Try 
-        ///    Using zip As New ZipFile()
-        ///      zip.Encryption= EncryptionAlgorithm.WinZipAes256
-        ///      zip.Password= "Top.Secret.No.Peeking!"
-        ///      zip.AddFile("ReadMe.txt")
-        ///      zip.AddFile("7440-N49th.png")
-        ///      zip.AddFile("2008-Regional-Sales-Report.pdf")
-        ///      zip.Save("EncryptedArchive.zip")
-        ///    End Using
-        ///  Catch ex1 As System.Exception
-        ///    System.Console.Error.WriteLine("exception: {0}", ex1)
-        ///  End Try
+        /// Try 
+        ///   Using zip As New ZipFile()
+        ///     zip.Encryption= EncryptionAlgorithm.WinZipAes256
+        ///     zip.Password= "Top.Secret.No.Peeking!"
+        ///     zip.AddFile("ReadMe.txt")
+        ///     zip.AddFile("7440-N49th.png")
+        ///     zip.AddFile("2008-Regional-Sales-Report.pdf")
+        ///     zip.Save("EncryptedArchive.zip")
+        ///   End Using
+        /// Catch ex1 As System.Exception
+        ///   System.Console.Error.WriteLine("exception: {0}", ex1)
+        /// End Try
         /// </code>
         ///
         /// </example>
@@ -2734,8 +2737,8 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// Uses the given stream as input to create an entry in the ZipFile, with the 
-        /// given filename and given directory path.  
+        /// Create an entry in the ZipFile using the given Stream as input.  The entry 
+        /// will have the given filename and given directory path.  
         /// </summary>
         ///
         /// <remarks>
@@ -2778,7 +2781,7 @@ namespace Ionic.Zip
         /// {
         ///   using (ZipFile zip = new ZipFile())
         ///   {
-        ///     ZipEntry entry= zip.AddFileFromStream(FileNameInArchive, "basedirectory", StreamToRead);
+        ///     ZipEntry entry= zip.AddEntry(FileNameInArchive, "basedirectory", StreamToRead);
         ///     entry.Comment = "The content for this entry in the zip file was obtained from a stream";
         ///     zip.AddFile("Readme.txt");
         ///     zip.Save(ZipToCreate);
@@ -2791,7 +2794,7 @@ namespace Ionic.Zip
         /// Dim FileNameInArchive As String = "Content-From-Stream.bin"
         /// Using StreamToRead as System.IO.Stream = MyStreamOpener()
         ///   Using zip As ZipFile = New ZipFile()
-        ///     Dim entry as ZipEntry = zip.AddFileFromStream(FileNameInArchive, "basedirectory", StreamToRead)
+        ///     Dim entry as ZipEntry = zip.AddEntry(FileNameInArchive, "basedirectory", StreamToRead)
         ///     entry.Comment = "The content for this entry in the zip file was obtained from a stream"
         ///     zip.AddFile("Readme.txt")
         ///     zip.Save(ZipToCreate)
@@ -2799,7 +2802,7 @@ namespace Ionic.Zip
         /// End Using
         /// </code>
         /// </example>
-        /// <seealso cref="Ionic.Zip.ZipFile.UpdateFileStream(string, string, System.IO.Stream)"/>
+        /// <seealso cref="Ionic.Zip.ZipFile.UpdateEntry(string, string, System.IO.Stream)"/>
         ///
         /// <param name="fileName">FileName which is shown in the ZIP File</param>
         /// <param name="directoryPathInArchive">
@@ -2811,7 +2814,7 @@ namespace Ionic.Zip
         /// </param>
         /// <param name="stream">the input stream from which to grab content for the file</param>
         /// <returns>The ZipEntry added.</returns>
-        public ZipEntry AddFileFromStream(string fileName, string directoryPathInArchive, Stream stream)
+        public ZipEntry AddEntry(string fileName, string directoryPathInArchive, Stream stream)
         {
             string n = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
             ZipEntry ze = ZipEntry.Create(fileName, n, true, stream);
@@ -2833,6 +2836,24 @@ namespace Ionic.Zip
         }
 
 
+    
+        /// <summary>
+        /// Create an entry in the ZipFile using the given Stream as input.  The entry will have the
+        /// given filename and given directory path.  
+        /// </summary>
+        ///
+        /// <remarks>
+        /// This method has been deprecated. Please use <see cref="AddEntry(string, string,
+        /// System.IO.Stream)"/>.  This method will be removed in a future version of this library.
+        /// </remarks>
+        ///
+        [Obsolete("Please use method AddEntry(string, string, System.IO.Stream))")]
+        public ZipEntry AddFileFromStream(string fileName, string directoryPathInArchive, Stream stream)
+        {
+            return AddEntry(fileName, directoryPathInArchive, stream);
+        }
+        
+
 
         /// <summary>
         /// Uses the given stream as input to create an entry in the ZipFile, with the 
@@ -2840,13 +2861,13 @@ namespace Ionic.Zip
         /// </summary>
         ///
         /// <remarks>
-        /// This method has been deprecated. Please use <see cref="AddFileFromStream(string, string,
+        /// This method has been deprecated. Please use <see cref="AddEntry(string, string,
         /// System.IO.Stream)"/>.  This method will be removed in a future version of this library.
         /// </remarks>
-        [Obsolete("Please use method AddFileFromStream()")]
+        [Obsolete("Please use method AddEntry(string, string, System.IO.Stream))")]
         public ZipEntry AddFileStream(string fileName, string directoryPathInArchive, Stream stream)
         {
-            return AddFileFromStream(fileName, directoryPathInArchive, stream);
+            return AddEntry(fileName, directoryPathInArchive, stream);
         }
 
 
@@ -2886,7 +2907,7 @@ namespace Ionic.Zip
         /// using (ZipFile zip1 = new ZipFile())
         /// {
         ///   zip1.AddFile("MyDocuments\\Resume.doc", "files");
-        ///   zip1.AddFileFromString("Readme.txt", "", Content); 
+        ///   zip1.AddEntry("Readme.txt", "", Content); 
         ///   zip1.Comment = "This zip file was created at " + System.DateTime.Now.ToString("G");
         ///   zip1.Save("Content.zip");
         /// }
@@ -2896,7 +2917,7 @@ namespace Ionic.Zip
         /// Public Sub Run()
         ///   Dim Content As String = "This string will be the content of the Readme.txt file in the zip archive."
         ///   Using zip1 As ZipFile = New ZipFile
-        ///     zip1.AddFileFromString("Readme.txt", "", Content)
+        ///     zip1.AddEntry("Readme.txt", "", Content)
         ///     zip1.AddFile("MyDocuments\Resume.doc", "files")
         ///     zip1.Comment = ("This zip file was created at " &amp; DateTime.Now.ToString("G"))
         ///     zip1.Save("Content.zip")
@@ -2904,9 +2925,26 @@ namespace Ionic.Zip
         /// End Sub
         /// </code>
         /// </example>
+        public ZipEntry AddEntry(string fileName, string directoryPathInArchive, string content)
+        {
+            return AddEntry(fileName, directoryPathInArchive, content,
+                                     System.Text.Encoding.Default);
+        }
+
+        
+        /// <summary>
+        /// Adds a named entry into the zip archive, taking content for the entry
+        /// from a string.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// This method has been deprecated. Please use <see cref="AddEntry(string, string,
+        /// string)"/>.  This method will be removed in a future version of this library.
+        /// </remarks>
+        [Obsolete("Please use method AddEntry(System.String, System.String, System.String))")]
         public ZipEntry AddFileFromString(string fileName, string directoryPathInArchive, string content)
         {
-            return AddFileFromString(fileName, directoryPathInArchive, content,
+            return AddEntry(fileName, directoryPathInArchive, content,
                                      System.Text.Encoding.Default);
         }
 
@@ -2930,9 +2968,9 @@ namespace Ionic.Zip
         /// Unicode-encoded content that includes a byte-order-mark, you can convert
         /// your string to a byte array using the appropriate <see
         /// cref="System.Text.Encoding.GetBytes(String)"/> method, then prepend to that byte
-        /// array the output of <see cref="System.Text.Encoding.GetPreamble()"/>, create
-        /// a MemoryStream from the resulting byte array, and use the
-        /// <c>AddFileFromStream()</c> method, to add the entry.  </para>
+        /// array the output of <see cref="System.Text.Encoding.GetPreamble()"/>, and use the
+        /// <c>AddEntry(string,string,byte[])</c> method, to add the entry.
+        /// </para>
         ///
         /// </remarks>
         ///
@@ -2955,11 +2993,11 @@ namespace Ionic.Zip
         ///
         /// <returns>The ZipEntry added.</returns>
         /// 
-        public ZipEntry AddFileFromString(string fileName, string directoryPathInArchive, string content,
+        public ZipEntry AddEntry(string fileName, string directoryPathInArchive, string content,
             System.Text.Encoding encoding)
         {
-            System.IO.MemoryStream ms = new System.IO.MemoryStream();
-            var sw = new System.IO.StreamWriter(ms, encoding);
+            var ms = new MemoryStream();
+            var sw = new StreamWriter(ms, encoding);
 
             sw.Write(content);
             sw.Flush();
@@ -2967,7 +3005,7 @@ namespace Ionic.Zip
             // note: stream leak!  We create this stream and then never Dispose() it.
             // This shouldn't be a problem though. The MemoryStream will be lazily collected at
             // some later point, after the zipfile is Saved.
-            return AddFileFromStream(fileName, directoryPathInArchive, ms);
+            return AddEntry(fileName, directoryPathInArchive, ms);
         }
 
 
@@ -2981,7 +3019,7 @@ namespace Ionic.Zip
         /// <para>
         /// Calling this method is equivalent to removing the ZipEntry for the
         /// given fileName and directory path, if it exists, and then calling <see
-        /// cref="AddFileFromString(String,String,String)" />.  See the documentation
+        /// cref="AddEntry(String,String,String)" />.  See the documentation
         /// for that method for further explanation. </para>
         /// 
         /// </remarks>
@@ -3001,21 +3039,22 @@ namespace Ionic.Zip
         ///
         /// <returns>The ZipEntry added.</returns>
         /// 
-        public ZipEntry UpdateFileFromString(string fileName, string directoryPathInArchive,
-                                             string content)
+        public ZipEntry UpdateEntry(string fileName, string directoryPathInArchive,
+                                    string content)
         {
-            return UpdateFileFromString(fileName, directoryPathInArchive,
-                                        content, System.Text.Encoding.Default);
+            return UpdateEntry(fileName, directoryPathInArchive,
+                               content, System.Text.Encoding.Default);
         }
 
 
         /// <summary>
-        /// Updates the given entry in the ZipFile, using the given string as input.
+        /// Updates the given entry in the ZipFile, using the given string as content
+        /// for the ZipEntry. 
         /// </summary>
         ///
         /// <remarks>Calling this method is equivalent to removing the ZipEntry for the
         /// given fileName and directory path, if it exists, and then calling <see
-        /// cref="AddFileFromString(String,String,String, System.Text.Encoding)" />.
+        /// cref="AddEntry(String,String,String, System.Text.Encoding)" />.
         /// See the documentation for that method for further explanation. </remarks>
         ///
         /// <param name="fileName">The filename to use within the archive.</param>
@@ -3037,15 +3076,15 @@ namespace Ionic.Zip
         ///
         /// <returns>The ZipEntry added.</returns>
         /// 
-        public ZipEntry UpdateFileFromString(string fileName, string directoryPathInArchive,
-                                             string content,
-                                             System.Text.Encoding encoding)
+        public ZipEntry UpdateEntry(string fileName, string directoryPathInArchive,
+                                    string content,
+                                    System.Text.Encoding encoding)
         {
             var key = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
             if (this[key] != null)
                 this.RemoveEntry(key);
 
-            return AddFileFromString(fileName, directoryPathInArchive, content, encoding);
+            return AddEntry(fileName, directoryPathInArchive, content, encoding);
         }
 
 
@@ -3085,13 +3124,13 @@ namespace Ionic.Zip
         /// for the entry added from the stream.</param>
         /// <param name="stream">The input stream from which to read file data.</param>
         /// <returns>The ZipEntry added.</returns>
-        public ZipEntry UpdateFileFromStream(string fileName, string directoryPathInArchive, Stream stream)
+        public ZipEntry UpdateEntry(string fileName, string directoryPathInArchive, Stream stream)
         {
             var key = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
             if (this[key] != null)
                 this.RemoveEntry(key);
 
-            return AddFileFromStream(fileName, directoryPathInArchive, stream);
+            return AddEntry(fileName, directoryPathInArchive, stream);
         }
 
 
@@ -3101,17 +3140,79 @@ namespace Ionic.Zip
         /// </summary>
         ///
         /// <remarks>
-        /// This method has been deprecated. Please use <see cref="UpdateFileFromStream(string, string,
+        /// This method has been deprecated. Please use <see cref="UpdateEntry(string, string,
         /// System.IO.Stream)"/>.  This method will be removed in a future version of this library.
         /// </remarks>
-        [Obsolete("Please use method UpdateFileFromStream()")]
-
+        [Obsolete("Please use method UpdateEntry()")]
         public ZipEntry UpdateFileStream(string fileName, string directoryPathInArchive, Stream stream)
         {
-            return UpdateFileFromStream(fileName, directoryPathInArchive, stream);
+            return UpdateEntry(fileName, directoryPathInArchive, stream);
 
         }
 
+
+
+        /// <summary>
+        /// Add an entry into the zip archive using the given filename and directory
+        /// path within the archive, and the given content for the file. No file is
+        /// created in the filesystem.
+        /// </summary>
+        ///
+        /// <param name="content">The data to use for the entry.</param>
+        /// <param name="fileName">The filename to use within the archive.</param>
+        ///
+        /// <param name="directoryPathInArchive">
+        /// Specifies a directory path to use for the entry. 
+        /// This path may, or may not, correspond to a real directory in the current
+        /// filesystem.  If the files within the zip are later extracted, this is the
+        /// path used for the extracted file.  Passing null (nothing in VB) will use the
+        /// path on the fileName, if any. Passing the empty string ("") will insert the
+        /// item at the root path within the archive.
+        /// </param>
+        ///
+        /// <returns>The ZipEntry added.</returns>
+        public ZipEntry AddEntry(string fileName, string directoryPathInArchive, byte[] content)
+        {
+            var ms = new MemoryStream(content);
+            return AddEntry(fileName, directoryPathInArchive, ms);
+        }
+
+        
+        /// <summary>
+        /// Updates the given entry in the ZipFile, using the given byte array as
+        /// content for the entry.
+        /// </summary>
+        ///
+        /// <remarks>Calling this method is equivalent to removing the ZipEntry for the
+        /// given fileName and directory path, if it exists, and then calling <see
+        /// cref="AddEntry(String,String,String, System.Text.Encoding)" />.
+        /// See the documentation for that method for further explanation. </remarks>
+        ///
+        /// <param name="fileName">The filename to use within the archive.</param>
+        ///
+        /// <param name="directoryPathInArchive"> Specifies a directory path to use to
+        /// override any path in the fileName.  This path need not correspond to a real
+        /// directory in the current filesystem when creating the zip file.  If the
+        /// files within the zip are later extracted, this is the path used for the
+        /// extracted file.  Passing null (nothing in VB) will use the path on the
+        /// fileName, if any.  Passing the empty string ("") will insert the item at the
+        /// root path within the archive.  </param>
+        ///
+        /// <param name="content">The content to use for the ZipEntry.</param>
+        ///
+        /// <returns>The ZipEntry added.</returns>
+        /// 
+        public ZipEntry UpdateEntry(string fileName, string directoryPathInArchive,
+                                    byte[] content)
+        {
+            var key = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
+            if (this[key] != null)
+                this.RemoveEntry(key);
+
+            return AddEntry(fileName, directoryPathInArchive, content);
+        }
+
+        
         private void InsureUniqueEntry(ZipEntry ze1)
         {
             foreach (ZipEntry ze2 in _entries)

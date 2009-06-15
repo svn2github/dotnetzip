@@ -19,11 +19,12 @@
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Data.Linq" />                   <!-- LINQ -->
-    <!--Reference Include="System.ServiceModel" /-->           <!-- WCF -->
-    <!--Reference Include="System.ServiceModel.Web" /-->       <!-- WCF -->
-    <!--Reference Include="System.Runtime.Serialization" /-->  <!-- WCF -->
+    <!-- <Reference Include="System.Data" />                       -->
+
+    <!-- <Reference Include="System.Data.Linq" />                   -->
+
+    <Reference Include="..\Zlib\bin\Debug\Ionic.Zlib.dll" />   <!-- ZLIB -->
+
   </ItemGroup>
 
   <!-- This ItemGroup includes every .cs source file in the directory,           -->

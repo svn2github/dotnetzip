@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-13 12:54:28>
+// Time-stamp: <2009-June-14 13:45:56>
 //
 // ------------------------------------------------------------------
 //
@@ -2515,6 +2515,19 @@ namespace Ionic.Zip
             _ioOperationCanceled = _zipfile.OnSaveBlock(this, bytesXferred, totalBytesToXfer);
         }
 
+        private void ReallyDelete(string fileName)
+        {
+            // workitem 7881
+            // reset ReadOnly bit if necessary
+#if NETCF
+            if ( (NetCfFile.GetAttributes(fileName) & (uint)FileAttributes.ReadOnly) == (uint)FileAttributes.ReadOnly)
+                NetCfFile.SetAttributes(fileName, (uint)FileAttributes.Normal);
+#else
+            if ( (File.GetAttributes(fileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                File.SetAttributes(fileName, FileAttributes.Normal);
+#endif
+            File.Delete(fileName);
+        }
 
         // Pass in either basedir or s, but not both. 
         // In other words, you can extract to a stream or to a directory (filesystem), but not both!
@@ -2565,28 +2578,44 @@ namespace Ionic.Zip
                         fileExistsBeforeExtraction = true;
                         switch (ExtractExistingFile)
                         {
-                            case ExtractExistingFileAction.Throw:
+                        case ExtractExistingFileAction.Throw:
+                            throw new ZipException("The file already exists.");
+                        case ExtractExistingFileAction.OverwriteSilently:
+                            {
+                            if (_zipfile.Verbose)
+                                _zipfile.StatusMessageTextWriter.WriteLine("the file {0} exists; deleting it...", FileName);
+                                
+                            //System.IO.File.Delete(TargetFile);
+                            ReallyDelete(TargetFile);
+                            }
+                            break;
+                        case ExtractExistingFileAction.DontOverwrite:
+                            if (_zipfile.Verbose)
+                                _zipfile.StatusMessageTextWriter.WriteLine("the file {0} exists; not extracting entry...", FileName);
+                            OnAfterExtract(baseDir);
+                            return;
+                        case ExtractExistingFileAction.InvokeExtractProgressEvent:
+                            OnExtractExisting(baseDir);
+                            // Check the ExtractExistingFile property again, it may have been reset.
+                            if (ExtractExistingFile == ExtractExistingFileAction.Throw)
                                 throw new ZipException("The file already exists.");
-                            case ExtractExistingFileAction.OverwriteSilently:
-                                System.IO.File.Delete(TargetFile);
-                                break;
-                            case ExtractExistingFileAction.DontOverwrite:
+                            else if (ExtractExistingFile == ExtractExistingFileAction.OverwriteSilently)
+                                //System.IO.File.Delete(TargetFile);
+                            {
+                                if (_zipfile.Verbose)
+                                    _zipfile.StatusMessageTextWriter.WriteLine("the file {0} exists; deleting it...", FileName);
+                                //System.IO.File.Delete(TargetFile);
+                                ReallyDelete(TargetFile);
+                            }
+                            else if (ExtractExistingFile == ExtractExistingFileAction.DontOverwrite)
+                            {
+                                if (_zipfile.Verbose)
+                                    _zipfile.StatusMessageTextWriter.WriteLine("the file {0} exists; not extracting entry...", FileName);
                                 OnAfterExtract(baseDir);
                                 return;
-                            case ExtractExistingFileAction.InvokeExtractProgressEvent:
-                                OnExtractExisting(baseDir);
-                                // Check the ExtractExistingFile property again, it may have been reset.
-                                if (ExtractExistingFile == ExtractExistingFileAction.Throw)
-                                    throw new ZipException("The file already exists.");
-                                else if (ExtractExistingFile == ExtractExistingFileAction.OverwriteSilently)
-                                    System.IO.File.Delete(TargetFile);
-                                else if (ExtractExistingFile == ExtractExistingFileAction.DontOverwrite)
-                                {
-                                    OnAfterExtract(baseDir);
-                                    return;
-                                }
-                                else throw new ZipException("The file already exists.");
-                                break;
+                            }
+                            else throw new ZipException("The file already exists.");
+                            break;
                         }
                     }
                     output = new System.IO.FileStream(TargetFile, System.IO.FileMode.CreateNew);
@@ -2665,7 +2694,6 @@ namespace Ionic.Zip
 
                     if (_ntfsTimesAreSet)
                     {
-
                         DateTime[] adjusted = new DateTime[] {
                             Ionic.Zip.SharedUtilities.AdjustTime_DotNetToWin32(_Ctime),
                             Ionic.Zip.SharedUtilities.AdjustTime_DotNetToWin32(_Atime),
@@ -5011,7 +5039,7 @@ namespace Ionic.Zip
 
 
         [System.Runtime.InteropServices.DllImport("coredll", EntryPoint="GetFileAttributes", SetLastError=true)]
-        internal static extern int GetAttributes(string lpFileName);
+        internal static extern uint GetAttributes(string lpFileName);
 
         [System.Runtime.InteropServices.DllImport("coredll", EntryPoint="SetFileAttributes", SetLastError=true)]
         internal static extern bool SetAttributes(string lpFileName, uint dwFileAttributes);

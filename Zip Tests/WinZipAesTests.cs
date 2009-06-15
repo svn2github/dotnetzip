@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-May-30 08:40:37>
+// Time-stamp: <2009-June-14 18:40:14>
 //
 // ------------------------------------------------------------------
 //
@@ -573,7 +573,7 @@ e.Extract(extractDir);
                     for (int i = 0; i < TextFiles.Length; i++)
                         zip.AddFile(TextFiles[i], "");
 
-                    zip.AddFileFromString("Readme.txt", "", "This is the content");
+                    zip.AddEntry("Readme.txt", "", "This is the content of the file. Ho ho ho!");
                     TestContext.WriteLine("Save...");
                     zip.Save(ZipFileToCreate);
                 }
