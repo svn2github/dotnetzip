@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-05 08:48:14>
+// Time-stamp: <2009-June-16 08:41:51>
 //
 // ------------------------------------------------------------------
 //
@@ -30,14 +30,6 @@ using System.IO;
 
 namespace Ionic.Zip
 {
-    /// <summary>
-    /// The ZipFile type represents a zip archive file.  This is the main type in the DotNetZip
-    /// class library.  This class reads and writes zip files, as defined in the format for zip
-    /// described by PKWare.  The compression for this implementation was, at one time, based on
-    /// the System.IO.Compression.DeflateStream base class in the .NET Framework base class
-    /// library, available in v2.0 and later of the .NET Framework. As of v1.7 of DotNetZip, the
-    /// compression is provided by a managed-code version of Zlib, included with DotNetZip.
-    /// </summary>
     public partial class ZipFile : System.Collections.Generic.IEnumerable<ZipEntry>,
     IDisposable
     {

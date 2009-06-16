@@ -112,7 +112,7 @@ namespace Ionic.Zip
         ///
         /// <para>
         /// If you use the no-argument constructor, and you then explicitly set this property,
-        /// when you call <see cref="ZipFile.Save()"/>", this name will specify the name of the
+        /// when you call <see cref="ZipFile.Save()"/>, this name will specify the name of the
         /// zipfile created.  Doing so is equivalent to calling <see
         /// cref="ZipFile.Save(String)"/>.  When instantiating a ZipFile by reading from a stream
         /// or byte array, the Name property remains null.  When saving to a stream, the Name
@@ -539,7 +539,7 @@ namespace Ionic.Zip
         /// <para>
         /// The use of ZIP64 extensions within an archive is not always necessary, and for
         /// interoperability concerns, it may be desired to NOT use ZIP64 if possible.  The
-        /// <see cref="ZipFile.UseZip64WhenSaving"> property can be set to use ZIP64
+        /// <see cref="ZipFile.UseZip64WhenSaving"/> property can be set to use ZIP64
         /// extensions only when necessary.  In those cases, Sometimes applications want to
         /// know whether a Save() actually used ZIP64 extensions.  Applications can query
         /// this read-only property to learn whether ZIP64 has been used in a just-saved
@@ -904,7 +904,7 @@ namespace Ionic.Zip
         /// archive, then each entry is encrypted with that password.  You may also want 
         /// to change the password between adding different entries. If you set the 
         /// password, add an entry, then set the password to null, and add another entry,
-        /// the first entry is encrypted and the second is not.  Furshtay?
+        /// the first entry is encrypted and the second is not.
         /// </para>
         /// 
         /// <para>
@@ -926,11 +926,10 @@ namespace Ionic.Zip
         /// then the password is null, and the entry is extracted with no password.
         /// </para>
         ///
-        /// <para>
-        /// If you set Password on the ZipFile, then Extract() an entry that has not been 
-        /// encrypted with a password, then the password is not used for that entry, and
-        /// the ZipEntry is extracted as normal.
-        /// </para>
+        /// <para> If you set the Password property on the ZipFile, then call Extract() an
+        /// entry that has not been encrypted with a password, the password is not
+        /// used for that entry, and the ZipEntry is extracted as normal. In other words,
+        /// the password is used only if necessary. </para>
         /// 
         /// </remarks>
         ///
@@ -1345,7 +1344,7 @@ namespace Ionic.Zip
         /// <remarks>
         /// <para>
         /// Applications can use this constructor to create a new ZipFile for writing, 
-        /// or to slurp in an existing zip archive for read and write purposes. 
+        /// or to slurp in an existing zip archive for read and update purposes. 
         /// </para>
         /// 
         /// <para>
@@ -1387,9 +1386,9 @@ namespace Ionic.Zip
         /// </para>
         /// 
         /// <para>
-        /// By the way, if you are using multiple threads with DotNetZip, don't you think <see
+        /// By the way, since DotNetZip is so easy to use, don't you think <see
         /// href="http://cheeso.members.winisp.net/DotNetZipDonate.aspx">you should donate
-        /// $5 or $10?</see>
+        /// $5 or $10</see>?
         /// </para>
         ///
         /// </remarks>
@@ -1407,11 +1406,7 @@ namespace Ionic.Zip
         /// { 
         ///   // Store all files found in the top level directory, into the zip archive.
         ///   String[] filenames = System.IO.Directory.GetFiles(DirectoryToZip);
-        ///   foreach (String filename in filenames)
-        ///   {
-        ///     Console.WriteLine("Adding {0}...", filename);
-        ///     zip.AddFile(filename);
-        ///   }  
+        ///   zip.AddFiles(filenames, "files");
         ///   zip.Save(ZipFileToCreate);
         /// }
         /// </code>
@@ -1421,11 +1416,7 @@ namespace Ionic.Zip
         /// Dim DirectoryToZip As String = "c:\reports"
         /// Using zip As ZipFile = New ZipFile()
         ///     Dim filenames As String() = System.IO.Directory.GetFiles(DirectoryToZip)
-        ///     Dim filename As String
-        ///     For Each filename In filenames
-        ///         Console.WriteLine("Adding {0}...", filename)
-        ///         zip.AddFile(filename)
-        ///     Next
+        ///     zip.AddFiles(filenames, "files")
         ///     zip.Save(ZipFileToCreate)
         /// End Using
         /// </code>
@@ -1460,8 +1451,8 @@ namespace Ionic.Zip
         ///
         /// <para>
         /// The Encoding is used as the default alternate encoding for entries with filenames or
-        /// comments that cannot be encoded with the IBM437 code page.  This is a equivalent to
-        /// setting the <see cref="ProvisionalAlternateEncoding"/> property on the ZIpFile
+        /// comments that cannot be encoded with the IBM437 code page.  This is equivalent to
+        /// setting the <see cref="ProvisionalAlternateEncoding"/> property on the ZipFile
         /// instance after construction.
         /// </para>
         ///
@@ -1508,20 +1499,20 @@ namespace Ionic.Zip
         /// constructors.
         /// </para>
         ///
-        /// <para>
-        /// After instantiating with this constructor and adding entries to the archive, your
-        /// application should call <see cref="ZipFile.Save(String)"/> or <see
-        /// cref="ZipFile.Save(System.IO.Stream)"/> to save to a file or a stream, respectively.
-        /// If you call the no-argument <see cref="Save()"/> method, the Save() will throw, as
-        /// there is no known place to save the file.
-        /// </para>
+        /// <para> After instantiating with this constructor and adding entries to the
+        /// archive, the application should call <see cref="ZipFile.Save(String)"/> or <see
+        /// cref="ZipFile.Save(System.IO.Stream)"/> to save to a file or a stream,
+        /// respectively.  The application can also set the <see cref="Name"/> property and
+        /// then call the no-argument <see cref="Save()"/> method.  (This is the preferred
+        /// approach for applications that use the library through COM interop.)  If you
+        /// call the no-argument <see cref="Save()"/> method without having set the
+        /// <c>Name</c> of the ZipFile, either through the parameterized constructor or
+        /// through the explicit property , the Save() will throw, because there is no
+        /// place to save the file.  </para>
         ///
-        /// <para>
-        /// Instances of the ZipFile class are not multi-thread safe.  You may not party on a
-        /// single instance with multiple threads.  You may have multiple threads that each use a
-        /// distinct ZipFile instance, or you can synchronize multi-thread access to a single
-        /// instance.
-        /// </para>
+        /// <para> Instances of the ZipFile class are not multi-thread safe.  You may have
+        /// multiple threads that each use a distinct ZipFile instance, or you can
+        /// synchronize multi-thread access to a single instance.  </para>
         /// 
         /// </remarks>
         /// 
@@ -1534,11 +1525,7 @@ namespace Ionic.Zip
         ///   // Store all files found in the top level directory, into the zip archive.
         ///   // note: this code does not recurse subdirectories!
         ///   String[] filenames = System.IO.Directory.GetFiles(DirectoryToZip);
-        ///   foreach (String filename in filenames)
-        ///   {
-        ///     Console.WriteLine("Adding {0}...", filename);
-        ///     zip.AddFile(filename);
-        ///   }  
+        ///   zip.AddFiles(filenames, "files");
         ///   zip.Save("Backup.zip");
         /// }
         /// </code>
@@ -1548,11 +1535,7 @@ namespace Ionic.Zip
         ///     ' Store all files found in the top level directory, into the zip archive.
         ///     ' note: this code does not recurse subdirectories!
         ///     Dim filenames As String() = System.IO.Directory.GetFiles(DirectoryToZip)
-        ///     Dim filename As String
-        ///     For Each filename In filenames
-        ///         Console.WriteLine("Adding {0}...", filename)
-        ///         zip.AddFile(filename)
-        ///     Next
+        ///     zip.AddFiles(filenames, "files")
         ///     zip.Save("Backup.zip")
         /// End Using
         /// </code>
@@ -1629,31 +1612,25 @@ namespace Ionic.Zip
         ///
         /// <example>
         /// <code>
-        /// using (ZipFile zip = new ZipFile())
+        /// using (ZipFile zip = new ZipFile("Backup.zip", Console.Out))
         /// { 
         ///   // Store all files found in the top level directory, into the zip archive.
         ///   // note: this code does not recurse subdirectories!
+        ///   // Status messages will be written to Console.Out
         ///   String[] filenames = System.IO.Directory.GetFiles(DirectoryToZip);
-        ///   foreach (String filename in filenames)
-        ///   {
-        ///     Console.WriteLine("Adding {0}...", filename);
-        ///     zip.AddFile(filename);
-        ///   }  
-        ///   zip.Save("Backup.zip");
+        ///   zip.AddFiles(filenames);
+        ///   zip.Save();
         /// }
         /// </code>
         ///
         /// <code lang="VB">
-        /// Using zip As New ZipFile
+        /// Using zip As New ZipFile("Backup.zip", Console.Out)
         ///     ' Store all files found in the top level directory, into the zip archive.
         ///     ' note: this code does not recurse subdirectories!
+        ///     ' Status messages will be written to Console.Out
         ///     Dim filenames As String() = System.IO.Directory.GetFiles(DirectoryToZip)
-        ///     Dim filename As String
-        ///     For Each filename In filenames
-        ///         Console.WriteLine("Adding {0}...", filename)
-        ///         zip.AddFile(filename)
-        ///     Next
-        ///     zip.Save("Backup.zip")
+        ///     zip.AddFiles(filenames)
+        ///     zip.Save()
         /// End Using
         /// </code>
         /// </example>
@@ -1764,8 +1741,20 @@ namespace Ionic.Zip
         /// Initialize a ZipFile instance by reading in a zip file.
         /// </summary>
         /// <remarks>
-        /// This method is most useful from COM Automation environments, when reading or extracting zip files.
-        /// For .NET environments, I suggest you use the ZipFile.Read() methods for clarity.  
+        ///
+        /// <para>
+        ///     This method is useful from COM Automation environments, when reading or
+        ///     extracting zip files. In COM, it is not possible to invoke parameterized
+        ///     constructors for a class. A COM Automation application can update a zip
+        ///     file by using the default (no argument) constructor, then calling
+        ///     Initialize() to read the contents of an on-disk zip archive into the
+        ///     ZipFile instance.
+        /// </para>
+        ///
+        /// <para>
+        ///   .NET applications should use the ZipFile.Read() methods for clarity.
+        /// </para>
+        ///
         /// </remarks>
         /// <param name="zipFileName">the name of the existing zip file to read in.</param>
         public void Initialize(string zipFileName)
@@ -3510,12 +3499,11 @@ namespace Ionic.Zip
         /// before the rename.
         /// </para>
         ///
-        /// <para>
-        /// The <see cref="ZipFile.Name"/> property is specified either explicitly, or
-        /// implicitly using one of the parameterized ZipFile constructors.  For COM
-        /// clients, the Name property must be specified explicitly, because COM does not
-        /// call parameterized constructors.
-        /// </para>
+        /// <para> The <see cref="ZipFile.Name"/> property is specified either
+        /// explicitly, or implicitly using one of the parameterized ZipFile
+        /// constructors.  For COM Automation clients, the <c>Name</c> property must be
+        /// set explicitly, because COM Automation clients cannot call parameterized
+        /// constructors.  </para>
         ///
         /// <para>
         /// When using a filesystem file for the Zip output, it is possible to call
