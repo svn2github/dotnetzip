@@ -363,7 +363,7 @@
             this.listView1.Location = new System.Drawing.Point(6, 91);
             this.listView1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(628, 238);
+            this.listView1.Size = new System.Drawing.Size(639, 358);
             this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -374,7 +374,7 @@
             // btnOpenZip
             // 
             this.btnOpenZip.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOpenZip.Location = new System.Drawing.Point(574, 2);
+            this.btnOpenZip.Location = new System.Drawing.Point(585, 2);
             this.btnOpenZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnOpenZip.Name = "btnOpenZip";
             this.btnOpenZip.Size = new System.Drawing.Size(60, 26);
@@ -473,7 +473,7 @@
             // btnExtractDirBrowse
             // 
             this.btnExtractDirBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnExtractDirBrowse.Location = new System.Drawing.Point(544, 28);
+            this.btnExtractDirBrowse.Location = new System.Drawing.Point(555, 28);
             this.btnExtractDirBrowse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnExtractDirBrowse.Name = "btnExtractDirBrowse";
             this.btnExtractDirBrowse.Size = new System.Drawing.Size(24, 26);
@@ -489,7 +489,7 @@
             this.tbExtractDir.Location = new System.Drawing.Point(60, 32);
             this.tbExtractDir.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbExtractDir.Name = "tbExtractDir";
-            this.tbExtractDir.Size = new System.Drawing.Size(478, 20);
+            this.tbExtractDir.Size = new System.Drawing.Size(489, 20);
             this.tbExtractDir.TabIndex = 22;
             // 
             // label11
@@ -516,7 +516,7 @@
             // 
             this.btnExtract.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnExtract.Enabled = false;
-            this.btnExtract.Location = new System.Drawing.Point(574, 28);
+            this.btnExtract.Location = new System.Drawing.Point(585, 28);
             this.btnExtract.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnExtract.Name = "btnExtract";
             this.btnExtract.Size = new System.Drawing.Size(60, 26);
@@ -528,7 +528,7 @@
             // btnReadZipBrowse
             // 
             this.btnReadZipBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnReadZipBrowse.Location = new System.Drawing.Point(544, 2);
+            this.btnReadZipBrowse.Location = new System.Drawing.Point(555, 2);
             this.btnReadZipBrowse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnReadZipBrowse.Name = "btnReadZipBrowse";
             this.btnReadZipBrowse.Size = new System.Drawing.Size(24, 26);
@@ -544,7 +544,7 @@
             this.tbZipToOpen.Location = new System.Drawing.Point(60, 6);
             this.tbZipToOpen.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbZipToOpen.Name = "tbZipToOpen";
-            this.tbZipToOpen.Size = new System.Drawing.Size(478, 20);
+            this.tbZipToOpen.Size = new System.Drawing.Size(489, 20);
             this.tbZipToOpen.TabIndex = 12;
             // 
             // tabPage2

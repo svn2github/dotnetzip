@@ -35,6 +35,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Ionic.CopyData, Version=1.0.1.0, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\vsp\UnitTestProgressMonitor\CopyDataChannel\bin\Debug\Ionic.CopyData.dll</HintPath>
+    </Reference>
     <Reference Include="Ionic.Zip, Version=1.7.1.11, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Zip Full DLL\bin\Debug\Ionic.Zip.dll</HintPath>
@@ -48,6 +52,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
