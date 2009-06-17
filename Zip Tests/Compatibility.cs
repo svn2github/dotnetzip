@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-17 16:16:09>
+// Time-stamp: <2009-June-17 17:24:21>
 //
 // ------------------------------------------------------------------
 //
@@ -231,54 +231,12 @@ namespace Ionic.Zip.Tests
 
 
 
-        private void DiagnoseEmbeddedItems()
-        {
-            string[] x = myself.GetManifestResourceNames();
-            TestContext.WriteLine("Listing Embedded Resources:");
-            foreach (var s in x)
-                TestContext.WriteLine("    {0}", s);
-        }
-
-
-
-        private System.IO.Stream GetEmbeddedStream(string name)
-        {
-            string embeddedName = String.Format("Ionic.Zip.Tests.Resources.{0}", name);
-            return myself.GetManifestResourceStream(embeddedName);
-        }
-
-
-        private string ExtractEmbeddedStream(string name)
-        {
-            string fileToCreate = Path.Combine(TopLevelDir, name);
-
-            using (Stream s = GetEmbeddedStream(name))
-            {
-                if (s != null)
-                {
-                    using (FileStream o = File.Create(fileToCreate))
-                    {
-                        byte[] buffer = new byte[1024];
-                        int n = -1;
-                        while (n != 0)
-                        {
-                            n = s.Read(buffer, 0, buffer.Length);
-                            if (n != 0)
-                                o.Write(buffer, 0, n);
-                        }
-                    }
-                }
-            }
-
-            return fileToCreate;
-        }
-
-
         [TestMethod]
         public void Compat_ShellApplication_Unzip()
         {
             string ZipFileToCreate = Path.Combine(TopLevelDir, "Compat_ShellApplication_Unzip.zip");
             Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
 
             // cons up the directories
             string ExtractDir = Path.Combine(TopLevelDir, "extract");
@@ -303,14 +261,14 @@ namespace Ionic.Zip.Tests
                                  "Incorrect number of entries in the zip file.");
 
             // run the unzip script
-            var script = ExtractEmbeddedStream("VbsUnzip-ShellApp.vbs");
+            string script = Path.Combine(testBin,"Resources\\VbsUnzip-ShellApp.vbs");
             Assert.IsTrue(File.Exists(script), "script ({0}) does not exist", script);
             var w = System.Environment.GetEnvironmentVariable("Windir");
             Assert.IsTrue(Directory.Exists(w), "%windir% does not exist ({0})", w);
 
 
             ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
-                      String.Format("{0} {1} {2}", script, ZipFileToCreate, ExtractDir));
+                      String.Format("\"{0}\" {1} {2}", script, ZipFileToCreate, ExtractDir));
 
             // check the files in the extract dir
             VerifyChecksums(Path.Combine("extract", "files"), FilesToZip, checksums);
@@ -324,6 +282,7 @@ namespace Ionic.Zip.Tests
         {
             string ZipFileToCreate = Path.Combine(TopLevelDir, "Compat_ShellApplication_SelectedFiles_Unzip.zip");
             Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
@@ -333,7 +292,7 @@ namespace Ionic.Zip.Tests
             TestContext.WriteLine("creating dir '{0}' with files", dirToZip);
             Directory.CreateDirectory(dirToZip);
 
-            int numFilesToAdd = _rnd.Next(4) + 5;
+            int numFilesToAdd = _rnd.Next(5) + 6;
             int numFilesAdded = 0;
             int baseSize = _rnd.Next(0x100ff) + 8000;
             int nFilesInSubfolders= 0;
@@ -380,14 +339,14 @@ namespace Ionic.Zip.Tests
                                  "Incorrect number of entries in the zip file.");
 
             // run the unzip script
-            var script = ExtractEmbeddedStream("VbsUnzip-ShellApp.vbs");
+            string script = Path.Combine(testBin,"Resources\\VbsUnzip-ShellApp.vbs");
             Assert.IsTrue(File.Exists(script), "script ({0}) does not exist", script);
             var w = System.Environment.GetEnvironmentVariable("Windir");
             Assert.IsTrue(Directory.Exists(w), "%windir% does not exist ({0})", w);
 
 
             ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
-                      String.Format("{0} {1} {2}", script, ZipFileToCreate, Path.Combine(TopLevelDir, extractDir)));
+                      String.Format("\"{0}\" {1} {2}", script, ZipFileToCreate, Path.Combine(TopLevelDir, extractDir)));
 
             // check the files in the extract dir
             foreach (var fqPath in flist)
@@ -415,7 +374,9 @@ namespace Ionic.Zip.Tests
             string ZipFileToCreate = Path.Combine(TopLevelDir, "Compat_ShellApplication_Zip.zip");
             Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
-            DiagnoseEmbeddedItems();
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+            
+            //DiagnoseEmbeddedItems();
 
             string Subdir = Path.Combine(TopLevelDir, "files");
 
@@ -425,13 +386,13 @@ namespace Ionic.Zip.Tests
 
             // Create the zip archive via script
             Directory.SetCurrentDirectory(TopLevelDir);
-            var script = ExtractEmbeddedStream("VbsCreateZip-ShellApp.vbs");
+            string script = Path.Combine(testBin,"Resources\\VbsCreateZip-ShellApp.vbs");
             Assert.IsTrue(File.Exists(script), "script ({0}) does not exist", script);
             var w = System.Environment.GetEnvironmentVariable("Windir");
             Assert.IsTrue(Directory.Exists(w), "%windir% does not exist ({0})", w);
 
             ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
-                                   String.Format("{0} {1} {2}", script, ZipFileToCreate, Subdir));
+                                   String.Format("\"{0}\" {1} {2}", script, ZipFileToCreate, Subdir));
 
             // Verify the number of files in the zip
             Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), FilesToZip.Length,
@@ -525,6 +486,7 @@ namespace Ionic.Zip.Tests
         {
             string ZipFileToCreate = Path.Combine(TopLevelDir, "Compat_COM_Zip.zip");
             Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
 
             string Subdir = Path.Combine(TopLevelDir, "files");
 
@@ -533,13 +495,13 @@ namespace Ionic.Zip.Tests
             CreateFilesAndChecksums(Subdir, out FilesToZip, out checksums);
 
             // run the COM script to create the ZIP archive
-            var script = ExtractEmbeddedStream("VbsCreateZip-DotNetZip.vbs");
+            string script = Path.Combine(testBin,"Resources\\VbsCreateZip-DotNetZip.vbs");
             Assert.IsTrue(File.Exists(script), "script ({0}) does not exist", script);
             var w = System.Environment.GetEnvironmentVariable("Windir");
             Assert.IsTrue(Directory.Exists(w), "%windir% does not exist ({0})", w);
 
             ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
-                               String.Format("{0} {1} {2}", script, ZipFileToCreate, Subdir));
+                               String.Format("\"{0}\" {1} {2}", script, ZipFileToCreate, Subdir));
 
             // Verify the number of files in the zip
             Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), FilesToZip.Length,
@@ -556,12 +518,14 @@ namespace Ionic.Zip.Tests
             VerifyChecksums("extract", FilesToZip, checksums);
         }
 
+        
 
         [TestMethod]
         public void Compat_COM_Unzip()
         {
             string ZipFileToCreate = Path.Combine(TopLevelDir, "Compat_COM_Unzip.zip");
             Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
 
             // cons up the directories
             string ExtractDir = Path.Combine(TopLevelDir, "extract");
@@ -586,13 +550,13 @@ namespace Ionic.Zip.Tests
 
 
             // run the COM script to unzip the ZIP archive
-            var script = ExtractEmbeddedStream("VbsUnZip-DotNetZip.vbs");
+            string script = Path.Combine(testBin,"Resources\\VbsUnzip-DotNetZip.vbs");
             Assert.IsTrue(File.Exists(script), "script ({0}) does not exist", script);
             var w = System.Environment.GetEnvironmentVariable("Windir");
             Assert.IsTrue(Directory.Exists(w), "%windir% does not exist ({0})", w);
 
             ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
-                               String.Format("{0} {1} {2}", script, ZipFileToCreate, ExtractDir));
+                               String.Format("\"{0}\" {1} {2}", script, ZipFileToCreate, ExtractDir));
 
 
             // check the files in the extract dir
@@ -608,6 +572,12 @@ namespace Ionic.Zip.Tests
         {
             string ZipFileToCreate = Path.Combine(TopLevelDir, "Compat_7z_Zip_COM_Unzip.zip");
             Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+            
+            Directory.SetCurrentDirectory(TopLevelDir);
+
+            var sevenZip = Path.Combine(testBin,"Resources\\7z.exe");
+            Assert.IsTrue(File.Exists(sevenZip), "exe ({0}) does not exist", sevenZip);
 
             // cons up the directories
             string ExtractDir = Path.Combine(TopLevelDir, "extract");
@@ -618,10 +588,6 @@ namespace Ionic.Zip.Tests
             CreateFilesAndChecksums(Subdir, out FilesToZip, out checksums);
 
             // Create the zip archive via 7z.exe
-            Directory.SetCurrentDirectory(TopLevelDir);
-            var sevenZip = ExtractEmbeddedStream("7z.exe");
-            Assert.IsTrue(File.Exists(sevenZip), "exe ({0}) does not exist", sevenZip);
-
             ShellExec(sevenZip, String.Format("a {0} {1}", ZipFileToCreate, Subdir));
 
             // Verify the number of files in the zip
@@ -630,13 +596,13 @@ namespace Ionic.Zip.Tests
 
 
             // run the COM script to unzip the ZIP archive
-            var script = ExtractEmbeddedStream("VbsUnZip-DotNetZip.vbs");
+            string script = Path.Combine(testBin,"Resources\\VbsUnZip-DotNetZip.vbs");
             Assert.IsTrue(File.Exists(script), "script ({0}) does not exist", script);
             var w = System.Environment.GetEnvironmentVariable("Windir");
             Assert.IsTrue(Directory.Exists(w), "%windir% does not exist ({0})", w);
 
             ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
-                               String.Format("{0} {1} {2}", script, ZipFileToCreate, ExtractDir));
+                               String.Format("\"{0}\" {1} {2}", script, ZipFileToCreate, ExtractDir));
 
 
             // check the files in the extract dir
@@ -651,6 +617,7 @@ namespace Ionic.Zip.Tests
         {
             string ZipFileToCreate = Path.Combine(TopLevelDir, "Compat_7z_Zip_COM_Unzip.zip");
             Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
 
             // cons up the directories
             string ExtractDir = Path.Combine(TopLevelDir, "extract");
@@ -662,7 +629,7 @@ namespace Ionic.Zip.Tests
 
             // Create the zip archive via 7z.exe
             Directory.SetCurrentDirectory(TopLevelDir);
-            var sevenZip = ExtractEmbeddedStream("7z.exe");
+            string sevenZip = Path.Combine(testBin,"Resources\\7z.exe");
             Assert.IsTrue(File.Exists(sevenZip), "exe ({0}) does not exist", sevenZip);
 
             ShellExec(sevenZip, String.Format("a {0} {1}", ZipFileToCreate, Subdir));
@@ -670,7 +637,6 @@ namespace Ionic.Zip.Tests
             // Verify the number of files in the zip
             Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), FilesToZip.Length,
                                  "Incorrect number of entries in the zip file.");
-
 
             // unzip
             Directory.SetCurrentDirectory(TopLevelDir);
@@ -690,6 +656,8 @@ namespace Ionic.Zip.Tests
             string ZipFileToCreate = Path.Combine(TopLevelDir, "Compat_7z_Zip_COM_Unzip.zip");
             Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+            
             // cons up the directories
             string Subdir = Path.Combine(TopLevelDir, "files");
 
@@ -713,7 +681,7 @@ namespace Ionic.Zip.Tests
             // unpack the zip archive via 7z.exe
             Directory.CreateDirectory("extract");
             Directory.SetCurrentDirectory("extract");
-            var sevenZip = ExtractEmbeddedStream("7z.exe");
+            string sevenZip = Path.Combine(testBin,"Resources\\7z.exe");
             Assert.IsTrue(File.Exists(sevenZip), "exe ({0}) does not exist", sevenZip);
             ShellExec(sevenZip, String.Format("x {0}", ZipFileToCreate));
 

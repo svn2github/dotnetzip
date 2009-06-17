@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-May-30 08:37:08>
+// Time-stamp: <2009-June-17 17:19:00>
 //
 // ------------------------------------------------------------------
 //
@@ -465,6 +465,7 @@ namespace Ionic.Zip.Tests.Utilities
         }
 
 
+        
 
         internal static string[] GenerateFilesFlat(string Subdir)
         {
@@ -481,6 +482,17 @@ namespace Ionic.Zip.Tests.Utilities
             return FilesToZip;
         }
 
+        
+        internal static string GetTestBinDir(string startingPoint)
+        {
+            var location = startingPoint;   
+            for (int i = 0; i < 3; i++)
+                location = System.IO.Path.GetDirectoryName(location);
+
+            var testDir = "Zip Tests\\bin\\Debug";
+            location = System.IO.Path.Combine(location, testDir);
+            return location;
+        }
 
         #endregion
 

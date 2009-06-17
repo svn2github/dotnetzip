@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-17 14:42:43>
+// Time-stamp: <2009-June-17 17:21:13>
 //
 // ------------------------------------------------------------------
 //
@@ -485,18 +485,19 @@ namespace Ionic.Zip.Tests.Zip64
             
             // Update a ZIP64 archive with a true 64-bit offset.
             // This requires a file size above 4gb, which means the test will run a long, long time. 
-            string SourceDir = CurrentDir;
-            for (int i = 0; i < 3; i++)
-                SourceDir = Path.GetDirectoryName(SourceDir);
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
 
-            // set up the progress monitor tool
-            string progressMonitorTool = Path.Combine(SourceDir,"UnitTestProgressMonitor.exe");
+            string progressMonitorTool = Path.Combine(testBin, "Resources\\UnitTestProgressMonitor.exe");
+            string requiredDll = Path.Combine(testBin, "Resources\\Ionic.CopyData.dll");
+            
             Assert.IsTrue(File.Exists(progressMonitorTool), "progress monitor tool does not exist ({0})",  progressMonitorTool);
+            Assert.IsTrue(File.Exists(requiredDll), "required DLL does not exist ({0})",  requiredDll);
 
             string progressChannel = "Zip64_Update";
             // start the progress monitor
             ShellExec(progressMonitorTool, String.Format("-channel {0}", progressChannel), false);
 
+            // System.Reflection.Assembly.Load(requiredDll);
 
             System.Threading.Thread.Sleep(1000);
             _txrx = new Ionic.CopyData.Transceiver();
