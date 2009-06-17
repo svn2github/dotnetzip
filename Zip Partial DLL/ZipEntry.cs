@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-16 11:06:25>
+// Time-stamp: <2009-June-17 16:19:23>
 //
 // ------------------------------------------------------------------
 //
@@ -1917,6 +1917,9 @@ namespace Ionic.Zip
             }
             result = SharedUtilities.TrimVolumeAndSwapSlashes(result);
             result = SharedUtilities.NormalizeFwdSlashPath(result);
+            
+            while (result.StartsWith("/")) result = result.Substring(1);
+
             return result;
         }
 

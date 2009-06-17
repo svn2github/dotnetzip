@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-17 09:45:25>
+// Time-stamp: <2009-June-17 14:42:43>
 //
 // ------------------------------------------------------------------
 //
@@ -478,7 +478,7 @@ namespace Ionic.Zip.Tests.Zip64
         
         
         
-        [Timeout(7200000), TestMethod] // 2 hours
+        [Timeout(13200000), TestMethod] // in milliseconds. 7200000 = 2 hours; 13,200,000 = 3:40
         public void Zip64_Update()
         {
             int numUpdates = 2;
