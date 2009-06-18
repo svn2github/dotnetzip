@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-18 16:54:37>
+// Time-stamp: <2009-June-18 18:45:59>
 //
 // ------------------------------------------------------------------
 //
@@ -26,7 +26,7 @@
 
 using System;
 
-
+#pragma warning disable 1591
 // This nearly empty namespace is necessary to allow extension methods
 // to work in a .NET 2.0 compile. 
 namespace System.Runtime.CompilerServices

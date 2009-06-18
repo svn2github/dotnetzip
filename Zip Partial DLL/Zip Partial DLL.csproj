@@ -80,7 +80,6 @@
       <DependentUpon>ZipContentsDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\FolderBrowserDialogEx.cs" />
-    <Compile Include="Extensions.cs" />
     <Compile Include="FileSelector.cs" />
     <Compile Include="WinZipAes.cs" />
     <Compile Include="ZipConstants.cs" />

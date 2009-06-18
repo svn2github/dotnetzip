@@ -61,9 +61,6 @@
     <Compile Include="..\Zip Partial DLL\Exceptions.cs">
       <Link>Exceptions.cs</Link>
     </Compile>
-    <Compile Include="..\Zip Partial DLL\Extensions.cs">
-      <Link>Extensions.cs</Link>
-    </Compile>
     <Compile Include="..\Zip Partial DLL\Shared.cs">
       <Link>Shared.cs</Link>
     </Compile>

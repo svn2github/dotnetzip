@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-18 16:25:27>
+// Time-stamp: <2009-June-18 18:42:06>
 //
 // ------------------------------------------------------------------
 //
@@ -4092,7 +4092,7 @@ namespace Ionic.Zip
                 // as we emit the file, we maybe deflate, then maybe encrypt, then write the bytes. 
                 byte[] buffer = new byte[BufferSize];
                 int n;
-                while ((n= input1.ReadWithRetry(buffer, 0, buffer.Length, FileName)) != 0)
+                while ((n= SharedUtilities.ReadWithRetry(input1,buffer, 0, buffer.Length, FileName)) != 0)
                 {
                     output2.Write(buffer, 0, n);
                     OnWriteBlock(input1.TotalBytesSlurped, fileLength);
