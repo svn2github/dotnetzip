@@ -58,6 +58,131 @@ namespace Ionic.Zip
         #region public properties
 
         /// <summary>
+        /// Indicates whether to perform a full scan of the zipfile when reading it. 
+        /// </summary>
+        ///
+        /// <remarks>
+        ///
+        /// <para> When reading a zip file, if this flag is true (True in VB), the entire
+        /// zip archive will be scanned and searched for entries.  For large archives, this
+        /// can take a very, long time. The much more efficient default behavior is to read
+        /// the zip directory, at the end of the zip file. However, in some cases the
+        /// directory is corrupted and it is desirable to perform a full scan of the zip
+        /// file to determine the contents of the zip file.  </para>
+        ///
+        /// <para>
+        /// If you want to track progress, you can set the ReadProgress event. 
+        /// </para>
+        ///
+        /// <para>
+        /// This flag is effective only when calling Initialize.
+        /// The Initialize method may take a long time to run for large zip files,
+        /// when <c>Fullscan</c> is true. 
+        /// </para>
+        /// </para>
+        ///
+        /// </remarks>
+        ///
+        /// <example>
+        /// This example shows how to read a zip file using the full scan approach,
+        /// and then save it, thereby producing a corrected zip file. 
+        /// <code lang="C#">
+        /// using (var zip = new ZipFile())
+        /// {
+        ///     zip.Fullscan = true;
+        ///     zip.Initialize(zipFileName);
+        ///     zip.Save(newName);
+        /// }
+        /// </code>
+        ///
+        /// <code lang="VB">
+        /// Using zip As New ZipFile
+        ///     zip.Fullscan = True
+        ///     zip.Initialize(zipFileName)
+        ///     zip.Save(newName)
+        /// End Using
+        /// </code>
+        /// </example>
+        ///
+        public bool Fullscan
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Returns true if a zip file needs to have its directory re-written.  
+        /// </summary>
+        ///
+        /// <remarks>
+        /// <para>
+        /// In cases of data error, the directory in a zip file can get out of synch with
+        /// the entries in the zip file.  This method returns true if this has
+        /// occurred.  
+        /// </para>
+        ///
+        /// <para>
+        /// This method may take a long time to run for large zip files. 
+        /// </para>
+        ///
+        /// </remarks>
+        ///
+        /// <seealso cref="FixupDirectory"/>
+        public static bool NeedsDirectoryFixup(string zipFileName)
+        {
+            ZipFile zip1 = null;
+            ZipFile zip2 = null;
+            bool needsFixup = false;
+            try 
+            {
+                zip1 = new ZipFile();
+                zip1.Fullscan= true;
+                zip1.Initialize(zipFileName);
+
+                zip2 = new ZipFile(zipFileName);
+
+                foreach (var e1 in zip1)
+                {
+                    foreach (var e2 in zip2)
+                    {
+                        if (e1.FileName == e2.FileName)
+                        {
+                            if (e1._RelativeOffsetOfLocalHeader != e2._RelativeOffsetOfLocalHeader)
+                                needsFixup = true;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                if (zip1 != null) zip1.Dispose();
+                if (zip2 != null) zip2.Dispose();
+            }
+            return needsFixup;
+        }
+
+        
+        /// <summary>
+        /// Rewrite the directory for a zipfile 
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// This can take a long time for large zip files. 
+        /// </remarks>
+        ///
+        /// <seealso cref="FixupDirectory"/>
+        public static void FixupDirectory(string zipFileName)
+        {
+            using (var zip = new ZipFile())
+            {
+                zip.Fullscan = true;
+                zip.Initialize(zipFileName);
+                zip.Save(zipFileName);
+            }
+        }
+
+        
+        /// <summary>
         /// Size of the IO Buffer used while saving.
         /// </summary>
         /// <remarks>
@@ -359,7 +484,7 @@ namespace Ionic.Zip
         /// and may result in incorrect filenames, exceptions, stomach upset, hair loss, and acne.
         /// </para>
         /// </remarks>
-        /// <seealso cref="ProvisionalAlternateEncoding">ProvisionalAlternateEncoding</seealso>
+        /// <seealso cref="ProvisionalAlternateEncoding"/>
         public bool UseUnicodeAsNecessary
         {
             get
@@ -1721,6 +1846,7 @@ namespace Ionic.Zip
         /// <summary>
         /// Returns the version number on the DotNetZip assembly.
         /// </summary>
+        ///
         /// <remarks>
         /// This property is exposed as a convenience.  Callers
         /// could also get the version value by retrieving  GetName().Version 
@@ -1742,14 +1868,12 @@ namespace Ionic.Zip
         /// </summary>
         /// <remarks>
         ///
-        /// <para>
-        ///     This method is useful from COM Automation environments, when reading or
-        ///     extracting zip files. In COM, it is not possible to invoke parameterized
-        ///     constructors for a class. A COM Automation application can update a zip
-        ///     file by using the default (no argument) constructor, then calling
-        ///     Initialize() to read the contents of an on-disk zip archive into the
-        ///     ZipFile instance.
-        /// </para>
+        /// <para> This method is primarily useful from COM Automation environments, when
+        ///     reading or extracting zip files. In COM, it is not possible to invoke
+        ///     parameterized constructors for a class. A COM Automation application can
+        ///     update a zip file by using the default (no argument) constructor, then
+        ///     calling Initialize() to read the contents of an on-disk zip archive into the
+        ///     ZipFile instance.  </para>
         ///
         /// <para>
         ///   .NET applications should use the ZipFile.Read() methods for clarity.
@@ -1782,7 +1906,10 @@ namespace Ionic.Zip
             _entries = new System.Collections.Generic.List<ZipEntry>();
             if (File.Exists(_name))
             {
-                ReadIntoInstance(this);
+                if (Fullscan)
+                    ReadIntoInstance_Orig(this);
+                else
+                    ReadIntoInstance(this);
                 this._fileAlreadyExists = true;
             }
 
