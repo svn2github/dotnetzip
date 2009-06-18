@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-15 10:16:38>
+// Time-stamp: <2009-June-17 20:43:51>
 //
 // ------------------------------------------------------------------
 //
@@ -49,7 +49,7 @@ namespace Ionic.Zip.Tests.Extended
     /// Summary description for ExtendedTests
     /// </summary>
     [TestClass]
-    public class ExtendedTests
+    public class ExtendedTests : IShellExec
     {
         private System.Random _rnd;
 
@@ -111,6 +111,12 @@ namespace Ionic.Zip.Tests.Extended
         public void MyTestCleanup()
         {
             TestUtilities.Cleanup(CurrentDir, _FilesToRemove);
+
+            if (_txrx!=null)
+            {
+                _txrx.Send("stop");
+                _txrx = null;
+            }
         }
 
         #endregion
@@ -129,49 +135,6 @@ namespace Ionic.Zip.Tests.Extended
             }
         }
 
-
-
-        private void DiagnoseEmbeddedItems()
-        {
-            string[] x = myself.GetManifestResourceNames();
-            TestContext.WriteLine("Listing Embedded Resources:");
-            foreach (var s in x)
-                TestContext.WriteLine("    {0}", s);
-        }
-
-
-
-        private System.IO.Stream GetEmbeddedStream(string name)
-        {
-            string embeddedName = String.Format("Ionic.Zip.Tests.Resources.{0}", name);
-            return myself.GetManifestResourceStream(embeddedName);
-        }
-
-
-        private string ExtractEmbeddedStream(string name)
-        {
-            string fileToCreate = Path.Combine(TopLevelDir, name);
-
-            using (Stream s = GetEmbeddedStream(name))
-            {
-                if (s != null)
-                {
-                    using (FileStream o = File.Create(fileToCreate))
-                    {
-                        byte[] buffer = new byte[1024];
-                        int n = -1;
-                        while (n != 0)
-                        {
-                            n = s.Read(buffer, 0, buffer.Length);
-                            if (n != 0)
-                                o.Write(buffer, 0, n);
-                        }
-                    }
-                }
-            }
-
-            return fileToCreate;
-        }
 
         static String StreamToStringUTF8(System.IO.Stream s)
         {
@@ -669,20 +632,11 @@ namespace Ionic.Zip.Tests.Extended
                                          Encoding.GetEncoding("Windows-1252"),
                 };
 
-            // read in a bunch of text strings
-            List<String> contentStrings = new List<String>();
-            using (var s = GetEmbeddedStream("TestStrings.txt"))
-            {
-                // read in via UTF-8
-                using (var sr = new StreamReader(s))
-                {
-                    string x;
-                    while ((x = sr.ReadLine()) != null)
-                        contentStrings.Add(x);
-                }
-            }
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+            string testStringsFile = Path.Combine(testBin,"Resources\\TestStrings.txt");
+            var contentStrings = File.ReadAllLines(testStringsFile);
 
-            int[] successfulEncodings = new int[contentStrings.Count];
+            int[] successfulEncodings = new int[contentStrings.Length];
 
             for (int a = 0; a < EncOptions.Length; a++)
             {
@@ -701,7 +655,7 @@ namespace Ionic.Zip.Tests.Extended
                         {
                             zip1.Encryption = EncOptions[a];
                             zip1.Password = Passwords[b];
-                            for (int d = 0; d < contentStrings.Count; d++)
+                            for (int d = 0; d < contentStrings.Length; d++)
                             {
                                 string entryName = String.Format("File{0}.txt", d + 1);
                                 // add each string using the given encoding
@@ -712,14 +666,14 @@ namespace Ionic.Zip.Tests.Extended
 
 
                         // Verify the number of files in the zip
-                        Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), contentStrings.Count,
+                        Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), contentStrings.Length,
                                              "Incorrect number of entries in the zip file.");
 
 
                         using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
                         {
                             zip2.Password = Passwords[b];
-                            for (int d = 0; d < contentStrings.Count; d++)
+                            for (int d = 0; d < contentStrings.Length; d++)
                             {
                                 string entryName = String.Format("File{0}.txt", d + 1);
                                 zip2[entryName].Password = Passwords[b];  // should not be necessary
@@ -759,7 +713,6 @@ namespace Ionic.Zip.Tests.Extended
 
             for (int d = 0; d < successfulEncodings.Length; d++)
                 Assert.AreNotEqual<Int32>(0, successfulEncodings[d], "Content item #{0} ({1}) was never encoded successfully.", d, contentStrings[d]);
-
 
         }
 
@@ -894,7 +847,7 @@ namespace Ionic.Zip.Tests.Extended
         int _progressEventCalls;
         int _cancelIndex;
         Int64 maxBytesXferred = 0;
-        public void SaveProgress(object sender, SaveProgressEventArgs e)
+        void SaveProgress(object sender, SaveProgressEventArgs e)
         {
             switch (e.EventType)
             {
@@ -918,7 +871,7 @@ namespace Ionic.Zip.Tests.Extended
         }
 
 
-        public void ExtractProgress(object sender, ExtractProgressEventArgs e)
+        void ExtractProgress(object sender, ExtractProgressEventArgs e)
         {
             switch (e.EventType)
             {
@@ -983,62 +936,197 @@ namespace Ionic.Zip.Tests.Extended
         }
 
 
-        [Timeout(1500000), TestMethod]
+        Ionic.CopyData.Transceiver _txrx;
+        bool _pb2Set;
+        bool _pb1Set;
+        void LF_SaveProgress(object sender, SaveProgressEventArgs e)
+        {
+            string msg; 
+            switch (e.EventType)
+            {
+                case ZipProgressEventType.Saving_Started:
+                    _txrx.Send("status saving started...");
+                    _pb1Set = false;
+                    //_txrx.Send(String.Format("pb1 max {0}", e.EntriesTotal));
+                    //_txrx.Send("pb2 max 1");
+                    break;
+
+                case ZipProgressEventType.Saving_BeforeWriteEntry:
+                    _txrx.Send(String.Format("status Compressing {0}", e.CurrentEntry.FileName));
+                    if (!_pb1Set)
+                    {
+                        _txrx.Send(String.Format("pb 1 max {0}", e.EntriesTotal));
+                        _pb1Set = true;
+                    }
+                    _pb2Set = false;
+                    break;
+                    
+                case ZipProgressEventType.Saving_EntryBytesRead:
+                    if (!_pb2Set)
+                    {
+                        _txrx.Send(String.Format("pb 2 max {0}", e.TotalBytesToTransfer));
+                        _pb2Set = true;
+                    }
+                    _txrx.Send(String.Format("status Saving {0} :: [{2}/{3}] ({1:N0}%)",
+                                             e.CurrentEntry.FileName,
+                                             ((double)e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer),
+                                             e.BytesTransferred, e.TotalBytesToTransfer));
+                    msg = String.Format("pb 2 value {0}", e.BytesTransferred);
+                    _txrx.Send(msg);
+                    
+                    if (maxBytesXferred < e.BytesTransferred)
+                        maxBytesXferred = e.BytesTransferred;
+
+                    break;
+                    
+            case ZipProgressEventType.Saving_AfterWriteEntry:
+                _txrx.Send("pb 1 step");
+                break;
+                    
+            case ZipProgressEventType.Saving_Completed:
+                _txrx.Send("status Save completed");
+                _pb1Set = false;
+                _pb2Set = false;
+                _txrx.Send("pb 1 max 1");
+                _txrx.Send("pb 1 value 1");
+                break;
+            }
+        }
+        
+
+
+        private int _numFilesToExtract;
+        void LF_ExtractProgress(object sender, ExtractProgressEventArgs e)
+        {
+            switch (e.EventType)
+            {
+                case ZipProgressEventType.Extracting_BeforeExtractEntry:
+                    if (!_pb1Set)
+                    {
+                        _txrx.Send(String.Format("pb 1 max {0}", _numFilesToExtract));
+                        _pb1Set = true;
+                    }
+                    _pb2Set = false;
+                    break;
+                    
+                case ZipProgressEventType.Extracting_EntryBytesWritten:
+                    if (!_pb2Set)
+                    {
+                        _txrx.Send(String.Format("pb 2 max {0}", e.TotalBytesToTransfer));
+                        _pb2Set = true;
+                    }
+                    _txrx.Send(String.Format("status Extracting {0} :: [{2}/{3}] ({1:N0}%)",
+                                             e.CurrentEntry.FileName,
+                                             ((double)e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer),
+                                             e.BytesTransferred, e.TotalBytesToTransfer));
+                    string msg = String.Format("pb 2 value {0}", e.BytesTransferred);
+                    _txrx.Send(msg);
+
+                    if (maxBytesXferred < e.BytesTransferred)
+                        maxBytesXferred = e.BytesTransferred;
+
+                    break;
+
+                case ZipProgressEventType.Extracting_AfterExtractEntry:
+                    _txrx.Send("pb 1 step");
+                    break;
+            }
+        }
+
+        
+        
+        [Timeout(3600000), TestMethod]
         public void LargeFile_WithProgress()
         {
             // This test checks the Int64 limits in progress events (Save + Extract)
             TestContext.WriteLine("Test beginning {0}", System.DateTime.Now.ToString("G"));
+
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+
+            string progressMonitorTool = Path.Combine(testBin, "Resources\\UnitTestProgressMonitor.exe");
+            string requiredDll = Path.Combine(testBin, "Resources\\Ionic.CopyData.dll");
+            
+            Assert.IsTrue(File.Exists(progressMonitorTool), "progress monitor tool does not exist ({0})",  progressMonitorTool);
+            Assert.IsTrue(File.Exists(requiredDll), "required DLL does not exist ({0})",  requiredDll);
+
+            string progressChannel = "LargeFile_Progress";
+            // start the progress monitor
+            this.ShellExec(progressMonitorTool, String.Format("-channel {0}", progressChannel), false);
+
+            // System.Reflection.Assembly.Load(requiredDll);
+
+            System.Threading.Thread.Sleep(1000);
+            _txrx = new Ionic.CopyData.Transceiver();
+            _txrx.Channel = progressChannel;
+            _txrx.Send("test Large File Save and Verify");
+            _txrx.Send("bars 3");
+            System.Threading.Thread.Sleep(120);
+            _txrx.Send("status Creating a large file...");
+            _txrx.Send(String.Format("pb 0 max {0}", 3));
+            
             string ZipFileToCreate = Path.Combine(TopLevelDir, "LargeFile_WithProgress.zip");
             string TargetDirectory = Path.Combine(TopLevelDir, "unpack");
 
             string DirToZip = Path.Combine(TopLevelDir, "LargeFile");
             Directory.CreateDirectory(DirToZip);
 
-            Int64 filesize = 2147483649 + _rnd.Next(1000000);  // larger than max-int 
+            Int64 filesize = 0x7FFFFFFFL + _rnd.Next(1000000); 
             TestContext.WriteLine("Creating a large file, size({0})", filesize);
             string filename = Path.Combine(DirToZip, "LargeFile.bin");
-            TestUtilities.CreateAndFillFileBinaryZeroes(filename, filesize);
+
+            _txrx.Send(String.Format("pb 1 max {0}", filesize));
+            
+            Action<Int64> progressUpdate = (x) =>
+                {
+                    _txrx.Send(String.Format("pb 1 value {0}", x));
+                    _txrx.Send(String.Format("status Creating a large file, ({0}/{1})", x, filesize));
+                };
+            
+            TestUtilities.CreateAndFillFileBinaryZeroes(filename, filesize, progressUpdate);
+            _txrx.Send("pb 0 step");
             TestContext.WriteLine("File Create complete {0}", System.DateTime.Now.ToString("G"));
 
-            _progressEventCalls = 0;
             maxBytesXferred = 0;
             using (ZipFile zip1 = new ZipFile())
             {
-                zip1.SaveProgress += SaveProgress;
+                zip1.SaveProgress += LF_SaveProgress;
                 zip1.Comment = "This is the comment on the zip archive.";
+                zip1.AddEntry("Readme.txt", "", "This is some content.");
                 zip1.AddDirectory(DirToZip, Path.GetFileName(DirToZip));
+                zip1.BufferSize = 65536 * 8; // 512k
+                zip1.CodecBufferSize = 65536 * 2; // 128k
                 zip1.Save(ZipFileToCreate);
             }
 
-            TestContext.WriteLine("Save complete {0}", System.DateTime.Now.ToString("G"));
-
-            Assert.AreEqual<Int32>(_progressEventCalls, 1 + 1,
-                   "The number of Entries added is not equal to the number of entries saved.");
-
+            _txrx.Send("pb 0 step");
+                       
+            TestContext.WriteLine("Save complete {0}", System.DateTime.Now.ToString("G"));                       
+                       
             Assert.AreEqual<Int64>(filesize, maxBytesXferred,
                 "The number of bytes saved is not the expected value.");
 
             // remove the very large file before extracting
             Directory.Delete(DirToZip, true);
-
-            _progressEventCalls = 0;
-            _cancelIndex = -1; // don't cancel this Extract
+                       
+            _pb1Set = false;
             maxBytesXferred = 0;
             using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
             {
-                zip2.ExtractProgress += ExtractProgress;
+                _numFilesToExtract = zip2.Entries.Count;
+                zip2.ExtractProgress += LF_ExtractProgress;
                 zip2.ExtractAll(TargetDirectory);
             }
+                       
+            _txrx.Send("pb 0 step");
 
             TestContext.WriteLine("Extract complete {0}", System.DateTime.Now.ToString("G"));
-
-            Assert.AreEqual<Int32>(_progressEventCalls, 1 + 1,
-                   "The number of Entries added is not equal to the number of entries extracted.");
 
             Assert.AreEqual<Int64>(filesize, maxBytesXferred,
                    "The number of bytes extracted is not the expected value.");
 
             TestContext.WriteLine("Test complete {0}", System.DateTime.Now.ToString("G"));
+
+            _txrx.Send("stop");
         }
 
 

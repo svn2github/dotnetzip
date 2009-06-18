@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-17 17:21:13>
+// Time-stamp: <2009-June-17 20:38:01>
 //
 // ------------------------------------------------------------------
 //
@@ -39,7 +39,7 @@ namespace Ionic.Zip.Tests.Zip64
     /// Summary description for Zip64Tests
     /// </summary>
     [TestClass]
-    public class Zip64Tests
+    public class Zip64Tests : IShellExec
     {
         private System.Random _rnd;
 
@@ -112,57 +112,6 @@ namespace Ionic.Zip.Tests.Zip64
 
 
         
-        private static int StaticShellExec(string program, string args, bool waitForExit, out string output)
-        {
-            System.Diagnostics.Process p = new System.Diagnostics.Process();
-            p.StartInfo.FileName = program;
-            p.StartInfo.Arguments = args;
-            p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-            p.StartInfo.RedirectStandardOutput = true;
-            p.StartInfo.RedirectStandardError = true;
-            p.StartInfo.UseShellExecute = false;
-            p.Start();
-
-            if (waitForExit)
-            {
-                
-            output = p.StandardOutput.ReadToEnd();
-            p.WaitForExit();
-
-            return p.ExitCode;
-            }
-            output = "";
-            return 0;
-        }
-
-        
-        private string ShellExec(string program, string args)
-        {
-            return ShellExec(program, args, true);
-        }
-
-        
-        private string ShellExec(string program, string args, bool waitForExit)
-        {
-            if (args == null)
-                throw new ArgumentException("args");
-
-            if (program == null)
-                throw new ArgumentException("program");
-
-            TestContext.WriteLine("running command: {0} {1}\n    ", program, args);
-
-            string output;
-            int rc = StaticShellExec(program, args, waitForExit, out output);
-
-            if (rc != 0)
-                throw new Exception(String.Format("Exception running app {0}: {1}", program, output));
-
-            TestContext.WriteLine("output: {0}", output);
-
-            return output;
-        }
-
 
 
         [TestMethod]
@@ -399,7 +348,7 @@ namespace Ionic.Zip.Tests.Zip64
                     }
                     _txrx.Send(String.Format("status Saving {0} :: [{2}/{3}] ({1:N0}%)",
                                              e.CurrentEntry.FileName,
-                                             ((double)(e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer)),
+                                             ((double)e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer),
                                              e.BytesTransferred, e.TotalBytesToTransfer));
                     msg = String.Format("pb 2 value {0}", e.BytesTransferred);
                     _txrx.Send(msg);
@@ -440,9 +389,9 @@ namespace Ionic.Zip.Tests.Zip64
                         _txrx.Send(String.Format("pb 2 max {0}", e.TotalBytesToTransfer));
                         _pb2Set = true;
                     }
-                    _txrx.Send(String.Format("status Reading {0} :: [{2}/{3}] ({1:N0}%)",
+                    _txrx.Send(String.Format("status Extracting {0} :: [{2}/{3}] ({1:N0}%)",
                                              e.CurrentEntry.FileName,
-                                             ((double)(e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer)),
+                                             ((double)e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer),
                                              e.BytesTransferred, e.TotalBytesToTransfer));
                     string msg = String.Format("pb 2 value {0}", e.BytesTransferred);
                     _txrx.Send(msg);
@@ -495,7 +444,7 @@ namespace Ionic.Zip.Tests.Zip64
 
             string progressChannel = "Zip64_Update";
             // start the progress monitor
-            ShellExec(progressMonitorTool, String.Format("-channel {0}", progressChannel), false);
+            this.ShellExec(progressMonitorTool, String.Format("-channel {0}", progressChannel), false);
 
             // System.Reflection.Assembly.Load(requiredDll);
 
@@ -574,7 +523,7 @@ namespace Ionic.Zip.Tests.Zip64
                 Assert.IsTrue(File.Exists(f));
                 string cmd = String.Format("hardlink create {0} {1}", Path.GetFileName(f), f);
                 _txrx.Send("status " + cmd);
-                ShellExec(fsutil,cmd );
+                this.ShellExec(fsutil, cmd);
             }
             numFilesToAdd += namesOfLargeFiles.Length;
             Directory.SetCurrentDirectory(TopLevelDir);
@@ -589,6 +538,8 @@ namespace Ionic.Zip.Tests.Zip64
                 zip.StatusMessageTextWriter = sw;
                 zip.UpdateDirectory(dirToZip, "");
                 zip.UseZip64WhenSaving = Zip64Option.Always;
+                zip.BufferSize = 65536*8; // 65536 * 8 = 512k
+                zip.CodecBufferSize = 65536*2; // 65536 * 2 = 128k
                 zip.Save(ZipFileToCreate);
             }
 
@@ -623,6 +574,7 @@ namespace Ionic.Zip.Tests.Zip64
                     zip.StatusMessageTextWriter = sw;
                     zip.UpdateDirectory(subdir, subdir);
                     zip.UseZip64WhenSaving = Zip64Option.Always;
+                    zip.BufferSize = 65536*8; // 65536 * 8 = 512k
                     zip.Save();
                 }
 

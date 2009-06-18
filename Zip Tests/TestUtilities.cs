@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-17 17:19:00>
+// Time-stamp: <2009-June-17 19:42:16>
 //
 // ------------------------------------------------------------------
 //
@@ -197,18 +197,22 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal static void CreateAndFillFileBinary(string Filename, Int64 size)
         {
-            _CreateAndFillBinary(Filename, size, false);
+            _CreateAndFillBinary(Filename, size, false, null);
         }
-        internal static void CreateAndFillFileBinaryZeroes(string Filename, Int64 size)
+        internal static void CreateAndFillFileBinaryZeroes(string Filename, Int64 size, System.Action<Int64> update)
         {
-            _CreateAndFillBinary(Filename, size, true);
+            _CreateAndFillBinary(Filename, size, true, update);
         }
 
-        private static void _CreateAndFillBinary(string Filename, Int64 size, bool zeroes)
+        delegate void ProgressUpdate(System.Int64 bytesXferred);
+        
+        private static void _CreateAndFillBinary(string Filename, Int64 size, bool zeroes, System.Action<Int64> update)
         {
             Int64 bytesRemaining = size;
             // fill with binary data
-            byte[] Buffer = new byte[20000];
+            int sz = 65536*8;
+            if (size < sz) sz= (int)size;
+            byte[] Buffer = new byte[sz];
             using (System.IO.Stream fileStream = new System.IO.FileStream(Filename, System.IO.FileMode.Create, System.IO.FileAccess.Write))
             {
                 while (bytesRemaining > 0)
@@ -217,6 +221,8 @@ namespace Ionic.Zip.Tests.Utilities
                     if (!zeroes) _rnd.NextBytes(Buffer);
                     fileStream.Write(Buffer, 0, sizeOfChunkToWrite);
                     bytesRemaining -= sizeOfChunkToWrite;
+                    if (update!= null)
+                        update(size-bytesRemaining);
                 }
                 fileStream.Close();
             }
@@ -494,6 +500,37 @@ namespace Ionic.Zip.Tests.Utilities
             return location;
         }
 
+
+        internal static int ShellExec_NoContext(string program, string args, out string output)
+        {
+            return  ShellExec_NoContext(program, args, true, out output);
+        }
+
+        
+        internal static int ShellExec_NoContext(string program, string args, bool waitForExit, out string output)
+        {
+            System.Diagnostics.Process p = new System.Diagnostics.Process();
+            p.StartInfo.FileName = program;
+            p.StartInfo.Arguments = args;
+            p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.RedirectStandardError = true;
+            p.StartInfo.UseShellExecute = false;
+            p.Start();
+
+            if (waitForExit)
+            {
+                
+            output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+
+            return p.ExitCode;
+            }
+            output = "";
+            return 0;
+        }
+
+
         #endregion
 
         internal static string LoremIpsum =
@@ -559,7 +596,46 @@ namespace Ionic.Zip.Tests.Utilities
         static string[] LoremIpsumWords;
 
 
+    }
 
+    public interface IShellExec
+    {
+        TestContext TestContext
+        {
+            get; set ;
+        }
+    }
+
+    public static class Extensions
+    {
+        
+        internal static string ShellExec(this IShellExec o, string program, string args)
+        {
+            return ShellExec(o, program, args, true);
+        }
+
+        
+        internal static string ShellExec(this IShellExec o, string program, string args, bool waitForExit)
+        {
+            if (args == null)
+                throw new ArgumentException("args");
+
+            if (program == null)
+                throw new ArgumentException("program");
+
+            // Microsoft.VisualStudio.TestTools.UnitTesting
+            o.TestContext.WriteLine("running command: {0} {1}\n    ", program, args);
+
+            string output;
+            int rc = TestUtilities.ShellExec_NoContext(program, args, waitForExit, out output);
+
+            if (rc != 0)
+                throw new Exception(String.Format("Exception running app {0}: {1}", program, output));
+
+            o.TestContext.WriteLine("output: {0}", output);
+
+            return output;
+        }
 
     }
 }

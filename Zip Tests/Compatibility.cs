@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-17 17:24:21>
+// Time-stamp: <2009-June-17 17:57:30>
 //
 // ------------------------------------------------------------------
 //
@@ -49,7 +49,7 @@ namespace Ionic.Zip.Tests
     /// Summary description for Compatibility
     /// </summary>
     [TestClass]
-    public class Compatibility
+    public class Compatibility : IShellExec
     {
         private System.Random _rnd;
 
@@ -78,24 +78,6 @@ namespace Ionic.Zip.Tests
 
         #region Additional test attributes
 
-        private static int StaticShellExec(string program, string args, out string output)
-        {
-            System.Diagnostics.Process p = new System.Diagnostics.Process();
-            p.StartInfo.FileName = program;
-            p.StartInfo.Arguments = args;
-            p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-            p.StartInfo.RedirectStandardOutput = true;
-            p.StartInfo.RedirectStandardError = true;
-            p.StartInfo.UseShellExecute = false;
-            p.Start();
-
-            output = p.StandardOutput.ReadToEnd();
-            p.WaitForExit();
-
-            return p.ExitCode;
-        }
-
-
 
 
         [ClassInitialize()]
@@ -113,7 +95,7 @@ namespace Ionic.Zip.Tests
             // register it for COM interop
             string output;
             
-            int rc = StaticShellExec(RegAsm, String.Format("\"{0}\" /codebase /verbose", IonicZipDll), out output);
+            int rc = TestUtilities.ShellExec_NoContext(RegAsm, String.Format("\"{0}\" /codebase /verbose", IonicZipDll), out output);
             if (rc != 0)
             {
                 string cmd = String.Format("{0} \"{1}\" /codebase /verbose", RegAsm, IonicZipDll);
@@ -127,7 +109,7 @@ namespace Ionic.Zip.Tests
         {
             string output;
             // unregister the DLL for COM interop
-            int rc = StaticShellExec(RegAsm, String.Format("\"{0}\" /unregister /verbose", IonicZipDll), out output);
+            int rc = TestUtilities.ShellExec_NoContext(RegAsm, String.Format("\"{0}\" /unregister /verbose", IonicZipDll), out output);
             if (rc != 0)
                 throw new Exception(String.Format("Failed to unregister DotNetZip with COM  rc({0}) ({1})", rc, output));
         }
@@ -175,6 +157,25 @@ namespace Ionic.Zip.Tests
         }
 
 
+
+        #if NONSENSE
+        private static int StaticShellExec(string program, string args, out string output)
+        {
+            System.Diagnostics.Process p = new System.Diagnostics.Process();
+            p.StartInfo.FileName = program;
+            p.StartInfo.Arguments = args;
+            p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.RedirectStandardError = true;
+            p.StartInfo.UseShellExecute = false;
+            p.Start();
+
+            output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+
+            return p.ExitCode;
+        }
+
         private string ShellExec(string program, string args)
         {
             if (args == null)
@@ -195,7 +196,9 @@ namespace Ionic.Zip.Tests
 
             return output;
         }
+#endif
 
+        
         private static void CreateFilesAndChecksums(string Subdir, out string[] FilesToZip, out Dictionary<string, byte[]> checksums)
         {
             // create a bunch of files
@@ -267,7 +270,7 @@ namespace Ionic.Zip.Tests
             Assert.IsTrue(Directory.Exists(w), "%windir% does not exist ({0})", w);
 
 
-            ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
+            this.ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
                       String.Format("\"{0}\" {1} {2}", script, ZipFileToCreate, ExtractDir));
 
             // check the files in the extract dir
@@ -345,7 +348,7 @@ namespace Ionic.Zip.Tests
             Assert.IsTrue(Directory.Exists(w), "%windir% does not exist ({0})", w);
 
 
-            ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
+            this.ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
                       String.Format("\"{0}\" {1} {2}", script, ZipFileToCreate, Path.Combine(TopLevelDir, extractDir)));
 
             // check the files in the extract dir
@@ -391,7 +394,7 @@ namespace Ionic.Zip.Tests
             var w = System.Environment.GetEnvironmentVariable("Windir");
             Assert.IsTrue(Directory.Exists(w), "%windir% does not exist ({0})", w);
 
-            ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
+            this.ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
                                    String.Format("\"{0}\" {1} {2}", script, ZipFileToCreate, Subdir));
 
             // Verify the number of files in the zip
@@ -500,7 +503,7 @@ namespace Ionic.Zip.Tests
             var w = System.Environment.GetEnvironmentVariable("Windir");
             Assert.IsTrue(Directory.Exists(w), "%windir% does not exist ({0})", w);
 
-            ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
+            this.ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
                                String.Format("\"{0}\" {1} {2}", script, ZipFileToCreate, Subdir));
 
             // Verify the number of files in the zip
@@ -555,7 +558,7 @@ namespace Ionic.Zip.Tests
             var w = System.Environment.GetEnvironmentVariable("Windir");
             Assert.IsTrue(Directory.Exists(w), "%windir% does not exist ({0})", w);
 
-            ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
+            this.ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
                                String.Format("\"{0}\" {1} {2}", script, ZipFileToCreate, ExtractDir));
 
 
@@ -588,7 +591,7 @@ namespace Ionic.Zip.Tests
             CreateFilesAndChecksums(Subdir, out FilesToZip, out checksums);
 
             // Create the zip archive via 7z.exe
-            ShellExec(sevenZip, String.Format("a {0} {1}", ZipFileToCreate, Subdir));
+            this.ShellExec(sevenZip, String.Format("a {0} {1}", ZipFileToCreate, Subdir));
 
             // Verify the number of files in the zip
             Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), FilesToZip.Length,
@@ -601,7 +604,7 @@ namespace Ionic.Zip.Tests
             var w = System.Environment.GetEnvironmentVariable("Windir");
             Assert.IsTrue(Directory.Exists(w), "%windir% does not exist ({0})", w);
 
-            ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
+            this.ShellExec(Path.Combine(Path.Combine(w, "system32"), "cscript.exe"),
                                String.Format("\"{0}\" {1} {2}", script, ZipFileToCreate, ExtractDir));
 
 
@@ -632,7 +635,7 @@ namespace Ionic.Zip.Tests
             string sevenZip = Path.Combine(testBin,"Resources\\7z.exe");
             Assert.IsTrue(File.Exists(sevenZip), "exe ({0}) does not exist", sevenZip);
 
-            ShellExec(sevenZip, String.Format("a {0} {1}", ZipFileToCreate, Subdir));
+            this.ShellExec(sevenZip, String.Format("a {0} {1}", ZipFileToCreate, Subdir));
 
             // Verify the number of files in the zip
             Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), FilesToZip.Length,
@@ -683,8 +686,7 @@ namespace Ionic.Zip.Tests
             Directory.SetCurrentDirectory("extract");
             string sevenZip = Path.Combine(testBin,"Resources\\7z.exe");
             Assert.IsTrue(File.Exists(sevenZip), "exe ({0}) does not exist", sevenZip);
-            ShellExec(sevenZip, String.Format("x {0}", ZipFileToCreate));
-
+            this.ShellExec(sevenZip, String.Format("x {0}", ZipFileToCreate));
 
             // check the files in the extract dir
             Directory.SetCurrentDirectory(TopLevelDir);
