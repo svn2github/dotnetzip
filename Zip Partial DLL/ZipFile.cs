@@ -57,54 +57,53 @@ namespace Ionic.Zip
 
         #region public properties
 
-        /// <summary>
-        /// Indicates whether to perform a full scan of the zipfile when reading it. 
-        /// </summary>
-        ///
-        /// <remarks>
-        ///
-        /// <para> When reading a zip file, if this flag is true (True in VB), the entire
-        /// zip archive will be scanned and searched for entries.  For large archives, this
-        /// can take a very, long time. The much more efficient default behavior is to read
-        /// the zip directory, at the end of the zip file. However, in some cases the
-        /// directory is corrupted and it is desirable to perform a full scan of the zip
-        /// file to determine the contents of the zip file.  </para>
-        ///
-        /// <para>
-        /// If you want to track progress, you can set the ReadProgress event. 
-        /// </para>
-        ///
-        /// <para>
-        /// This flag is effective only when calling Initialize.
-        /// The Initialize method may take a long time to run for large zip files,
-        /// when <c>Fullscan</c> is true. 
-        /// </para>
-        /// </para>
-        ///
-        /// </remarks>
-        ///
-        /// <example>
-        /// This example shows how to read a zip file using the full scan approach,
-        /// and then save it, thereby producing a corrected zip file. 
-        /// <code lang="C#">
-        /// using (var zip = new ZipFile())
-        /// {
-        ///     zip.Fullscan = true;
-        ///     zip.Initialize(zipFileName);
-        ///     zip.Save(newName);
-        /// }
-        /// </code>
-        ///
-        /// <code lang="VB">
-        /// Using zip As New ZipFile
-        ///     zip.Fullscan = True
-        ///     zip.Initialize(zipFileName)
-        ///     zip.Save(newName)
-        /// End Using
-        /// </code>
-        /// </example>
-        ///
-        public bool Fullscan
+            /// <summary>
+            /// Indicates whether to perform a full scan of the zipfile when reading it. 
+            /// </summary>
+            ///
+            /// <remarks>
+            ///
+            /// <para> When reading a zip file, if this flag is true (True in VB), the entire
+            /// zip archive will be scanned and searched for entries.  For large archives, this
+            /// can take a very, long time. The much more efficient default behavior is to read
+            /// the zip directory, at the end of the zip file. However, in some cases the
+            /// directory is corrupted and it is desirable to perform a full scan of the zip
+            /// file to determine the contents of the zip file.  </para>
+            ///
+            /// <para>
+            /// If you want to track progress, you can set the ReadProgress event. 
+            /// </para>
+            ///
+            /// <para>
+            /// This flag is effective only when calling Initialize.
+            /// The Initialize method may take a long time to run for large zip files,
+            /// when <c>Fullscan</c> is true. 
+            /// </para>
+            ///
+            /// </remarks>
+            ///
+            /// <example>
+            /// This example shows how to read a zip file using the full scan approach,
+            /// and then save it, thereby producing a corrected zip file. 
+            /// <code lang="C#">
+            /// using (var zip = new ZipFile())
+            /// {
+            ///     zip.Fullscan = true;
+            ///     zip.Initialize(zipFileName);
+            ///     zip.Save(newName);
+            /// }
+            /// </code>
+            ///
+            /// <code lang="VB">
+            /// Using zip As New ZipFile
+            ///     zip.Fullscan = True
+            ///     zip.Initialize(zipFileName)
+            ///     zip.Save(newName)
+            /// End Using
+            /// </code>
+            /// </example>
+            ///
+            public bool Fullscan
         {
             get;
             set;
@@ -186,13 +185,54 @@ namespace Ionic.Zip
         /// Size of the IO Buffer used while saving.
         /// </summary>
         /// <remarks>
-        /// You really don't need to bother with this.  It is here to allow for optimizations that
-        /// you probably won't make! The default buffer size is 8k. 
+        ///
+        /// <para> First, let me say that you really don't need to bother with this.  It is
+        ///     here to allow for optimizations that you probably won't make! It will work
+        ///     fine if you don't set or get this property at all.  Ok?  </para>
+        ///
+        /// <para> Now that we have <em>that</em> out of the way, the fine print: This
+        ///     property affects the size of the buffer that is used for I/O for each entry
+        ///     contained in the zip file. When a file is read in to be compressed, it uses
+        ///     a buffer given by the size here.  When you update a zip file, the data for
+        ///     unmodified entries is copied from the first zip file to the other, through a
+        ///     buffer given by the size here. </para>
+        ///
+        /// <para> Changing the buffer size affects a few things: first, for larger buffer
+        ///     sizes, the memory used by the ZipFile, obviously, will be larger during I/O
+        ///     operations.  This may make operations faster for very much larger files.
+        ///     Last,
+        ///     for any given entry, when you use a larger buffer there will be fewer
+        ///     progress events during I/O operations, because there's one progress event
+        ///     generated for each time the buffer is filled and then emptied.</para>
+        ///
+        /// <para> The default buffer size is 8k.  Increasing the buffer size may speed
+        ///     things up as you compress larger files.  But there are no hard-and-fast
+        ///     rules here, eh?  You won't know til you test it.  And there will be a limit
+        ///     where ever larger buffers actually slow things down.  So as I said in the
+        ///     beginning, it's probably best if you don't set or get this property at
+        ///     all.</para>
+        ///
         /// </remarks>
+        ///
+        /// <example>
+        /// This example shows how you might set a large buffer size for efficiency when
+        /// dealing with zip entries that are larger than 1gb. 
+        /// <code lang="C#">
+        /// using (ZipFile zip = new ZipFile())
+        /// {
+        ///     zip.SaveProgress += this.zip1_SaveProgress;
+        ///     zip.AddDirectory(directoryToZip, "");
+        ///     zip.UseZip64WhenSaving = Zip64Option.Always;
+        ///     zip.BufferSize = 65536*8; // 65536 * 8 = 512k
+        ///     zip.Save(ZipFileToCreate);
+        /// }
+        /// </code>
+        /// </example>
+        
         public int BufferSize
         {
-            get;
-            set;
+            get { return _BufferSize; }
+            set { _BufferSize = value; }
         }
 
         /// <summary>
@@ -1901,7 +1941,6 @@ namespace Ionic.Zip
             _StatusMessageTextWriter = statusMessageWriter;
             _contentsChanged = true;
             CompressionLevel = Ionic.Zlib.CompressionLevel.Default;
-            BufferSize = 8192;  // Default 
             // workitem 7685
             _entries = new System.Collections.Generic.List<ZipEntry>();
             if (File.Exists(_name))
@@ -2270,7 +2309,7 @@ namespace Ionic.Zip
         {
             string nameInArchive = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
             ZipEntry ze = ZipEntry.Create(fileName, nameInArchive);
-            ze.BufferSize = BufferSize;
+            //ze.BufferSize = BufferSize;
             //ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
             ze.ExtractExistingFile = ExtractExistingFile;
@@ -2955,7 +2994,7 @@ namespace Ionic.Zip
         {
             string n = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
             ZipEntry ze = ZipEntry.Create(fileName, n, true, stream);
-            ze.BufferSize = BufferSize;
+            //ze.BufferSize = BufferSize;
             //ze.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             ze.ForceNoCompression = ForceNoCompression;
             ze.ExtractExistingFile = ExtractExistingFile;
@@ -3505,7 +3544,7 @@ namespace Ionic.Zip
         {
             // add the directory itself.
             ZipEntry baseDir = ZipEntry.Create(directoryNameInArchive, directoryNameInArchive);
-            baseDir.BufferSize = BufferSize;
+            //baseDir.BufferSize = BufferSize;
             //baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             baseDir.MarkAsDirectory();
             baseDir._zipfile = this;
@@ -3551,7 +3590,7 @@ namespace Ionic.Zip
             if (level > 0 || rootDirectoryPathInArchive != "")
             {
                 baseDir = ZipEntry.Create(directoryName, dirForEntries);
-                baseDir.BufferSize = BufferSize;
+                //baseDir.BufferSize = BufferSize;
                 baseDir.ProvisionalAlternateEncoding = this.ProvisionalAlternateEncoding;  // workitem 6410
                 //baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
                 baseDir.MarkAsDirectory();
@@ -5100,7 +5139,6 @@ namespace Ionic.Zip
                         if (posn < 0) posn = 0;
                     }
                 }
-                //while (!success && nTries < 3);
                 while (!success && posn > maxSeekback);
 
                 if (success)
@@ -6629,6 +6667,8 @@ namespace Ionic.Zip
         internal bool _inExtractAll = false;
         private System.Text.Encoding _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437"); // default = IBM437
 
+        private int _BufferSize = 8192;
+        
         internal Zip64Option _zip64 = Zip64Option.Default;
         #pragma warning disable 649
         private bool _SavingSfx; 

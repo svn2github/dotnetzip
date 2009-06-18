@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-May-30 06:42:50>
+// Time-stamp: <2009-June-18 03:47:53>
 //
 // ------------------------------------------------------------------
 //
@@ -491,7 +491,7 @@ namespace Ionic.Zip.Tests.Error
 
 
         [TestMethod]
-        [ExpectedException(typeof(System.SystemException))] // not sure which exception - could be one of several.
+        [ExpectedException(typeof(ZipException))] // not sure which exception - could be one of several.
         public void Error_ReadCorruptedZipFile_Passwords()
         {
             string ZipFileToCreate = Path.Combine(TopLevelDir, "Read_CorruptedZipFile_Passwords.zip");
@@ -548,13 +548,14 @@ namespace Ionic.Zip.Tests.Error
             }
             catch (Exception exc1)
             {
-                throw new SystemException("expected", exc1);
+                throw new ZipException("expected", exc1);
             }
         }
 
 
+        
         [TestMethod]
-        [ExpectedException(typeof(System.SystemException))] // not sure which exception - could be one of several.
+        [ExpectedException(typeof(ZipException))] // not sure which exception - could be one of several.
         public void Error_ReadCorruptedZipFile()
         {
             int i;
@@ -593,10 +594,8 @@ namespace Ionic.Zip.Tests.Error
                 // read the corrupted zip - this should fail in some way
                 using (ZipFile zip = new ZipFile(ZipFileToCreate))
                 {
-                    for (i = 0; i < filenames.Length; i++)
+                    foreach (var e in zip)
                     {
-                        ZipEntry e = zip[Path.GetFileName(filenames[i])];
-
                         System.Console.WriteLine("name: {0}  compressed: {1} has password?: {2}",
                             e.FileName, e.CompressedSize, e.UsesEncryption);
                         e.Extract("extract");
@@ -605,11 +604,42 @@ namespace Ionic.Zip.Tests.Error
             }
             catch (Exception exc1)
             {
-                throw new SystemException("expected", exc1);
+                throw new ZipException("expected", exc1);
             }
         }
 
 
+
+        [TestMethod]
+        [ExpectedException(typeof(ZipException))]
+        public void Error_Read_EmptyZipFile()
+        {
+            string ZipFileToRead = Path.Combine(TopLevelDir, "Read_BadFile.zip");
+
+            string NewFile = Path.GetTempFileName();
+            File.Move(NewFile, ZipFileToRead);
+
+            NewFile = Path.GetTempFileName();
+
+            string EntryToAdd = Path.Combine(TopLevelDir, "NonExistentFile.txt");
+            File.Move(NewFile, EntryToAdd);
+
+            try 
+            {
+                using (ZipFile zip = ZipFile.Read(ZipFileToRead))
+                {
+                    zip.AddFile(EntryToAdd, "");
+                    zip.Save();
+                }
+            }
+            catch (System.Exception exc1)
+            {
+              throw new ZipException("expected", exc1);
+            }
+
+        }
+
+        
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]

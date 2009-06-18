@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-17 20:43:51>
+// Time-stamp: <2009-June-18 03:40:31>
 //
 // ------------------------------------------------------------------
 //
@@ -376,9 +376,9 @@ namespace Ionic.Zip.Tests.Extended
                 sw.WriteLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
             }
 
-            // 3. make a large text file
-            string LargeTextFile = Path.Combine(Subdir, "LargeTextFile.txt");
-            TestUtilities.CreateAndFillFileText(LargeTextFile, _rnd.Next(64000) + 15000);
+            // 3. make a text file
+            string LargeTextFile = Path.Combine(Subdir, "HundredKTextFile.txt");
+            TestUtilities.CreateAndFillFileText(LargeTextFile, _rnd.Next(44000) + 65000);
 
             // 4. compress that file to make a large incompressible file
             string CompressedFile = LargeTextFile + ".COMPRESSED";
@@ -407,7 +407,11 @@ namespace Ionic.Zip.Tests.Extended
             using (ZipFile zip = new ZipFile())
             {
                 zip.WillReadTwiceOnInflation = ReadTwiceCallback;
-                zip.AddEntry("ReadMe.txt", "", "This is the content for the Readme file. This is the content. Right here. This is the content. This is it. And this content is compressible.");
+                zip.AddEntry("ReadMe.txt", "", "This is the content for the Readme file. This is the content. Right here. " +
+                             "This is the content. This is it. And as you will see, this content is compressible. This " +
+                             "compressibility comees from replacing common sequences of data in the file, with codes.  " +
+                             "They call it a dictionary. There are well-known algorithms for it. DEFLATE is one of them.  " +
+                             "And that's the algorithm we're using on this text.");
                 zip.AddFile(SmallIncompressibleTextFile, Path.GetFileName(Subdir));
                 zip.AddFile(LargeTextFile, Path.GetFileName(Subdir));
                 zip.AddFile(CompressedFile, Path.GetFileName(Subdir));
@@ -1114,6 +1118,7 @@ namespace Ionic.Zip.Tests.Extended
             {
                 _numFilesToExtract = zip2.Entries.Count;
                 zip2.ExtractProgress += LF_ExtractProgress;
+                zip2.BufferSize = 65536 * 8;
                 zip2.ExtractAll(TargetDirectory);
             }
                        
@@ -1199,38 +1204,6 @@ namespace Ionic.Zip.Tests.Extended
 
 
 
-        [TestMethod]
-        public void Read_BadFile()
-        {
-            string ZipFileToRead = Path.Combine(TopLevelDir, "Read_BadFile.zip");
-
-            string NewFile = Path.GetTempFileName();
-            File.Move(NewFile, ZipFileToRead);
-
-            NewFile = Path.GetTempFileName();
-
-            string EntryToAdd = Path.Combine(TopLevelDir, "NonExistentFile.txt");
-            File.Move(NewFile, EntryToAdd);
-
-            try
-            {
-                using (ZipFile zip = ZipFile.Read(ZipFileToRead))
-                {
-                    zip.AddFile(EntryToAdd, "");
-                    zip.Save();
-                }
-            }
-            catch (Exception ex1)
-            {
-                // expected - the zip file is invalid
-                Console.WriteLine("Exception: {0}", ex1);
-            }
-
-            // this should succeed
-            File.Delete(ZipFileToRead);
-            File.Delete(EntryToAdd);
-
-        }
 
         [TestMethod]
         public void Create_SaveCancellation()

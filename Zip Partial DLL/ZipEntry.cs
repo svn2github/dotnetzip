@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-17 16:19:23>
+// Time-stamp: <2009-June-18 03:24:14>
 //
 // ------------------------------------------------------------------
 //
@@ -179,9 +179,9 @@ namespace Ionic.Zip
         /// <remarks>Applications should never need to call this directly.  It is exposed to 
         /// support COM Automation environments.
         /// </remarks>
-        public ZipEntry() { BufferSize = IO_BUFFER_SIZE_DEFAULT; }
+        public ZipEntry() { }
 
-        internal ZipEntry(int size) { BufferSize = size; }
+        //internal ZipEntry(int size) { BufferSize = size; }
 
         /// <summary>
         /// The time and date at which the file indicated by the ZipEntry was last modified. 
@@ -291,7 +291,7 @@ namespace Ionic.Zip
             }
         }
 
-
+#if NOTNEEDED
         /// <summary>
         /// Size of the buffer used when extracting or saving.
         /// </summary>
@@ -300,7 +300,13 @@ namespace Ionic.Zip
             get;
             set;
         }
-
+#endif
+        
+        private int BufferSize
+        {
+            get { return this._zipfile.BufferSize; }
+        }
+        
         /// <summary>
         /// Last Modified time for the file represented by the entry.
         /// </summary>
@@ -2944,7 +2950,6 @@ namespace Ionic.Zip
         }
 
 
-
         private void _CheckRead(int nbytes)
         {
             if (nbytes == 0)
@@ -2953,6 +2958,7 @@ namespace Ionic.Zip
 
         }
 
+        
 
         private Int32 _ExtractOne(System.IO.Stream output)
         {
@@ -2985,7 +2991,10 @@ namespace Ionic.Zip
 #endif
 
             else
-                input2 = new Ionic.Zlib.CrcCalculatorStream(input, _CompressedFileDataSize);
+                // Thu, 18 Jun 2009  01:45
+                // why do I need a CrcCalculatorStream?  couldn't I just assign input1 ?
+                //input2 = new Ionic.Zlib.CrcCalculatorStream(input, _CompressedFileDataSize);
+                input2 = input;
 
 
             //Stream input2a = new TraceStream(input2);
@@ -3011,7 +3020,9 @@ namespace Ionic.Zip
 
                     //Console.WriteLine("ExtractOne: Read {0} bytes\n{1}", n, Util.FormatByteArray(bytes,n));
 
+                    // must check data read - essential for detecting corrupt zip files
                     _CheckRead(n);
+                    
                     output.Write(bytes, 0, n);
                     LeftToRead -= n;
                     bytesWritten += n;
@@ -4554,7 +4565,7 @@ namespace Ionic.Zip
 
                         // read
                         n = input1.Read(bytes, 0, len);
-                        _CheckRead(n);
+                        //_CheckRead(n);
 
                         // write
                         outstream.Write(bytes, 0, n);
@@ -4678,7 +4689,7 @@ namespace Ionic.Zip
 
                     // read
                     n = input1.Read(bytes, 0, len);
-                    _CheckRead(n);
+                    //_CheckRead(n);
 
                     // write
                     outstream.Write(bytes, 0, n);
@@ -5004,10 +5015,10 @@ namespace Ionic.Zip
         private Nullable<bool> _OutputUsesZip64;
         private bool _IsText; // workitem 7801
 
-        /// <summary>
-        /// The default size of the IO buffer for ZipEntry instances. Currently it is 8192 bytes.
-        /// </summary>
-        public const int IO_BUFFER_SIZE_DEFAULT = 8192; // 0x8000; // 0x4400
+        // summary
+        // The default size of the IO buffer for ZipEntry instances. Currently it is 8192 bytes.
+        // summary
+        //public const int IO_BUFFER_SIZE_DEFAULT = 8192; // 0x8000; // 0x4400
 
     }
 
