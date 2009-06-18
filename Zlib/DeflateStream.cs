@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-16 08:12:14>
+// Time-stamp: <2009-June-18 16:23:23>
 //
 // ------------------------------------------------------------------
 //
@@ -83,12 +83,10 @@ namespace Ionic.Zlib
         ///         using (Stream compressor = new DeflateStream(raw, CompressionMode.Compress))
         ///         {
         ///             byte[] buffer = new byte[WORKING_BUFFER_SIZE];
-        ///             int n= -1;
-        ///             while (n != 0)
+        ///             int n;
+        ///             while ((n= input.Read(buffer, 0, buffer.Length)) != 0)
         ///             {
-        ///                 if (n &gt; 0) 
-        ///                     compressor.Write(buffer, 0, n);
-        ///                 n= input.Read(buffer, 0, buffer.Length);
+        ///                 compressor.Write(buffer, 0, n);
         ///             }
         ///         }
         ///     }

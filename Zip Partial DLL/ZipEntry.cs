@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-18 03:24:14>
+// Time-stamp: <2009-June-18 16:25:27>
 //
 // ------------------------------------------------------------------
 //
@@ -4091,14 +4091,13 @@ namespace Ionic.Zip
 
                 // as we emit the file, we maybe deflate, then maybe encrypt, then write the bytes. 
                 byte[] buffer = new byte[BufferSize];
-                int n = input1.Read(buffer, 0, BufferSize);
-                while (n > 0)
+                int n;
+                while ((n= input1.ReadWithRetry(buffer, 0, buffer.Length, FileName)) != 0)
                 {
                     output2.Write(buffer, 0, n);
                     OnWriteBlock(input1.TotalBytesSlurped, fileLength);
                     if (_ioOperationCanceled)
                         break;
-                    n = input1.Read(buffer, 0, BufferSize);
                 }
 
                 // by calling Close() on the deflate stream, we write the footer bytes, as necessary.

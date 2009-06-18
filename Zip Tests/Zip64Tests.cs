@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-17 20:38:01>
+// Time-stamp: <2009-June-18 05:05:07>
 //
 // ------------------------------------------------------------------
 //
@@ -413,6 +413,7 @@ namespace Ionic.Zip.Tests.Zip64
             TestContext.WriteLine("\nChecking file {0}", zipfile);
             using (ZipFile zip = ZipFile.Read(zipfile))
             {
+                zip.BufferSize = 65536*8; // 65536 * 8 = 512k - large buffer better for large files
                 _numFilesToExtract = zip.Entries.Count;
                 zip.ExtractProgress += zip_ExtractProgress;
                 foreach (var s in zip.EntryFileNames)
