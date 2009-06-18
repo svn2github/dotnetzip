@@ -142,7 +142,7 @@
             // btnZipUp
             // 
             this.btnZipUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnZipUp.Location = new System.Drawing.Point(579, 431);
+            this.btnZipUp.Location = new System.Drawing.Point(579, 454);
             this.btnZipUp.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnZipUp.Name = "btnZipUp";
             this.btnZipUp.Size = new System.Drawing.Size(66, 26);
@@ -155,7 +155,7 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.Enabled = false;
-            this.btnCancel.Location = new System.Drawing.Point(579, 491);
+            this.btnCancel.Location = new System.Drawing.Point(579, 487);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(66, 26);
@@ -168,20 +168,20 @@
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(6, 461);
+            this.progressBar1.Location = new System.Drawing.Point(6, 487);
             this.progressBar1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(639, 10);
+            this.progressBar1.Size = new System.Drawing.Size(563, 10);
             this.progressBar1.TabIndex = 4;
             // 
             // progressBar2
             // 
             this.progressBar2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar2.Location = new System.Drawing.Point(6, 477);
+            this.progressBar2.Location = new System.Drawing.Point(6, 503);
             this.progressBar2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.progressBar2.Name = "progressBar2";
-            this.progressBar2.Size = new System.Drawing.Size(639, 10);
+            this.progressBar2.Size = new System.Drawing.Size(563, 10);
             this.progressBar2.TabIndex = 17;
             // 
             // label1
@@ -303,7 +303,7 @@
             // 
             this.lblStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(12, 498);
+            this.lblStatus.Location = new System.Drawing.Point(12, 495);
             this.lblStatus.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(0, 13);
@@ -360,10 +360,11 @@
             this.listView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.listView1.GridLines = true;
             this.listView1.Location = new System.Drawing.Point(6, 91);
             this.listView1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(639, 358);
+            this.listView1.Size = new System.Drawing.Size(639, 382);
             this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -784,7 +785,7 @@
             // btnClearItemsToZip
             // 
             this.btnClearItemsToZip.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClearItemsToZip.Location = new System.Drawing.Point(465, 431);
+            this.btnClearItemsToZip.Location = new System.Drawing.Point(465, 454);
             this.btnClearItemsToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnClearItemsToZip.Name = "btnClearItemsToZip";
             this.btnClearItemsToZip.Size = new System.Drawing.Size(102, 26);
@@ -797,7 +798,7 @@
             // 
             this.textBox1.AcceptsReturn = true;
             this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.textBox1.Location = new System.Drawing.Point(192, 433);
+            this.textBox1.Location = new System.Drawing.Point(192, 456);
             this.textBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(100, 20);
@@ -825,7 +826,7 @@
             this.listView2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.listView2.MultiSelect = false;
             this.listView2.Name = "listView2";
-            this.listView2.Size = new System.Drawing.Size(639, 156);
+            this.listView2.Size = new System.Drawing.Size(639, 176);
             this.listView2.TabIndex = 98;
             this.listView2.UseCompatibleStateImageBehavior = false;
             this.listView2.View = System.Windows.Forms.View.Details;
@@ -873,7 +874,7 @@
             this.richTextBox1.Location = new System.Drawing.Point(54, 20);
             this.richTextBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(508, 312);
+            this.richTextBox1.Size = new System.Drawing.Size(585, 497);
             this.richTextBox1.TabIndex = 2;
             this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
             this.richTextBox1.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBox1_LinkClicked);
@@ -897,7 +898,7 @@
             this.Controls.Add(this.tabControl1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.MinimumSize = new System.Drawing.Size(556, 458);
+            this.MinimumSize = new System.Drawing.Size(578, 458);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "DotNetZip\'s WinForms Zip Tool";
