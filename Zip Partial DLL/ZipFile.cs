@@ -110,24 +110,59 @@ namespace Ionic.Zip
         }
 
         /// <summary>
-        /// Returns true if a zip file needs to have its directory re-written.  
+        /// Checks a zip file to see if its directory is consistent.
         /// </summary>
         ///
         /// <remarks>
-        /// <para>
-        /// In cases of data error, the directory in a zip file can get out of synch with
-        /// the entries in the zip file.  This method returns true if this has
-        /// occurred.  
-        /// </para>
         ///
-        /// <para>
-        /// This method may take a long time to run for large zip files. 
-        /// </para>
+        /// <para> In cases of data error, the directory within a zip file can get out of
+        ///     synch with the entries in the zip file.  This method checks the given
+        ///     zip file and returns true if this has occurred.  </para>
+        ///
+        /// <para> This method may take a long time to run for large zip files.  </para>
         ///
         /// </remarks>
         ///
-        /// <seealso cref="FixupDirectory"/>
-        public static bool NeedsDirectoryFixup(string zipFileName)
+        /// <param name="zipFileName">The filename to of the zip file to check.</param>
+        ///
+        /// <returns>true if the named zip file needs to be fixed.</returns>
+        ///
+        /// <seealso cref="FixupDirectory(string)"/>
+        /// <seealso cref="CheckZip(string,bool)"/>
+        public static bool CheckZip(string zipFileName)
+        {
+            return CheckZip(zipFileName, false);
+        }
+
+        
+        /// <summary>
+        /// Checks a zip file to see if its directory is consistent, 
+        /// and optionally fixes the directory if necessary. 
+        /// </summary>
+        ///
+        /// <remarks>
+        ///
+        /// <para> In cases of data error, the directory within a zip file can get out of
+        ///     synch with the entries in the zip file.  This method checks the given
+        ///     zip file, and returns true if this has occurred. It also optionally
+        ///     fixes the zipfile, saving the fixed copy in <em>Name</em>_Fixed.zip.</para>
+        ///
+        /// <para> This method may take a long time to run for large zip files.  It will
+        ///     take even longer if the file actually needs to be fixed, and if
+        ///     <c>fixIfNecessary</c> is true.  </para>
+        ///
+        /// </remarks>
+        ///
+        /// <param name="zipFileName">The filename to of the zip file to check.</param>
+        ///
+        /// <param name="fixIfNecessary">If true, the method will fix the zip file if
+        ///     necessary.</param>
+        ///
+        /// <returns>true if the named zip file needs to be fixed.</returns>
+        ///
+        /// <seealso cref="CheckZip(string)"/>
+        /// <seealso cref="FixZipDirectory(string)"/>
+        public static bool CheckZip(string zipFileName, bool fixIfNecessary)
         {
             ZipFile zip1 = null;
             ZipFile zip2 = null;
@@ -149,6 +184,17 @@ namespace Ionic.Zip
                             if (e1._RelativeOffsetOfLocalHeader != e2._RelativeOffsetOfLocalHeader)
                                 needsFixup = true;
                         }
+                        if (needsFixup) break;
+                    }
+
+                    zip2.Dispose();
+                    zip2= null;
+                    
+                    if (needsFixup && fixIfNecessary)
+                    {
+                        string newFileName = Path.GetFileNameWithoutExtension(zipFileName);
+                        newFileName = String.Format("{0}_fixed.zip", newFileName);
+                        zip1.Save(newFileName);
                     }
                 }
             }
@@ -162,15 +208,22 @@ namespace Ionic.Zip
 
         
         /// <summary>
-        /// Rewrite the directory for a zipfile 
+        /// Rewrite the directory within a zipfile.
         /// </summary>
         /// 
         /// <remarks>
-        /// This can take a long time for large zip files. 
+        ///
+        /// <para> In cases of data error, the directory in a zip file can get out of
+        ///     synch with the entries in the zip file.  This method returns true if
+        ///     this has occurred.  </para>
+        ///
+        /// <para> This can take a long time for large zip files. </para>
+        ///
         /// </remarks>
         ///
-        /// <seealso cref="FixupDirectory"/>
-        public static void FixupDirectory(string zipFileName)
+        /// <seealso cref="CheckZip(string)"/>
+        /// <seealso cref="CheckZip(string,bool)"/>
+        public static void FixZipDirectory(string zipFileName)
         {
             using (var zip = new ZipFile())
             {
