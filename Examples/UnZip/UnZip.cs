@@ -30,31 +30,41 @@ namespace Ionic.Zip.Examples
 
         private static void Usage()
         {
-            Console.WriteLine("UnZip.exe:  extract or list the entries in a zip file.");
+            Console.WriteLine("UnZip.exe:  extract or list or test the entries in a zip file.");
             Console.WriteLine("            Depends on Ionic's DotNetZip library. This is version {0} of the utility.",
                   System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
             Console.WriteLine("usage:\n" +
-                  "  unzip  [-p <password>] <zipfile> <options>  [<entryToUnzip>]\n" +
-                  "     unzips all files in the archive to the specified directory, which should exist.\n" +
-                  "     If no directory is provided, this utility uses the current directory. UTF-8\n" +
-                  "     encoding is used if the zip file wants it.\n\n" +
-                  "arguments:\n" +
-                  "  -o                overwrite existing files if necessary.\n" +
-                  "  -q                operate quietly (no verbose messages). \n" +
-                  "  -cp <codepage>    extract with the specified numeric codepage.  Only do this if you\n" +
-                  "                    know the codepage. If UTF-8 is required you don't need this switch.\n" +
-                  "                    If the codepage you specify here is different than the codepage of \n" +
-                  "                    the cmd.exe, then the verbose messages will look odd, but the files\n" +
-                  "                    will be extracted properly.\n" +
-                  "  -d <directory>    unpack to the specified directory. \n\n" +
+                  "  unzip <zipfile> <options>  \n" +
+                  "     unzips all files in the archive.\n" +
+                  "     arguments:\n" +
+                  "       -o                overwrite existing files if necessary.\n" +
+                  "       -p <password>     specify password for extraction.\n" +
+                  "       -t                test the file for consistency. \n" +
+                  "       -q                operate quietly (no verbose messages). \n" +
+                  "       -cp <codepage>    extract with the specified numeric codepage.  Only do this if you\n" +
+                  "                         know the codepage, and it is neither IBM437 nor UTF-8. If the \n" +
+                  "                         codepage you specify here is different than the codepage of \n" +
+                  "                         the cmd.exe, then the verbose messages will look odd, but the \n" +
+                  "                         files will be extracted properly.\n" +
+                  "       -d <directory>    unpack to the specified directory. If none provided, it will\n" +
+                  "                         unzip to the current directory.\n" + 
+                  "       <filename>        unzip only the specified filename.\n\n" +
                   "  unzip -l <zipfile>\n" +
                   "     lists the entries in the zip archive.\n" +
+                  "  unzip -t <zipfile> [-p <password>] [-cp <codepage>]\n" +
+                  "     tests the zip archive.\n" +
                   "  unzip -?\n" +
                   "     displays this message.\n"
                   );
             Environment.Exit(1);
         }
 
+        enum ActionDesired
+        {
+            Extract,
+            List,
+            Test
+        }
 
         public static void Main(String[] args)
         {
@@ -66,9 +76,10 @@ namespace Ionic.Zip.Examples
             string password = null;
             string entryToExtract = null;
             bool extractToConsole = false;
-            bool WantExtract = true;
+            ActionDesired action = ActionDesired.Extract;
             ExtractExistingFileAction behaviorForExistingFile = ExtractExistingFileAction.DontOverwrite;
             bool WantQuiet = false;
+            System.IO.Stream bitbucket = System.IO.Stream.Null;
             System.IO.Stream outstream = null;
 
             // because the comments and filenames on zip entries may be UTF-8
@@ -94,11 +105,18 @@ namespace Ionic.Zip.Examples
                         break;
 
                     case "-q":
+                        if (action == ActionDesired.List) Usage();
                         WantQuiet = true;
                         break;
 
                     case "-o":
-			behaviorForExistingFile = ExtractExistingFileAction.OverwriteSilently;
+                        behaviorForExistingFile = ExtractExistingFileAction.OverwriteSilently;
+                        if (action != ActionDesired.Extract) Usage();
+                        break;
+
+                    case "-t":
+                        action = ActionDesired.Test;
+                        if (entryToExtract != null) Usage();
                         break;
 
                     case "-d":
@@ -106,10 +124,7 @@ namespace Ionic.Zip.Examples
                         if (args.Length <= i) Usage();
                         if (targdir != null) Usage();
                         if (extractToConsole) Usage();
-                        if (!WantExtract)
-                        {
-                            Console.WriteLine("unzip: Warning: Ignoring -d option when listing contents.\n");
-                        }
+                        if (action != ActionDesired.Extract) Usage();
                         targdir = args[i];
                         break;
 
@@ -123,9 +138,10 @@ namespace Ionic.Zip.Examples
                     case "-l":
                         if (password != null) Usage();
                         if (targdir != null) Usage();
+                        if (WantQuiet) Usage();
                         if (entryToExtract != null) Usage();
                         if (behaviorForExistingFile == ExtractExistingFileAction.OverwriteSilently) Usage();
-                        WantExtract = false;
+                        action = ActionDesired.List;
                         break;
 
                     case "-?":
@@ -136,16 +152,9 @@ namespace Ionic.Zip.Examples
                         // positional args
                         if (zipfile == null)
                             zipfile = args[i];
-                        else if (!WantExtract)
-                        {
-                            Console.WriteLine("unzip: Warning: Ignoring entry to extract when listing contents.\n");
-                        }
-                        else
-                        {
-                            if (entryToExtract != null) Usage();
-                            entryToExtract = args[i];
-                        }
-
+                        else if (action != ActionDesired.Extract) Usage();
+                        else if (entryToExtract != null) Usage();
+                        else entryToExtract = args[i];                       
                         break;
                 }
 
@@ -204,7 +213,7 @@ namespace Ionic.Zip.Examples
                     }
                     else
                     {
-                        // extract all
+                        // extract all, or list, or test
 
                         // The logic here does almost the same thing as the ExtractAll() method
                         // on the ZipFile class.  But in this case we *could* have control over
@@ -244,7 +253,7 @@ namespace Ionic.Zip.Examples
                                     System.Console.WriteLine("  Comment: {0}", e.Comment);
                             }
 
-                            if (WantExtract)
+                            if (action == ActionDesired.Extract)
                             {
                                 if (e.UsesEncryption)
                                 {
@@ -264,6 +273,11 @@ namespace Ionic.Zip.Examples
 
                                 }
                             }
+                            else if (action == ActionDesired.Test)
+                            {
+                                e.ExtractWithPassword(bitbucket, password);
+                            }
+
                         } // foreach
 
                         if (!WantQuiet)
