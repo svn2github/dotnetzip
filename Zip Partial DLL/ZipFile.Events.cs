@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-18 22:53:50>
+// Time-stamp: <2009-June-19 06:32:34>
 //
 // ------------------------------------------------------------------
 //
@@ -910,7 +910,50 @@ namespace Ionic.Zip
         /// An event handler invoked before, during, and after Adding entries to a zip archive.
         /// </summary>
         ///
-        /// </remarks>
+        /// <remarks> Adding a large number of entries to a zip file can take a long
+        ///     time.  For example, when calling <see cref="AddDirectory(string)"/> on a
+        ///     directory that contains 50,000 files, it could take 3 minutes or so.
+        ///     This event handler allws an application to track the progress of the Add
+        ///     operation.  </remarks>
+        ///
+        /// <example>
+        /// <code lang="C#">
+        ///
+        /// int _numEntriesToAdd= 0;
+        /// int _numEntriesAdded= 0;
+        /// void AddProgressHandler(object sender, AddProgressEventArgs e)
+        /// {
+        ///     switch (e.EventType)
+        ///     {
+        ///         case ZipProgressEventType.Adding_Started:
+        ///             Console.WriteLine("Adding files to the zip...");
+        ///             break;
+        ///          case ZipProgressEventType.Adding_AfterAddEntry:
+        ///             _numEntriesAdded++;
+        ///             Console.WriteLine(String.Format("Adding file {0}/{1} :: {2}",
+        ///                                      _numEntriesAdded, _numEntriesToAdd, e.CurrentEntry.FileName));
+        ///             break;
+        ///             
+        ///         case ZipProgressEventType.Adding_Completed:
+        ///             Console.WriteLine("Added all files");
+        ///             break;
+        ///     }
+        /// }
+        ///    
+        /// void CreateTheZip()
+        /// {
+        ///     using (ZipFile zip = new ZipFile())
+        ///     {
+        ///         zip.AddProgress += AddProgressHandler;
+        ///         zip.AddDirectory(System.IO.Path.GetFileName(DirToZip));
+        ///         zip.BufferSize = 4096;
+        ///         zip.SaveProgress += SaveProgressHandler;
+        ///         zip.Save(ZipFileToCreate);
+        ///     }
+        /// }
+        ///     
+        /// </code>
+        /// </example>
         public event EventHandler<AddProgressEventArgs> AddProgress;
 
         private void OnAddStarted()

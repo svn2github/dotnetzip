@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-18 23:15:28>
+// Time-stamp: <2009-June-19 06:45:02>
 //
 // ------------------------------------------------------------------
 //
@@ -622,14 +622,11 @@ namespace Ionic.Zip.Tests.Basic
         bool _pb1Set;
         void LNSF_SaveProgress(object sender, SaveProgressEventArgs e)
         {
-            string msg; 
             switch (e.EventType)
             {
                 case ZipProgressEventType.Saving_Started:
                     _txrx.Send("status saving started...");
                     _pb1Set = false;
-                    //_txrx.Send(String.Format("pb1 max {0}", e.EntriesTotal));
-                    //_txrx.Send("pb2 max 1");
                     break;
 
                 case ZipProgressEventType.Saving_BeforeWriteEntry:
@@ -641,17 +638,16 @@ namespace Ionic.Zip.Tests.Basic
                     }
                     break;
                     
-            case ZipProgressEventType.Saving_AfterWriteEntry:
-                _txrx.Send("pb 1 step");
-                break;
-                    
-            case ZipProgressEventType.Saving_Completed:
-                _txrx.Send("status Save completed");
-                _pb1Set = false;
-                //_pb2Set = false;
-                _txrx.Send("pb 1 max 1");
-                _txrx.Send("pb 1 value 1");
-                break;
+                case ZipProgressEventType.Saving_AfterWriteEntry:
+                    _txrx.Send("pb 1 step");
+                    break;
+
+                case ZipProgressEventType.Saving_Completed:
+                    _txrx.Send("status Save completed");
+                    _pb1Set = false;
+                    _txrx.Send("pb 1 max 1");
+                    _txrx.Send("pb 1 value 1");
+                    break;
             }
         }
         
@@ -660,7 +656,6 @@ namespace Ionic.Zip.Tests.Basic
         int _numEntriesAdded= 0;
         void LNSF_AddProgress(object sender, AddProgressEventArgs e)
         {
-            string msg; 
             switch (e.EventType)
             {
                 case ZipProgressEventType.Adding_Started:

@@ -127,7 +127,7 @@ namespace Ionic.Zip
         ///
         /// <returns>true if the named zip file needs to be fixed.</returns>
         ///
-        /// <seealso cref="FixupDirectory(string)"/>
+        /// <seealso cref="FixZipDirectory(string)"/>
         /// <seealso cref="CheckZip(string,bool)"/>
         public static bool CheckZip(string zipFileName)
         {
