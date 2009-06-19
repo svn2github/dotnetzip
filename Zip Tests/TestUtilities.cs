@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-17 19:42:16>
+// Time-stamp: <2009-June-18 22:18:53>
 //
 // ------------------------------------------------------------------
 //
@@ -205,13 +205,13 @@ namespace Ionic.Zip.Tests.Utilities
         }
 
         delegate void ProgressUpdate(System.Int64 bytesXferred);
-        
+
         private static void _CreateAndFillBinary(string Filename, Int64 size, bool zeroes, System.Action<Int64> update)
         {
             Int64 bytesRemaining = size;
             // fill with binary data
-            int sz = 65536*8;
-            if (size < sz) sz= (int)size;
+            int sz = 65536 * 8;
+            if (size < sz) sz = (int)size;
             byte[] Buffer = new byte[sz];
             using (System.IO.Stream fileStream = new System.IO.FileStream(Filename, System.IO.FileMode.Create, System.IO.FileAccess.Write))
             {
@@ -221,8 +221,8 @@ namespace Ionic.Zip.Tests.Utilities
                     if (!zeroes) _rnd.NextBytes(Buffer);
                     fileStream.Write(Buffer, 0, sizeOfChunkToWrite);
                     bytesRemaining -= sizeOfChunkToWrite;
-                    if (update!= null)
-                        update(size-bytesRemaining);
+                    if (update != null)
+                        update(size - bytesRemaining);
                 }
                 fileStream.Close();
             }
@@ -439,39 +439,59 @@ namespace Ionic.Zip.Tests.Utilities
 
 
 
-        internal static int GenerateFilesOneLevelDeep(TestContext TC, string TestName, string DirToZip, out int subdirCount)
+        internal static int GenerateFilesOneLevelDeep(TestContext tc,
+            string TestName,
+            string DirToZip,
+            Action<Int16, Int32> update,
+            out int subdirCount)
         {
             int[] settings = { 7, 6, 17, 23, 4000, 4000 }; // to randomly set dircount, filecount, and filesize
-            return GenerateFilesOneLevelDeep(TC, TestName, DirToZip, settings, out subdirCount);
+            return GenerateFilesOneLevelDeep(tc, TestName, DirToZip, settings, update, out subdirCount);
         }
 
-        internal static int GenerateFilesOneLevelDeep(TestContext TC, string TestName, string DirToZip, int[] settings, out int subdirCount)
+
+        internal static int GenerateFilesOneLevelDeep(TestContext tc,
+            string TestName,
+            string DirToZip,
+            int[] settings,
+            Action<Int16, Int32> update,
+            out int subdirCount)
         {
             int entriesAdded = 0;
             String filename = null;
 
             subdirCount = _rnd.Next(settings[0]) + settings[1];
-            TC.WriteLine("{0}: Creating {1} subdirs.", TestName, subdirCount);
+            if (update != null)
+                update(0, subdirCount);
+            tc.WriteLine("{0}: Creating {1} subdirs.", TestName, subdirCount);
             for (int i = 0; i < subdirCount; i++)
             {
                 string SubDir = System.IO.Path.Combine(DirToZip, String.Format("dir{0:D4}", i));
                 System.IO.Directory.CreateDirectory(SubDir);
 
                 int filecount = _rnd.Next(settings[2]) + settings[3];
-                TC.WriteLine("{0}: Subdir {1}, Creating {2} files.", TestName, i, filecount);
+                if (update != null)
+                    update(1, filecount);
+                tc.WriteLine("{0}: Subdir {1}, Creating {2} files.", TestName, i, filecount);
                 for (int j = 0; j < filecount; j++)
                 {
                     filename = String.Format("file{0:D4}.x", j);
                     TestUtilities.CreateAndFillFile(System.IO.Path.Combine(SubDir, filename),
-                        _rnd.Next(settings[4]) + settings[5]);
+                                                    _rnd.Next(settings[4]) + settings[5]);
                     entriesAdded++;
+                    if (update != null)
+                        update(3, j + 1);
                 }
+                if (update != null)
+                    update(2, i + 1);
             }
+            if (update != null)
+                update(4, entriesAdded);
             return entriesAdded;
         }
 
 
-        
+
 
         internal static string[] GenerateFilesFlat(string Subdir)
         {
@@ -488,10 +508,10 @@ namespace Ionic.Zip.Tests.Utilities
             return FilesToZip;
         }
 
-        
+
         internal static string GetTestBinDir(string startingPoint)
         {
-            var location = startingPoint;   
+            var location = startingPoint;
             for (int i = 0; i < 3; i++)
                 location = System.IO.Path.GetDirectoryName(location);
 
@@ -503,10 +523,10 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal static int ShellExec_NoContext(string program, string args, out string output)
         {
-            return  ShellExec_NoContext(program, args, true, out output);
+            return ShellExec_NoContext(program, args, true, out output);
         }
 
-        
+
         internal static int ShellExec_NoContext(string program, string args, bool waitForExit, out string output)
         {
             System.Diagnostics.Process p = new System.Diagnostics.Process();
@@ -520,11 +540,11 @@ namespace Ionic.Zip.Tests.Utilities
 
             if (waitForExit)
             {
-                
-            output = p.StandardOutput.ReadToEnd();
-            p.WaitForExit();
 
-            return p.ExitCode;
+                output = p.StandardOutput.ReadToEnd();
+                p.WaitForExit();
+
+                return p.ExitCode;
             }
             output = "";
             return 0;
@@ -602,19 +622,20 @@ namespace Ionic.Zip.Tests.Utilities
     {
         TestContext TestContext
         {
-            get; set ;
+            get;
+            set;
         }
     }
 
     public static class Extensions
     {
-        
+
         internal static string ShellExec(this IShellExec o, string program, string args)
         {
             return ShellExec(o, program, args, true);
         }
 
-        
+
         internal static string ShellExec(this IShellExec o, string program, string args, bool waitForExit)
         {
             if (args == null)

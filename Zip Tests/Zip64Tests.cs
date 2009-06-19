@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-18 05:05:07>
+// Time-stamp: <2009-June-18 21:47:03>
 //
 // ------------------------------------------------------------------
 //
@@ -436,7 +436,6 @@ namespace Ionic.Zip.Tests.Zip64
             // Update a ZIP64 archive with a true 64-bit offset.
             // This requires a file size above 4gb, which means the test will run a long, long time. 
             string testBin = TestUtilities.GetTestBinDir(CurrentDir);
-
             string progressMonitorTool = Path.Combine(testBin, "Resources\\UnitTestProgressMonitor.exe");
             string requiredDll = Path.Combine(testBin, "Resources\\Ionic.CopyData.dll");
             
@@ -456,7 +455,7 @@ namespace Ionic.Zip.Tests.Zip64
             _txrx.Send("bars 3");
             System.Threading.Thread.Sleep(120);
             _txrx.Send("status Creating files");
-            _txrx.Send(String.Format("pb 0 max {0}", (numUpdates*2) + 3));
+            _txrx.Send(String.Format("pb 0 max {0}", (numUpdates*2) + 4));
             
             Directory.SetCurrentDirectory(TopLevelDir);
             

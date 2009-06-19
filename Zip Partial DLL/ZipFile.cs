@@ -2322,6 +2322,7 @@ namespace Ionic.Zip
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
             InsureUniqueEntry(ze);
             _entries.Add(ze);
+            AfterAddEntry(ze);
             _contentsChanged = true;
             return ze;
         }
@@ -2545,6 +2546,7 @@ namespace Ionic.Zip
         /// <seealso cref="Ionic.Zip.ZipFile.AddSelectedFiles(String, String)" />
         public void AddFiles(System.Collections.Generic.IEnumerable<String> fileNames, bool preserveDirHierarchy, String directoryPathInArchive)
         {
+            OnAddStarted();
             if (preserveDirHierarchy)
             {
                 foreach (var f in fileNames)
@@ -2562,7 +2564,9 @@ namespace Ionic.Zip
             {
                 foreach (var f in fileNames)
                     this.AddFile(f, directoryPathInArchive);
+
             }
+            OnAddCompleted();
         }
 
 
@@ -2604,8 +2608,10 @@ namespace Ionic.Zip
         /// <seealso cref="Ionic.Zip.ZipFile.AddSelectedFiles(String, String)" />
         public void UpdateFiles(System.Collections.Generic.IEnumerable<String> fileNames, String directoryPathInArchive)
         {
+                OnAddStarted();
             foreach (var f in fileNames)
                 this.UpdateFile(f, directoryPathInArchive);
+                OnAddCompleted();
         }
 
 
@@ -3007,6 +3013,7 @@ namespace Ionic.Zip
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
             InsureUniqueEntry(ze);
             _entries.Add(ze);
+            AfterAddEntry(ze);
             _contentsChanged = true;
             return ze;
         }
@@ -3550,6 +3557,7 @@ namespace Ionic.Zip
             baseDir._zipfile = this;
             InsureUniqueEntry(baseDir);
             _entries.Add(baseDir);
+            AfterAddEntry(baseDir);
             _contentsChanged = true;
             return baseDir;
         }
@@ -3573,6 +3581,9 @@ namespace Ionic.Zip
             if (Verbose) StatusMessageTextWriter.WriteLine("{0} {1}...",
                                                            (action == AddOrUpdateAction.AddOnly) ? "adding" : "Adding or updating", directoryName);
 
+            if (level == 0)
+                OnAddStarted();
+            
             string dirForEntries = rootDirectoryPathInArchive;
             ZipEntry baseDir = null;
 
@@ -3641,6 +3652,9 @@ namespace Ionic.Zip
             }
             //_contentsChanged = true;
 
+            if (level == 0)
+                OnAddCompleted();
+            
             return baseDir;
         }
 

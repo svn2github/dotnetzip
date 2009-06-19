@@ -910,7 +910,7 @@ namespace Ionic.Zip.Tests.Extended
             Directory.CreateDirectory(DirToZip);
 
             int subdirCount = 0;
-            int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "Create_SaveCancellation", DirToZip, out subdirCount);
+            int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "Create_SaveCancellation", DirToZip, null, out subdirCount);
 
             _progressEventCalls = 0;
             _cancelIndex = -1; // don't cancel this Save
@@ -1214,7 +1214,7 @@ namespace Ionic.Zip.Tests.Extended
             Directory.CreateDirectory(DirToZip);
 
             int subdirCount = 0;
-            int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "Create_SaveCancellation", DirToZip, out subdirCount);
+            int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "Create_SaveCancellation", DirToZip, null, out subdirCount);
 
             _cancelIndex = entriesAdded - _rnd.Next(entriesAdded / 2);
             _progressEventCalls = 0;
@@ -1243,7 +1243,7 @@ namespace Ionic.Zip.Tests.Extended
             Directory.CreateDirectory(DirToZip);
 
             int subdirCount = 0;
-            int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "ExtractAll_Cancellation", DirToZip, out subdirCount);
+            int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "ExtractAll_Cancellation", DirToZip, null, out subdirCount);
 
             using (ZipFile zip1 = new ZipFile())
             {
@@ -1275,7 +1275,7 @@ namespace Ionic.Zip.Tests.Extended
             Directory.CreateDirectory(DirToZip);
             int subdirCount = 0;
 
-            int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "ExtractAll_WithPassword", DirToZip, out subdirCount);
+            int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "ExtractAll_WithPassword", DirToZip, null, out subdirCount);
             string password = TestUtilities.GenerateRandomPassword();
             using (ZipFile zip1 = new ZipFile())
             {

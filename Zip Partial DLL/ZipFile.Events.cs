@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-16 08:41:51>
+// Time-stamp: <2009-June-18 22:53:50>
 //
 // ------------------------------------------------------------------
 //
@@ -34,8 +34,6 @@ namespace Ionic.Zip
     IDisposable
     {
 
-        #region Events
-
         private string ArchiveNameForEvent
         {
             get
@@ -44,6 +42,8 @@ namespace Ionic.Zip
             }
         }
 
+
+        #region Save
 
         /// <summary>
         /// An event handler invoked when a Save() starts, before and after each entry has been
@@ -540,10 +540,10 @@ namespace Ionic.Zip
                 }
             }
         }
+        #endregion
 
 
-
-
+        #region Read
         /// <summary>
         /// An event handler invoked before, during, and after the reading of a zip archive.
         /// </summary>
@@ -669,8 +669,10 @@ namespace Ionic.Zip
                 return _lengthOfReadStream;
             }
         }
+        #endregion
 
 
+        #region Extract
         /// <summary>
         /// An event handler invoked before, during, and after extraction of entries 
         /// in the zip archive. 
@@ -902,5 +904,52 @@ namespace Ionic.Zip
         #endregion
 
 
+
+        #region Add
+        /// <summary>
+        /// An event handler invoked before, during, and after Adding entries to a zip archive.
+        /// </summary>
+        ///
+        /// </remarks>
+        public event EventHandler<AddProgressEventArgs> AddProgress;
+
+        private void OnAddStarted()
+        {
+            if (AddProgress != null)
+            {
+                lock (LOCK)
+                {
+                    var e = AddProgressEventArgs.Started(ArchiveNameForEvent);
+                    AddProgress(this, e);
+                }
+            }
+        }
+
+        private void OnAddCompleted()
+        {
+            if (AddProgress != null)
+            {
+                lock (LOCK)
+                {
+                    var e = AddProgressEventArgs.Completed(ArchiveNameForEvent);
+                    AddProgress(this, e);
+                }
+            }
+        }
+
+        internal void AfterAddEntry(ZipEntry entry)
+        {
+            if (AddProgress != null)
+            {
+                lock (LOCK)
+                {
+                    var e = AddProgressEventArgs.AfterEntry(ArchiveNameForEvent, entry, _entries.Count);
+                    AddProgress(this, e);
+                }
+            }
+        }
+
+        #endregion
+            
     }
 }

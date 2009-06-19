@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-11 21:24:18>
+// Time-stamp: <2009-June-18 23:05:42>
 //
 // ------------------------------------------------------------------
 //
@@ -416,6 +416,8 @@ namespace Ionic.Zip
             var filesToAdd = ff.SelectFiles(directoryOnDisk, recurseDirectories);
             if (Verbose) StatusMessageTextWriter.WriteLine("found {0} files...", filesToAdd.Count);
 
+            OnAddStarted();
+            
             foreach (var f in filesToAdd)
             {
                 if (directoryPathInArchive!=null) 
@@ -426,6 +428,8 @@ namespace Ionic.Zip
                 else
                     this.AddFile(f, null);
             }
+
+            OnAddCompleted();
         }
 
 
