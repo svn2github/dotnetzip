@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-19 06:45:02>
+// Time-stamp: <2009-June-19 11:57:46>
 //
 // ------------------------------------------------------------------
 //
@@ -638,6 +638,10 @@ namespace Ionic.Zip.Tests.Basic
                     }
                     break;
                     
+                case ZipProgressEventType.Saving_EntryBytesRead:
+                    Assert.IsTrue(e.BytesTransferred <= e.TotalBytesToTransfer);
+                    break;
+
                 case ZipProgressEventType.Saving_AfterWriteEntry:
                     _txrx.Send("pb 1 step");
                     break;
@@ -752,7 +756,7 @@ namespace Ionic.Zip.Tests.Basic
 
                 int subdirCount = 0;
                 int entries = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "LargeNumberOfFiles", DirToZip, settings[m], progressUpdate, out subdirCount);
-                _numEntriesToAdd = entries;  // used in LNSF_AddProgress
+                _numEntriesToAdd = entries;  // _numEntriesToAdd is used in LNSF_AddProgress
                 
                 _txrx.Send("pb 0 step");
 

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-18 03:40:31>
+// Time-stamp: <2009-June-19 12:28:52>
 //
 // ------------------------------------------------------------------
 //
@@ -866,6 +866,9 @@ namespace Ionic.Zip.Tests.Extended
                     break;
 
                 case ZipProgressEventType.Saving_EntryBytesRead:
+                    Assert.IsTrue(e.BytesTransferred <= e.TotalBytesToTransfer,
+                        "For entry {0}, BytesTransferred is greater than TotalBytesToTransfer: ({1} > {2})",
+                        e.CurrentEntry.FileName, e.BytesTransferred, e.TotalBytesToTransfer);
                     maxBytesXferred = e.BytesTransferred;
                     break;
 
@@ -903,40 +906,70 @@ namespace Ionic.Zip.Tests.Extended
         [TestMethod]
         public void Create_WithEvents()
         {
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Create_WithEvents.zip");
-            string TargetDirectory = Path.Combine(TopLevelDir, "unpack");
-
             string DirToZip = Path.Combine(TopLevelDir, "EventTest");
             Directory.CreateDirectory(DirToZip);
 
+            
+            var randomizerSettings=  new int[]
+                {
+                    6, 4,        // dircount
+                    7, 8,        // filecount
+                    10000, 15000 // filesize
+                };
             int subdirCount = 0;
-            int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "Create_SaveCancellation", DirToZip, null, out subdirCount);
+            int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "Create_WithEvents", DirToZip, randomizerSettings, null, out subdirCount);
+            // int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "Create_SaveCancellation", DirToZip, null, out subdirCount);
 
-            _progressEventCalls = 0;
-            _cancelIndex = -1; // don't cancel this Save
-            using (ZipFile zip1 = new ZipFile())
+            for (int m=0; m < 2; m++)
             {
-                zip1.SaveProgress += SaveProgress;
-                zip1.Comment = "This is the comment on the zip archive.";
-                zip1.AddDirectory(DirToZip, Path.GetFileName(DirToZip));
-                zip1.Save(ZipFileToCreate);
+                TestContext.WriteLine("=======================================================");
+                TestContext.WriteLine("Trial {0}", m);
+                
+                string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Create_WithEvents-{0}.zip", m));
+                string TargetDirectory = Path.Combine(TopLevelDir, "unpack" + m.ToString());
+                
+                _progressEventCalls = 0;
+                _cancelIndex = -1; // don't cancel this Save
+
+                // create a zip file
+                using (ZipFile zip1 = new ZipFile())
+                {
+                    zip1.SaveProgress += SaveProgress;
+                    zip1.Comment = "This is the comment on the zip archive.";
+                    zip1.AddDirectory(DirToZip, Path.GetFileName(DirToZip));
+                    zip1.Save(ZipFileToCreate);
+                }
+
+                if (m>0)
+                {
+                    // update the zip file
+                    using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
+                    {
+                        zip1.SaveProgress += SaveProgress;
+                        zip1.Comment = "This is the comment on the zip archive.";
+                        zip1.AddEntry("ReadThis.txt","", "This is the content for the readme file in the archive.");
+                        zip1.Save();
+                    }
+                    entriesAdded++;
+                }
+
+                int expectedNumberOfProgressCalls = (entriesAdded + subdirCount) * (m+1) + 1;
+                Assert.AreEqual<Int32>(expectedNumberOfProgressCalls, _progressEventCalls, 
+                                       "The number of progress events was unexpected ({0}!={1}).", expectedNumberOfProgressCalls, _progressEventCalls);
+
+                _progressEventCalls = 0;
+                _cancelIndex = -1; // don't cancel this Extract
+                using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+                {
+                    zip2.ExtractProgress += ExtractProgress;
+                    zip2.ExtractAll(TargetDirectory);
+                }
+
+                Assert.AreEqual<Int32>(_progressEventCalls, entriesAdded + subdirCount + 1,
+                                       "The number of Entries added is not equal to the number of entries extracted.");
+
             }
-
-            // why entriesAdded + subdirCount + 1?  
-            Assert.AreEqual<Int32>(_progressEventCalls, entriesAdded + subdirCount + 1,
-                   "The number of Entries added is not equal to the number of entries saved.");
-
-            _progressEventCalls = 0;
-            _cancelIndex = -1; // don't cancel this Extract
-            using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
-            {
-                zip2.ExtractProgress += ExtractProgress;
-                zip2.ExtractAll(TargetDirectory);
-            }
-
-            Assert.AreEqual<Int32>(_progressEventCalls, entriesAdded + subdirCount + 1,
-                   "The number of Entries added is not equal to the number of entries extracted.");
-
+            
         }
 
 
@@ -977,7 +1010,7 @@ namespace Ionic.Zip.Tests.Extended
                                              e.BytesTransferred, e.TotalBytesToTransfer));
                     msg = String.Format("pb 2 value {0}", e.BytesTransferred);
                     _txrx.Send(msg);
-                    
+                    Assert.IsTrue(e.BytesTransferred <= e.TotalBytesToTransfer);
                     if (maxBytesXferred < e.BytesTransferred)
                         maxBytesXferred = e.BytesTransferred;
 

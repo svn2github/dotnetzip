@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-18 18:42:06>
+// Time-stamp: <2009-June-22 12:55:35>
 //
 // ------------------------------------------------------------------
 //
@@ -4013,6 +4013,7 @@ namespace Ionic.Zip
 
             try
             {
+                long fileLength = 0;
                 // get the original stream:
                 if (this._Source == ZipEntrySource.Stream)
                 {
@@ -4020,6 +4021,9 @@ namespace Ionic.Zip
                         throw new ZipException(String.Format("The input stream is null for entry '{0}'.", FileName));
                     this._sourceStream.Position = 0;
                     input = this._sourceStream;
+
+                    if (this._sourceStream.CanSeek)
+                        fileLength = this._sourceStream.Length;
                 }
                 else
                 {
@@ -4030,15 +4034,12 @@ namespace Ionic.Zip
                     // FileShare.Delete is not defined for the Compact Framework
                     fs |= FileShare.Delete;
 #endif
+                    System.IO.FileInfo fi = new System.IO.FileInfo(LocalFileName);
+                    fileLength = fi.Length;
+
                     input = System.IO.File.Open(LocalFileName, FileMode.Open, FileAccess.Read, fs);
                 }
 
-                long fileLength = 0;
-                if (this._Source != ZipEntrySource.Stream)
-                {
-                    System.IO.FileInfo fi = new System.IO.FileInfo(LocalFileName);
-                    fileLength = fi.Length;
-                }
 
                 // wrap a CRC Calculator Stream around the raw input stream. 
                 input1 = new Ionic.Zlib.CrcCalculatorStream(input);
@@ -4181,7 +4182,6 @@ namespace Ionic.Zip
             if (_zipfile._zip64 == Zip64Option.Never && _entryRequiresZip64.Value)
                 throw new ZipException("Compressed or Uncompressed size, or offset exceeds the maximum value. Consider setting the UseZip64WhenSaving property on the ZipFile instance.");
 
-
             _OutputUsesZip64 = new Nullable<bool>(_zipfile._zip64 == Zip64Option.Always || _entryRequiresZip64.Value);
 
             // (i==26) filename length (Int16)
@@ -4194,6 +4194,11 @@ namespace Ionic.Zip
                 _EntryHeader[4] = (byte)(45 & 0x00FF);
                 _EntryHeader[5] = 0x00;
 
+                // workitem 7917
+                // set bit 3 for ZIP64 compatibility with WinZip12
+                _BitField |= 0x0008;
+                _EntryHeader[6] = (byte)(_BitField & 0x00FF);
+                
                 // CompressedSize and UncompressedSize - 0xFF
                 for (int j = 0; j < 8; j++)
                     _EntryHeader[i++] = 0xff;
@@ -4316,8 +4321,8 @@ namespace Ionic.Zip
             {
                 byte[] Descriptor = null;
 
-                // on non-seekable device, Zip64Option.AsNecessary is equivalent to Zip64Option.Always
-                if (_zipfile._zip64 == Zip64Option.Always || _zipfile._zip64 == Zip64Option.AsNecessary)
+                // workitem 7917
+                if (_OutputUsesZip64.Value)
                 {
                     Descriptor = new byte[24];
                     i = 0;
@@ -4693,7 +4698,8 @@ namespace Ionic.Zip
                     // write
                     outstream.Write(bytes, 0, n);
                     Remaining -= n;
-                    OnWriteBlock(input1.TotalBytesSlurped, this._CompressedSize);
+                    //OnWriteBlock(input1.TotalBytesSlurped, this._CompressedSize);
+                    OnWriteBlock(input1.TotalBytesSlurped, this._TotalEntrySize);
                     if (_ioOperationCanceled)
                         break;
                 }
