@@ -39,7 +39,7 @@ namespace Ionic.Zip.Tests.Basic
     /// Summary description for UnitTest1
     /// </summary>
     [TestClass]
-    public class BasicTests : IShellExec
+    public class BasicTests : IExec
     {
         private System.Random _rnd;
 
@@ -703,7 +703,7 @@ namespace Ionic.Zip.Tests.Basic
 
             string progressChannel = "LargeNumberOfSmallFiles";
             // start the progress monitor
-            this.ShellExec(progressMonitorTool, String.Format("-channel {0}", progressChannel), false);
+            this.Exec(progressMonitorTool, String.Format("-channel {0}", progressChannel), false);
 
             System.Threading.Thread.Sleep(1000);
             _txrx = new Ionic.CopyData.Transceiver();
@@ -711,7 +711,6 @@ namespace Ionic.Zip.Tests.Basic
             _txrx.Send("test Large # of Small Files");
             _txrx.Send("bars 2");
             System.Threading.Thread.Sleep(120);
-
             
             int max1=0;
             Action<Int16,Int32> progressUpdate = (x,y) =>

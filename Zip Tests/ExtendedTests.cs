@@ -49,7 +49,7 @@ namespace Ionic.Zip.Tests.Extended
     /// Summary description for ExtendedTests
     /// </summary>
     [TestClass]
-    public class ExtendedTests : IShellExec
+    public class ExtendedTests : IExec
     {
         private System.Random _rnd;
 
@@ -1088,7 +1088,7 @@ namespace Ionic.Zip.Tests.Extended
 
             string progressChannel = "LargeFile_Progress";
             // start the progress monitor
-            this.ShellExec(progressMonitorTool, String.Format("-channel {0}", progressChannel), false);
+            this.Exec(progressMonitorTool, String.Format("-channel {0}", progressChannel), false);
 
             // System.Reflection.Assembly.Load(requiredDll);
 

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-22 12:55:35>
+// Time-stamp: <2009-June-25 12:03:18>
 //
 // ------------------------------------------------------------------
 //
@@ -33,18 +33,19 @@ using RE = System.Text.RegularExpressions;
 namespace Ionic.Zip
 {
     /// <summary>
-    /// An enum that provides the various encryption algorithms supported by this library.
+    /// An enum that provides the various encryption algorithms supported by this
+    /// library.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// PkzipWeak implies the use of Zip 2.0 encryption, which is known to be weak and 
-    /// subvertible. 
+    /// PkzipWeak implies the use of Zip 2.0 encryption, which is known to be weak and
+    /// subvertible.
     /// </para>
     /// <para>
     /// A note on interoperability: Values of PkzipWeak and None are specified in the
     /// PKWare AppNote.txt document, are considered to be "standard".  Zip archives
-    /// produced using these options will be interoperable with many other zip tools
-    /// and libraries, including Windows Explorer.
+    /// produced using these options will be interoperable with many other zip tools and
+    /// libraries, including Windows Explorer.
     /// </para>
     /// <para>
     /// Values of WinZipAes128 and WinZipAes256 are not part of the Zip specification,
@@ -127,16 +128,17 @@ namespace Ionic.Zip
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This enum describes the actions that the library can take when an <c>Extract()</c> or
-    /// <c>ExtractWithPassword()</c> method is called to extract an entry to a filesystem, and the
-    /// extraction would overwrite an existing filesystem file.
+    /// This enum describes the actions that the library can take when an
+    /// <c>Extract()</c> or <c>ExtractWithPassword()</c> method is called to extract an
+    /// entry to a filesystem, and the extraction would overwrite an existing filesystem
+    /// file.
     /// </para>
     /// </remarks>
     public enum ExtractExistingFileAction
     {
         /// <summary>
-        /// Throw an exception when extraction would overwrite an existing file. (For COM clients, 
-        /// this is a 0 (zero).)
+        /// Throw an exception when extraction would overwrite an existing file. (For
+        /// COM clients, this is a 0 (zero).)
         /// </summary>
         Throw,
 
@@ -154,12 +156,12 @@ namespace Ionic.Zip
         DontOverwrite,
 
         /// <summary>
-        /// When extraction would overwrite an existing file, invoke the ExtractProgress event,
-        /// using an event type of <see
-        /// cref="ZipProgressEventType.Extracting_ExtractEntryWouldOverwrite"/>.  In this way, the
-        /// application can decide, just-in-time, whether to overwrite the file. For example, a
-        /// GUI application may wish to pop up a dialog to allow the user to choose.  
-        /// (For COM clients, this is a 3.)
+        /// When extraction would overwrite an existing file, invoke the ExtractProgress
+        /// event, using an event type of <see
+        /// cref="ZipProgressEventType.Extracting_ExtractEntryWouldOverwrite"/>.  In
+        /// this way, the application can decide, just-in-time, whether to overwrite the
+        /// file. For example, a GUI application may wish to pop up a dialog to allow
+        /// the user to choose.  (For COM clients, this is a 3.)
         /// </summary>
         InvokeExtractProgressEvent,
     }
@@ -167,16 +169,16 @@ namespace Ionic.Zip
 
 
     /// <summary>
-    /// Represents a single entry in a ZipFile. Typically, applications
-    /// get a ZipEntry by enumerating the entries within a ZipFile,
-    /// or by adding an entry to a ZipFile.  
+    /// Represents a single entry in a ZipFile. Typically, applications get a ZipEntry
+    /// by enumerating the entries within a ZipFile, or by adding an entry to a ZipFile.
     /// </summary>
     public partial class ZipEntry
     {
         /// <summary>
         /// Default constructor.  
         /// </summary>
-        /// <remarks>Applications should never need to call this directly.  It is exposed to 
+        /// <remarks>
+        /// Applications should never need to call this directly.  It is exposed to
         /// support COM Automation environments.
         /// </remarks>
         public ZipEntry() { }
@@ -189,24 +191,24 @@ namespace Ionic.Zip
         /// 
         /// <remarks>
         /// <para>
-        /// The DotNetZip library sets the LastModified value for an entry, equal to the 
-        /// Last Modified time of the file in the filesystem.  If an entry is added from a stream, 
-        /// in which case no Last Modified attribute is available, the library uses 
-        /// <c>System.DateTime.Now</c> for this value, for the given entry. 
+        /// The DotNetZip library sets the LastModified value for an entry, equal to the
+        /// Last Modified time of the file in the filesystem.  If an entry is added from
+        /// a stream, in which case no Last Modified attribute is available, the library
+        /// uses <c>System.DateTime.Now</c> for this value, for the given entry.
         /// </para>
         ///
         /// <para>
-        /// This property allows the application to retrieve and possibly set the LastModified value
-        /// on an entry, to an arbitrary value.  DateTime values without a DateTimeKind setting are
-        /// assumed to be expressed in Local Time.
+        /// This property allows the application to retrieve and possibly set the
+        /// LastModified value on an entry, to an arbitrary value.  DateTime values
+        /// without a DateTimeKind setting are assumed to be expressed in Local Time.
         /// </para>
         ///
         /// <para>
-        /// Be aware that because of the way the PKZip specification
-        /// describes how times are stored in the zip file, the full precision of the
-        /// <c>System.DateTime</c> datatype is not stored for the last modified time when saving
-        /// zip files.  For more information on how times are formatted, see the PKZip
-        /// specification. 
+        /// Be aware that because of the way the PKZip specification describes how times
+        /// are stored in the zip file, the full precision of the <c>System.DateTime</c>
+        /// datatype is not stored for the last modified time when saving zip files.
+        /// For more information on how times are formatted, see the PKZip
+        /// specification.
         /// </para>
         ///
         /// <para> The actual last modified time of a file can be stored in two ways in the
@@ -225,20 +227,22 @@ namespace Ionic.Zip
         /// time quantities.  </para>
         ///
         /// <para>
-        /// The last modified time of the file created upon a call to <c>ZipEntry.Extract()</c>
-        /// may be adjusted during extraction to compensate for differences in how the .NET Base
-        /// Class Library deals with daylight saving time (DST) versus how the Windows filesystem
-        /// deals with daylight saving time.  Raymond Chen <see
-        /// href="http://blogs.msdn.com/oldnewthing/archive/2003/10/24/55413.aspx">provides some
-        /// good context</see>.
+        /// The last modified time of the file created upon a call to
+        /// <c>ZipEntry.Extract()</c> may be adjusted during extraction to compensate
+        /// for differences in how the .NET Base Class Library deals with daylight
+        /// saving time (DST) versus how the Windows filesystem deals with daylight
+        /// saving time.  Raymond Chen <see
+        /// href="http://blogs.msdn.com/oldnewthing/archive/2003/10/24/55413.aspx">provides
+        /// some good context</see>.
         /// </para>
         ///
         /// <para>
-        /// In a nutshell: Daylight savings time rules change regularly.  In 2007, for example, the
-        /// inception week of DST changed.  In 1977, DST was in place all year round. In 1945,
-        /// likewise.  And so on.  Win32 does not attempt to guess which time zone rules were in
-        /// effect at the time in question.  It will render a time as "standard time" and allow the
-        /// app to change to DST as necessary.  .NET makes a different choice.
+        /// In a nutshell: Daylight savings time rules change regularly.  In 2007, for
+        /// example, the inception week of DST changed.  In 1977, DST was in place all
+        /// year round. In 1945, likewise.  And so on.  Win32 does not attempt to guess
+        /// which time zone rules were in effect at the time in question.  It will
+        /// render a time as "standard time" and allow the app to change to DST as
+        /// necessary.  .NET makes a different choice.
         /// </para>
         ///
         /// <para>
@@ -291,16 +295,6 @@ namespace Ionic.Zip
             }
         }
 
-#if NOTNEEDED
-        /// <summary>
-        /// Size of the buffer used when extracting or saving.
-        /// </summary>
-        public int BufferSize
-        {
-            get;
-            set;
-        }
-#endif
         
         private int BufferSize
         {
@@ -461,11 +455,13 @@ namespace Ionic.Zip
         /// </summary>
         /// <remarks>
         ///
-        /// <para> The <see cref="System.IO.FileAttributes">attributes</see> in NTFS include
+        /// <para>
+        /// The <see cref="System.IO.FileAttributes">attributes</see> in NTFS include
         /// ReadOnly, Archive, Hidden, System, and Indexed.  When adding a ZipEntry to a
         /// ZipFile, these attributes are set implicitly when adding an entry from the
         /// filesystem.  When adding an entry from a stream or string, the Attributes are
-        /// not set.  </para>
+        /// not set.
+        /// </para>
         ///
         /// <para>
         /// When reading a ZipEntry from a ZipFile, the attributes are set according to the data
@@ -503,9 +499,10 @@ namespace Ionic.Zip
             set
             {
                 _ExternalFileAttrs = (int)value;
-                // Since the application is explicitly setting the attributes, overriding
-                // whatever was there, we will turn on the NTFS bits for the platform.
-                _VersionMadeBy = (10 << 8) + 45;
+                // Since the application is explicitly setting the attributes, overwriting
+                // whatever was there, we will explicitly set the Version made by field.  
+                // workitem 7926 - "version made by" OS should be zero for compat with WinZip
+                _VersionMadeBy = (0 << 8) + 45;  // v4.5 of the spec
                 _metadataChanged = true;
             }
         }
@@ -638,7 +635,7 @@ namespace Ionic.Zip
         ///
         /// <para> To avoid this, at the time of calling
         /// <c>ZipFile.AddFileFromStream</c> for each entry, the application can supply
-        /// null (Nothing in VB) as the value of the stream parameter. The application
+        /// Stream.Null as the value of the stream parameter. The application
         /// can then open the stream on a just-in-time basis, setting this property, and
         /// thus insuring, as with the latter example, that only one stream need be
         /// opened at a time while constructing and saving the ZipFile.  </para>
@@ -675,7 +672,7 @@ namespace Ionic.Zip
         ///     if (e.EventType == ZipProgressEventType.Saving_BeforeWriteEntry)
         ///     {
         ///         if (e.CurrentEntry.Source == ZipEntrySource.Stream &amp;&amp;
-        ///               e.CurrentEntry.InputStream == null)
+        ///               e.CurrentEntry.InputStream == Stream.Null)
         ///         {
         ///             System.IO.Stream s = MyStreamOpener(e.CurrentEntry.FileName);
         ///             e.CurrentEntry.InputStream = s;
@@ -708,7 +705,7 @@ namespace Ionic.Zip
         /// Public Shared Sub ProvisionStreams(ByVal sender As Object, ByVal e As SaveProgressEventArgs)
         ///     If (e.EventType = ZipProgressEventType.Saving_BeforeWriteEntry) Then
         ///         If (e.CurrentEntry.Source = ZipEntrySource.Stream) Then
-        ///             If (e.CurrentEntry.InputStream Is Nothing) Then
+        ///             If (e.CurrentEntry.InputStream = Stream.Null) Then
         ///                 Dim s As Stream = MyStreamOpener(e.CurrentEntry.FileName)
         ///                 e.CurrentEntry.InputStream = s
         ///             End If
@@ -1945,7 +1942,8 @@ namespace Ionic.Zip
             ZipEntry entry = new ZipEntry();
 
             // workitem 7071
-            entry._VersionMadeBy = (10 << 8) + 45; // indicates the attributes are NTFS Attributes, and v4.5 of the spec
+            // workitem 7926 - "version made by" OS should be zero for compat with WinZip
+            entry._VersionMadeBy = (0 << 8) + 45; // indicates the attributes are FAT Attributes, and v4.5 of the spec
 
             // workitem 7192 - late bound streams
             if (isStream)
@@ -2806,8 +2804,8 @@ namespace Ionic.Zip
 
 
 #if NETCF
-
-                    if ((_VersionMadeBy & 0xFF00) == 0x0a00)
+                    // workitem 7926 - version made by OS can be zero or 10
+                    if ((_VersionMadeBy & 0xFF00) == 0x0a00 || (_VersionMadeBy & 0xFF00) == 0x0000)
                         NetCfFile.SetAttributes(TargetFile, (uint)_ExternalFileAttrs);
 
 #else
@@ -2815,7 +2813,8 @@ namespace Ionic.Zip
                     // We can only apply attributes if they are relevant to the NTFS OS. 
                     // Must do this LAST because it may involve a ReadOnly bit, which would prevent
                     // us from setting the time, etc. 
-                    if ((_VersionMadeBy & 0xFF00) == 0x0a00)
+                    // workitem 7926 - version made by OS can be zero (FAT) or 10 (NTFS)
+                    if ((_VersionMadeBy & 0xFF00) == 0x0a00 || (_VersionMadeBy & 0xFF00) == 0x0000)
                         System.IO.File.SetAttributes(TargetFile, (FileAttributes)_ExternalFileAttrs);
 
 #endif
@@ -3217,7 +3216,7 @@ namespace Ionic.Zip
 
             // do this again because now we have real data
             _presumeZip64 = _OutputUsesZip64.Value;
-            _Extra = ConsExtraField();
+            _Extra = ConsExtraField(true);
 
             Int16 extraFieldLength = (Int16)((_Extra == null) ? 0 : _Extra.Length);
             bytes[i++] = (byte)(extraFieldLength & 0x00FF);
@@ -3243,7 +3242,6 @@ namespace Ionic.Zip
 
             // external file attrs
             // workitem 7071
-            int fileattrs = _ExternalFileAttrs | ((IsDirectory) ? 0x10 : 0x20);
             bytes[i++] = (byte)(_ExternalFileAttrs & 0x000000FF);
             bytes[i++] = (byte)((_ExternalFileAttrs & 0x0000FF00) >> 8);
             bytes[i++] = (byte)((_ExternalFileAttrs & 0x00FF0000) >> 16);
@@ -3307,7 +3305,7 @@ namespace Ionic.Zip
 #endif
 
 
-        private byte[] ConsExtraField()
+        private byte[] ConsExtraField(bool forCentralDirectory)
         {
             byte[] blockZip64 = null;
             byte[] blockWinZipAes = null;
@@ -3320,7 +3318,9 @@ namespace Ionic.Zip
             if (_zipfile._zip64 != Zip64Option.Never)
             {
                 // add extra field for zip64 here
-                blockZip64 = new byte[4 + 28];
+                // workitem 7924
+                int sz = 4 + (forCentralDirectory ? 28 : 16); 
+                blockZip64 = new byte[sz];
                 int i = 0;
 
                 // HeaderId = dummy data now, maybe set to 0x0001 (ZIP64) later.
@@ -3341,7 +3341,7 @@ namespace Ionic.Zip
                 }
 
                 // DataSize
-                blockZip64[i++] = 0x1c;  // decimal 28 - this is important
+                blockZip64[i++] = (byte)(sz - 4);  // decimal 28 or 16  (workitem 7924)
                 blockZip64[i++] = 0x00;
 
                 // The actual metadata - we may or may not have real values yet...
@@ -3351,51 +3351,57 @@ namespace Ionic.Zip
                 i += 8;
                 // compressed size
                 Array.Copy(BitConverter.GetBytes(_CompressedSize), 0, blockZip64, i, 8);
-                i += 8;
-                // relative offset
-                Array.Copy(BitConverter.GetBytes(_RelativeOffsetOfLocalHeader), 0, blockZip64, i, 8);
-                i += 8;
-                // starting disk number
-                Array.Copy(BitConverter.GetBytes(0), 0, blockZip64, i, 4);
+
+                // workitem 7924 - only include this if the "extra" field is for use in the central directory.
+                // It is unnecessary and not useful for local header; makes WinZip choke.
+                if (forCentralDirectory)
+                {
+                    i += 8;
+                    // relative offset
+                    Array.Copy(BitConverter.GetBytes(_RelativeOffsetOfLocalHeader), 0, blockZip64, i, 8);
+                    i += 8;
+                    // starting disk number
+                    Array.Copy(BitConverter.GetBytes(0), 0, blockZip64, i, 4);
+                }
             }
 
 
-#if AESCRYPTO
-            if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
-            Encryption == EncryptionAlgorithm.WinZipAes256)
-            {
-                blockWinZipAes = new byte[4 + 7];
-                int i = 0;
-                // extra field for WinZip AES 
-                // header id
-                blockWinZipAes[i++] = 0x01;
-                blockWinZipAes[i++] = 0x99;
+            #if AESCRYPTO
+                if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
+                    Encryption == EncryptionAlgorithm.WinZipAes256)
+                {
+                    blockWinZipAes = new byte[4 + 7];
+                    int i = 0;
+                    // extra field for WinZip AES 
+                    // header id
+                    blockWinZipAes[i++] = 0x01;
+                    blockWinZipAes[i++] = 0x99;
 
-                // data size
-                blockWinZipAes[i++] = 0x07;
-                blockWinZipAes[i++] = 0x00;
+                    // data size
+                    blockWinZipAes[i++] = 0x07;
+                    blockWinZipAes[i++] = 0x00;
 
-                // vendor number
-                blockWinZipAes[i++] = 0x01;  // AE-1 - means "Verify CRC"
-                blockWinZipAes[i++] = 0x00;
+                    // vendor number
+                    blockWinZipAes[i++] = 0x01;  // AE-1 - means "Verify CRC"
+                    blockWinZipAes[i++] = 0x00;
 
-                // vendor id "AE"
-                blockWinZipAes[i++] = 0x41;
-                blockWinZipAes[i++] = 0x45;
+                    // vendor id "AE"
+                    blockWinZipAes[i++] = 0x41;
+                    blockWinZipAes[i++] = 0x45;
 
-                // key strength
-                blockWinZipAes[i] = 0xFF;
-                if (_KeyStrengthInBits == 128)
-                    blockWinZipAes[i] = 1;
-                if (_KeyStrengthInBits == 256)
-                    blockWinZipAes[i] = 3;
-                i++;
+                    // key strength
+                    blockWinZipAes[i] = 0xFF;
+                    if (_KeyStrengthInBits == 128)
+                        blockWinZipAes[i] = 1;
+                    if (_KeyStrengthInBits == 256)
+                        blockWinZipAes[i] = 3;
+                    i++;
 
-                // actual compression method
-                blockWinZipAes[i++] = (byte)(_CompressionMethod & 0x00FF);
-                blockWinZipAes[i++] = (byte)(_CompressionMethod & 0xFF00);
-            }
-#endif
+                    // actual compression method
+                    blockWinZipAes[i++] = (byte)(_CompressionMethod & 0x00FF);
+                    blockWinZipAes[i++] = (byte)(_CompressionMethod & 0xFF00);
+                }
+            #endif
 
             if (_ntfsTimesAreSet)
             {
@@ -3515,7 +3521,7 @@ namespace Ionic.Zip
                 s1 = SlashFixed.Substring(3);
             }
             else if ((FileName.Length >= 4)
-             && ((SlashFixed[0] == '/') && (SlashFixed[1] == '/')))
+                     && ((SlashFixed[0] == '/') && (SlashFixed[1] == '/')))
             {
                 int n = SlashFixed.IndexOf('/', 2);
                 //System.Console.WriteLine("input Path '{0}'", FileName);
@@ -3526,7 +3532,7 @@ namespace Ionic.Zip
                 s1 = SlashFixed.Substring(n + 1);
             }
             else if ((FileName.Length >= 3)
-             && ((SlashFixed[0] == '.') && (SlashFixed[1] == '/')))
+                     && ((SlashFixed[0] == '.') && (SlashFixed[1] == '/')))
             {
                 // trim off dot and slash
                 s1 = SlashFixed.Substring(2);
@@ -3682,13 +3688,13 @@ namespace Ionic.Zip
                 else if (WantCompression != null)
                 {
                     _CompressionMethod = (short)(WantCompression(LocalFileName, _FileNameInArchive)
-                         ? 0x08 : 0x00);
+                                                 ? 0x08 : 0x00);
                 }
                 else
                 {
                     // if there is no callback set, we use the default behavior.
                     _CompressionMethod = (short)(DefaultWantCompression()
-                         ? 0x08 : 0x00);
+                                                 ? 0x08 : 0x00);
                     //Console.WriteLine("DefaultWantCompression: {0}", _CompressionMethod);
                 }
             }
@@ -3817,7 +3823,9 @@ namespace Ionic.Zip
             // Perl takes an interesting approach - it always sets bit 3 if ZIP64 in use. 
             // I do the same, and it gives better compatibility with WinZip 12.
 
-            if (!s.CanSeek || _presumeZip64)
+            // workitem 7924 - don't need this for WinZip compat any longer.
+            //if (!s.CanSeek || _presumeZip64)
+            if (!s.CanSeek)
                 _BitField |= 0x0008;
 
             // (i==6)
@@ -3848,17 +3856,17 @@ namespace Ionic.Zip
             bytes[i++] = (byte)(CompressionMethod & 0x00FF);
             bytes[i++] = (byte)((CompressionMethod & 0xFF00) >> 8);
 
-#if AESCRYPTO
-            if (Encryption == EncryptionAlgorithm.WinZipAes128 || Encryption == EncryptionAlgorithm.WinZipAes256)
-            {
-                i -= 2;
-                bytes[i++] = 0x63;
-                bytes[i++] = 0;
-            }
-#endif
+            #if AESCRYPTO
+                if (Encryption == EncryptionAlgorithm.WinZipAes128 || Encryption == EncryptionAlgorithm.WinZipAes256)
+                {
+                    i -= 2;
+                    bytes[i++] = 0x63;
+                    bytes[i++] = 0;
+                }
+            #endif
 
-            // LastMod
-            _TimeBlob = Ionic.Zip.SharedUtilities.DateTimeToPacked(LastModified);
+                // LastMod
+                _TimeBlob = Ionic.Zip.SharedUtilities.DateTimeToPacked(LastModified);
 
             // (i==10) time blob
             bytes[i++] = (byte)(_TimeBlob & 0x000000FF);
@@ -3900,7 +3908,7 @@ namespace Ionic.Zip
             bytes[i++] = (byte)(filenameLength & 0x00FF);
             bytes[i++] = (byte)((filenameLength & 0xFF00) >> 8);
 
-            _Extra = ConsExtraField();
+            _Extra = ConsExtraField(false);
 
             // (i==28) extra field length (short)
             Int16 ExtraFieldLength = (Int16)((_Extra == null) ? 0 : _Extra.Length);
@@ -4019,11 +4027,13 @@ namespace Ionic.Zip
                 {
                     if (this._sourceStream == null)
                         throw new ZipException(String.Format("The input stream is null for entry '{0}'.", FileName));
-                    this._sourceStream.Position = 0;
+                    //this._sourceStream.Position = 0;
                     input = this._sourceStream;
 
-                    if (this._sourceStream.CanSeek)
-                        fileLength = this._sourceStream.Length;
+                    //if (this._sourceStream.CanSeek)
+                    // Try to get the length, no big deal if not available.
+                        try { fileLength = this._sourceStream.Length; }
+                        catch { }
                 }
                 else
                 {
@@ -4194,10 +4204,11 @@ namespace Ionic.Zip
                 _EntryHeader[4] = (byte)(45 & 0x00FF);
                 _EntryHeader[5] = 0x00;
 
-                // workitem 7917
-                // set bit 3 for ZIP64 compatibility with WinZip12
-                _BitField |= 0x0008;
-                _EntryHeader[6] = (byte)(_BitField & 0x00FF);
+                // workitem 7924 - don't need bit 3
+                // // workitem 7917
+                // // set bit 3 for ZIP64 compatibility with WinZip12
+                // _BitField |= 0x0008;
+                // _EntryHeader[6] = (byte)(_BitField & 0x00FF);
                 
                 // CompressedSize and UncompressedSize - 0xFF
                 for (int j = 0; j < 8; j++)
@@ -5045,8 +5056,8 @@ namespace Ionic.Zip
         Filesystem,
 
         /// <summary>
-        /// The entry was instantiated via <see cref="ZipFile.AddFileFromStream"/> or 
-        /// <see cref="ZipFile.AddFileFromString(String,String,String)"/>.
+        /// The entry was instantiated via <see cref="ZipFile.AddEntry(string,string,string)"/> or
+        /// <see cref="ZipFile.AddEntry(string,string,System.IO.Stream)"/> .
         /// </summary>
         Stream,
 
@@ -5100,7 +5111,8 @@ namespace Ionic.Zip
 
             if((int)hFile == -1)
             {
-                throw new ZipException("CreateFileCE Failed");
+                throw new ZipException(String.Format("CreateFileCE Failed ({0})",
+                                                     System.Runtime.InteropServices.Marshal.GetLastWin32Error()));
             }
                         
             SetFileTime(hFile, null, null, 

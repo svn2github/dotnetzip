@@ -21,6 +21,7 @@
 
 
 using System;
+using System.Collections.Generic;
 using Ionic.Zip;
 
 namespace Ionic.Zip.Examples
@@ -34,10 +35,11 @@ namespace Ionic.Zip.Examples
             Console.WriteLine("            Depends on Ionic's DotNetZip library. This is version {0} of the utility.",
                   System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
             Console.WriteLine("usage:\n" +
-                  "  unzip <zipfile> <options>  \n" +
+                  "  unzip [options] <zipfile> [<entryname>...]  \n" +
                   "     unzips all files in the archive.\n" +
-                  "     arguments:\n" +
+                  "     options:\n" +
                   "       -o                overwrite existing files if necessary.\n" +
+                  "       -f                flatten directory structure when extracting.\n" +
                   "       -p <password>     specify password for extraction.\n" +
                   "       -t                test the file for consistency. \n" +
                   "       -q                operate quietly (no verbose messages). \n" +
@@ -48,7 +50,7 @@ namespace Ionic.Zip.Examples
                   "                         files will be extracted properly.\n" +
                   "       -d <directory>    unpack to the specified directory. If none provided, it will\n" +
                   "                         unzip to the current directory.\n" + 
-                  "       <filename>        unzip only the specified filename.\n\n" +
+                  "       <entryname>       unzip only the specified filename.\n\n" +
                   "  unzip -l <zipfile>\n" +
                   "     lists the entries in the zip archive.\n" +
                   "  unzip -t <zipfile> [-p <password>] [-cp <codepage>]\n" +
@@ -74,11 +76,12 @@ namespace Ionic.Zip.Examples
             string zipfile = null;
             string targdir = null;
             string password = null;
-            string entryToExtract = null;
+            List<string> entriesToExtract = new List<String>();
             bool extractToConsole = false;
             ActionDesired action = ActionDesired.Extract;
             ExtractExistingFileAction behaviorForExistingFile = ExtractExistingFileAction.DontOverwrite;
-            bool WantQuiet = false;
+            bool wantQuiet = false;
+            bool wantFlatten = false;
             System.IO.Stream bitbucket = System.IO.Stream.Null;
             System.IO.Stream outstream = null;
 
@@ -106,17 +109,22 @@ namespace Ionic.Zip.Examples
 
                     case "-q":
                         if (action == ActionDesired.List) Usage();
-                        WantQuiet = true;
+                        wantQuiet = true;
                         break;
 
                     case "-o":
                         behaviorForExistingFile = ExtractExistingFileAction.OverwriteSilently;
                         if (action != ActionDesired.Extract) Usage();
                         break;
+                        
+                    case "-f":
+                        wantFlatten = true;
+                        if (action != ActionDesired.Extract) Usage();
+                        break;
 
                     case "-t":
                         action = ActionDesired.Test;
-                        if (entryToExtract != null) Usage();
+                        if (entriesToExtract.Count > 0) Usage();
                         break;
 
                     case "-d":
@@ -138,8 +146,8 @@ namespace Ionic.Zip.Examples
                     case "-l":
                         if (password != null) Usage();
                         if (targdir != null) Usage();
-                        if (WantQuiet) Usage();
-                        if (entryToExtract != null) Usage();
+                        if (wantQuiet) Usage();
+                        if (entriesToExtract.Count > 0) Usage();
                         if (behaviorForExistingFile == ExtractExistingFileAction.OverwriteSilently) Usage();
                         action = ActionDesired.List;
                         break;
@@ -153,8 +161,7 @@ namespace Ionic.Zip.Examples
                         if (zipfile == null)
                             zipfile = args[i];
                         else if (action != ActionDesired.Extract) Usage();
-                        else if (entryToExtract != null) Usage();
-                        else entryToExtract = args[i];                       
+                        else entriesToExtract.Add(args[i]);
                         break;
                 }
 
@@ -178,37 +185,44 @@ namespace Ionic.Zip.Examples
                 using (ZipFile zip = (codePage != 0) ? ZipFile.Read(zipfile, System.Text.Encoding.GetEncoding(codePage)) : ZipFile.Read(zipfile))
                 {
 
-                    if (entryToExtract != null)
+                    if (entriesToExtract.Count > 0)
                     {
-                        // find the entry
-                        if (zip[entryToExtract] == null)
+                        // extract specified entries
+                        foreach (var entryToExtract in entriesToExtract)
                         {
-                            System.Console.WriteLine("  That entry ({0}) does not exist in the zip archive.", entryToExtract);
+                        // find the entry
+                            ZipEntry e= zip[entryToExtract];
+                        if (e == null)
+                        {
+                            System.Console.WriteLine("  entry ({0}) does not exist in the zip archive.", entryToExtract);
                         }
                         else
                         {
-                            if ((password != null) && !(zip[entryToExtract].UsesEncryption))
-                            {
-                                System.Console.WriteLine("  That entry ({0}) does not require a password to extract.", entryToExtract);
-                                password = null;
-                            }
+                            
+//                             if ((password != null) && !(zip[entryToExtract].UsesEncryption))
+//                             {
+//                                 System.Console.WriteLine("  That entry ({0}) does not require a password to extract.", entryToExtract);
+//                                 password = null;
+//                             }
+                            if (wantFlatten) e.FileName = System.IO.Path.GetFileName(e.FileName);
 
                             if (password == null)
                             {
-                                if (zip[entryToExtract].UsesEncryption)
+                                if (e.UsesEncryption)
                                     System.Console.WriteLine("  That entry ({0}) requires a password to extract.", entryToExtract);
                                 else if (extractToConsole)
-                                    zip[entryToExtract].Extract(outstream);
+                                    e.Extract(outstream);
                                 else
-                                    zip[entryToExtract].Extract(targdir, behaviorForExistingFile);
+                                    e.Extract(targdir, behaviorForExistingFile);
                             }
                             else
                             {
                                 if (extractToConsole)
-                                    zip[entryToExtract].ExtractWithPassword(outstream, password);
+                                    e.ExtractWithPassword(outstream, password);
                                 else
-                                    zip[entryToExtract].ExtractWithPassword(targdir, behaviorForExistingFile, password);
+                                    e.ExtractWithPassword(targdir, behaviorForExistingFile, password);
                             }
+                        }
                         }
                     }
                     else
@@ -226,7 +240,7 @@ namespace Ionic.Zip.Examples
                         bool header = true;
                         foreach (ZipEntry e in zip)
                         {
-                            if (!WantQuiet)
+                            if (!wantQuiet)
                             {
                                 if (header)
                                 {
@@ -259,13 +273,18 @@ namespace Ionic.Zip.Examples
                                 {
                                     if (password == null)
                                         System.Console.WriteLine("unzip: {0}: Cannot extract this entry without a password.", e.FileName);
-                                    else if (extractToConsole)
-                                        e.ExtractWithPassword(outstream, password);
                                     else
-                                        e.ExtractWithPassword(targdir, behaviorForExistingFile, password);
+                                    {
+                                        if (wantFlatten) e.FileName = System.IO.Path.GetFileName(e.FileName);
+                                        if (extractToConsole)
+                                            e.ExtractWithPassword(outstream, password);
+                                        else
+                                            e.ExtractWithPassword(targdir, behaviorForExistingFile, password);
+                                    }
                                 }
                                 else
                                 {
+                                    if (wantFlatten) e.FileName = System.IO.Path.GetFileName(e.FileName);
                                     if (extractToConsole)
                                         e.Extract(outstream);
                                     else
@@ -280,7 +299,7 @@ namespace Ionic.Zip.Examples
 
                         } // foreach
 
-                        if (!WantQuiet)
+                        if (!wantQuiet)
                         {
                             System.Console.WriteLine(new System.String('-', 80));
                             System.Console.WriteLine("{1,-22} {2,10}  {3,5}   {4,9}  {5,3} {6,8} {0}",
