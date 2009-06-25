@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-18 18:43:15>
+// Time-stamp: <2009-June-25 15:08:22>
 //
 // ------------------------------------------------------------------
 //
@@ -412,7 +412,9 @@ namespace Ionic.Zip
                     retries++;
                     if (retries > 10)
                         throw new System.IO.IOException(String.Format("Cannot read file {0}, at offset 0x{1:X8} after 10 retries", FileName, offset), ioexc1);
-                    System.Threading.Thread.Sleep(250 + retries * 20);
+                    // max time waited on last retry = 250 + 10*550 = 5.75s
+                    // aggregate time waited after 10 retries: 250 + 55*550 = 30.5s
+                    System.Threading.Thread.Sleep(250 + retries * 550);
                 }
             }
             while (!done);
