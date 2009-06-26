@@ -57,6 +57,57 @@ namespace Ionic.Zip
 
         #region public properties
 
+        /// <summary>
+        /// Indicates whether to perform a full scan of the zipfile when reading it. 
+        /// </summary>
+        ///
+        /// <remarks>
+        ///
+        /// <para> When reading a zip file, if this flag is true (True in VB), the entire
+        /// zip archive will be scanned and searched for entries.  For large archives, this
+        /// can take a very, long time. The much more efficient default behavior is to read
+        /// the zip directory, at the end of the zip file. However, in some cases the
+        /// directory is corrupted and it is desirable to perform a full scan of the zip
+        /// file to determine the contents of the zip file.  </para>
+        ///
+        /// <para>
+        /// If you want to track progress, you can set the ReadProgress event. 
+        /// </para>
+        ///
+        /// <para>
+        /// This flag is effective only when calling Initialize.
+        /// The Initialize method may take a long time to run for large zip files,
+        /// when <c>Fullscan</c> is true. 
+        /// </para>
+        ///
+        /// </remarks>
+        ///
+        /// <example>
+        /// This example shows how to read a zip file using the full scan approach,
+        /// and then save it, thereby producing a corrected zip file. 
+        /// <code lang="C#">
+        /// using (var zip = new ZipFile())
+        /// {
+        ///     zip.Fullscan = true;
+        ///     zip.Initialize(zipFileName);
+        ///     zip.Save(newName);
+        /// }
+        /// </code>
+        ///
+        /// <code lang="VB">
+        /// Using zip As New ZipFile
+        ///     zip.Fullscan = True
+        ///     zip.Initialize(zipFileName)
+        ///     zip.Save(newName)
+        /// End Using
+        /// </code>
+        /// </example>
+        ///
+        public bool Fullscan
+        {
+            get;
+            set;
+        }
 
 
         
