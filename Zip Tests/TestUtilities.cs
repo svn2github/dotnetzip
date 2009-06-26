@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-25 12:08:21>
+// Time-stamp: <2009-June-25 21:48:47>
 //
 // ------------------------------------------------------------------
 //
@@ -117,243 +117,6 @@ namespace Ionic.Zip.Tests.Utilities
         }
 
 
-
-        private static bool _pb2Set;
-        private static bool _pb1Set;
-        private static Ionic.CopyData.Transceiver _txrx;
-        private static int _sizeBase;
-        private static int _sizeRandom;
-        
-        private static void setup_SaveProgress(object sender, SaveProgressEventArgs e)
-        {
-            string msg; 
-            switch (e.EventType)
-            {
-                case ZipProgressEventType.Saving_Started:
-                    _txrx.Send("status saving started...");
-                    _pb1Set = false;
-                    //_txrx.Send(String.Format("pb1 max {0}", e.EntriesTotal));
-                    //_txrx.Send("pb2 max 1");
-                    break;
-
-                case ZipProgressEventType.Saving_BeforeWriteEntry:
-                    _txrx.Send(String.Format("status Compressing {0}", e.CurrentEntry.FileName));
-                    if (!_pb1Set)
-                    {
-                        _txrx.Send(String.Format("pb 1 max {0}", e.EntriesTotal));
-                        _pb1Set = true;
-                    }
-                    _pb2Set = false;
-
-                    if (e.CurrentEntry.Source == ZipEntrySource.Stream &&
-                        e.CurrentEntry.InputStream == Stream.Null)
-                    {
-                        System.IO.Stream s = new RandomTextInputStream(_sizeBase + _rnd.Next(_sizeRandom));
-                        e.CurrentEntry.InputStream = s;
-                    }
-                    
-                    break;
-                    
-                case ZipProgressEventType.Saving_EntryBytesRead:
-                    if (!_pb2Set)
-                    {
-                        _txrx.Send(String.Format("pb 2 max {0}", e.TotalBytesToTransfer));
-                        _pb2Set = true;
-                    }
-                    _txrx.Send(String.Format("status Saving {0} :: [{2}/{3}] ({1:N0}%)",
-                                             e.CurrentEntry.FileName,
-                                             ((double)e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer),
-                                             e.BytesTransferred, e.TotalBytesToTransfer));
-                    msg = String.Format("pb 2 value {0}", e.BytesTransferred);
-                    _txrx.Send(msg);
-                    break;
-                    
-            case ZipProgressEventType.Saving_AfterWriteEntry:
-                _txrx.Send("test Zip64 Test Setup"); // just in case it was missed
-                _txrx.Send("pb 1 step");
-                break;
-                    
-            case ZipProgressEventType.Saving_Completed:
-                _txrx.Send("status Save completed");
-                _pb1Set = false;
-                _pb2Set = false;
-                _txrx.Send("pb 1 max 1");
-                _txrx.Send("pb 1 value 1");
-                break;
-            }
-        }
-
-
-
-        internal static string CreateHugeZipfile()
-        {
-            string HugeZipFile = TestUtilities.GenerateUniquePathname("tmp.zip");
-            string TempDir = TestUtilities.GenerateUniquePathname("Zip64Tests.tmp");
-            string CurrentDir = Directory.GetCurrentDirectory();
-            
-            Directory.CreateDirectory(TempDir);
-            Directory.SetCurrentDirectory(Path.GetDirectoryName(TempDir));
-
-
-            // create a huge ZIP64 archive with a true 64-bit offset.
-            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
-            //string testBin = CurrentDir;
-            string progressMonitorTool = Path.Combine(testBin, "Resources\\UnitTestProgressMonitor.exe");
-            string requiredDll = Path.Combine(testBin, "Resources\\Ionic.CopyData.dll");
-            
-            Assert.IsTrue(File.Exists(progressMonitorTool), "progress monitor tool does not exist ({0})",  progressMonitorTool);
-            Assert.IsTrue(File.Exists(requiredDll), "required DLL does not exist ({0})",  requiredDll);
-
-            string progressChannel = "Zip64_Setup";
-            // start the progress monitor
-            string ignored;
-            Exec_NoContext(progressMonitorTool, String.Format("-channel {0}", progressChannel), false, out ignored);
-
-            // System.Reflection.Assembly.Load(requiredDll);
-
-            System.Threading.Thread.Sleep(1000);
-            _txrx = new Ionic.CopyData.Transceiver();
-            _txrx.Channel = progressChannel;
-            _txrx.Send("test Zip64 Test Setup");
-            _txrx.Send("bars 3");
-            System.Threading.Thread.Sleep(120);
-            _txrx.Send("status Creating files");
-            _txrx.Send(String.Format("pb 0 max {0}", 3));
-            
-            string ZipFileToCreate = Path.Combine(TempDir, "Zip64Data.zip");
-
-            Directory.SetCurrentDirectory(TempDir);
-
-            // create a directory with some files in it, to zip
-            string dirToZip = "dir";
-            Directory.CreateDirectory(dirToZip);
-
-            // create a few files in that directory
-            int numFilesToAdd = _rnd.Next(3) + 6;
-            
-            _sizeBase   = 0x20000000;
-            _sizeRandom = 0x01000000;
-
- #if SKIP_THIS
-     
-     // Rather than create these large files with random content and
-     // then zip them, we'll add entries from streams, and provide the
-     // streams just-in-time.  This means no write for the original
-     // file, nor read during zip saving, which avoids a ton of I/O, and
-     // is faster.
-     
-            _txrx.Send(String.Format("pb 1 max {0}", numFilesToAdd));
-            int baseSize = _rnd.Next(0x1f0000ff) + 80000;
-            bool firstFileDone = false;
-            string fileName = "";
-            string firstBinary = null;
-            string firstText = null;
-            long fileSize = 0;
-            
-            Action<Int64> progressUpdate = (x) =>
-                {
-                    _txrx.Send(String.Format("pb 2 value {0}", x));
-                    _txrx.Send(String.Format("status Creating {0}, [{1}/{2}] ({3:N0}%)", fileName, x, fileSize, ((double)x)/ (0.01 * fileSize) ));
-                };
-
-            // It takes a long time to create a large file. And we need
-            // a bunch of them.  
-            
-            for (int i = 0; i < numFilesToAdd; i++)
-            {
-                int n = _rnd.Next(2);
-                fileName = string.Format("Pippo{0}.{1}", i, (n==0) ? "bin" : "txt" );
-                    if (i != 0)
-                    {
-                        int x = _rnd.Next(6);
-                        if (x != 0)
-                        {
-                            string folderName = string.Format("folder{0}", x);
-                            fileName = Path.Combine(folderName, fileName);
-                            if (!Directory.Exists(Path.Combine(dirToZip, folderName)))
-                                Directory.CreateDirectory(Path.Combine(dirToZip, folderName));
-                        }
-                    }
-                fileName = Path.Combine(dirToZip, fileName);
-                // first file is 2x larger
-                fileSize = (firstFileDone) ? (baseSize + _rnd.Next(0x880000)) : (2*baseSize);
-                _txrx.Send(String.Format("pb 2 max {0}", fileSize));
-                if (n==0) 
-                    TestUtilities.CreateAndFillFileBinary(fileName, fileSize, progressUpdate);
-                else
-                    TestUtilities.CreateAndFillFileText(fileName, fileSize, progressUpdate);
-                firstFileDone = true;
-                _txrx.Send("pb 1 step");
-            }
-#endif
-            
-            _txrx.Send("pb 0 step");
-            
-            // Add links to a few very large files into the same directory.
-            // We do this because creating such large files will take a very very long time.
-
-            _txrx.Send("status Creating links");
-            var namesOfLargeFiles = new String[]
-                {
-                    "c:\\dinoch\\PST\\archive.pst",
-                    "c:\\dinoch\\PST\\archive1.pst", 
-                    "c:\\dinoch\\PST\\Lists.pst",
-                    "c:\\dinoch\\PST\\OldStuff.pst",
-                    "c:\\dinoch\\PST\\Personal1.pst",
-                };
-            
-            string subdir = Path.Combine(dirToZip, "largelinks");
-            Directory.CreateDirectory(subdir);
-            Directory.SetCurrentDirectory(subdir);
-            var w = System.Environment.GetEnvironmentVariable("Windir");
-            Assert.IsTrue(Directory.Exists(w), "%windir% does not exist ({0})", w);
-            var fsutil = Path.Combine(Path.Combine(w, "system32"), "fsutil.exe");
-            Assert.IsTrue(File.Exists(fsutil), "fsutil.exe does not exist ({0})", fsutil);
-            foreach (var f in namesOfLargeFiles)
-            {
-                Assert.IsTrue(File.Exists(f));
-                string cmd = String.Format("hardlink create {0} {1}", Path.GetFileName(f), f);
-                _txrx.Send("status " + cmd);
-                Exec_NoContext(fsutil, cmd, out ignored);
-                cmd = String.Format("hardlink create {0}-Copy1{1} {2}",
-                                    Path.GetFileNameWithoutExtension(f),Path.GetExtension(f), f);
-                Exec_NoContext(fsutil, cmd, out ignored);
-            }
-
-            Directory.SetCurrentDirectory(TempDir); // again
-
-            // pb1 and pb2 will be set in the SaveProgress handler
-            _txrx.Send("pb 0 step");
-            _txrx.Send("status Saving the zip...");
-            _pb1Set= false;
-            using (ZipFile zip = new ZipFile())
-            {
-                zip.SaveProgress += setup_SaveProgress;
-                zip.UpdateDirectory(dirToZip, "");
-                zip.UseZip64WhenSaving = Zip64Option.Always;
-                // use large buffer to speed up save for large files:
-                zip.BufferSize = 1024 * 756;
-                zip.CodecBufferSize = 1024 * 128;
-                for (int i = 0; i < numFilesToAdd; i++)
-                    zip.AddEntry("random"+i+".txt", "", Stream.Null);
-                
-                zip.Save(ZipFileToCreate);
-            }
-
-            _txrx.Send("pb 0 step");
-            System.Threading.Thread.Sleep(120);
-            
-            Directory.Delete(dirToZip, true);
-            _txrx.Send("pb 0 step");
-            System.Threading.Thread.Sleep(120);
-
-            _txrx.Send("stop");
-
-            // restore the cwd:
-            Directory.SetCurrentDirectory(CurrentDir);
-
-            return ZipFileToCreate;
-        }
         
         #endregion
 
@@ -826,6 +589,7 @@ namespace Ionic.Zip.Tests.Utilities
                     StartInfo =
                     {
                         FileName = program,
+                        CreateNoWindow = true,
                         Arguments = args,
                         WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
                         UseShellExecute = false,
@@ -1090,7 +854,7 @@ namespace Ionic.Zip.Tests.Utilities
             Console.WriteLine("There are {0} keys in the table", table.Keys.Count);
             foreach (string s in table.Keys)
             {
-                string x= s.Replace("\n", "¿");
+                string x= s.Replace("\n", "ï¿½");
                 var y = table[s].ToArray();
                 Console.WriteLine("  {0}: {1}", x, String.Join(", ", y));
             }
@@ -1098,11 +862,11 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal void ShowList(string word)
         {
-            string x= word.Replace("\n", "¿");
+            string x= word.Replace("\n", "ï¿½");
             if (table.ContainsKey(word))
             {
                 var y = table[word].ToArray();
-                var z = Array.ConvertAll(y,  x1 => x1.Replace("\n", "¿"));
+                var z = Array.ConvertAll(y,  x1 => x1.Replace("\n", "ï¿½"));
                 Console.WriteLine("  {0}: {1}", x, String.Join(", ", z));
             }
             else

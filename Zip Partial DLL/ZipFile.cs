@@ -57,181 +57,7 @@ namespace Ionic.Zip
 
         #region public properties
 
-            /// <summary>
-            /// Indicates whether to perform a full scan of the zipfile when reading it. 
-            /// </summary>
-            ///
-            /// <remarks>
-            ///
-            /// <para> When reading a zip file, if this flag is true (True in VB), the entire
-            /// zip archive will be scanned and searched for entries.  For large archives, this
-            /// can take a very, long time. The much more efficient default behavior is to read
-            /// the zip directory, at the end of the zip file. However, in some cases the
-            /// directory is corrupted and it is desirable to perform a full scan of the zip
-            /// file to determine the contents of the zip file.  </para>
-            ///
-            /// <para>
-            /// If you want to track progress, you can set the ReadProgress event. 
-            /// </para>
-            ///
-            /// <para>
-            /// This flag is effective only when calling Initialize.
-            /// The Initialize method may take a long time to run for large zip files,
-            /// when <c>Fullscan</c> is true. 
-            /// </para>
-            ///
-            /// </remarks>
-            ///
-            /// <example>
-            /// This example shows how to read a zip file using the full scan approach,
-            /// and then save it, thereby producing a corrected zip file. 
-            /// <code lang="C#">
-            /// using (var zip = new ZipFile())
-            /// {
-            ///     zip.Fullscan = true;
-            ///     zip.Initialize(zipFileName);
-            ///     zip.Save(newName);
-            /// }
-            /// </code>
-            ///
-            /// <code lang="VB">
-            /// Using zip As New ZipFile
-            ///     zip.Fullscan = True
-            ///     zip.Initialize(zipFileName)
-            ///     zip.Save(newName)
-            /// End Using
-            /// </code>
-            /// </example>
-            ///
-            public bool Fullscan
-        {
-            get;
-            set;
-        }
 
-        /// <summary>
-        /// Checks a zip file to see if its directory is consistent.
-        /// </summary>
-        ///
-        /// <remarks>
-        ///
-        /// <para> In cases of data error, the directory within a zip file can get out of
-        ///     synch with the entries in the zip file.  This method checks the given
-        ///     zip file and returns true if this has occurred.  </para>
-        ///
-        /// <para> This method may take a long time to run for large zip files.  </para>
-        ///
-        /// </remarks>
-        ///
-        /// <param name="zipFileName">The filename to of the zip file to check.</param>
-        ///
-        /// <returns>true if the named zip file needs to be fixed.</returns>
-        ///
-        /// <seealso cref="FixZipDirectory(string)"/>
-        /// <seealso cref="CheckZip(string,bool)"/>
-        public static bool CheckZip(string zipFileName)
-        {
-            return CheckZip(zipFileName, false);
-        }
-
-        
-        /// <summary>
-        /// Checks a zip file to see if its directory is consistent, 
-        /// and optionally fixes the directory if necessary. 
-        /// </summary>
-        ///
-        /// <remarks>
-        ///
-        /// <para> In cases of data error, the directory within a zip file can get out of
-        ///     synch with the entries in the zip file.  This method checks the given
-        ///     zip file, and returns true if this has occurred. It also optionally
-        ///     fixes the zipfile, saving the fixed copy in <em>Name</em>_Fixed.zip.</para>
-        ///
-        /// <para> This method may take a long time to run for large zip files.  It will
-        ///     take even longer if the file actually needs to be fixed, and if
-        ///     <c>fixIfNecessary</c> is true.  </para>
-        ///
-        /// </remarks>
-        ///
-        /// <param name="zipFileName">The filename to of the zip file to check.</param>
-        ///
-        /// <param name="fixIfNecessary">If true, the method will fix the zip file if
-        ///     necessary.</param>
-        ///
-        /// <returns>true if the named zip file needs to be fixed.</returns>
-        ///
-        /// <seealso cref="CheckZip(string)"/>
-        /// <seealso cref="FixZipDirectory(string)"/>
-        public static bool CheckZip(string zipFileName, bool fixIfNecessary)
-        {
-            ZipFile zip1 = null;
-            ZipFile zip2 = null;
-            bool needsFixup = false;
-            try 
-            {
-                zip1 = new ZipFile();
-                zip1.Fullscan= true;
-                zip1.Initialize(zipFileName);
-
-                zip2 = new ZipFile(zipFileName);
-
-                foreach (var e1 in zip1)
-                {
-                    foreach (var e2 in zip2)
-                    {
-                        if (e1.FileName == e2.FileName)
-                        {
-                            if (e1._RelativeOffsetOfLocalHeader != e2._RelativeOffsetOfLocalHeader)
-                                needsFixup = true;
-                        }
-                        if (needsFixup) break;
-                    }
-
-                    zip2.Dispose();
-                    zip2= null;
-                    
-                    if (needsFixup && fixIfNecessary)
-                    {
-                        string newFileName = Path.GetFileNameWithoutExtension(zipFileName);
-                        newFileName = String.Format("{0}_fixed.zip", newFileName);
-                        zip1.Save(newFileName);
-                    }
-                }
-            }
-            finally
-            {
-                if (zip1 != null) zip1.Dispose();
-                if (zip2 != null) zip2.Dispose();
-            }
-            return needsFixup;
-        }
-
-        
-        /// <summary>
-        /// Rewrite the directory within a zipfile.
-        /// </summary>
-        /// 
-        /// <remarks>
-        ///
-        /// <para> In cases of data error, the directory in a zip file can get out of
-        ///     synch with the entries in the zip file.  This method returns true if
-        ///     this has occurred.  </para>
-        ///
-        /// <para> This can take a long time for large zip files. </para>
-        ///
-        /// </remarks>
-        ///
-        /// <seealso cref="CheckZip(string)"/>
-        /// <seealso cref="CheckZip(string,bool)"/>
-        public static void FixZipDirectory(string zipFileName)
-        {
-            using (var zip = new ZipFile())
-            {
-                zip.Fullscan = true;
-                zip.Initialize(zipFileName);
-                zip.Save(zipFileName);
-            }
-        }
 
         
         /// <summary>
@@ -3238,9 +3064,9 @@ namespace Ionic.Zip
             sw.Write(stringContent);
             sw.Flush();
 
-            // note: stream leak!  We create this stream and then never Dispose() it.
-            // This shouldn't be a problem though. The MemoryStream will be lazily collected at
-            // some later point, after the zipfile is Saved.
+            // reset to allow reading later
+            ms.Seek(0, SeekOrigin.Begin);
+
             return AddEntry(fileName, directoryPathInArchive, ms);
         }
 
@@ -3789,16 +3615,14 @@ namespace Ionic.Zip
 
                 // validate the number of entries
                 if (_entries.Count >= 0xFFFF && _zip64 == Zip64Option.Never)
-                    throw new ZipException("The number of entries is 0xFFFF or greater. Consider setting the UseZip64WhenSaving property on the ZipFile instance.");
+                    throw new ZipException("The number of entries is 65535 or greater. Consider setting the UseZip64WhenSaving property on the ZipFile instance.");
 
 
                 {
-
                     // write an entry in the zip for each file
                     int n = 0;
                     foreach (ZipEntry e in _entries)
                     {
-
                         OnSaveEntry(n, e, true);
                         e.Write(WriteStream);
                         e._zipfile = this;

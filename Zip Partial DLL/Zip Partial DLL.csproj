@@ -90,6 +90,7 @@
     <Compile Include="ZipDirEntry.cs" />
     <Compile Include="ZipEntry.cs" />
     <Compile Include="Events.cs" />
+    <Compile Include="ZipFile.Check.cs" />
     <Compile Include="ZipFile.cs" />
     <Compile Include="ZipFile.Events.cs" />
     <Compile Include="ZipFile.Selector.cs" />

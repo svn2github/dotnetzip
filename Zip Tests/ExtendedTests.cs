@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-19 12:28:52>
+// Time-stamp: <2009-June-26 00:59:15>
 //
 // ------------------------------------------------------------------
 //
@@ -104,7 +104,7 @@ namespace Ionic.Zip.Tests.Extended
         }
 
 
-        System.Collections.Generic.List<string> _FilesToRemove = new System.Collections.Generic.List<string>();
+        List<string> _FilesToRemove = new List<string>();
 
         // Use TestCleanup to run code after each test has run
         [TestCleanup()]
@@ -384,19 +384,16 @@ namespace Ionic.Zip.Tests.Extended
             string CompressedFile = LargeTextFile + ".COMPRESSED";
 
             byte[] working = new byte[0x2000];
-            int n = -1;
+            int n;
             using (var input = File.OpenRead(LargeTextFile))
             {
                 using (var raw = File.Create(CompressedFile))
                 {
                     using (var compressor = new Ionic.Zlib.GZipStream(raw, Ionic.Zlib.CompressionMode.Compress, Ionic.Zlib.CompressionLevel.BestCompression, true))
                     {
-                        n = -1;
-                        while (n != 0)
+                        while ((n = input.Read(working, 0, working.Length)) > 0)
                         {
-                            if (n > 0)
-                                compressor.Write(working, 0, n);
-                            n = input.Read(working, 0, working.Length);
+                            compressor.Write(working, 0, n);
                         }
                     }
                 }
@@ -404,6 +401,7 @@ namespace Ionic.Zip.Tests.Extended
 
 
             // 5. create the zip file with all those things in it
+            _doubleReadCallbacks = 0;  // will be updated by the ReadTwiceCallback
             using (ZipFile zip = new ZipFile())
             {
                 zip.WillReadTwiceOnInflation = ReadTwiceCallback;
@@ -425,7 +423,8 @@ namespace Ionic.Zip.Tests.Extended
             Assert.IsTrue(ZipFile.IsZipFile(ZipFileToCreate),
                           "The IsZipFile() method returned an unexpected result for an existing zip file.");
 
-            Assert.AreEqual<int>(2, _doubleReadCallbacks);  // 1 for the compressed file, 1 for the small incompressible text file
+            // 1 for the compressed file, 1 for the small incompressible text file
+            Assert.AreEqual<int>(2, _doubleReadCallbacks);
         }
 
 
@@ -629,11 +628,11 @@ namespace Ionic.Zip.Tests.Extended
             string[] Passwords = { null, "Password", TestUtilities.GenerateRandomPassword(), "A" };
 
             Encoding[] encodings = { Encoding.UTF8,
-                                         Encoding.Default,
-                                         Encoding.ASCII,
-                                         Encoding.GetEncoding("Big5"),
-                                         Encoding.GetEncoding("iso-8859-1"),
-                                         Encoding.GetEncoding("Windows-1252"),
+                                     Encoding.Default,
+                                     Encoding.ASCII,
+                                     Encoding.GetEncoding("Big5"),
+                                     Encoding.GetEncoding("iso-8859-1"),
+                                     Encoding.GetEncoding("Windows-1252"),
                 };
 
             string testBin = TestUtilities.GetTestBinDir(CurrentDir);
@@ -649,7 +648,7 @@ namespace Ionic.Zip.Tests.Extended
                     for (int c = 0; c < encodings.Length; c++)
                     {
                         string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Test_AddEntry_String-{0}.{1}.{2}.zip", a, b, c));
-                        Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+                        Assert.IsFalse(File.Exists(ZipFileToCreate), "The zip file '{0}' already exists.", ZipFileToCreate);
 
                         Directory.SetCurrentDirectory(TopLevelDir);
 
@@ -657,6 +656,10 @@ namespace Ionic.Zip.Tests.Extended
                         // use a password.(possibly null)
                         using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
                         {
+                            zip1.Comment= String.Format("Test zip file.\nEncryption({0}) Pw({1}) fileEncoding({2})",
+                                                        EncOptions[a].ToString(),
+                                                        Passwords[b],
+                                                        encodings[c].ToString());
                             zip1.Encryption = EncOptions[a];
                             zip1.Password = Passwords[b];
                             for (int d = 0; d < contentStrings.Length; d++)
@@ -668,47 +671,63 @@ namespace Ionic.Zip.Tests.Extended
                             zip1.Save();
                         }
 
-
                         // Verify the number of files in the zip
                         Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), contentStrings.Length,
                                              "Incorrect number of entries in the zip file.");
 
 
+                            
                         using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
                         {
                             zip2.Password = Passwords[b];
                             for (int d = 0; d < contentStrings.Length; d++)
                             {
-                                string entryName = String.Format("File{0}.txt", d + 1);
-                                zip2[entryName].Password = Passwords[b];  // should not be necessary
-                                using (Stream s = zip2[entryName].OpenReader())
+                                try
                                 {
-                                    using (var sr = new StreamReader(s, encodings[c]))
+                                    string entryName = String.Format("File{0}.txt", d + 1);
+                                    //zip2[entryName].Password = Passwords[b];  // should not be necessary
+                                    using (Stream s = zip2[entryName].OpenReader())
                                     {
-                                        try
+                                        using (var sr = new StreamReader(s, encodings[c]))
                                         {
-                                            Assert.AreNotEqual<StreamReader>(null, sr);
-                                            string retrievedContent = sr.ReadLine();
-                                            if (IsEncodable(contentStrings[d], encodings[c]))
+                                            try
                                             {
-                                                Assert.AreEqual<String>(contentStrings[d], retrievedContent,
-                                                                        "trial {0}.{1}.{2}, file ({3}): the content did not match.", a, b, c, entryName);
-                                                successfulEncodings[d]++;
+                                                Assert.AreNotEqual<StreamReader>(null, sr);
+                                                string retrievedContent = sr.ReadLine();
+                                                if (IsEncodable(contentStrings[d], encodings[c]))
+                                                {
+                                                    Assert.AreEqual<String>(contentStrings[d], retrievedContent,
+                                                                            "encryption({0}) pw({1}) encoding({2}), contentString({3}) file({4}): the content did not match.",
+                                                                            a, b, c, d, entryName);
+                                                    successfulEncodings[d]++;
+                                                }
+                                                else
+                                                {
+                                                    Assert.AreNotEqual<Encoding>(Encoding.UTF8, encodings[c]);
+                                                    Assert.AreNotEqual<String>(contentStrings[d], retrievedContent,
+                                                                               "encryption({0}) pw({1}) encoding({2}), contentString({3}) file({4}): the content should not match, but does.",
+                                                                               a, b, c, d, entryName);
+                                                }
                                             }
-                                            else
+                                            catch (Exception exc1)
                                             {
-                                                Assert.AreNotEqual<Encoding>(Encoding.UTF8, encodings[c]);
-                                                Assert.AreNotEqual<String>(contentStrings[d], retrievedContent,
-                                                                           "trial {0}.{1}.{2}, file ({3}): the content should not match, but does.", a, b, c, entryName);
+                                                TestContext.WriteLine("Exception while reading: a({0}) b({1}) c({2}) d({3})",
+                                                                      a,b,c,d );
+                                                throw new Exception("broken", exc1);
                                             }
-                                        }
-                                        catch (Exception exc1)
-                                        {
-                                            TestContext.WriteLine("Exception: {0}", exc1.Message);
-                                            throw new Exception("broken", exc1);
                                         }
                                     }
+
                                 }
+                                catch (Exception e1)
+                                {
+                                    TestContext.WriteLine("Exception in OpenReader: Encryption({0}) pw({1}) c({2}) d({3})",
+                                                          EncOptions[a].ToString(), Passwords[b], encodings[c].ToString(), d );
+
+                                    throw new Exception("broken", e1);
+                                }
+
+                                    
                             }
                         }
                     }
@@ -1192,7 +1211,7 @@ namespace Ionic.Zip.Tests.Extended
             string ZipFileToCreate = TestUtilities.GenerateUniquePathname("zip");
             _FilesToRemove.Add(ZipFileToCreate);
 
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            Assert.IsFalse(File.Exists(ZipFileToCreate), "The zip file '{0}' already exists.", ZipFileToCreate);
 
             using (ZipFile zip = new ZipFile(ZipFileToCreate))
             {
@@ -1207,7 +1226,7 @@ namespace Ionic.Zip.Tests.Extended
         public void Create_AddDirectory_NoFilesInRoot_WI5893a()
         {
             string ZipFileToCreate = Path.Combine(TopLevelDir, "Create_AddDirectory_NoFilesInRoot_WI5893a.zip");
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            Assert.IsFalse(File.Exists(ZipFileToCreate), "The  zip file '{0}' already exists.", ZipFileToCreate);
 
             int i, j;
             int entries = 0;
@@ -1486,7 +1505,7 @@ namespace Ionic.Zip.Tests.Extended
         public void Extract_ExistingFile()
         {
             string ZipFileToCreate = Path.Combine(TopLevelDir, "Extract_ExistingFile.zip");
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            Assert.IsFalse(File.Exists(ZipFileToCreate), "The zip file '{0}' already exists.", ZipFileToCreate);
 
             string SourceDir = CurrentDir;
             for (int i = 0; i < 3; i++)
@@ -1587,928 +1606,158 @@ namespace Ionic.Zip.Tests.Extended
         }
 
 
-        [TestMethod]
-        public void Selector_SelectFiles()
-        {
-            Directory.SetCurrentDirectory(TopLevelDir);
-
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectFiles.zip");
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-
-            int count1, count2;
-            int entriesAdded = 0;
-            String filename = null;
-
-            string Subdir = Path.Combine(TopLevelDir, "A");
-            Directory.CreateDirectory(Subdir);
-
-            int fileCount = _rnd.Next(33) + 33;
-            for (int j = 0; j < fileCount; j++)
-            {
-                if (_rnd.Next(2) == 0)
-                {
-                    filename = Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
-                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(5000) + 5000);
-                }
-                else
-                {
-                    filename = Path.Combine(Subdir, String.Format("file{0:D3}.bin", j));
-                    TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(5000) + 5000);
-                }
-                entriesAdded++;
-            }
-
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt");
-            var list = ff.SelectFiles(Subdir);
-            TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
-            count1 = 0;
-            foreach (string s in list)
-            {
-                TestContext.WriteLine(Path.GetFileName(s));
-                Assert.IsTrue(s.EndsWith(".txt"));
-                count1++;
-            }
-
-            ff = new Ionic.FileSelector("name = *.bin");
-            list = ff.SelectFiles(Subdir);
-            TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
-            count2 = 0;
-            foreach (string s in list)
-            {
-                TestContext.WriteLine(Path.GetFileName(s));
-                Assert.IsTrue(s.EndsWith(".bin"));
-                count2++;
-            }
-            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
-
-
-            // shorthand
-            ff = new Ionic.FileSelector("*.txt");
-            list = ff.SelectFiles(Subdir);
-            TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
-            count1 = 0;
-            foreach (string s in list)
-            {
-                TestContext.WriteLine(Path.GetFileName(s));
-                Assert.IsTrue(s.EndsWith(".txt"));
-                count1++;
-            }
-
-            ff = new Ionic.FileSelector("*.bin");
-            list = ff.SelectFiles(Subdir);
-            TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
-            count2 = 0;
-            foreach (string s in list)
-            {
-                TestContext.WriteLine(Path.GetFileName(s));
-                Assert.IsTrue(s.EndsWith(".bin"));
-                count2++;
-            }
-            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
-
-
-
-            ff = new Ionic.FileSelector("size > 7500");
-            list = ff.SelectFiles(Subdir);
-            TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
-            count1 = 0;
-            foreach (string s in list)
-            {
-                FileInfo fi = new FileInfo(s);
-                TestContext.WriteLine("{0} size({1})", Path.GetFileName(s), fi.Length);
-                Assert.IsTrue(fi.Length > 7500);
-                count1++;
-            }
-
-            ff = new Ionic.FileSelector("size <= 7500");
-            list = ff.SelectFiles(Subdir);
-            TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
-            count2 = 0;
-            foreach (string s in list)
-            {
-                FileInfo fi = new FileInfo(s);
-                TestContext.WriteLine("{0} size({1})", Path.GetFileName(s), fi.Length);
-                Assert.IsTrue(fi.Length <= 7500);
-                count2++;
-            }
-            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
-
-
-            ff = new Ionic.FileSelector("name = *.bin AND size > 7500");
-            list = ff.SelectFiles(Subdir);
-            TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
-            count1 = 0;
-            foreach (string s in list)
-            {
-                FileInfo fi = new FileInfo(s);
-                TestContext.WriteLine("{0} size({1})", Path.GetFileName(s), fi.Length);
-                bool x = s.EndsWith(".bin") && fi.Length > 7500;
-                Assert.IsTrue(x);
-                count1++;
-            }
-
-            ff = new Ionic.FileSelector("name != *.bin  OR  size <= 7500");
-            list = ff.SelectFiles(Subdir);
-            TestContext.WriteLine("=======================================================");
-            TestContext.WriteLine("Criteria: " + ff.SelectionCriteria);
-            count2 = 0;
-            foreach (string s in list)
-            {
-                FileInfo fi = new FileInfo(s);
-                TestContext.WriteLine("{0} size({1})", Path.GetFileName(s), fi.Length);
-                bool x = !s.EndsWith(".bin") || fi.Length <= 7500;
-                Assert.IsTrue(x);
-                count2++;
-            }
-            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
-        }
-
-
-
 
         [TestMethod]
-        public void Selector_AddSelectedFiles()
+            public void Extended_CheckZip1()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
-
-            string[] ZipFileToCreate = {
-                Path.Combine(TopLevelDir, "Selector_AddSelectedFiles-1.zip"),
-                Path.Combine(TopLevelDir, "Selector_AddSelectedFiles-2.zip")
+            EncryptionAlgorithm[] crypto = { EncryptionAlgorithm.None, 
+                                             EncryptionAlgorithm.PkzipWeak,
+                                             EncryptionAlgorithm.WinZipAes128, 
+                                             EncryptionAlgorithm.WinZipAes256,
             };
 
-            Assert.IsFalse(File.Exists(ZipFileToCreate[0]), "The temporary zip file '{0}' already exists.", ZipFileToCreate[0]);
-            Assert.IsFalse(File.Exists(ZipFileToCreate[1]), "The temporary zip file '{0}' already exists.", ZipFileToCreate[1]);
+            Zip64Option[] z64 = { Zip64Option.Never,
+                                  Zip64Option.AsNecessary, 
+                                  Zip64Option.Always,
+            };
 
-            int count1, count2;
-            int entriesAdded = 0;
-            String filename = null;
 
-            string Subdir = Path.Combine(TopLevelDir, "A");
-            Directory.CreateDirectory(Subdir);
+            string[] dirNames = { "", Path.GetRandomFileName() };
+            
+            //             var rtg = new RandomTextGenerator();
+            //             string textToEncode = rtg.Generate(256);
+            
+            string textToEncode = 
+                "Pay no attention to this: " +
+                "We've read in the regular entry header, the extra field, and any encryption " +
+                "header.  The pointer in the file is now at the start of the filedata, which is " +
+                "potentially compressed and encrypted.  Just ahead in the file, there are " +
+                "_CompressedFileDataSize bytes of data, followed by potentially a non-zero length " +
+                "trailer, consisting of optionally, some encryption stuff (10 byte MAC for AES), " +
+                "and the bit-3 trailer (16 or 24 bytes). ";
+            
+            Directory.SetCurrentDirectory(TopLevelDir);
 
-            int fileCount = _rnd.Next(95) + 95;
-            TestContext.WriteLine("===============================================");
-            TestContext.WriteLine("Creating {0} files.", fileCount);
-            for (int j = 0; j < fileCount; j++)
+            for (int i=0; i < crypto.Length; i++)
             {
-                if (_rnd.Next(2) == 0)
+                for (int j=0; j < z64.Length; j++)
                 {
-                    filename = Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
-                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(5000) + 5000);
+                    for (int k=0; k < dirNames.Length; k++)
+                    {
+                        string zipFile = Path.Combine(TopLevelDir, String.Format("Extended-CheckZip1-{0}.{1}.{2}.zip", i, j, k));
+                        string password = Path.GetRandomFileName();
+
+                        TestContext.WriteLine("=================================");
+                        TestContext.WriteLine("Creating {0}...", Path.GetFileName(zipFile));
+                        TestContext.WriteLine("Encryption:{0}  Zip64:{1} pw={2}", 
+                                              crypto[i].ToString(), z64[j].ToString(), password);
+                        using (var zip = new ZipFile())
+                        {
+                            zip.Comment = String.Format("Encryption={0}  Zip64={1}  pw={2}", 
+                                                        crypto[i].ToString(), z64[j].ToString(), password);
+                            zip.Encryption = crypto[i];
+                            zip.Password = password;
+                            zip.UseZip64WhenSaving = z64[j];
+                            if (!String.IsNullOrEmpty(dirNames[k]))
+                                zip.AddDirectoryByName(dirNames[k]);
+                            zip.AddEntry("File1.txt", dirNames[k], textToEncode);
+                            zip.Save(zipFile);
+                        }
+
+                        TestContext.WriteLine("Checking zip...");
+                        System.Collections.ObjectModel.ReadOnlyCollection<String> msgs;
+
+                        bool result = ZipFile.CheckZip(zipFile, false, out msgs);
+                        TestContext.WriteLine("Messages: ({0})", msgs.Count);
+                        foreach (var m in  msgs) 
+                        {
+                            TestContext.WriteLine("{0}", m);
+                        }
+
+                        Assert.IsTrue(result, "Zip ({0}) does not check OK", zipFile);
+
+                    }
                 }
-                else
-                {
-                    filename = Path.Combine(Subdir, String.Format("file{0:D3}.bin", j));
-                    TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(5000) + 5000);
-                }
-
-                // mark one third of the files as Hidden
-                if (j % 3 == 0)
-                {
-                    File.SetAttributes(filename, FileAttributes.Hidden);
-                }
-
-                // set the last mod time on 1/4th of the files
-                if (j % 4 == 0)
-                {
-                    DateTime x = new DateTime(1998, 4, 29);
-                    File.SetLastWriteTime(filename, x);
-                }
-
-                entriesAdded++;
             }
-
-
-            TestContext.WriteLine("===============================================");
-            TestContext.WriteLine("Selecting files by name.", fileCount);
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("name = *.txt", Subdir);
-                zip1.Save(ZipFileToCreate[0]);
-            }
-            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
-            TestContext.WriteLine("{0} of those files were *.txt", count1);
-
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("name = *.bin", Subdir);
-                zip1.Save(ZipFileToCreate[1]);
-            }
-            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
-            TestContext.WriteLine("{0} of those files were *.bin", count2);
-            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
-
-
-
-            TestContext.WriteLine("===============================================");
-            TestContext.WriteLine("Selecting files by name (shorthand).", fileCount);
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("*.txt", Subdir);
-                zip1.Save(ZipFileToCreate[0]);
-            }
-            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
-            TestContext.WriteLine("{0} of those files were *.txt", count1);
-
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("*.bin", Subdir);
-                zip1.Save(ZipFileToCreate[1]);
-            }
-            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
-            TestContext.WriteLine("{0} of those files were *.bin", count2);
-            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
-
-
-
-            TestContext.WriteLine("===============================================");
-            TestContext.WriteLine("Selecting files by attribute.", fileCount);
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("attributes = H", Subdir);
-                zip1.Save(ZipFileToCreate[0]);
-            }
-            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
-            TestContext.WriteLine("{0} of those files were Hidden", count1);
-            Assert.AreEqual<Int32>((entriesAdded - 1) / 3 + 1, count1);
-
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("attributes != H", Subdir);
-                zip1.Save(ZipFileToCreate[1]);
-            }
-            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
-            TestContext.WriteLine("{0} of those files were NOT Hidden", count2);
-            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
-
-
-            TestContext.WriteLine("===============================================");
-            TestContext.WriteLine("Selecting files by time.", fileCount);
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("mtime < 2007-01-01", Subdir);
-                zip1.Save(ZipFileToCreate[0]);
-            }
-            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
-            TestContext.WriteLine("{0} of those files were from prior to 2007-01-01.", count1);
-            Assert.AreEqual<Int32>((entriesAdded - 1) / 4 + 1, count1);
-
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("mtime > 2007-01-01", Subdir);
-                zip1.Save(ZipFileToCreate[1]);
-            }
-            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
-            TestContext.WriteLine("{0} of those files were from after 2007-01-01.", count2);
-            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
-
-
-
-            TestContext.WriteLine("===============================================");
-            TestContext.WriteLine("Selecting files by size.", fileCount);
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("size <= 7500", Subdir);
-                zip1.Save(ZipFileToCreate[0]);
-            }
-            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
-            TestContext.WriteLine("{0} of those files were less than 7500 bytes in size", count1);
-
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("size > 7500", Subdir);
-                zip1.Save(ZipFileToCreate[1]);
-            }
-            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
-            TestContext.WriteLine("{0} of those files were 7500 bytes or more in size", count2);
-            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
-
-
-
-            TestContext.WriteLine("===============================================");
-            TestContext.WriteLine("Selecting files by name and size.", fileCount);
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("name = *.bin AND size > 7500", Subdir);
-                zip1.Save(ZipFileToCreate[0]);
-            }
-            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
-            TestContext.WriteLine("{0} of those files were in the first set.", count1);
-
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("name != *.bin  OR  size <= 7500", Subdir);
-                zip1.Save(ZipFileToCreate[1]);
-            }
-            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
-            TestContext.WriteLine("{0} of those files were in the second set.", count2);
-            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
-
-
-            TestContext.WriteLine("===============================================");
-            TestContext.WriteLine("Selecting files by name, size and attributes.", fileCount);
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("name = *.bin AND size > 7500 and attributes = H", Subdir);
-                zip1.Save(ZipFileToCreate[0]);
-            }
-            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
-            TestContext.WriteLine("{0} of those files were in the first set.", count1);
-
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("name != *.bin  OR  size <= 7500 or attributes != H", Subdir);
-                zip1.Save(ZipFileToCreate[1]);
-            }
-            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
-            TestContext.WriteLine("{0} of those files were in the second set.", count2);
-            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
-
-
-            TestContext.WriteLine("===============================================");
-            TestContext.WriteLine("Selecting files by name, size, time and attributes.", fileCount);
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("name = *.bin AND size > 7500 and mtime < 2007-01-01 and attributes = H", Subdir);
-                zip1.Save(ZipFileToCreate[0]);
-            }
-            count1 = TestUtilities.CountEntries(ZipFileToCreate[0]);
-            TestContext.WriteLine("{0} of those files were in the first set.", count1);
-
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddSelectedFiles("name != *.bin  OR  size <= 7500 or mtime > 2007-01-01 or attributes != H", Subdir);
-                zip1.Save(ZipFileToCreate[1]);
-            }
-            count2 = TestUtilities.CountEntries(ZipFileToCreate[1]);
-            TestContext.WriteLine("{0} of those files were in the second set.", count2);
-            Assert.AreEqual<Int32>(entriesAdded, count1 + count2);
-
         }
-
-
-
+        
 
         [TestMethod]
-        public void Selector_SelectEntries()
+            public void Extended_CheckZip2()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
-
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectEntries.zip");
-
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-
-            //int count1, count2;
-            int entriesAdded = 0;
-            String filename = null;
-
-            string Subdir = Path.Combine(TopLevelDir, "A");
-            Directory.CreateDirectory(Subdir);
-
-            int fileCount = _rnd.Next(33) + 33;
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Files being added to the zip:");
-            for (int j = 0; j < fileCount; j++)
-            {
-                if (_rnd.Next(2) == 0)
-                {
-                    filename = Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
-                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(5000) + 5000);
-                }
-                else
-                {
-                    filename = Path.Combine(Subdir, String.Format("file{0:D3}.bin", j));
-                    TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(5000) + 5000);
-                }
-                TestContext.WriteLine(Path.GetFileName(filename));
-                entriesAdded++;
-            }
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Creating zip...");
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddDirectory(Subdir, "");
-                zip1.Save(ZipFileToCreate);
-            }
-            Assert.AreEqual<Int32>(entriesAdded, TestUtilities.CountEntries(ZipFileToCreate));
-
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Reading zip...");
-            using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
-            {
-                var selected1 = zip1.SelectEntries("name = *.txt");
-                var selected2 = zip1.SelectEntries("name = *.bin");
-                TestContext.WriteLine("Text files:");
-                foreach (ZipEntry e in selected1)
-                {
-                    TestContext.WriteLine(e.FileName);
-                }
-                Assert.AreEqual<Int32>(entriesAdded, selected1.Count + selected2.Count);
-            }
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Reading zip, using shorthand filters...");
-            using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
-            {
-                var selected1 = zip1.SelectEntries("*.txt");
-                var selected2 = zip1.SelectEntries("*.bin");
-                TestContext.WriteLine("Text files:");
-                foreach (ZipEntry e in selected1)
-                {
-                    TestContext.WriteLine(e.FileName);
-                }
-                Assert.AreEqual<Int32>(entriesAdded, selected1.Count + selected2.Count);
-            }
-
-        }
-
-
-        [TestMethod]
-        public void Selector_SelectEntries_Spaces()
-        {
-            Directory.SetCurrentDirectory(TopLevelDir);
-
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectEntries_Spaces.zip");
-
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-
-            //int count1, count2;
-            int entriesAdded = 0;
-            String filename = null;
-
-            string Subdir = Path.Combine(TopLevelDir, "A");
-            Directory.CreateDirectory(Subdir);
-
-            int fileCount = _rnd.Next(44) + 44;
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Files being added to the zip:");
-            for (int j = 0; j < fileCount; j++)
-            {
-                string space = (_rnd.Next(2) == 0) ? " " : "";
-                if (_rnd.Next(2) == 0)
-                {
-                    filename = Path.Combine(Subdir, String.Format("file{1}{0:D3}.txt", j, space));
-                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(5000) + 5000);
-                }
-                else
-                {
-                    filename = Path.Combine(Subdir, String.Format("file{1}{0:D3}.bin", j, space));
-                    TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(5000) + 5000);
-                }
-                TestContext.WriteLine(Path.GetFileName(filename));
-                entriesAdded++;
-            }
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Creating zip...");
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddDirectory(Subdir, "");
-                zip1.Save(ZipFileToCreate);
-            }
-            Assert.AreEqual<Int32>(entriesAdded, TestUtilities.CountEntries(ZipFileToCreate));
-
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Reading zip...");
-            using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
-            {
-                var selected1 = zip1.SelectEntries("name = *.txt");
-                var selected2 = zip1.SelectEntries("name = *.bin");
-                TestContext.WriteLine("Text files:");
-                foreach (ZipEntry e in selected1)
-                {
-                    TestContext.WriteLine(e.FileName);
-                }
-                Assert.AreEqual<Int32>(entriesAdded, selected1.Count + selected2.Count);
-            }
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Reading zip, using name patterns that contain spaces...");
-            string[] selectionStrings = { "name = '* *.txt'", 
-                                           "name = '* *.bin'", 
-                                           "name = *.txt and name != '* *.txt'",
-                                           "name = *.bin and name != '* *.bin'",
-                                       };
-            int count = 0;
-            using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
-            {
-                foreach (string selectionCriteria in selectionStrings)
-                {
-                    var selected1 = zip1.SelectEntries(selectionCriteria);
-                    count += selected1.Count;
-                    TestContext.WriteLine("  For criteria ({0}), found {1} files.", selectionCriteria, selected1.Count);
-                }
-            }
-            Assert.AreEqual<Int32>(entriesAdded, count);
-
-        }
-
-        [TestMethod]
-        public void Selector_RemoveSelectedEntries_Spaces()
-        {
-            Directory.SetCurrentDirectory(TopLevelDir);
-
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Selector_RemoveSelectedEntries_Spaces.zip");
-
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-
-            //int count1, count2;
-            int entriesAdded = 0;
-            String filename = null;
-
-            string Subdir = Path.Combine(TopLevelDir, "A");
-            Directory.CreateDirectory(Subdir);
-
-            int fileCount = _rnd.Next(44) + 44;
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Files being added to the zip:");
-            for (int j = 0; j < fileCount; j++)
-            {
-                string space = (_rnd.Next(2) == 0) ? " " : "";
-                if (_rnd.Next(2) == 0)
-                {
-                    filename = Path.Combine(Subdir, String.Format("file{1}{0:D3}.txt", j, space));
-                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(5000) + 5000);
-                }
-                else
-                {
-                    filename = Path.Combine(Subdir, String.Format("file{1}{0:D3}.bin", j, space));
-                    TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(5000) + 5000);
-                }
-                TestContext.WriteLine(Path.GetFileName(filename));
-                entriesAdded++;
-            }
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Creating zip...");
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddDirectory(Subdir, "");
-                zip1.Save(ZipFileToCreate);
-            }
-            Assert.AreEqual<Int32>(entriesAdded, TestUtilities.CountEntries(ZipFileToCreate));
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Reading zip, using name patterns that contain spaces...");
-            string[] selectionStrings = { "name = '* *.txt'", 
-                                           "name = '* *.bin'", 
-                                           "name = *.txt and name != '* *.txt'",
-                                           "name = *.bin and name != '* *.bin'",
-                                       };
-            foreach (string selectionCriteria in selectionStrings)
-            {
-                using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
-                {
-                    var selected1 = zip1.SelectEntries(selectionCriteria);
-                    zip1.RemoveEntries(selected1);
-                    TestContext.WriteLine("for pattern {0}, Removed {1} entries", selectionCriteria, selected1.Count);
-                    zip1.Save();
-                }
-
-            }
-
-            Assert.AreEqual<Int32>(0, TestUtilities.CountEntries(ZipFileToCreate));
-        }
-
-
-        [TestMethod]
-        public void Selector_RemoveSelectedEntries2()
-        {
-            Directory.SetCurrentDirectory(TopLevelDir);
-
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Selector_RemoveSelectedEntries2.zip");
-
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-
-            //int count1, count2;
-            int entriesAdded = 0;
-            String filename = null;
-
-            string Subdir = Path.Combine(TopLevelDir, "A");
-            Directory.CreateDirectory(Subdir);
-
-            int fileCount = _rnd.Next(44) + 44;
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Files being added to the zip:");
-            for (int j = 0; j < fileCount; j++)
-            {
-                string space = (_rnd.Next(2) == 0) ? " " : "";
-                if (_rnd.Next(2) == 0)
-                {
-                    filename = Path.Combine(Subdir, String.Format("file{1}{0:D3}.txt", j, space));
-                    TestUtilities.CreateAndFillFileText(filename, _rnd.Next(5000) + 5000);
-                }
-                else
-                {
-                    filename = Path.Combine(Subdir, String.Format("file{1}{0:D3}.bin", j, space));
-                    TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(5000) + 5000);
-                }
-                TestContext.WriteLine(Path.GetFileName(filename));
-                entriesAdded++;
-            }
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Creating zip...");
-            using (ZipFile zip1 = new ZipFile())
-            {
-                zip1.AddDirectory(Subdir, "");
-                zip1.Save(ZipFileToCreate);
-            }
-            Assert.AreEqual<Int32>(entriesAdded, TestUtilities.CountEntries(ZipFileToCreate));
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Reading zip, using name patterns that contain spaces...");
-            string[] selectionStrings = { "name = '* *.txt'", 
-                                           "name = '* *.bin'", 
-                                           "name = *.txt and name != '* *.txt'",
-                                           "name = *.bin and name != '* *.bin'",
-                                       };
-            foreach (string selectionCriteria in selectionStrings)
-            {
-                using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
-                {
-                    var selected1 = zip1.SelectEntries(selectionCriteria);
-                    ZipEntry[] entries = new ZipEntry[selected1.Count];
-                    selected1.CopyTo(entries, 0);
-                    string[] names = Array.ConvertAll(entries, x => x.FileName);
-                    zip1.RemoveEntries(names);
-                    TestContext.WriteLine("for pattern {0}, Removed {1} entries", selectionCriteria, selected1.Count);
-                    zip1.Save();
-                }
-
-            }
-
-            Assert.AreEqual<Int32>(0, TestUtilities.CountEntries(ZipFileToCreate));
-        }
-
-
-
-        [TestMethod]
-        public void Selector_SelectEntries_Subdirs()
-        {
-            Directory.SetCurrentDirectory(TopLevelDir);
-
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectFiles_Subdirs.zip");
-
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-
-            int count1, count2;
-
-            string Fodder = Path.Combine(TopLevelDir, "fodder");
-            Directory.CreateDirectory(Fodder);
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Creating files...");
-            int entries = 0;
-            int i = 0;
-            int subdirCount = _rnd.Next(17) + 9;
-            //int subdirCount = _rnd.Next(3) + 2;
-            var FileCount = new Dictionary<string, int>();
-
-            var checksums = new Dictionary<string, string>();
-            // I don't actually verify the checksums in this method...
-
-
-            for (i = 0; i < subdirCount; i++)
-            {
-                string SubdirShort = new System.String(new char[] { (char)(i + 65) });
-                string Subdir = Path.Combine(Fodder, SubdirShort);
-                Directory.CreateDirectory(Subdir);
-
-                int filecount = _rnd.Next(8) + 8;
-                //int filecount = _rnd.Next(2) + 2;
-                FileCount[SubdirShort] = filecount;
-                for (int j = 0; j < filecount; j++)
-                {
-                    string filename = String.Format("file{0:D4}.x", j);
-                    string fqFilename = Path.Combine(Subdir, filename);
-                    TestUtilities.CreateAndFillFile(fqFilename, _rnd.Next(1000) + 1000);
-
-                    var chk = TestUtilities.ComputeChecksum(fqFilename);
-                    var s = TestUtilities.CheckSumToString(chk);
-                    var t1 = Path.GetFileName(Fodder);
-                    var t2 = Path.Combine(t1, SubdirShort);
-                    var key = Path.Combine(t2, filename);
-                    key = TestUtilities.TrimVolumeAndSwapSlashes(key);
-                    TestContext.WriteLine("chk[{0}]= {1}", key, s);
-                    checksums.Add(key, s);
-                    entries++;
-                }
-            }
+            EncryptionAlgorithm[] crypto = { EncryptionAlgorithm.None, 
+                                             EncryptionAlgorithm.PkzipWeak,
+                                             EncryptionAlgorithm.WinZipAes128, 
+                                             EncryptionAlgorithm.WinZipAes256,
+            };
+
+            Zip64Option[] z64 = { Zip64Option.Never,
+                                  Zip64Option.AsNecessary, 
+                                  Zip64Option.Always,
+            };
+
+            //             var rtg = new RandomTextGenerator();
+            //             string textToEncode = rtg.Generate(256);
+            
+            string textToEncode = 
+                "Pay no attention to this: " +
+                "We've read in the regular entry header, the extra field, and any encryption " +
+                "header.  The pointer in the file is now at the start of the filedata, which is " +
+                "potentially compressed and encrypted.  Just ahead in the file, there are " +
+                "_CompressedFileDataSize bytes of data, followed by potentially a non-zero length " +
+                "trailer, consisting of optionally, some encryption stuff (10 byte MAC for AES), " +
+                "and the bit-3 trailer (16 or 24 bytes). ";
+
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+            string fileToZip = Path.Combine(testBin, "Ionic.Zip.dll");
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Creating zip ({0} entries in {1} subdirs)...", entries, subdirCount);
-            // add all the subdirectories into a new zip
-            using (ZipFile zip1 = new ZipFile())
+            for (int i=0; i < crypto.Length; i++)
             {
-                // add all of those subdirectories (A, B, C...) into the root in the zip archive
-                zip1.AddDirectory(Fodder, "");
-                zip1.Save(ZipFileToCreate);
-            }
-            Assert.AreEqual<Int32>(entries, TestUtilities.CountEntries(ZipFileToCreate));
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Selecting entries by directory...");
-            count1 = 0;
-            using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
-            {
-                for (i = 0; i < subdirCount; i++)
+                for (int j=0; j < z64.Length; j++)
                 {
-                    string dirInArchive = new System.String(new char[] { (char)(i + 65) });
-                    var selected1 = zip1.SelectEntries("*.*", dirInArchive);
-                    count1 += selected1.Count;
-                    TestContext.WriteLine("--------------\nfiles in dir {0} ({1}):",
-                      dirInArchive, selected1.Count);
-                    foreach (ZipEntry e in selected1)
-                        TestContext.WriteLine(e.FileName);
+                    string zipFile = Path.Combine(TopLevelDir, String.Format("Extended-CheckZip2-{0}.{1}.zip", i, j));
+                    string password = Path.GetRandomFileName();
+
+                    TestContext.WriteLine("=================================");
+                    TestContext.WriteLine("Creating {0}...", Path.GetFileName(zipFile));
+                    TestContext.WriteLine("Encryption:{0}  Zip64:{1} pw={2}", 
+                                          crypto[i].ToString(), z64[j].ToString(), password);
+
+                    string dir = Path.GetRandomFileName();
+                    using (var zip = new ZipFile())
+                    {
+                        zip.Comment = String.Format("Encryption={0}  Zip64={1}  pw={2}", 
+                                                    crypto[i].ToString(), z64[j].ToString(), password);
+                        zip.Encryption = crypto[i];
+                        zip.Password = password;
+                        zip.UseZip64WhenSaving = z64[j];
+                        int N = _rnd.Next(14)+8;
+                        for (int k=0; k < N; k++)
+                            zip.AddDirectoryByName(Path.GetRandomFileName());
+                        
+                        zip.AddEntry("File1.txt", "", textToEncode);
+                        zip.AddFile(fileToZip, Path.GetRandomFileName());
+                        zip.Save(zipFile);
+                    }
+
+                    TestContext.WriteLine("Checking zip...");
+                    System.Collections.ObjectModel.ReadOnlyCollection<String> msgs;
+
+                    bool result = ZipFile.CheckZip(zipFile, false, out msgs);
+                    TestContext.WriteLine("Messages: ({0})", msgs.Count);
+                    foreach (var m in  msgs) 
+                    {
+                        TestContext.WriteLine("{0}", m);
+                    }
+
+                    Assert.IsTrue(result, "Zip ({0}) does not check OK", zipFile);
+
                 }
-                Assert.AreEqual<Int32>(entries, count1);
-            }
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Selecting entries by directory and size...");
-            count1 = 0;
-            count2 = 0;
-            using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
-            {
-                for (i = 0; i < subdirCount; i++)
-                {
-                    string dirInArchive = new System.String(new char[] { (char)(i + 65) });
-                    var selected1 = zip1.SelectEntries("size > 1500", dirInArchive);
-                    count1 += selected1.Count;
-                    TestContext.WriteLine("--------------\nfiles in dir {0} ({1}):",
-                      dirInArchive, selected1.Count);
-                    foreach (ZipEntry e in selected1)
-                        TestContext.WriteLine(e.FileName);
-                }
-
-                var selected2 = zip1.SelectEntries("size <= 1500");
-                count2 = selected2.Count;
-                Assert.AreEqual<Int32>(entries, count1 + count2 - subdirCount);
-            }
-
-        }
-
-
-
-        [TestMethod]
-        public void Selector_SelectEntries_Fullpath()
-        {
-            Directory.SetCurrentDirectory(TopLevelDir);
-
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectFiles_Fullpath.zip");
-
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-
-            int count1, count2;
-
-            string Fodder = Path.Combine(TopLevelDir, "fodder");
-            Directory.CreateDirectory(Fodder);
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Creating files...");
-            int entries = 0;
-            int i = 0;
-            int subdirCount = _rnd.Next(17) + 9;
-            //int subdirCount = _rnd.Next(3) + 2;
-            var FileCount = new Dictionary<string, int>();
-
-            var checksums = new Dictionary<string, string>();
-            // I don't actually verify the checksums in this method...
-
-
-            for (i = 0; i < subdirCount; i++)
-            {
-                string SubdirShort = new System.String(new char[] { (char)(i + 65) });
-                string Subdir = Path.Combine(Fodder, SubdirShort);
-                Directory.CreateDirectory(Subdir);
-
-                int filecount = _rnd.Next(8) + 8;
-                //int filecount = _rnd.Next(2) + 2;
-                FileCount[SubdirShort] = filecount;
-                for (int j = 0; j < filecount; j++)
-                {
-                    string filename = String.Format("file{0:D4}.x", j);
-                    string fqFilename = Path.Combine(Subdir, filename);
-                    TestUtilities.CreateAndFillFile(fqFilename, _rnd.Next(1000) + 1000);
-
-                    var chk = TestUtilities.ComputeChecksum(fqFilename);
-                    var s = TestUtilities.CheckSumToString(chk);
-                    var t1 = Path.GetFileName(Fodder);
-                    var t2 = Path.Combine(t1, SubdirShort);
-                    var key = Path.Combine(t2, filename);
-                    key = TestUtilities.TrimVolumeAndSwapSlashes(key);
-                    TestContext.WriteLine("chk[{0}]= {1}", key, s);
-                    checksums.Add(key, s);
-                    entries++;
-                }
-            }
-
-            Directory.SetCurrentDirectory(TopLevelDir);
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Creating zip ({0} entries in {1} subdirs)...", entries, subdirCount);
-            // add all the subdirectories into a new zip
-            using (ZipFile zip1 = new ZipFile())
-            {
-                // add all of those subdirectories (A, B, C...) into the root in the zip archive
-                zip1.AddDirectory(Fodder, "");
-                zip1.Save(ZipFileToCreate);
-            }
-            Assert.AreEqual<Int32>(entries, TestUtilities.CountEntries(ZipFileToCreate));
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Selecting entries by full path...");
-            count1 = 0;
-            using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
-            {
-                for (i = 0; i < subdirCount; i++)
-                {
-                    string dirInArchive = new System.String(new char[] { (char)(i + 65) });
-                    var selected1 = zip1.SelectEntries(Path.Combine(dirInArchive, "*.*"));
-                    count1 += selected1.Count;
-                    TestContext.WriteLine("--------------\nfiles in dir {0} ({1}):",
-                      dirInArchive, selected1.Count);
-                    foreach (ZipEntry e in selected1)
-                        TestContext.WriteLine(e.FileName);
-                }
-                Assert.AreEqual<Int32>(entries, count1);
-            }
-
-
-            TestContext.WriteLine("====================================================");
-            TestContext.WriteLine("Selecting entries by directory and size...");
-            count1 = 0;
-            count2 = 0;
-            using (ZipFile zip1 = ZipFile.Read(ZipFileToCreate))
-            {
-                for (i = 0; i < subdirCount; i++)
-                {
-                    string dirInArchive = new System.String(new char[] { (char)(i + 65) });
-                    string pathCriterion = String.Format("name = {0}",
-                             Path.Combine(dirInArchive, "*.*"));
-                    string combinedCriterion = String.Format("size > 1500  AND {0}", pathCriterion);
-
-                    var selected1 = zip1.SelectEntries(combinedCriterion, dirInArchive);
-                    count1 += selected1.Count;
-                    TestContext.WriteLine("--------------\nfiles in ({0}) ({1} entries):",
-                      combinedCriterion,
-                      selected1.Count);
-                    foreach (ZipEntry e in selected1)
-                        TestContext.WriteLine(e.FileName);
-                }
-
-                var selected2 = zip1.SelectEntries("size <= 1500");
-                count2 = selected2.Count;
-                Assert.AreEqual<Int32>(entries, count1 + count2 - subdirCount);
-            }
-
-        }
-
-
-        [TestMethod]
-        public void Selector_SelectFiles_GoodSyntax01()
-        {
-            string[] criteria = {
-                                    "name = *.txt  OR (size > 7800)",
-                                    "name = *.harvey  OR  (size > 7800  and attributes = H)",
-                                    "(name = *.harvey)  OR  (size > 7800  and attributes = H)",
-                                    "(name = *.xls)  and (name != *.xls)  OR  (size > 7800  and attributes = H)",
-                                    "(name = '*.xls')",
-                                };
-
-            foreach (string s in criteria)
-            {
-                var ff = new Ionic.FileSelector(s);
             }
         }
+        
 
 
     }
