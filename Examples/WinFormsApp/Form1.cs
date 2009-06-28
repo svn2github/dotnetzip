@@ -996,7 +996,7 @@ namespace Ionic.Zip.WinFormsExample
             {
                 this.listView1.Clear();
                 this.listView1.EndUpdate();
-                MessageBox.Show(String.Format("There was a problem opening that file! [file={0}, problem={1}",
+                MessageBox.Show(String.Format("There was a problem opening that file! [file={0}, problem={1}]",
                     zipFile, exc1.Message), "Whoops!", MessageBoxButtons.OK);
             }
 

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-26 00:49:43>
+// Time-stamp: <2009-June-26 11:47:33>
 //
 // ------------------------------------------------------------------
 //
@@ -106,7 +106,7 @@ namespace Ionic.Zip
         /// </summary>
         PkzipWeak,
 
-#if AESCRYPTO
+        #if AESCRYPTO
         /// <summary>
         /// WinZip AES encryption (128 key bits).
         /// </summary>
@@ -116,7 +116,7 @@ namespace Ionic.Zip
         /// WinZip AES encryption (256 key bits).
         /// </summary>
         WinZipAes256,
-#endif
+        #endif
 
         // others... not implemented (yet?)
     }
@@ -1192,10 +1192,10 @@ namespace Ionic.Zip
                 _Encryption = value;
                 _restreamRequiredOnSave = true;
 
-#if AESCRYPTO
+                #if AESCRYPTO
                 if (value == EncryptionAlgorithm.WinZipAes256) this._KeyStrengthInBits = 256;
                 else if (value == EncryptionAlgorithm.WinZipAes128) this._KeyStrengthInBits = 128;
-#endif
+                #endif
             }
         }
 
@@ -1712,7 +1712,7 @@ namespace Ionic.Zip
             if ((ze._BitField & 0x01) == 0x01)
             {
 
-#if AESCRYPTO
+                #if AESCRYPTO
                 if (ze.Encryption == EncryptionAlgorithm.WinZipAes128 ||
                     ze.Encryption == EncryptionAlgorithm.WinZipAes256)
                 {
@@ -1723,7 +1723,7 @@ namespace Ionic.Zip
                     ze._LengthOfTrailer += 10;
                 }
                 else
-#endif
+                    #endif
                 {
                     // read in the header data for "weak" encryption
                     ze._WeakEncryptionHeader = new byte[12];
@@ -1945,19 +1945,19 @@ namespace Ionic.Zip
                 entry._Ctime = Ionic.Zip.SharedUtilities.AdjustTime_Win32ToDotNet(System.IO.File.GetCreationTime(filename));
                 entry._Atime = Ionic.Zip.SharedUtilities.AdjustTime_Win32ToDotNet(System.IO.File.GetLastAccessTime(filename));
 
-#if NETCF
+                #if NETCF
                 // workitem 7071
                 // can only get attributes of files that exist.
                 if (System.IO.File.Exists(filename) || System.IO.Directory.Exists(filename))
                     entry._ExternalFileAttrs = (int)NetCfFile.GetAttributes(filename);
-#else
+                #else
                 // workitem 7071
                 // can only get attributes on files that exist.
                 if (System.IO.File.Exists(filename) || System.IO.Directory.Exists(filename))
                     entry._ExternalFileAttrs = (int)System.IO.File.GetAttributes(filename);
                 // else ??
 
-#endif
+                #endif
             }
 
             //             else
@@ -2496,17 +2496,17 @@ namespace Ionic.Zip
             if (Encryption == EncryptionAlgorithm.PkzipWeak)
                 input2 = new ZipCipherStream(input, _zipCrypto, CryptoMode.Decrypt);
 
-#if AESCRYPTO
+            #if AESCRYPTO
             else if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
-                 Encryption == EncryptionAlgorithm.WinZipAes256)
+                     Encryption == EncryptionAlgorithm.WinZipAes256)
             {
                 input2 = new WinZipAesCipherStream(input, _aesCrypto, _CompressedFileDataSize, CryptoMode.Decrypt);
             }
-#endif
+            #endif
             return new Ionic.Zlib.CrcCalculatorStream((CompressionMethod == 0x08)
-                ? new Ionic.Zlib.DeflateStream(input2, Ionic.Zlib.CompressionMode.Decompress, true)
-                : input2,
-                _UncompressedSize);
+                                                      ? new Ionic.Zlib.DeflateStream(input2, Ionic.Zlib.CompressionMode.Decompress, true)
+                                                      : input2,
+                                                      _UncompressedSize);
         }
 
 
@@ -2570,13 +2570,13 @@ namespace Ionic.Zip
         {
             // workitem 7881
             // reset ReadOnly bit if necessary
-#if NETCF
+            #if NETCF
             if ( (NetCfFile.GetAttributes(fileName) & (uint)FileAttributes.ReadOnly) == (uint)FileAttributes.ReadOnly)
                 NetCfFile.SetAttributes(fileName, (uint)FileAttributes.Normal);
-#else
+            #else
             if ((File.GetAttributes(fileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
                 File.SetAttributes(fileName, FileAttributes.Normal);
-#endif
+            #endif
             File.Delete(fileName);
         }
 
@@ -2651,7 +2651,7 @@ namespace Ionic.Zip
                                 if (ExtractExistingFile == ExtractExistingFileAction.Throw)
                                     throw new ZipException("The file already exists.");
                                 else if (ExtractExistingFile == ExtractExistingFileAction.OverwriteSilently)
-                                //System.IO.File.Delete(TargetFile);
+                                    //System.IO.File.Delete(TargetFile);
                                 {
                                     if (_zipfile.Verbose)
                                         _zipfile.StatusMessageTextWriter.WriteLine("the file {0} exists; deleting it...", FileName);
@@ -2715,19 +2715,19 @@ namespace Ionic.Zip
                 // After extracting, Validate the CRC32
                 if (ActualCrc32 != _Crc32)
                 {
-#if AESCRYPTO
+                    #if AESCRYPTO
                     // CRC is not meaningful with WinZipAES and AES method 2 (AE-2)
                     if ((Encryption != EncryptionAlgorithm.WinZipAes128 &&
-                        Encryption != EncryptionAlgorithm.WinZipAes256)
+                         Encryption != EncryptionAlgorithm.WinZipAes256)
                         || _WinZipAesMethod != 0x02)
-#endif
+                        #endif
 
                         throw new BadCrcException("CRC error: the file being extracted appears to be corrupted. " +
-                              String.Format("Expected 0x{0:X8}, Actual 0x{1:X8}", _Crc32, ActualCrc32));
+                                                  String.Format("Expected 0x{0:X8}, Actual 0x{1:X8}", _Crc32, ActualCrc32));
                 }
 
 
-#if AESCRYPTO
+                #if AESCRYPTO
                 // Read the MAC if appropriate
                 if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
                     Encryption == EncryptionAlgorithm.WinZipAes256)
@@ -2735,7 +2735,7 @@ namespace Ionic.Zip
                     _aesCrypto.ReadAndVerifyMac(this.ArchiveStream); // throws if MAC is bad
                     // side effect: advances file position.
                 }
-#endif
+                #endif
 
 
                 if (TargetFile != null)
@@ -2751,17 +2751,17 @@ namespace Ionic.Zip
                             Ionic.Zip.SharedUtilities.AdjustTime_DotNetToWin32(_Mtime),
                         };
 
-                        //                         DateTime[] adjusted = new DateTime[] {
-                        //                          _Ctime,
-                        //                          _Atime,
-                        //                          _Mtime,
-                        //                      };
-
-
 #if NETCF
-                        NetCfFile.SetTimes(TargetFile, adjusted[0].ToLocalTime(),
-                                           adjusted[1].ToLocalTime(),
-                                           adjusted[2].ToLocalTime());
+                        // workitem 7944: set time should not be a fatal error on CF
+                        int rc = NetCfFile.SetTimes(TargetFile, adjusted[0].ToLocalTime(),
+                                                    adjusted[1].ToLocalTime(),
+                                                    adjusted[2].ToLocalTime());
+                        if ( rc != 0)
+                        {
+                            if (_zipfile.Verbose)
+                                _zipfile.StatusMessageTextWriter.WriteLine("Warning: SetTimes failed.  entry({0})  file({1})  rc({2})",
+                                                                           FileName, TargetFile, rc);
+                        }
 
 #else
                         System.IO.File.SetCreationTime(TargetFile, adjusted[0].ToLocalTime());
@@ -2776,7 +2776,14 @@ namespace Ionic.Zip
                         DateTime AdjustedLastModified = Ionic.Zip.SharedUtilities.AdjustTime_DotNetToWin32(LastModified);
 
 #if NETCF
-                        NetCfFile.SetLastWriteTime(TargetFile, AdjustedLastModified);
+                        int rc = NetCfFile.SetLastWriteTime(TargetFile, AdjustedLastModified);
+                        
+                        if ( rc != 0)
+                        {
+                            if (_zipfile.Verbose)
+                                _zipfile.StatusMessageTextWriter.WriteLine("Warning: SetLastWriteTime failed.  entry({0})  file({1})  rc({2})",
+                                                                           FileName, TargetFile, rc);
+                        }
 #else
                         System.IO.File.SetLastWriteTime(TargetFile, AdjustedLastModified);
 #endif
@@ -5081,8 +5088,7 @@ namespace Ionic.Zip
 #if NETCF
     internal class NetCfFile
     {
-
-        public static void SetTimes(string filename, DateTime ctime, DateTime atime, DateTime mtime)
+        public static int SetTimes(string filename, DateTime ctime, DateTime atime, DateTime mtime)
         {
             IntPtr hFile  = (IntPtr) CreateFileCE(filename, 
                                                   (uint)System.IO.FileAccess.Write, 
@@ -5094,7 +5100,9 @@ namespace Ionic.Zip
 
             if((int)hFile == -1)
             {
-                throw new ZipException("CreateFileCE Failed");
+                // workitem 7944: don't throw on failure to set file times
+                // throw new ZipException("CreateFileCE Failed");
+                return System.Runtime.InteropServices.Marshal.GetLastWin32Error();
             }
                         
             SetFileTime(hFile, 
@@ -5103,10 +5111,11 @@ namespace Ionic.Zip
                         BitConverter.GetBytes(mtime.ToFileTime()));
 
             CloseHandle(hFile);
+            return 0;
         }
 
 
-        public static void SetLastWriteTime(string filename, DateTime mtime)
+        public static int SetLastWriteTime(string filename, DateTime mtime)
         {
             IntPtr hFile  = (IntPtr) CreateFileCE(filename, 
                                                   (uint)System.IO.FileAccess.Write, 
@@ -5118,14 +5127,17 @@ namespace Ionic.Zip
 
             if((int)hFile == -1)
             {
-                throw new ZipException(String.Format("CreateFileCE Failed ({0})",
-                                                     System.Runtime.InteropServices.Marshal.GetLastWin32Error()));
+                // workitem 7944: don't throw on failure to set file time
+                // throw new ZipException(String.Format("CreateFileCE Failed ({0})",
+                //                                      System.Runtime.InteropServices.Marshal.GetLastWin32Error()));
+                return System.Runtime.InteropServices.Marshal.GetLastWin32Error();
             }
                         
             SetFileTime(hFile, null, null, 
                         BitConverter.GetBytes(mtime.ToFileTime()));
 
             CloseHandle(hFile);
+            return 0;
         }
 
 

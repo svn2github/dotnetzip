@@ -9,7 +9,7 @@
 #  from powershell.exe prompt: 
 #     .\SetVersion.ps1  2.8.3.0
 #
-# last saved Time-stamp: <2009-February-11 22:18:04>
+# last saved Time-stamp: <2009-June-26 13:34:43>
 #
 
 
@@ -34,9 +34,12 @@ function Update-SourceVersion
 
   foreach ($o in $input) 
   {
-
-   # c:\vs2008\common7\IDE\tf edit $o.FullName
-    c:\vs2008\common7\IDE\tf  edit $o.FullName $env:cplogin
+    if ($o.Attributes -band [System.IO.FileAttributes]::ReadOnly) 
+    {
+        # checkout the file for edit, using the tf.exe too, and 
+        # passing the CodePlex authn info on cmd line
+        c:\vs2008\common7\IDE\tf  edit $o.FullName $env:cplogin
+    }
     Write-output $o.FullName
     $TmpFile = $o.FullName + ".tmp"
 
