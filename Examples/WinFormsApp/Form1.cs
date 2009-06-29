@@ -691,6 +691,7 @@ namespace Ionic.Zip.WinFormsExample
             this.btnZipupDirBrowse.Enabled = true;
             this.btnReadZipBrowse.Enabled = true;
             this.btnClearItemsToZip.Enabled = true;
+            this.btnCreateZipBrowse.Enabled = true;
 
             this.progressBar1.Value = 0;
             this.progressBar2.Value = 0;
@@ -1306,14 +1307,14 @@ namespace Ionic.Zip.WinFormsExample
                 if (this.tabPage2.Controls.Contains(this.lblStatus))
                     this.tabPage2.Controls.Remove(this.lblStatus);
 
+                if (!this.tabPage1.Controls.Contains(this.lblStatus))
+                    this.tabPage1.Controls.Add(this.lblStatus);
                 if (!this.tabPage1.Controls.Contains(this.progressBar1))
                     this.tabPage1.Controls.Add(this.progressBar1);
                 if (!this.tabPage1.Controls.Contains(this.progressBar2))
                     this.tabPage1.Controls.Add(this.progressBar2);
                 if (!this.tabPage1.Controls.Contains(this.btnCancel))
                     this.tabPage1.Controls.Add(this.btnCancel);
-                if (!this.tabPage1.Controls.Contains(this.lblStatus))
-                    this.tabPage1.Controls.Add(this.lblStatus);
             }
             else if (this.tabControl1.SelectedIndex == 1)
             {
@@ -1326,14 +1327,14 @@ namespace Ionic.Zip.WinFormsExample
                 if (this.tabPage1.Controls.Contains(this.lblStatus))
                     this.tabPage1.Controls.Remove(this.lblStatus);
 
+                if (!this.tabPage2.Controls.Contains(this.lblStatus))
+                    this.tabPage2.Controls.Add(this.lblStatus);
                 if (!this.tabPage2.Controls.Contains(this.progressBar1))
                     this.tabPage2.Controls.Add(this.progressBar1);
                 if (!this.tabPage2.Controls.Contains(this.progressBar2))
                     this.tabPage2.Controls.Add(this.progressBar2);
                 if (!this.tabPage2.Controls.Contains(this.btnCancel))
                     this.tabPage2.Controls.Add(this.btnCancel);
-                if (!this.tabPage2.Controls.Contains(this.lblStatus))
-                    this.tabPage2.Controls.Add(this.lblStatus);
             }
         }
 

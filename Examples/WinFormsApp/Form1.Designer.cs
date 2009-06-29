@@ -142,7 +142,7 @@
             // btnZipUp
             // 
             this.btnZipUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnZipUp.Location = new System.Drawing.Point(579, 454);
+            this.btnZipUp.Location = new System.Drawing.Point(579, 458);
             this.btnZipUp.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnZipUp.Name = "btnZipUp";
             this.btnZipUp.Size = new System.Drawing.Size(66, 26);
@@ -155,7 +155,7 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.Enabled = false;
-            this.btnCancel.Location = new System.Drawing.Point(579, 487);
+            this.btnCancel.Location = new System.Drawing.Point(579, 489);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(66, 26);
@@ -168,7 +168,7 @@
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(6, 487);
+            this.progressBar1.Location = new System.Drawing.Point(6, 490);
             this.progressBar1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(563, 10);
@@ -303,7 +303,7 @@
             // 
             this.lblStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(12, 495);
+            this.lblStatus.Location = new System.Drawing.Point(12, 471);
             this.lblStatus.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(0, 13);
@@ -361,7 +361,7 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.listView1.GridLines = true;
-            this.listView1.Location = new System.Drawing.Point(6, 91);
+            this.listView1.Location = new System.Drawing.Point(6, 85);
             this.listView1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.listView1.Name = "listView1";
             this.listView1.Size = new System.Drawing.Size(639, 382);
@@ -432,7 +432,7 @@
             this.tbSelectionToExtract.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbSelectionToExtract.Name = "tbSelectionToExtract";
             this.tbSelectionToExtract.Size = new System.Drawing.Size(232, 20);
-            this.tbSelectionToExtract.TabIndex = 28;
+            this.tbSelectionToExtract.TabIndex = 24;
             this.tbSelectionToExtract.Text = "*.*";
             this.toolTip1.SetToolTip(this.tbSelectionToExtract, "Selection criteria.  eg, (name = *.* and size> 1000) etc.  Also use atime/mtime/c" +
                     "time and attributes. (HRSA)");
@@ -467,7 +467,7 @@
             this.chkOpenExplorer.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.chkOpenExplorer.Name = "chkOpenExplorer";
             this.chkOpenExplorer.Size = new System.Drawing.Size(91, 17);
-            this.chkOpenExplorer.TabIndex = 25;
+            this.chkOpenExplorer.TabIndex = 28;
             this.chkOpenExplorer.Text = "open Explorer";
             this.chkOpenExplorer.UseVisualStyleBackColor = true;
             // 
@@ -785,7 +785,7 @@
             // btnClearItemsToZip
             // 
             this.btnClearItemsToZip.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClearItemsToZip.Location = new System.Drawing.Point(465, 454);
+            this.btnClearItemsToZip.Location = new System.Drawing.Point(465, 458);
             this.btnClearItemsToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnClearItemsToZip.Name = "btnClearItemsToZip";
             this.btnClearItemsToZip.Size = new System.Drawing.Size(102, 26);
@@ -798,7 +798,7 @@
             // 
             this.textBox1.AcceptsReturn = true;
             this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.textBox1.Location = new System.Drawing.Point(192, 456);
+            this.textBox1.Location = new System.Drawing.Point(362, 461);
             this.textBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(100, 20);
@@ -826,7 +826,7 @@
             this.listView2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.listView2.MultiSelect = false;
             this.listView2.Name = "listView2";
-            this.listView2.Size = new System.Drawing.Size(639, 176);
+            this.listView2.Size = new System.Drawing.Size(639, 180);
             this.listView2.TabIndex = 98;
             this.listView2.UseCompatibleStateImageBehavior = false;
             this.listView2.View = System.Windows.Forms.View.Details;
