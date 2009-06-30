@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-26 11:47:33>
+// Time-stamp: <2009-June-30 11:06:02>
 //
 // ------------------------------------------------------------------
 //
@@ -2487,6 +2487,10 @@ namespace Ionic.Zip
             ValidateEncryption();
             SetupCrypto(password);
 
+            // workitem 7958
+            if (this._Source != ZipEntrySource.Zipfile)
+                throw new  BadStateException("You must call ZipFile.Save before calling OpenReader.");
+            
             Stream input = this.ArchiveStream;
 
             this.ArchiveStream.Seek(this.FileDataPosition, System.IO.SeekOrigin.Begin);
@@ -2585,12 +2589,20 @@ namespace Ionic.Zip
         // The Password param is required for encrypted entries.
         private void InternalExtract(string baseDir, System.IO.Stream outstream, string password)
         {
+            // workitem 7958
+            if (_zipfile == null)
+                throw new BadStateException("This ZipEntry is an orphan.");
+
+            _zipfile.Reset();
+            if (this._Source != ZipEntrySource.Zipfile)
+                throw new BadStateException("You must call ZipFile.Save before calling any Extract method.");
+            
             OnBeforeExtract(baseDir);
             _ioOperationCanceled = false;
             string TargetFile = null;
             System.IO.Stream output = null;
             bool fileExistsBeforeExtraction = false;
-
+            
             try
             {
                 ValidateCompression();
@@ -4004,6 +4016,7 @@ namespace Ionic.Zip
             this._CompressedFileDataSize = source._CompressedFileDataSize;
             this._UncompressedSize = source._UncompressedSize;
             this._BitField = source._BitField;
+            this._Source = source._Source;
             this._LastModified = source._LastModified;
             this._Mtime = source._Mtime;
             this._Atime = source._Atime;

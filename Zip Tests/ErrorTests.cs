@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-18 03:47:53>
+// Time-stamp: <2009-June-30 11:33:06>
 //
 // ------------------------------------------------------------------
 //
@@ -166,52 +166,58 @@ namespace Ionic.Zip.Tests.Error
 
 
 
-        [TestMethod]
-        [ExpectedException(typeof(Ionic.Zip.ZipException))]
-        public void Error_Extract_ExistingFileWithoutOverwrite()
+
+        public void _Internal_ExtractExisting(int flavor)
         {
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Error_Extract_ExistingFileWithoutOverwrite.zip");
+            string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Error-Extract-ExistingFileWithoutOverwrite-{0}.zip", flavor));
             Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
 
-            string SourceDir = CurrentDir;
-            for (int i = 0; i < 3; i++)
-                SourceDir = Path.GetDirectoryName(SourceDir);
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+            string resourceDir = Path.Combine(testBin, "Resources");
 
             Directory.SetCurrentDirectory(TopLevelDir);
+            var filenames = Directory.GetFiles(resourceDir);
 
-            string[] filenames = 
-            {
-                Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.dll"),
-                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.pdb"),
-                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
-                //Path.Combine(SourceDir, "AppNote.txt")
-            };
-            int j = 0;
             using (ZipFile zip = new ZipFile(ZipFileToCreate))
             {
-                for (j = 0; j < filenames.Length; j++)
-                    zip.AddFile(filenames[j], "");
+                zip.AddFiles(filenames, "");
                 zip.Comment = "This is a Comment On the Archive";
                 zip.Save();
             }
 
             Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), filenames.Length,
-                "The zip file created has the wrong number of entries.");
+                                 "The zip file created has the wrong number of entries.");
 
-            // extract the first time - this should succeed
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            // Extract twice: the first time should succeed.
+            // The second, should fail, because of a failed file overwrite.
+            // Unless flavor==3, in which case we overwrite silently.
+            for (int k = 0; k < 2; k++)
             {
-                for (j = 0; j < filenames.Length; j++)
-                    zip[Path.GetFileName(filenames[j])].Extract("unpack", false);
+                using (ZipFile zip = ZipFile.Read(ZipFileToCreate))
+                {
+                    for (int j = 0; j < filenames.Length; j++)
+                    {
+                        ZipEntry e = zip[Path.GetFileName(filenames[j])];
+                        if (flavor == 1)
+                            e.Extract("unpack", false);
+                        else if (flavor == 2)
+                            e.Extract("unpack", ExtractExistingFileAction.Throw);
+                        else if (flavor == 3)
+                            e.Extract("unpack", ExtractExistingFileAction.OverwriteSilently);
+                        else
+                            throw new System.ArgumentException("flavor");
+                    }
+                }
             }
+        }
+        
 
-            // extract the second time - this should fail (overwrite exception)
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
-            {
-                for (j = 0; j < filenames.Length; j++)
-                    zip[Path.GetFileName(filenames[j])].Extract("unpack", false);
-            }
+    
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        public void Error_Extract_ExistingFileWithoutOverwrite_1()
+        {
+            _Internal_ExtractExisting(1);
         }
 
 
@@ -220,50 +226,32 @@ namespace Ionic.Zip.Tests.Error
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Error_Extract_ExistingFileWithoutOverwrite_2()
         {
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Error_Extract_ExistingFileWithoutOverwrite_2.zip");
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-
-            string SourceDir = CurrentDir;
-            for (int i = 0; i < 3; i++)
-                SourceDir = Path.GetDirectoryName(SourceDir);
-
-            Directory.SetCurrentDirectory(TopLevelDir);
-
-            string[] filenames = 
-            {
-                Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.dll"),
-                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.pdb"),
-                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
-                //Path.Combine(SourceDir, "AppNote.txt")
-            };
-            int j = 0;
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
-            {
-                for (j = 0; j < filenames.Length; j++)
-                    zip.AddFile(filenames[j], "");
-                zip.Comment = "This is a Comment On the Archive";
-                zip.Save();
-            }
-
-            Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), filenames.Length,
-                "The zip file created has the wrong number of entries.");
-
-            // extract the first time - this should succeed
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
-            {
-                for (j = 0; j < filenames.Length; j++)
-                    zip[Path.GetFileName(filenames[j])].Extract("unpack", ExtractExistingFileAction.Throw);
-            }
-
-            // extract the second time - this should fail (overwrite exception)
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
-            {
-                for (j = 0; j < filenames.Length; j++)
-                    zip[Path.GetFileName(filenames[j])].Extract("unpack", ExtractExistingFileAction.Throw);
-            }
+            _Internal_ExtractExisting(2);
         }
 
+
+        // not really an error test
+        [TestMethod]
+        public void Extract_ExistingFileWithOverwrite_1()
+        {
+            _Internal_ExtractExisting(3);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(System.ArgumentException))]
+        public void Error_Extract_ExistingFileWithoutOverwrite_3()
+        {
+            // this is a test of the test!
+            _Internal_ExtractExisting(0);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(System.ArgumentException))]
+        public void Error_Extract_ExistingFileWithoutOverwrite_4()
+        {
+            // this is a test of the test!
+            _Internal_ExtractExisting(4);
+        }
 
 
 
@@ -405,21 +393,76 @@ namespace Ionic.Zip.Tests.Error
         [ExpectedException(typeof(Ionic.Zip.BadStateException))]
         public void Error_Save_NoFilename()
         {
-            string SourceDir = CurrentDir;
-            for (int i = 0; i < 3; i++)
-                SourceDir = Path.GetDirectoryName(SourceDir);
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+            string resourceDir = Path.Combine(testBin, "Resources");
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
-            string filename =
-                Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe");
+            string filename = Path.Combine(resourceDir, "TestStrings.txt");
+            Assert.IsTrue(File.Exists(filename));
 
             // add an entry to the zipfile, then try saving, never having specified a filename. This should fail.
             using (ZipFile zip = new ZipFile())
             {
                 zip.AddFile(filename, "");
+                // this should fail
                 zip.Save(); // don't know where to save!
             }
+            
+            // should never reach this
+            Assert.IsTrue(false);
+        }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.BadStateException))]
+        public void Error_Extract_WithoutSave()
+        {
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+            string resourceDir = Path.Combine(testBin, "Resources");
+
+            Directory.SetCurrentDirectory(TopLevelDir);
+
+            // add a directory to the zipfile, then try
+            // extracting, without a Save. This should fail.
+            using (ZipFile zip = new ZipFile())
+            {
+                zip.AddDirectory(resourceDir, "");
+                Assert.IsTrue(zip.Entries.Count > 0);
+                // this should fail
+                zip[0].Extract();
+            }
+
+            // should never reach this
+            Assert.IsTrue(false);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.BadStateException))]
+        public void Error_Read_WithoutSave()
+        {
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+            string resourceDir = Path.Combine(testBin, "Resources");
+
+            Directory.SetCurrentDirectory(TopLevelDir);
+
+            // add a directory to the zipfile, then try
+            // extracting, without a Save. This should fail.
+            using (ZipFile zip = new ZipFile())
+            {
+                zip.AddDirectory(resourceDir, "");
+                Assert.IsTrue(zip.Entries.Count > 0);
+                // this should fail
+                using (var s = zip[0].OpenReader())
+                {
+                    byte[] buffer= new byte[1024];
+                    int n;
+                    while ((n= s.Read(buffer,0,buffer.Length)) > 0) ;
+                }
+            }
+
+            // should never reach this
+            Assert.IsTrue(false);
         }
 
 

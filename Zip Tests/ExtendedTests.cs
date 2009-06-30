@@ -523,11 +523,11 @@ namespace Ionic.Zip.Tests.Extended
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
-            using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
+            using (ZipFile zip1 = new ZipFile())
             {
                 MemoryStream ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(InputString));
                 zip1.AddEntry("Test.xml", "Woo", ms1);
-                zip1.Save();
+                zip1.Save(ZipFileToCreate);
 
                 MemoryStream ms2 = new MemoryStream();
                 zip1.Extract("Woo/Test.xml", ms2);

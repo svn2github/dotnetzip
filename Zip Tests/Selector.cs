@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-25 23:43:14>
+// Time-stamp: <2009-June-30 14:20:20>
 //
 // ------------------------------------------------------------------
 //
@@ -534,6 +534,8 @@ namespace Ionic.Zip.Tests
             {
                 var selected1 = zip1.SelectEntries("name = *.txt");
                 var selected2 = zip1.SelectEntries("name = *.bin");
+                var selected3 = zip1.SelectEntries("name = *.bin OR name = *.txt");
+                TestContext.WriteLine("Found {0} text files, {0} bin files.", selected1.Count, selected2.Count);
                 TestContext.WriteLine("Text files:");
                 foreach (ZipEntry e in selected1)
                 {
@@ -561,7 +563,7 @@ namespace Ionic.Zip.Tests
 
 
         [TestMethod]
-        public void Selector_SelectEntries_Spaces()
+        public void Selector_SelectEntries_ByName_NamesWithSpaces()
         {
             Directory.SetCurrentDirectory(TopLevelDir);
 
