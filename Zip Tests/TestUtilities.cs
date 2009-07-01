@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-25 21:48:47>
+// Time-stamp: <2009-July-01 06:17:08>
 //
 // ------------------------------------------------------------------
 //
@@ -283,10 +283,24 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal static void CreateAndFillFile(string filename, Int64 size)
         {
-            //Assert.IsTrue(size > 0, "File size should be greater than zero.");
             if (size == 0)
                 File.Create(filename);
             else if (_rnd.Next(2) == 0)
+                CreateAndFillFileText(filename, size);
+            else
+                CreateAndFillFileBinary(filename, size);
+        }
+
+        internal enum FileFlavor
+        {
+            text=0, binary=1,
+        }
+        
+        internal static void CreateAndFillFile(string filename, Int64 size, FileFlavor flavor)
+        {
+            if (size == 0)
+                File.Create(filename);
+            else if (flavor == FileFlavor.text)
                 CreateAndFillFileText(filename, size);
             else
                 CreateAndFillFileBinary(filename, size);
@@ -492,19 +506,19 @@ namespace Ionic.Zip.Tests.Utilities
 
 
         internal static int GenerateFilesOneLevelDeep(TestContext tc,
-                                                      string TestName,
-                                                      string DirToZip,
+                                                      string testName,
+                                                      string dirToZip,
                                                       Action<Int16, Int32> update,
                                                       out int subdirCount)
         {
             int[] settings = { 7, 6, 17, 23, 4000, 4000 }; // to randomly set dircount, filecount, and filesize
-            return GenerateFilesOneLevelDeep(tc, TestName, DirToZip, settings, update, out subdirCount);
+            return GenerateFilesOneLevelDeep(tc, testName, dirToZip, settings, update, out subdirCount);
         }
 
 
         internal static int GenerateFilesOneLevelDeep(TestContext tc,
-                                                      string TestName,
-                                                      string DirToZip,
+                                                      string testName,
+                                                      string dirToZip,
                                                       int[] settings,
                                                       Action<Int16, Int32> update,
                                                       out int subdirCount)
@@ -515,21 +529,23 @@ namespace Ionic.Zip.Tests.Utilities
             subdirCount = _rnd.Next(settings[0]) + settings[1];
             if (update != null)
                 update(0, subdirCount);
-            tc.WriteLine("{0}: Creating {1} subdirs.", TestName, subdirCount);
+            tc.WriteLine("{0}: Creating {1} subdirs.", testName, subdirCount);
             for (int i = 0; i < subdirCount; i++)
             {
-                string SubDir = Path.Combine(DirToZip, String.Format("dir{0:D4}", i));
-                Directory.CreateDirectory(SubDir);
+                string subdir = Path.Combine(dirToZip, String.Format("dir{0:D4}", i));
+                Directory.CreateDirectory(subdir);
 
                 int filecount = _rnd.Next(settings[2]) + settings[3];
                 if (update != null)
                     update(1, filecount);
-                tc.WriteLine("{0}: Subdir {1}, Creating {2} files.", TestName, i, filecount);
+                tc.WriteLine(":: Subdir {0}, Creating {1} files.", i, filecount);
                 for (int j = 0; j < filecount; j++)
                 {
-                    filename = String.Format("file{0:D4}.x", j);
-                    TestUtilities.CreateAndFillFile(Path.Combine(SubDir, filename),
-                                                    _rnd.Next(settings[4]) + settings[5]);
+                    int n = _rnd.Next(2);
+                    filename = String.Format("file{0:D4}.{1}", j, (n==0)? "txt" : "bin");
+                    TestUtilities.CreateAndFillFile(Path.Combine(subdir, filename),
+                                                    _rnd.Next(settings[4]) + settings[5],
+                                                    (FileFlavor)n);
                     entriesAdded++;
                     if (update != null)
                         update(3, j + 1);
@@ -545,16 +561,16 @@ namespace Ionic.Zip.Tests.Utilities
 
 
 
-        internal static string[] GenerateFilesFlat(string Subdir)
+        internal static string[] GenerateFilesFlat(string subdir)
         {
-            if (!Directory.Exists(Subdir))
-                Directory.CreateDirectory(Subdir);
+            if (!Directory.Exists(subdir))
+                Directory.CreateDirectory(subdir);
 
             int NumFilesToCreate = _rnd.Next(23) + 14;
             string[] FilesToZip = new string[NumFilesToCreate];
             for (int i = 0; i < NumFilesToCreate; i++)
             {
-                FilesToZip[i] = Path.Combine(Subdir, String.Format("file{0:D3}.txt", i));
+                FilesToZip[i] = Path.Combine(subdir, String.Format("file{0:D3}.txt", i));
                 TestUtilities.CreateAndFillFileText(FilesToZip[i], _rnd.Next(34000) + 5000);
             }
             return FilesToZip;

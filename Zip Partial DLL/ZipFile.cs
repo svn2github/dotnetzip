@@ -4643,7 +4643,7 @@ namespace Ionic.Zip
             }
             catch (Exception e1)
             {
-                throw new ZipException(String.Format("{0} is not a valid zip file", zipFileName), e1);
+                throw new ZipException(String.Format("{0} could not be read", zipFileName), e1);
             }
             return zf;
         }
@@ -5046,6 +5046,8 @@ namespace Ionic.Zip
                     ReadIntoInstance_Orig(zf);
                     return;
                 }
+                
+                zf.OnReadStarted();
 
                 long origPosn = s.Position;
 
@@ -5659,6 +5661,7 @@ namespace Ionic.Zip
         /// default; you can use the <c>CaseSensitiveRetrieval</c> property to change
         /// this behavior.
         /// </param>
+        [Obsolete("Please use method ZipEntry.Extract()")]
         public void Extract(string fileName)
         {
             ZipEntry e = this[fileName];
@@ -5710,6 +5713,7 @@ namespace Ionic.Zip
         /// </param>
         /// <param name="directoryName">the directory into which to extract. It will be created 
         /// if it does not exist.</param>
+        [Obsolete("Please use method ZipEntry.Extract(string)")]
         public void Extract(string entryName, string directoryName)
         {
             ZipEntry e = this[entryName];
@@ -5760,7 +5764,7 @@ namespace Ionic.Zip
         /// <param name="wantOverwrite">
         /// True if the caller wants to overwrite any existing files by the given name.
         /// </param>
-        [Obsolete("Please use method Extract(String,ExtractExistingFileAction)")]
+        [Obsolete("Please use method ZipEntry.Extract(ExtractExistingFileAction)")]
         public void Extract(string entryName, bool wantOverwrite)
         {
             ZipEntry e = this[entryName];
@@ -5811,6 +5815,7 @@ namespace Ionic.Zip
         /// <param name="extractExistingFile">
         /// The action to take if extraction would overwrite an existing file.
         /// </param>
+        [Obsolete("Please use method ZipEntry.Extract(ExtractExistingFileAction)")]
         public void Extract(string entryName, ExtractExistingFileAction extractExistingFile)
         {
             ZipEntry e = this[entryName];
@@ -5865,7 +5870,7 @@ namespace Ionic.Zip
         /// True if the caller wants to overwrite any existing files 
         /// by the given name. 
         /// </param>
-        [Obsolete("Please use method Extract(String,String,ExtractExistingFileAction)")]
+        [Obsolete("Please use method ZipEntry.Extract(String,ExtractExistingFileAction)")]
         public void Extract(string entryName, string directoryName, bool wantOverwrite)
         {
             ZipEntry e = this[entryName];
@@ -5925,6 +5930,7 @@ namespace Ionic.Zip
         /// <param name="extractExistingFile">
         /// The action to take if extraction would overwrite an existing file.
         /// </param>
+        [Obsolete("Please use method ZipEntry.Extract(string, ExtractExistingFileAction)")]
         public void Extract(string entryName, string directoryName, ExtractExistingFileAction extractExistingFile)
         {
             ZipEntry e = this[entryName];
@@ -5975,6 +5981,7 @@ namespace Ionic.Zip
         /// the stream to which the extacted, decompressed file data is written. 
         /// The stream must be writable.
         /// </param>
+        [Obsolete("Please use method ZipEntry.Extract(Stream)")]
         public void Extract(string entryName, Stream outputStream)
         {
             if (outputStream == null || !outputStream.CanWrite)

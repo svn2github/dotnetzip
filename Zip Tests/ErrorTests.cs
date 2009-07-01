@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-30 11:33:06>
+// Time-stamp: <2009-July-01 09:33:30>
 //
 // ------------------------------------------------------------------
 //
@@ -165,9 +165,22 @@ namespace Ionic.Zip.Tests.Error
         }
 
 
+        private void OverwriteDecider(object sender, ExtractProgressEventArgs e)
+        {
+            switch (e.EventType)
+            {
+                case ZipProgressEventType.Extracting_ExtractEntryWouldOverwrite:
+                    // randomly choose whether to overwrite or not
+                    e.CurrentEntry.ExtractExistingFile = (_rnd.Next(2) == 0)
+                        ? ExtractExistingFileAction.DontOverwrite 
+                        : ExtractExistingFileAction.OverwriteSilently;
+                    break;
+            }
+        }
 
 
-        public void _Internal_ExtractExisting(int flavor)
+
+        private void _Internal_ExtractExisting(int flavor)
         {
             string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Error-Extract-ExistingFileWithoutOverwrite-{0}.zip", flavor));
             Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
@@ -195,17 +208,17 @@ namespace Ionic.Zip.Tests.Error
             {
                 using (ZipFile zip = ZipFile.Read(ZipFileToCreate))
                 {
+                    if (flavor > 10)
+                        zip.ExtractProgress += OverwriteDecider;
                     for (int j = 0; j < filenames.Length; j++)
                     {
                         ZipEntry e = zip[Path.GetFileName(filenames[j])];
-                        if (flavor == 1)
+                        if (flavor == 4)
                             e.Extract("unpack", false);
-                        else if (flavor == 2)
-                            e.Extract("unpack", ExtractExistingFileAction.Throw);
-                        else if (flavor == 3)
-                            e.Extract("unpack", ExtractExistingFileAction.OverwriteSilently);
-                        else
-                            throw new System.ArgumentException("flavor");
+                        else if (flavor == 5)
+                            e.Extract("unpack");
+                        else 
+                            e.Extract("unpack", (ExtractExistingFileAction) flavor);
                     }
                 }
             }
@@ -215,42 +228,62 @@ namespace Ionic.Zip.Tests.Error
     
         [TestMethod]
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
-        public void Error_Extract_ExistingFileWithoutOverwrite_1()
+        public void Error_Extract_ExistingFileWithoutOverwrite_Throw()
         {
-            _Internal_ExtractExisting(1);
+            _Internal_ExtractExisting((int)ExtractExistingFileAction.Throw);
         }
-
 
 
         [TestMethod]
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
-        public void Error_Extract_ExistingFileWithoutOverwrite_2()
+        public void Error_Extract_ExistingFileWithoutOverwrite_NoArg()
         {
-            _Internal_ExtractExisting(2);
+            _Internal_ExtractExisting(5);
         }
 
 
-        // not really an error test
+        // not an error test
         [TestMethod]
-        public void Extract_ExistingFileWithOverwrite_1()
+        public void Extract_ExistingFileWithOverwrite_OverwriteSilently()
         {
-            _Internal_ExtractExisting(3);
+            _Internal_ExtractExisting((int)ExtractExistingFileAction.OverwriteSilently);
+        }
+
+        // not an error test
+        [TestMethod]
+        public void Extract_ExistingFileWithOverwrite_DontOverwrite()
+        {
+            _Internal_ExtractExisting((int)ExtractExistingFileAction.DontOverwrite);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void Error_Extract_ExistingFileWithoutOverwrite_3()
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        public void Error_Extract_ExistingFileWithoutOverwrite_InvokeProgress()
         {
-            // this is a test of the test!
-            _Internal_ExtractExisting(0);
+            _Internal_ExtractExisting((int)ExtractExistingFileAction.InvokeExtractProgressEvent);
         }
+        
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        public void Error_Extract_ExistingFileWithoutOverwrite_InvokeProgress_2()
+        {
+            _Internal_ExtractExisting(10+(int)ExtractExistingFileAction.InvokeExtractProgressEvent);
+        }
+        
 
         [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void Error_Extract_ExistingFileWithoutOverwrite_4()
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        public void Error_Extract_ExistingFileWithoutOverwrite_False()
         {
-            // this is a test of the test!
             _Internal_ExtractExisting(4);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        public void Error_Extract_ExistingFileWithoutOverwrite_7()
+        {
+            // this is a test of the test!
+            _Internal_ExtractExisting(7);
         }
 
 
@@ -281,12 +314,34 @@ namespace Ionic.Zip.Tests.Error
         }
 
 
+        
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        public void Error_Set_ZipEntry()
+        {
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string  zipFileToCreate = Path.Combine(TopLevelDir, "Error_Set_ZipEntry.zip");
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+
+            using (ZipFile zip = new ZipFile())
+            {
+                zip.AddFiles(files);
+                zip.Save(zipFileToCreate);
+            }
+            
+            using (ZipFile zip = ZipFile.Read(zipFileToCreate))
+            {
+                // this should throw
+                zip[1]= zip[0];
+            }
+        }
+
+
         [TestMethod]
         [ExpectedException(typeof(ZipException))]
         public void Error_Save_InvalidLocation()
         {
-            //string ZipFileToCreate = Path.Combine(TopLevelDir, "Error_Save_InvalidLocation.zip");
-
             string SourceDir = CurrentDir;
             for (int i = 0; i < 3; i++)
                 SourceDir = Path.GetDirectoryName(SourceDir);
@@ -307,6 +362,7 @@ namespace Ionic.Zip.Tests.Error
             }
         }
 
+        
         [TestMethod]
         public void Error_Save_NonExistentFile()
         {
@@ -727,116 +783,5 @@ namespace Ionic.Zip.Tests.Error
             }
         }
 
-
-        [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void Selector_SelectFiles_BadNoun()
-        {
-            // specify an invalid string 
-            Ionic.FileSelector ff = new Ionic.FileSelector("fame = *.txt");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void Selector_SelectFiles_BadSyntax01()
-        {
-            // specify an invalid string 
-            Ionic.FileSelector ff = new Ionic.FileSelector("size = ");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void Selector_SelectFiles_BadSyntax02()
-        {
-            // specify an invalid string 
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt and");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void Selector_SelectFiles_BadSyntax03()
-        {
-            // specify an invalid string 
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  URF ");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void Selector_SelectFiles_BadSyntax04()
-        {
-            // specify an invalid string 
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  OR (");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(System.FormatException))]
-        public void Selector_SelectFiles_BadSyntax05()
-        {
-            // specify an invalid string 
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  OR (size = G)");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void Selector_SelectFiles_BadSyntax06()
-        {
-            // specify an invalid string 
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  OR (size > )");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void Selector_SelectFiles_BadSyntax07()
-        {
-            // specify an invalid string 
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  OR (size > 7800");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void Selector_SelectFiles_BadSyntax08()
-        {
-            // specify an invalid string 
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  OR )size > 7800");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void Selector_SelectFiles_BadSyntax09()
-        {
-            // specify an invalid string 
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt and  name =");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void Selector_SelectFiles_BadSyntax10()
-        {
-            // specify an invalid string 
-            Ionic.FileSelector ff = new Ionic.FileSelector("name == *.txt");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void Selector_SelectFiles_BadSyntax11()
-        {
-            // specify an invalid string 
-            Ionic.FileSelector ff = new Ionic.FileSelector("name ~= *.txt");
-        }
-        [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void Selector_SelectFiles_BadSyntax12()
-        {
-            // specify an invalid string 
-            Ionic.FileSelector ff = new Ionic.FileSelector("name @ = *.txt");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void Selector_SelectFiles_BadSyntax13()
-        {
-            // specify an invalid string 
-            Ionic.FileSelector ff = new Ionic.FileSelector("name LIKE  *.txt");
-        }
     }
 }

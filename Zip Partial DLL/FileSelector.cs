@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-May-29 17:31:02>
+// Time-stamp: <2009-June-30 19:27:23>
 //
 // ------------------------------------------------------------------
 //
@@ -164,7 +164,7 @@ namespace Ionic
 
         internal override bool Evaluate(string filename)
         {
-            System.IO.FileInfo fi = new System.IO.FileInfo(filename);
+            //System.IO.FileInfo fi = new System.IO.FileInfo(filename);
             DateTime x;
             switch (Which)
             {
@@ -186,7 +186,6 @@ namespace Ionic
 
         private bool _Evaluate(DateTime x)
         {
-
             bool result = false;
             switch (Operator)
             {
@@ -387,8 +386,6 @@ namespace Ionic
             if (Operator != ComparisonOperator.EqualTo)
                 result = !result;
 
-            //Console.WriteLine("AttributesCriterion[{2}]({0})= {1}", filename, result, AttributeString);
-
             return result;
         }
     }
@@ -490,7 +487,7 @@ namespace Ionic
         /// you'll want to set the SelectionCriteria property on the instance before calling
         /// SelectFiles().
         /// </remarks>
-        protected FileSelector() { }
+        //protected FileSelector() { }
 
 
         /// <summary>
@@ -876,7 +873,7 @@ namespace Ionic
         /// selection criteria for this instance. </returns>
         public override String ToString()
         {
-            return _Criterion.ToString();
+            return "FileSelector("+_Criterion.ToString()+")";
         }
 
 

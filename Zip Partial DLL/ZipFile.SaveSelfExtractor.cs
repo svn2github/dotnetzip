@@ -646,7 +646,7 @@ namespace Ionic.Zip
                 ? System.IO.Path.GetTempPath() 
                 : ContainingDirectory;
 
-            if (parentDir == null) return null;
+            //if (parentDir == null) return null;
 
             int index = 0;
             do

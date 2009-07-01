@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-30 11:06:02>
+// Time-stamp: <2009-July-01 07:46:49>
 //
 // ------------------------------------------------------------------
 //
@@ -2842,8 +2842,11 @@ namespace Ionic.Zip
                 }
                 finally { }
 
-                // re-raise the original exception
-                throw;
+                if (ex1 as Ionic.Zip.ZipException == null)
+                    // wrap the original exception and throw
+                    throw new ZipException("Cannot extract", ex1);
+                else
+                    throw;
             }
         }
 

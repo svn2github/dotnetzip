@@ -1,11 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<TestRunConfiguration name="Local Test Run" id="0e568622-f541-4955-9150-ac53a0252a21" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2006">
+<TestRunConfiguration name="Basic Test Run" id="0e568622-f541-4955-9150-ac53a0252a21" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2006">
   <Description>This is a default test run configuration for a local test run.</Description>
-  <CodeCoverage enabled="true" keyFile="Ionic.snk">
-    <Regular>
-      <CodeCoverageItem binaryFile="Zip Full DLL\bin\Debug\Ionic.Zip.dll" pdbFile="Zip Full DLL\bin\Debug\Ionic.Zip.pdb" instrumentInPlace="true" />
-    </Regular>
-  </CodeCoverage>
+  <CodeCoverage keyFile="Ionic.snk" />
   <TestTypeSpecific>
     <WebTestRunConfiguration testTypeId="4e7599fa-5ecb-43e9-a887-cd63cf72d207">
       <Browser name="Internet Explorer 7.0">

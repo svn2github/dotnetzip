@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-23 21:16:36>
+// Time-stamp: <2009-July-01 09:10:17>
 //
 // ------------------------------------------------------------------
 //
@@ -158,45 +158,6 @@ namespace Ionic.Zip.Tests
 
 
 
-        #if NONSENSE
-            private static int StaticShellExec(string program, string args, out string output)
-            {
-                System.Diagnostics.Process p = new System.Diagnostics.Process();
-                p.StartInfo.FileName = program;
-                p.StartInfo.Arguments = args;
-                p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-                p.StartInfo.RedirectStandardOutput = true;
-                p.StartInfo.RedirectStandardError = true;
-                p.StartInfo.UseShellExecute = false;
-                p.Start();
-
-                output = p.StandardOutput.ReadToEnd();
-                p.WaitForExit();
-
-                return p.ExitCode;
-            }
-
-        private string ShellExec(string program, string args)
-        {
-            if (args == null)
-                throw new ArgumentException("args");
-
-            if (program == null)
-                throw new ArgumentException("program");
-
-            TestContext.WriteLine("running command: {0} {1}\n    ", program, args);
-
-            string output;
-            int rc = StaticShellExec(program, args, out output);
-
-            if (rc != 0)
-                throw new Exception(String.Format("Exception running app {0}: {1}", program, output));
-
-            TestContext.WriteLine("output: {0}", output);
-
-            return output;
-        }
-        #endif
 
         
         private static void CreateFilesAndChecksums(string Subdir, out string[] FilesToZip, out Dictionary<string, byte[]> checksums)
@@ -232,6 +193,22 @@ namespace Ionic.Zip.Tests
             Assert.AreEqual<Int32>(0, checksums.Count, "Not all of the expected files were found in the extract directory.");
         }
 
+
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+            public void Compat_ZipFile_Initialize_Error()
+        {
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+            string notaZipFile = Path.Combine(testBin,"Resources\\VbsUnzip-ShellApp.vbs");
+
+            // try to read a bogus zip archive
+            Directory.SetCurrentDirectory(TopLevelDir);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.Initialize(notaZipFile);
+            }
+        }
 
 
         [TestMethod]
