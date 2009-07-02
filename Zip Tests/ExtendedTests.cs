@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-01 17:06:18>
+// Time-stamp: <2009-July-01 22:45:50>
 //
 // ------------------------------------------------------------------
 //
@@ -922,7 +922,6 @@ namespace Ionic.Zip.Tests.Extended
             string DirToZip = Path.Combine(TopLevelDir, "EventTest");
             Directory.CreateDirectory(DirToZip);
 
-            
             var randomizerSettings=  new int[]
                 {
                     6, 4,        // dircount
@@ -931,7 +930,6 @@ namespace Ionic.Zip.Tests.Extended
                 };
             int subdirCount = 0;
             int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "Create_WithEvents", DirToZip, randomizerSettings, null, out subdirCount);
-            // int entriesAdded = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "Create_SaveCancellation", DirToZip, null, out subdirCount);
 
             for (int m=0; m < 2; m++)
             {
@@ -1188,13 +1186,13 @@ namespace Ionic.Zip.Tests.Extended
             int i, j;
             int entries = 0;
 
-            int subdirCount = _rnd.Next(4) + 4;
+            int subdirCount = _rnd.Next(5) + 5;
             for (i = 0; i < subdirCount; i++)
             {
                 string Subdir = Path.Combine(TopLevelDir, "DirectoryToZip.test." + i);
                 Directory.CreateDirectory(Subdir);
 
-                int fileCount = _rnd.Next(3) + 3;
+                int fileCount = _rnd.Next(13) + 7;
                 for (j = 0; j < fileCount; j++)
                 {
                     String file = Path.Combine(Subdir, String.Format("file{0:D3}.a", j));
@@ -1226,10 +1224,10 @@ namespace Ionic.Zip.Tests.Extended
                 string Subdir = Path.Combine(TopLevelDir, "DirectoryToZip.test." + i);
                 Directory.CreateDirectory(Subdir);
 
-                int fileCount = _rnd.Next(3) + 3;
+                int fileCount = _rnd.Next(16) + 8;
                 for (j = 0; j < fileCount; j++)
                 {
-                    String file = Path.Combine(Subdir, String.Format("file{0:D3}.a", j));
+                    String file = Path.Combine(Subdir, String.Format("testfile{0:D3}.a", j));
                     TestUtilities.CreateAndFillFile(file, _rnd.Next(100) + 500);
                     entries++;
                 }

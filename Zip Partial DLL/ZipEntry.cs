@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-01 19:11:48>
+// Time-stamp: <2009-July-01 23:26:51>
 //
 // ------------------------------------------------------------------
 //
@@ -1648,7 +1648,7 @@ namespace Ionic.Zip
                     // total size of data read (through all loops of this). 
                     SizeOfDataRead += d;
 
-                    if (ze._InputUsesZip64 == true)
+                    if (ze._InputUsesZip64)
                     {
                         // read 1x 4-byte (CRC) and 2x 8-bytes (Compressed Size, Uncompressed Size)
                         block = new byte[20];
@@ -4474,10 +4474,7 @@ namespace Ionic.Zip
             {
                 nCycles++;
 
-                // write the header:
-                //Console.WriteLine("calling WriteHeader({0}): 0x{1:X8}..", FileName, _CompressionMethod);
                 WriteHeader(s, nCycles);
-                //Console.WriteLine("done calling WriteHeader({0}): 0x{1:X8}..", FileName, _CompressionMethod);
 
                 if (IsDirectory)
                 {
@@ -4499,12 +4496,13 @@ namespace Ionic.Zip
 
                 if (readAgain)
                 {
-                    // seek back!
-                    // seek in the raw output stream, to the beginning of the file data for this entry
+                    // seek back in the raw output stream, to the beginning of the
+                    // file data for this entry
                     s.Seek(_RelativeOffsetOfLocalHeader, SeekOrigin.Begin);
 
-                    // If the last entry expands, we read again; but here, we must truncate the stream
-                    // to prevent garbage data after the end-of-central-directory.
+                    // If the last entry expands, we read again; but here, we must
+                    // truncate the stream to prevent garbage data after the
+                    // end-of-central-directory.
                     s.SetLength(s.Position);
 
                     // Adjust the count on the CountingStream as necessary.
@@ -4605,35 +4603,24 @@ namespace Ionic.Zip
 
                 // The header length may change due to rename of file, add a comment, etc.
                 // We need to retain the original. 
-                int origLengthOfHeader = LengthOfHeader;
+                int origLengthOfHeader = LengthOfHeader; // including crypto bytes!
 
                 // WriteHeader() has the side effect of changing _RelativeOffsetOfLocalHeader 
-                // and setting _LengthOfHeader.  It writes the crypto header too, if any. 
+                // and setting _LengthOfHeader.  While ReadHeader() reads the crypto header if
+                // present, WriteHeader() does not write the crypto header.
                 WriteHeader(outstream, 0);
 
                 if (!this.FileName.EndsWith("/"))
                 {
                     // not a directory, we have file data
                     // seek to the beginning of the entry data in the input stream
-                    input.Seek(origRelativeOffsetOfHeader + origLengthOfHeader, SeekOrigin.Begin);
+                    long pos = origRelativeOffsetOfHeader + origLengthOfHeader;
+                    pos -= LengthOfCryptoHeaderBytes; // want to keep the crypto header
+                    _LengthOfHeader += LengthOfCryptoHeaderBytes;
+                    input.Seek(pos, SeekOrigin.Begin);
 
                     // copy through everything after the header to the output stream
                     long remaining = this._CompressedSize;
-                    _LengthOfTrailer = 0;
-#if AESCRYPTO
-                    if (this.Encryption == EncryptionAlgorithm.WinZipAes128 ||
-                    this.Encryption == EncryptionAlgorithm.WinZipAes256)
-                    {
-                        int sizeOfSaltAndPv = ((_KeyStrengthInBits / 8 / 2) + 2);
-                        remaining -= sizeOfSaltAndPv;
-
-                        // There is a 10 byte AES MAC that follows the encrypted file data.
-                        // The CompressedSize value includes that, as well as the crypto header.
-                        _LengthOfTrailer += 10;  
-                    }
-#endif
-                    if (this.Encryption == EncryptionAlgorithm.PkzipWeak)
-                        remaining -= 12;
                     
                     while (remaining > 0)
                     {
@@ -4675,7 +4662,7 @@ namespace Ionic.Zip
                             if (_UncompressedSize > 0xFFFFFFFF)
                                 throw new InvalidOperationException("ZIP64 is required");
                             outstream.Write(Descriptor, 16, 4);
-                            _LengthOfTrailer += 16;
+                            _LengthOfTrailer -= 8;
                         }
                         else if (!_InputUsesZip64 && _zipfile.UseZip64WhenSaving == Zip64Option.Always)
                         {
@@ -4689,13 +4676,13 @@ namespace Ionic.Zip
                             // UnCompressed
                             outstream.Write(Descriptor, 12, 4);
                             outstream.Write(pad, 0, 4);
-                            _LengthOfTrailer += 24;
+                            _LengthOfTrailer += 8;
                         }
                         else
                         {
                             // same descriptor on input and output. Copy it through.
                             outstream.Write(Descriptor, 0, size);
-                            _LengthOfTrailer += size;
+                            //_LengthOfTrailer += size;
                         }
                     }
                 }
