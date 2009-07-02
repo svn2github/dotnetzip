@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-01 13:15:21>
+// Time-stamp: <2009-July-02 17:42:27>
 //
 // ------------------------------------------------------------------
 //
@@ -1690,8 +1690,6 @@ namespace Ionic.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_SetFileLastModified()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_SetFileLastModified.zip");
-            Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
             int fileCount = _rnd.Next(13) + 23;
             string[] FilesToZip = new string[fileCount];
@@ -1702,34 +1700,56 @@ namespace Ionic.Zip.Tests.Basic
             }
 
             Directory.SetCurrentDirectory(TopLevelDir);
-            var Timestamp = new System.DateTime(2007, 9, 1, 15, 0, 0);
-            using (ZipFile zip = new ZipFile())
+            for (int m=0; m<3;  m++)
             {
-                for (int i = 0; i < FilesToZip.Length; i++)
+                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("CreateZip-SetFileLastModified-{0}.zip", m));
+                TestContext.WriteLine("Cycle {0}", m);
+                TestContext.WriteLine("zipfile {0}", zipFileToCreate);
+                // try both unspecified, and local
+                var timestamp = new System.DateTime(2007, 9, 1, 15, 0, 0);
+                if (m==1) timestamp = DateTime.SpecifyKind(timestamp, DateTimeKind.Local);
+                else if (m==2) timestamp = DateTime.SpecifyKind(timestamp, DateTimeKind.Utc);
+                
+                using (ZipFile zip = new ZipFile())
                 {
-                    // use the local filename (not fully qualified)
-                    ZipEntry e = zip.AddFile(Path.GetFileName(FilesToZip[i]));
-                    e.LastModified = Timestamp;
+                    for (int i = 0; i < FilesToZip.Length; i++)
+                    {
+                        // use the local filename (not fully qualified)
+                        ZipEntry e = zip.AddFile(Path.GetFileName(FilesToZip[i]));
+                        e.LastModified = timestamp;
+                    }
+                    zip.Comment = "All files in this archive have the same LastModified value.";
+                    zip.Save(zipFileToCreate);
                 }
-                zip.Comment = "All files in this archive have the same timestamp.";
-                zip.Save(zipFileToCreate);
-            }
 
-            int entries = 0;
-            using (ZipFile z2 = ZipFile.Read(zipFileToCreate))
-            {
-                foreach (ZipEntry e in z2)
+                // This is silly: comparing two DateTime variables will return
+                // "not equal" if they are not of the same "Kind", even if they
+                // represent the same point in time.  To counteract that, we
+                // convert to Local if the time is Utc.  If the values are equal
+                // and one is Unspecified and the other is not Unspecified, then
+                // the comparison returns equal.  ?? Counter-logical. 
+                if (m==2)
+                    timestamp= timestamp.ToLocalTime();
+                
+                string unpackDir = "unpack"+m;
+                int entries = 0;
+                using (ZipFile z2 = ZipFile.Read(zipFileToCreate))
                 {
-                    Assert.AreEqual<DateTime>(Timestamp, e.LastModified, "Unexpected timestamp on ZipEntry.");
-                    entries++;
-                    // now verify that the LastMod time on the filesystem file is set correctly
-                    e.Extract("unpack");
-                    DateTime ActualFilesystemLastMod = File.GetLastWriteTime(Path.Combine("unpack", e.FileName));
-                    Assert.AreEqual<DateTime>(Timestamp, ActualFilesystemLastMod, "Unexpected timestamp on extracted filesystem file.");
+                    foreach (ZipEntry e in z2)
+                    {
+                        Assert.AreEqual<DateTime>(timestamp, e.LastModified,
+                                                  "cycle {0}: Unexpected LastModified value on ZipEntry.", m);
+                        entries++;
+                        // now verify that the LastMod time on the filesystem file is set correctly
+                        e.Extract(unpackDir);
+                        DateTime ActualFilesystemLastMod = File.GetLastWriteTime(Path.Combine(unpackDir, e.FileName));
+                        Assert.AreEqual<DateTime>(timestamp, ActualFilesystemLastMod,
+                                                  "cycle {0}: Unexpected LastWriteTime on extracted filesystem file.", m);
+                    }
                 }
+                Assert.AreEqual<int>(entries, FilesToZip.Length, "Unexpected file count. Expected {0}, got {1}.",
+                                     FilesToZip.Length, entries);
             }
-            Assert.AreEqual<int>(entries, FilesToZip.Length, "Unexpected file count. Expected {0}, got {1}.",
-                    FilesToZip.Length, entries);
         }
 
         [TestMethod]

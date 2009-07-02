@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-01 23:26:51>
+// Time-stamp: <2009-July-02 17:37:01>
 //
 // ------------------------------------------------------------------
 //
@@ -199,8 +199,10 @@ namespace Ionic.Zip
         ///
         /// <para>
         /// This property allows the application to retrieve and possibly set the
-        /// LastModified value on an entry, to an arbitrary value.  DateTime values
-        /// without a DateTimeKind setting are assumed to be expressed in Local Time.
+        /// LastModified value on an entry, to an arbitrary value.  <see
+        /// cref="System.DateTime"/> values with a <see cref="System.DateTimeKind" />
+        /// setting of <c>DateTimeKind.Unspecified</c> are taken to be expressed as
+        /// <c>DateTimeKind.Local</c>.
         /// </para>
         ///
         /// <para>
@@ -282,16 +284,15 @@ namespace Ionic.Zip
         ///
         public DateTime LastModified
         {
-            get { return _LastModified; }
+            get { return _LastModified.ToLocalTime(); }
             set
             {
-                _LastModified = value;
+                 _LastModified= (value.Kind == DateTimeKind.Unspecified)
+                     ? DateTime.SpecifyKind(value, DateTimeKind.Local)
+                     : value;
                 if (_ntfsTimesAreSet)
-                {
-                    // if Kind is not set, this call assumes Local
                     _Mtime = _LastModified.ToUniversalTime();
-                }
-                //SetLastModDateTimeWithAdjustment(this);
+
                 _metadataChanged = true;
             }
         }
