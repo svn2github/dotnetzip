@@ -258,9 +258,9 @@ goto :EOF
   echo.
 
   c:\vs2008\Common7\ide\devenv.exe DotNetZip.sln /build release /project "RuntimeSetup"
-  echo waiting for RuntimeSetup\release\DotNetZip-Runtime.msi
-  c:\dinoch\dev\dotnet\AwaitFile RuntimeSetup\release\DotNetZip-Runtime.msi
-  move RuntimeSetup\release\DotNetZip-Runtime.msi ..\releases\v%version%-%stamp%\DotNetZip-Runtime-v%version%.msi
+  echo waiting for RuntimeSetup\release\DotNetZipLib-Runtime.msi
+  c:\dinoch\dev\dotnet\AwaitFile RuntimeSetup\release\DotNetZipLib-Runtime.msi
+  move RuntimeSetup\release\DotNetZipLib-Runtime.msi ..\releases\v%version%-%stamp%\DotNetZipLib-Runtime-v%version%.msi
 
 goto :EOF
 @REM end subroutine
