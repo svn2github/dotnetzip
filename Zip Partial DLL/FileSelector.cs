@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-30 19:27:23>
+// Time-stamp: <2009-July-01 14:07:51>
 //
 // ------------------------------------------------------------------
 //
@@ -164,18 +164,17 @@ namespace Ionic
 
         internal override bool Evaluate(string filename)
         {
-            //System.IO.FileInfo fi = new System.IO.FileInfo(filename);
             DateTime x;
             switch (Which)
             {
                 case WhichTime.atime:
-                    x = System.IO.File.GetLastAccessTime(filename);
+                    x = System.IO.File.GetLastAccessTimeUtc(filename);
                     break;
                 case WhichTime.mtime:
-                    x = System.IO.File.GetLastWriteTime(filename);
+                    x = System.IO.File.GetLastWriteTimeUtc(filename);
                     break;
                 case WhichTime.ctime:
-                    x = System.IO.File.GetCreationTime(filename);
+                    x = System.IO.File.GetCreationTimeUtc(filename);
                     break;
                 default:
                     throw new ArgumentException("Operator");
@@ -478,6 +477,7 @@ namespace Ionic
     {
         internal SelectionCriterion _Criterion;
 
+        #if NOTUSED
         /// <summary>
         /// The default constructor.  
         /// </summary>
@@ -487,8 +487,8 @@ namespace Ionic
         /// you'll want to set the SelectionCriteria property on the instance before calling
         /// SelectFiles().
         /// </remarks>
-        //protected FileSelector() { }
-
+        protected FileSelector() { }
+        #endif
 
         /// <summary>
         /// Constructor that allows the caller to specify file selection criteria.
@@ -725,6 +725,7 @@ namespace Ionic
                         {
                             t = DateTime.ParseExact(tokens[i + 2], "yyyy-MM-dd", null);
                         }
+                        t= DateTime.SpecifyKind(t, DateTimeKind.Local).ToUniversalTime();
                         current = new TimeCriterion
                         {
                             Which = (WhichTime)Enum.Parse(typeof(WhichTime), tokens[i]),

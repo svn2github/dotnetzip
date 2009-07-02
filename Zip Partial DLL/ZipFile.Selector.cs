@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-18 23:05:42>
+// Time-stamp: <2009-July-01 13:49:40>
 //
 // ------------------------------------------------------------------
 //
@@ -63,7 +63,7 @@ namespace Ionic.Zip
         /// "attributes" for the file attributes; and "size" for the file length (uncompressed).
         /// The "attributes" and "name" nouns both support = and != as operators.  The "size",
         /// "atime", "mtime", and "ctime" nouns support = and !=, and &gt;, &gt;=, &lt;, &lt;=
-        /// as well.
+        /// as well. The times are taken to be expressed in "local time". 
         /// </para> 
         ///
         /// <para>

@@ -67,8 +67,6 @@ namespace Ionic.Zip.Tests
 
         private string CurrentDir;
         private string TopLevelDir;
-        private static string IonicZipDll;
-        private static string RegAsm = "c:\\windows\\Microsoft.NET\\Framework\\v2.0.50727\\regasm.exe";
 
         // Use TestInitialize to run code before running each test 
         [TestInitialize()]

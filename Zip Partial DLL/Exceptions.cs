@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-01 05:29:19>
+// Time-stamp: <2009-July-01 12:25:24>
 //
 // ------------------------------------------------------------------
 //
@@ -27,7 +27,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+#if !NETCF
 using System.Runtime.Serialization;
+#endif
 
 namespace Ionic.Zip
 {

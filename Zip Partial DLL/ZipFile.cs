@@ -6038,7 +6038,8 @@ namespace Ionic.Zip
             set
             {
                 if (value != null)
-                    throw new ArgumentException("You may not set this to a non-null ZipEntry value.");
+                    throw new ZipException("You may not set this to a non-null ZipEntry value.",
+                                           new ArgumentException("this[int]"));
                 RemoveEntry(_entries[ix]);
             }
         }
