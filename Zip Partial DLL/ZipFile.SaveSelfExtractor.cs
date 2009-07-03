@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-15 14:22:15>
+// Time-stamp: <2009-July-02 21:32:23>
 //
 // ------------------------------------------------------------------
 //
@@ -475,6 +475,7 @@ namespace Ionic.Zip
                 cp.GenerateInMemory = false;
                 cp.GenerateExecutable = true;
                 cp.IncludeDebugInformation = false;
+                //cp.IncludeDebugInformation = true;
                 cp.OutputAssembly = StubExe;
 
                 Assembly a2 = Assembly.GetExecutingAssembly();
@@ -560,9 +561,20 @@ namespace Ionic.Zip
                 }
 
                 string LiteralSource = sb.ToString();
-                
-                System.CodeDom.Compiler.CompilerResults cr = csharp.CompileAssemblyFromSource(cp, LiteralSource);
+
+                #if NEEDED
+                // for debugging only
+                string sourceModule = GenerateTempPathname("cs", null);
+                using (StreamWriter sw = File.CreateText(sourceModule))
+                {
+                    sw.Write(LiteralSource);
+                }
+                Console.WriteLine("source: {0}", sourceModule);
+                #endif
                     
+                System.CodeDom.Compiler.CompilerResults cr = csharp.CompileAssemblyFromSource(cp, LiteralSource);
+
+                
                 if (cr == null)
                     throw new SfxGenerationException("Cannot compile the extraction logic!");
 

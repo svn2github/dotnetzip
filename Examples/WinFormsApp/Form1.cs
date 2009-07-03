@@ -107,7 +107,8 @@ namespace Ionic.Zip.WinFormsExample
             _EncryptionNames = new List<string>(Enum.GetNames(typeof(Ionic.Zip.EncryptionAlgorithm)));
             foreach (var name in _EncryptionNames)
             {
-                comboEncryption.Items.Add(name);
+                if (name != "Unsupported")
+                    comboEncryption.Items.Add(name);
             }
 
             // select the first item: 

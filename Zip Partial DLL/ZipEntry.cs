@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-02 17:37:01>
+// Time-stamp: <2009-July-03 00:36:56>
 //
 // ------------------------------------------------------------------
 //
@@ -118,6 +118,12 @@ namespace Ionic.Zip
         WinZipAes256,
         #endif
 
+        /// <summary>
+        /// An encryption algorithm that is not supported by DotNetZip.
+        /// </summary>
+        Unsupported = 4,
+
+        
         // others... not implemented (yet?)
     }
 
@@ -2881,28 +2887,29 @@ namespace Ionic.Zip
 
         private void ValidateEncryption()
         {
-#if AESCRYPTO
             if (Encryption != EncryptionAlgorithm.PkzipWeak &&
+#if AESCRYPTO
                 Encryption != EncryptionAlgorithm.WinZipAes128 &&
                 Encryption != EncryptionAlgorithm.WinZipAes256 &&
-                Encryption != EncryptionAlgorithm.None)
-                throw new ArgumentException(String.Format("Unsupported Encryption algorithm ({0:X2})",
-                              Encryption));
-#else
-            if (Encryption != EncryptionAlgorithm.PkzipWeak &&
-                Encryption != EncryptionAlgorithm.None)
-                throw new ArgumentException(String.Format("Unsupported Encryption algorithm ({0:X2})",
-                              Encryption));
-
 #endif
-
+                Encryption != EncryptionAlgorithm.None)
+            {
+                // workitem 7968
+                if (_UnsupportedAlgorithmId!=0)
+                    throw new ZipException(String.Format("Cannot extract: Entry {0} is encrypted with an algorithm not supported by DotNetZip: {1}",
+                                                         FileName, UnsupportedAlgorithm));
+                else
+                    throw new ZipException(String.Format("Cannot extract: Entry {0} uses an unsupported encryption algorithm ({1:X2})",
+                                                         FileName, (int)Encryption));
+            }
         }
 
+        
         private void ValidateCompression()
         {
             if ((CompressionMethod != 0) && (CompressionMethod != 0x08))  // deflate
-                throw new ArgumentException(String.Format("Unsupported Compression method (0x{0:X2})",
-                              CompressionMethod));
+                throw new ArgumentException(String.Format("Entry {0} uses an unsupported Compression method (0x{1:X2})",
+                                                          FileName, CompressionMethod));
         }
 
 
@@ -4779,12 +4786,6 @@ namespace Ionic.Zip
 
 
 
-        static internal bool IsStrong(EncryptionAlgorithm e)
-        {
-            return ((e != EncryptionAlgorithm.None)
-            && (e != EncryptionAlgorithm.PkzipWeak));
-        }
-
 
         // At current cursor position in the stream, read the extra field,
         // and set the properties on the ZipEntry instance appropriately. 
@@ -4939,6 +4940,32 @@ namespace Ionic.Zip
                             }
                             break;
 #endif
+                        case 0x0017: // workitem 7968: handle PKWare Strong encryption header
+                            //           Value     Size     Description
+                            //           -----     ----     -----------
+                            //           0x0017    2 bytes  Tag for this "extra" block type
+                            //           TSize     2 bytes  Size of data that follows
+                            //           Format    2 bytes  Format definition for this record
+                            //           AlgID     2 bytes  Encryption algorithm identifier
+                            //           Bitlen    2 bytes  Bit length of encryption key
+                            //           Flags     2 bytes  Processing flags
+                            //           CertData  TSize-8  Certificate decryption extra field data
+                            //                              (refer to the explanation for CertData
+                            //                               in the section describing the 
+                            //                               Certificate Processing Method under 
+                            //                               the Strong Encryption Specification)
+                            {
+                                Int16 format = (Int16)(Buffer[j] + Buffer[j + 1] * 256);
+                                j+=2;
+                                _UnsupportedAlgorithmId = (UInt16)(Buffer[j] + Buffer[j + 1] * 256);
+                                j+=2;
+                                _Encryption = EncryptionAlgorithm.Unsupported;
+
+                                // DotNetZip doesn't support this algorithm, but we don't need to throw here.
+                                // we might just be reading the archive, which is fine.  We'll need to
+                                // throw if Extract() is called.
+                            }
+                            break;
                     }
 
                     // move to the next Header in the extra field
@@ -4950,7 +4977,60 @@ namespace Ionic.Zip
 
 
 
-
+        // workitem 7968
+        private string UnsupportedAlgorithm
+        {
+            get
+            {
+                string alg = String.Empty;
+                switch (_UnsupportedAlgorithmId)
+                {
+                    case 0:
+                        alg = "--";
+                        break;
+                    case 0x6601:
+                        alg = "DES";
+                        break;
+                    case 0x6602: // - RC2 (version needed to extract < 5.2)
+                        alg= "RC2";
+                        break;
+                    case 0x6603: // - 3DES 168
+                        alg= "3DES-168";
+                        break;
+                    case 0x6609: // - 3DES 112
+                        alg= "3DES-112";
+                        break;
+                    case 0x660E: // - AES 128
+                        alg= "PKWare AES128";
+                        break;
+                    case 0x660F: // - AES 192
+                        alg= "PKWare AES192";
+                        break;
+                    case 0x6610: // - AES 256
+                        alg= "PKWare AES256";
+                        break;
+                    case 0x6702: // - RC2 (version needed to extract >= 5.2)
+                        alg= "RC2";
+                        break;
+                    case 0x6720: // - Blowfish
+                        alg= "Blowfish";
+                        break;
+                    case 0x6721: // - Twofish
+                        alg= "Twofish";
+                        break;
+                    case 0x6801: // - RC4
+                        alg= "RC4";
+                        break;
+                    case 0xFFFF: // - Unknown algorithm
+                    default:
+                        alg= String.Format("Unknown (0x{0:X4})", _UnsupportedAlgorithmId);
+                        break;
+                }
+                return alg;
+            }
+        }
+    
+        
         private void SetFdpLoh()
         {
             // Indicates that the value has not yet been set. 
@@ -4997,17 +5077,17 @@ namespace Ionic.Zip
             {
                 if ((_BitField & 0x01) != 0x01) return 0;
 
-                    #if AESCRYPTO
-                        if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
-                            Encryption == EncryptionAlgorithm.WinZipAes256)
-                        {
-                            int sizeOfSaltAndPv = ((_KeyStrengthInBits / 8 / 2) + 2);
-                            return sizeOfSaltAndPv;
-                        }
-                    #endif
-                        if (Encryption == EncryptionAlgorithm.PkzipWeak)
-                            return 12;
-                    throw new ZipException("internal error");
+                #if AESCRYPTO
+                    if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
+                        Encryption == EncryptionAlgorithm.WinZipAes256)
+                    {
+                        int sizeOfSaltAndPv = ((_KeyStrengthInBits / 8 / 2) + 2);
+                        return sizeOfSaltAndPv;
+                    }
+                #endif
+                    if (Encryption == EncryptionAlgorithm.PkzipWeak)
+                        return 12;
+                throw new ZipException("internal error");
             }
         }
 
@@ -5037,11 +5117,11 @@ namespace Ionic.Zip
 
 
         internal ZipCrypto _zipCrypto;
-#if AESCRYPTO
+        #if AESCRYPTO
         internal WinZipAesCrypto _aesCrypto;
         internal Int16 _KeyStrengthInBits;
         private Int16 _WinZipAesMethod;
-#endif
+        #endif
 
         internal DateTime _LastModified;
         private DateTime _Mtime, _Atime, _Ctime;  // workitem 6878: NTFS quantities
@@ -5080,6 +5160,7 @@ namespace Ionic.Zip
         internal int _LengthOfHeader;
         internal int _LengthOfTrailer;
         private bool _InputUsesZip64;
+        private  UInt32 _UnsupportedAlgorithmId;
 
         internal string _Password;
         internal ZipEntrySource _Source = ZipEntrySource.None;

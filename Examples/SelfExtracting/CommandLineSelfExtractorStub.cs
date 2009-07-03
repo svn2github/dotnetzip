@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-02 01:31:23>
+// Time-stamp: <2009-July-02 23:48:32>
 //
 // ------------------------------------------------------------------
 //
@@ -47,7 +47,6 @@ namespace Ionic.Zip
         bool WantOverwrite = false;
         bool ListOnly = false;
         bool Verbose = false;
-        bool wantUsage = false;
         string Password = null;
         
         private bool PostUnpackCmdLineIsSet()
@@ -79,15 +78,23 @@ namespace Ionic.Zip
         // ctor
         public SelfExtractor(string[] args)
         {
-
+            string specifiedDirectory = null;
             for (int i = 0; i < args.Length; i++)
             {
                 switch (args[i])
                 {
                     case "-p":
                         i++;
-                        if (args.Length <= i) Usage();
-                        if (Password != null) Usage();
+                        if (args.Length <= i)
+                        {
+                            Console.WriteLine("please supply a password.\n");
+                            GiveUsageAndExit();
+                        }
+                        if (Password != null) 
+                        {
+                            Console.WriteLine("You already provided a password.\n");
+                            GiveUsageAndExit();
+                        }
                         Password = args[i];
                         break;
                     case "-o":
@@ -97,31 +104,36 @@ namespace Ionic.Zip
                         ListOnly = true;
                         break;
                     case "-?":
-                        wantUsage = true;
+                        GiveUsageAndExit();
                         break;
                     case "-v":
                         Verbose = true;
                         break;
                     default:
                         // positional args
-                        if (!TargetDirectoryIsSet())
-                            TargetDirectory = args[i];
-                        else
-                            Usage();
+                        if (specifiedDirectory!=null)
+                        {
+                            Console.WriteLine("unrecognized argument: '{0}'\n", args[i]);
+                            GiveUsageAndExit();
+                        }
+                        specifiedDirectory = args[i];
                         break;
                 }
             }
 
-            if (wantUsage)
-                Usage();
 
-            if (!ListOnly && !TargetDirectoryIsSet())
-                TargetDirectory = ".";  // cwd
+            if (!ListOnly)
+            {
+                if (specifiedDirectory!=null)
+                    TargetDirectory = specifiedDirectory;
+                else if (!TargetDirectoryIsSet())
+                    TargetDirectory = ".";  // cwd
+            }
 
-            if (ListOnly && (WantOverwrite || Verbose))
+            if (ListOnly && (WantOverwrite || Verbose || (specifiedDirectory != null)))
             {
                 Console.WriteLine("Inconsistent options.\n");
-                Usage();
+                GiveUsageAndExit();
             }
         }
 
@@ -134,25 +146,41 @@ namespace Ionic.Zip
 
         static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
         {
+            // super defensive
             Assembly a1 = Assembly.GetExecutingAssembly();
+            if (a1==null)
+                throw new Exception("GetExecutingAssembly returns null");
+            
             Stream s = a1.GetManifestResourceStream("Ionic.Zip.dll");
+            if (s==null)
+            {
+                String[] names = a1.GetManifestResourceNames();
+                throw new Exception(String.Format("GetManifestResourceStream returns null. Available resources: [{0}]",
+                                                  String.Join("|", names)));
+            }
+                
             byte[] block = new byte[s.Length];
+            
+            if (s==null)
+                throw new Exception(String.Format("Cannot allocated buffer of length({0}).", s.Length));
+
             s.Read(block, 0, block.Length);
             Assembly a2 = Assembly.Load(block);
+            if (a2==null)
+                throw new Exception("Assembly.Load(block) returns null");
+            
             return a2;
         }
 
 
         public int Run()
         {
-            if (wantUsage) return 0;
-            //string currentPassword = null;
+            //System.Diagnostics.Debugger.Break();
+            
 
-            // There are only two embedded resources.
-            // One of them is the zip dll.  The other is the zip archive.
-            // We load the resouce that is NOT the DLL, as the zip archive.
+            // There way this works:  the EXE is a ZIP file.  So
+            // read from the location of the assembly, in other words the path to the exe. 
             Assembly a = Assembly.GetExecutingAssembly();
-
 
             int rc = 0;
             try
@@ -198,7 +226,7 @@ namespace Ionic.Zip
                                 }
                                 catch (Exception ex1)
                                 {
-                                    Console.WriteLine("Failed to extract entry {0} -- {1}", entry.FileName, ex1.ToString());
+                                    Console.WriteLine("Failed to extract entry {0} -- {1}", entry.FileName, ex1.Message);
                                     rc++;
                                     break;
                                 }
@@ -216,7 +244,7 @@ namespace Ionic.Zip
                                     catch (Exception ex2)
                                     {
                                         // probably want a retry here in the case of bad password.
-                                        Console.WriteLine("Failed to extract entry {0} -- {1}", entry.FileName, ex2.ToString());
+                                        Console.WriteLine("Failed to extract entry {0} -- {1}", entry.FileName, ex2.Message);
                                     }
                                 }
                             }
@@ -273,17 +301,21 @@ namespace Ionic.Zip
         }
 
 
-        private static void Usage()
+        private void GiveUsageAndExit()
         {
             Assembly a = Assembly.GetExecutingAssembly();
             string s = Path.GetFileName(a.Location);
             Console.WriteLine("DotNetZip Command-Line Self Extractor, see http://www.codeplex.com/DotNetZip");
-            Console.WriteLine("usage:\n  {0} [-o] [-v] [-p password] <directory>", s);
-            Console.WriteLine("    Extracts entries from the archive.");
-            Console.WriteLine("    -o   - overwrite any existing files upon extraction.");
-            Console.WriteLine("    -v   - verbose.");
+            Console.WriteLine("usage:\n  {0} [-o] [-v] [-p password] [<directory>]", s);
+            Console.WriteLine("    Extracts entries from the archive.\n" +
+                              "    -o   - overwrite any existing files upon extraction.\n" +
+                              "    -v   - verbose.\n");
+            
+            if (TargetDirectoryIsSet()) 
+                Console.WriteLine("  default extract dir: {0}\n",TargetDirectory);
 
-            Console.WriteLine("\n  {0} -l", s);
+
+            Console.WriteLine("  {0} -l", s);
             Console.WriteLine("    Lists entries in the archive.");
             Environment.Exit(1);
         }

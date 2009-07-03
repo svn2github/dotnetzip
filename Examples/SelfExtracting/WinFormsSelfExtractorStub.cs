@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-15 13:43:45>
+// Time-stamp: <2009-July-02 23:48:42>
 //
 // ------------------------------------------------------------------
 //
@@ -156,6 +156,7 @@ namespace Ionic.Zip
         }
 
 
+        #if ORIG
         static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
         {
             Assembly a1 = Assembly.GetExecutingAssembly();
@@ -165,7 +166,37 @@ namespace Ionic.Zip
             Assembly a2 = Assembly.Load(block);
             return a2;
         }
+        #else
+            
+        static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
+        {
+            // super defensive
+            Assembly a1 = Assembly.GetExecutingAssembly();
+            if (a1==null)
+                throw new Exception("GetExecutingAssembly returns null");
+            
+            Stream s = a1.GetManifestResourceStream("Ionic.Zip.dll");
+            if (s==null)
+            {
+                String[] names = a1.GetManifestResourceNames();
+                throw new Exception(String.Format("GetManifestResourceStream returns null. Available resources: [{0}]",
+                                                  String.Join("|", names)));
+            }
+                
+            byte[] block = new byte[s.Length];
+            
+            if (s==null)
+                throw new Exception(String.Format("Cannot allocated buffer of length({0}).", s.Length));
 
+            s.Read(block, 0, block.Length);
+            Assembly a2 = Assembly.Load(block);
+            if (a2==null)
+                throw new Exception("Assembly.Load(block) returns null");
+            
+            return a2;
+        }
+            
+        #endif
 
 
         private void btnDirBrowse_Click(object sender, EventArgs e)
