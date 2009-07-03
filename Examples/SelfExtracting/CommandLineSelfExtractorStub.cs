@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-02 23:48:32>
+// Time-stamp: <2009-July-03 15:02:41>
 //
 // ------------------------------------------------------------------
 //
@@ -144,24 +144,41 @@ namespace Ionic.Zip
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(Resolver);
         }
 
+
         static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
         {
             // super defensive
             Assembly a1 = Assembly.GetExecutingAssembly();
             if (a1==null)
-                throw new Exception("GetExecutingAssembly returns null");
+                throw new Exception("GetExecutingAssembly returns null.");
+
+            string[] tokens = args.Name.Split(',');
             
-            Stream s = a1.GetManifestResourceStream("Ionic.Zip.dll");
-            if (s==null)
+            String[] names = a1.GetManifestResourceNames();
+            
+            if (names==null)
+                throw new Exception("GetManifestResourceNames returns null.");
+
+            // workitem 7978
+            Stream s = null;
+            foreach (string n in names)
             {
-                String[] names = a1.GetManifestResourceNames();
+                string root = n.Substring(0,n.Length-4);
+                string ext = n.Substring(n.Length-3);
+                if (root.Equals(tokens[0])  && ext.ToLower().Equals("dll"))
+                {
+                    s= a1.GetManifestResourceStream(n);
+                    if (s!=null) break;
+                }
+            }
+            
+            if (s==null)
                 throw new Exception(String.Format("GetManifestResourceStream returns null. Available resources: [{0}]",
                                                   String.Join("|", names)));
-            }
-                
+
             byte[] block = new byte[s.Length];
             
-            if (s==null)
+            if (block==null)
                 throw new Exception(String.Format("Cannot allocated buffer of length({0}).", s.Length));
 
             s.Read(block, 0, block.Length);

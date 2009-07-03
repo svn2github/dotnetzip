@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-01 17:00:11>
+// Time-stamp: <2009-July-03 16:48:14>
 //
 // ------------------------------------------------------------------
 //
@@ -43,7 +43,7 @@ namespace Ionic.Zip.Tests
     public class Selector
     {
         private System.Random _rnd;
-        
+
         public Selector()
         {
             _rnd = new System.Random();
@@ -116,7 +116,7 @@ namespace Ionic.Zip.Tests
             {
                 if (Directory.Exists(fodderDirectory))
                 {
-                    // some of the files are marked as ReadOnly/System, and
+                    // Some of the files are marked as ReadOnly/System, and
                     // before deleting the dir we must strip those attrs.
                     var files = Directory.GetFiles(fodderDirectory);
                     foreach (var f in files)
@@ -124,18 +124,37 @@ namespace Ionic.Zip.Tests
                         var a = File.GetAttributes(f);
                         if ((a & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
                         {
-                            a  &= ~FileAttributes.ReadOnly;
+                            a &= ~FileAttributes.ReadOnly;
                             File.SetAttributes(f, a);
                         }
                         if (((a & FileAttributes.Hidden) == FileAttributes.Hidden) ||
                             ((a & FileAttributes.System) == FileAttributes.System))
                         {
-                            a  &= ~FileAttributes.Hidden;
-                            a  &= ~FileAttributes.System;
+                            a &= ~FileAttributes.Hidden;
+                            a &= ~FileAttributes.System;
                             File.SetAttributes(f, a);
                         }
+                        File.Delete(f);
                     }
-                    Directory.Delete(fodderDirectory, true);
+
+                    // Delete the directory with delay and retry.
+                    // Sometimes I have a console window in the directory
+                    // and I want it to not give up so easily.
+                    int tries =0;
+                    bool success = false;
+                    do
+                    {
+                        try 
+                        {
+                            Directory.Delete(fodderDirectory, true);
+                            success = true;
+                        }
+                        catch
+                        {
+                            System.Threading.Thread.Sleep(600);
+                        }
+                        tries++;
+                    } while (tries < 100 && !success)
                 }
             }
         }
@@ -149,10 +168,10 @@ namespace Ionic.Zip.Tests
         public void Selector_EdgeCases()
         {
             string Subdir = Path.Combine(TopLevelDir, "A");
-            
+
             Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt");
             var list = ff.SelectFiles(Subdir);
-            
+
             ff.SelectionCriteria = "name = *.bin";
             list = ff.SelectFiles(Subdir);
         }
@@ -173,15 +192,15 @@ namespace Ionic.Zip.Tests
         {
             lock (LOCK)
             {
-                if (numFodderFiles<=0)
+                if (numFodderFiles <= 0)
                     _SetupFiles();
-                if (numFodderFiles<=0)
+                if (numFodderFiles <= 0)
                     throw new Exception();
                 return fodderDirectory;
             }
         }
 
-        
+
         private void _SetupFiles()
         {
             lock (LOCK)
@@ -191,48 +210,51 @@ namespace Ionic.Zip.Tests
                 // remember this directory so we can restore later
                 string originalDir = Directory.GetCurrentDirectory();
 
-                int entriesAdded= 0;
-            
+                int entriesAdded = 0;
+
                 Directory.SetCurrentDirectory(CurrentDir);
                 Directory.CreateDirectory(fodderDirectory);
                 Directory.SetCurrentDirectory(fodderDirectory);
 
-                twentyPlusDaysAgo = DateTime.Now - new TimeSpan(20,12,13,14);
+                twentyPlusDaysAgo = DateTime.Now - new TimeSpan(20, 12, 13, 14);
                 today = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
-                tomorrow = today + new TimeSpan(1,0,0,0);
-                threeDaysAgo = today - new TimeSpan(3,0,0,0);
-                yesterday = today - new TimeSpan(1,0,0,0);
+                tomorrow = today + new TimeSpan(1, 0, 0, 0);
+                threeDaysAgo = today - new TimeSpan(3, 0, 0, 0);
+                yesterday = today - new TimeSpan(1, 0, 0, 0);
 
+                string[] nameFormats =
+                {
+                    "file{0:D3}",
+                    "{0:D3}",
+                    "PrettyLongFileName-{0:D3}",
+                    "Extremely-Long-Filename-{0:D3}-with-a-repeated-segment-{0:D3}-{0:D3}-{0:D3}-{0:D3}",
+                    
+                };
+                
                 int fileCount = _rnd.Next(95) + 95;
                 for (int j = 0; j < fileCount; j++)
                 {
                     // select the size
                     int sz = 0;
-                    if (j%5==0) sz= _rnd.Next(15000) + 150000;
-                    else if (j%17==1) sz = _rnd.Next(50*1024) + 1024*1024;
-                    else if (_rnd.Next(13)==0) sz = 8080; // exactly
-                    else sz= _rnd.Next(5000) + 5000;
+                    if (j % 5 == 0) sz = _rnd.Next(15000) + 150000;
+                    else if (j % 17 == 1) sz = _rnd.Next(50 * 1024) + 1024 * 1024;
+                    else if (_rnd.Next(13) == 0) sz = 8080; // exactly
+                    else sz = _rnd.Next(5000) + 5000;
 
                     // select the name (long or short form)
-                    string fnameTemplate ="";
-                    int n= _rnd.Next(3);
-                    if (n==0)
-                        fnameTemplate = "file{0:D3}";
-                    else if (n==1)
-                        fnameTemplate = "{0:D3}";
-                    else 
-                        fnameTemplate = "ReallyLongFileName-{0:D3}";
+                    string fnameTemplate = "";
+                    int n = _rnd.Next(4);
 
                     // binary or text
                     string filename = null;
                     if (_rnd.Next(2) == 0)
                     {
-                        filename = Path.Combine(fodderDirectory, String.Format(fnameTemplate, j) + ".txt");
+                        filename = Path.Combine(fodderDirectory, String.Format(nameFormats[n], j) + ".txt");
                         TestUtilities.CreateAndFillFileText(filename, sz);
                     }
                     else
                     {
-                        filename = Path.Combine(fodderDirectory, String.Format(fnameTemplate, j) + ".bin");
+                        filename = Path.Combine(fodderDirectory, String.Format(nameFormats[n], j) + ".bin");
                         TestUtilities.CreateAndFillFileBinary(filename, sz);
                     }
 
@@ -255,7 +277,7 @@ namespace Ionic.Zip.Tests
                         File.SetLastWriteTime(filename, x);
                     }
 
-                
+
                     // mark some of the files as hidden, system, readonly, etc
                     if (j % 9 == 0)
                         File.SetAttributes(filename, FileAttributes.Hidden);
@@ -265,19 +287,19 @@ namespace Ionic.Zip.Tests
                         File.SetAttributes(filename, FileAttributes.System);
                     if (j % 11 == 0)
                         File.SetAttributes(filename, FileAttributes.Archive);
-                
+
                     entriesAdded++;
                 }
-                numFodderFiles= entriesAdded;
+                numFodderFiles = entriesAdded;
 
                 // restore the cwd
                 Directory.SetCurrentDirectory(originalDir);
             }
-            
+
         }
 
-        
-        
+
+
         class Trial
         {
             public string Label;
@@ -287,7 +309,7 @@ namespace Ionic.Zip.Tests
 
 
 
-        
+
         [TestMethod]
         public void Selector_SelectFiles()
         {
@@ -339,7 +361,7 @@ namespace Ionic.Zip.Tests
                     
                 };
 
-            
+
             string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectFiles.zip");
             Assert.IsFalse(File.Exists(zipFileToCreate), "The zip file '{0}' already exists.", zipFileToCreate);
 
@@ -421,33 +443,33 @@ namespace Ionic.Zip.Tests
 
         private Ionic.CopyData.Transceiver SetupProgressMonitor(string label)
         {
-                // create a huge ZIP64 archive with a true 64-bit offset.
-                string testBin = TestUtilities.GetTestBinDir(CurrentDir);
-                string progressMonitorTool = Path.Combine(testBin, "Resources\\UnitTestProgressMonitor.exe");
-                string requiredDll = Path.Combine(testBin, "Resources\\Ionic.CopyData.dll");
+            // create a huge ZIP64 archive with a true 64-bit offset.
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+            string progressMonitorTool = Path.Combine(testBin, "Resources\\UnitTestProgressMonitor.exe");
+            string requiredDll = Path.Combine(testBin, "Resources\\Ionic.CopyData.dll");
 
-                Assert.IsTrue(File.Exists(progressMonitorTool), "progress monitor tool does not exist ({0})", progressMonitorTool);
-                Assert.IsTrue(File.Exists(requiredDll), "required DLL does not exist ({0})", requiredDll);
+            Assert.IsTrue(File.Exists(progressMonitorTool), "progress monitor tool does not exist ({0})", progressMonitorTool);
+            Assert.IsTrue(File.Exists(requiredDll), "required DLL does not exist ({0})", requiredDll);
 
-                string progressChannel = label;
-                // start the progress monitor
-                string ignored;
-                TestUtilities.Exec_NoContext(progressMonitorTool, String.Format("-channel {0}", progressChannel), false, out ignored);
+            string progressChannel = label;
+            // start the progress monitor
+            string ignored;
+            TestUtilities.Exec_NoContext(progressMonitorTool, String.Format("-channel {0}", progressChannel), false, out ignored);
 
-                // System.Reflection.Assembly.Load(requiredDll);
+            // System.Reflection.Assembly.Load(requiredDll);
 
-                System.Threading.Thread.Sleep(1000);
-                var txrx = new Ionic.CopyData.Transceiver();
+            System.Threading.Thread.Sleep(1000);
+            var txrx = new Ionic.CopyData.Transceiver();
 
-                txrx.Channel = progressChannel;
-                txrx.Send("test " + label);
-                System.Threading.Thread.Sleep(120);
-                txrx.Send(String.Format("pb 0 max {0}", 3));
+            txrx.Channel = progressChannel;
+            txrx.Send("test " + label);
+            System.Threading.Thread.Sleep(120);
+            txrx.Send(String.Format("pb 0 max {0}", 3));
 
-                return txrx;
+            return txrx;
         }
-        
-        
+
+
         [TestMethod]
         public void Selector_AddSelectedFiles()
         {
@@ -480,9 +502,9 @@ namespace Ionic.Zip.Tests
                         },
                 };
 
-            Ionic.CopyData.Transceiver txrx=  SetupProgressMonitor("AddSelectedFiles");
+            Ionic.CopyData.Transceiver txrx = SetupProgressMonitor("AddSelectedFiles");
 
-            txrx.Send(String.Format("pb 0 max {0}", trials.Length+1));
+            txrx.Send(String.Format("pb 0 max {0}", trials.Length + 1));
 
             string[] zipFileToCreate = {
                 Path.Combine(TopLevelDir, "Selector_AddSelectedFiles-1.zip"),
@@ -506,7 +528,7 @@ namespace Ionic.Zip.Tests
                 txrx.Send("test AddSelectedFiles");
                 txrx.Send("pb 1 max 4");
                 txrx.Send(String.Format("status test {0}/{1}: creating zip #1",
-                                        m+1, trials.Length));
+                                        m + 1, trials.Length));
                 TestContext.WriteLine("===============================================");
                 TestContext.WriteLine("AddSelectedFiles() [{0}]", trials[m].Label);
                 using (ZipFile zip1 = new ZipFile())
@@ -519,7 +541,7 @@ namespace Ionic.Zip.Tests
                 txrx.Send("pb 1 step");
 
                 txrx.Send(String.Format("status test {0}/{1}: creating zip #2",
-                                        m+1, trials.Length));
+                                        m + 1, trials.Length));
                 using (ZipFile zip1 = new ZipFile())
                 {
                     zip1.AddSelectedFiles(trials[m].C2, fodderDirectory, "");
@@ -533,23 +555,23 @@ namespace Ionic.Zip.Tests
                 /// =======================================================
                 /// Now, select entries from that ZIP
                 txrx.Send(String.Format("status test {0}/{1}: selecting zip #1",
-                                        m+1, trials.Length));
+                                        m + 1, trials.Length));
                 using (ZipFile zip1 = ZipFile.Read(zipFileToCreate[0]))
                 {
                     var selected1 = zip1.SelectEntries(trials[m].C1);
                     Assert.AreEqual<Int32>(selected1.Count, count1);
                 }
                 txrx.Send("pb 1 step");
-                    
+
                 txrx.Send(String.Format("status test {0}/{1}: selecting zip #2",
-                                        m+1, trials.Length));
+                                        m + 1, trials.Length));
                 using (ZipFile zip1 = ZipFile.Read(zipFileToCreate[1]))
                 {
                     var selected2 = zip1.SelectEntries(trials[m].C2);
                     Assert.AreEqual<Int32>(selected2.Count, count2);
                 }
                 txrx.Send("pb 1 step");
-                
+
                 txrx.Send("pb 0 step");
             }
 
@@ -560,13 +582,13 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void Selector_AddSelectedFiles_2()
         {
-            string  zipFileToCreate = Path.Combine(TopLevelDir, "Selector_AddSelectedFiles_2.zip");
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_AddSelectedFiles_2.zip");
 
             Directory.SetCurrentDirectory(TopLevelDir);
             string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
             var files = TestUtilities.GenerateFilesFlat(dirToZip);
             var txtFiles = Directory.GetFiles(dirToZip, "*.txt", SearchOption.AllDirectories);
-            
+
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.AddSelectedFiles("*.txt");
@@ -593,7 +615,7 @@ namespace Ionic.Zip.Tests
 
         }
 
-        
+
 
         private enum WhichTime
         {
@@ -604,13 +626,13 @@ namespace Ionic.Zip.Tests
 
         private void TouchFile(string strFile, WhichTime which, DateTime stamp)
         {
-            System.IO.FileInfo fi = new System.IO.FileInfo (strFile);
+            System.IO.FileInfo fi = new System.IO.FileInfo(strFile);
             if (which == WhichTime.atime)
                 fi.LastAccessTime = stamp;
             else if (which == WhichTime.ctime)
                 fi.CreationTime = stamp;
             else if (which == WhichTime.mtime)
-                fi.LastWriteTime  = stamp;
+                fi.LastWriteTime = stamp;
             else throw new System.ArgumentException("which");
         }
 
@@ -649,7 +671,7 @@ namespace Ionic.Zip.Tests
                 crit = String.Format("mtime < {0}", today.ToString("yyyy-MM-dd"));
                 var selected2 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected2.Count);
-                
+
                 Assert.AreEqual<Int32>(numFodderFiles, selected1.Count + selected2.Count);
 
                 crit = String.Format("ctime >= {0}", threeDaysAgo.ToString("yyyy-MM-dd"));
@@ -666,19 +688,19 @@ namespace Ionic.Zip.Tests
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected4.Count);
                 Assert.AreEqual<Int32>(0, selected4.Count);
 
-                
+
                 // those created 3 days ago, plus those created today = all entries
                 crit = String.Format("ctime >= {0}  and  ctime < {1}",
                                      threeDaysAgo.ToString("yyyy-MM-dd"),
                                      today.ToString("yyyy-MM-dd"));
                 var selected5 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected5.Count);
-                Assert.IsTrue(selected5.Count>0);
+                Assert.IsTrue(selected5.Count > 0);
                 crit = String.Format("ctime >= {0}",
                                      today.ToString("yyyy-MM-dd"));
                 var selected6 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected5.Count);
-                Assert.AreEqual<Int32>(numFodderFiles, selected5.Count+selected6.Count);
+                Assert.AreEqual<Int32>(numFodderFiles, selected5.Count + selected6.Count);
 
 
                 // those accessed yesterday, plus those accessed today = all entries
@@ -687,25 +709,25 @@ namespace Ionic.Zip.Tests
                                      today.ToString("yyyy-MM-dd"));
                 selected5 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected5.Count);
-                Assert.IsTrue(selected5.Count>0);
+                Assert.IsTrue(selected5.Count > 0);
                 crit = String.Format("atime >= {0}",
                                      today.ToString("yyyy-MM-dd"));
                 selected6 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected5.Count);
-                Assert.AreEqual<Int32>(numFodderFiles, selected5.Count+selected6.Count);
+                Assert.AreEqual<Int32>(numFodderFiles, selected5.Count + selected6.Count);
 
-                
+
                 // those accessed *exactly* at midnight yesterday, plus those NOT = all entries
                 crit = String.Format("atime = {0}",
                                      yesterday.ToString("yyyy-MM-dd"));
                 selected5 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected5.Count);
-                Assert.IsTrue(selected5.Count>0);
+                Assert.IsTrue(selected5.Count > 0);
                 crit = String.Format("atime != {0}",
                                      yesterday.ToString("yyyy-MM-dd"));
                 selected6 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected5.Count);
-                Assert.AreEqual<Int32>(numFodderFiles, selected5.Count+selected6.Count);
+                Assert.AreEqual<Int32>(numFodderFiles, selected5.Count + selected6.Count);
 
 
                 // those accessed three days ago or more == empty set
@@ -714,7 +736,7 @@ namespace Ionic.Zip.Tests
                 selected5 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected5.Count);
                 Assert.AreEqual<Int32>(0, selected5.Count);
-                
+
             }
         }
 
@@ -738,32 +760,32 @@ namespace Ionic.Zip.Tests
                 zip1.Save(zipFileToCreate);
             }
             Assert.AreEqual<Int32>(numFodderFiles, TestUtilities.CountEntries(zipFileToCreate));
-            
+
             string extractDir = "extract";
 
-                TestContext.WriteLine("====================================================");
-                TestContext.WriteLine("Reading zip, ExtractSelectedEntries() by date...");
-                using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
-                {
-                    string crit = String.Format("mtime >= {0}", today.ToString("yyyy-MM-dd"));
-                    TestContext.WriteLine("Criteria({0})", crit);
-                    zip1.ExtractSelectedEntries(crit, null, extractDir);
-                }
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Reading zip, ExtractSelectedEntries() by date...");
+            using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
+            {
+                string crit = String.Format("mtime >= {0}", today.ToString("yyyy-MM-dd"));
+                TestContext.WriteLine("Criteria({0})", crit);
+                zip1.ExtractSelectedEntries(crit, null, extractDir);
+            }
 
-                TestContext.WriteLine("====================================================");
-                TestContext.WriteLine("Reading zip, ExtractSelectedEntries() by date, with overwrite...");
-                using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
-                {
-                    string crit = String.Format("mtime >= {0}", today.ToString("yyyy-MM-dd"));
-                    TestContext.WriteLine("Criteria({0})", crit);
-                    zip1.ExtractSelectedEntries(crit, null, extractDir, ExtractExistingFileAction.OverwriteSilently);
-                }
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Reading zip, ExtractSelectedEntries() by date, with overwrite...");
+            using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
+            {
+                string crit = String.Format("mtime >= {0}", today.ToString("yyyy-MM-dd"));
+                TestContext.WriteLine("Criteria({0})", crit);
+                zip1.ExtractSelectedEntries(crit, null, extractDir, ExtractExistingFileAction.OverwriteSilently);
+            }
 
         }
 
 
-        
-        
+
+
         [TestMethod]
         public void Selector_SelectEntries_ByName()
         {
@@ -862,21 +884,21 @@ namespace Ionic.Zip.Tests
                 // try an compound criterion with XOR 
                 crit = "name = *.bin XOR name = *2.*";
                 var selected3 = zip1.SelectEntries(crit);
-                Assert.IsTrue(selected3.Count>0);
+                Assert.IsTrue(selected3.Count > 0);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected3.Count);
 
                 // factor out the XOR
                 crit = "(name = *.bin AND name != *2.*) OR (name != *.bin AND name = *2.*)";
                 var selected4 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected4.Count);
-                Assert.AreEqual<Int32>(selected3.Count,selected4.Count);
+                Assert.AreEqual<Int32>(selected3.Count, selected4.Count);
 
                 // take the negation of the XOR criterion
                 crit = "(name != *.bin OR name = *2.*) AND (name = *.bin OR name != *2.*)";
                 var selected5 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected4.Count);
                 Assert.IsTrue(selected5.Count > 0);
-                Assert.AreEqual<Int32>(entriesAdded, selected3.Count+selected5.Count);
+                Assert.AreEqual<Int32>(entriesAdded, selected3.Count + selected5.Count);
             }
         }
 
@@ -1435,7 +1457,7 @@ namespace Ionic.Zip.Tests
         {
             Ionic.FileSelector ff = new Ionic.FileSelector("name == *.txt");
         }
-        
+
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax10a()
@@ -1521,7 +1543,7 @@ namespace Ionic.Zip.Tests
         {
             Ionic.FileSelector ff = new Ionic.FileSelector("attributes HRTS");
         }
-        
+
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax22a()
@@ -1552,7 +1574,7 @@ namespace Ionic.Zip.Tests
         {
             Ionic.FileSelector ff = new Ionic.FileSelector("attributes = IRIA");
         }
-        
+
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax23()

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-02 21:32:23>
+// Time-stamp: <2009-July-03 14:35:32>
 //
 // ------------------------------------------------------------------
 //
@@ -503,7 +503,7 @@ namespace Ionic.Zip
                                 } while (n > 0);
                             }
                         }
-                        // add the embedded resource in our own assembly into the target assembly as an embedded resource
+                        // add the file into the target assembly as an embedded resource
                         cp.EmbeddedResources.Add(filename);
                     }
                 }

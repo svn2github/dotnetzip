@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-03 00:36:56>
+// Time-stamp: <2009-July-03 12:11:40>
 //
 // ------------------------------------------------------------------
 //
@@ -2832,7 +2832,6 @@ namespace Ionic.Zip
 #else
                         File.SetLastWriteTime(TargetFile, AdjustedLastModified);
 #endif
-
                     }
 
 
@@ -4842,7 +4841,25 @@ namespace Ionic.Zip
                                     Int64 z = BitConverter.ToInt64(Buffer, j);
                                     this._Mtime = DateTime.FromFileTimeUtc(z);
                                     j += 8;
-
+                                    
+                                    // At this point the library *could* set the
+                                    // LastModified value to coincide with the Mtime
+                                    // value.  In theory, they refer to the same
+                                    // property of the file, and should be the same
+                                    // anyway, allowing for differences in precision.
+                                    // But they are independent quantities in the zip
+                                    // archive, and this library will keep them separate
+                                    // in the object model. There is no ill effect from
+                                    // this, because as files are extracted, the
+                                    // higher-precision value (Mtime) is used if it is
+                                    // present.  Apps may wish to compare the Mtime
+                                    // versus LastModified values, but any difference
+                                    // when both are present is not germaine to the
+                                    // correctness of the library. but note: when
+                                    // explicitly setting either value, both are
+                                    // set. See the setter for LastModified or
+                                    // the SetNtfsTimes() method.
+                                    
                                     z = BitConverter.ToInt64(Buffer, j);
                                     this._Atime = DateTime.FromFileTimeUtc(z);
                                     j += 8;

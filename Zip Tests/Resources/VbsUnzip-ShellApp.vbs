@@ -1,7 +1,7 @@
 ' VbsUnzip.vbs
 ' ------------------------------------------------------------------
 '
-' Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.  
+' Copyright (c) 2009 Dino Chiesa.  
 ' All rights reserved.
 '
 ' This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 ' ------------------------------------------------------------------
 '
 ' last saved (in emacs): 
-' Time-stamp: <2009-May-29 18:00:30>
+' Time-stamp: <2009-July-03 16:02:14>
 '
 ' ------------------------------------------------------------------
 '
@@ -36,15 +36,18 @@ Sub UnpackZip(pathToZipFile, extractLocation)
     dim sa
     set sa = CreateObject("Shell.Application") 
 
-    Dim zip
-    Set zip = sa.NameSpace(pathToZipFile)
-
     Dim fso
     Set fso= CreateObject("Scripting.FileSystemObject")
+    fqPathToZip= fso.GetAbsolutePathName(pathToZipFile)
+    
     If Not fso.FolderExists(extractLocation) Then fso.CreateFolder(extractLocation)
+    fqExtractLoc= fso.GetAbsolutePathName(extractLocation)
+
+    Dim zip
+    Set zip = sa.NameSpace(fqPathToZip)
     
     Dim ex
-    Set ex = sa.NameSpace(extractLocation)
+    Set ex = sa.NameSpace(fqExtractLoc)
 
     ' http://msdn.microsoft.com/en-us/library/bb787866(VS.85).aspx
     ' ===============================================================
