@@ -45,7 +45,7 @@ http://www.pkware.com/business_and_developers/developer/popups/appnote.txt.
 This implementation utilizes a DeflateStream class implemented in managed code, in the Ionic.Zlib namespace.  It does not use System.IO.Compression.DeflateStream in the .NET Framework
 v2.0 base class library.
 
-DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Girls Club of King County, in Washington, USA.  http://cheeso.members.winisp.net/DotNetZipDonate.aspx</NamespaceSummaryItem>
+DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Girls Club in Pennsylvania, USA.  http://cheeso.members.winisp.net/DotNetZipDonate.aspx</NamespaceSummaryItem>
       <NamespaceSummaryItem name="Ionic.Zlib" isDocumented="True" xmlns="">Ionic.Zlib namespace includes classes for doing ZLIB, DEFLATE, and GZIP compression and decompression, according to RFC1950, RFC1951, and RFC 1952.  It includes stream classes that can directly replace the DeflateStream and GZipStream classes that are included in the Base Class Library of the .NET Framework.</NamespaceSummaryItem>
     </NamespaceSummaries>
   </PropertyGroup>
