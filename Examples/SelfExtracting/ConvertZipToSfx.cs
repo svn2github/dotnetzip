@@ -84,8 +84,13 @@ namespace Ionic.Zip.Examples
                     }
                     ExeOnUnpack = args[++i];
                     break;
-                    
-                    default:
+
+                case "-?":
+                case "-help":
+                    Usage();
+                    return;
+
+                default:
                         // positional args
                         if (ZipFileToConvert == null)
                             ZipFileToConvert = args[i];
@@ -103,10 +108,12 @@ namespace Ionic.Zip.Examples
         string ZipComment;
         string ZipFileToConvert = null;
         string ExtractDir = null;
+        bool _gaveUsage;
         SelfExtractorFlavor flavor = Ionic.Zip.SelfExtractorFlavor.WinFormsApplication;
 
         public void Run()
         {
+            if (_gaveUsage) return; 
             if (ZipFileToConvert == null)
             {
                 Console.WriteLine("No zipfile specified.\n");
@@ -140,7 +147,7 @@ namespace Ionic.Zip.Examples
         }
 
 
-        private static void Usage()
+        private void Usage()
         {
             Console.WriteLine("usage:");
             Console.WriteLine("  CreateSelfExtractor [-cmdline]  [-extractdir <xxxx>]  [-comment <xx>]");
@@ -153,6 +160,7 @@ namespace Ionic.Zip.Examples
             Console.WriteLine("     -comment <xx>  - embed a comment into the self-extracting archive.");
             Console.WriteLine("                      It is displayed when the SFX is extracted.");
             Console.WriteLine();
+            _gaveUsage = true;
         }
 
 
@@ -161,8 +169,7 @@ namespace Ionic.Zip.Examples
         {
             try
             {
-                ConvertZipToSfx me = new ConvertZipToSfx(args);
-                me.Run();
+                new ConvertZipToSfx(args).Run();
             }
             catch (System.Exception exc1)
             {
