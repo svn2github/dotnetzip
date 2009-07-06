@@ -11,15 +11,17 @@
         public PasswordDialog()
         {
             InitializeComponent();
+            this.textBox1.Focus();
         }
 
         public PasswordDialogResult Result
-    {
-        get
         {
-            return _result;
+            get
+            {
+                return _result;
+            }
         }
-    }
+        
         public string EntryName
         {
             set

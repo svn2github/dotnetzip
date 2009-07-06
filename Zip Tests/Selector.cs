@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-03 16:48:14>
+// Time-stamp: <2009-July-05 15:42:50>
 //
 // ------------------------------------------------------------------
 //
@@ -154,7 +154,7 @@ namespace Ionic.Zip.Tests
                             System.Threading.Thread.Sleep(600);
                         }
                         tries++;
-                    } while (tries < 100 && !success)
+                    } while (tries < 100 && !success);
                 }
             }
         }
@@ -241,8 +241,7 @@ namespace Ionic.Zip.Tests
                     else if (_rnd.Next(13) == 0) sz = 8080; // exactly
                     else sz = _rnd.Next(5000) + 5000;
 
-                    // select the name (long or short form)
-                    string fnameTemplate = "";
+                    // randomly select the format of the file name
                     int n = _rnd.Next(4);
 
                     // binary or text

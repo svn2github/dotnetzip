@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-03 15:03:01>
+// Time-stamp: <2009-July-06 18:34:38>
 //
 // ------------------------------------------------------------------
 //
@@ -69,7 +69,7 @@ namespace Ionic.Zip
                 this.txtExtractDirectory.Text.EndsWith("EXTRACTLOCATION"))
             {
                 this.txtExtractDirectory.Text = 
-                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal),
                                            ZipName);
             }
         }
@@ -96,20 +96,28 @@ namespace Ionic.Zip
                 // adjust the position of all the remaining UI
                 int delta = this.txtPostUnpackCmdLine.Height;
 
-                this.MinimumSize = new System.Drawing.Size(this.MinimumSize.Width, this.MinimumSize.Height - (delta + 4));
+                this.MinimumSize = new System.Drawing.Size(this.MinimumSize.Width, this.MinimumSize.Height - (delta + 8));
                 
                  MoveDown(this.chk_Overwrite, delta);
                  MoveDown(this.chk_OpenExplorer, delta);
                  MoveDown(this.btnDirBrowse, delta);
                  MoveDown(this.txtExtractDirectory, delta);
-                 MoveDown(this.label1, delta);
+                 MoveDown(this.lblExtractDir, delta);
+                 //MoveDown(this.txtComment, delta);
+                 //MoveDown(this.lblComment, delta);
                           
 //                 moveup(this.btnContents, delta);
 //                 MoveUp(this.btnCancel, delta);
 //                 MoveUp(this.btnExtract, delta);
                 
                  // finally, adjust the size of the form
-                this.Size = new System.Drawing.Size(this.Width, this.Height - (delta + 4));
+                this.Size = new System.Drawing.Size(this.Width, this.Height - (delta + 8));
+
+                // Add the size to the txtComment, because it is anchored to the bottom.
+                // When we shrink the size of the form, the txtComment shrinks also.
+                // No need for that.
+                this.txtComment.Size = new System.Drawing.Size(this.txtComment.Width,
+                                                               this.txtComment.Height + delta);
             }
         }
 
@@ -118,9 +126,16 @@ namespace Ionic.Zip
             c.Location = new System.Drawing.Point(c.Location.X, c.Location.Y + delta);
         }
         
+        private void FixTitle()
+        {
+            this.Text = String.Format("DotNetZip v{0} Self-extractor (www.codeplex.com/DotNetZip)",
+                                      Ionic.Zip.ZipFile.LibraryVersion.ToString());
+        }
+
         public WinFormsSelfExtractorStub()
         {
             InitializeComponent();
+            FixTitle();
             _setCancel = true;
             entryCount= 0;
             _SetDefaultExtractLocation();
@@ -134,17 +149,30 @@ namespace Ionic.Zip
                 }
                 else
                 {
-                    label2.Visible = false;
+                    lblComment.Visible = false;
                     txtComment.Visible = false;
-                    this.Size = new System.Drawing.Size(this.Width, this.Height - (this.txtComment.Height+18));
+                    
+                    this.MinimumSize = new System.Drawing.Size(this.MinimumSize.Width, this.MinimumSize.Height -
+                                                               (this.txtComment.Height+this.lblComment.Height+5));
+                    
+                    this.MaximumSize = new System.Drawing.Size(this.MaximumSize.Width, this.MinimumSize.Height);
+                    
+                    this.Size = new System.Drawing.Size(this.Width, this.MinimumSize.Height);
+                    
+                    //this.lblStatus.Text = String.Format("size: ({0}, {1})", this.Width, this.Height);
                 }
             }
-            catch
+            catch (Exception e1)
             {
+                this.lblStatus.Text = "exception while resetting size: " + e1.ToString();
+                
                 // why would this ever fail?  Not sure. 
-                label2.Visible = false;
+                lblComment.Visible = false;
                 txtComment.Visible = false;
-                this.Size = new System.Drawing.Size(this.Width, this.Height - (this.txtComment.Height+18));
+                this.MinimumSize = new System.Drawing.Size(this.MinimumSize.Width, this.MinimumSize.Height -
+                                                           (this.txtComment.Height+this.lblComment.Height+5));
+                
+                this.Size = new System.Drawing.Size(this.Width, this.MinimumSize.Height);
             }
         }
 
@@ -157,74 +185,90 @@ namespace Ionic.Zip
 
 
         #if ORIG
-        static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
-        {
-            Assembly a1 = Assembly.GetExecutingAssembly();
-            Stream s = a1.GetManifestResourceStream(DllResourceName);
-            byte[] block = new byte[s.Length];
-            s.Read(block, 0, block.Length);
-            Assembly a2 = Assembly.Load(block);
-            return a2;
-        }
+            static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
+            {
+                Assembly a1 = Assembly.GetExecutingAssembly();
+                Stream s = a1.GetManifestResourceStream(DllResourceName);
+                byte[] block = new byte[s.Length];
+                s.Read(block, 0, block.Length);
+                Assembly a2 = Assembly.Load(block);
+                return a2;
+            }
         #else
             
-        static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
-        {
-            // super defensive
-            Assembly a1 = Assembly.GetExecutingAssembly();
-            if (a1==null)
-                throw new Exception("GetExecutingAssembly returns null.");
-
-            string[] tokens = args.Name.Split(',');
-            
-            String[] names = a1.GetManifestResourceNames();
-            
-            if (names==null)
-                throw new Exception("GetManifestResourceNames returns null.");
-
-            // workitem 7978
-            Stream s = null;
-            foreach (string n in names)
+            static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
             {
-                string root = n.Substring(0,n.Length-4);
-                string ext = n.Substring(n.Length-3);
-                if (root.Equals(tokens[0])  && ext.ToLower().Equals("dll"))
+                // super defensive
+                Assembly a1 = Assembly.GetExecutingAssembly();
+                if (a1==null)
+                    throw new Exception("GetExecutingAssembly returns null.");
+
+                string[] tokens = args.Name.Split(',');
+            
+                String[] names = a1.GetManifestResourceNames();
+            
+                if (names==null)
+                    throw new Exception("GetManifestResourceNames returns null.");
+
+                // workitem 7978
+                Stream s = null;
+                foreach (string n in names)
                 {
-                    s= a1.GetManifestResourceStream(n);
-                    if (s!=null) break;
+                    string root = n.Substring(0,n.Length-4);
+                    string ext = n.Substring(n.Length-3);
+                    if (root.Equals(tokens[0])  && ext.ToLower().Equals("dll"))
+                    {
+                        s= a1.GetManifestResourceStream(n);
+                        if (s!=null) break;
+                    }
                 }
+            
+                if (s==null)
+                    throw new Exception(String.Format("GetManifestResourceStream returns null. Available resources: [{0}]",
+                                                      String.Join("|", names)));
+
+                byte[] block = new byte[s.Length];
+            
+                if (block==null)
+                    throw new Exception(String.Format("Cannot allocated buffer of length({0}).", s.Length));
+
+                s.Read(block, 0, block.Length);
+                Assembly a2 = Assembly.Load(block);
+                if (a2==null)
+                    throw new Exception("Assembly.Load(block) returns null");
+            
+                return a2;
             }
-            
-            if (s==null)
-                throw new Exception(String.Format("GetManifestResourceStream returns null. Available resources: [{0}]",
-                                                  String.Join("|", names)));
-
-            byte[] block = new byte[s.Length];
-            
-            if (block==null)
-                throw new Exception(String.Format("Cannot allocated buffer of length({0}).", s.Length));
-
-            s.Read(block, 0, block.Length);
-            Assembly a2 = Assembly.Load(block);
-            if (a2==null)
-                throw new Exception("Assembly.Load(block) returns null");
-            
-            return a2;
-        }
             
         #endif
 
 
         private void btnDirBrowse_Click(object sender, EventArgs e)
         {
+            
             Ionic.Utils.FolderBrowserDialogEx dlg1 = new Ionic.Utils.FolderBrowserDialogEx();
             dlg1.Description = "Select a folder for the extracted files:";
             dlg1.ShowNewFolderButton = true;
             dlg1.ShowEditBox = true;
             //dlg1.NewStyle = false;
-            dlg1.SelectedPath = txtExtractDirectory.Text;
+            if (Directory.Exists(txtExtractDirectory.Text))
+                dlg1.SelectedPath = txtExtractDirectory.Text;
+            else
+            {
+                string d = txtExtractDirectory.Text;
+                while (d.Length > 2 && !Directory.Exists(d))
+                {
+                    d = Path.GetDirectoryName(d);
+                }
+                if (d.Length < 2)
+                    dlg1.SelectedPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                else
+                    dlg1.SelectedPath = d;
+            }
+                
             dlg1.ShowFullPathInEditBox = true;
-            dlg1.RootFolder = System.Environment.SpecialFolder.MyComputer;
+                
+            //dlg1.RootFolder = System.Environment.SpecialFolder.MyComputer;
 
             // Show the FolderBrowserDialog.
             DialogResult result = dlg1.ShowDialog();
@@ -526,7 +570,7 @@ namespace Ionic.Zip
         {
             get
             {
-                return System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
+                return Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetExecutingAssembly().Location);
             }
         }
 
@@ -538,7 +582,7 @@ namespace Ionic.Zip
                 Assembly a = Assembly.GetExecutingAssembly();
 
                 // workitem 7067
-                _s= System.IO.File.OpenRead(a.Location);
+                _s= File.OpenRead(a.Location);
 
                 return _s;
             }

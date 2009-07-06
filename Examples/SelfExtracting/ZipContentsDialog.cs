@@ -9,6 +9,13 @@ namespace Ionic.Zip
         public ZipContentsDialog()
         {
             InitializeComponent();
+            FixTitle();
+        }
+
+        private void FixTitle()
+        {
+            this.Text = String.Format("Contents of the zip archive (DotNetZip v{0})",
+                                      Ionic.Zip.ZipFile.LibraryVersion.ToString());
         }
 
         public ZipFile ZipFile
@@ -50,6 +57,18 @@ namespace Ionic.Zip
                 }
 
                 listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+
+                // adjust size of the entire form
+                int aggWidth= 0;
+                for (int i = 0; i < this.listView1.Columns.Count; i++)
+                {
+                    aggWidth += this.listView1.Columns[i].Width + 1;
+                }
+                // plus a fudge factor
+                //aggWidth += this.listView1.Columns[this.listView1.Columns.Count - 1].Width / 2 + this.listView1.Location.X * 4;
+                aggWidth += this.listView1.Location.X * 4 + 4;
+                this.Size = new System.Drawing.Size(aggWidth, this.Height);
+
                 this.listView1.EndUpdate();
             }
         }

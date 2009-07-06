@@ -32,11 +32,11 @@
             this.btnExtract = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.txtExtractDirectory = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
+            this.lblExtractDir = new System.Windows.Forms.Label();
             this.btnDirBrowse = new System.Windows.Forms.Button();
             this.chk_Overwrite = new System.Windows.Forms.CheckBox();
             this.chk_OpenExplorer = new System.Windows.Forms.CheckBox();
-            this.label2 = new System.Windows.Forms.Label();
+            this.lblComment = new System.Windows.Forms.Label();
             this.txtComment = new System.Windows.Forms.TextBox();
             this.btnContents = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
@@ -49,7 +49,7 @@
             // btnExtract
             // 
             this.btnExtract.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnExtract.Location = new System.Drawing.Point(331, 269);
+            this.btnExtract.Location = new System.Drawing.Point(331, 268);
             this.btnExtract.Name = "btnExtract";
             this.btnExtract.Size = new System.Drawing.Size(60, 23);
             this.btnExtract.TabIndex = 0;
@@ -60,7 +60,7 @@
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCancel.Location = new System.Drawing.Point(397, 269);
+            this.btnCancel.Location = new System.Drawing.Point(397, 268);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(60, 23);
             this.btnCancel.TabIndex = 1;
@@ -74,23 +74,23 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.txtExtractDirectory.Location = new System.Drawing.Point(8, 147);
             this.txtExtractDirectory.Name = "txtExtractDirectory";
-            this.txtExtractDirectory.Size = new System.Drawing.Size(416, 20);
+            this.txtExtractDirectory.Size = new System.Drawing.Size(417, 20);
             this.txtExtractDirectory.TabIndex = 2;
             // 
-            // label1
+            // lblExtractDir
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(5, 131);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(100, 13);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "Extract to Directory:";
+            this.lblExtractDir.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblExtractDir.AutoSize = true;
+            this.lblExtractDir.Location = new System.Drawing.Point(5, 131);
+            this.lblExtractDir.Name = "lblExtractDir";
+            this.lblExtractDir.Size = new System.Drawing.Size(100, 13);
+            this.lblExtractDir.TabIndex = 3;
+            this.lblExtractDir.Text = "Extract to Directory:";
             // 
             // btnDirBrowse
             // 
             this.btnDirBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDirBrowse.Location = new System.Drawing.Point(430, 144);
+            this.btnDirBrowse.Location = new System.Drawing.Point(431, 144);
             this.btnDirBrowse.Name = "btnDirBrowse";
             this.btnDirBrowse.Size = new System.Drawing.Size(25, 23);
             this.btnDirBrowse.TabIndex = 4;
@@ -122,14 +122,14 @@
             this.chk_OpenExplorer.Text = "Open Explorer after extract";
             this.chk_OpenExplorer.UseVisualStyleBackColor = true;
             // 
-            // label2
+            // lblComment
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(5, 6);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(75, 13);
-            this.label2.TabIndex = 8;
-            this.label2.Text = "Zip Comment: ";
+            this.lblComment.AutoSize = true;
+            this.lblComment.Location = new System.Drawing.Point(5, 6);
+            this.lblComment.Name = "lblComment";
+            this.lblComment.Size = new System.Drawing.Size(75, 13);
+            this.lblComment.TabIndex = 8;
+            this.lblComment.Text = "Zip Comment: ";
             // 
             // txtComment
             // 
@@ -141,13 +141,13 @@
             this.txtComment.Name = "txtComment";
             this.txtComment.ReadOnly = true;
             this.txtComment.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtComment.Size = new System.Drawing.Size(447, 104);
+            this.txtComment.Size = new System.Drawing.Size(448, 104);
             this.txtComment.TabIndex = 9;
             // 
             // btnContents
             // 
             this.btnContents.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnContents.Location = new System.Drawing.Point(235, 269);
+            this.btnContents.Location = new System.Drawing.Point(235, 268);
             this.btnContents.Name = "btnContents";
             this.btnContents.Size = new System.Drawing.Size(90, 23);
             this.btnContents.TabIndex = 10;
@@ -170,7 +170,7 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.progressBar2.Location = new System.Drawing.Point(8, 252);
             this.progressBar2.Name = "progressBar2";
-            this.progressBar2.Size = new System.Drawing.Size(449, 10);
+            this.progressBar2.Size = new System.Drawing.Size(449, 11);
             this.progressBar2.TabIndex = 12;
             // 
             // lblStatus
@@ -209,7 +209,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(467, 299);
+            this.ClientSize = new System.Drawing.Size(468, 300);
             this.Controls.Add(this.chk_ExeAfterUnpack);
             this.Controls.Add(this.txtPostUnpackCmdLine);
             this.Controls.Add(this.lblStatus);
@@ -217,18 +217,19 @@
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.btnContents);
             this.Controls.Add(this.txtComment);
-            this.Controls.Add(this.label2);
+            this.Controls.Add(this.lblComment);
             this.Controls.Add(this.chk_OpenExplorer);
             this.Controls.Add(this.chk_Overwrite);
             this.Controls.Add(this.btnDirBrowse);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.lblExtractDir);
             this.Controls.Add(this.txtExtractDirectory);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnExtract);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(1024, 400);
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(480, 200);
+            this.MinimumSize = new System.Drawing.Size(484, 336);
             this.Name = "WinFormsSelfExtractorStub";
             this.Text = "DotNetZip Self-extractor (www.codeplex.com/DotNetZip)";
             this.ResumeLayout(false);
@@ -243,10 +244,10 @@
         private System.Windows.Forms.Button btnDirBrowse;
         private System.Windows.Forms.Button btnContents;
         private System.Windows.Forms.TextBox txtExtractDirectory;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lblExtractDir;
         private System.Windows.Forms.CheckBox chk_Overwrite;
         private System.Windows.Forms.CheckBox chk_OpenExplorer;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label lblComment;
         private System.Windows.Forms.TextBox txtComment;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.ProgressBar progressBar2;
