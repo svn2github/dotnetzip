@@ -4184,7 +4184,7 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// Checks a to see if a file is a valid zip file.
+        /// Checks a file to see if it is a valid zip file.
         /// </summary>
         ///
         /// <remarks>
@@ -4216,7 +4216,7 @@ namespace Ionic.Zip
         /// </remarks>
         /// <param name="fileName">The zip file to check.</param>
         /// <param name="testExtract">true if the caller wants to extract each entry.</param>
-        /// <returns>true if the file appears to be a valid zip file.</returns>
+        /// <returns>true if the file contains a valid zip file.</returns>
         public static bool IsZipFile(string fileName, bool testExtract)
         {
             bool result = false;
@@ -4227,6 +4227,72 @@ namespace Ionic.Zip
                 var bitBucket = Stream.Null;
 
                 using (ZipFile zip1 = ZipFile.Read(fileName, null, System.Text.Encoding.GetEncoding("IBM437")))
+                {
+                    if (testExtract)
+                    {
+                        foreach (var e in zip1)
+                        {
+                            if (!e.IsDirectory)
+                            {
+                                e.Extract(bitBucket);
+                            }
+                        }
+                    }
+                }
+                result = true;
+            }
+            catch (Exception) { }
+            return result;
+        }
+
+        
+        /// <summary>
+        /// Checks a stream to see if it contains a valid zip archive.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// <para>
+        /// This method reads the zip archive contained in the specified stream, verifying
+        /// the ZIP metadata as it reads.  If testExtract is true, this method also extracts 
+        /// each entry in the archive, dumping all the bits into <see cref="Stream.Null"/>.
+        /// </para>
+        /// 
+        /// <para>
+        /// If everything succeeds, then the method
+        /// returns true.  If anything fails - for example if an incorrect signature or CRC
+        /// is found, indicating a corrupt file, the the method returns false.  This method also returns false
+        /// for a file that does not exist. 
+        /// </para>
+        ///
+        /// <para>
+        /// If <c>testExtract</c> is true, this method reads in the content for each
+        /// entry, expands it, and checks CRCs.  This provides an additional check
+        /// beyond verifying the zip header data.
+        /// </para>
+        ///
+        /// <para>
+        /// If <c>testExtract</c> is true, and if any of the zip entries are protected
+        /// with a password, this method will return false.  If you want to verify a
+        /// ZipFile that has entries which are protected with a password, you will need
+        /// to do that manually.
+        /// </para>
+        /// </remarks>
+        ///
+        /// <seealso cref="IsZipFile(string, bool)"/>
+        ///
+        /// <param name="stream">The stream to check.</param>
+        /// <param name="testExtract">true if the caller wants to extract each entry.</param>
+        /// <returns>true if the stream contains a valid zip archive.</returns>
+        public static bool IsZipFile(Stream stream, bool testExtract)
+        {
+            bool result = false;
+            try
+            {
+                if (!stream.CanRead) return false;
+
+                var bitBucket = Stream.Null;
+
+                using (ZipFile zip1 = ZipFile.Read(stream, null, System.Text.Encoding.GetEncoding("IBM437")))
                 {
                     if (testExtract)
                     {
