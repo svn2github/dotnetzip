@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-05 16:37:50>
+// Time-stamp: <2009-July-08 08:27:38>
 //
 // ------------------------------------------------------------------
 //
@@ -36,44 +36,50 @@ namespace Ionic.Zip
     /// An enum that provides the various encryption algorithms supported by this
     /// library.
     /// </summary>
+    ///
     /// <remarks>
+    ///
     /// <para>
     /// PkzipWeak implies the use of Zip 2.0 encryption, which is known to be weak and
     /// subvertible.
     /// </para>
+    ///
     /// <para>
-    /// A note on interoperability: Values of PkzipWeak and None are specified in the
-    /// PKWare AppNote.txt document, are considered to be "standard".  Zip archives
-    /// produced using these options will be interoperable with many other zip tools and
-    /// libraries, including Windows Explorer.
-    /// </para>
-    /// <para>
-    /// Values of WinZipAes128 and WinZipAes256 are not part of the Zip specification,
-    /// but rather imply the use of a vendor-specific extension from WinZip. If you
-    /// want to produce interoperable Zip archives, do not use these values.  For
-    /// example, if you produce a zip archive using WinZipAes256, you will be able to
-    /// open it in Windows Explorer on Windows XP and Vista, but you will not be able
-    /// to extract entries; trying this will lead to an "unspecified error". For this
-    /// reason, some people have said that a zip archive that uses WinZip's AES
-    /// encryption is not actually a zip archive at all.  A zip archive produced this
-    /// way will be readable with the WinZip tool (Version 11 and beyond).
-    /// </para>
-    /// <para>
-    /// There are other third-party tools and libraries, both commercial and
-    /// otherwise, that support WinZip's AES encryption. These will be able to read
-    /// AES-encrypted zip archives produced by DotNetZip, and conversely applications
-    /// that use DotNetZip to read zip archives will be able to read AES-encrypted
-    /// archives produced by those tools or libraries.  Consult the documentation for
-    /// those other tools and libraries to find out if WinZip's AES encryption is
-    /// supported.
+    /// A note on interoperability: Values of PkzipWeak and None are specified in <see
+    /// href="http://www.pkware.com/documents/casestudies/APPNOTE.TXT">PKWARE's zip
+    /// specification</see>, and are considered to be "standard".  Zip archives produced
+    /// using these options will be interoperable with many other zip tools and libraries,
+    /// including Windows Explorer.
     /// </para>
     ///
     /// <para>
-    /// In case you care: According to the WinZip specification, the actual AES key used
-    /// is derived from the <see cref="ZipEntry.Password"/> via an algorithm that
-    /// complies with <see href="http://www.ietf.org/rfc/rfc2898.txt">RFC 2898</see>,
-    /// using an iteration count of 1000.  The algorithm is sometimes referred to as
-    /// PBKDF2, which stands for "Password Based Key Derivation Function #2".
+    /// Values of <c>WinZipAes128</c> and <c>WinZipAes256</c> are not part of the Zip
+    /// specification, but rather imply the use of a vendor-specific extension from
+    /// WinZip. If you want to produce interoperable Zip archives, do not use these values.
+    /// For example, if you produce a zip archive using WinZipAes256, you will be able to
+    /// open it in Windows Explorer on Windows XP and Vista, but you will not be able to
+    /// extract entries; trying this will lead to an "unspecified error". For this reason,
+    /// some people have said that a zip archive that uses WinZip's AES encryption is not
+    /// actually a zip archive at all.  A zip archive produced this way will be readable
+    /// with the WinZip tool (Version 11 and beyond).
+    /// </para>
+    ///
+    /// <para>
+    /// There are other third-party tools and libraries, both commercial and otherwise, that
+    /// support WinZip's AES encryption. These will be able to read AES-encrypted zip
+    /// archives produced by DotNetZip, and conversely applications that use DotNetZip to
+    /// read zip archives will be able to read AES-encrypted archives produced by those
+    /// tools or libraries.  Consult the documentation for those other tools and libraries
+    /// to find out if WinZip's AES encryption is supported.
+    /// </para>
+    ///
+    /// <para>
+    /// In case you care: According to <see href="http://www.winzip.com/aes_info.htm">the
+    /// WinZip specification</see>, the actual AES key used is derived from the <see
+    /// cref="ZipEntry.Password"/> via an algorithm that complies with <see
+    /// href="http://www.ietf.org/rfc/rfc2898.txt">RFC 2898</see>, using an iteration count
+    /// of 1000.  The algorithm is sometimes referred to as PBKDF2, which stands for
+    /// "Password Based Key Derivation Function #2".
     /// </para>
     ///
     /// <para>
@@ -1275,53 +1281,160 @@ namespace Ionic.Zip
         /// A derived property that is <c>true</c> if the entry uses encryption.  
         /// </summary>
         ///
-        /// <remarks> This is a readonly property on the entry.  When reading a zip file,
-        /// the value for the <c>ZipEntry</c> is determined by the data read from the zip file.
-        /// After saving a ZipFile, the value of this property for each <c>ZipEntry</c> indicates
-        /// whether encryption was actually used (which will have been true if the <see
-        /// cref="Password"/> was set and the <see cref="Encryption"/> property was
-        /// something other than <see cref="EncryptionAlgorithm.None"/>.  </remarks>
+        /// <remarks>
+        /// <para>
+        /// This is a readonly property on the entry.  When reading a zip file, the
+        /// value for the <c>ZipEntry</c> is determined by the data read from the zip
+        /// file.  After saving a ZipFile, the value of this property for each
+        /// <c>ZipEntry</c> indicates whether encryption was actually used (which will
+        /// have been true if the <see cref="Password"/> was set and the <see
+        /// cref="Encryption"/> property was something other than <see
+        /// cref="EncryptionAlgorithm.None"/>.
+        /// </para>
+        /// </remarks>
         public bool UsesEncryption
         {
             get { return (Encryption != EncryptionAlgorithm.None); }
         }
 
         /// <summary>
-        /// Set this to specify which encryption algorithm to use for the entry.
+        /// Set this to specify which encryption algorithm to use for the entry
+        /// when saving it to a zip archive.
         /// </summary>
         /// 
         /// <remarks>
         ///
-        /// <para> When setting this property, you must also set a <see cref="Password"/> on
-        /// the entry in order to encrypt the entry when the <c>ZipFile</c> is saved.  If
-        /// you set a value other than <see cref="EncryptionAlgorithm.None"/> on this
-        /// property and do not set a <c>Password</c> then the entry will not be
-        /// encrypted. The <c>ZipEntry</c> data is encrypted as the <c>ZipFile</c> is saved, 
-        /// when you call <see cref="ZipFile.Save()"/> or one of its cousins on the
-        /// containing <c>ZipFile</c> instance.  </para>
-        ///
-        /// <para> There is no common, ubiquitous multi-vendor standard for strong
-        /// encryption. There is broad support for so-called "traditional" Zip encryption,
-        /// sometimes called Zip 2.0 encryption, as <see
-        /// href="http://www.pkware.com/documents/casestudies/APPNOTE.TXT">specified by
-        /// PKWare</see>, but this encryption is considered weak and breakable. This library
-        /// currently supports the Zip 2.0 "weak" encryption, and also a stronger
-        /// WinZip-compatible AES encryption, using either 128-bit or 256-bit key strength.
+        /// <para>
+        /// Set this property in order to encrypt the entry when the <c>ZipFile</c> is
+        /// saved. When setting this property, you must also set a <see
+        /// cref="Password"/> on the entry.  If you set a value other than <see
+        /// cref="EncryptionAlgorithm.None"/> on this property and do not set a
+        /// <c>Password</c> then the entry will not be encrypted. The <c>ZipEntry</c>
+        /// data is encrypted as the <c>ZipFile</c> is saved, when you call <see
+        /// cref="ZipFile.Save()"/> or one of its cousins on the containing
+        /// <c>ZipFile</c> instance. You do not need to specify the <c>Encryption</c>
+        /// when extracting entries from an archive.
         /// </para>
-        ///
-        /// <para> The
-        /// Zip specification from PKWare defines a set of encryption algorithms, and
-        /// the data formats for the zip archive that support them. Other vendors of tools
-        /// and libraries, such as WinZip or Xceed, also specify and support different
-        /// encryption algorithms and data formats, as extensions to the basic ZIP
-        /// specification.  This library supports a subset of the complete set of
-        /// algorithms.  If you want one that is not currently supported, call me and maybe
-        /// we can talk business.  </para>
         ///
         /// <para>
-        /// The WinZip AES encryption algorithms are not supported on the .NET Compact Framework. 
+        /// The Zip specification from PKWare defines a set of encryption algorithms,
+        /// and the data formats for the zip archive that support them, and PKWare
+        /// supports those algorithms in the tools it produces. Other vendors of tools
+        /// and libraries, such as WinZip or Xceed, typically support <em>a subset</em>
+        /// of the algorithms specified by PKWare. These tools can sometimes support
+        /// additional different encryption algorithms and data formats, not specified
+        /// by PKWare. The AES Encryption specified and supported by WinZip is the most
+        /// popular example. This library supports a subset of the complete set of
+        /// algorithms specified by PKWare and other vendors.  
+        /// </para>
+        ///
+        /// <para>
+        /// There is no common, ubiquitous multi-vendor standard for strong encryption
+        /// within zip files. There is broad support for so-called "traditional" Zip
+        /// encryption, sometimes called Zip 2.0 encryption, as <see
+        /// href="http://www.pkware.com/documents/casestudies/APPNOTE.TXT">specified
+        /// by PKWare</see>, but this encryption is considered weak and
+        /// breakable. This library currently supports the Zip 2.0 "weak" encryption,
+        /// and also a stronger WinZip-compatible AES encryption, using either 128-bit
+        /// or 256-bit key strength. If you want DotNetZip to support an algorithm
+        /// that is not currently supported, call the author of this library and maybe
+        /// we can talk business.
+        /// </para>
+        ///
+        /// <para>
+        /// The <see cref="ZipFile"/> class also has a <see cref="ZipFile.Encryption"/>
+        /// property.  In most cases you will use <em>that</em> property when setting
+        /// encryption. This property takes precedence over any <c>Encryption</c> set on the
+        /// <c>ZipFile</c> itself.  Typically, you would use the per-entry Encryption when
+        /// most entries in the zip archive use one encryption algorithm, and a few entries
+        /// use a different one.  If all entries in the zip file use the same Encryption,
+        /// then it is simpler to just set this property on the ZipFile itself, when
+        /// creating a zip archive.
+        /// </para>
+        ///
+        /// <para>
+        /// Some comments on updating archives: If you read a <c>ZipFile</c>, you cannot
+        /// modify the Encryption on any encrypted entry, except by extracting the entry
+        /// using  the original password (if any), removing the original entry via <see
+        /// cref="ZipFile.RemoveEntry(ZipEntry)"/>, and then adding a new entry with a
+        /// new Password and Encryption.
+        /// </para>
+        ///
+        /// <para>
+        /// For example, suppose you read a <c>ZipFile</c>, and there is an entry encrypted
+        /// with PKZip 2.0 encryption.  Setting the <c>Encryption</c> property on that
+        /// <c>ZipEntry</c> to <see cref="EncryptionAlgorithm.WinZipAes256"/> will cause an
+        /// exception to be thrown.  Setting the <c>Encryption</c> on the <c>ZipFile</c> and
+        /// then adding new entries will allow that encryption to be used on the newly added
+        /// entries.  During the <c>Save()</c>, the existing entries are copied through to
+        /// the new zip archive, in their original encrypted form (encrypted or not), while
+        /// the newly-added entries are encrypted as usual.
+        /// </para>
+        ///
+        /// <para>
+        /// The WinZip AES encryption algorithms are not supported on the .NET Compact
+        /// Framework.
         /// </para>
         /// </remarks>
+        ///
+        /// <example>
+        /// <para>
+        /// This example creates a zip archive that uses encryption, and then extracts entries
+        /// from the archive.  When creating the zip archive, the ReadMe.txt file is zipped
+        /// without using a password or encryption.  The other file uses encryption.  
+        /// </para>
+        /// <code>
+        /// // Create a zip archive with AES Encryption.
+        /// using (ZipFile zip = new ZipFile())
+        /// {
+        ///     zip.AddFile("ReadMe.txt")
+        ///     ZipEntry e1= zip.AddFile("2008-Regional-Sales-Report.pdf");
+        ///     e1.Encryption= EncryptionAlgorithm.WinZipAes256;
+        ///     e1.Password= "Top.Secret.No.Peeking!";
+        ///     zip.Save("EncryptedArchive.zip");
+        /// }
+        /// 
+        /// // Extract a zip archive that uses AES Encryption.
+        /// // You do not need to specify the algorithm during extraction.
+        /// using (ZipFile zip = ZipFile.Read("EncryptedArchive.zip"))
+        /// {
+        ///     // Specify the password that is used during extraction, for
+        ///     // all entries that require a password:
+        ///     zip.Password= "Top.Secret.No.Peeking!";
+        ///     zip.ExtractAll("extractDirectory");
+        /// }
+        /// </code>
+        ///
+        /// <code lang="VB">
+        /// ' Create a zip that uses Encryption.
+        /// Using zip As New ZipFile()
+        ///     zip.AddFile("ReadMe.txt")
+        ///     Dim e1 as ZipEntry
+        ///     e1= zip.AddFile("2008-Regional-Sales-Report.pdf")
+        ///     e1.Encryption= EncryptionAlgorithm.WinZipAes256
+        ///     e1.Password= "Top.Secret.No.Peeking!"
+        ///     zip.Save("EncryptedArchive.zip")
+        /// End Using
+        /// 
+        /// ' Extract a zip archive that uses AES Encryption.
+        /// ' You do not need to specify the algorithm during extraction.
+        /// Using (zip as ZipFile = ZipFile.Read("EncryptedArchive.zip"))
+        ///     ' Specify the password that is used during extraction, for
+        ///     ' all entries that require a password:
+        ///     zip.Password= "Top.Secret.No.Peeking!"
+        ///     zip.ExtractAll("extractDirectory")
+        /// End Using
+        /// </code>
+        ///
+        /// </example>
+        /// 
+        /// <exception cref="System.InvalidOperationException">
+        /// Thrown in the setter if EncryptionAlgorithm.Unsupported is specified, or
+        /// if setting the property on an entry read from a zip archive.
+        /// </exception>
+        ///
+        /// <seealso cref="Ionic.Zip.ZipEntry.Password">ZipEntry.Password</seealso>
+        /// <seealso cref="Ionic.Zip.ZipFile.Encryption">ZipFile.Encryption</seealso>
         public EncryptionAlgorithm Encryption
         {
             get
@@ -1332,6 +1445,9 @@ namespace Ionic.Zip
             {
                 if (value == _Encryption) return;
 
+                if (value == EncryptionAlgorithm.Unsupported)
+                    throw new InvalidOperationException("You may not set Encryption to that value.");
+                
                 // If the source is a zip archive and there was encryption
                 // on the entry, this will not work. 
                 if (this._Source == ZipEntrySource.Zipfile && _sourceIsEncrypted)
@@ -1368,11 +1484,36 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        /// Some comments on updating archives: If you read a <c>ZipFile</c>, you cannot modify
-        /// the password on any encrypted entry, except by extracting the entry with the
-        /// first password (if any), removing the original entry via <see
+        /// Consider setting the <see cref="Encryption"/> property when using a
+        /// password. Answering concerns that the standard password protection supported by
+        /// all zip tools is weak, WinZip has extended the ZIP specification with a way to
+        /// use AES Encryption to protect entries in the Zip file. Unlike the "PKZIP 2.0"
+        /// encryption specified in the PKZIP specification, <see href=
+        /// "http://en.wikipedia.org/wiki/Advanced_Encryption_Standard">AES Encryption</see>
+        /// uses a standard, strong, tested, encryption algorithm. DotNetZip can create zip
+        /// archives that use WinZip-compatible AES encryption, if you set the <see
+        /// cref="Encryption"/> property. But, archives created that use AES encryption may
+        /// not be readable by all other tools and libraries. For example, Windows Explorer
+        /// cannot read a "compressed folder" (a zip file) that uses AES encryption, though
+        /// it can read a zip file that uses "PKZIP encryption."
+        /// </para>
+        ///
+        /// <para>
+        /// The <see cref="ZipFile"/> class also has a <see cref="ZipFile.Password"/>
+        /// property.  This property takes precedence over any password set on the ZipFile
+        /// itself.  Typically, you would use the per-entry Password when most entries in
+        /// the zip archive use one password, and a few entries use a different password.
+        /// If all entries in the zip file use the same password, then it is simpler to just
+        /// set this property on the ZipFile itself, whether creating a zip archive or
+        /// extracting a zip archive.
+        /// </para>
+        ///
+        /// <para>
+        /// Some comments on updating archives: If you read a <c>ZipFile</c>, you cannot
+        /// modify the password on any encrypted entry, except by extracting the entry
+        /// with the original password (if any), removing the original entry via <see
         /// cref="ZipFile.RemoveEntry(ZipEntry)"/>, and then adding a new entry with a
-        /// new password.
+        /// new Password.
         /// </para>
         ///
         /// <para>
@@ -1393,7 +1534,68 @@ namespace Ionic.Zip
         ///
         /// </remarks>
         ///
+        /// <example>
+        /// <para>
+        /// This example creates a zip file with two entries, and then extracts the
+        /// entries from the zip file.  When creating the zip file, the two files are
+        /// added to the zip file using password protection. Each entry uses a different
+        /// password.  During extraction, each file is extracted with the appropriate
+        /// password.
+        /// </para>
+        /// <code>
+        /// // create a file with encryption
+        /// using (ZipFile zip = new ZipFile())
+        /// {
+        ///     ZipEntry entry;
+        ///     entry= zip.AddFile("Declaration.txt");
+        ///     entry.Password= "123456!";
+        ///     entry = zip.AddFile("Report.xls");
+        ///     entry.Password= "1Secret!";
+        ///     zip.Save("EncryptedArchive.zip");
+        /// }
+        /// 
+        /// // extract entries that use encryption
+        /// using (ZipFile zip = ZipFile.Read("EncryptedArchive.zip"))
+        /// {
+        ///     ZipEntry entry;
+        ///     entry = zip["Declaration.txt"];
+        ///     entry.Password = "123456!";
+        ///     entry.Extract("extractDir");
+        ///     entry = zip["Report.xls"];
+        ///     entry.Password = "1Secret!";
+        ///     entry.Extract("extractDir");
+        /// }
+        /// 
+        /// </code>
+        ///
+        /// <code lang="VB">
+        /// Using zip As New ZipFile
+        ///     Dim entry as ZipEntry
+        ///     entry= zip.AddFile("Declaration.txt")
+        ///     entry.Password= "123456!"
+        ///     entry = zip.AddFile("Report.xls")
+        ///     entry.Password= "1Secret!"
+        ///     zip.Save("EncryptedArchive.zip")
+        /// End Using
+        ///
+        ///
+        /// ' extract entries that use encryption
+        /// Using (zip as ZipFile = ZipFile.Read("EncryptedArchive.zip"))
+        ///     Dim entry as ZipEntry
+        ///     entry = zip("Declaration.txt")
+        ///     entry.Password = "123456!"
+        ///     entry.Extract("extractDir")
+        ///     entry = zip("Report.xls")
+        ///     entry.Password = "1Secret!"
+        ///     entry.Extract("extractDir")
+        /// End Using
+        /// 
+        /// </code>
+        ///
+        /// </example>
+        /// 
         /// <seealso cref="Ionic.Zip.ZipEntry.Encryption"/>
+        /// <seealso cref="Ionic.Zip.ZipFile.Password">ZipFile.Password</seealso>
         public string Password
         {
             set
