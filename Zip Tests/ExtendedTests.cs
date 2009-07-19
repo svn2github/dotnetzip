@@ -551,6 +551,30 @@ namespace Ionic.Zip.Tests.Extended
         }
 
 
+        [TestMethod]
+        public void Create_RenameEntryTwice_wi8047()
+        {
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Create_RenameEntryTwice.zip");
+            string filename = "file.test";
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+
+            using (var zip = new ZipFile())
+            {
+                int n = _rnd.Next(files.Length);
+                zip.UpdateFile(files[n]).FileName = filename;
+                int n2 = 0;
+                while ((n2 = _rnd.Next(files.Length)) == n) ;
+                zip.UpdateFile(files[n2]).FileName = filename;
+                zip.Save(zipFileToCreate);
+            }
+
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), 1, "The Zip file has the wrong number of entries.");            
+        }
+
+
+
 
         [TestMethod]
         public void Extract_AfterSaveNoDispose()

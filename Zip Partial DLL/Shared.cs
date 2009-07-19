@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-03 15:11:01>
+// Time-stamp: <2009-July-12 14:37:37>
 //
 // ------------------------------------------------------------------
 //
@@ -25,6 +25,7 @@
 // 
 
 using System;
+using System.Security.Permissions;
 
 namespace Ionic.Zip
 {
@@ -43,16 +44,19 @@ namespace Ionic.Zip
         ///
         /// <remarks>
         /// <para>
-        /// Round up in the case of an odd second value.  The rounding does not consider fractional seconds.
+        /// Round up in the case of an odd second value.  The rounding does not consider
+        /// fractional seconds.
         /// </para>
         /// <para>
-        /// This is useful because the Zip spec allows storage of time only to the nearest even second.
-        /// So if you want to compare the time of an entry in the archive with it's actual time in the filesystem, you 
-        /// need to round the actual filesystem time, or use a 2-second threshold for the comparison. 
+        /// This is useful because the Zip spec allows storage of time only to the nearest
+        /// even second.  So if you want to compare the time of an entry in the archive with
+        /// it's actual time in the filesystem, you need to round the actual filesystem
+        /// time, or use a 2-second threshold for the comparison.
         /// </para>
         /// <para>
-        /// This is most nautrally an extension method for the DateTime class but this library is 
-        /// built for .NET 2.0, not for .NET 3.5;  This means extension methods are a no-no.  
+        /// This is most nautrally an extension method for the DateTime class but this
+        /// library is built for .NET 2.0, not for .NET 3.5; This means extension methods
+        /// are a no-no.
         /// </para>
         /// </remarks>
         /// <param name="source">The DateTime value to round</param>
@@ -418,24 +422,60 @@ namespace Ionic.Zip
                 }
                 catch (System.IO.IOException ioexc1)
                 {
-                    uint hresult = unchecked((uint)System.Runtime.InteropServices.Marshal.GetHRForException(ioexc1));
-                    if (hresult != 0x80070021)
-                        throw new System.IO.IOException(String.Format("Cannot read file {0}", FileName), ioexc1);
-                    retries++;
-                    if (retries > 10)
-                        throw new System.IO.IOException(String.Format("Cannot read file {0}, at offset 0x{1:X8} after 10 retries", FileName, offset), ioexc1);
-                    // max time waited on last retry = 250 + 10*550 = 5.75s
-                    // aggregate time waited after 10 retries: 250 + 55*550 = 30.5s
-                    System.Threading.Thread.Sleep(250 + retries * 550);
+
+#if !NETCF
+                    // Check if we can call GetHRForException, 
+                    // which makes unmanaged code calls.
+                    var p = new SecurityPermission(SecurityPermissionFlag.UnmanagedCode);
+                    try
+                    {
+                        p.Demand();
+#endif
+
+                        uint hresult = HRForException(ioexc1);
+                        if (hresult != 0x80070021)  // ERROR_LOCK_VIOLATION
+                            throw new System.IO.IOException(String.Format("Cannot read file {0}", FileName), ioexc1);
+                        retries++;
+                        if (retries > 10)
+                            throw new System.IO.IOException(String.Format("Cannot read file {0}, at offset 0x{1:X8} after 10 retries", FileName, offset), ioexc1);
+                        
+                        // max time waited on last retry = 250 + 10*550 = 5.75s
+                        // aggregate time waited after 10 retries: 250 + 55*550 = 30.5s
+                        System.Threading.Thread.Sleep(250 + retries * 550);
+
+#if !NETCF
+                    }
+                    catch (System.Security.SecurityException)
+                    {
+                        // The permission.Demand() failed. Therefore, we cannot call
+                        // GetHRForException, and cannot do the subtle handling of
+                        // ERROR_LOCK_VIOLATION.  Just bail.
+                        throw(ioexc1);
+                    }
+#endif
+
                 }
             }
             while (!done);
-            
+
+                 
             return n;
+        }
+
+        
+#if !NETCF
+        // workitem 8009
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode=true)]
+#endif        
+        private static uint HRForException(System.Exception ex1)
+        {
+            return  unchecked((uint)System.Runtime.InteropServices.Marshal.GetHRForException(ex1));
         }
 
     }
 
+
+    
 
     /// <summary> 
     /// A Stream wrapper, used for bookkeeping on input or output
