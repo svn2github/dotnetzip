@@ -54,6 +54,14 @@ Some of the advanced features of DotNetZip are not available through COM,
 including eventing, and streaming.
 </p>
 
+<p>Also, because COM does not support calling overloaded methods, only the
+simplest method in a method group will be available to COM callers.  For example,
+consider ZipFile.AddFile.  There are two overloads.  Only the overload that
+accepts a single string will be accessible to COM clients.  In most cases the
+thing you need to accomplish is achievable anyway.  In the AddFile() case, setting
+the FileName on the entry after calling AddFile() will do the trick.  </p>
+
+
 <p>
 Some examples follow.
 </p>
