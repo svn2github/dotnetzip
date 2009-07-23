@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-05 15:42:50>
+// Time-stamp: <2009-July-23 14:43:31>
 //
 // ------------------------------------------------------------------
 //
@@ -122,6 +122,7 @@ namespace Ionic.Zip.Tests
                     foreach (var f in files)
                     {
                         var a = File.GetAttributes(f);
+                        // must do ReadOnly bit first - to allow setting other bits.
                         if ((a & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
                         {
                             a &= ~FileAttributes.ReadOnly;
@@ -205,6 +206,16 @@ namespace Ionic.Zip.Tests
         {
             lock (LOCK)
             {
+                // Before creating the directory for the current run, Remove old directories.
+                // For some reason the test cleanup code tends to leave these directories??
+                string tempDir = System.Environment.GetEnvironmentVariable("TEMP");
+                var oldDirs = Directory.GetDirectories(tempDir, "*.SelectorTests");
+                foreach (var dir in oldDirs)
+                {
+                    fodderDirectory = dir;
+                    MyClassCleanup();
+                }
+                
                 fodderDirectory = TestUtilities.GenerateUniquePathname("SelectorTests");
 
                 // remember this directory so we can restore later
@@ -469,7 +480,7 @@ namespace Ionic.Zip.Tests
         }
 
 
-        [TestMethod]
+        [TestMethod, Timeout(7200000)]
         public void Selector_AddSelectedFiles()
         {
             Directory.SetCurrentDirectory(TopLevelDir);
@@ -526,7 +537,7 @@ namespace Ionic.Zip.Tests
             {
                 txrx.Send("test AddSelectedFiles");
                 txrx.Send("pb 1 max 4");
-                txrx.Send(String.Format("status test {0}/{1}: creating zip #1",
+                txrx.Send(String.Format("status test {0}/{1}: creating zip #1/2",
                                         m + 1, trials.Length));
                 TestContext.WriteLine("===============================================");
                 TestContext.WriteLine("AddSelectedFiles() [{0}]", trials[m].Label);
@@ -539,7 +550,7 @@ namespace Ionic.Zip.Tests
                 TestContext.WriteLine("C1({0}) Count({1})", trials[m].C1, count1);
                 txrx.Send("pb 1 step");
 
-                txrx.Send(String.Format("status test {0}/{1}: creating zip #2",
+                txrx.Send(String.Format("status test {0}/{1}: creating zip #2/2",
                                         m + 1, trials.Length));
                 using (ZipFile zip1 = new ZipFile())
                 {
@@ -553,7 +564,7 @@ namespace Ionic.Zip.Tests
 
                 /// =======================================================
                 /// Now, select entries from that ZIP
-                txrx.Send(String.Format("status test {0}/{1}: selecting zip #1",
+                txrx.Send(String.Format("status test {0}/{1}: selecting zip #1/2",
                                         m + 1, trials.Length));
                 using (ZipFile zip1 = ZipFile.Read(zipFileToCreate[0]))
                 {
@@ -562,7 +573,7 @@ namespace Ionic.Zip.Tests
                 }
                 txrx.Send("pb 1 step");
 
-                txrx.Send(String.Format("status test {0}/{1}: selecting zip #2",
+                txrx.Send(String.Format("status test {0}/{1}: selecting zip #2/2",
                                         m + 1, trials.Length));
                 using (ZipFile zip1 = ZipFile.Read(zipFileToCreate[1]))
                 {

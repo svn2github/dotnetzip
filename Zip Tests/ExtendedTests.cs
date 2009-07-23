@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-07 10:00:21>
+// Time-stamp: <2009-July-23 09:11:22>
 //
 // ------------------------------------------------------------------
 //
@@ -570,9 +570,61 @@ namespace Ionic.Zip.Tests.Extended
                 zip.Save(zipFileToCreate);
             }
 
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), 1, "The Zip file has the wrong number of entries.");            
+            Assert.AreEqual<int>(1, TestUtilities.CountEntries(zipFileToCreate), "The Zip file has the wrong number of entries.");            
         }
 
+
+        [TestMethod]
+        public void Create_EmitTimestampOptions()
+        {
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+
+            for (int j = 0; j < 3; j++)
+            {
+                for (int k = 0; k < 3; k++)
+                {
+                    string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Create_EmitTimestampOptions-{0}-{1}.zip", j, k));
+                    using (var zip = new ZipFile())
+                    {
+                        if (j == 1) zip.EmitTimesInUnixFormatWhenSaving = false;
+                        else if (j == 2) zip.EmitTimesInUnixFormatWhenSaving = true;
+
+                        if (k == 1) zip.EmitTimesInWindowsFormatWhenSaving = false;
+                        else if (k == 2) zip.EmitTimesInWindowsFormatWhenSaving = true;
+
+                        zip.AddFiles(files, "files");
+                        zip.Save(zipFileToCreate);
+                    }
+
+                    Assert.AreEqual<int>(files.Length, TestUtilities.CountEntries(zipFileToCreate), "The Zip file has the wrong number of entries.");
+
+                    using (var zip = ZipFile.Read(zipFileToCreate))
+                    {
+                        for (int i = 0; i < zip.Entries.Count; i++)
+                        {
+                            if (j == 2)
+                                Assert.AreEqual<ZipEntryTimestamp>(ZipEntryTimestamp.Unix, zip[i].Timestamp & ZipEntryTimestamp.Unix, 
+                                    "Missing Unix timestamp (cycle {0},{1}) (entry {2}).", j,k,i);
+                            else
+                                Assert.AreEqual<ZipEntryTimestamp>(ZipEntryTimestamp.None, zip[i].Timestamp & ZipEntryTimestamp.Unix, 
+                                    "Unix timestamp is present when none is expected (cycle {0},{1}) (entry {2}).", j, k, i);
+
+                            if (k == 1)
+                                Assert.AreEqual<ZipEntryTimestamp>(ZipEntryTimestamp.None, zip[i].Timestamp & ZipEntryTimestamp.Windows, 
+                                    "Windows timestamp is present when none is expected (cycle {0},{1}) (entry {2}).", j, k, i);
+                            else
+                                Assert.AreEqual<ZipEntryTimestamp>(ZipEntryTimestamp.Windows, zip[i].Timestamp & ZipEntryTimestamp.Windows, 
+                                    "Missing Windows timestamp (cycle {0},{1}) (entry {2}).", j, k, i);
+
+                            Assert.AreEqual<ZipEntryTimestamp>(ZipEntryTimestamp.DOS, zip[i].Timestamp & ZipEntryTimestamp.DOS, 
+                                "Missing DOS timestamp (entry (cycle {0},{1}) (entry {2}).", j, k, i);
+                        }
+                    }
+                }
+            }
+        }
 
 
 
@@ -1859,7 +1911,10 @@ namespace Ionic.Zip.Tests.Extended
                 }
             }
         }
-        
+
+
+
+
 
 
     }

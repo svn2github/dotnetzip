@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-01 13:08:29>
+// Time-stamp: <2009-July-23 10:04:24>
 //
 // ------------------------------------------------------------------
 //
@@ -93,7 +93,8 @@ namespace Ionic.Zip.Tests.Utilities
             if (GotException != null) throw GotException;
         }
 
-        private static void ClearReadOnly(string dirname)
+        
+        public static void ClearReadOnly(string dirname)
         {
             foreach (var d in Directory.GetDirectories(dirname))
             {
@@ -159,7 +160,7 @@ namespace Ionic.Zip.Tests.Utilities
             {
                 RandomTextGenerator rtg = new RandomTextGenerator();
                 
-                // fill the file with text data, selecting 5 paragraphs at a time
+                // fill the file with text data, selecting large blocks at a time
                 using (StreamWriter sw = File.CreateText(filename))
                 {
                     do
