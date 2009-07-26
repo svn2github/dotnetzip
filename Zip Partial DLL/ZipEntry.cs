@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-23 08:42:25>
+// Time-stamp: <2009-July-24 18:11:12>
 //
 // ------------------------------------------------------------------
 //
@@ -4670,7 +4670,8 @@ namespace Ionic.Zip
                 // this will happen the first cycle through, if seekable
                 this._sourceStreamOriginalPosition = new Nullable<Int64>(this._sourceStream.Position);
             }
-            else throw new ZipException("It is not possible to use PKZIP encryption on a non-seekable stream");
+            else if (this.Encryption == EncryptionAlgorithm.PkzipWeak) 
+                throw new ZipException("It is not possible to use PKZIP encryption on a non-seekable stream");
         }
 
 
@@ -5589,22 +5590,38 @@ namespace Ionic.Zip
                                 
                                 // workitem 7941: check datasize before reading.
                                 if (DataSize > 28)
-                                    throw new BadReadException(String.Format("  Inconsistent datasize (0x{0:X4}) for ZIP64 extra field at position 0x{1:X16}", DataSize, s.Position - additionalBytesRead));
+                                    throw new BadReadException(String.Format("  Inconsistent datasize (0x{0:X4}) for ZIP64 extra field at position 0x{1:X16}",
+                                                                             DataSize, s.Position - additionalBytesRead));
 
-                                if (this._UncompressedSize == 0xFFFFFFFF && DataSize >= 8)
+                                if (this._UncompressedSize == 0xFFFFFFFF)
                                 {
+                                    if (DataSize < 8)
+                                        throw new BadReadException(String.Format("  Missing data for ZIP64 extra field (Uncompressed Size) at position 0x{1:X16}",
+                                                                                 s.Position - additionalBytesRead));
+
                                     this._UncompressedSize = BitConverter.ToInt64(Buffer, j);
                                     j += 8;
+                                    DataSize-=8;
                                 }
-                                if (this._CompressedSize == 0xFFFFFFFF && DataSize >= 16)
+                                if (this._CompressedSize == 0xFFFFFFFF)
                                 {
+                                    if (DataSize < 8)
+                                        throw new BadReadException(String.Format("  Missing data for ZIP64 extra field (Compressed Size) at position 0x{1:X16}",
+                                                                                 s.Position - additionalBytesRead));
+
                                     this._CompressedSize = BitConverter.ToInt64(Buffer, j);
                                     j += 8;
+                                    DataSize-=8;
                                 }
-                                if (this._RelativeOffsetOfLocalHeader == 0xFFFFFFFF && DataSize >= 24)
+                                if (this._RelativeOffsetOfLocalHeader == 0xFFFFFFFF)
                                 {
+                                    if (DataSize < 8)
+                                        throw new BadReadException(String.Format("  Missing data for ZIP64 extra field (Relative Offset) at position 0x{1:X16}",
+                                                                                 s.Position - additionalBytesRead));
+
                                     this._RelativeOffsetOfLocalHeader = BitConverter.ToInt64(Buffer, j);
                                     j += 8;
+                                    DataSize-=8;
                                 }
 
                                 // Ignore anything else. Potentially there are 4 more bytes for the

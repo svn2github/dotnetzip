@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-22 18:49:11>
+// Time-stamp: <2009-July-24 17:37:33>
 //
 // ------------------------------------------------------------------
 //
@@ -903,7 +903,7 @@ namespace Ionic.Zip.Tests
         }
 
 
-                [TestMethod]
+        [TestMethod]
         public void Compat_7z_Unzip_SFX()
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_7z_Unzip_SFX.exe");
@@ -948,7 +948,84 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void Compat_Winzip_Zip()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_Winzip_Zip.zip");
+            Compat_Winzip_Zip_Variable("");
+        }
+        
+        [TestMethod]
+        public void Compat_Winzip_Zip_Normal()
+        {
+            Compat_Winzip_Zip_Variable("-en");
+        }
+
+        [TestMethod]
+        public void Compat_Winzip_Zip_Fast()
+        {
+            Compat_Winzip_Zip_Variable("-ef");
+        }
+
+        [TestMethod]
+        public void Compat_Winzip_Zip_SuperFast()
+        {
+            Compat_Winzip_Zip_Variable("-es");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        public void Compat_Winzip_Zip_EZ()
+        {
+            // Unsupported compression method
+            Compat_Winzip_Zip_Variable("-ez");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        public void Compat_Winzip_Zip_PPMd()
+        {
+            // Unsupported compression method
+            Compat_Winzip_Zip_Variable("-ep");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        public void Compat_Winzip_Zip_Bzip2()
+        {
+            // Unsupported compression method
+            Compat_Winzip_Zip_Variable("-eb");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        public void Compat_Winzip_Zip_Enhanced()
+        {
+            // Unsupported compression method
+            Compat_Winzip_Zip_Variable("-ee");
+        }
+
+        
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        public void Compat_Winzip_Zip_LZMA()
+        {
+            // Unsupported compression method
+            Compat_Winzip_Zip_Variable("-el");
+        }
+        
+
+        
+        public void Compat_Winzip_Zip_Variable(string compressionString)
+        {
+            // compressionString:
+            // -ep - PPMd compression.
+            // -el - LZMA compression
+            // -eb - bzip2 compression
+            // -ee - "enhanced" compression.
+            // -en - normal compression.
+            // -ef - fast compression.
+            // -es - superfast compression.
+            // -ez - select best method at runtime. Requires WinZip12 to extract.
+            // empty string = default
+            string zipFileToCreate = Path.Combine(TopLevelDir,
+                                                  String.Format("Compat_Winzip_Zip{0}.zip", compressionString));
 
             string testBin = TestUtilities.GetTestBinDir(CurrentDir);
             string dirInZip = "files";
@@ -968,7 +1045,9 @@ namespace Ionic.Zip.Tests
             System.Threading.Thread.Sleep(1200);
             
             // exec wzzip.exe to create the zip file
-            string wzzipOut = this.Exec(wzzip, String.Format("-a -p -yx {0} {1}\\*.*", zipFileToCreate, subdir));
+            string formatString = "-a -p " + compressionString + " -yx {0} {1}\\*.*";
+            
+            string wzzipOut = this.Exec(wzzip, String.Format(formatString, zipFileToCreate, subdir));
 
             // unzip with DotNetZip
             Directory.SetCurrentDirectory(TopLevelDir);
