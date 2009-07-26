@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-24 18:11:12>
+// Time-stamp: <2009-July-26 09:22:56>
 //
 // ------------------------------------------------------------------
 //
@@ -823,7 +823,9 @@ namespace Ionic.Zip
                 if (value == null || value == "") throw new ZipException("The FileName must be non empty and non-null.");
 
                 var filename = ZipEntry.NameInArchive(value, null);
-                // workitem 8047
+                // workitem 8180
+                if (_FileNameInArchive == filename) return; // nothing to do
+                // workitem 8047 - renaming to a name that already exists
                 if (this._zipfile.EntryFileNames.Contains(filename))
                     this._zipfile.RemoveEntry(filename);
                 _FileNameInArchive = filename;
