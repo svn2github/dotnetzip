@@ -56,7 +56,11 @@ namespace Ionic.Zip.Examples
             "  -Tw+                  - store Windows-format extended times (default).\n" +
             "  -Tw-                  - don't store Windows-format extended times.\n" +
             "  -Tu+                  - store Unix-format extended times (default).\n" +
-            "  -Tu-                  - don't store Unix-format extended times (default).\n";
+            "  -Tu-                  - don't store Unix-format extended times (default).\n" +
+            "  -UTnow                - use uniform time, NOW, for all entries. \n" +
+            "  -UTnewest             - use uniform time, newest entry, for all entries. \n" +
+            "  -UToldest             - use uniform time, oldest entry, for all entries. \n" +
+            "  -UT <time>            - use uniform time, specified, for all entries. \n";
 
             Console.WriteLine(UsageMessage,
                       System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
@@ -69,17 +73,12 @@ namespace Ionic.Zip.Examples
         {
             if (args.Length < 2) Usage();
 
-            //if (!args[0].EndsWith(".zip"))
-            //{
-            //    Console.WriteLine("The filename must end with .zip!\n");
-            //    Usage();
-            //}
             if (System.IO.File.Exists(args[0]))
             {
                 System.Console.Error.WriteLine("That zip file ({0}) already exists.", args[0]);
             }
 
-            // because the comments and filenames on zip entries may be UTF-8
+            // Because the comments and filenames on zip entries may be UTF-8
             // System.Console.OutputEncoding = new System.Text.UTF8Encoding();
 
             try
@@ -87,6 +86,8 @@ namespace Ionic.Zip.Examples
                 Nullable<SelfExtractorFlavor> flavor = null;
                 int codePage = 0;
                 ZipEntry e = null;
+                int _UseUniformTimestamp = 0;
+                DateTime _fixedTimestamp= System.DateTime.Now;
                 string entryComment = null;
                 string entryDirectoryPathInArchive = "";
 
@@ -139,6 +140,33 @@ namespace Ionic.Zip.Examples
                                 zip.EmitTimesInUnixFormatWhenSaving = false;
                                 break;
 
+                            case "-UTnow":
+                                _UseUniformTimestamp = 1;
+                                _fixedTimestamp = System.DateTime.UtcNow;
+                                break;
+                                
+                            case "-UTnewest":
+                                _UseUniformTimestamp = 2;
+                                break;
+                                
+                            case "-UToldest":
+                                _UseUniformTimestamp = 3;
+                                break;
+                                
+                            case "-UT":
+                                i++;
+                                if (args.Length <= i) Usage();
+                                _UseUniformTimestamp = 4;
+                                try
+                                {
+                                    _fixedTimestamp= System.DateTime.Parse(args[i]);
+                                }
+                                catch
+                                {
+                                    throw new ArgumentException("-TU");
+                                }
+                                break;
+                                
                             case "-64":
                                 zip.UseZip64WhenSaving = Zip64Option.Always;
                                 break;
@@ -208,6 +236,34 @@ namespace Ionic.Zip.Examples
                         }
                     }
 
+                    if (_UseUniformTimestamp > 0)
+                    {
+                        if (_UseUniformTimestamp==2)
+                        {
+                            // newest
+                            _fixedTimestamp = new System.DateTime(1601,1,1,0,0,0);
+                            foreach(var entry in zip)
+                            {
+                                if (entry.LastModified > _fixedTimestamp)
+                                    _fixedTimestamp = entry.LastModified;
+                            }
+                        }
+                        else if (_UseUniformTimestamp==3)
+                        {
+                            // oldest
+                            foreach(var entry in zip)
+                            {
+                                if (entry.LastModified < _fixedTimestamp)
+                                    _fixedTimestamp = entry.LastModified;
+                            }
+                        }
+                        
+                        foreach(var entry in zip)
+                        {
+                            entry.LastModified = _fixedTimestamp;
+                        }
+                    }
+                    
                     if (!flavor.HasValue)
                         zip.Save();
                     else 
