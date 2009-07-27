@@ -32,6 +32,7 @@ namespace Ionic.Zip.Examples
             "            Depends on Ionic's DotNetZip library. This is version {0} of the utility.\n" +
             "usage:\n   ZipIt.exe <ZipFileToCreate> [arguments]\n" +
             "\narguments: \n" +
+            "  <directory> | <file>  - a directory or file to add to the archive.\n" +
             "  -utf8                 - use UTF-8 encoding for entries with comments or\n" +
             "                          filenames that cannot be encoded with the default IBM437\n" +
             "                          code page.\n" +
@@ -52,7 +53,10 @@ namespace Ionic.Zip.Examples
             "                          archive, with the given string as its content.\n" +
             "  -flat                 - store the files in a flat dir structure; do not use the \n" +
             "                          directory paths from the source files.\n" +
-            "  <directory> | <file>  - add the directory or file to the archive.";
+            "  -Tw+                  - store Windows-format extended times (default).\n" +
+            "  -Tw-                  - don't store Windows-format extended times.\n" +
+            "  -Tu+                  - store Unix-format extended times (default).\n" +
+            "  -Tu-                  - don't store Unix-format extended times (default).\n";
 
             Console.WriteLine(UsageMessage,
                       System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
@@ -117,6 +121,22 @@ namespace Ionic.Zip.Examples
 
                             case "-utf8":
                                 zip.UseUnicodeAsNecessary = true;
+                                break;
+
+                            case "-Tw+":
+                                zip.EmitTimesInWindowsFormatWhenSaving = true;
+                                break;
+
+                            case "-Tw-":
+                                zip.EmitTimesInWindowsFormatWhenSaving = false;
+                                break;
+
+                            case "-Tu+":
+                                zip.EmitTimesInUnixFormatWhenSaving = true;
+                                break;
+
+                            case "-Tu-":
+                                zip.EmitTimesInUnixFormatWhenSaving = false;
                                 break;
 
                             case "-64":

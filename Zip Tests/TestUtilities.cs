@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-23 10:04:24>
+// Time-stamp: <2009-July-26 23:49:45>
 //
 // ------------------------------------------------------------------
 //
@@ -410,7 +410,13 @@ namespace Ionic.Zip.Tests.Utilities
         {
             const int range = 126 - 33;
             const int start = 33;
-            return (char)(_rnd.Next(range) + start);
+            char x = '\0';
+            do
+            {
+                x = (char)(_rnd.Next(range) + start);
+                
+            } while (x=='^' || x=='&' || x=='"' || x=='>'|| x=='<');
+            return x;
         }
 
         internal static string GenerateRandomPassword()
@@ -561,15 +567,19 @@ namespace Ionic.Zip.Tests.Utilities
 
 
 
-
         internal static string[] GenerateFilesFlat(string subdir)
+        {
+            int numFilesToCreate = _rnd.Next(23) + 14;
+            return GenerateFilesFlat(subdir, numFilesToCreate);
+        }
+        
+        internal static string[] GenerateFilesFlat(string subdir, int numFilesToCreate)
         {
             if (!Directory.Exists(subdir))
                 Directory.CreateDirectory(subdir);
 
-            int NumFilesToCreate = _rnd.Next(23) + 14;
-            string[] FilesToZip = new string[NumFilesToCreate];
-            for (int i = 0; i < NumFilesToCreate; i++)
+            string[] FilesToZip = new string[numFilesToCreate];
+            for (int i = 0; i < numFilesToCreate; i++)
             {
                 FilesToZip[i] = Path.Combine(subdir, String.Format("testfile{0:D3}.txt", i));
                 TestUtilities.CreateAndFillFileText(FilesToZip[i], _rnd.Next(34000) + 5000);
@@ -712,24 +722,81 @@ namespace Ionic.Zip.Tests.Utilities
 
     }
 
-    public interface IExec
+    public class IonicTestClass
     {
-        TestContext TestContext
-        {
-            get;
-            set;
-        }
-    }
+        protected System.Random _rnd;
+        protected System.Collections.Generic.List<string> _FilesToRemove = new System.Collections.Generic.List<string>();
+        protected string CurrentDir = null;
+        protected string TopLevelDir = null;
 
-    public static class Extensions
-    {
 
-        internal static string Exec(this IExec o, string program, string args)
+        public IonicTestClass()
         {
-            return Exec(o, program, args, true);
+            _rnd = new System.Random();
         }
         
-        internal static string Exec(this IExec o, string program, string args, bool waitForExit)
+        #region Context
+        private TestContext testContextInstance;
+
+        /// <summary>
+        ///Gets or sets the test context which provides
+        ///information about and functionality for the current test run.
+        ///</summary>
+        public TestContext TestContext
+        {
+            get
+            {
+                return testContextInstance;
+            }
+            set
+            {
+                testContextInstance = value;
+            }
+        }
+
+        #endregion
+
+
+        
+        #region Test Init and Cleanup
+        //
+        // You can use the following additional attributes as you write your tests:
+        //
+        // Use ClassInitialize to run code before running the first test in the class
+        // [ClassInitialize()]
+        // public static void MyClassInitialize(TestContext testContext) { }
+        //
+        // Use ClassCleanup to run code after all tests in a class have run
+        // [ClassCleanup()]
+        // public static void MyClassCleanup() { }
+        //
+
+
+        // Use TestInitialize to run code before running each test 
+        [TestInitialize()]
+        public void MyTestInitialize()
+        {
+            TestUtilities.Initialize(ref CurrentDir, ref TopLevelDir);
+            _FilesToRemove.Add(TopLevelDir);
+        }
+
+        // Use TestCleanup to run code after each test has run
+        [TestCleanup()]
+        public void MyTestCleanup()
+        {
+            TestUtilities.Cleanup(CurrentDir, _FilesToRemove);
+        }
+
+        #endregion
+
+
+        
+        internal string Exec(string program, string args)
+        {
+            return Exec(program, args, true);
+        }
+        
+        internal string Exec(string program, string args, bool waitForExit)
         {
             if (args == null)
                 throw new ArgumentException("args");
@@ -738,7 +805,7 @@ namespace Ionic.Zip.Tests.Utilities
                 throw new ArgumentException("program");
 
             // Microsoft.VisualStudio.TestTools.UnitTesting
-            o.TestContext.WriteLine("running command: {0} {1}", program, args);
+            this.TestContext.WriteLine("running command: {0} {1}", program, args);
 
             string output;
             int rc = TestUtilities.Exec_NoContext(program, args, waitForExit, out output);
@@ -746,11 +813,39 @@ namespace Ionic.Zip.Tests.Utilities
             if (rc != 0)
                 throw new Exception(String.Format("Exception running app {0}: {1}", program, output));
 
-            o.TestContext.WriteLine("output: {0}", output);
+            this.TestContext.WriteLine("output: {0}", output);
 
             return output;
         }
 
+        string wzunzip = null;
+
+        internal void WinzipVerify(string zipfile)
+        {
+            WinzipVerify(zipfile, null);
+        }
+
+        internal void WinzipVerify(string zipfile, string password)
+        {
+            if (wzunzip == null)
+            {
+                var progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
+                wzunzip = Path.Combine(progfiles, "winzip\\wzunzip.exe");
+                Assert.IsTrue(File.Exists(wzunzip), "exe ({0}) does not exist", wzunzip);
+            }
+            string args = (password == null)
+                ? String.Format("-t {0}", zipfile)
+                : String.Format("-s{0} -t {1}", password, zipfile);
+
+            string wzunzipOut = this.Exec(wzunzip, args);
+            //TestContext.WriteLine("{0}", wzunzipOut);
+        }
+    }
+
+
+    
+    public static class Extensions
+    {
 
         public static IEnumerable<string> SplitByWords(this string subject)
         {  

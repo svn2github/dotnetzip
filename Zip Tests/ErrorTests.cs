@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-01 09:33:30>
+// Time-stamp: <2009-July-26 23:54:21>
 //
 // ------------------------------------------------------------------
 //
@@ -42,71 +42,10 @@ namespace Ionic.Zip.Tests.Error
     /// Summary description for ErrorTests
     /// </summary>
     [TestClass]
-    public class ErrorTests
+    public class ErrorTests : IonicTestClass
     {
-        private System.Random _rnd = null;
+        public ErrorTests() : base() { }
 
-        public ErrorTests()
-        {
-            _rnd = new System.Random();
-        }
-
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
-        #region Additional test attributes
-        //
-        // You can use the following additional attributes as you write your tests:
-        //
-        // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
-        //
-        // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-
-        #endregion
-
-
-        #region Test Init and Cleanup
-        private string CurrentDir = null;
-        private string TopLevelDir = null;
-
-        // Use TestInitialize to run code before running each test 
-        [TestInitialize()]
-        public void MyTestInitialize()
-        {
-            TestUtilities.Initialize(ref CurrentDir, ref TopLevelDir);
-            _FilesToRemove.Add(TopLevelDir);
-        }
-
-
-        System.Collections.Generic.List<string> _FilesToRemove = new System.Collections.Generic.List<string>();
-
-        // Use TestCleanup to run code after each test has run
-        [TestCleanup()]
-        public void MyTestCleanup()
-        {
-            TestUtilities.Cleanup(CurrentDir, _FilesToRemove);
-        }
-        #endregion
 
         [TestMethod]
         [ExpectedException(typeof(FileNotFoundException))]

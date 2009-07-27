@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-02 17:42:27>
+// Time-stamp: <2009-July-27 00:53:16>
 //
 // ------------------------------------------------------------------
 //
@@ -39,68 +39,13 @@ namespace Ionic.Zip.Tests.Basic
     /// Summary description for UnitTest1
     /// </summary>
     [TestClass]
-    public class BasicTests : IExec
+    public class BasicTests : IonicTestClass
     {
-        private System.Random _rnd;
+        public BasicTests() : base() { }
 
-        public BasicTests()
-        {
-            _rnd = new System.Random();
-        }
-
-        #region Context
-        private TestContext testContextInstance;
-
-        /// <summary>
-        /// Gets or sets the test context which provides
-        /// information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-        #endregion
-
-        #region Test Init and Cleanup
-        //
-        // You can use the following additional attributes as you write your tests:
-        //
-        // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
-        //
-        // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-
-
-        private string CurrentDir = null;
-        private string TopLevelDir = null;
-
-        // Use TestInitialize to run code before running each test 
-        [TestInitialize()]
-        public void MyTestInitialize()
-        {
-            TestUtilities.Initialize(ref CurrentDir, ref TopLevelDir);
-            _FilesToRemove.Add(TopLevelDir);
-        }
-
-
-        System.Collections.Generic.List<string> _FilesToRemove = new System.Collections.Generic.List<string>();
-
-        // Use TestCleanup to run code after each test has run
         [TestCleanup()]
-        public void MyTestCleanup()
+        public void MyTestCleanupEx()
         {
-            TestUtilities.Cleanup(CurrentDir, _FilesToRemove);
             if (_txrx!=null)
             {
                 _txrx.Send("stop");
@@ -108,7 +53,6 @@ namespace Ionic.Zip.Tests.Basic
             }
         }
 
-        #endregion
 
         [TestMethod]
         public void CreateZip_AddItem_WithDirectory()
@@ -546,13 +490,30 @@ namespace Ionic.Zip.Tests.Basic
         }
 
         [TestMethod]
+        public void CreateZip_AddFile_OnlyZeroLengthFiles_Password()
+        {
+            _Internal_ZeroLengthFiles(_rnd.Next(33) + 3, "CreateZip_AddFile_OnlyZeroLengthFiles",Path.GetRandomFileName());
+        }
+
+        [TestMethod]
         public void CreateZip_AddFile_OneZeroLengthFile()
         {
             _Internal_ZeroLengthFiles(1, "CreateZip_AddFile_OneZeroLengthFile");
         }
 
 
+        [TestMethod]
+        public void CreateZip_AddFile_OneZeroLengthFile_Password()
+        {
+            _Internal_ZeroLengthFiles(1, "CreateZip_AddFile_OneZeroLengthFile_Password", Path.GetRandomFileName());
+        }
+
         private void _Internal_ZeroLengthFiles(int fileCount, string nameStub)
+        {
+            _Internal_ZeroLengthFiles(fileCount, nameStub, null);
+        }
+        
+        private void _Internal_ZeroLengthFiles(int fileCount, string nameStub, string password)
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, nameStub + ".zip");
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
@@ -562,9 +523,11 @@ namespace Ionic.Zip.Tests.Basic
             for (i = 0; i < fileCount; i++)
                 FilesToZip[i] = TestUtilities.CreateUniqueFile("zerolength", TopLevelDir);
 
+            var sw = new StringWriter();
             using (ZipFile zip = new ZipFile())
             {
-                //zip.StatusMessageTextWriter = System.Console.Out;
+                zip.StatusMessageTextWriter = sw;
+                zip.Password = password;
                 for (i = 0; i < FilesToZip.Length; i++)
                 {
                     string pathToUse = Path.Combine(Path.GetFileName(TopLevelDir),
@@ -573,11 +536,16 @@ namespace Ionic.Zip.Tests.Basic
                 }
                 zip.Save(zipFileToCreate);
             }
+            string status = sw.ToString();
+            TestContext.WriteLine("save output: " + status);
 
+            WinzipVerify(zipFileToCreate, password);
+            
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), FilesToZip.Length,
                     "The zip file created has the wrong number of entries.");
         }
 
+        
         [TestMethod]
         public void CreateZip_UpdateDirectory()
         {
@@ -1058,8 +1026,7 @@ namespace Ionic.Zip.Tests.Basic
             }
 
             string status = sw.ToString();
-
-            TestContext.WriteLine("status output: " + status);
+            TestContext.WriteLine("save output: " + status);
 
             Assert.IsTrue(status.Length > 24 * entries, "Insufficient status messages on the StatusTexWriter?");
 

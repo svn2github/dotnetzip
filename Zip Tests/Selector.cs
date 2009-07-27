@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-23 14:43:31>
+// Time-stamp: <2009-July-26 23:52:47>
 //
 // ------------------------------------------------------------------
 //
@@ -40,74 +40,10 @@ namespace Ionic.Zip.Tests
     /// Summary description for Selector
     /// </summary>
     [TestClass]
-    public class Selector
+    public class Selector : IonicTestClass
     {
-        private System.Random _rnd;
+        public Selector() : base() { }
 
-        public Selector()
-        {
-            _rnd = new System.Random();
-        }
-
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
-        #region Additional test attributes
-        //
-        // You can use the following additional attributes as you write your tests:
-        //
-        // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
-        //
-        // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-        // Use TestInitialize to run code before running each test 
-        // [TestInitialize()]
-        // public void MyTestInitialize() { }
-        //
-        // Use TestCleanup to run code after each test has run
-        // [TestCleanup()]
-        // public void MyTestCleanup() { }
-        //
-
-        private string CurrentDir = null;
-        private string TopLevelDir = null;
-
-        // Use TestInitialize to run code before running each test 
-        [TestInitialize()]
-        public void MyTestInitialize()
-        {
-            TestUtilities.Initialize(ref CurrentDir, ref TopLevelDir);
-            _FilesToRemove.Add(TopLevelDir);
-        }
-
-
-        List<string> _FilesToRemove = new List<string>();
-
-        // Use TestCleanup to run code after each test has run
-        [TestCleanup()]
-        public void MyTestCleanup()
-        {
-            TestUtilities.Cleanup(CurrentDir, _FilesToRemove);
-        }
 
         [ClassCleanup()]
         public static void MyClassCleanup()
@@ -159,9 +95,6 @@ namespace Ionic.Zip.Tests
                 }
             }
         }
-
-
-        #endregion
 
 
 

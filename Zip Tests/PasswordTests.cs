@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-05 14:06:36>
+// Time-stamp: <2009-July-26 23:55:00>
 //
 // ------------------------------------------------------------------
 //
@@ -35,74 +35,9 @@ using Ionic.Zip.Tests.Utilities;
 namespace Ionic.Zip.Tests.Password
 {
     [TestClass]
-    public class PasswordTests
+    public class PasswordTests : IonicTestClass
     {
-        private System.Random _rnd;
-
-        public PasswordTests()
-        {
-            _rnd = new System.Random();
-        }
-
-        #region Context
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-        #endregion
-
-        #region Test Init and Cleanup
-        //
-        // You can use the following additional attributes as you write your tests:
-        //
-        // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
-        //
-        // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-
-
-        private string CurrentDir = null;
-        private string TopLevelDir = null;
-
-        // Use TestInitialize to run code before running each test 
-        [TestInitialize()]
-        public void MyTestInitialize()
-        {
-            TestUtilities.Initialize(ref CurrentDir, ref TopLevelDir);
-            _FilesToRemove.Add(TopLevelDir);
-        }
-
-
-        System.Collections.Generic.List<string> _FilesToRemove = new System.Collections.Generic.List<string>();
-
-        // Use TestCleanup to run code after each test has run
-        [TestCleanup()]
-        public void MyTestCleanup()
-        {
-            TestUtilities.Cleanup(CurrentDir, _FilesToRemove);
-        }
-
-        #endregion
-
-
-
+        public PasswordTests() : base() { }
 
         [TestMethod]
         public void Password_BasicAddAndExtract()

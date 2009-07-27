@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-24 17:37:33>
+// Time-stamp: <2009-July-26 23:45:53>
 //
 // ------------------------------------------------------------------
 //
@@ -49,36 +49,11 @@ namespace Ionic.Zip.Tests
     /// Summary description for Compatibility
     /// </summary>
     [TestClass]
-    public class Compatibility : IExec
+    public class Compatibility : IonicTestClass
     {
-        private System.Random _rnd;
-
-        public Compatibility()
+        public Compatibility() : base()
         {
-            _rnd = new System.Random();
         }
-
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
-        #region Additional test attributes
-
-
 
         [ClassInitialize()]
         public static void MyClassInitialize(TestContext testContext)
@@ -115,31 +90,8 @@ namespace Ionic.Zip.Tests
         }
 
 
-        private string CurrentDir;
-        private string TopLevelDir;
         private static string IonicZipDll;
         private static string RegAsm = "c:\\windows\\Microsoft.NET\\Framework\\v2.0.50727\\regasm.exe";
-
-        // Use TestInitialize to run code before running each test 
-        [TestInitialize()]
-        public void MyTestInitialize()
-        {
-            TestUtilities.Initialize(ref CurrentDir, ref TopLevelDir);
-            _FilesToRemove.Add(TopLevelDir);
-        }
-
-
-        System.Collections.Generic.List<string> _FilesToRemove = new System.Collections.Generic.List<string>();
-
-        // Use TestCleanup to run code after each test has run
-        [TestCleanup()]
-        public void MyTestCleanup()
-        {
-            TestUtilities.Cleanup(CurrentDir, _FilesToRemove);
-        }
-
-
-        #endregion
 
 
 
@@ -160,7 +112,7 @@ namespace Ionic.Zip.Tests
 
 
 
-        private static void CreateFilesAndChecksums(string subdir, out string[] filesToZip, out Dictionary<string, byte[]> checksums)
+        internal static void CreateFilesAndChecksums(string subdir, out string[] filesToZip, out Dictionary<string, byte[]> checksums)
         {
             // create a bunch of files
             filesToZip = TestUtilities.GenerateFilesFlat(subdir);
@@ -825,7 +777,7 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void Compat_7z_Zip_2()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_7z_Zip_DotNetZip_Unzip.zip");
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_7z_Zip_2.zip");
             string testBin = TestUtilities.GetTestBinDir(CurrentDir);
 
             // cons up the directories
@@ -1068,7 +1020,7 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void Compat_Winzip_Unzip_2()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_ShellApplication_Unzip-2.zip");
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_Winzip_Unzip_2.zip");
             string testBin = TestUtilities.GetTestBinDir(CurrentDir);
 
             // cons up the directories
@@ -1108,10 +1060,48 @@ namespace Ionic.Zip.Tests
         }
 
 
+
+        
+        [TestMethod]
+        public void Compat_Winzip_Unzip_ZeroLengthFile()
+        {
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_Winzip_Unzip_ZeroLengthFile.zip");
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+
+            // create an empty file
+            string filename = Path.Combine(TopLevelDir, Path.GetRandomFileName());
+            using (StreamWriter sw = File.CreateText(filename)) { }
+             
+            // Create the zip archive
+            Directory.SetCurrentDirectory(TopLevelDir);
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddFile(filename, "");
+                zip1.Save(zipFileToCreate);
+            }
+
+            // Verify the number of files in the zip
+            Assert.AreEqual<int>(1,TestUtilities.CountEntries(zipFileToCreate),
+                                 "Incorrect number of entries in the zip file.");
+
+            // now, test the zip
+            // eg, wzunzip.exe -t test.zip  <extractdir>
+            var progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
+            string wzunzip = Path.Combine(progfiles, "winzip\\wzunzip.exe");
+            Assert.IsTrue(File.Exists(wzunzip), "exe ({0}) does not exist", wzunzip);
+
+            string wzunzipOut= this.Exec(wzunzip, String.Format("-t {0}", zipFileToCreate));
+
+            TestContext.WriteLine("{0}", wzunzipOut);
+            Assert.IsTrue(wzunzipOut.Contains("No errors"));
+            Assert.IsFalse(wzunzipOut.Contains("At least one error was detected"));
+        }
+
+
         [TestMethod]
         public void Compat_Winzip_Unzip_SFX()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_ShellApplication_Unzip-SFX.exe");
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_Winzip_Unzip_SFX.exe");
             string testBin = TestUtilities.GetTestBinDir(CurrentDir);
 
             // cons up the directories
@@ -1153,7 +1143,7 @@ namespace Ionic.Zip.Tests
 
         
         [TestMethod]
-        public void Compat_Winzip_Unzip()
+        public void Compat_Winzip_Unzip_Basic()
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_Winzip_Unzip.zip");
 

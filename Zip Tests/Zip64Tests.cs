@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-25 22:11:30>
+// Time-stamp: <2009-July-27 00:03:08>
 //
 // ------------------------------------------------------------------
 //
@@ -39,48 +39,9 @@ namespace Ionic.Zip.Tests.Zip64
     /// Summary description for Zip64Tests
     /// </summary>
     [TestClass]
-    public class Zip64Tests : IExec
+    public class Zip64Tests : IonicTestClass
     {
-        private System.Random _rnd;
-
-        public Zip64Tests()
-        {
-            _rnd = new System.Random();
-        }
-
-        #region Context
-        private TestContext testContextInstance;
-
-        /// <summary>
-        /// Gets or sets the test context which provides
-        /// information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-        #endregion
-
-        #region Test Init and Cleanup
-        //
-        // You can use the following additional attributes as you write your tests:
-        //
-        // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
-        //
-        // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-
+        public Zip64Tests() : base() { }
 
         private static string _HugeZipFile;
         private string GetHugeZipFile()
@@ -97,6 +58,22 @@ namespace Ionic.Zip.Tests.Zip64
         //             public static void MyClassInitialize(TestContext testContext)
         //         {
         //         }
+
+
+        // Use TestCleanup to run code after each test has run
+        [TestCleanup()]
+        public void MyTestCleanupEx()
+        {
+            if (_txrx!=null)
+            {
+                try
+                {
+                    _txrx.Send("stop");
+                    _txrx = null;
+                }
+                catch { }
+            }
+        }
 
         [ClassCleanup()]
         public static void MyClassCleanup()
@@ -118,37 +95,6 @@ namespace Ionic.Zip.Tests.Zip64
 
 
         private Object LOCK = new Object();
-        private string CurrentDir = null;
-        private string TopLevelDir = null;
-
-        
-        // Use TestInitialize to run code before running each test 
-        [TestInitialize()]
-        public void MyTestInitialize()
-        {
-            TestUtilities.Initialize(ref CurrentDir, ref TopLevelDir);
-            _FilesToRemove.Add(TopLevelDir);
-        }
-
-
-        System.Collections.Generic.List<string> _FilesToRemove = new System.Collections.Generic.List<string>();
-
-        // Use TestCleanup to run code after each test has run
-        [TestCleanup()]
-        public void MyTestCleanup()
-        {
-            TestUtilities.Cleanup(CurrentDir, _FilesToRemove);
-            if (_txrx!=null)
-            {
-                try
-                {
-                    _txrx.Send("stop");
-                    _txrx = null;
-                }
-                catch { }
-            }
-        }
-
 
 
         private string _CreateHugeZipfile()
@@ -304,7 +250,7 @@ namespace Ionic.Zip.Tests.Zip64
             Directory.SetCurrentDirectory(current);
         }
         
-        #endregion
+
 
 
 
@@ -361,6 +307,8 @@ namespace Ionic.Zip.Tests.Zip64
 
                 }
 
+                WinzipVerify(zipFileToCreate);
+                
                 TestContext.WriteLine("---------------Reading {0}...", zipFileToCreate);
                 using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
                 {

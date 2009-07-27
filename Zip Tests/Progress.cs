@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-01 09:38:57>
+// Time-stamp: <2009-July-26 23:53:40>
 //
 // ------------------------------------------------------------------
 //
@@ -41,55 +41,9 @@ namespace Ionic.Zip.Tests
     /// Summary description for Compatibility
     /// </summary>
     [TestClass]
-    public class Progress
+    public class Progress : IonicTestClass
     {
-        private System.Random _rnd;
-
-        public Progress()
-        {
-            _rnd = new System.Random();
-        }
-
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get { return testContextInstance; }
-            set { testContextInstance = value; }
-        }
-
-        #region Additional test attributes
-
-
-        private string CurrentDir;
-        private string TopLevelDir;
-
-        // Use TestInitialize to run code before running each test 
-        [TestInitialize()]
-            public void MyTestInitialize()
-        {
-            TestUtilities.Initialize(ref CurrentDir, ref TopLevelDir);
-            _FilesToRemove.Add(TopLevelDir);
-        }
-
-
-        System.Collections.Generic.List<string> _FilesToRemove = new System.Collections.Generic.List<string>();
-
-        // Use TestCleanup to run code after each test has run
-        [TestCleanup()]
-            public void MyTestCleanup()
-        {
-            TestUtilities.Cleanup(CurrentDir, _FilesToRemove);
-        }
-
-
-        #endregion
-
-
+        public Progress() : base() { }
 
         private System.Reflection.Assembly _myself;
         private System.Reflection.Assembly myself

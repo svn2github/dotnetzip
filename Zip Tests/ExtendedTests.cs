@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-23 09:11:22>
+// Time-stamp: <2009-July-27 00:50:12>
 //
 // ------------------------------------------------------------------
 //
@@ -47,69 +47,15 @@ namespace Ionic.Zip.Tests.Extended
     /// Summary description for ExtendedTests
     /// </summary>
     [TestClass]
-    public class ExtendedTests : IExec
+    public class ExtendedTests : IonicTestClass
     {
-        private System.Random _rnd;
+        public ExtendedTests() : base() { }
 
-        public ExtendedTests()
-        {
-            _rnd = new System.Random();
-        }
-
-        #region Context
-        private TestContext testContextInstance;
-
-        /// <summary>
-        /// Gets or sets the test context which provides
-        /// information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-        #endregion
-
-        #region Test Init and Cleanup
-        //
-        // You can use the following additional attributes as you write your tests:
-        //
-        // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
-        //
-        // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-
-
-        private string CurrentDir = null;
-        private string TopLevelDir = null;
-
-        // Use TestInitialize to run code before running each test 
-        [TestInitialize()]
-        public void MyTestInitialize()
-        {
-            TestUtilities.Initialize(ref CurrentDir, ref TopLevelDir);
-            _FilesToRemove.Add(TopLevelDir);
-        }
-
-
-        List<string> _FilesToRemove = new List<string>();
 
         // Use TestCleanup to run code after each test has run
         [TestCleanup()]
-        public void MyTestCleanup()
+        public void MyTestCleanupEx()
         {
-            TestUtilities.Cleanup(CurrentDir, _FilesToRemove);
-
             if (_txrx!=null)
             {
                 _txrx.Send("stop");
@@ -117,7 +63,6 @@ namespace Ionic.Zip.Tests.Extended
             }
         }
 
-        #endregion
 
 
         private System.Reflection.Assembly _myself;
@@ -1325,6 +1270,8 @@ namespace Ionic.Zip.Tests.Extended
                 zip.AddDirectory(TopLevelDir, string.Empty);
                 zip.Save(zipFileToCreate);
             }
+
+            WinzipVerify(zipFileToCreate);
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), entries, "The Zip file has the wrong number of entries.");
         }
 
@@ -1352,11 +1299,14 @@ namespace Ionic.Zip.Tests.Extended
                 }
             }
 
-            using (ZipFile zip = new ZipFile(zipFileToCreate))
+            using (ZipFile zip = new ZipFile())
             {
                 zip.AddDirectory(TopLevelDir, string.Empty);
-                zip.Save();
+                zip.Save(zipFileToCreate);
             }
+
+            WinzipVerify(zipFileToCreate);
+
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), entries, "The Zip file has the wrong number of entries.");
         }
 
@@ -1410,6 +1360,8 @@ namespace Ionic.Zip.Tests.Extended
                 zip1.Save(zipFileToCreate);
             }
 
+            WinzipVerify(zipFileToCreate);
+
             _cancelIndex = entriesAdded - _rnd.Next(entriesAdded / 2);
             _progressEventCalls = 0;
             using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
@@ -1443,6 +1395,8 @@ namespace Ionic.Zip.Tests.Extended
                 zip1.Save(zipFileToCreate);
             }
 
+            WinzipVerify(zipFileToCreate, password);
+            
             _cancelIndex = -1; // don't cancel this Extract
             _progressEventCalls = 0;
             using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
@@ -1554,6 +1508,7 @@ namespace Ionic.Zip.Tests.Extended
                         zip1.Save(zipFileToCreate[m]);
                     }
                     TestContext.WriteLine("\n");
+                    WinzipVerify(zipFileToCreate[m]);
                 }
 
 
@@ -1645,14 +1600,17 @@ namespace Ionic.Zip.Tests.Extended
                 };
 
             int j = 0;
-            using (ZipFile zip = new ZipFile(zipFileToCreate))
+            using (ZipFile zip = new ZipFile())
             {
                 for (j = 0; j < filenames.Length; j++)
                     zip.AddFile(filenames[j], "");
                 zip.Comment = "This is a Comment On the Archive";
-                zip.Save();
+                zip.Save(zipFileToCreate);
             }
 
+
+            WinzipVerify(zipFileToCreate);
+            
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filenames.Length,
                                  "The zip file created has the wrong number of entries.");
 
@@ -1735,10 +1693,8 @@ namespace Ionic.Zip.Tests.Extended
 
             TestContext.WriteLine("Current Dir: {0}", CurrentDir);
 
-            // This is a SFX (Self-Extracting Archive) produced by WinZip
             string filename = Path.Combine(SourceDir, "Zip Tests\\bin\\Debug\\zips\\" + fileName);
 
-            // try reading the WinZip SFX zipfile - this should succeed
             TestContext.WriteLine("Reading zip file: '{0}'", filename);
             using (ZipFile zip = ZipFile.Read(filename))
             {
@@ -1762,7 +1718,7 @@ namespace Ionic.Zip.Tests.Extended
 
 
         [TestMethod]
-            public void Extended_CheckZip1()
+        public void Extended_CheckZip1()
         {
             EncryptionAlgorithm[] crypto = { EncryptionAlgorithm.None, 
                                              EncryptionAlgorithm.PkzipWeak,
@@ -1818,6 +1774,7 @@ namespace Ionic.Zip.Tests.Extended
                             zip.Save(zipFile);
                         }
 
+                        WinzipVerify(zipFile, password);
                         TestContext.WriteLine("Checking zip...");
                         System.Collections.ObjectModel.ReadOnlyCollection<String> msgs;
 
@@ -1837,17 +1794,19 @@ namespace Ionic.Zip.Tests.Extended
         
 
         [TestMethod]
-            public void Extended_CheckZip2()
+        public void Extended_CheckZip2()
         {
-            EncryptionAlgorithm[] crypto = { EncryptionAlgorithm.None, 
+            EncryptionAlgorithm[] crypto = {
+                                             EncryptionAlgorithm.WinZipAes128,
+                                             EncryptionAlgorithm.None, 
                                              EncryptionAlgorithm.PkzipWeak,
-                                             EncryptionAlgorithm.WinZipAes128, 
                                              EncryptionAlgorithm.WinZipAes256,
             };
 
-            Zip64Option[] z64 = { Zip64Option.Never,
-                                  Zip64Option.AsNecessary, 
+            Zip64Option[] z64 = { 
                                   Zip64Option.Always,
+                                  Zip64Option.AsNecessary, 
+                                  Zip64Option.Never,
             };
 
             //             var rtg = new RandomTextGenerator();
@@ -1860,7 +1819,8 @@ namespace Ionic.Zip.Tests.Extended
                 "potentially compressed and encrypted.  Just ahead in the file, there are " +
                 "_CompressedFileDataSize bytes of data, followed by potentially a non-zero length " +
                 "trailer, consisting of optionally, some encryption stuff (10 byte MAC for AES), " +
-                "and the bit-3 trailer (16 or 24 bytes). ";
+                "and the bit-3 trailer (16 or 24 bytes). All the various combinations of possibilities " +
+                "are what make testing a zip library so challenging.";
 
             string testBin = TestUtilities.GetTestBinDir(CurrentDir);
             string fileToZip = Path.Combine(testBin, "Ionic.Zip.dll");
@@ -1876,7 +1836,7 @@ namespace Ionic.Zip.Tests.Extended
 
                     TestContext.WriteLine("=================================");
                     TestContext.WriteLine("Creating {0}...", Path.GetFileName(zipFile));
-                    TestContext.WriteLine("Encryption:{0}  Zip64:{1} pw={2}", 
+                    TestContext.WriteLine("Encryption({0})  Zip64({1}) pw({2})", 
                                           crypto[i].ToString(), z64[j].ToString(), password);
 
                     string dir = Path.GetRandomFileName();
@@ -1896,6 +1856,8 @@ namespace Ionic.Zip.Tests.Extended
                         zip.Save(zipFile);
                     }
 
+                    WinzipVerify(zipFile, password);
+                    
                     TestContext.WriteLine("Checking zip...");
                     System.Collections.ObjectModel.ReadOnlyCollection<String> msgs;
 

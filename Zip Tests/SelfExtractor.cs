@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-15 14:23:39>
+// Time-stamp: <2009-July-26 23:55:44>
 //
 // ------------------------------------------------------------------
 //
@@ -42,100 +42,9 @@ namespace Ionic.Zip.Tests
     /// Summary description for Self extracting archives (SFX)
     /// </summary>
     [TestClass]
-    public class SelfExtractor
+    public class SelfExtractor : IonicTestClass
     {
-        private System.Random _rnd;
-
-        public SelfExtractor()
-        {
-            _rnd = new System.Random();
-        }
-
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
-        #region Additional test attributes
-
-#if NOTUSED
-        private static int StaticShellExec(string program, string args, out string output)
-        {
-            System.Diagnostics.Process p = new System.Diagnostics.Process();
-            p.StartInfo.FileName = program;
-            p.StartInfo.Arguments = args;
-            p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-            p.StartInfo.RedirectStandardOutput = true;
-            p.StartInfo.RedirectStandardError = true;
-            p.StartInfo.UseShellExecute = false;
-            p.Start();
-
-            output = p.StandardOutput.ReadToEnd();
-            p.WaitForExit();
-
-            return p.ExitCode;
-        }
-#endif
-
-        private string CurrentDir;
-        private string TopLevelDir;
-
-        // Use TestInitialize to run code before running each test 
-        [TestInitialize()]
-        public void MyTestInitialize()
-        {
-            TestUtilities.Initialize(ref CurrentDir, ref TopLevelDir);
-            _FilesToRemove.Add(TopLevelDir);
-        }
-
-
-        System.Collections.Generic.List<string> _FilesToRemove = new System.Collections.Generic.List<string>();
-
-        // Use TestCleanup to run code after each test has run
-        [TestCleanup()]
-        public void MyTestCleanup()
-        {
-            TestUtilities.Cleanup(CurrentDir, _FilesToRemove);
-        }
-
-
-#if NOTUSED
-        private string ShellExec(string program, string args)
-        {
-            if (args == null)
-                throw new ArgumentException("args");
-
-            if (program == null)
-                throw new ArgumentException("program");
-
-            TestContext.WriteLine("running command: {0} {1}\n    ", program, args);
-
-            string output;
-            int rc = StaticShellExec(program, args, out output);
-
-            if (rc != 0)
-                throw new Exception(String.Format("Exception running app {0}: {1}", program, output));
-
-            TestContext.WriteLine("output: {0}", output);
-
-            return output;
-        }
-#endif
-        #endregion
-
+        public SelfExtractor() : base() { }
 
         [TestMethod]
         public void SelfExtractor_CanRead()
