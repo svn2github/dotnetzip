@@ -146,14 +146,14 @@ namespace Ionic.Zip.WinFormsExample
             _CompressionLevelNames.Sort();
             foreach (var name in _CompressionLevelNames)
             {
-                if (name.StartsWith("Level"))
+                if (!name.StartsWith("Level"))
                 {
                     comboCompression.Items.Add(name);
                 }
             }
 
-            // select the first item: 
-            comboCompression.SelectedIndex = 0;
+            // select the 2nd item, "Default": 
+            comboCompression.SelectedIndex = 2;
         }
 
         private void InitFlavorList()
@@ -230,6 +230,8 @@ namespace Ionic.Zip.WinFormsExample
                     Encoding = "ibm437",
                     ZipFlavor = this.comboFlavor.SelectedIndex,
                     Password = this.tbPassword.Text,
+                    WindowsTimes = this.chkWindowsTime.Checked,
+                    UnixTimes = this.chkUnixTime.Checked,
                     };
 
             if (this.comboEncoding.SelectedIndex != 0)
@@ -402,7 +404,8 @@ namespace Ionic.Zip.WinFormsExample
                     zip1.Comment = options.Comment;
                     zip1.Password = (options.Password != "") ? options.Password : null;
                     zip1.Encryption = options.Encryption;
-
+                    zip1.EmitTimesInWindowsFormatWhenSaving = options.WindowsTimes;
+                    zip1.EmitTimesInUnixFormatWhenSaving = options.UnixTimes;
                     foreach (ItemToAdd item in options.Entries)
                     {
                         var e = zip1.AddItem(item.LocalFileName, item.DirectoryInArchive);
@@ -1595,10 +1598,14 @@ namespace Ionic.Zip.WinFormsExample
 
         private void btnClearItemsToZip_Click(object sender, EventArgs e)
         {
+            int rCount=0;
             foreach (ListViewItem item in this.listView2.Items)
             {
                 if (item.Checked)
+                {
                     this.listView2.Items.Remove(item);
+                    rCount++;
+                }
             }
 
             // After removing all the checked items, all items  are now unchecked.
@@ -1607,6 +1614,9 @@ namespace Ionic.Zip.WinFormsExample
             _disableMasterChecking = true;
             this.checkBox1.Checked = false;
             _disableMasterChecking = false;
+            this.lblStatus.Text = (rCount == 1)
+                ? String.Format("Cleared 1 entry.  {1} remaining entries to save.", rCount, this.listView2.Items.Count)
+                : String.Format("Cleared {0} entries.  {1} remaining entries to save.", rCount, this.listView2.Items.Count);
         }
 
 
@@ -1857,6 +1867,8 @@ namespace Ionic.Zip.WinFormsExample
         public Ionic.Zlib.CompressionLevel CompressionLevel;
         public Ionic.Zip.EncryptionAlgorithm Encryption;
         public Zip64Option Zip64;
+        public bool WindowsTimes;
+        public bool UnixTimes;
         public ItemToAdd[] Entries;
     }
 

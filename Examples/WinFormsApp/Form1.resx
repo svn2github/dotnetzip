@@ -120,6 +120,9 @@
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <metadata name="comboCompression.Locked" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
   <data name="richTextBox1.Text" xml:space="preserve">
     <value>This is DotNetZip, a free zip tool.  For you programmer types, you may be interested to learn that it is built in C#, on .NET.  
 
