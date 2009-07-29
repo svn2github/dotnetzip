@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-28 22:59:19>
+// Time-stamp: <2009-July-28 23:27:14>
 //
 // ------------------------------------------------------------------
 //
@@ -34,7 +34,6 @@ using System.Security.Cryptography;
 #if AESCRYPTO
 namespace Ionic.Zip
 {
-
     /// <summary> 
     /// This is a helper class supporting WinZip AES encryption.  
     /// This class is intended for use only by the DotNetZip library.
