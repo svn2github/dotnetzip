@@ -45,6 +45,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_6A180DBE03324B67AB52F6579B03376F"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_79B79A0956724180B56BEB087743E497"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -191,7 +197,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Zip, Version=1.8.3.17, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zip, Version=1.8.4.13, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_4ADC6320CB5A23DFF593EA7C95D93FF3"
@@ -216,6 +222,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6A180DBE03324B67AB52F6579B03376F"
+            {
+            "SourcePath" = "8:Uninstall.cmd"
+            "TargetName" = "8:Uninstall.cmd"
+            "Tag" = "8:"
+            "Folder" = "8:_23BCB24D0FEF491DB38964CE9740634B"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_79B79A0956724180B56BEB087743E497"
@@ -306,7 +332,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DotNetZip Tools v1.8"
         "ProductCode" = "8:{A2CEDD37-3C87-4076-9839-FCA01BA3973D}"
-        "PackageCode" = "8:{79C0E690-2DEB-4A9F-94C7-4198600E0FC3}"
+        "PackageCode" = "8:{10091F18-06A0-4382-9A4F-5D79DE004D97}"
         "UpgradeCode" = "8:{BEF05388-A74D-4383-BD87-61940DF83E20}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
@@ -649,6 +675,20 @@
             "Folder" = "8:_5A8F74C81DC54F19864F2B0C4DCEB6EE"
             "WorkingFolder" = "8:_23BCB24D0FEF491DB38964CE9740634B"
             "Icon" = "8:_C761E906187B41B991150E5027BA2F8A"
+            "Feature" = "8:"
+            }
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_D692FEB4B66947AE8AD46C7E111B5286"
+            {
+            "Name" = "8:Uninstall DotNetZip Tools.cmd"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_6A180DBE03324B67AB52F6579B03376F"
+            "Folder" = "8:_5A8F74C81DC54F19864F2B0C4DCEB6EE"
+            "WorkingFolder" = "8:_23BCB24D0FEF491DB38964CE9740634B"
+            "Icon" = "8:"
             "Feature" = "8:"
             }
         }

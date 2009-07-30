@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-26 23:52:47>
+// Time-stamp: <2009-July-29 16:13:46>
 //
 // ------------------------------------------------------------------
 //
@@ -1319,6 +1319,40 @@ namespace Ionic.Zip.Tests
             {
                 var ff = new Ionic.FileSelector(s);
             }
+        }
+
+
+
+
+        [TestMethod]
+        public void Selector_SelectFiles_DirName_wi8245()
+        {
+            // workitem 8245
+            Directory.SetCurrentDirectory(TopLevelDir);
+            SetupFiles();
+            var ff = new Ionic.FileSelector("*.*");
+            var result = ff.SelectFiles(fodderDirectory);
+            Assert.IsTrue(result.Count > 1);
+        }
+
+        [TestMethod]
+        public void Selector_SelectFiles_DirName_wi8245_2()
+        {
+            // workitem 8245
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectFiles_DirName_wi8245_2.zip");
+            Directory.SetCurrentDirectory(TopLevelDir);
+            SetupFiles();
+            
+            TestContext.WriteLine("===============================================");
+            TestContext.WriteLine("AddSelectedFiles()");
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles(fodderDirectory, null, "fodder", true);
+                zip1.Save(zipFileToCreate);
+            }
+
+            Assert.IsTrue(TestUtilities.CountEntries(zipFileToCreate) > 1,
+                          "The Zip file has the wrong number of entries.");
         }
 
 

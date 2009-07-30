@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-01 13:49:40>
+// Time-stamp: <2009-July-29 16:17:41>
 //
 // ------------------------------------------------------------------
 //
@@ -32,7 +32,7 @@
 
 
 using System;
-
+using System.IO;
 
 namespace Ionic.Zip
 {
@@ -410,10 +410,25 @@ namespace Ionic.Zip
                                      String directoryPathInArchive,
                                      bool recurseDirectories)
         {
-            if (String.IsNullOrEmpty(directoryOnDisk)) directoryOnDisk = ".";
-            if (Verbose) StatusMessageTextWriter.WriteLine("adding selection '{0}' from dir '{1}'...", selectionCriteria, directoryOnDisk);
-            Ionic.FileSelector ff = new Ionic.FileSelector(selectionCriteria);
-            var filesToAdd = ff.SelectFiles(directoryOnDisk, recurseDirectories);
+            //System.Collections.Generic.List<string> filesToAdd = null;
+            if (directoryOnDisk == null && (Directory.Exists(selectionCriteria)))
+            {
+                //if (Verbose) StatusMessageTextWriter.WriteLine("adding selection '{0}' from dir '{1}'...",
+                //selectionCriteria, directoryOnDisk);
+                //Ionic.FileSelector ff = new Ionic.FileSelector("*.*");
+                //filesToAdd = ff.SelectFiles(selectionCriteria, recurseDirectories);
+                directoryOnDisk = selectionCriteria;
+                selectionCriteria = "*.*";
+            }
+            else if (String.IsNullOrEmpty(directoryOnDisk))
+            {
+                directoryOnDisk = ".";
+            }
+                if (Verbose) StatusMessageTextWriter.WriteLine("adding selection '{0}' from dir '{1}'...",
+                                                               selectionCriteria, directoryOnDisk);
+                Ionic.FileSelector ff = new Ionic.FileSelector(selectionCriteria);
+                var filesToAdd = ff.SelectFiles(directoryOnDisk, recurseDirectories);
+                
             if (Verbose) StatusMessageTextWriter.WriteLine("found {0} files...", filesToAdd.Count);
 
             OnAddStarted();
@@ -422,7 +437,7 @@ namespace Ionic.Zip
             {
                 if (directoryPathInArchive != null)
                 {
-                    string dirInArchive = System.IO.Path.GetDirectoryName(f).Replace(directoryOnDisk, directoryPathInArchive);
+                    string dirInArchive = Path.GetDirectoryName(f).Replace(directoryOnDisk, directoryPathInArchive);
                     this.AddFile(f, dirInArchive);
                 }
                 else
@@ -991,7 +1006,7 @@ namespace Ionic
     {
         internal override bool Evaluate(Ionic.Zip.ZipEntry entry)
         {
-            System.IO.FileAttributes fileAttrs = entry.Attributes;
+            FileAttributes fileAttrs = entry.Attributes;
             return _Evaluate(fileAttrs);
         }
     }
@@ -1117,7 +1132,7 @@ namespace Ionic
 
             foreach (Ionic.Zip.ZipEntry e in zip)
             {
-                if (directoryPathInArchive == null || System.IO.Path.GetDirectoryName(e.FileName) == directoryPathInArchive)
+                if (directoryPathInArchive == null || Path.GetDirectoryName(e.FileName) == directoryPathInArchive)
                     if (this.Evaluate(e))
                         list.Add(e);
             }
