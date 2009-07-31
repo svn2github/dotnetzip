@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-30 16:59:34>
+// Time-stamp: <2009-July-30 22:49:08>
 //
 // ------------------------------------------------------------------
 //
@@ -5108,22 +5108,20 @@ namespace Ionic.Zip
             }
             else
             {
-                byte[] Descriptor = null;
+                byte[] Descriptor = new byte[16 + (_OutputUsesZip64.Value?8:0)];
+                i = 0;
+                    
+                // signature
+                Array.Copy(BitConverter.GetBytes(ZipConstants.ZipEntryDataDescriptorSignature), 0, Descriptor, i, 4);
+                i += 4;
+
+                // CRC - the correct value now
+                Array.Copy(BitConverter.GetBytes(_Crc32), 0, Descriptor, i, 4);
+                i += 4;
 
                 // workitem 7917
                 if (_OutputUsesZip64.Value)
                 {
-                    Descriptor = new byte[24];
-                    i = 0;
-
-                    // signature
-                    Array.Copy(BitConverter.GetBytes(ZipConstants.ZipEntryDataDescriptorSignature), 0, Descriptor, i, 4);
-                    i += 4;
-
-                    // CRC - the correct value now
-                    Array.Copy(BitConverter.GetBytes(_Crc32), 0, Descriptor, i, 4);
-                    i += 4;
-
                     // CompressedSize - the correct value now
                     Array.Copy(BitConverter.GetBytes(_CompressedSize), 0, Descriptor, i, 8);
                     i += 8;
@@ -5134,28 +5132,13 @@ namespace Ionic.Zip
                 }
                 else
                 {
-                    Descriptor = new byte[16];
-                    i = 0;
-                    // signature
-                    int sig = ZipConstants.ZipEntryDataDescriptorSignature;
-                    Descriptor[i++] = (byte)(sig & 0x000000FF);
-                    Descriptor[i++] = (byte)((sig & 0x0000FF00) >> 8);
-                    Descriptor[i++] = (byte)((sig & 0x00FF0000) >> 16);
-                    Descriptor[i++] = (byte)((sig & 0xFF000000) >> 24);
-
-                    // CRC - the correct value now
-                    Descriptor[i++] = (byte)(_Crc32 & 0x000000FF);
-                    Descriptor[i++] = (byte)((_Crc32 & 0x0000FF00) >> 8);
-                    Descriptor[i++] = (byte)((_Crc32 & 0x00FF0000) >> 16);
-                    Descriptor[i++] = (byte)((_Crc32 & 0xFF000000) >> 24);
-
-                    // CompressedSize - the correct value now
+                    // CompressedSize - (lower 32 bits) the correct value now
                     Descriptor[i++] = (byte)(_CompressedSize & 0x000000FF);
                     Descriptor[i++] = (byte)((_CompressedSize & 0x0000FF00) >> 8);
                     Descriptor[i++] = (byte)((_CompressedSize & 0x00FF0000) >> 16);
                     Descriptor[i++] = (byte)((_CompressedSize & 0xFF000000) >> 24);
 
-                    // UncompressedSize - the correct value now
+                    // UncompressedSize - (lower 32 bits) the correct value now
                     Descriptor[i++] = (byte)(_UncompressedSize & 0x000000FF);
                     Descriptor[i++] = (byte)((_UncompressedSize & 0x0000FF00) >> 8);
                     Descriptor[i++] = (byte)((_UncompressedSize & 0x00FF0000) >> 16);
@@ -5270,16 +5253,40 @@ namespace Ionic.Zip
                 byte[] encryptionHeader = new byte[12];
                 rnd.NextBytes(encryptionHeader);
 
-                // Here, it is important to encrypt the random header, INCLUDING the
-                // final byte which is the high-order byte of the CRC32.  We must do
-                // this BEFORE we encrypt the file data.  This step changes the state of
-                // the cipher, or in the words of the PKZIP spec, it "further
-                // initializes" the cipher keys.
-                //
-                // No way around this: must read the stream to compute the actual CRC.
-                FigureCrc32();
-                encryptionHeader[11] = (byte)((this._Crc32 >> 24) & 0xff);
+                // workitem 8271
+                if ((this._BitField & 0x0008) == 0x0008)
+                {
+                    // In the case that bit 3 of the general purpose bit flag is set to
+                    // indicate the presence of a 'data
+                    // descriptor' (signature 0x08074b50), the last byte of the decrypted
+                    // header is sometimes compared with the high-order byte of the
+                    // lastmodified time, rather than the high-order byte of the CRC, to
+                    // verify the password.
+                    //
+                    // This is not documented in the PKWare Appnote.txt.  
+                    // This was discovered this by analysis of the Crypt.c source file in the InfoZip library
+                    // http://www.info-zip.org/pub/infozip/
 
+                    // Also, winzip insists on this!
+                    _TimeBlob = Ionic.Zip.SharedUtilities.DateTimeToPacked(LastModified);
+                    encryptionHeader[11] = (byte)((this._TimeBlob >> 8) & 0xff);
+                }
+                else
+                {
+                    // When bit 3 is not set, the CRC value is required before
+                    // encryption of the file data begins. In this case there is no way
+                    // around it: must read the stream in its entirety to compute the
+                    // actual CRC before proceeding.
+                    FigureCrc32();
+                    encryptionHeader[11] = (byte)((this._Crc32 >> 24) & 0xff);
+                }
+
+                // Encrypt the random header, INCLUDING the final byte which is either
+                // the high-order byte of the CRC32, or the high-order byte of the
+                // _TimeBlob.  Must do this BEFORE encrypting the file data.  This
+                // step changes the state of the cipher, or in the words of the PKZIP
+                // spec, it "further initializes" the cipher keys.
+                
                 byte[] cipherText = _zipCrypto.EncryptMessage(encryptionHeader, encryptionHeader.Length);
 
                 // Write the ciphered bonafide encryption header. 

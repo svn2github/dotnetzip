@@ -59,9 +59,11 @@ namespace Ionic.Zip.Examples
             "  -d <path>            - use the given directory path in the archive for\n" +
             "                         succeeding items added to the archive.\n" +
             "  -D <path>            - find files in the given directory on disk.\n" + 
+            "  -r-                  - don't recurse directories (default).\n" +
+            "  -r+                  - recurse directories.\n" +
             "  -s <entry> 'string'  - insert an entry of the given name into the \n" +
             "                         archive, with the given string as its content.\n" +
-            "  -progress            - emit progress reports (good for large zips)\n" +
+            "  -progress            - emit progress reports (good when creating large zips)\n" +
             "  -Tw+                 - store Windows-format extended times (default).\n" +
             "  -Tw-                 - don't store Windows-format extended times.\n" +
             "  -Tu+                 - store Unix-format extended times (default).\n" +
@@ -93,19 +95,19 @@ namespace Ionic.Zip.Examples
             switch(e.EventType)
             {
                 case ZipProgressEventType.Saving_Started:
-                    Console.WriteLine("Saving: {0}", e.ArchiveName);
+                    Console.Error.WriteLine("Saving: {0}", e.ArchiveName);
                     break;
                 
                 case ZipProgressEventType.Saving_Completed:
                     justHadByteUpdate= false; 
-                    Console.WriteLine();
-                    Console.WriteLine("Done: {0}", e.ArchiveName);
+                    Console.Error.WriteLine();
+                    Console.Error.WriteLine("Done: {0}", e.ArchiveName);
                     break;
 
                 case ZipProgressEventType.Saving_BeforeWriteEntry:
                     if (justHadByteUpdate) 
-                        Console.WriteLine();
-                    Console.WriteLine("  Writing: {0} ({1}/{2})",  
+                        Console.Error.WriteLine();
+                    Console.Error.WriteLine("  Writing: {0} ({1}/{2})",  
                                       e.CurrentEntry.FileName, e.EntriesSaved+1, e.EntriesTotal);
                     justHadByteUpdate= false;
                     break;
@@ -116,7 +118,7 @@ namespace Ionic.Zip.Examples
                 case ZipProgressEventType.Saving_EntryBytesRead:
                     if (justHadByteUpdate)
                         Console.SetCursorPosition(0, Console.CursorTop);
-                    Console.Write("     {0}/{1} ({2:N0}%)", e.BytesTransferred, e.TotalBytesToTransfer,
+                    Console.Error.Write("     {0}/{1} ({2:N0}%)", e.BytesTransferred, e.TotalBytesToTransfer,
                                   e.BytesTransferred / (0.01 * e.TotalBytesToTransfer ));
                     justHadByteUpdate= true;
                     break;
@@ -136,12 +138,18 @@ namespace Ionic.Zip.Examples
 
         public static void Main(String[] args)
         {
+            bool saveToStdout = false;
             if (args.Length < 2) Usage();
 
-            if (System.IO.File.Exists(args[0]))
+            if (args[0]=="-")
+            {
+                saveToStdout = true;                
+            }
+            else if (System.IO.File.Exists(args[0]))
             {
                 System.Console.Error.WriteLine("That zip file ({0}) already exists.", args[0]);
             }
+            
 
             // Because the comments and filenames on zip entries may be UTF-8
             // System.Console.OutputEncoding = new System.Text.UTF8Encoding();
@@ -158,10 +166,11 @@ namespace Ionic.Zip.Examples
                 //string entryComment = null;
                 string entryDirectoryPathInArchive = "";
                 string directoryOnDisk = null;
-
+                bool recurseDirectories = false;
+                
                 using (ZipFile zip = new ZipFile(args[0])) // read/update an existing zip, or create a new one.
                 {
-                    zip.StatusMessageTextWriter = System.Console.Out;
+                    zip.StatusMessageTextWriter = System.Console.Error;
                     zip.SaveProgress += SaveProgress;
                     for (int i = 1; i < args.Length; i++)
                     {
@@ -188,6 +197,14 @@ namespace Ionic.Zip.Examples
                                 if (args[i] != "w" && args[i] != "c") Usage();
                                 flavor = new Nullable<SelfExtractorFlavor>
                                     ((args[i] == "w") ? SelfExtractorFlavor.WinFormsApplication : SelfExtractorFlavor.ConsoleApplication);
+                                break;
+
+                            case "-r-":
+                                recurseDirectories = false;
+                                break;
+
+                            case "-r+":
+                                recurseDirectories = true;
                                 break;
 
                             case "-utf8":
@@ -307,7 +324,25 @@ namespace Ionic.Zip.Examples
                                     entryComment = null;
                                 }
                                 #else
-                                    zip.AddSelectedFiles(args[i], directoryOnDisk, entryDirectoryPathInArchive, true);
+                                {
+                                    if (args[i].Contains("\\"))
+                                    {
+                                        if (directoryOnDisk != null)
+                                            throw new Exception("Don't specify a path in the filespec and also with -d");
+
+                                        string dir = System.IO.Path.GetDirectoryName(args[i]);
+                                        string spec = System.IO.Path.GetFileName(args[i]);
+                                        //bool wantRecurse = recurseDirectories || System.IO.Directory.Exists(args[i]); 
+                                        zip.UpdateSelectedFiles(spec, dir, entryDirectoryPathInArchive,
+                                                            recurseDirectories);
+                                    }
+                                    else
+                                    {
+                                    bool wantRecurse = recurseDirectories || System.IO.Directory.Exists(args[i]); 
+                                    zip.UpdateSelectedFiles(args[i], directoryOnDisk, entryDirectoryPathInArchive,
+                                                            wantRecurse);
+                                    }
+                                }
                                 #endif
                                     
                                 break;
@@ -343,9 +378,19 @@ namespace Ionic.Zip.Examples
                     }
                     
                     if (!flavor.HasValue)
-                        zip.Save();
-                    else 
+                    {
+                        if (saveToStdout)
+                            zip.Save(Console.OpenStandardOutput());
+                        else
+                            zip.Save();
+                    }
+                    else
+                    {
+                        if (saveToStdout)
+                            throw new Exception("Cannot save SFX to stdout, sorry! See http://dotnetzip.codeplex.com/WorkItem/View.aspx?WorkItemId=7246");
                         zip.SaveSelfExtractor(args[0], flavor.Value);
+                        
+                    }
 
                 }
             }

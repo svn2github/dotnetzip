@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-27 00:03:08>
+// Time-stamp: <2009-July-30 17:58:58>
 //
 // ------------------------------------------------------------------
 //
@@ -731,10 +731,6 @@ namespace Ionic.Zip.Tests.Zip64
             
                     string extractDir = String.Format("extract.{0}.{1}",n,m);
                     Directory.CreateDirectory(extractDir);
-            
-                    string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                    string wzunzip = Path.Combine(progfiles, "winzip\\wzunzip.exe");
-                    Assert.IsTrue(File.Exists(wzunzip), "exe ({0}) does not exist", wzunzip);
 
                     // this will throw if the command has a non-zero exit code.
                     this.Exec(wzunzip,
@@ -782,10 +778,6 @@ namespace Ionic.Zip.Tests.Zip64
                 _txrx.Send("status Using WinZip to list the entries...");
 
                 // examine and unpack the zip archive via WinZip
-                string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                string wzzip = Path.Combine(progfiles, "winzip\\wzzip.exe");
-                Assert.IsTrue(File.Exists(wzzip), "exe ({0}) does not exist", wzzip);
-
                 // first, examine the zip entry metadata:
                 string wzzipOut = this.Exec(wzzip, String.Format("-vt {0}", zipFileToExtract));
                 TestContext.WriteLine(wzzipOut);
@@ -819,8 +811,6 @@ namespace Ionic.Zip.Tests.Zip64
                 _txrx.Send(String.Format("pb 1 max {0}", numEntries*2));
                 x=0; y = 0;
                 _txrx.Send("status Extracting the entries...");
-                string wzunzip = Path.Combine(progfiles, "winzip\\wzunzip.exe");
-                Assert.IsTrue(File.Exists(wzunzip), "exe ({0}) does not exist", wzunzip);
                 int nCycles = 0;
                 while (true)
                 {
@@ -912,6 +902,36 @@ namespace Ionic.Zip.Tests.Zip64
         }
 
 
+        private string _wzzip = null;
+        private string wzzip
+        {
+            get
+            {
+               if (_wzzip == null)
+               {
+                string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
+                _wzzip = Path.Combine(progfiles, "winzip\\wzzip.exe");
+                Assert.IsTrue(File.Exists(_wzzip), "exe ({0}) does not exist", _wzzip);
+               }
+               return _wzzip;
+            }
+        }
+        
+        private string _wzunzip = null;
+        private string wzunzip
+        {
+            get
+            {
+               if (_wzunzip == null)
+               {
+                string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
+                _wzunzip = Path.Combine(progfiles, "winzip\\wzunzip.exe");
+                Assert.IsTrue(File.Exists(_wzunzip), "exe ({0}) does not exist", _wzunzip);
+               }
+               return _wzunzip;
+            }
+        }
+        
         
         [Timeout(36000000), TestMethod] // in milliseconds. 3600 000 0 = 10 hours
         public void Zip64_Winzip_Zip_Huge()
@@ -942,9 +962,6 @@ namespace Ionic.Zip.Tests.Zip64
                 var fileList = Directory.GetFiles(extractDir, "*.*", SearchOption.AllDirectories);
                     
                 // examine and unpack the zip archive via WinZip
-                string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                string wzzip = Path.Combine(progfiles, "winzip\\wzzip.exe");
-                Assert.IsTrue(File.Exists(wzzip), "exe ({0}) does not exist", wzzip);
                 string wzzipOut= null;
                 string zipFileToCreate = Path.Combine(TopLevelDir, "Zip64-WinZip-Huge.zip");
                 int nCycles= 0;
