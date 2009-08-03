@@ -8,7 +8,7 @@
 // Created Thu Jul 30 22:32:18 2009
 //
 // last saved: 
-// Time-stamp: <2009-July-30 22:47:07>
+// Time-stamp: <2009-August-01 09:50:24>
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2009 by Dino Chiesa
@@ -25,6 +25,7 @@ namespace Ionic.Zip.Tests
     public class NonSeekableOutputStream : Stream
     {
         protected Stream _s;
+        protected bool  _disposed;
         // ctor
         public NonSeekableOutputStream (Stream s) : base()
         {
@@ -83,5 +84,23 @@ namespace Ionic.Zip.Tests
         {
             _s.SetLength(value);
         }
+        
+        protected override void Dispose(bool disposing)
+        {
+            try
+            {
+                if (!_disposed)
+                {
+                    if (disposing && (this._s != null))
+                        this._s.Close();
+                    _disposed = true;
+                }
+            }
+            finally
+            {
+                base.Dispose(disposing);
+            }
+        }
+        
     }
 }
