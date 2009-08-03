@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-30 22:49:08>
+// Time-stamp: <2009-August-03 11:19:26>
 //
 // ------------------------------------------------------------------
 //
@@ -6103,8 +6103,8 @@ namespace Ionic.Zip
         public static int SetTimes(string filename, DateTime ctime, DateTime atime, DateTime mtime)
         {
             IntPtr hFile  = (IntPtr) CreateFileCE(filename, 
-                                                  (uint)FileAccess.Write, 
-                                                  (uint)FileShare.Write, 
+                                                  (uint)0x40000000L, // (uint)FileAccess.Write, 
+                                                  (uint)0x00000002L, // (uint)FileShare.Write, 
                                                   0, 
                                                   (uint) 3,  // == open existing
                                                   (uint)0, // flagsAndAttributes 
@@ -6130,8 +6130,8 @@ namespace Ionic.Zip
         public static int SetLastWriteTime(string filename, DateTime mtime)
         {
             IntPtr hFile  = (IntPtr) CreateFileCE(filename, 
-                                                  (uint)FileAccess.Write, 
-                                                  (uint)FileShare.Write, 
+                                                  (uint)0x40000000L, // (uint)FileAccess.Write, 
+                                                  (uint)0x00000002L, // (uint)FileShare.Write, 
                                                   0, 
                                                   (uint) 3,  // == open existing
                                                   (uint)0, // flagsAndAttributes 
