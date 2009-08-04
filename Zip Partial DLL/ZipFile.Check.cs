@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-26 01:41:46>
+// Time-stamp: <2009-August-04 13:54:32>
 //
 // ------------------------------------------------------------------
 //
@@ -33,8 +33,6 @@ using System.Collections.Generic;
 
 namespace Ionic.Zip
 {
-
-
     public partial class ZipFile
     {
 
@@ -227,4 +225,5 @@ namespace Ionic.Zip
 
 
     }
+
 }

@@ -80,6 +80,8 @@
       <DependentUpon>ZipContentsDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\FolderBrowserDialogEx.cs" />
+    <Compile Include="EncryptionAlgorithm.cs" />
+    <Compile Include="ExtractExistingFileAction.cs" />
     <Compile Include="FileSelector.cs" />
     <Compile Include="WinZipAes.cs" />
     <Compile Include="ZipConstants.cs" />
@@ -90,9 +92,16 @@
     <Compile Include="ZipDirEntry.cs" />
     <Compile Include="ZipEntry.cs" />
     <Compile Include="Events.cs" />
+    <Compile Include="ZipEntry.Extract.cs" />
+    <Compile Include="ZipEntry.Read.cs" />
+    <Compile Include="ZipEntry.Write.cs" />
+    <Compile Include="ZipFile.AddUpdate.cs" />
     <Compile Include="ZipFile.Check.cs" />
     <Compile Include="ZipFile.cs" />
     <Compile Include="ZipFile.Events.cs" />
+    <Compile Include="ZipFile.Extract.cs" />
+    <Compile Include="ZipFile.Read.cs" />
+    <Compile Include="ZipFile.Save.cs" />
     <Compile Include="ZipFile.Selector.cs" />
     <Compile Include="ZipFile.SaveSelfExtractor.cs" />
     <Compile Include="ZipFile.x-IEnumerable.cs" />

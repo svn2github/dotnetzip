@@ -55,11 +55,17 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Zip Partial DLL\EncryptionAlgorithm.cs">
+      <Link>EncryptionAlgorithm.cs</Link>
+    </Compile>
     <Compile Include="..\Zip Partial DLL\Events.cs">
       <Link>Events.cs</Link>
     </Compile>
     <Compile Include="..\Zip Partial DLL\Exceptions.cs">
       <Link>Exceptions.cs</Link>
+    </Compile>
+    <Compile Include="..\Zip Partial DLL\ExtractExistingFileAction.cs">
+      <Link>ExtractExistingFileAction.cs</Link>
     </Compile>
     <Compile Include="..\Zip Partial DLL\Shared.cs">
       <Link>Shared.cs</Link>
@@ -76,11 +82,32 @@
     <Compile Include="..\Zip Partial DLL\ZipEntry.cs">
       <Link>ZipEntry.cs</Link>
     </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipEntry.Extract.cs">
+      <Link>ZipEntry.Extract.cs</Link>
+    </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipEntry.Read.cs">
+      <Link>ZipEntry.Read.cs</Link>
+    </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipEntry.Write.cs">
+      <Link>ZipEntry.Write.cs</Link>
+    </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipFile.AddUpdate.cs">
+      <Link>ZipFile.AddUpdate.cs</Link>
+    </Compile>
     <Compile Include="..\Zip Partial DLL\ZipFile.cs">
       <Link>ZipFile.cs</Link>
     </Compile>
     <Compile Include="..\Zip Partial DLL\ZipFile.Events.cs">
       <Link>ZipFile.Events.cs</Link>
+    </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipFile.Extract.cs">
+      <Link>ZipFile.Extract.cs</Link>
+    </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipFile.Read.cs">
+      <Link>ZipFile.Read.cs</Link>
+    </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipFile.Save.cs">
+      <Link>ZipFile.Save.cs</Link>
     </Compile>
     <Compile Include="..\Zip Partial DLL\ZipFile.x-IEnumerable.cs">
       <Link>ZipFile.x-IEnumerable.cs</Link>
