@@ -497,9 +497,10 @@ namespace Ionic.Zip.Tests.Extended
 
 
         [TestMethod]
-        public void Create_RenameEntryTwice_wi8047()
+        [ExpectedException(typeof(ZipException))]
+        public void Create_DuplicateEntries_wi8047()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Create_RenameEntryTwice.zip");
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Create_DuplicateEntries_wi8047.zip");
             string filename = "file.test";
             Directory.SetCurrentDirectory(TopLevelDir);
             string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
@@ -514,8 +515,46 @@ namespace Ionic.Zip.Tests.Extended
                 zip.UpdateFile(files[n2]).FileName = filename;
                 zip.Save(zipFileToCreate);
             }
+        }
 
-            Assert.AreEqual<int>(1, TestUtilities.CountEntries(zipFileToCreate), "The Zip file has the wrong number of entries.");            
+
+        [TestMethod]
+        public void Create_RenameRemoveAndRenameAgain_wi8047()
+        {
+            string filename = "file.test";
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+
+            for (int m = 0; m < 2; m++)
+            {
+                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Create_RenameRemoveAndRenameAgain_wi8047-{0}.zip", m));
+
+                using (var zip = new ZipFile())
+                {
+                    // select a single file from the list
+                    int n = _rnd.Next(files.Length);
+
+                    // insert the selected file into the zip, and also rename it
+                    zip.UpdateFile(files[n]).FileName = filename;
+
+                    // conditionally save
+                    if (m > 0) zip.Save(zipFileToCreate);
+
+                    // remove the original file
+                    zip.RemoveEntry(zip[filename]);
+
+                    // select another file from the list, making sure it is not the same file
+                    int n2 = 0;
+                    while ((n2 = _rnd.Next(files.Length)) == n) ;
+
+                    // insert that other file and rename it
+                    zip.UpdateFile(files[n2]).FileName = filename;
+                    zip.Save(zipFileToCreate);
+                }
+
+                Assert.AreEqual<int>(1, TestUtilities.CountEntries(zipFileToCreate), "The Zip file has the wrong number of entries.");
+            }
         }
 
 
