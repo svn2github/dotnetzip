@@ -5730,12 +5730,14 @@ namespace Ionic.Zip
 
                 if (success)
                 {
+                    // workitem 8299
+                    zf._locEndOfCDS = s.Position - 4;
                     byte[] block = new byte[16];
                     zf.ReadStream.Read(block, 0, block.Length);
                     int i = 12;
 
-                    uint Offset32 = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
-                    if (Offset32 == 0xFFFFFFFF)
+                    uint offset32 = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
+                    if (offset32 == 0xFFFFFFFF)
                     {
                         Zip64SeekToCentralDirectory(zf);
                     }
@@ -5743,7 +5745,7 @@ namespace Ionic.Zip
                     {
                         // change for workitem 8098
                         //s.Seek(Offset32, SeekOrigin.Begin);
-                        zf.SeekFromOrigin(Offset32);
+                        zf.SeekFromOrigin(offset32);
                     }
 
                     ReadCentralDirectory(zf);
@@ -5819,6 +5821,7 @@ namespace Ionic.Zip
             uint datum = (uint)Ionic.Zip.SharedUtilities.ReadInt(s);
             if (datum != ZipConstants.PackedToRemovableMedia              // weird edge case #1
                 && datum != ZipConstants.ZipEntryDataDescriptorSignature  // weird edge case #2
+                && datum != ZipConstants.ZipDirEntrySignature             // weird edge case #3 - DynaZip
                 && datum != ZipConstants.ZipEntrySignature                // normal BOF marker
                 && datum != ZipConstants.EndOfCentralDirectorySignature   // for zip file with no entries
                 && (datum & 0x0000FFFF) != 0x00005A4D                     // PE/COFF BOF marker (for SFX)
@@ -5846,6 +5849,8 @@ namespace Ionic.Zip
                 zf._entries.Add(de);
             }
 
+            // workitem 8299
+            zf.SeekFromOrigin(zf._locEndOfCDS);
             ReadCentralDirectoryFooter(zf);
 
             if (zf.Verbose && !String.IsNullOrEmpty(zf.Comment))
@@ -5905,6 +5910,9 @@ namespace Ionic.Zip
                 }
             }
 
+            // workitem 8299
+            zf.SeekFromOrigin(zf._locEndOfCDS);
+            
             ReadCentralDirectoryFooter(zf);
 
             if (zf.Verbose && !String.IsNullOrEmpty(zf.Comment))
@@ -6079,7 +6087,7 @@ namespace Ionic.Zip
         /// <para>
         /// The action to take when an extract would overwrite an existing file applies
         /// to all entries.  If you want to set this on a per-entry basis, then you must
-        /// use one of the <see cef="ZipEntry.Extract" /> methods.
+        /// use one of the <see cef="ZipEntry.Extract" >ZipEntry.Extract</see> methods.
         /// </para>
         ///
         /// <para>
@@ -6091,6 +6099,41 @@ namespace Ionic.Zip
         /// You may wish to take advantage of the <c>ExtractProgress</c> event.
         /// </para>
         ///
+        /// <para>
+        /// About Timestamps: When extracting a file entry from a zip archive, the
+        /// extracted file gets the last modified time of the entry as stored in the
+        /// archive. The archive may also store extended file timestamp information,
+        /// including last accessed and created times. If these are present in the
+        /// ZipEntry, then the extracted file will also get these times.
+        /// </para>
+        ///
+        /// <para>
+        /// A Directory entry is somewhat different. It will get the times as described
+        /// for a file entry, but, if there are file entries in the zip archive that,
+        /// when extracted, appear in the just-created directory, then when those file
+        /// entries are extracted, the last modified and last accessed times of the
+        /// directory will change, as a side effect.  The result is that after an
+        /// extraction of a directory and a number of files within the directory, the
+        /// last modified and last accessed timestamps on the directory will reflect the
+        /// time that the last file was extracted into the directory, rather than the
+        /// time stored in the zip archive for the directory.
+        /// </para>
+        ///
+        /// <para>
+        /// To compensate, when extracting an archive with <c>ExtractAll</c>, DotNetZip
+        /// will extract all the file and directory entries as described above, but it
+        /// will then make a second pass on the directories, and reset the times on the
+        /// directories to reflect what is stored in the zip archive.
+        /// </para>
+        ///
+        /// <para>
+        /// This compensation is performed only within the context of an
+        /// <c>ExtractAll</c>. If you call <c>ZipEntry.Extract</c> on a directory entry,
+        /// the timestamps on directory in the filesystem will reflect the times stored
+        /// in the zip.  If you then call <c>ZipEntry.Extract</c> on a file entry, which
+        /// is extracted into the directory, the timestamps on the directory will be
+        /// updated to the current time.
+        /// </para>
         /// </remarks>
         ///
         /// <example>
@@ -6283,6 +6326,24 @@ namespace Ionic.Zip
 
                 }
 
+                // workitem 8264: 
+                // now, set times on directory entries, again.
+                // The problem is, extracting a file changes the times on the parent
+                // directory.  So after all files have been extracted, we have to
+                // run through the directories again. 
+                foreach (ZipEntry e in _entries)
+                {
+                    // check if it is a directory
+                    if ((e.IsDirectory) || (e.FileName.EndsWith("/")))
+                    {
+                        string outputFile = (e.FileName.StartsWith("/"))
+                            ? Path.Combine(path, e.FileName.Substring(1))
+                            : Path.Combine(path, e.FileName);
+                        
+                        e._SetTimes(outputFile, false);
+                    }
+                }
+                
                 OnExtractAllCompleted(path);
             }
             finally
@@ -7338,6 +7399,7 @@ namespace Ionic.Zip
         private EncryptionAlgorithm _Encryption;
         private bool _JustSaved;
         private bool _NeedZip64CentralDirectory;
+        private long _locEndOfCDS;
         private Nullable<bool> _OutputUsesZip64;
         internal bool _inExtractAll = false;
         private System.Text.Encoding _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437"); // default = IBM437

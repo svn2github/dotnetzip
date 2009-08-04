@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-03 11:19:26>
+// Time-stamp: <2009-August-03 17:48:51>
 //
 // ------------------------------------------------------------------
 //
@@ -825,9 +825,12 @@ namespace Ionic.Zip
                 var filename = ZipEntry.NameInArchive(value, null);
                 // workitem 8180
                 if (_FileNameInArchive == filename) return; // nothing to do
+                
                 // workitem 8047 - renaming to a name that already exists
                 if (this._zipfile.EntryFileNames.Contains(filename))
-                    this._zipfile.RemoveEntry(filename);
+                    throw new ZipException(String.Format("Cannot rename {0} to {1}; an entry by that name already exists in the archive.", _FileNameInArchive, filename));
+                        //this._zipfile.RemoveEntry(filename);
+                
                 _FileNameInArchive = filename;
                 if (this._zipfile != null) this._zipfile.NotifyEntryChanged();
                 _metadataChanged = true;
@@ -3296,7 +3299,7 @@ namespace Ionic.Zip
                         Directory.CreateDirectory(Path.GetDirectoryName(TargetFile));
                     }
                     else
-                        checkLaterForResetDirTimes = true;  // workitem 8264
+                        checkLaterForResetDirTimes = _zipfile._inExtractAll;  // workitem 8264
 
 
                     // Take care of the behavior when extraction would overwrite an existing file
@@ -3428,8 +3431,12 @@ namespace Ionic.Zip
                         if (this.FileName.IndexOf('/') != -1)
                         {
                             string dirname = Path.GetDirectoryName(this.FileName);
-                            if (this._zipfile[dirname]!=null)
+                            //Console.WriteLine("Checking for dir '{0}'", dirname);
+                            if (this._zipfile[dirname]==null)
+                            {
+                                //Console.WriteLine("found no dir '{0}', setting times", dirname);
                                 _SetTimes(Path.GetDirectoryName(TargetFile), false);
+                            }
                         }
                     }
 
@@ -3481,8 +3488,15 @@ namespace Ionic.Zip
         }
 
 
-        private void _SetTimes(string fileOrDirectory, bool isFile)
+        internal void _SetTimes(string fileOrDirectory, bool isFile)
         {
+            
+//             Console.WriteLine("_SetTimeS({0}): m({1}) a({2}) c({3})",
+//                               fileOrDirectory,
+//                               Mtime.ToString("yyyy/MM/dd HH:mm:ss"),
+//                               Atime.ToString("yyyy/MM/dd HH:mm:ss"),
+//                               Ctime.ToString("yyyy/MM/dd HH:mm:ss"));
+
             if (_ntfsTimesAreSet)
             {
 #if NETCF
@@ -3620,6 +3634,7 @@ namespace Ionic.Zip
                     if (!Directory.Exists(OutputFile))
                     {
                         Directory.CreateDirectory(OutputFile);
+                        
                         _SetTimes(OutputFile, false);
                     }
                     else
