@@ -82,6 +82,12 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_4ADC6320CB5A23DFF593EA7C95D93FF3"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_CB8DB966CAC04B37B66694A2F4A5443F"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -95,12 +101,6 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_1095DCE16DF54952900B158E667C1D5F"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_4ADC6320CB5A23DFF593EA7C95D93FF3"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -197,7 +197,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Zip, Version=1.8.4.13, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zip, Version=1.8.4.15, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_4ADC6320CB5A23DFF593EA7C95D93FF3"
@@ -332,7 +332,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DotNetZip Tools v1.8"
         "ProductCode" = "8:{A2CEDD37-3C87-4076-9839-FCA01BA3973D}"
-        "PackageCode" = "8:{10091F18-06A0-4382-9A4F-5D79DE004D97}"
+        "PackageCode" = "8:{7C6C3175-B2CA-4263-B580-BF763D0D20EE}"
         "UpgradeCode" = "8:{BEF05388-A74D-4383-BD87-61940DF83E20}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
@@ -679,7 +679,7 @@
             }
             "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_D692FEB4B66947AE8AD46C7E111B5286"
             {
-            "Name" = "8:Uninstall DotNetZip Tools.cmd"
+            "Name" = "8:Uninstall DotNetZip Tools"
             "Arguments" = "8:"
             "Description" = "8:"
             "ShowCmd" = "3:1"

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-27 00:50:12>
+// Time-stamp: <2009-August-05 13:43:53>
 //
 // ------------------------------------------------------------------
 //
@@ -1719,6 +1719,18 @@ namespace Ionic.Zip.Tests.Extended
         public void Extract_Docx()
         {
             Extract_ZipFile("Vanishing Oatmeal Cookies.docx");
+        }
+
+        [TestMethod]
+        public void Extract_DWF()
+        {
+            Extract_ZipFile("plot.dwf");
+        }
+
+        [TestMethod]
+        public void Extract_InfoZipAppNote()
+        {
+            Extract_ZipFile("appnote-iz-latest.zip");
         }
 
 

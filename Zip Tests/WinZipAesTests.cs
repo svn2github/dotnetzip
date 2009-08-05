@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-03 11:22:59>
+// Time-stamp: <2009-August-05 13:21:21>
 //
 // ------------------------------------------------------------------
 //
@@ -807,31 +807,12 @@ public void WinZipAes_ReadZip_Fail_WrongPassword()
             {
                 for (int j = 0; j < 5; j++)
                 {
+                    // This should fail
                     zip[j].CompressionMethod = 0;
                 }
                 zip.Save();
             }
 
-            // validate all the checksums
-            using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
-            {
-                foreach (ZipEntry e in zip2)
-                {
-                    if (!e.IsDirectory)
-                    {
-                        e.ExtractWithPassword("unpack", password);
-
-                        string PathToExtractedFile = Path.Combine("unpack", e.FileName);
-
-                        Assert.IsTrue(checksums.ContainsKey(e.FileName));
-
-                        // verify the checksum of the file is correct
-                        string expectedCheckString = checksums[e.FileName];
-                        string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
-                        Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", PathToExtractedFile);
-                    }
-                }
-            }
         }
 
 
