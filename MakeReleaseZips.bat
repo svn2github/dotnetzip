@@ -33,8 +33,8 @@ set version=%setz:~0,3%
 echo version is %version%
 
 
-c:\.net3.5\msbuild.exe DotNetZip.sln /p:Configuration=Release
 c:\.net3.5\msbuild.exe DotNetZip.sln /p:Configuration=Debug
+c:\.net3.5\msbuild.exe DotNetZip.sln /p:Configuration=Release
 
 echo "making release dir ..\releases\v%version%-%stamp%"
 mkdir ..\releases\v%version%-%stamp%
@@ -279,12 +279,23 @@ goto :EOF
   echo Making the Source Zip...
   echo.
 
-    set zipfile=DotNetZip-src-v%version%.zip
+    @REM set zipfile=DotNetZip-src-v%version%.zip
 
     cd..
+    @REM Delete any existing files 
+    for %%f in (DotNetZip-src-v*.zip) do del %%f
+
     c:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe  DotNetZip\ZipSrc.ps1
 
-    move DotNetZip-src-v*.zip  releases\v%version%-%stamp%
+    @REM edit in place to remove Ionic.pfx and Ionic.snk from the csproj files
+
+    for %%f in (DotNetZip-src-v*.zip) do set actualFilename=%%f
+
+    DotNetZip\EditCsproj.exe -z %actualFileName%
+
+    @REM move DotNetZip-src-v*.zip  releases\v%version%-%stamp%
+    move %actualFileName%  releases\v%version%-%stamp%
+
     cd DotNetZip
 
 @REM    del /q Library\Resources\*.*
