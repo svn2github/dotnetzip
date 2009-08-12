@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-04 13:04:14>
+// Time-stamp: <2009-August-07 20:58:23>
 //
 // ------------------------------------------------------------------
 //
@@ -511,34 +511,39 @@ namespace Ionic.Zip
                             // The Unix filetimes are 32-bit unsigned integers,
                             // storing seconds since Unix epoch.
                             {
-                                if (DataSize != 13 && DataSize != 5)
+                                if (DataSize != 13 && DataSize != 9 && DataSize != 5)
                                     throw new BadReadException(String.Format("  Unexpected datasize (0x{0:X4}) for Extended Timestamp extra field at position 0x{1:X16}", DataSize, s.Position - additionalBytesRead));
+
+                                int remainingData = DataSize;
 
                                 if (DataSize == 13 || _readExtraDepth > 1)
                                 {
                                     byte flag = Buffer[j++];
-
-                                    if ((flag & 0x0001) != 0)
+                                    remainingData--;
+                                    if ((flag & 0x0001) != 0 && remainingData >= 4)
                                     {
                                         Int32 timet = BitConverter.ToInt32(Buffer, j);
                                         this._Mtime = _unixEpoch.AddSeconds(timet);
                                         j += 4;
+                                        remainingData-= 4;
                                     }
 
-                                    if ((flag & 0x0002) != 0)
+                                    if ((flag & 0x0002) != 0 && remainingData >= 4)
                                     {
                                         Int32 timet = BitConverter.ToInt32(Buffer, j);
                                         this._Atime = _unixEpoch.AddSeconds(timet);
                                         j += 4;
+                                        remainingData-= 4;
                                     }
                                     else
                                         this._Atime = DateTime.UtcNow;
 
-                                    if ((flag & 0x0004) != 0)
+                                    if ((flag & 0x0004) != 0 && remainingData >= 4)
                                     {
                                         Int32 timet = BitConverter.ToInt32(Buffer, j);
                                         this._Ctime = _unixEpoch.AddSeconds(timet);
                                         j += 4;
+                                        remainingData-= 4;
                                     }
                                     else
                                         this._Ctime = DateTime.UtcNow;
