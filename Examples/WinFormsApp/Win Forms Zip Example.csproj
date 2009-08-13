@@ -8,7 +8,7 @@
     <ProjectGuid>{6BCCF138-2EFB-464C-B872-E3079F0A4708}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WinFormsExample</RootNamespace>
+    <RootNamespace>Ionic.Zip.Examples.WinForms</RootNamespace>
     <AssemblyName>DotNetZip-WinFormsTool</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

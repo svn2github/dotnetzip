@@ -1,4 +1,4 @@
-﻿namespace Ionic.Zip.WinFormsExample
+﻿namespace Ionic.Zip.Examples.WinForms
 {
     partial class Form1
     {
@@ -915,7 +915,7 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = global::WinFormsExample.Properties.Resources.zippedFile;
+            this.pictureBox1.Image = global::Ionic.Zip.Examples.WinForms.Properties.Resources.zippedFile;
             this.pictureBox1.Location = new System.Drawing.Point(6, 20);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.pictureBox1.Name = "pictureBox1";

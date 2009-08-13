@@ -264,9 +264,9 @@ namespace Ionic.Zip.Tests.Extended
                                             output.Flush();
                                             output.Close();
                                             TestContext.WriteLine("CRC expected({0:X8}) actual({1:X8})",
-                                                                  e1.Crc32, s.Crc32);
+                                                                  e1.Crc, s.Crc);
 
-                                            Assert.AreEqual<Int32>(s.Crc32, e1.Crc32,
+                                            Assert.AreEqual<Int32>(s.Crc, e1.Crc,
                                                                    string.Format("The Entry {0} failed the CRC Check.", eName));
 
                                             Assert.AreEqual<Int32>(totalBytesRead, (int)e1.UncompressedSize,
@@ -1610,7 +1610,7 @@ namespace Ionic.Zip.Tests.Extended
                 case ZipProgressEventType.Extracting_ExtractEntryWouldOverwrite:
                     // randomly choose whether to overwrite or not
                     e.CurrentEntry.ExtractExistingFile = (_rnd.Next(2) == 0)
-                        ? ExtractExistingFileAction.DontOverwrite 
+                        ? ExtractExistingFileAction.DoNotOverwrite 
                         : ExtractExistingFileAction.OverwriteSilently;
                     break;
             }
@@ -1667,14 +1667,14 @@ namespace Ionic.Zip.Tests.Extended
             TestContext.WriteLine(sw.ToString());
             
             TestContext.WriteLine("- - - - - - - - - - - - - - - - - - - - - - - - - - - -");
-            TestContext.WriteLine("2. extract again - DontOverwrite");
+            TestContext.WriteLine("2. extract again - DoNotOverwrite");
             sw = new StringWriter();
             using (ZipFile zip = ZipFile.Read(zipFileToCreate, sw))
             {
                 for (j = 0; j < filenames.Length; j++)
                 {
                     var f = Path.GetFileName(filenames[j]);
-                    zip[f].Extract("unpack", ExtractExistingFileAction.DontOverwrite);
+                    zip[f].Extract("unpack", ExtractExistingFileAction.DoNotOverwrite);
                 }
             }
             TestContext.WriteLine(sw.ToString());
@@ -1760,7 +1760,7 @@ namespace Ionic.Zip.Tests.Extended
                                                                          e.CompressionRatio,
                                                                          e.CompressedSize,
                                                                          (e.UsesEncryption) ? "Y" : "N",
-                                                                         e.Crc32);
+                                                                         e.Crc);
                     e.Extract(extractDir);
                 }
             }

@@ -111,7 +111,7 @@ namespace Ionic.Zip.Tests.Error
                 case ZipProgressEventType.Extracting_ExtractEntryWouldOverwrite:
                     // randomly choose whether to overwrite or not
                     e.CurrentEntry.ExtractExistingFile = (_rnd.Next(2) == 0)
-                        ? ExtractExistingFileAction.DontOverwrite 
+                        ? ExtractExistingFileAction.DoNotOverwrite 
                         : ExtractExistingFileAction.OverwriteSilently;
                     break;
             }
@@ -190,9 +190,9 @@ namespace Ionic.Zip.Tests.Error
 
         // not an error test
         [TestMethod]
-        public void Extract_ExistingFileWithOverwrite_DontOverwrite()
+        public void Extract_ExistingFileWithOverwrite_DoNotOverwrite()
         {
-            _Internal_ExtractExisting((int)ExtractExistingFileAction.DontOverwrite);
+            _Internal_ExtractExisting((int)ExtractExistingFileAction.DoNotOverwrite);
         }
 
         [TestMethod]

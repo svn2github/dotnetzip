@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Ionic.Zip.WinFormsExample
+namespace Ionic.Zip.Examples.WinForms
 {
     static class Program
     {

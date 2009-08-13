@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-03 15:02:41>
+// Time-stamp: <2009-August-12 19:34:22>
 //
 // ------------------------------------------------------------------
 //
@@ -29,7 +29,6 @@
 
 namespace Ionic.Zip
 {
-
     // include the using statements inside the namespace decl, because
     // source code will be concatenated together before compilation. 
     using System;
@@ -44,10 +43,15 @@ namespace Ionic.Zip
 
         string TargetDirectory = "@@EXTRACTLOCATION";
         string PostUnpackCmdLine = "@@POST_UNPACK_CMD_LINE";
-        bool WantOverwrite = false;
         bool ListOnly = false;
         bool Verbose = false;
         string Password = null;
+        int overwriteOption;  
+
+        // Attention: it isn't possible, with the design  of this class as it is now, to have a
+        // member variable of a type from the Ionic.Zip assembly.  The class design registers
+        // an assembly resolver, but apparently NOT in time to allow the assembly to be used
+        // in private instance variables. 
         
         private bool PostUnpackCmdLineIsSet()
         {
@@ -98,7 +102,12 @@ namespace Ionic.Zip
                         Password = args[i];
                         break;
                     case "-o":
-                        WantOverwrite = true;
+                        overwriteOption = 1;
+                        //WantOverwrite = ExtractExistingFileAction.OverwriteSilently;
+                        break;
+                    case "-n":
+                        overwriteOption= 2;
+                        //WantOverwrite = ExtractExistingFileAction.DoNotOverwrite;
                         break;
                     case "-l":
                         ListOnly = true;
@@ -130,7 +139,7 @@ namespace Ionic.Zip
                     TargetDirectory = ".";  // cwd
             }
 
-            if (ListOnly && (WantOverwrite || Verbose || (specifiedDirectory != null)))
+            if (ListOnly && ((overwriteOption!= 0) || Verbose || (specifiedDirectory != null)))
             {
                 Console.WriteLine("Inconsistent options.\n");
                 GiveUsageAndExit();
@@ -194,6 +203,18 @@ namespace Ionic.Zip
         {
             //System.Diagnostics.Debugger.Break();
             
+        global::Ionic.Zip.ExtractExistingFileAction WantOverwrite =
+            (overwriteOption == 0) ?
+            global::Ionic.Zip.ExtractExistingFileAction.Throw // default
+            : 
+            (overwriteOption == 1) ?
+            global::Ionic.Zip.ExtractExistingFileAction.OverwriteSilently 
+            : 
+            (overwriteOption == 2) ?
+            global::Ionic.Zip.ExtractExistingFileAction.DoNotOverwrite 
+            : 
+            global::Ionic.Zip.ExtractExistingFileAction.Throw ;// default
+
 
             // There way this works:  the EXE is a ZIP file.  So
             // read from the location of the assembly, in other words the path to the exe. 
@@ -229,7 +250,7 @@ namespace Ionic.Zip
                                          entry.CompressionRatio,
                                          entry.CompressedSize,
                                          (entry.UsesEncryption) ? "Y" : "N",
-                                         entry.Crc32);
+                                         entry.Crc);
 
                         }
 
@@ -322,10 +343,12 @@ namespace Ionic.Zip
         {
             Assembly a = Assembly.GetExecutingAssembly();
             string s = Path.GetFileName(a.Location);
-            Console.WriteLine("DotNetZip Command-Line Self Extractor, see http://www.codeplex.com/DotNetZip");
-            Console.WriteLine("usage:\n  {0} [-o] [-v] [-p password] [<directory>]", s);
-            Console.WriteLine("    Extracts entries from the archive.\n" +
+            Console.WriteLine("DotNetZip Command-Line Self Extractor, see http://DotNetZip.codeplex.com/");
+            Console.WriteLine("usage:\n  {0} [-o|-n] [-v] [-p password] [<directory>]", s);
+            Console.WriteLine("    Extracts entries from the archive. If any files to be extracted already\n" +
+                              "    exist, the program will stop.\n  Options:\n" +
                               "    -o   - overwrite any existing files upon extraction.\n" +
+                              "    -n   - do not overwrite any existing files upon extraction.\n" +
                               "    -v   - verbose.\n");
             
             if (TargetDirectoryIsSet()) 

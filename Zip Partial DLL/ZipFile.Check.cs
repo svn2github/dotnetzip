@@ -114,7 +114,7 @@ namespace Ionic.Zip
             try
             {
                 zip1 = new ZipFile();
-                zip1.Fullscan = true;
+                zip1.FullScan = true;
                 zip1.Initialize(zipFileName);
 
                 zip2 = ZipFile.Read(zipFileName);
@@ -153,12 +153,12 @@ namespace Ionic.Zip
                                                         e1.FileName, e1.CompressionMethod,
                                                         e2.CompressionMethod));
                             }
-                            if (e1.Crc32 != e2.Crc32)
+                            if (e1.Crc != e2.Crc)
                             {
                                 isOk = false;
                                 notes.Add(String.Format("{0}: mismatch in Crc32  (0x{1:X4} != 0x{2:X4})",
-                                                        e1.FileName, e1.Crc32,
-                                                        e2.Crc32));
+                                                        e1.FileName, e1.Crc,
+                                                        e2.Crc));
                             }
 
                             // found a match, so stop the inside loop
@@ -176,10 +176,6 @@ namespace Ionic.Zip
                     newFileName = System.String.Format("{0}_fixed.zip", newFileName);
                     zip1.Save(newFileName);
                 }
-            }
-            catch (Exception e1)
-            {
-                throw e1;
             }
             finally
             {
@@ -217,7 +213,7 @@ namespace Ionic.Zip
         {
             using (var zip = new ZipFile())
             {
-                zip.Fullscan = true;
+                zip.FullScan = true;
                 zip.Initialize(zipFileName);
                 zip.Save(zipFileName);
             }

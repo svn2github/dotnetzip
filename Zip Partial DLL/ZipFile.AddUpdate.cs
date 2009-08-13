@@ -32,10 +32,8 @@ using System.Collections.Generic;
 
 namespace Ionic.Zip
 {
-
     public partial class ZipFile
     {
-
         /// <summary>
         /// Adds an item, either a file or a directory, to a zip file archive.  
         /// </summary>
@@ -1208,7 +1206,7 @@ namespace Ionic.Zip
         /// cref="System.Text.Encoding.Default"/>).
         /// </remarks>
         ///
-        /// <param name="stringContent">The content of the file, should it be extracted from
+        /// <param name="content">The content of the file, should it be extracted from
         /// the zip.</param>
         ///
         /// <param name="fileName">The filename to use within the archive.</param>
@@ -1253,9 +1251,9 @@ namespace Ionic.Zip
         /// End Sub
         /// </code>
         /// </example>
-        public ZipEntry AddEntry(string fileName, string directoryPathInArchive, string stringContent)
+        public ZipEntry AddEntry(string fileName, string directoryPathInArchive, string content)
         {
-            return AddEntry(fileName, directoryPathInArchive, stringContent,
+            return AddEntry(fileName, directoryPathInArchive, content,
                                      System.Text.Encoding.Default);
         }
 
@@ -1313,7 +1311,7 @@ namespace Ionic.Zip
         /// will insert the item at the root path within the archive.
         /// </param>
         ///
-        /// <param name="stringContent">The content of the file, should it be extracted from
+        /// <param name="content">The content of the file, should it be extracted from
         /// the zip.</param>
         ///
         /// <param name="encoding">
@@ -1324,13 +1322,13 @@ namespace Ionic.Zip
         ///
         /// <returns>The <c>ZipEntry</c> added.</returns>
         /// 
-        public ZipEntry AddEntry(string fileName, string directoryPathInArchive, string stringContent,
+        public ZipEntry AddEntry(string fileName, string directoryPathInArchive, string content,
             System.Text.Encoding encoding)
         {
             var ms = new MemoryStream();
             var sw = new StreamWriter(ms, encoding);
 
-            sw.Write(stringContent);
+            sw.Write(content);
             sw.Flush();
 
             // reset to allow reading later
@@ -1402,7 +1400,7 @@ namespace Ionic.Zip
         /// within the archive.
         /// </param>
         ///
-        /// <param name="stringContent">
+        /// <param name="content">
         /// The content of the file, should it be extracted from the zip.
         /// </param>
         ///
@@ -1415,14 +1413,14 @@ namespace Ionic.Zip
         /// <returns>The <c>ZipEntry</c> added.</returns>
         /// 
         public ZipEntry UpdateEntry(string fileName, string directoryPathInArchive,
-                                    string stringContent,
+                                    string content,
                                     System.Text.Encoding encoding)
         {
             var key = ZipEntry.NameInArchive(fileName, directoryPathInArchive);
             if (this[key] != null)
                 this.RemoveEntry(key);
 
-            return AddEntry(fileName, directoryPathInArchive, stringContent, encoding);
+            return AddEntry(fileName, directoryPathInArchive, content, encoding);
         }
 
 
@@ -1514,7 +1512,7 @@ namespace Ionic.Zip
         /// <returns>The <c>ZipEntry</c> added.</returns>
         public ZipEntry AddEntry(string fileName, string directoryPathInArchive, byte[] byteContent)
         {
-            if (byteContent == null) throw new ArgumentException("byteContent");
+            if (byteContent == null) throw new ArgumentException("bad argument", "byteContent");
             var ms = new MemoryStream(byteContent);
             return AddEntry(fileName, directoryPathInArchive, ms);
         }

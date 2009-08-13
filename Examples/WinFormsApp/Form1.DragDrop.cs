@@ -1,5 +1,5 @@
 
-namespace Ionic.Zip.WinFormsExample
+namespace Ionic.Zip.Examples.WinForms
 {
 
     using System;

@@ -92,12 +92,10 @@ namespace Ionic.Zip
     [Serializable]
     public class BadReadException : ZipException
     {
-#if NOTUSED
         /// <summary>
         /// Default ctor.
         /// </summary>
         public BadReadException() { }
-#endif
 
         /// <summary>
         /// Come on, you know how exceptions work. Why are you looking at this documentation?
@@ -107,7 +105,6 @@ namespace Ionic.Zip
             : base(message)
         { }
 
-#if NOTUSED
         /// <summary>
         /// Come on, you know how exceptions work. Why are you looking at this documentation?
         /// </summary>
@@ -117,8 +114,6 @@ namespace Ionic.Zip
             : base(message, innerException)
         {
         }
-#endif
-
 
 #if !NETCF
         /// <summary>
@@ -141,12 +136,10 @@ namespace Ionic.Zip
     [Serializable]
     public class BadCrcException : ZipException
     {
-#if NOTUSED
         /// <summary>
         /// Default ctor.
         /// </summary>
         public BadCrcException() { }
-#endif
 
         /// <summary>
         /// Come on, you know how exceptions work. Why are you looking at this documentation?
@@ -234,12 +227,10 @@ namespace Ionic.Zip
     [Serializable]
     public class BadStateException : ZipException
     {
-#if NOTUSED
         /// <summary>
         /// Default ctor.
         /// </summary>
         public BadStateException() { }
-#endif
 
         /// <summary>
         /// Come on, you know how exceptions work. Why are you looking at this documentation?
@@ -249,7 +240,6 @@ namespace Ionic.Zip
             : base(message)
         { }
 
-#if NOTUSED
         /// <summary>
         /// Come on, you know how exceptions work. Why are you looking at this documentation?
         /// </summary>
@@ -258,7 +248,6 @@ namespace Ionic.Zip
         public BadStateException(String message, Exception innerException)
             : base(message, innerException)
         {}
-#endif
 
 #if !NETCF
         /// <summary>

@@ -58,7 +58,7 @@ namespace Ionic.Zip
         /// When extraction would overwrite an existing file, don't overwrite the file, silently. 
         /// (For COM clients, this is a 2.)
         /// </summary>
-        DontOverwrite,
+        DoNotOverwrite,
 
         /// <summary>
         /// When extraction would overwrite an existing file, invoke the ExtractProgress

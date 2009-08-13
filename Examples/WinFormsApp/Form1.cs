@@ -4,7 +4,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Ionic.Zip;
 
-namespace Ionic.Zip.WinFormsExample
+namespace Ionic.Zip.Examples.WinForms
 {
     public partial class Form1 : Form
     {
@@ -978,7 +978,7 @@ namespace Ionic.Zip.WinFormsExample
                         String.Format("{0,5:F0}%", entry.CompressionRatio),
                         entry.CompressedSize.ToString(),
                         (entry.UsesEncryption) ? "Y" : "N",
-                        String.Format("{0:X8}", entry.Crc32)};
+                        String.Format("{0:X8}", entry.Crc)};
 
                         foreach (String s in subitems)
                         {
@@ -1067,7 +1067,7 @@ namespace Ionic.Zip.WinFormsExample
                 OpenExplorer = this.chkOpenExplorer.Checked,
                 ExtractExisting = (this.chkOverwrite.Checked)
                     ? ExtractExistingFileAction.OverwriteSilently
-                    : ExtractExistingFileAction.DontOverwrite,
+                    : ExtractExistingFileAction.DoNotOverwrite,
             };
 
             _workerThread = new Thread(this.DoExtract);

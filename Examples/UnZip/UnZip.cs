@@ -79,7 +79,7 @@ namespace Ionic.Zip.Examples
             List<string> entriesToExtract = new List<String>();
             bool extractToConsole = false;
             ActionDesired action = ActionDesired.Extract;
-            ExtractExistingFileAction behaviorForExistingFile = ExtractExistingFileAction.DontOverwrite;
+            ExtractExistingFileAction behaviorForExistingFile = ExtractExistingFileAction.DoNotOverwrite;
             bool wantQuiet = false;
             bool wantFlatten = false;
             System.IO.Stream bitbucket = System.IO.Stream.Null;
@@ -261,7 +261,7 @@ namespace Ionic.Zip.Examples
                                                                  e.CompressionRatio,
                                                                  e.CompressedSize,
                                                                  (e.UsesEncryption) ? "Y" : "N",
-                                                                 e.Crc32);
+                                                                 e.Crc);
 
                                 if ((e.Comment != null) && (e.Comment != ""))
                                     System.Console.WriteLine("  Comment: {0}", e.Comment);

@@ -15,18 +15,19 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-June-16 08:20:33>
+// Time-stamp: <2009-August-12 15:35:32>
 //
 // ------------------------------------------------------------------
 //
-// This module defines the ZlibStream class, which is philosophically
-// related to the System.IO.Compression.DeflateStream and
+// This module defines the ZlibStream class, which is similar in idea to
+// the System.IO.Compression.DeflateStream and
 // System.IO.Compression.GZipStream classes in the .NET BCL.
 //
 // ------------------------------------------------------------------
 
-
 using System;
+using System.IO;
+
 namespace Ionic.Zlib
 {
 
@@ -551,6 +552,119 @@ namespace Ionic.Zlib
             _baseStream.Write(buffer, offset, count);
         }
         #endregion
+
+            
+        /// <summary>
+        /// Compress a string into a byte array.
+        /// </summary>
+        /// <remarks>
+        /// Uncompress it with <see cref="ZlibStream.UncompressString(byte[])"/>.
+        /// </remarks>
+        /// <seealso cref="ZlibStream.UncompressString(byte[])"/>
+        /// <param name="s">
+        /// A string to compress.  The string will first be encoded using UTF8, then compressed.
+        /// </param>
+        public static byte[] CompressString(String s)
+        {
+            // workitem 8460
+            var encoding = System.Text.Encoding.UTF8;
+            byte[] uncompressed = encoding.GetBytes(s);
+
+            using (var ms = new MemoryStream())
+            {
+                using (Stream compressor = new ZlibStream(ms, CompressionMode.Compress, CompressionLevel.BestCompression))
+                {
+                    compressor.Write(uncompressed, 0, uncompressed.Length);
+                }
+                return ms.ToArray();
+            }
+        }
+            
+        /// <summary>
+        /// Compress a byte array into a new byte array.
+        /// </summary>
+        /// <remarks>
+        /// Uncompress it with <see cref="ZlibStream.UncompressBuffer(byte[])"/>.
+        /// </remarks>
+        /// <seealso cref="ZlibStream.CompressString(string)"/>
+        /// <seealso cref="ZlibStream.UncompressBuffer(byte[])"/>
+        /// <param name="b">
+        /// A buffer to compress. 
+        /// </param>
+        public static byte[] CompressBuffer(byte[] b)
+        {
+            // workitem 8460
+            using (var ms = new MemoryStream())
+            {
+                using (Stream compressor = new ZlibStream(ms, CompressionMode.Compress, CompressionLevel.BestCompression))
+                {
+                    compressor.Write(b, 0, b.Length);
+                }
+                return ms.ToArray();
+            }
+        }
+
+            
+        /// <summary>
+        /// Uncompress a byte array into a single string.
+        /// </summary>
+        /// <seealso cref="ZlibStream.CompressString(String)"/>
+        /// <param name="compressed">
+        /// A buffer containing ZLIB-compressed data.  
+        /// </param>
+        public static String UncompressString(byte[] compressed)
+        {
+            // workitem 8460
+            byte[] working = new byte[1024];
+            var encoding = System.Text.Encoding.UTF8;
+            using (var output = new MemoryStream())
+            {
+                using (var input = new MemoryStream(compressed))
+                {
+                    using (Stream decompressor = new ZlibStream(input, CompressionMode.Decompress))
+                    {
+                        int n;
+                        while ((n= decompressor.Read(working, 0, working.Length)) !=0)
+                        {
+                            output.Write(working, 0, n);
+                        }
+                    }
+                    // reset to allow read from start
+                    output.Seek(0, SeekOrigin.Begin);
+                    var sr = new StreamReader(output, encoding);
+                    return sr.ReadToEnd();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Uncompress a byte array into a byte array.
+        /// </summary>
+        /// <seealso cref="ZlibStream.CompressBuffer(byte[])"/>
+        /// <seealso cref="ZlibStream.UncompressString(byte[])"/>
+        /// <param name="compressed">
+        /// A buffer containing ZLIB-compressed data.  
+        /// </param>
+        public static byte[] UncompressBuffer(byte[] compressed)
+        {
+            // workitem 8460
+            byte[] working = new byte[1024];
+            using (var output = new MemoryStream())
+            {
+                using (var input = new MemoryStream(compressed))
+                {
+                    using (Stream decompressor = new ZlibStream(input, CompressionMode.Decompress))
+                    {
+                        int n;
+                        while ((n= decompressor.Read(working, 0, working.Length)) !=0)
+                        {
+                            output.Write(working, 0, n);
+                        }
+                    }
+                    return output.ToArray();
+                }
+            }
+        }
     }
 
 

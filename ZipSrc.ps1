@@ -13,19 +13,19 @@ function ZipUp-Files ( $directory )
       $ParentOfBase = $x.PSParentPath.Substring($ix+2) + "\"
     }
 
-    if ($o.Name -ne "TestResults" -and 
-        $o.Name -ne "obj" -and 
-        $o.Name -ne "bin" -and 
-    $o.Name -ne "_tfs" -and 
-    $o.Name -ne "notused" -and 
-    $o.Name -ne "AppNote.txt" -and 
-    $o.Name -ne "CodePlex-Readme.txt" -and 
-    $o.Name -ne "ReadThis.txt" -and 
-    $o.Name -ne "Ionic.snk" -and 
-    $o.Name -ne "Ionic.pfx" -and 
-    $o.Name -ne "Debug" -and 
-    $o.Name -ne "Release" -and
-    $o.Name -ne "Resources")
+    if ($o.Name -ne "TestResults" -and
+      $o.Name -ne "obj"      -and
+    $o.Name -ne "bin"      -and
+    $o.Name -ne "_tfs"     -and
+    $o.Name -ne "notused"     -and
+    $o.Name -ne "AppNote.txt"     -and
+    $o.Name -ne "CodePlex-Readme.txt"     -and
+    $o.Name -ne "ReadThis.txt"     -and
+    $o.Name -ne "Ionic.snk"     -and
+    $o.Name -ne "Ionic.pfx"     -and
+    $o.Name -ne "Debug"     -and
+    $o.Name -ne "Release"  )
+     # -and $o.Name -ne "Resources"  )
     {
       if ($o.PSIsContainer)
       {
@@ -35,13 +35,13 @@ function ZipUp-Files ( $directory )
       {
         #Write-output $o.FullName
         if ($o.Name -and 
-	  $o.Name -ne "" -and
-	$o.Name -ne ".tfs-ignore" -and
-	(!$o.Name.EndsWith("~")) -and
-	(!$o.Name.EndsWith("#")) -and
-	(!$o.Name.EndsWith(".vsp")) -and
-	(!$o.Name.EndsWith(".cache")) 
-	# -and (!$o.Name.EndsWith(".zip"))  # was eliminating test cases
+          $o.Name -ne "" -and
+        $o.Name -ne ".tfs-ignore" -and
+        (!$o.Name.EndsWith("~")) -and
+        (!$o.Name.EndsWith("#")) -and
+        (!$o.Name.EndsWith(".vsp")) -and
+        (!$o.Name.EndsWith(".cache")) 
+        # -and (!$o.Name.EndsWith(".zip"))  # was eliminating test cases
         )
         {
           Write-output $o.FullName.Replace($ParentOfBase, "")

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-12 09:22:10>
+// Time-stamp: <2009-August-12 15:35:30>
 //
 // ------------------------------------------------------------------
 //
@@ -866,6 +866,32 @@ namespace Ionic.Zlib
             }
         }
 
+                    
+        /// <summary>
+        /// Compress a byte array into a new byte array.
+        /// </summary>
+        /// <remarks>
+        /// Uncompress it with <see cref="GZipStream.UncompressBuffer(byte[])"/>.
+        /// </remarks>
+        /// <seealso cref="GZipStream.CompressString(string)"/>
+        /// <seealso cref="GZipStream.UncompressBuffer(byte[])"/>
+        /// <param name="b">
+        /// A buffer to compress. 
+        /// </param>
+        public static byte[] CompressBuffer(byte[] b)
+        {
+            // workitem 8460
+            using (var ms = new MemoryStream())
+            {
+                using (Stream compressor = new GZipStream(ms, CompressionMode.Compress, CompressionLevel.BestCompression))
+                {
+                    compressor.Write(b, 0, b.Length);
+                }
+                return ms.ToArray();
+            }
+        }
+
+
 
         /// <summary>
         /// Uncompress a byte array into a single string.
@@ -899,6 +925,35 @@ namespace Ionic.Zlib
             }
         }
 
+        /// <summary>
+        /// Uncompress a byte array into a byte array.
+        /// </summary>
+        /// <seealso cref="GZipStream.CompressBuffer(byte[])"/>
+        /// <seealso cref="GZipStream.UncompressString(byte[])"/>
+        /// <param name="compressed">
+        /// A buffer containing ZLIB-compressed data.  
+        /// </param>
+        public static byte[] UncompressBuffer(byte[] compressed)
+        {
+            // workitem 8460
+            byte[] working = new byte[1024];
+            using (var output = new MemoryStream())
+            {
+                using (var input = new MemoryStream(compressed))
+                {
+                    using (Stream decompressor = new GZipStream(input, CompressionMode.Decompress))
+                    {
+                        int n;
+                        while ((n= decompressor.Read(working, 0, working.Length)) !=0)
+                        {
+                            output.Write(working, 0, n);
+                        }
+                    }
+                    return output.ToArray();
+                }
+            }
+        }
+        
         
     }
 }

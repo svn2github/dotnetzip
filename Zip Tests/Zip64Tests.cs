@@ -402,7 +402,7 @@ namespace Ionic.Zip.Tests.Zip64
                             string extractDir = String.Format("extract-{0}-{1}.A", k, u);
                             foreach (var e in zip2)
                             {
-                                TestContext.WriteLine(" {0}  crc({1:X8})  c({2:X8}) unc({3:X8})", e.FileName, e.Crc32, e.CompressedSize, e.UncompressedSize);
+                                TestContext.WriteLine(" {0}  crc({1:X8})  c({2:X8}) unc({3:X8})", e.FileName, e.Crc, e.CompressedSize, e.UncompressedSize);
 
                                 e.Extract(extractDir);
                                 filename = Path.Combine(extractDir, e.FileName);
@@ -438,7 +438,7 @@ namespace Ionic.Zip.Tests.Zip64
                             string extractDir = String.Format("extract-{0}-{1}.B", k, u);
                             foreach (var e in zip3)
                             {
-                                TestContext.WriteLine(" {0}  crc({1:X8})  c({2:X8}) unc({3:X8})", e.FileName, e.Crc32, e.CompressedSize, e.UncompressedSize);
+                                TestContext.WriteLine(" {0}  crc({1:X8})  c({2:X8}) unc({3:X8})", e.FileName, e.Crc, e.CompressedSize, e.UncompressedSize);
 
                                 e.Extract(extractDir);
                                 filename = Path.Combine(extractDir, e.FileName);

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-26 23:56:27>
+// Time-stamp: <2009-August-12 15:53:37>
 //
 // ------------------------------------------------------------------
 //
@@ -117,7 +117,7 @@ namespace Ionic.Zip.Tests.Update
         public void UpdateZip_ChangeMetadata_AES()
         {
             Directory.SetCurrentDirectory(TopLevelDir);
-            string zipFileToCreate = Path.Combine(TopLevelDir, "UpdateZip_SmallBuffers_AES.zip");
+            string zipFileToCreate = Path.Combine(TopLevelDir, "UpdateZip_ChangeMetadata_AES.zip");
             string subdir = Path.Combine(TopLevelDir, "A");
             Directory.CreateDirectory(subdir);
 

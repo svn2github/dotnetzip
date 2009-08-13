@@ -44,7 +44,7 @@ namespace Ionic.Zip
                         String.Format("{0,5:F0}%", e.CompressionRatio),
                         e.CompressedSize.ToString(),
                         (e.UsesEncryption) ? "Y" : "N",
-                        String.Format("{0:X8}", e.Crc32)};
+                        String.Format("{0:X8}", e.Crc)};
 
                     foreach (String s in subitems)
                     {

@@ -92,7 +92,7 @@ namespace Ionic.Zip
             /// <code lang="C#">
             /// using (var zip = new ZipFile())
             /// {
-            ///     zip.Fullscan = true;
+            ///     zip.FullScan = true;
             ///     zip.Initialize(zipFileName);
             ///     zip.Save(newName);
             /// }
@@ -100,14 +100,14 @@ namespace Ionic.Zip
             ///
             /// <code lang="VB">
             /// Using zip As New ZipFile
-            ///     zip.Fullscan = True
+            ///     zip.FullScan = True
             ///     zip.Initialize(zipFileName)
             ///     zip.Save(newName)
             /// End Using
             /// </code>
             /// </example>
             ///
-            public bool Fullscan
+            public bool FullScan
         {
             get;
             set;
@@ -322,11 +322,11 @@ namespace Ionic.Zip
         ///
         /// <para>
         /// When adding an entry from a file or directory, the Creation (<see
-        /// cref="ZipEntry.Ctime"/>), Access (<see cref="ZipEntry.Atime"/>), and
-        /// Modified (<see cref="ZipEntry.Mtime"/>) times for the given entry are
-        /// automatically set from the filesystem values. When adding an entry from a
-        /// stream or string, all three values are implicitly set to DateTime.Now.
-        /// Applications can also explicitly set those times by calling <see
+        /// cref="ZipEntry.CreationTime"/>), Access (<see cref="ZipEntry.AccessedTime"/>),
+        /// and Modified (<see cref="ZipEntry.ModifiedTime"/>) times for the given entry are
+        /// automatically set from the filesystem values. When adding an entry from a stream
+        /// or string, all three values are implicitly set to DateTime.Now.  Applications
+        /// can also explicitly set those times by calling <see
         /// cref="ZipEntry.SetEntryTimes(DateTime, DateTime, DateTime)"/>.
         /// </para>
         ///
@@ -350,8 +350,8 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        /// The times stored are taken from <see cref="ZipEntry.Mtime"/>, <see
-        /// cref="ZipEntry.Atime"/>, and <see cref="ZipEntry.Ctime"/>.
+        /// The times stored are taken from <see cref="ZipEntry.ModifiedTime"/>, <see
+        /// cref="ZipEntry.AccessedTime"/>, and <see cref="ZipEntry.CreationTime"/>.
         /// </para>
         ///
         /// <para>
@@ -425,8 +425,8 @@ namespace Ionic.Zip
         ///
         /// <para>
         /// When adding an entry from a file or directory, the Creation (<see
-        /// cref="ZipEntry.Ctime"/>), Access (<see cref="ZipEntry.Atime"/>), and
-        /// Modified (<see cref="ZipEntry.Mtime"/>) times for the given entry are
+        /// cref="ZipEntry.CreationTime"/>), Access (<see cref="ZipEntry.AccessedTime"/>), and
+        /// Modified (<see cref="ZipEntry.ModifiedTime"/>) times for the given entry are
         /// automatically set from the filesystem values. When adding an entry from a
         /// stream or string, all three values are implicitly set to DateTime.Now.
         /// Applications can also explicitly set those times by calling <see
@@ -453,8 +453,8 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        /// The times stored are taken from <see cref="ZipEntry.Mtime"/>, <see
-        /// cref="ZipEntry.Atime"/>, and <see cref="ZipEntry.Ctime"/>.
+        /// The times stored are taken from <see cref="ZipEntry.ModifiedTime"/>, <see
+        /// cref="ZipEntry.AccessedTime"/>, and <see cref="ZipEntry.CreationTime"/>.
         /// </para>
         ///
         /// <para>
@@ -2211,7 +2211,7 @@ namespace Ionic.Zip
             _entries = new System.Collections.Generic.List<ZipEntry>();
             if (File.Exists(_name))
             {
-                if (Fullscan)
+                if (FullScan)
                     ReadIntoInstance_Orig(this);
                 else
                     ReadIntoInstance(this);
@@ -2861,7 +2861,7 @@ namespace Ionic.Zip
         private bool _NeedZip64CentralDirectory;
         private long _locEndOfCDS = -1;
         private Nullable<bool> _OutputUsesZip64;
-        internal bool _inExtractAll = false;
+        internal bool _inExtractAll;
         private System.Text.Encoding _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437"); // default = IBM437
 
         private int _BufferSize = 8192;

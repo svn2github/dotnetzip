@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-22 10:16:55>
+// Time-stamp: <2009-August-12 17:34:39>
 //
 // ------------------------------------------------------------------
 //
@@ -316,7 +316,7 @@ namespace Ionic.Zlib
         /// <summary>
         /// Provides the current CRC for all blocks slurped in.
         /// </summary>
-        public Int32 Crc32
+        public Int32 Crc
         {
             get { return _Crc32.Crc32Result; }
         }

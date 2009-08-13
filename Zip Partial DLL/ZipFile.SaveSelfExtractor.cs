@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-03 14:35:32>
+// Time-stamp: <2009-August-12 21:11:46>
 //
 // ------------------------------------------------------------------
 //
@@ -173,8 +173,8 @@ namespace Ionic.Zip
 #endif
 
 
-        string _defaultExtractLocation = null;
-        string _postExtractCmdLine = null;
+        string _defaultExtractLocation;
+        string _postExtractCmdLine;
         //         string _SetDefaultLocationCode =
         //         "namespace Ionic.Zip { public partial class WinFormsSelfExtractorStub { partial void _SetDefaultExtractLocation() {" +
         //         " txtExtractDirectory.Text = \"@@VALUE\"; } }}";
@@ -407,7 +407,7 @@ namespace Ionic.Zip
             _SavingSfx = true;
             _name = exeToGenerate;
             if (Directory.Exists(_name))
-                throw new ZipException("Bad Directory", new System.ArgumentException("That name specifies an existing directory. Please specify a filename.", "zipFileName"));
+                throw new ZipException("Bad Directory", new System.ArgumentException("That name specifies an existing directory. Please specify a filename.", "exeToGenerate"));
             _contentsChanged = true;
             _fileAlreadyExists = File.Exists(_name);
 
@@ -492,7 +492,7 @@ namespace Ionic.Zip
                         using (Stream instream = a2.GetManifestResourceStream(re))
                         {
                             if (instream == null)
-                                throw new ZipException(String.Format("DotNetZip error: missing resource '{0}'", re));
+                                throw new ZipException(String.Format("missing resource '{0}'", re));
 
                             using (FileStream outstream = File.OpenWrite(filename))
                             {
@@ -542,7 +542,7 @@ namespace Ionic.Zip
                     //Console.WriteLine("  trying to read stream: ({0})", rc);
                     Stream s = a2.GetManifestResourceStream(rc);
                     if (s == null)
-                        throw new ZipException(String.Format("DotNetZip error: missing resource '{0}'", rc));
+                        throw new ZipException(String.Format("missing resource '{0}'", rc));
                     using (StreamReader sr = new StreamReader(s))
                     {
                         while (sr.Peek() >= 0)
@@ -562,7 +562,7 @@ namespace Ionic.Zip
 
                 string LiteralSource = sb.ToString();
 
-                #if NEEDED
+                #if DEBUGSFX
                 // for debugging only
                 string sourceModule = GenerateTempPathname("cs", null);
                 using (StreamWriter sw = File.CreateText(sourceModule))
