@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-06 18:34:38>
+// Time-stamp: <2009-August-13 12:38:15>
 //
 // ------------------------------------------------------------------
 //
@@ -334,10 +334,16 @@ namespace Ionic.Zip
                         }
                         catch (Exception ex1)
                         {
-                            if (WantOverwrite == global::Ionic.Zip.ExtractExistingFileAction.OverwriteSilently ||
-                                (ex1.Message.ToString() != "The file already exists."))
+                            if (WantOverwrite != global::Ionic.Zip.ExtractExistingFileAction.OverwriteSilently 
+                                && ex1.Message.Contains("already exists."))
                             {
-                                DialogResult result = MessageBox.Show(String.Format("Failed to extract entry {0} -- {1}", entry.FileName, ex1.Message.ToString()),
+                                // The file exists, but the user did not ask for overwrite.
+                                didNotOverwrite.Add("    " + entry.FileName);
+                            }
+                            else if (WantOverwrite == global::Ionic.Zip.ExtractExistingFileAction.OverwriteSilently ||
+                                     ex1.Message.Contains("already exists."))
+                            {
+                                DialogResult result = MessageBox.Show(String.Format("Failed to extract entry {0} -- {1}", entry.FileName, ex1.Message),
                                                                       String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
 
                                 if (result == DialogResult.Cancel)
@@ -386,15 +392,14 @@ namespace Ionic.Zip
                                     continue; // loop around, ask for password again
                                 }
                                 else if (WantOverwrite != global::Ionic.Zip.ExtractExistingFileAction.OverwriteSilently 
-                                        && (ex2.Message.ToString() == "The file already exists."))
+                                        && ex2.Message.Contains("already exists."))
                                 {
-                                    // The file exists, but the user
-                                    // did not ask for overwrite.
+                                    // The file exists, but the user did not ask for overwrite.
                                     didNotOverwrite.Add("    " + entry.FileName);
                                     done = true;
                                 }
                                 else if (WantOverwrite == global::Ionic.Zip.ExtractExistingFileAction.OverwriteSilently 
-                                        && (ex2.Message.ToString() != "The file already exists."))
+                                        && !ex2.Message.Contains("already exists."))
                                 {
                                     DialogResult result = MessageBox.Show(String.Format("Failed to extract the password-encrypted entry {0} -- {1}", entry.FileName, ex2.Message.ToString()),
                                                                           String.Format("Error Extracting {0}", entry.FileName), MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
@@ -421,12 +426,14 @@ namespace Ionic.Zip
 
             if (didNotOverwrite.Count > 0)
             {
-                string msg = String.Format("These files were not extracted because the target files already exist:\n{0}", String.Join("\n", didNotOverwrite.ToArray()));
-                MessageBox.Show(msg,
-                                "DotNetZip: Just so you know...",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Information,
-                                MessageBoxDefaultButton.Button1);
+                UnzipStatusReport f = new UnzipStatusReport();
+                if (didNotOverwrite.Count == 1)
+                    f.Header = "This file was not extracted because the target file already exists:";
+                else
+                    f.Header = String.Format("These {0} files were not extracted because the target files already exist:",
+                                             didNotOverwrite.Count);
+                f.Message = String.Join("\r\n", didNotOverwrite.ToArray());
+                f.ShowDialog();
             }
 
             SetUiDone();
@@ -646,8 +653,134 @@ namespace Ionic.Zip
         global::Ionic.Zip.ZipFile _zip;
 
     }
+    
+
+    
+    public class UnzipStatusReport : Form
+    {
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox tbMessage;
+        private System.Windows.Forms.Button btnOK;
+
+        public UnzipStatusReport()
+        {
+            InitializeComponent();
+        }
+
+        
+        private void UnzipStatusReport_Load(object sender, EventArgs e)
+        {
+            this.Text = "DotNetZip: Unzip status report...";
+        }
 
 
+        private void btnOK_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.OK;
+            this.Close();
+        }
+        
+        public string Message
+        {
+            set
+            {
+                this.tbMessage.Text = value;
+                this.tbMessage.Select(0,0);
+            }
+            get
+            {
+                return this.tbMessage.Text;
+            }
+        }
+
+        public string Header
+        {
+            set
+            {
+                this.label1.Text = value;   
+            }
+            get
+            {
+                return this.label1.Text;
+            }
+        }
+
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+
+        private void InitializeComponent()
+        {
+            this.components = new System.ComponentModel.Container();
+            this.label1 = new System.Windows.Forms.Label();
+            this.tbMessage = new System.Windows.Forms.TextBox();
+            this.btnOK = new System.Windows.Forms.Button();
+            this.SuspendLayout();
+            //
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(12, 12);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(50, 13);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Status";
+            // 
+            // tbMessage
+            // 
+            this.tbMessage.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)
+                        | System.Windows.Forms.AnchorStyles.Bottom)));
+            this.tbMessage.Location = new System.Drawing.Point(20, 31);
+            this.tbMessage.Name = "tbMessage";
+            this.tbMessage.Multiline = true;
+            this.tbMessage.ScrollBars = ScrollBars.Vertical;
+            this.tbMessage.ReadOnly = true;
+            this.tbMessage.Size = new System.Drawing.Size(340, 110);
+            this.tbMessage.TabIndex = 10;
+            // 
+            // btnOK
+            // 
+            this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnOK.Location = new System.Drawing.Point(290, 156);
+            this.btnOK.Name = "btnOK";
+            this.btnOK.Size = new System.Drawing.Size(82, 24);
+            this.btnOK.TabIndex = 20;
+            this.btnOK.Text = "OK";
+            this.btnOK.UseVisualStyleBackColor = true;
+            this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
+            // 
+            // UnzipStatusReport
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(380, 190);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.tbMessage);
+            this.Controls.Add(this.btnOK);
+            this.Name = "UnzipStatusReport";
+            this.Text = "Not Unzipped";
+            this.Load += new System.EventHandler(this.UnzipStatusReport_Load);
+            this.ResumeLayout(false);
+            this.PerformLayout();
+        }
+        
+    } 
 
     class WinFormsSelfExtractorStubProgram
     {
