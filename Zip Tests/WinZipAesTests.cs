@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-05 13:21:21>
+// Time-stamp: <2009-August-13 22:36:35>
 //
 // ------------------------------------------------------------------
 //
@@ -388,8 +388,8 @@ namespace Ionic.Zip.Tests.WinZipAes
 
 
         [TestMethod]
-[ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
-public void WinZipAes_ReadZip_Fail_BadPassword()
+        [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
+        public void WinZipAes_ReadZip_Fail_BadPassword()
         {
             _Internal_ReadEncryptedZips(false);
         }
@@ -423,16 +423,16 @@ public void WinZipAes_ReadZip_Fail_BadPassword()
 
 
         [TestMethod]
-[ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
-public void WinZipAes_ReadZip_Fail_NoPassword_128()
+        [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
+        public void WinZipAes_ReadZip_Fail_NoPassword_128()
         {
             string password = TestUtilities.GenerateRandomPassword();
             _Internal_GenerateFiles_CreateZip("-ycAES128", password, 1);
         }
 
         [TestMethod]
-[ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
-public void WinZipAes_ReadZip_Fail_NoPassword_256()
+        [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
+        public void WinZipAes_ReadZip_Fail_NoPassword_256()
         {
             string password = TestUtilities.GenerateRandomPassword();
             _Internal_GenerateFiles_CreateZip("-ycAES256", password, 1);
@@ -440,8 +440,8 @@ public void WinZipAes_ReadZip_Fail_NoPassword_256()
 
 
         [TestMethod]
-[ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
-public void WinZipAes_ReadZip_Fail_WrongMethod()
+        [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
+        public void WinZipAes_ReadZip_Fail_WrongMethod()
         {
             string password = TestUtilities.GenerateRandomPassword();
             _Internal_GenerateFiles_CreateZip("-ycAES256", password, 3);
@@ -449,8 +449,8 @@ public void WinZipAes_ReadZip_Fail_WrongMethod()
         }
 
         [TestMethod]
-[ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
-public void WinZipAes_ReadZip_Fail_WrongPassword()
+        [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
+        public void WinZipAes_ReadZip_Fail_WrongPassword()
         {
             string password = TestUtilities.GenerateRandomPassword();
             _Internal_GenerateFiles_CreateZip("-ycAES256", password, 2);
@@ -666,7 +666,7 @@ public void WinZipAes_ReadZip_Fail_WrongPassword()
         public void WinZipAes_RemoveEntryAndSave()
         {
             // make a few text files
-            string[] TextFiles = new string[3];
+            string[] TextFiles = new string[5];
             for (int i = 0; i < TextFiles.Length; i++)
             {
                 TextFiles[i] = Path.Combine(TopLevelDir, String.Format("TextFile{0}.txt", i));
@@ -750,6 +750,73 @@ public void WinZipAes_ReadZip_Fail_WrongPassword()
         }
 
 
+
+        [TestMethod]
+        public void WinZipAes_InMemory_wi8493()
+        {
+            Directory.SetCurrentDirectory(TopLevelDir);
+
+            string password = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                for (int m = 0; m < 2; m++)
+                {
+                    string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("WinZipAes_InMemory_wi8493-{0}.zip", m));
+
+                    using (var zip = new ZipFile())
+                    {
+                        zip.Password = password;
+                        zip.Encryption = EncryptionAlgorithm.WinZipAes256;
+                        zip.AddEntry(Path.GetRandomFileName(), "", "Hello, World!");
+                        if (m==1)
+                            zip.Save(ms);
+                        else
+                            zip.Save(zipFileToCreate);
+                    }
+
+                    if (m==1)
+                        File.WriteAllBytes(zipFileToCreate,ms.ToArray());
+                
+                    WinzipVerify(zipFileToCreate, password);
+                }
+            }
+        }
+
+        
+
+        [TestMethod]
+        public void WinZipAes_InMemory_wi8493a()
+        {
+            Directory.SetCurrentDirectory(TopLevelDir);
+
+            string zipFileToCreate = Path.Combine(TopLevelDir, "WinZipAes_InMemory_wi8493a.zip");
+            string password = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+
+            string[] TextFiles = new string[25 + _rnd.Next(8)];
+            for (int i = 0; i < TextFiles.Length; i++)
+            {
+                TextFiles[i] = Path.Combine(TopLevelDir, String.Format("TextFile{0}.txt", i));
+                TestUtilities.CreateAndFillFileText(TextFiles[i], _rnd.Next(14000) + 13000);
+            }
+            
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (var zip = new ZipFile())
+                {
+                    zip.Password = password;
+                    zip.Encryption = EncryptionAlgorithm.WinZipAes256;
+                    zip.AddEntry("Readme.txt", "", "Hello, World!");
+                    zip.AddFiles(TextFiles, "files");
+                    zip.Save(ms);
+                }
+                File.WriteAllBytes(zipFileToCreate,ms.ToArray());
+                
+                WinzipVerify(zipFileToCreate, password);
+            }
+        }
+        
+        
 
         [TestMethod]
         [ExpectedException(typeof(System.InvalidOperationException))]

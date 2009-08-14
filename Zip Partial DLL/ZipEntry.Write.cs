@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-12 17:01:18>
+// Time-stamp: <2009-August-13 21:35:35>
 //
 // ------------------------------------------------------------------
 //
@@ -542,14 +542,14 @@ namespace Ionic.Zip
 
         private bool WantReadAgain()
         {
-            if (_UncompressedSize < 10) return false;
+            if (_UncompressedSize < 0x10) return false;
             if (_CompressionMethod == 0x00) return false;
             if (_CompressedSize < _UncompressedSize) return false;
             if (ForceNoCompression) return false;
             if (this._Source == ZipEntrySource.Stream && !this._sourceStream.CanSeek) return false;
 
 #if AESCRYPTO
-            if (_aesCrypto != null && (CompressedSize - _aesCrypto.SizeOfEncryptionMetadata) <= UncompressedSize) return false;
+            if (_aesCrypto != null && (CompressedSize - _aesCrypto.SizeOfEncryptionMetadata) <= UncompressedSize + 0x10) return false;
 #endif
 
             if (_zipCrypto != null && (CompressedSize - 12) <= UncompressedSize) return false;
@@ -1510,6 +1510,7 @@ namespace Ionic.Zip
 
                 // Write the ciphered bonafide encryption header. 
                 outstream.Write(cipherText, 0, cipherText.Length);
+                _LengthOfHeader+= cipherText.Length;
             }
 
 #if AESCRYPTO
@@ -1523,7 +1524,8 @@ namespace Ionic.Zip
                 _aesCrypto = WinZipAesCrypto.Generate(_Password, _KeyStrengthInBits);
                 outstream.Write(_aesCrypto.Salt, 0, _aesCrypto._Salt.Length);
                 outstream.Write(_aesCrypto.GeneratedPV, 0, _aesCrypto.GeneratedPV.Length);
-            }
+                _LengthOfHeader+= _aesCrypto._Salt.Length + _aesCrypto.GeneratedPV.Length;
+    }
 #endif
 
         }

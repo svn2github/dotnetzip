@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-12 22:02:48>
+// Time-stamp: <2009-August-13 22:44:05>
 //
 // ------------------------------------------------------------------
 //
@@ -119,10 +119,14 @@ namespace Ionic.Zip
         /// 
         /// <remarks>
         /// 
-        /// <para> For example, the caller could specify <c>Console.Out</c>, or a
-        /// <c>MemoryStream</c>, or ASP.NET's <c>Response.OutputStream</c>.  The content
-        /// will be decrypted and decompressed as necessary. If the entry is encrypted and
-        /// no password is provided, this method will throw.  </para>
+        /// <para>
+        /// The caller can specify any write-able stream, for example <see
+        /// cref="System.Console.OpenStandardOutput()"/>, a <see
+        /// cref="System.IO.FileStream"/>, a <see cref="System.IO.MemoryStream"/>, or
+        /// ASP.NET's <c>Response.OutputStream</c>.
+        /// The content will be decrypted and decompressed as necessary. If the entry is
+        /// encrypted and no password is provided, this method will throw.
+        /// </para>
         /// 
         /// </remarks>
         /// 
