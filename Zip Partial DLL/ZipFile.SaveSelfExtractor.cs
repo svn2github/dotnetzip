@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-12 21:11:46>
+// Time-stamp: <2009-August-14 10:25:07>
 //
 // ------------------------------------------------------------------
 //
@@ -180,6 +180,103 @@ namespace Ionic.Zip
         //         " txtExtractDirectory.Text = \"@@VALUE\"; } }}";
 
 
+
+        /// <summary>
+        /// Saves the ZipFile instance to a self-extracting zip archive.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// 
+        /// <para>
+        /// The generated exe image will execute on any machine that has the .NET Framework 2.0
+        /// installed on it.  The generated exe image is also a valid ZIP file, readable with DotNetZip
+        /// or another Zip library or tool such as WinZip. 
+        /// </para>
+        /// 
+        /// <para>
+        /// There are two "flavors" of self-extracting archive.  The <c>WinFormsApplication</c>
+        /// version will pop up a GUI and allow the user to select a target directory into which
+        /// to extract. There's also a checkbox allowing the user to specify to overwrite
+        /// existing files, and another checkbox to allow the user to request that Explorer be
+        /// opened to see the extracted files after extraction.  The other flavor is
+        /// <c>ConsoleApplication</c>.  A self-extractor generated with that flavor setting will
+        /// run from the command line. It accepts command-line options to set the overwrite
+        /// behavior, and to specify the target extraction directory.
+        /// </para>
+        /// 
+        /// <para>
+        /// There are a few temporary files created during the saving to a self-extracting zip.
+        /// These files are created in the directory pointed to by <see
+        /// cref="ZipFile.TempFileFolder"/>, which defaults to <see
+        /// cref="System.IO.Path.GetTempPath"/>.  These temporary files are removed upon
+        /// successful completion of this method.
+        /// </para>
+        ///
+        /// <para>
+        /// When a user runs the WinForms SFX, the user's personal directory (<see
+        /// cref="Environment.SpecialFolder.Personal"/>) will be used as the default extract
+        /// location.  The user who runs the SFX will have the opportunity to change the extract
+        /// directory before extracting. When the user runs the Command-Line SFX, the user must
+        /// explicitly specify the directory to which to extract.  The .NET Framework 2.0 is
+        /// required on the computer when the self-extracting archive is run.
+        /// </para>
+        ///
+        /// <para>
+        /// NB: This method is not available in the version of DotNetZip
+        /// build for the .NET Compact Framework, nor in the "Reduced" DotNetZip library.  
+        /// </para>
+        /// 
+        /// </remarks>
+        /// 
+        /// <example>
+        /// <code>
+        /// string DirectoryPath = "c:\\Documents\\Project7";
+        /// using (ZipFile zip = new ZipFile())
+        /// {
+        ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath));
+        ///     zip.Comment = "This will be embedded into a self-extracting console-based exe";
+        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication);
+        /// }
+        /// </code>
+        /// <code lang="VB">
+        /// Dim DirectoryPath As String = "c:\Documents\Project7"
+        /// Using zip As New ZipFile()
+        ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath))
+        ///     zip.Comment = "This will be embedded into a self-extracting console-based exe"
+        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication)
+        /// End Using
+        /// </code>
+        /// </example>
+        /// 
+        /// <param name="exeToGenerate">a pathname, possibly fully qualified, to be created. Typically it will end in an .exe extension.</param>
+        /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
+        public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor)
+        {
+            // Save an SFX that is both an EXE and a ZIP.
+
+            // Check for the case where we are re-saving a zip archive 
+            // that was originally instantiated with a stream.  In that case, 
+            // the _name will be null. If so, we set _writestream to null, 
+            // which insures that we'll cons up a new WriteStream (with a filesystem
+            // file backing it) in the Save() method.
+            if (_name == null)
+                _writestream = null;
+
+            _SavingSfx = true;
+            _name = exeToGenerate;
+            if (Directory.Exists(_name))
+                throw new ZipException("Bad Directory", new System.ArgumentException("That name specifies an existing directory. Please specify a filename.", "exeToGenerate"));
+            _contentsChanged = true;
+            _fileAlreadyExists = File.Exists(_name);
+
+            _SaveSfxStub(exeToGenerate, flavor);
+
+            Save();
+            _SavingSfx = false;
+        }
+
+        
+
         /// <summary>
         /// Saves the ZipFile instance to a self-extracting zip archive, using the specified 
         /// default extract directory. 
@@ -320,101 +417,6 @@ namespace Ionic.Zip
             // unset
             this._defaultExtractLocation = null;
             this._postExtractCmdLine = null;
-        }
-
-
-        /// <summary>
-        /// Saves the ZipFile instance to a self-extracting zip archive.
-        /// </summary>
-        /// 
-        /// <remarks>
-        /// 
-        /// <para>
-        /// The generated exe image will execute on any machine that has the .NET Framework 2.0
-        /// installed on it.  The generated exe image is also a valid ZIP file, readable with DotNetZip
-        /// or another Zip library or tool such as WinZip. 
-        /// </para>
-        /// 
-        /// <para>
-        /// There are two "flavors" of self-extracting archive.  The <c>WinFormsApplication</c>
-        /// version will pop up a GUI and allow the user to select a target directory into which
-        /// to extract. There's also a checkbox allowing the user to specify to overwrite
-        /// existing files, and another checkbox to allow the user to request that Explorer be
-        /// opened to see the extracted files after extraction.  The other flavor is
-        /// <c>ConsoleApplication</c>.  A self-extractor generated with that flavor setting will
-        /// run from the command line. It accepts command-line options to set the overwrite
-        /// behavior, and to specify the target extraction directory.
-        /// </para>
-        /// 
-        /// <para>
-        /// There are a few temporary files created during the saving to a self-extracting zip.
-        /// These files are created in the directory pointed to by <see
-        /// cref="ZipFile.TempFileFolder"/>, which defaults to <see
-        /// cref="System.IO.Path.GetTempPath"/>.  These temporary files are removed upon
-        /// successful completion of this method.
-        /// </para>
-        ///
-        /// <para>
-        /// When a user runs the WinForms SFX, the user's personal directory (<see
-        /// cref="Environment.SpecialFolder.Personal"/>) will be used as the default extract
-        /// location.  The user who runs the SFX will have the opportunity to change the extract
-        /// directory before extracting. When the user runs the Command-Line SFX, the user must
-        /// explicitly specify the directory to which to extract.  The .NET Framework 2.0 is
-        /// required on the computer when the self-extracting archive is run.
-        /// </para>
-        ///
-        /// <para>
-        /// NB: This method is not available in the version of DotNetZip
-        /// build for the .NET Compact Framework, nor in the "Reduced" DotNetZip library.  
-        /// </para>
-        /// 
-        /// </remarks>
-        /// 
-        /// <example>
-        /// <code>
-        /// string DirectoryPath = "c:\\Documents\\Project7";
-        /// using (ZipFile zip = new ZipFile())
-        /// {
-        ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath));
-        ///     zip.Comment = "This will be embedded into a self-extracting console-based exe";
-        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication);
-        /// }
-        /// </code>
-        /// <code lang="VB">
-        /// Dim DirectoryPath As String = "c:\Documents\Project7"
-        /// Using zip As New ZipFile()
-        ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath))
-        ///     zip.Comment = "This will be embedded into a self-extracting console-based exe"
-        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication)
-        /// End Using
-        /// </code>
-        /// </example>
-        /// 
-        /// <param name="exeToGenerate">a pathname, possibly fully qualified, to be created. Typically it will end in an .exe extension.</param>
-        /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
-        public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor)
-        {
-            // Save an SFX that is both an EXE and a ZIP.
-
-            // Check for the case where we are re-saving a zip archive 
-            // that was originally instantiated with a stream.  In that case, 
-            // the _name will be null. If so, we set _writestream to null, 
-            // which insures that we'll cons up a new WriteStream (with a filesystem
-            // file backing it) in the Save() method.
-            if (_name == null)
-                _writestream = null;
-
-            _SavingSfx = true;
-            _name = exeToGenerate;
-            if (Directory.Exists(_name))
-                throw new ZipException("Bad Directory", new System.ArgumentException("That name specifies an existing directory. Please specify a filename.", "exeToGenerate"));
-            _contentsChanged = true;
-            _fileAlreadyExists = File.Exists(_name);
-
-            _SaveSfxStub(exeToGenerate, flavor);
-
-            Save();
-            _SavingSfx = false;
         }
 
 
