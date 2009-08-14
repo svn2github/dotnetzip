@@ -1014,7 +1014,55 @@ Max Ehrmann c.1920
         }
 
 
+        [TestMethod]
+        public void Zlib_GZipStream_DecompressEmptyStream()
+        {
+            _DecompressEmptyStream(typeof(GZipStream));
+        }
 
+        
+        [TestMethod]
+        public void Zlib_ZlibStream_DecompressEmptyStream()
+        {
+            _DecompressEmptyStream(typeof(ZlibStream));
+        }
+
+        private void _DecompressEmptyStream(Type t)
+        {
+            byte[] working = new byte[WORKING_BUFFER_SIZE];
+
+            // once politely, and the 2nd time through, try to read after EOF
+            for (int m = 0; m < 2; m++)
+            {
+                using (MemoryStream ms1 = new MemoryStream())
+                {
+                    Object[] args = { ms1, CompressionMode.Decompress, false };
+                    using (Stream decompressor = (Stream) Activator.CreateInstance(t, args)) 
+                    {
+                        using (MemoryStream ms2 = new MemoryStream())
+                        {
+                            int n = -1;
+                            while (n != 0)
+                            {
+                                n = decompressor.Read(working, 0, working.Length);
+                                if (n > 0)
+                                    ms2.Write(working, 0, n);
+                            }
+
+                            // we know there is no more data.  Want to insure it does
+                            // not throw.
+                            if (m==1)
+                                n = decompressor.Read(working, 0, working.Length);
+                            
+
+                            Assert.AreEqual<Int64>(ms2.Length, 0L);
+                        }
+                    }
+                }
+            }
+        }
+
+        
         [TestMethod]
         public void Zlib_DeflateStream_InMemory()
         {
@@ -1375,7 +1423,7 @@ Max Ehrmann c.1920
                                 }
 
                                 // now, decompress with Ionic and System.IO.Compression
-                                //for (int j = 0; j < 2; j++)
+                                // for (int j = 0; j < 2; j++)
                                 for (int j = 1; j >= 0; j--)
                                 {
                                     using (var input = System.IO.File.OpenRead(CompressedFile))

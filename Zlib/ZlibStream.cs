@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-12 15:35:32>
+// Time-stamp: <2009-August-14 11:30:52>
 //
 // ------------------------------------------------------------------
 //
@@ -849,7 +849,6 @@ namespace Ionic.Zlib
 
                 Flush();
 
-
                 // workitem 7159
                 if (_flavor == ZlibStreamFlavor.GZIP)
                 {
@@ -876,11 +875,15 @@ namespace Ionic.Zlib
                 {
                     if (!_wantCompress)
                     {
+                        // workitem 8501: handle edge case (decompress empty stream)
+                        if (_z.TotalBytesOut == 0L)
+                            return;
+                        
                         // Read and potentially verify the GZIP trailer: CRC32 and  size mod 2^32
                         byte[] trailer = new byte[8];
 
                         if (_z.AvailableBytesIn != 8)
-                            throw new ZlibException(String.Format("Can't handle this! AvailableBytesIn={0}, expected 8",
+                            throw new ZlibException(String.Format("Protocol error. AvailableBytesIn={0}, expected 8",
                                  _z.AvailableBytesIn));
 
                         Array.Copy(_z.InputBuffer, _z.NextIn, trailer, 0, trailer.Length);
@@ -1005,6 +1008,10 @@ namespace Ionic.Zlib
             byte[] header = new byte[10];
             int n = _stream.Read(header, 0, header.Length);
 
+            // workitem 8501: handle edge case (decompress empty stream)
+            if (n==0)
+                return 0;
+            
             if (n != 10)
                 throw new ZlibException("Not a valid GZIP stream.");
 
@@ -1056,7 +1063,12 @@ namespace Ionic.Zlib
                 // may initialize it.)
                 z.AvailableBytesIn = 0;
                 if (_flavor == ZlibStreamFlavor.GZIP)
+                {
                     _gzipHeaderByteCount = _ReadAndValidateGzipHeader();
+                    // workitem 8501: handle edge case (decompress empty stream)
+                    if (_gzipHeaderByteCount == 0)
+                        return 0;
+                }
             }
 
             if (_streamMode != StreamMode.Reader)
