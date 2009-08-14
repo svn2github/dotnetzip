@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-12 17:10:54>
+// Time-stamp: <2009-August-14 09:53:46>
 //
 // ------------------------------------------------------------------
 //
@@ -28,14 +28,19 @@
 
 using System;
 using System.IO;
+using Interop=System.Runtime.InteropServices;
 
 namespace Ionic.Zip
 {
-
     /// <summary>
     /// Represents a single entry in a ZipFile. Typically, applications get a ZipEntry
     /// by enumerating the entries within a ZipFile, or by adding an entry to a ZipFile.
     /// </summary>
+
+    [Interop.GuidAttribute("ebc25cf6-9120-4283-b972-0e5520d00004")]
+    [Interop.ComVisible(true)]
+    //[Interop.ClassInterface(Interop.ClassInterfaceType.AutoDispatch)]
+    [Interop.ClassInterface(Interop.ClassInterfaceType.AutoDispatch)]
     public partial class ZipEntry
     {
         /// <summary>
@@ -2436,7 +2441,7 @@ namespace Ionic.Zip
             {
                 // workitem 7944: don't throw on failure to set file times
                 // throw new ZipException("CreateFileCE Failed");
-                return System.Runtime.InteropServices.Marshal.GetLastWin32Error();
+                return Interop.Marshal.GetLastWin32Error();
             }
                         
             SetFileTime(hFile, 
@@ -2463,8 +2468,8 @@ namespace Ionic.Zip
             {
                 // workitem 7944: don't throw on failure to set file time
                 // throw new ZipException(String.Format("CreateFileCE Failed ({0})",
-                //                                      System.Runtime.InteropServices.Marshal.GetLastWin32Error()));
-                return System.Runtime.InteropServices.Marshal.GetLastWin32Error();
+                //                                      Interop.Marshal.GetLastWin32Error()));
+                return Interop.Marshal.GetLastWin32Error();
             }
                         
             SetFileTime(hFile, null, null, 
@@ -2475,7 +2480,7 @@ namespace Ionic.Zip
         }
 
 
-        [System.Runtime.InteropServices.DllImport("coredll.dll", EntryPoint="CreateFile", SetLastError=true)]
+        [Interop.DllImport("coredll.dll", EntryPoint="CreateFile", SetLastError=true)]
         internal static extern int CreateFileCE(string lpFileName,
                                                 uint dwDesiredAccess,
                                                 uint dwShareMode,
@@ -2485,16 +2490,16 @@ namespace Ionic.Zip
                                                 int hTemplateFile);
 
 
-        [System.Runtime.InteropServices.DllImport("coredll", EntryPoint="GetFileAttributes", SetLastError=true)]
+        [Interop.DllImport("coredll", EntryPoint="GetFileAttributes", SetLastError=true)]
         internal static extern uint GetAttributes(string lpFileName);
 
-        [System.Runtime.InteropServices.DllImport("coredll", EntryPoint="SetFileAttributes", SetLastError=true)]
+        [Interop.DllImport("coredll", EntryPoint="SetFileAttributes", SetLastError=true)]
         internal static extern bool SetAttributes(string lpFileName, uint dwFileAttributes);
 
-        [System.Runtime.InteropServices.DllImport("coredll", EntryPoint="SetFileTime", SetLastError=true)]
+        [Interop.DllImport("coredll", EntryPoint="SetFileTime", SetLastError=true)]
         internal static extern bool SetFileTime(IntPtr hFile, byte[] lpCreationTime, byte[] lpLastAccessTime, byte[] lpLastWriteTime); 
 
-        [System.Runtime.InteropServices.DllImport("coredll.dll", SetLastError=true)]
+        [Interop.DllImport("coredll.dll", SetLastError=true)]
         internal static extern bool CloseHandle(IntPtr hObject);
 
     }

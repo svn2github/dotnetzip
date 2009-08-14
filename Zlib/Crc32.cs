@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-12 17:34:39>
+// Time-stamp: <2009-August-14 02:43:37>
 //
 // ------------------------------------------------------------------
 //
@@ -44,6 +44,10 @@ namespace Ionic.Zlib
     /// directly by applications wishing to create, read, or manipulate zip archive
     /// files.
     /// </summary>
+
+    [System.Runtime.InteropServices.GuidAttribute("ebc25cf6-9120-4283-b972-0e5520d0000C")]
+    [System.Runtime.InteropServices.ComVisible(true)]
+    [System.Runtime.InteropServices.ClassInterface(System.Runtime.InteropServices.ClassInterfaceType.AutoDual)]
     public class CRC32
     {
         /// <summary>

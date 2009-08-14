@@ -37,6 +37,7 @@
 
 using System;
 using System.IO;
+using Interop=System.Runtime.InteropServices;
 
 
 namespace Ionic.Zip
@@ -50,6 +51,10 @@ namespace Ionic.Zip
     /// Framework. As of v1.7 of DotNetZip, the compression is provided by a
     /// managed-code version of Zlib, included with DotNetZip.
     /// </summary>
+    [Interop.GuidAttribute("ebc25cf6-9120-4283-b972-0e5520d00005")]
+    [Interop.ComVisible(true)]
+    //[Interop.ClassInterface(Interop.ClassInterfaceType.AutoDispatch)]
+    [Interop.ClassInterface(Interop.ClassInterfaceType.AutoDispatch)]
     public partial class ZipFile :
     System.Collections.IEnumerable,
     System.Collections.Generic.IEnumerable<ZipEntry>,

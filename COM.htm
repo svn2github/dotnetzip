@@ -1,3 +1,4 @@
+
 <html>
 <head>
 <title>Using DotNetZip from PHP, Javascript, and other COM Environments</title>
@@ -40,27 +41,355 @@ steps for you when it installs.  </p>
 
 <h2>Using the COM interface to DotNetZip</h2>
 
-<p>Via the COM exposure, applications written in COM-capable environments
-like VBScript, Javascript, PHP, Perl, and others, can create instances of the
-ZipFile class, add entries, and save archives, as any .NET application could.
-Most of DotNetZip's advanced features are available to these COM environments,
-including ZIP64 support, self-extracting archives, password-protected zip
-files, AES Encryption, and Unicode support. COM environments can also read zip 
-files and extract files from zip files. 
-</p>
+<p>Via the COM exposure, applications written in COM-capable
+environments like old-school ASP using VBScript or Javascript, VBScript
+or Javascript running in Windows Script Host, PHP, Perl, and others, can
+create instances of the ZipFile class, add entries, and save archives,
+as any .NET application could.  Most of DotNetZip's advanced features
+are available to these COM environments, including ZIP64 support,
+self-extracting archives, password-protected zip files, AES Encryption,
+and Unicode support. COM environments can also read zip files and
+extract files from zip files.  </p>
 
 <p>
 Some of the advanced features of DotNetZip are not available through COM,
 including eventing, and streaming.
 </p>
 
-<p>Also, because COM does not support calling overloaded methods, only the
-simplest method in a method group will be available to COM callers.  For example,
+<h3>IDispatch</h3>
+
+<p> The key classes in DotNetZip that are exposed to COM are: ZipFile,
+ZipEntry, and the various ZipExceptions.  These are all exposed via
+IDispatch interfaces - late binding only.  (For those familiar with
+.NET, DotNetZip is decorated with ClassInterfaceType.AutoDispatch.)
+There is no explicit typelib exposed by DotNetZip.  </p>
+
+<h3>Overloaded Methods</h3>
+
+<p>
+It seems that COM does not directly support calling overloaded methods, Only the
+simplest method in a method group is directly available to COM callers.  For example,
 consider ZipFile.AddFile.  There are two overloads.  Only the overload that
-accepts a single string will be accessible to COM clients.  In most cases the
+accepts a single string will be accessible via the name "AddFile" to COM clients. </p>
+
+<p> In most cases the
 thing you need to accomplish is achievable anyway.  In the AddFile() case, setting
 the FileName on the entry after calling AddFile() will do the trick.  </p>
 
+<p>Also, the overloaded methods <em>are available</em>, via "mangled"
+names: each successive overload gets a numeric suffix.  Consider the
+ExtractSelectedEntries method; there are 5 overloads. The first,
+simplest, is available via the name ExtractSelectedEntries.  Then,
+additional overloads are available via ExtractSelectedEntries_2,
+ExtractSelectedEntries_3, and so on. The same is true for other
+overloaded methods on the ZipFile and ZipEntry classes. 
+</p>
+
+
+<h4>For the ZipFile class:</h4>
+<table border='1'>
+<tr>
+<td style='color:white;Background:Navy;'><strong>Method Overload</strong></td>
+<td style='color:white;Background:Navy;'><strong>IDispatch name</strong></td>
+</tr>
+
+<tr>
+<td>AddItem(string)</td>
+<td>AddItem</td>
+</tr>
+<tr>
+<td>AddItem(string, string)</td>
+<td>AddItem_2</td>
+</tr>
+
+<tr>
+<td>AddFile(string)</td>
+<td>AddFile</td>
+</tr>
+<tr>
+<td>AddFile(string, string)</td>
+<td>AddFile_2</td>
+</tr>
+
+<tr>
+<td>UpdateFile(string)</td>
+<td>UpdateFile</td>
+</tr>
+<tr>
+<td>UpdateFile(string, string)</td>
+<td>UpdateFile_2</td>
+</tr>
+
+<tr>
+<td>UpdateDirectory(string)</td>
+<td>UpdateDirectory</td>
+</tr>
+<tr>
+<td>UpdateDirectory(string, string)</td>
+<td>UpdateDirectory_2</td>
+</tr>
+
+
+<tr>
+<td>UpdateItem(string)</td>
+<td>UpdateItem</td>
+</tr>
+<tr>
+<td>UpdateItem(string, string)</td>
+<td>UpdateItem_2</td>
+</tr>
+
+
+
+<tr>
+<td>AddEntry(string,string,string)</td>
+<td>AddEntry</td>
+</tr>
+<tr>
+<td>AddEntry(string,string,string,Encoding)</td>
+<td>AddEntry_2</td>
+</tr>
+<tr>
+<td>AddEntry(string,string,Stream)</td>
+<td>AddEntry_3</td>
+</tr>
+<tr>
+<td>AddEntry(string,string,byte[])</td>
+<td>AddEntry_4</td>
+</tr>
+
+<tr>
+<td>UpdateEntry(string,string,string)</td>
+<td>UpdateEntry</td>
+</tr>
+<tr>
+<td>UpdateEntry(string,string,string,Encoding)</td>
+<td>UpdateEntry_2</td>
+</tr>
+<tr>
+<td>UpdateEntry(string,string,Stream)</td>
+<td>UpdateEntry_3</td>
+</tr>
+<tr>
+<td>UpdateEntry(string,string,byte[])</td>
+<td>UpdateEntry_4</td>
+</tr>
+
+
+<tr>
+<td>AddDirectory(string)</td>
+<td>AddDirectory</td>
+</tr>
+<tr>
+<td>AddDirectory(string,string)</td>
+<td>AddDirectory_2</td>
+</tr>
+
+<tr>
+<td>RemoveEntry(ZipEntry)</td>
+<td>RemoveEntry</td>
+</tr>
+<tr>
+<td>RemoveEntry(string)</td>
+<td>RemoveEntry_2</td>
+</tr>
+
+<tr>
+<td>ExtractAll(string)</td>
+<td>ExtractAll</td>
+</tr>
+<tr>
+<td>ExtractAll(string, bool)</td>
+<td>ExtractAll_2</td>
+</tr>
+<tr>
+<td>ExtractAll(string, ExtractExistingFileAction)</td>
+<td>ExtractAll_3</td>
+</tr>
+
+
+<tr>
+<td>Save()</td>
+<td>Save</td>
+</tr>
+<tr>
+<td>Save(string)</td>
+<td>Save_2</td>
+</tr>
+<tr>
+<td>Save(Stream)</td>
+<td>Save_3</td>
+</tr>
+
+<tr>
+<td>AddSelectedFiles(string)</td>
+<td>AddSelectedFiles</td>
+</tr>
+<tr>
+<td>AddSelectedFiles(string, bool)</td>
+<td>AddSelectedFiles_2</td>
+</tr>
+<tr>
+<td>AddSelectedFiles(string, string)</td>
+<td>AddSelectedFiles_3</td>
+</tr>
+<tr>
+<td>AddSelectedFiles(string, string, bool)</td>
+<td>AddSelectedFiles_4</td>
+</tr>
+<tr>
+<td>AddSelectedFiles(string, string, string)</td>
+<td>AddSelectedFiles_5</td>
+</tr>
+<tr>
+<td>AddSelectedFiles(string, string, string, bool)</td>
+<td>AddSelectedFiles_6</td>
+</tr>
+
+<tr>
+<td>RemoveSelectedEntries(string)</td>
+<td>RemoveSelectedEntries</td>
+</tr>
+<tr>
+<td>AddSelectedFiles(string, string)</td>
+<td>RemoveSelectedEntries_2</td>
+</tr>
+
+<tr>
+<td>ExtractSelectedEntries(string)</td>
+<td>ExtractSelectedEntries</td>
+</tr>
+<tr>
+<td>ExtractSelectedEntries(string, ExtractExistingFileAction)</td>
+<td>ExtractSelectedEntries_2</td>
+</tr>
+<tr>
+<td>ExtractSelectedEntries(string, string)</td>
+<td>ExtractSelectedEntries_3</td>
+</tr>
+<tr>
+<td>ExtractSelectedEntries(string, string,string)</td>
+<td>ExtractSelectedEntries_4</td>
+</tr>
+<tr>
+<td>ExtractSelectedEntries(string, string,string,ExtractExistingFileAction)</td>
+<td>ExtractSelectedEntries_5</td>
+</tr>
+
+<tr>
+<td>SaveSelfExtractor(string, SelfExtractorFlavor)</td>
+<td>SaveSelfExtractor</td>
+</tr>
+<tr>
+<td>SaveSelfExtractor(string, SelfExtractorFlavor, string)</td>
+<td>SaveSelfExtractor_2</td>
+</tr>
+<tr>
+<td>SaveSelfExtractor(string, SelfExtractorFlavor, string, string)</td>
+<td>SaveSelfExtractor_3</td>
+</tr>
+
+
+</table>
+
+
+
+
+<h4>For the ZipEntry class:</h4>
+<table border='1'>
+<tr>
+<td style='color:white;Background:Navy;'><strong>Method Overload</strong></td>
+<td style='color:white;Background:Navy;'><strong>IDispatch name</strong></td>
+</tr>
+
+<tr>
+<td>Extract()</td>
+<td>Extract</td>
+</tr>
+
+<tr>
+<td>Extract(bool)</td>
+<td>Extract_2</td>
+</tr>
+
+<tr>
+<td>Extract(ExtractExistingFileAction)</td>
+<td>Extract_3</td>
+</tr>
+
+<tr>
+<td>Extract(string)</td>
+<td>Extract_5</td>
+</tr>
+
+<tr>
+<td>Extract(string, bool)</td>
+<td>Extract_6</td>
+</tr>
+
+<tr>
+<td>Extract(string, ExtractExistingFileAction)</td>
+<td>Extract_7</td>
+</tr>
+
+<tr>
+<td>ExtractWithPassword(string)</td>
+<td>ExtractWithPassword</td>
+</tr>
+
+<tr>
+<td>ExtractWithPassword(string,string)</td>
+<td>ExtractWithPassword_2</td>
+</tr>
+
+<tr>
+<td>ExtractWithPassword(bool,string)</td>
+<td>ExtractWithPassword_3</td>
+</tr>
+
+<tr>
+<td>ExtractWithPassword(ExtractExistingFileAction,string)</td>
+<td>ExtractWithPassword_4</td>
+</tr>
+
+<tr>
+<td>ExtractWithPassword(string, bool, string)</td>
+<td>ExtractWithPassword_5</td>
+</tr>
+
+<tr>
+<td>ExtractWithPassword(string, ExtractExistingFileAction, string)</td>
+<td>ExtractWithPassword_6</td>
+</tr>
+
+</table>
+
+
+<p>The bad news is that the mappings between names and actual methods will change over releases of DotNetZip.
+</p>
+
+
+
+<h3>Destroy the ZipFile object</h3>
+
+<p>After you call .Dispose() on the ZipFile object, you should destroy
+it completely.  In VBSCript, this is done by setting the object
+reference to Nothing.  You can't reuse the object instance for another
+zip file.  If for example, you want to read and extract a number of ZIP
+files in a loop, then you'll need to instantiate a new ZipFile object to
+read each one. 
+</p>
+
+<h3>For enumerations</h3>
+
+<p>DotNetZip exposes various enumerations to specify behavior in the
+interface - for example, the Ionic.Zlib.CompressionLevel enum, and the
+Ionic.Zip.ExtractExistingFileAction enum.  Enums are not available to
+IDispatch clients.  COM applications that need to use enum values can
+simply use the integer equivalent for those enums.  In most cases those
+integer values are specified in the documentation for the enum.  For
+example, for Ionic.Zip.ExtractExistingFileAction, the value of Throw is
+0, while OverwriteSilently is 1.  </p>
 
 <p>
 Some examples follow.
@@ -218,6 +547,8 @@ catch (e2)
   WScript.echo("Disposing...")
   zip.Dispose()
 
+  zip = Nothing
+
   WScript.echo("Done.")
 
 </pre>
@@ -282,7 +613,7 @@ catch (e2)
        If (ext = ".vbs") Then
           ' set password for extraction if necessary
           entry.Password = "This is the Password."
-          entry.Extract()
+          entry.Extract
        End If
     Next
 
@@ -294,6 +625,36 @@ catch (e2)
 </pre>
 
 
+<p> This example extracts selected entries from a zip archive, via the
+ExtractSelectedEntries overload.  It uses the mangled name to access the
+method, as described above.  </p>
+
+<pre lang="VBScript" numberLines="true" outlining="true"
+  title="Extract selected entries from a Zip">
+
+    Sub extractZip()
+        If Not (extractLocation = "") Then
+          Dim OverwriteSilently
+          OverwriteSilently = 1
+
+          Dim zip 
+          Set zip = CreateObject("Ionic.Zip.ZipFile")
+
+          zip.Initialize(filename)
+
+          If password <> "" Then
+            zip.Password = password
+          End If
+
+          zip.ExtractSelectedEntries "name = *.xml", Null, extractLocation, OverwriteSilently
+
+          zip.Dispose
+          zip = Nothing
+        End If
+
+    End Sub
+
+</pre>
 
 </body>
 </html>
