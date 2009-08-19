@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-13 22:44:05>
+// Time-stamp: <2009-August-18 21:07:22>
 //
 // ------------------------------------------------------------------
 //
@@ -1275,7 +1275,13 @@ namespace Ionic.Zip
         }
 
 
-
+        /// <summary>
+        /// Validates that the args are consistent.  
+        /// </summary>
+        /// <remarks>
+        /// Only one of {baseDir, outStream} can be non-null.
+        /// If baseDir is non-null, then the outputFile is created.
+        /// </remarks>
         private bool ValidateOutput(string basedir, Stream outstream, out string OutputFile)
         {
             if (basedir != null)
@@ -1283,9 +1289,18 @@ namespace Ionic.Zip
                 // Sometimes the name on the entry starts with a slash.
                 // Rather than unpack to the root of the volume, we're going to 
                 // drop the slash and unpack to the specified base directory. 
-                OutputFile = (this.FileName.StartsWith("/"))
-            ? Path.Combine(basedir, this.FileName.Substring(1))
-            : Path.Combine(basedir, this.FileName);
+                string f = this.FileName;
+                if (f.StartsWith("/"))
+                    f= this.FileName.Substring(1);
+
+                // String.Contains is not available on .NET CF 2.0
+
+                if (_zipfile.FlattenFoldersOnExtract)
+                    OutputFile = Path.Combine(basedir,
+                                              (f.IndexOf('/') != -1) ? Path.GetFileName(f) : f);
+                else 
+                    OutputFile = Path.Combine(basedir, f);
+
 
                 // check if it is a directory
                 if ((IsDirectory) || (FileName.EndsWith("/")))

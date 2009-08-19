@@ -53,8 +53,9 @@ namespace Ionic.Zip
     /// </summary>
     [Interop.GuidAttribute("ebc25cf6-9120-4283-b972-0e5520d00005")]
     [Interop.ComVisible(true)]
-    //[Interop.ClassInterface(Interop.ClassInterfaceType.AutoDispatch)]
+#if !NETCF    
     [Interop.ClassInterface(Interop.ClassInterfaceType.AutoDispatch)]
+#endif
     public partial class ZipFile :
     System.Collections.IEnumerable,
     System.Collections.Generic.IEnumerable<ZipEntry>,
@@ -189,7 +190,17 @@ namespace Ionic.Zip
             set;
         }
 
+        /// <summary>
+        /// Indicates whether extracted files should keep their paths as
+        /// stored in the zip archive. 
+        /// </summary>
+        public bool FlattenFoldersOnExtract
+        {
+            get;
+            set;
+        }
 
+    
         /// <summary>
         /// The compression strategy to use for all entries.
         /// </summary>
