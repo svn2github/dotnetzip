@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-14 10:25:07>
+// Time-stamp: <2009-August-20 17:30:21>
 //
 // ------------------------------------------------------------------
 //
@@ -479,6 +479,8 @@ namespace Ionic.Zip
                 cp.IncludeDebugInformation = false;
                 //cp.IncludeDebugInformation = true;
                 cp.OutputAssembly = StubExe;
+                if (flavor == SelfExtractorFlavor.WinFormsApplication)
+                    cp.CompilerOptions = "/target:winexe";
 
                 Assembly a2 = Assembly.GetExecutingAssembly();
 
