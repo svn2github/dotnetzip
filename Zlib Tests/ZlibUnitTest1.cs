@@ -127,11 +127,10 @@ namespace Ionic.Zlib.Tests
         private static void CopyStream(System.IO.Stream src, System.IO.Stream dest)
         {
             byte[] buffer = new byte[1024];
-            int len = src.Read(buffer, 0, buffer.Length);
-            while (len > 0)
+            int len = 0;
+            while ((len=src.Read(buffer, 0, buffer.Length)) > 0)
             {
                 dest.Write(buffer, 0, len);
-                len = src.Read(buffer, 0, buffer.Length);
             }
             dest.Flush();
         }
@@ -577,7 +576,7 @@ Max Ehrmann c.1920
 
         
         [TestMethod]
-        public void Zlib_ZlibStream()
+        public void Zlib_ZlibStream_CompressWhileWriting()
         {
             System.IO.MemoryStream msSinkCompressed;
             System.IO.MemoryStream msSinkDecompressed;
@@ -604,14 +603,43 @@ Max Ehrmann c.1920
         }
 
 
+
+        [TestMethod]
+        public void Zlib_ZlibStream_CompressWhileReading_wi8557()
+        {
+            // workitem 8557
+            System.IO.MemoryStream msSinkCompressed;
+            System.IO.MemoryStream msSinkDecompressed;
+            
+            String helloOriginal = "'What would things have been like [in Russia] if during periods of mass arrests people had not simply sat there, paling with terror at every bang on the downstairs door and at every step on the staircase, but understood they had nothing to lose and had boldly set up in the downstairs hall an ambush of half a dozen people?' -- Alexander Solzhenitsyn";
+            
+            // first, compress:
+            msSinkCompressed = new System.IO.MemoryStream();
+            ZlibStream zIn= new ZlibStream(StringToMemoryStream(helloOriginal), CompressionMode.Compress, CompressionLevel.BestCompression, true);
+            CopyStream(zIn, msSinkCompressed);
+
+            // At this point, msSinkCompressed contains the compressed bytes.
+            // Now, decompress:
+            msSinkDecompressed = new System.IO.MemoryStream();
+            ZlibStream zOut = new ZlibStream(msSinkDecompressed, CompressionMode.Decompress);
+            msSinkCompressed.Position = 0;
+            CopyStream(msSinkCompressed, zOut);
+
+            string result = MemoryStreamToString(msSinkDecompressed);
+            TestContext.WriteLine("decompressed: {0}", result);
+            Assert.AreEqual<String>(helloOriginal, result);
+        }
+
+
+
         [TestMethod]
         public void Zlib_CodecTest()
         {
             int sz = _rnd.Next(50000) + 50000;
-            string FileName = System.IO.Path.Combine(TopLevelDir, "Zlib_CodecTest.txt");
-            CreateAndFillFileText(FileName, sz);
+            string fileName = System.IO.Path.Combine(TopLevelDir, "Zlib_CodecTest.txt");
+            CreateAndFillFileText(fileName, sz);
 
-            byte[] UncompressedBytes = ReadFile(FileName);
+            byte[] UncompressedBytes = ReadFile(fileName);
 
             foreach (Ionic.Zlib.CompressionLevel level in Enum.GetValues(typeof(Ionic.Zlib.CompressionLevel)))
             {
@@ -1333,7 +1361,7 @@ Max Ehrmann c.1920
                 {
                     string FileToCompress = null;
                     int sz = _rnd.Next(Sizes[p]) + Sizes[p];
-                    FileToCompress = System.IO.Path.Combine(TopLevelDir, String.Format("Zlib_Streams.{0}.{1}", p, (m == 0) ? "txt" : "bin"));
+                    FileToCompress = System.IO.Path.Combine(TopLevelDir, String.Format("Zlib_Streams.{0}.{1}", sz, (m == 0) ? "txt" : "bin"));
                     Assert.IsFalse(System.IO.File.Exists(FileToCompress), "The temporary file '{0}' already exists.", FileToCompress);
                     TestContext.WriteLine("Creating file {0}   {1} bytes", FileToCompress, sz);
                     if (m == 0)
@@ -1356,6 +1384,7 @@ Max Ehrmann c.1920
 
                             int x = k + i * 2;
                             int z = (x == 0) ? 4 : 1;
+                            // why 4 trials??   (only for GZIP and Ionic)
                             for (int h = 0; h < z; h++)
                             {
                                 string CompressedFile = (x == 0)
@@ -1466,7 +1495,7 @@ Max Ehrmann c.1920
                                             }
 
                                             int crc2 = DoCrc(DecompressedFile);
-                                            Assert.AreEqual<Int32>(crc1, crc2);
+                                            Assert.AreEqual<UInt32>((UInt32)crc1, (UInt32)crc2);
 
                                         }
                                         finally
