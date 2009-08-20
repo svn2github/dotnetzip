@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-29 16:13:46>
+// Time-stamp: <2009-August-19 20:14:13>
 //
 // ------------------------------------------------------------------
 //
@@ -1085,8 +1085,8 @@ namespace Ionic.Zip.Tests
 
             int count1, count2;
 
-            string Fodder = Path.Combine(TopLevelDir, "fodder");
-            Directory.CreateDirectory(Fodder);
+            string fodder = Path.Combine(TopLevelDir, "fodder");
+            Directory.CreateDirectory(fodder);
 
 
             TestContext.WriteLine("====================================================");
@@ -1104,7 +1104,7 @@ namespace Ionic.Zip.Tests
             for (i = 0; i < subdirCount; i++)
             {
                 string subDirShort = new System.String(new char[] { (char)(i + 65) });
-                string subDir = Path.Combine(Fodder, subDirShort);
+                string subDir = Path.Combine(fodder, subDirShort);
                 Directory.CreateDirectory(subDir);
 
                 int filecount = _rnd.Next(8) + 8;
@@ -1118,7 +1118,7 @@ namespace Ionic.Zip.Tests
 
                     var chk = TestUtilities.ComputeChecksum(fqFilename);
                     var s = TestUtilities.CheckSumToString(chk);
-                    var t1 = Path.GetFileName(Fodder);
+                    var t1 = Path.GetFileName(fodder);
                     var t2 = Path.Combine(t1, subDirShort);
                     var key = Path.Combine(t2, filename);
                     key = TestUtilities.TrimVolumeAndSwapSlashes(key);
@@ -1136,7 +1136,7 @@ namespace Ionic.Zip.Tests
             using (ZipFile zip1 = new ZipFile())
             {
                 // add all of those subdirectories (A, B, C...) into the root in the zip archive
-                zip1.AddDirectory(Fodder, "");
+                zip1.AddDirectory(fodder, "");
                 zip1.Save(zipFileToCreate);
             }
             Assert.AreEqual<Int32>(entries, TestUtilities.CountEntries(zipFileToCreate));
@@ -1198,8 +1198,8 @@ namespace Ionic.Zip.Tests
 
             int count1, count2;
 
-            string Fodder = Path.Combine(TopLevelDir, "fodder");
-            Directory.CreateDirectory(Fodder);
+            string fodder = Path.Combine(TopLevelDir, "fodder");
+            Directory.CreateDirectory(fodder);
 
 
             TestContext.WriteLine("====================================================");
@@ -1217,7 +1217,7 @@ namespace Ionic.Zip.Tests
             for (i = 0; i < subdirCount; i++)
             {
                 string subDirShort = new System.String(new char[] { (char)(i + 65) });
-                string subDir = Path.Combine(Fodder, subDirShort);
+                string subDir = Path.Combine(fodder, subDirShort);
                 Directory.CreateDirectory(subDir);
 
                 int filecount = _rnd.Next(8) + 8;
@@ -1231,7 +1231,7 @@ namespace Ionic.Zip.Tests
 
                     var chk = TestUtilities.ComputeChecksum(fqFilename);
                     var s = TestUtilities.CheckSumToString(chk);
-                    var t1 = Path.GetFileName(Fodder);
+                    var t1 = Path.GetFileName(fodder);
                     var t2 = Path.Combine(t1, subDirShort);
                     var key = Path.Combine(t2, filename);
                     key = TestUtilities.TrimVolumeAndSwapSlashes(key);
@@ -1249,7 +1249,7 @@ namespace Ionic.Zip.Tests
             using (ZipFile zip1 = new ZipFile())
             {
                 // add all of those subdirectories (A, B, C...) into the root in the zip archive
-                zip1.AddDirectory(Fodder, "");
+                zip1.AddDirectory(fodder, "");
                 zip1.Save(zipFileToCreate);
             }
             Assert.AreEqual<Int32>(entries, TestUtilities.CountEntries(zipFileToCreate));
@@ -1300,9 +1300,63 @@ namespace Ionic.Zip.Tests
                 count2 = selected2.Count;
                 Assert.AreEqual<Int32>(entries, count1 + count2 - subdirCount);
             }
-
         }
 
+
+
+
+        [TestMethod]
+        public void Selector_SelectEntries_NestedDirectories_wi8559()
+        {
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectFiles_NestedDirectories.zip");
+
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Creating zip file...");
+            
+            int dirCount = _rnd.Next(4) + 3;
+            using (var zip = new ZipFile())
+            {
+                for (int i=0; i < dirCount; i++)
+                {
+                    String dir = new String( (char) (65+i), i+1 );
+                    zip.AddEntry("Readme.txt", dir, "This is the content for the Readme.txt in directory " + dir);
+                    int subDirCount = _rnd.Next(3) + 2;
+                    for (int j =0; j < subDirCount; j++)
+                    {
+                        String subdir = Path.Combine(dir, new String((char) (90-j), 3 ));
+                        zip.AddEntry("Readme.txt", subdir, "This is the content for the Readme.txt in directory " + subdir);
+                    }
+                }
+                zip.Save(zipFileToCreate);
+            }
+        
+            // this testmethod does not extract files, or verify checksums ...
+
+            // just want to verify that selection of entries works in nested directories as
+            // well as 
+            TestContext.WriteLine("====================================================");
+            TestContext.WriteLine("Selecting entries by path...");
+            using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
+            {
+                for (int i=0; i < dirCount; i++)
+                {
+                    String dir = new String( (char) (65+i), i+1 );
+                    var selected1 = zip1.SelectEntries("*.txt", dir);
+                    Assert.AreEqual<Int32>(1, selected1.Count);
+
+                    selected1 = zip1.SelectEntries("*.txt", dir + "/ZZZ");
+                    var selected2 = zip1.SelectEntries("*.txt", dir + "\\ZZZ");
+                    Assert.AreEqual<Int32>(selected1.Count, selected2.Count);
+                    
+                    selected1 = zip1.SelectEntries("*.txt", dir + "/YYY");
+                    selected2 = zip1.SelectEntries("*.txt", dir + "\\YYY");
+                    Assert.AreEqual<Int32>(selected1.Count, selected2.Count);
+                }
+            }
+        }
+
+                
 
         [TestMethod]
         public void Selector_SelectFiles_GoodSyntax01()
