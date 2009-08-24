@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-14 09:25:16>
+// Time-stamp: <2009-August-24 16:01:27>
 //
 // ------------------------------------------------------------------
 //
@@ -66,7 +66,16 @@ namespace Ionic.Zip
         /// cref="ZipProgressEventType.Extracting_ExtractEntryWouldOverwrite"/>.  In
         /// this way, the application can decide, just-in-time, whether to overwrite the
         /// file. For example, a GUI application may wish to pop up a dialog to allow
-        /// the user to choose.  (For COM clients, this is a 3.)
+        /// the user to choose. You may want to examine the <see
+        /// cref="ExtractProgressEventArgs.ExtractLocation"/c> property before making
+        /// the decision. If, after your processing in the Extract progress event, you
+        /// want to NOT extract the file, set <see cref="ZipEntry.ExtractExistingFile"/>
+        /// on the <c>ZipProgressEventArgs.CurrentEntry</c> to <c>DoNotOverwrite</c>.
+        /// If you do want to extract the file, set <c>ZipEntry.ExtractExistingFile</c>
+        /// to <c>OverwriteSilently</c>.  If you want to cancel the Extraction, set
+        /// <c>ZipProgressEventArgs.Cancel</c> to true.  Cancelling differs from using
+        /// DoNotOverwrite in that a cancel will not extract any further entries, if
+        /// there are any.  (For COM clients, the value of this enum is a 3.)
         /// </summary>
         InvokeExtractProgressEvent,
     }
