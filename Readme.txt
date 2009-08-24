@@ -1,12 +1,22 @@
 Wed, 01 Apr 2009  19:41
 
-Zip Library 
+DotNetZip Library and Tools
 ---------------------------------
 
-This library allows .NET applications to read, create and modify ZIP files. 
+DotNetZip is the name of an open-source project that delivers a library
+and associated tools for handling ZIP files.  The library allows .NET
+applications to read, create and modify ZIP files.  The tools are
+example programs that rely on the library, and can be used on any
+Windows machine to build or extract ZIP files.
 
-The Microsoft .NET Framework lacks a good set of classes for creating
-and reading ZIP files. 
+
+The Microsoft .NET Framework base class library lacks a good set of
+classes for creating and reading ZIP files, and Windows itself lacks
+full-powered built-in ZIP tools.  DotNetZip fills those needs.
+
+
+DotNetZip background
+---------------------------------
 
 Many people seem to think, incorrectly, that the classes in the
 System.IO.Compression namespace, like GZipStream or DeflateStream, can
@@ -53,7 +63,11 @@ the .NET Framework.
     programming interface.  There are no events, so embedding it into a
     Winforms app with a progress bar would be difficult.  Again it lacks
     an easy way to use or access many ZIP features, like encryption or
-    ZIP64 or self-extracting archives.  Also, the
+    ZIP64 or self-extracting archives.  Also, the shell32.dll is
+    designed for use within Windows Explorer, and presumes a user
+    interface.  In fact in some cases, calling into this DLL to perform
+    a ZIP extraction can display a dialog box, so it may not be suitable
+    for use within server or "headless" applications.
 
 
 There are other libraries out there than do zip files for .NET.  But
