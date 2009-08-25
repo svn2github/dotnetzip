@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-26 23:49:45>
+// Time-stamp: <2009-August-25 11:44:24>
 //
 // ------------------------------------------------------------------
 //
@@ -587,6 +587,20 @@ namespace Ionic.Zip.Tests.Utilities
             return FilesToZip;
         }
 
+        internal static string[] GenerateFilesFlat(string subdir, int numFilesToCreate, int size)
+        {
+            if (!Directory.Exists(subdir))
+                Directory.CreateDirectory(subdir);
+
+            string[] FilesToZip = new string[numFilesToCreate];
+            for (int i = 0; i < numFilesToCreate; i++)
+            {
+                FilesToZip[i] = Path.Combine(subdir, String.Format("testfile{0:D3}.txt", i));
+                TestUtilities.CreateAndFillFileText(FilesToZip[i], size);
+            }
+            return FilesToZip;
+        }
+        
 
         internal static string GetTestBinDir(string startingPoint)
         {

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-12 18:02:22>
+// Time-stamp: <2009-August-25 09:24:57>
 //
 // ------------------------------------------------------------------
 //
@@ -183,6 +183,16 @@ namespace Ionic.Zip
         /// Indicates that an ExtractAll operation has completed.
         /// </summary>
         Extracting_AfterExtractAll,
+
+        /// <summary>
+        /// Indicates that an error has occurred while saving a zip file. 
+        /// </summary>
+        Error_Saving,
+        
+        /// <summary>
+        /// Indicates that an error has occurred while opening a file to be inserted into a zip file. 
+        /// </summary>
+        Error_Opening,
     }
 
 
@@ -541,5 +551,55 @@ namespace Ionic.Zip
         }
 
     }
+
+
+
+    /// <summary>
+    /// Provides information about the an error that occurred while zipping. 
+    /// </summary>
+    public class ZipErrorEventArgs : ZipProgressEventArgs
+    {
+        private Exception _exc;
+        private ZipErrorEventArgs() { }
+        internal static ZipErrorEventArgs Saving(string archiveName, ZipEntry entry, Exception exception)
+        {
+            var x = new ZipErrorEventArgs
+                {
+                    EventType = ZipProgressEventType.Error_Saving,
+                    ArchiveName = archiveName,
+                    CurrentEntry = entry,
+                    _exc = exception
+                };
+            return x;
+        }
+        
+        internal static ZipErrorEventArgs Opening(string archiveName, string fileName, Exception exception)
+        {
+            var x = new ZipErrorEventArgs
+                {
+                    EventType = ZipProgressEventType.Error_Opening,
+                    ArchiveName = archiveName,
+                    _exc = exception
+                };
+            return x;
+        }
+
+        /// <summary>
+        /// Returns the exception that occurred, if any.
+        /// </summary>
+        public Exception @Exception
+        {
+            get { return _exc; }
+        }
+        
+        /// <summary>
+        /// Returns the name of the file that caused the exception, if any.
+        /// </summary>
+        public String FileName
+        {
+            get { return CurrentEntry.LocalFileName; }
+        }
+    }
+
 
 }

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-19 10:12:30>
+// Time-stamp: <2009-August-25 09:28:38>
 //
 // ------------------------------------------------------------------
 //
@@ -727,6 +727,15 @@ namespace Ionic.Zip
         /// CurrentEntry, BytesTransferred, TotalBytesToTransfer. 
         /// </description>
         /// </item>
+        ///
+        /// <item>
+        /// <term>ZipProgressEventType.Extracting_ExtractEntryWouldOverwrite</term>
+        /// <description>Set within a call to Extract() on an entry in the ZipFile, when the
+        /// extraction would overwrite an existing file. This event type is used only when
+        /// <c>ExtractExistingFileAction</c> on the <c>ZipFile</c> or <c>ZipEntry</c> is set
+        /// to <c>InvokeExtractProgressEvent</c>.
+        /// </description>
+        /// </item>
         /// 
         /// </list>
         /// 
@@ -909,11 +918,13 @@ namespace Ionic.Zip
         /// An event handler invoked before, during, and after Adding entries to a zip archive.
         /// </summary>
         ///
-        /// <remarks> Adding a large number of entries to a zip file can take a long
+        /// <remarks>
+        ///     Adding a large number of entries to a zip file can take a long
         ///     time.  For example, when calling <see cref="AddDirectory(string)"/> on a
         ///     directory that contains 50,000 files, it could take 3 minutes or so.
         ///     This event handler allws an application to track the progress of the Add
-        ///     operation.  </remarks>
+        ///     operation.
+        /// </remarks>
         ///
         /// <example>
         /// <code lang="C#">
@@ -992,6 +1003,50 @@ namespace Ionic.Zip
         }
 
         #endregion
-            
+
+
+        
+        #region Error
+        /// <summary>
+        /// An event handler invoked when an error occurs during open or read of files
+        /// while saving a zip archive.
+        /// </summary>
+        ///
+        /// <remarks>
+        ///  <para>
+        ///     In some cases an error will occur when a file to be added to the zip
+        ///     archive is opened.  In other cases, an error might occur after the file
+        ///     has been successfully opened, while reading the file.
+        ///  </para>
+        /// 
+        ///  <para>
+        ///    The first problem might occur when calling Adddirectory() on a directory
+        ///    that contains a Clipper .dbf file; the file is locked by Clipper and
+        ///    cannot be opened bby another process. An example of the second problem is
+        ///    the ERROR_LOCK_VIOLATION that results when a file is opened by another
+        ///    process, but not locked, and a range lock has been taken on the file.
+        ///    Microsoft Outlook takes range locks on .PST files.
+        ///  </para>
+        ///
+        /// </remarks>
+        ///
+        public event EventHandler<ZipErrorEventArgs> ZipError;
+
+        internal bool OnZipErrorSaving(ZipEntry entry, Exception exc)
+        {
+            if (ZipError != null)
+            {
+                lock (LOCK)
+                {
+                    var e = ZipErrorEventArgs.Saving(this.Name, entry, exc);
+                    ZipError(this, e);
+                    if (e.Cancel)
+                        _saveOperationCanceled = true;
+                }
+            }
+            return _saveOperationCanceled;
+        }
+        #endregion
+
     }
 }

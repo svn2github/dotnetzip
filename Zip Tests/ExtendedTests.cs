@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-05 13:43:53>
+// Time-stamp: <2009-August-25 11:51:11>
 //
 // ------------------------------------------------------------------
 //
@@ -1555,7 +1555,7 @@ namespace Ionic.Zip.Tests.Extended
                 foreach (string fileName in zipFileToCreate)
                 {
                     TestContext.WriteLine("queueing unzip for file: {0}", fileName);
-                    System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(processZip), fileName);
+                    System.Threading.ThreadPool.QueueUserWorkItem(processZip, fileName);
                 }
 
                 while (completedEntries != zipFileToCreate.Length)
@@ -1928,6 +1928,188 @@ namespace Ionic.Zip.Tests.Extended
 
 
 
+        [TestMethod]
+        [ExpectedException(typeof(System.IO.IOException))]
+        public void Create_ZipErrorAction_Throw()
+        {
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Create_ZipErrorAction_Throw.zip");
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+            int n = _rnd.Next(files.Length);
+
+            TestContext.WriteLine("Locking file {0}...", files[n]);
+            using (Stream lockStream = new FileStream(files[n], FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                using (var zip = new ZipFile())
+                {
+                    zip.ZipErrorAction = ZipErrorAction.Throw;
+                    zip.AddFiles(files,"fodder");
+                    zip.Save(zipFileToCreate);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void Create_ZipErrorAction_Skip()
+        {
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Create_ZipErrorAction_Skip.zip");
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            //var files = TestUtilities.GenerateFilesFlat(dirToZip);
+            var files = TestUtilities.GenerateFilesFlat(dirToZip, 2, 32);
+            int n = _rnd.Next(files.Length);
+
+            TestContext.WriteLine("Locking file {0}...", files[n]);
+            using (Stream lockStream = new FileStream(files[n], FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                using (var zip = new ZipFile())
+                {
+                    zip.ZipErrorAction = ZipErrorAction.Skip;
+                    zip.AddFiles(files,"fodder");
+                    zip.Save(zipFileToCreate);
+                }
+            }
+
+            WinzipVerify(zipFileToCreate);
+            
+            Assert.AreEqual<int>(files.Length-1, TestUtilities.CountEntries(zipFileToCreate), 
+                                 "The zip file created has the wrong number of entries.");
+        }
+
+
+
+        private int _retryCount;
+        void ErrorHandler_RetryAndEventuallySkip(object sender, ZipErrorEventArgs e)
+        {
+            switch (e.EventType)
+            {
+                case ZipProgressEventType.Error_Saving:
+                    _retryCount++;
+                    if (_retryCount < 29)
+                        e.CurrentEntry.ZipErrorAction = ZipErrorAction.Retry;
+                    else
+                        e.CurrentEntry.ZipErrorAction = ZipErrorAction.Skip;
+                    break;
+            }
+        }
+
+        void ErrorHandler_RetryAndEventuallyThrow(object sender, ZipErrorEventArgs e)
+        {
+            switch (e.EventType)
+            {
+                case ZipProgressEventType.Error_Saving:
+                    _retryCount++;
+                    if (_retryCount < 29)
+                        e.CurrentEntry.ZipErrorAction = ZipErrorAction.Retry;
+                    else
+                        e.CurrentEntry.ZipErrorAction = ZipErrorAction.Throw;
+                    break;
+            }
+        }
+
+
+
+        [TestMethod]
+        public void Create_ZipErrorAction_RetryAndEventuallySkip()
+        {
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Create_ZipErrorAction_RetryAndEventuallySkip.zip");
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+            int n = _rnd.Next(files.Length);
+
+            TestContext.WriteLine("Locking file {0}...", files[n]);
+            using (Stream lockStream = new FileStream(files[n], FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                _retryCount = 0;
+                using (var zip = new ZipFile())
+                {
+                    zip.ZipErrorAction = ZipErrorAction.InvokeErrorEvent;
+                    zip.ZipError += ErrorHandler_RetryAndEventuallySkip;
+                    zip.AddFiles(files,"fodder");
+                    zip.Save(zipFileToCreate);
+                }
+            }
+
+            WinzipVerify(zipFileToCreate);
+            
+            Assert.AreEqual<int>(files.Length-1, TestUtilities.CountEntries(zipFileToCreate), 
+                                 "The zip file created has the wrong number of entries.");
+        }
+
+
+        
+        [TestMethod]
+        [ExpectedException(typeof(System.IO.IOException))]
+        public void Create_ZipErrorAction_RetryAndEventuallyThrow()
+        {
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Create_ZipErrorAction_RetryAndEventuallyThrow.zip");
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+            int n = _rnd.Next(files.Length);
+
+            TestContext.WriteLine("Locking file {0}...", files[n]);
+            using (Stream lockStream = new FileStream(files[n], FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                _retryCount = 0;
+                using (var zip = new ZipFile())
+                {
+                    zip.ZipErrorAction = ZipErrorAction.InvokeErrorEvent;
+                    zip.ZipError += ErrorHandler_RetryAndEventuallyThrow;
+                    zip.AddFiles(files,"fodder");
+                    zip.Save(zipFileToCreate);
+                }
+            }
+        }
+
+
+        private void lockFile(object state)
+        {
+            Object[] a = (Object[]) state;
+            string filename = (string) a[0];
+            int duration = (int) a[1];
+
+            using (Stream lockStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                // hold the lock for a specified period of time
+                System.Threading.Thread.Sleep(duration);
+            }
+        }
+
+        
+        
+        [TestMethod]
+        public void Create_ZipErrorAction_RetryAndEventuallySucceed()
+        {
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Create_ZipErrorAction_RetryAndEventuallySucceed.zip");
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+            int n = _rnd.Next(files.Length);
+
+            TestContext.WriteLine("Locking file {0}...", files[n]);
+
+            System.Threading.ThreadPool.QueueUserWorkItem(lockFile, new Object[] { files[n], 3000 } );
+            System.Threading.Thread.Sleep(200);
+
+            _retryCount = 0;
+            using (var zip = new ZipFile())
+            {
+                zip.ZipErrorAction = ZipErrorAction.Retry;
+                zip.AddFiles(files,"fodder");
+                zip.Save(zipFileToCreate);
+            }
+
+            WinzipVerify(zipFileToCreate);
+            
+            Assert.AreEqual<int>(files.Length, TestUtilities.CountEntries(zipFileToCreate), 
+                                 "The zip file created has the wrong number of entries.");
+        }
+
+        
+                
 
 
     }

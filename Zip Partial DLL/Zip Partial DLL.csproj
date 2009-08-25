@@ -81,6 +81,7 @@
       <DependentUpon>ZipContentsDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\FolderBrowserDialogEx.cs" />
+    <Compile Include="ZipErrorAction.cs" />
     <Compile Include="EncryptionAlgorithm.cs" />
     <Compile Include="ExtractExistingFileAction.cs" />
     <Compile Include="FileSelector.cs" />
@@ -90,9 +91,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shared.cs" />
     <Compile Include="ZipCrypto.cs" />
+    <Compile Include="Events.cs" />
     <Compile Include="ZipDirEntry.cs" />
     <Compile Include="ZipEntry.cs" />
-    <Compile Include="Events.cs" />
     <Compile Include="ZipEntry.Extract.cs" />
     <Compile Include="ZipEntry.Read.cs" />
     <Compile Include="ZipEntry.Write.cs" />
@@ -140,6 +141,9 @@
     <EmbeddedResource Include="Resources\ZipContentsDialog.resx">
       <DependentUpon>ZipContentsDialog.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\zippedFile.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

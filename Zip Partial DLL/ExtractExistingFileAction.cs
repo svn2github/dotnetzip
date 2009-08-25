@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-24 16:01:27>
+// Time-stamp: <2009-August-25 08:44:37>
 //
 // ------------------------------------------------------------------
 //
@@ -31,14 +31,16 @@ namespace Ionic.Zip
     /// <summary>
     /// An enum for the options when extracting an entry would overwrite an existing file. 
     /// </summary>
+    /// 
     /// <remarks>
-    /// <para>
-    /// This enum describes the actions that the library can take when an
-    /// <c>Extract()</c> or <c>ExtractWithPassword()</c> method is called to extract an
-    /// entry to a filesystem, and the extraction would overwrite an existing filesystem
-    /// file.
-    /// </para>
+    ///   <para>
+    ///     This enum describes the actions that the library can take when an
+    ///     <c>Extract()</c> or <c>ExtractWithPassword()</c> method is called to extract an
+    ///     entry to a filesystem, and the extraction would overwrite an existing filesystem
+    ///     file.
+    ///   </para>
     /// </remarks>
+    ///
     public enum ExtractExistingFileAction
     {
         /// <summary>
@@ -67,7 +69,7 @@ namespace Ionic.Zip
         /// this way, the application can decide, just-in-time, whether to overwrite the
         /// file. For example, a GUI application may wish to pop up a dialog to allow
         /// the user to choose. You may want to examine the <see
-        /// cref="ExtractProgressEventArgs.ExtractLocation"/c> property before making
+        /// cref="ExtractProgressEventArgs.ExtractLocation"/> property before making
         /// the decision. If, after your processing in the Extract progress event, you
         /// want to NOT extract the file, set <see cref="ZipEntry.ExtractExistingFile"/>
         /// on the <c>ZipProgressEventArgs.CurrentEntry</c> to <c>DoNotOverwrite</c>.
