@@ -33,6 +33,8 @@ copy /y ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.resx     %ResourceD
 copy /y ..\Examples\SelfExtracting\PasswordDialog.resx                %ResourceDirectory%
 copy /y ..\Examples\SelfExtracting\ZipContentsDialog.resx             %ResourceDirectory%
 
+copy /y ..\Examples\WinFormsApp\zippedFile.ico           %ResourceDirectory%
+
 
 @REM c:\netsdk3.0\bin\resgen.exe ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.resx     %ResourceDirectory%\WinFormsSelfExtractorStub.resources
 @REM c:\netsdk3.0\bin\resgen.exe ..\Examples\SelfExtracting\PasswordDialog.resx                %ResourceDirectory%\PasswordDialog.resources

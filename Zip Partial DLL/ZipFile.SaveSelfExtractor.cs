@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-20 17:30:21>
+// Time-stamp: <2009-August-25 13:01:56>
 //
 // ------------------------------------------------------------------
 //
@@ -173,8 +173,8 @@ namespace Ionic.Zip
 #endif
 
 
-        string _defaultExtractLocation;
-        string _postExtractCmdLine;
+        //string _defaultExtractLocation;
+        //string _postExtractCmdLine;
         //         string _SetDefaultLocationCode =
         //         "namespace Ionic.Zip { public partial class WinFormsSelfExtractorStub { partial void _SetDefaultExtractLocation() {" +
         //         " txtExtractDirectory.Text = \"@@VALUE\"; } }}";
@@ -252,27 +252,7 @@ namespace Ionic.Zip
         /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
         public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor)
         {
-            // Save an SFX that is both an EXE and a ZIP.
-
-            // Check for the case where we are re-saving a zip archive 
-            // that was originally instantiated with a stream.  In that case, 
-            // the _name will be null. If so, we set _writestream to null, 
-            // which insures that we'll cons up a new WriteStream (with a filesystem
-            // file backing it) in the Save() method.
-            if (_name == null)
-                _writestream = null;
-
-            _SavingSfx = true;
-            _name = exeToGenerate;
-            if (Directory.Exists(_name))
-                throw new ZipException("Bad Directory", new System.ArgumentException("That name specifies an existing directory. Please specify a filename.", "exeToGenerate"));
-            _contentsChanged = true;
-            _fileAlreadyExists = File.Exists(_name);
-
-            _SaveSfxStub(exeToGenerate, flavor);
-
-            Save();
-            _SavingSfx = false;
+            SaveSelfExtractor(exeToGenerate, flavor, null, null, null);
         }
 
         
@@ -329,26 +309,23 @@ namespace Ionic.Zip
         /// </param>
         public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor, string defaultExtractDirectory)
         {
-            // set 
-            this._defaultExtractLocation = defaultExtractDirectory;
-            // save
-            SaveSelfExtractor(exeToGenerate, flavor);
-            // unset
-            this._defaultExtractLocation = null;
+            SaveSelfExtractor(exeToGenerate, flavor, defaultExtractDirectory, null, null);
         }
 
 
         
         /// <summary>
         /// Saves the ZipFile instance to a self-extracting zip archive, using the specified 
-        /// default extract directory. 
+        /// default extract directory, and a post-extract command to run.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This method saves a self extracting archive, with a specified default extracting
-        /// location.  Actually, the default extract directory applies only if the flavor is <see
-        /// cref="SelfExtractorFlavor.WinFormsApplication"/>.  See the documentation for <see
-        /// cref="SaveSelfExtractor(string , SelfExtractorFlavor)"/> for more details.
+        /// This method saves a self extracting archive, with a specified default
+        /// extracting location, and a command to run after extraction.  Actually, the
+        /// default extract directory applies only if the flavor is <see
+        /// cref="SelfExtractorFlavor.WinFormsApplication"/>.  See the documentation for
+        /// <see cref="SaveSelfExtractor(string , SelfExtractorFlavor)"/> for more
+        /// details.
         /// </para>
         ///
         /// <para>
@@ -407,23 +384,132 @@ namespace Ionic.Zip
         /// </param>
         public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor, string defaultExtractDirectory, string postExtractCommandToExecute)
         {
-            // set 
-            this._defaultExtractLocation = defaultExtractDirectory;
-            this._postExtractCmdLine = postExtractCommandToExecute;
+            SaveSelfExtractor(exeToGenerate, flavor, defaultExtractDirectory, postExtractCommandToExecute, null);
+        }
 
-            // save
-            SaveSelfExtractor(exeToGenerate, flavor);
-            
-            // unset
-            this._defaultExtractLocation = null;
-            this._postExtractCmdLine = null;
+        
+
+        /// <summary>
+        /// Saves the ZipFile instance to a self-extracting zip archive, using the specified 
+        /// default extract directory, post-extract command, and icon. 
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This method saves a self extracting archive, with a specified default
+        /// extracting location, a command to run after extraction, and application
+        /// icon.  Actually, the default extract directory applies only if the flavor is
+        /// <see cref="SelfExtractorFlavor.WinFormsApplication"/>.  See the
+        /// documentation for <see cref="SaveSelfExtractor(string ,
+        /// SelfExtractorFlavor)"/> for more details.
+        /// </para>
+        ///
+        /// <para>
+        /// The user who runs the SFX will have the opportunity to change the extract directory
+        /// before extracting.  If at the time of extraction, the specified directory does not
+        /// exist, the SFX will create the directory before extracting the files.
+        /// </para>
+        /// </remarks>
+        ///
+        /// <example>
+        /// This example saves a self-extracting archive that will use c:\ExtractHere as the default 
+        /// extract location.
+        /// <code>
+        /// string DirectoryPath = "c:\\Documents\\Project7";
+        /// using (ZipFile zip = new ZipFile())
+        /// {
+        ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath));
+        ///     zip.Comment = "This will be embedded into a self-extracting console-based exe";
+        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication, "c:\\ExtractHere");
+        /// }
+        /// </code>
+        /// <code lang="VB">
+        /// Dim DirectoryPath As String = "c:\Documents\Project7"
+        /// Using zip As New ZipFile()
+        ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath))
+        ///     zip.Comment = "This will be embedded into a self-extracting console-based exe"
+        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication, "c:\ExtractHere");
+        /// End Using
+        /// </code>
+        /// </example>
+        /// 
+        /// <param name="exeToGenerate">The name of the EXE to generate.</param>
+        /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
+        /// <param name="defaultExtractDirectory">
+        /// The default extract directory the user will see when running the self-extracting
+        /// archive. Passing null (or Nothing in VB) here, if flavor is
+        /// <c>SelfExtractorFlavor.WinFormsApplication</c>, will cause the Self Extractor to
+        /// use the the user's personal directory (<see
+        /// cref="Environment.SpecialFolder.Personal"/>) for the default extract location.
+        /// Passing null when flavor is <c>SelfExtractorFlavor.ConsoleApplication</c> will
+        /// cause the self-extractor to use the current directory for the default extract
+        /// location; it will also be settable on the command line when the SFX is executed.
+        /// </param>
+        /// <param name ="postExtractCommandToExecute">
+        /// The command to execute on the user's machine, after unpacking the archive. If the
+        /// flavor is <c>SelfExtractorFlavor.ConsoleApplication</c>, then the SFX changes the
+        /// current directory to the extract directory, and starts the post-extract command
+        /// and waits for it to exit.  The exit code of the post-extract command line is
+        /// returned as the exit code of the self-extractor exe.  A non-zero exit code is
+        /// typically used to indicated a failure by the program. In the case of an SFX, a
+        /// non-zero exit code may indicate a failure during extraction, OR, it may indicate a
+        /// failure of the run-on-extract program if specified. There is no way to distinguish
+        /// these conditions from the calling shell, aside from parsing output.  The GUI self
+        /// extractor simply starts the post-extract command and exits; it does not wait for
+        /// the command to exit first.
+        /// </param>
+        /// <param name ="iconFile">
+        /// the name of a .ico file in the filesystem to use for the application icon
+        /// </param>
+        public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor, string defaultExtractDirectory, string postExtractCommandToExecute, string iconFile)
+        {
+            // Save an SFX that is both an EXE and a ZIP.
+
+            // Check for the case where we are re-saving a zip archive 
+            // that was originally instantiated with a stream.  In that case, 
+            // the _name will be null. If so, we set _writestream to null, 
+            // which insures that we'll cons up a new WriteStream (with a filesystem
+            // file backing it) in the Save() method.
+            if (_name == null)
+                _writestream = null;
+
+            _SavingSfx = true;
+            _name = exeToGenerate;
+            if (Directory.Exists(_name))
+                throw new ZipException("Bad Directory", new System.ArgumentException("That name specifies an existing directory. Please specify a filename.", "exeToGenerate"));
+            _contentsChanged = true;
+            _fileAlreadyExists = File.Exists(_name);
+
+            _SaveSfxStub(exeToGenerate, flavor, defaultExtractDirectory, postExtractCommandToExecute, iconFile);
+
+            Save();
+            _SavingSfx = false;
         }
 
 
-
-
-        private void _SaveSfxStub(string exeToGenerate, SelfExtractorFlavor flavor)
+        private void ExtractResourceToFile(Assembly a, string resourceName, string filename)
         {
+            int n = 0;
+            byte[] bytes = new byte[1024];
+            using (Stream instream = a.GetManifestResourceStream(resourceName))
+            {
+                if (instream == null)
+                    throw new ZipException(String.Format("missing resource '{0}'", resourceName));
+
+                using (FileStream outstream = File.OpenWrite(filename))
+                {
+                    do
+                    {
+                        n = instream.Read(bytes, 0, bytes.Length);
+                        outstream.Write(bytes, 0, n);
+                    } while (n > 0);
+                }
+            }
+        }
+
+
+        private void _SaveSfxStub(string exeToGenerate, SelfExtractorFlavor flavor, string defaultExtractLocation, string postExtractCmdLine, string nameOfIconFile)
+        {
+            bool removeIconFile = false;
             string StubExe = null;
             string TempDir = null;
             try
@@ -477,36 +563,37 @@ namespace Ionic.Zip
                 cp.GenerateInMemory = false;
                 cp.GenerateExecutable = true;
                 cp.IncludeDebugInformation = false;
+                cp.CompilerOptions = "";                 
+
+                Assembly a2 = Assembly.GetExecutingAssembly();
+                
+                if (nameOfIconFile==null)
+                {
+                    removeIconFile = true;
+                    nameOfIconFile = GenerateTempPathname("ico", null);
+                    ExtractResourceToFile(a2, "Ionic.Zip.Resources.zippedFile.ico", nameOfIconFile);
+                    cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", nameOfIconFile);
+                }
+                else if (nameOfIconFile!="")
+                    cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", nameOfIconFile);
+                
                 //cp.IncludeDebugInformation = true;
                 cp.OutputAssembly = StubExe;
                 if (flavor == SelfExtractorFlavor.WinFormsApplication)
-                    cp.CompilerOptions = "/target:winexe";
+                    cp.CompilerOptions += " /target:winexe";
 
-                Assembly a2 = Assembly.GetExecutingAssembly();
+                if (cp.CompilerOptions == "")
+                    cp.CompilerOptions = null;
 
                 TempDir = GenerateTempPathname("tmp", null);
                 if ((settings.CopyThroughResources != null) && (settings.CopyThroughResources.Count != 0))
                 {
                     System.IO.Directory.CreateDirectory(TempDir);
-                    int n = 0;
-                    byte[] bytes = new byte[1024];
                     foreach (string re in settings.CopyThroughResources)
                     {
                         string filename = Path.Combine(TempDir, re);
-                        using (Stream instream = a2.GetManifestResourceStream(re))
-                        {
-                            if (instream == null)
-                                throw new ZipException(String.Format("missing resource '{0}'", re));
 
-                            using (FileStream outstream = File.OpenWrite(filename))
-                            {
-                                do
-                                {
-                                    n = instream.Read(bytes, 0, bytes.Length);
-                                    outstream.Write(bytes, 0, n);
-                                } while (n > 0);
-                            }
-                        }
+                        ExtractResourceToFile(a2, re, filename);
                         // add the file into the target assembly as an embedded resource
                         cp.EmbeddedResources.Add(filename);
                     }
@@ -537,9 +624,9 @@ namespace Ionic.Zip
 
                 // Set the default extract location if it is available, and if supported.
 
-                bool haveLocation = (_defaultExtractLocation != null);
+                bool haveLocation = (defaultExtractLocation != null);
                 if (haveLocation)
-                    _defaultExtractLocation = _defaultExtractLocation.Replace("\"", "").Replace("\\", "\\\\");
+                    defaultExtractLocation = defaultExtractLocation.Replace("\"", "").Replace("\\", "\\\\");
 
                 foreach (string rc in settings.ResourcesToCompile)
                 {
@@ -553,10 +640,10 @@ namespace Ionic.Zip
                         {
                             string line = sr.ReadLine();
                             if (haveLocation)
-                                line = line.Replace("@@EXTRACTLOCATION", _defaultExtractLocation);
+                                line = line.Replace("@@EXTRACTLOCATION", defaultExtractLocation);
                             
-                            if (_postExtractCmdLine != null)
-                                line = line.Replace("@@POST_UNPACK_CMD_LINE", _postExtractCmdLine.Replace("\\","\\\\"));
+                            if (postExtractCmdLine != null)
+                                line = line.Replace("@@POST_UNPACK_CMD_LINE", postExtractCmdLine.Replace("\\","\\\\"));
                             
                             sb.Append(line).Append("\n");
                         }
@@ -618,7 +705,6 @@ namespace Ionic.Zip
             }
             finally
             {
-
                 try
                 {
                     if (Directory.Exists(TempDir))
@@ -631,6 +717,11 @@ namespace Ionic.Zip
                         try { File.Delete(StubExe); }
                         catch { }
                     }
+                    if (removeIconFile && File.Exists(nameOfIconFile))
+                    {
+                        try { File.Delete(nameOfIconFile); }
+                        catch { }
+                    }
 
                 }
                 catch { }
@@ -638,15 +729,6 @@ namespace Ionic.Zip
             }
 
             return;
-
-
-            //       catch (Exception e1)
-            //       {
-            //  StatusMessageTextWriter.WriteLine("****Exception: " + e1);
-            //  throw;
-            //       }
-            //       return;
-
 
         }
 
