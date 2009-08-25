@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-25 09:24:57>
+// Time-stamp: <2009-August-25 13:35:37>
 //
 // ------------------------------------------------------------------
 //
@@ -186,13 +186,11 @@ namespace Ionic.Zip
 
         /// <summary>
         /// Indicates that an error has occurred while saving a zip file. 
+        /// This generally means the file cannot be opened, because it has been
+        /// removed, or because it is locked by another process.  It can also 
+        /// mean that the file cannot be Read, because of a range lock conflict. 
         /// </summary>
         Error_Saving,
-        
-        /// <summary>
-        /// Indicates that an error has occurred while opening a file to be inserted into a zip file. 
-        /// </summary>
-        Error_Opening,
     }
 
 
@@ -573,17 +571,6 @@ namespace Ionic.Zip
             return x;
         }
         
-        internal static ZipErrorEventArgs Opening(string archiveName, string fileName, Exception exception)
-        {
-            var x = new ZipErrorEventArgs
-                {
-                    EventType = ZipProgressEventType.Error_Opening,
-                    ArchiveName = archiveName,
-                    _exc = exception
-                };
-            return x;
-        }
-
         /// <summary>
         /// Returns the exception that occurred, if any.
         /// </summary>

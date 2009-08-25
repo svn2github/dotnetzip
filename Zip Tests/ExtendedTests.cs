@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-25 11:51:11>
+// Time-stamp: <2009-August-25 14:08:01>
 //
 // ------------------------------------------------------------------
 //
@@ -1953,28 +1953,71 @@ namespace Ionic.Zip.Tests.Extended
         [TestMethod]
         public void Create_ZipErrorAction_Skip()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Create_ZipErrorAction_Skip.zip");
             Directory.SetCurrentDirectory(TopLevelDir);
             string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
-            //var files = TestUtilities.GenerateFilesFlat(dirToZip);
-            var files = TestUtilities.GenerateFilesFlat(dirToZip, 2, 32);
-            int n = _rnd.Next(files.Length);
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
 
-            TestContext.WriteLine("Locking file {0}...", files[n]);
-            using (Stream lockStream = new FileStream(files[n], FileMode.Open, FileAccess.Read, FileShare.None))
+            // m is the number of files to lock
+            for (int m=1; m < 4; m++)
             {
-                using (var zip = new ZipFile())
+                // k is the type of locking.  0 == whole file, 1 == range lock
+                for (int k=0; k < 2; k++)
                 {
-                    zip.ZipErrorAction = ZipErrorAction.Skip;
-                    zip.AddFiles(files,"fodder");
-                    zip.Save(zipFileToCreate);
-                }
-            }
+                    TestContext.WriteLine("Trial {0}.{1}...", m, k);
+                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Create_ZipErrorAction_Skip-{0}-{1}.zip", m, k));
+                var locked = new Dictionary<String,FileStream>();
+                try 
+                {
+                    for (int i=0; i<m; i++)
+                    {
+                        int n = 0;
+                        do
+                        {
+                            n= _rnd.Next(files.Length);
+                        } while (locked.ContainsKey(files[n]));
+                        
+                        TestContext.WriteLine("  Locking file {0}...", files[n]);
+                        
+                        FileStream lockStream = null;
+                        if (k==0)
+                        {
+                            lockStream =  new FileStream(files[n], FileMode.Open, FileAccess.Read, FileShare.None);
+                        }
+                        else
+                        {
+                            lockStream =  new FileStream(files[n], FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                            int r = _rnd.Next((int) (lockStream.Length/2));
+                            int s = _rnd.Next((int) (lockStream.Length/2));
+                            lockStream.Lock(s,r);
+                        }
+                            
+                        locked.Add(files[n], lockStream);
+                    }
 
-            WinzipVerify(zipFileToCreate);
+                    using (var zip = new ZipFile())
+                    {
+                        zip.ZipErrorAction = ZipErrorAction.Skip;
+                        zip.AddFiles(files,"fodder");
+                        zip.Save(zipFileToCreate);
+                    }
+
+                    WinzipVerify(zipFileToCreate);
             
-            Assert.AreEqual<int>(files.Length-1, TestUtilities.CountEntries(zipFileToCreate), 
-                                 "The zip file created has the wrong number of entries.");
+                    Assert.AreEqual<int>(files.Length-m, TestUtilities.CountEntries(zipFileToCreate), 
+                                         "The zip file created has the wrong number of entries.");
+                }
+                finally
+                {
+                    foreach (String s in locked.Keys)
+                    {
+                        locked[s].Close();
+                    }
+                }
+
+                TestContext.WriteLine("  ...");
+                System.Threading.Thread.Sleep(320);
+            }
+            }
         }
 
 

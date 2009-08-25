@@ -78,8 +78,7 @@ namespace Ionic.Zip
 
         /// <summary>
         /// When an error occurs, invoke the zipError event.  The event type used is
-        /// <see cref="ZipProgressEventType.Error_Opening"/> or <see
-        /// cref="ZipProgressEventType.Error_Saving"/>.  A typical use of this option:
+        /// <see cref="ZipProgressEventType.Error_Saving"/>.  A typical use of this option:
         /// a GUI application may wish to pop up a dialog to allow the user to view the
         /// error that occurred, and choose an appropriate action.  After your
         /// processing in the error event, if you want to skip the file, set <see
