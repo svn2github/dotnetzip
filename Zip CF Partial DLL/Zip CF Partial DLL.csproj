@@ -91,6 +91,9 @@
     <Compile Include="..\Zip Partial DLL\ZipEntry.Write.cs">
       <Link>ZipEntry.Write.cs</Link>
     </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipErrorAction.cs">
+      <Link>ZipErrorAction.cs</Link>
+    </Compile>
     <Compile Include="..\Zip Partial DLL\ZipFile.AddUpdate.cs">
       <Link>ZipFile.AddUpdate.cs</Link>
     </Compile>
