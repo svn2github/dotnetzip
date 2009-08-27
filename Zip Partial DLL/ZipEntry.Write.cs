@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-25 12:45:57>
+// Time-stamp: <2009-August-25 15:28:32>
 //
 // ------------------------------------------------------------------
 //
@@ -632,13 +632,13 @@ namespace Ionic.Zip
                 else
                 {
                     // special case zero-length files
-                    FileInfo fi = new FileInfo(LocalFileName);
-                    long fileLength = fi.Length;
-                    if (fileLength == 0)
+                    // workitem 8423
+                    if (SharedUtilities.GetFileLength(LocalFileName) == 0L)
                     {
                         _CompressionMethod = 0x00;
                         return;
                     }
+                    
                 }
 
                 if (_ForceNoCompression)
@@ -1047,10 +1047,12 @@ namespace Ionic.Zip
                     // FileShare.Delete is not defined for the Compact Framework
                     fs |= FileShare.Delete;
 #endif
-                    FileInfo fi = new FileInfo(LocalFileName);
-                    fileLength = fi.Length;
+                    //FileInfo fi = new FileInfo(LocalFileName);
+                    //fileLength = fi.Length;
 
+                    // workitem 8423
                     input = File.Open(LocalFileName, FileMode.Open, FileAccess.Read, fs);
+                    fileLength = input.Length;
                 }
 
 

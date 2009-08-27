@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-20 12:52:44>
+// Time-stamp: <2009-August-25 15:33:40>
 //
 // ------------------------------------------------------------------
 //
@@ -25,6 +25,7 @@
 // 
 
 using System;
+using System.IO;
 using System.Security.Permissions;
 
 namespace Ionic.Zip
@@ -37,6 +38,27 @@ namespace Ionic.Zip
         /// private null constructor
         private SharedUtilities() { }
 
+
+        // workitem 8423
+        public static Int64 GetFileLength(string fileName)
+        {
+            if (!File.Exists(fileName))
+                throw new System.IO.FileNotFoundException(fileName);
+            
+            long fileLength = 0L;
+            FileShare fs = FileShare.ReadWrite;
+#if !NETCF
+            // FileShare.Delete is not defined for the Compact Framework
+            fs |= FileShare.Delete;
+#endif
+            using (var s = File.Open(fileName, FileMode.Open, FileAccess.Read, fs))
+            {
+                fileLength = s.Length;
+            }
+            return fileLength;
+        }
+
+                        
 #if LEGACY
         /// <summary>
         /// Round the given DateTime value to an even second value.  
