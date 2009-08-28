@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-28 11:08:09>
+// Time-stamp: <2009-August-28 16:11:41>
 //
 // ------------------------------------------------------------------
 //
@@ -1049,13 +1049,11 @@ namespace Ionic.Zip
                     if (zf._diskNumberWithCd == 0xFFFF)
                         throw new ZipException("Spanned archives with more than 65534 segments are not supported at this time.");
 
-                    zf._diskNumberWithCd++; // hack!!
+                    zf._diskNumberWithCd++; // I think the number in the file differs from reality by 1
                     
                     int i = 12;
 
                     uint offset32 = (uint) BitConverter.ToUInt32(block, i);
-                    //(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
-      Console.WriteLine("offset32: {0} (0x{0:X4})", offset32);
                     if (offset32 == 0xFFFFFFFF)
                     {
                         Zip64SeekToCentralDirectory(zf);
@@ -1064,7 +1062,6 @@ namespace Ionic.Zip
                     {
                         // change for workitem 8098
                         s.Seek(offset32, SeekOrigin.Begin);
-                        //zf.SeekFromOrigin(offset32);
                     }
 
                     ReadCentralDirectory(zf);

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-28 15:30:36>
+// Time-stamp: <2009-August-28 16:26:14>
 //
 // ------------------------------------------------------------------
 //
@@ -237,40 +237,50 @@ namespace Ionic.Zip
         /// <param name="count">the number of bytes to write</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            if (rw != 2 && rw != 3) throw new ZipException("Stream Error: Cannot Write.");
-
-            if (ContiguousWrite)
+            if (rw == 2)
             {
-                // enough space for a contiguous write?
-                if (_innerStream.Position + count > _maxSegmentSize)
+                if (ContiguousWrite)
                 {
-                    _currentDiskNumber++;
-                    //Console.WriteLine("Inc for Contiguous ({0}) p(0x{1:X}) c(0x{2:X}) sz(0x{3:X})",
-                    //                  _currentName, _innerStream.Position, count, _maxSegmentSize);
-                    _SetWriteStream();
+                    // enough space for a contiguous write?
+                    if (_innerStream.Position + count > _maxSegmentSize)
+                    {
+                        _currentDiskNumber++;
+                        //Console.WriteLine("Inc for Contiguous ({0}) p(0x{1:X}) c(0x{2:X}) sz(0x{3:X})",
+                        //                  _currentName, _innerStream.Position, count, _maxSegmentSize);
+                        _SetWriteStream();
+                    }
                 }
+                else
+                {
+                    while (_innerStream.Position + count > _maxSegmentSize)
+                    {
+                        int c = unchecked(_maxSegmentSize - (int)_innerStream.Position);
+                        //Console.WriteLine("ZipSegmentedStream::Write[{0}] pos(0x{1:X}) off(0x{2:X}) c(0x{3:X})",
+                        //        _currentName, _innerStream.Position,  offset, c);
+                        _innerStream.Write(buffer, offset, c);
+                        //Console.WriteLine("All Full ({0}) p(0x{1:X}) c(0x{2:X}) sz(0x{3:X})",
+                        //                  _currentName, _innerStream.Position, count, _maxSegmentSize);
+
+                        _currentDiskNumber++;
+                        _SetWriteStream();
+                        count -= c;
+                        offset += c;
+                    }
+                }
+                //Console.WriteLine("ZipSegmentedStream::Write[{0}] pos(0x{1:X}) off(0x{2:X}) c(0x{3:X})",
+                //                  _currentName, _innerStream.Position, offset, count);
+
+                _innerStream.Write(buffer, offset, count);
+                
+            }
+            else if (rw == 3)
+            {
+                // updating a segment.  There is no possibility for rollover
+                _innerStream.Write(buffer, offset, count);
             }
             else
-            {
-                while (_innerStream.Position + count > _maxSegmentSize)
-                {
-                    int c = unchecked(_maxSegmentSize - (int)_innerStream.Position);
-                    //Console.WriteLine("ZipSegmentedStream::Write[{0}] pos(0x{1:X}) off(0x{2:X}) c(0x{3:X})",
-                    //        _currentName, _innerStream.Position,  offset, c);
-                    _innerStream.Write(buffer, offset, c);
-                    //Console.WriteLine("All Full ({0}) p(0x{1:X}) c(0x{2:X}) sz(0x{3:X})",
-                    //                  _currentName, _innerStream.Position, count, _maxSegmentSize);
-
-                    _currentDiskNumber++;
-                    _SetWriteStream();
-                    count -= c;
-                    offset += c;
-                }
-            }
-            //Console.WriteLine("ZipSegmentedStream::Write[{0}] pos(0x{1:X}) off(0x{2:X}) c(0x{3:X})",
-            //                  _currentName, _innerStream.Position, offset, count);
-
-            _innerStream.Write(buffer, offset, count);
+                throw new ZipException("Stream Error: Cannot Write.");
+            
         }
 
 

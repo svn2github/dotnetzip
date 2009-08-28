@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-28 14:19:03>
+// Time-stamp: <2009-August-28 16:25:27>
 //
 // ------------------------------------------------------------------
 //
@@ -131,9 +131,10 @@ namespace Ionic.Zip
                     return;
 
                 var zss = WriteStream as ZipSegmentedStream;
+
                 _numberOfSegmentsForMostRecentSave = (zss!=null)
-                        ? zss.CurrentSegment
-                        : 1;
+                    ? zss.CurrentSegment
+                    : 1;
                     
                 WriteCentralDirectoryStructure(WriteStream);
 
@@ -416,14 +417,19 @@ namespace Ionic.Zip
             // not support these. (eg, ASP.NET Response.OutputStream) In those
             // cases we have a CountingStream.
 
-            // Also, we cannot just set Start as s.Position bfore the write, and
-            // Finish as s.Position after the write.  In a split zip, the write
-            // may actually flip to the next segment.  In that case, Start will be
-            // zero.  But we don't know that til after the write.
+            // Also, we cannot just set Start as s.Position bfore the write, and Finish
+            // as s.Position after the write.  In a split zip, the write may actually
+            // flip to the next segment.  In that case, Start will be zero.  But we
+            // don't know that til after we know the size of the thing to write.  So the
+            // answer is to compute the directory, then ask the ZipSegmentedStream which
+            // segment that directory would fall in, it it were written.  Then, include
+            // that data into the directory, and finally, write the directory to the
+            // output stream.
 
             var output = s as CountingStream;
             long Finish = (output != null) ? output.BytesWritten : s.Position;
-            long Start = Finish - a.Length;  
+            long Start = Finish - a.Length;
+            
             // need to know which segment the EOCD record starts in
             UInt32 startSegment = (zss != null)
                 ? zss.CurrentSegment
@@ -455,7 +461,8 @@ namespace Ionic.Zip
                     Array.Copy(BitConverter.GetBytes(thisSegment), 0, a, i, 4);
                     i += 4;
                     // number of the disk with the start of the central directory
-                    Array.Copy(BitConverter.GetBytes(startSegment), 0, a, i, 4);
+                    //Array.Copy(BitConverter.GetBytes(startSegment), 0, a, i, 4);
+                    Array.Copy(BitConverter.GetBytes(thisSegment), 0, a, i, 4);
                     
                     i = 60;
                     // offset 60
@@ -477,13 +484,17 @@ namespace Ionic.Zip
             // now, the regular footer
             if (startSegment != 0)
             {
+                // The assumption is the central directory is never split across
+                // segment boundaries.
+                
                 UInt16 thisSegment = (UInt16) zss.ComputeSegment(a2.Length);
                 int i = 4;
                 // number of this disk
                 Array.Copy(BitConverter.GetBytes(thisSegment), 0, a2, i, 2);
                 i += 2;
                 // number of the disk with the start of the central directory
-                Array.Copy(BitConverter.GetBytes((UInt16)startSegment), 0, a2, i, 2);
+                //Array.Copy(BitConverter.GetBytes((UInt16)startSegment), 0, a2, i, 2);
+                Array.Copy(BitConverter.GetBytes(thisSegment), 0, a2, i, 2);
                 i += 2;
             }
 

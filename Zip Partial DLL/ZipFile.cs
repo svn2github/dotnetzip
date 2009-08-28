@@ -1752,7 +1752,7 @@ namespace Ionic.Zip
         ///     The value of this property determines the maximum size of a split
         ///     segment when writing a split archive.  The minimum value is 65536.  For
         ///     example, if the saved zip file would be 200k, and you set the
-        ///     MaxOutputSegmentSize to 65536, you will get four distinct output
+        ///     <c>MaxOutputSegmentSize</c> to 65536, you will get four distinct output
         ///     files. On the other hand if you set this property to 256k, then you will
         ///     get a single-file archive.  
         ///   </para>
@@ -1771,6 +1771,13 @@ namespace Ionic.Zip
         ///     file. It's not possible to save a split zip file as a self-extracting
         ///     archive, nor is it possible to save a split zip file to a stream. When
         ///     saving to a SFX or to a Stream, this property is ignored.
+        ///   </para>
+        ///
+        ///   <para>
+        ///     Split or spanned zip files produced by DotNetZip can be read by WinZip
+        ///     or PKZip, and vice-versa. Segmented zip files may not be readable by
+        ///     other tools, if those other tools don't support zip spanning or
+        ///     splitting.  When in doubt, test.
         ///   </para>
         ///
         ///   <para>
@@ -1809,15 +1816,25 @@ namespace Ionic.Zip
         /// Returns the number of segments used in the most recent Save() operation. 
         /// </summary>
         /// <remarks>
-        /// This is normally zero, unless you have set the <see 
-        /// cref="MaxOutputSegmentSize"/> property.
+        ///   <para>
+        ///     This is normally zero, unless you have set the <see
+        ///     cref="MaxOutputSegmentSize"/> property.  If you have set <see
+        ///     cref="MaxOutputSegmentSize"/>, and then you save a file, after the call to
+        ///     Save() completes, you can read this value to learn the number of segments that
+        ///     were created. 
+        ///   </para>
+        ///   <para>
+        ///     If you call Save("Archive.zip"), and it creates 5 segments, then you
+        ///     will have filesystem files named Archive.z01, Archive.z02, Archive.z03,
+        ///     Archive.z04, and Archive.zip, and the value of this property will be 5.
+        ///   </para>
         /// </remarks>
         /// <seealso cref="MaxOutputSegmentSize"/>
         public Int32 NumberOfSegmentsForMostRecentSave
         {
             get
             {
-                return unchecked((Int32)_numberOfSegmentsForMostRecentSave);
+                return unchecked((Int32)_numberOfSegmentsForMostRecentSave+1);
             }
         }
         
