@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-05 13:42:48>
+// Time-stamp: <2009-August-28 14:52:32>
 //
 // ------------------------------------------------------------------
 //
@@ -160,55 +160,6 @@ namespace Ionic.Zip.Tests
         }
         
         
-
-        internal static void CreateFilesAndChecksums(string subdir, out string[] filesToZip, out Dictionary<string, byte[]> checksums)
-        {
-            // create a bunch of files
-            filesToZip = TestUtilities.GenerateFilesFlat(subdir);
-            DateTime atMidnight = new DateTime(DateTime.Now.Year,
-                                               DateTime.Now.Month,
-                                               DateTime.Now.Day);
-            DateTime fortyFiveDaysAgo = atMidnight - new TimeSpan(45, 0, 0, 0);
-
-            // get checksums for each one
-            checksums = new Dictionary<string, byte[]>();
-            //int count = 0;
-            System.Random rnd = new System.Random();
-            foreach (var f in filesToZip)
-            {
-                if (rnd.Next(3) == 0)
-                    File.SetLastWriteTime(f, fortyFiveDaysAgo);
-                else
-                    File.SetLastWriteTime(f, atMidnight);
-
-                var key = Path.GetFileName(f);
-                var chk = TestUtilities.ComputeChecksum(f);
-                checksums.Add(key, chk);
-            }
-        }
-
-
-        
-        private static void VerifyChecksums(string extractDir, 
-            System.Collections.Generic.IEnumerable<String> filesToCheck, 
-            Dictionary<string, byte[]> checksums)
-        {
-            int count= 0;
-            foreach (var fqPath in filesToCheck)
-            {
-                var f = Path.GetFileName(fqPath);
-                var extractedFile = Path.Combine(extractDir, f);
-                Assert.IsTrue(File.Exists(extractedFile), "File does not exist ({0})", extractedFile);
-                var chk = TestUtilities.ComputeChecksum(extractedFile);
-                Assert.AreEqual<String>(TestUtilities.CheckSumToString(checksums[f]),
-                                        TestUtilities.CheckSumToString(chk),
-                                        String.Format("Checksums for file {0} do not match.", f));
-                count++;
-            }
-
-            Assert.AreEqual<Int32>(count, checksums.Count, "Not all of the expected files were found in the extract directory.");
-        }
-
 
 
         private void VerifyFileTimes(string extractDir, 

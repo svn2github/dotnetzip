@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-25 15:33:40>
+// Time-stamp: <2009-August-28 11:07:15>
 //
 // ------------------------------------------------------------------
 //
@@ -478,7 +478,6 @@ namespace Ionic.Zip
             }
             while (!done);
 
-
             return n;
         }
 
@@ -543,10 +542,10 @@ namespace Ionic.Zip
             get { return _bytesWritten; }
         }
 
-        //public Int64 BytesRead
-        //{
-        //    get { return _bytesRead; }
-        //}
+        public Int64 BytesRead
+        {
+            get { return _bytesRead; }
+        }
 
         public void Adjust(Int64 delta)
         {
@@ -566,6 +565,7 @@ namespace Ionic.Zip
 
         public override void Write(byte[] buffer, int offset, int count)
         {
+            if (count == 0) return;
             _s.Write(buffer, offset, count);
             _bytesWritten += count;
         }

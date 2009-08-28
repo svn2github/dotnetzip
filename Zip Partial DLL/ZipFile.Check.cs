@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-04 13:54:32>
+// Time-stamp: <2009-August-27 13:30:05>
 //
 // ------------------------------------------------------------------
 //
@@ -220,6 +220,40 @@ namespace Ionic.Zip
         }
 
 
+
+        /// <summary>
+        /// Provides a human-readable string with information about the ZipFile.
+        /// </summary>
+public string Info
+{
+    get
+    {
+        var builder = new System.Text.StringBuilder();
+        builder.Append(string.Format("ZipFile: {0}\n", this.Name));
+        if (!string.IsNullOrEmpty(this._Comment))
+        {
+            builder.Append(string.Format("  Comment: {0}\n", this._Comment));
+        }
+        if (this._versionMadeBy != 0)
+        {
+            builder.Append(string.Format("  version made by: 0x{0:X4}\n", this._versionMadeBy));
+        }
+        if (this._versionNeededToExtract != 0)
+        {
+            builder.Append(string.Format("  version needed to extract: 0x{0:X4}\n", this._versionNeededToExtract));
+        }
+        builder.Append(string.Format("  disk number with CD: 0x{0:X8}\n", this._diskNumberWithCd));
+        foreach (ZipEntry entry in this._entries)
+        {
+            builder.Append(entry.Info);
+        }
+        return builder.ToString();
+    }
+}
+ 
+
+ 
+        
     }
 
 }

@@ -63,6 +63,9 @@
     <Compile Include="..\Zip Partial DLL\FileSelector.cs">
       <Link>FileSelector.cs</Link>
     </Compile>
+    <Compile Include="..\Zip Partial DLL\OffsetStream.cs">
+      <Link>OffsetStream.cs</Link>
+    </Compile>
     <Compile Include="..\Zip Partial DLL\Shared.cs">
       <Link>Shared.cs</Link>
     </Compile>
@@ -116,6 +119,9 @@
     </Compile>
     <Compile Include="..\Zip Partial DLL\ZipFile.x-IEnumerable.cs">
       <Link>ZipFile.x-IEnumerable.cs</Link>
+    </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipSegmentedStream.cs">
+      <Link>ZipSegmentedStream.cs</Link>
     </Compile>
     <Compile Include="..\Zlib\Crc32.cs">
       <Link>Crc32.cs</Link>

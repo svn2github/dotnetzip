@@ -1728,6 +1728,99 @@ namespace Ionic.Zip
         }
 
 
+        /// <summary>
+        /// The maximum size of an output segment, when saving a split Zip file. 
+        /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     Set this to a non-zero value before calling <see cref="Save()"/> or <see
+        ///     cref="Save(String)"/> to specify that the ZipFile should be saved as a
+        ///     split archive, also sometimes called a spanned archive. You might also
+        ///     call them multi-file archives.
+        ///   </para>
+        ///
+        ///   <para>
+        ///     A split zip archive is saved in a set of discrete filesystem files,
+        ///     rather than in a single file. This is handy when transmitting the
+        ///     archive in email or some other mechanism that has file size limits.  The
+        ///     first file in a split archive will be named <c>basename.z01</c>, the
+        ///     second will be named <c>basename.z02</c>, and so on. The final file is
+        ///     named <c>basename.zip</c>.
+        ///   </para>
+        ///
+        ///   <para>
+        ///     The value of this property determines the maximum size of a split
+        ///     segment when writing a split archive.  The minimum value is 65536.  For
+        ///     example, if the saved zip file would be 200k, and you set the
+        ///     MaxOutputSegmentSize to 65536, you will get four distinct output
+        ///     files. On the other hand if you set this property to 256k, then you will
+        ///     get a single-file archive.  
+        ///   </para>
+        ///
+        ///   <para>
+        ///     The size of each split output file will not always be exactly the
+        ///     maximum size set here. The zip specification requires that some data
+        ///     fields in a zip archive may not span a split boundary. Also, obviously
+        ///     the final segment of the archive may be smaller than the maximum segment
+        ///     size.  For these reasons some of the split files may be smaller than the
+        ///     maximum size you specify here.
+        ///   </para>
+        ///
+        ///   <para>
+        ///     You can save a split Zip file only when saving to a regular filesystem
+        ///     file. It's not possible to save a split zip file as a self-extracting
+        ///     archive, nor is it possible to save a split zip file to a stream. When
+        ///     saving to a SFX or to a Stream, this property is ignored.
+        ///   </para>
+        ///
+        ///   <para>
+        ///     This property has no effect when reading a split archive. You can read
+        ///     a split archive in the normal way with DotNetZip.
+        ///   </para>
+        ///
+        ///   <para>
+        ///     When saving a zip file, if you want a regular zip file rather than a
+        ///     split zip file, don't set this property, or set it to Zero.
+        ///   </para>
+        ///
+        ///   <para>
+        ///     If you read a split archive and then subsequently save it, unless you
+        ///     set this property before calling <c>Save()</c>, you will get a normal,
+        ///     single-file archive.
+        ///   </para>
+        /// </remarks>
+        /// <seealso cref="NumberOfSegmentsForMostRecentSave"/>
+        public Int32 MaxOutputSegmentSize
+        {
+            get
+            {
+                return _maxOutputSegmentSize; 
+            }
+            set
+            {
+                if (value < 65536 && value != 0)
+                    throw new ZipException("The value is too small.  Use a minimum segment size of 65536.");
+                _maxOutputSegmentSize = value;
+            }
+        }
+
+
+        /// <summary>
+        /// Returns the number of segments used in the most recent Save() operation. 
+        /// </summary>
+        /// <remarks>
+        /// This is normally zero, unless you have set the <see 
+        /// cref="MaxOutputSegmentSize"/> property.
+        /// </remarks>
+        /// <seealso cref="MaxOutputSegmentSize"/>
+        public Int32 NumberOfSegmentsForMostRecentSave
+        {
+            get
+            {
+                return unchecked((Int32)_numberOfSegmentsForMostRecentSave);
+            }
+        }
+        
 
         /// <summary>Provides a string representation of the instance.</summary>
         /// <returns>a string representation of the instance.</returns>
@@ -1764,31 +1857,16 @@ namespace Ionic.Zip
         }
 
 
-
-        internal Stream ReadStream
+        internal Stream StreamForDiskNumber(uint diskNumber)
         {
-            get
+            if (diskNumber + 1 == this._diskNumberWithCd || (diskNumber == 0 && this._diskNumberWithCd==0))
             {
-                if (_readstream == null)
-                {
-                    if (_name != null)
-                    {
-                        try
-                        {
-                            _readstream = File.OpenRead(_name);
-                            _ReadStreamIsOurs = true;
-                        }
-                        catch (System.IO.IOException ioe)
-                        {
-                            throw new ZipException("Error opening the file", ioe);
-                        }
-                    }
-                }
-                return _readstream;
+                return (this.ReadStream as FileStream);
             }
+            return ZipSegmentedStream.ForReading(this._name, diskNumber, _diskNumberWithCd);
         }
 
-
+ 
 
         // called by ZipEntry in ZipEntry.Extract(), when there is no stream set for the
         // ZipEntry.
@@ -2848,6 +2926,31 @@ namespace Ionic.Zip
 
         #region private properties
 
+        internal Stream ReadStream
+        {
+            get
+            {
+                if (_readstream == null)
+                {
+                    if (_name != null)
+                    {
+                        try
+                        {
+                            _readstream = File.OpenRead(_name);
+                            _ReadStreamIsOurs = true;
+                        }
+                        catch (System.IO.IOException ioe)
+                        {
+                            throw new ZipException("Error opening the file", ioe);
+                        }
+                    }
+                }
+                return _readstream;
+            }
+        }
+
+
+
         private Stream WriteStream
         {
             get
@@ -2856,17 +2959,23 @@ namespace Ionic.Zip
                 {
                     if (_name != null)
                     {
-
-                        if (TempFileFolder == ".")
-                            _temporaryFileName = SharedUtilities.GetTempFilename();
-                        else if (TempFileFolder != null)
-                            _temporaryFileName = Path.Combine(TempFileFolder, SharedUtilities.GetTempFilename());
-                        else // null
+                        if (_maxOutputSegmentSize != 0)
                         {
-                            var d = Path.GetDirectoryName(_name);
-                            _temporaryFileName = Path.Combine(d, SharedUtilities.GetTempFilename());
+                            _writestream =  ZipSegmentedStream.ForWriting(this._name, _maxOutputSegmentSize);
                         }
-                        _writestream = new FileStream(_temporaryFileName, FileMode.CreateNew);
+                        else
+                        {
+                            if (TempFileFolder == ".")
+                                _temporaryFileName = SharedUtilities.GetTempFilename();
+                            else if (TempFileFolder != null)
+                                _temporaryFileName = Path.Combine(TempFileFolder, SharedUtilities.GetTempFilename());
+                            else // null
+                            {
+                                var d = Path.GetDirectoryName(_name);
+                                _temporaryFileName = Path.Combine(d, SharedUtilities.GetTempFilename());
+                            }
+                            _writestream = new FileStream(_temporaryFileName, FileMode.CreateNew);
+                        }
                     }
                 }
                 return _writestream;
@@ -2874,7 +2983,7 @@ namespace Ionic.Zip
             set
             {
                 if (value != null)
-                    throw new ZipException("Whoa!", new ArgumentException("Cannot set the stream to a non-null value.", "value"));
+                    throw new ZipException("Cannot set the stream to a non-null value.");
                 _writestream = null;
             }
         }
@@ -2885,6 +2994,11 @@ namespace Ionic.Zip
         private bool _CaseSensitiveRetrieval;
         private Stream _readstream;
         private Stream _writestream;
+        private UInt16 _versionMadeBy;
+        private UInt16 _versionNeededToExtract;
+        private UInt32 _diskNumberWithCd;
+        private Int32 _maxOutputSegmentSize;
+        private UInt32 _numberOfSegmentsForMostRecentSave;
         private bool _disposed;
         private System.Collections.Generic.List<ZipEntry> _entries;
         private bool _ForceNoCompression;
@@ -2894,7 +3008,7 @@ namespace Ionic.Zip
         private bool _emitNtfsTimes = true;
         private bool _emitUnixTimes;
         private Ionic.Zlib.CompressionStrategy _Strategy = Ionic.Zlib.CompressionStrategy.Default;
-        private long _originPosition; 
+        //private long _originPosition; // workitem 8098
         private bool _fileAlreadyExists;
         private string _temporaryFileName;
         private bool _contentsChanged;

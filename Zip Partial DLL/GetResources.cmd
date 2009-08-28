@@ -18,7 +18,7 @@ setlocal
 
 set ResourceDirectory=Resources
 cd ..\..\
-mkdir %ResourceDirectory%
+if not exist %ResourceDirectory% (mkdir %ResourceDirectory%)
 copy /y ..\Examples\SelfExtracting\CommandLineSelfExtractorStub.cs        %ResourceDirectory%
 copy /y ..\Examples\SelfExtracting\FolderBrowserDialogEx.cs               %ResourceDirectory%
 copy /y ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.cs           %ResourceDirectory%
@@ -29,11 +29,11 @@ copy /y ..\Examples\SelfExtracting\PasswordDialog.Designer.cs             %Resou
 copy /y ..\Examples\SelfExtracting\ZipContentsDialog.Designer.cs          %ResourceDirectory%
 
 
-copy /y ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.resx     %ResourceDirectory%
-copy /y ..\Examples\SelfExtracting\PasswordDialog.resx                %ResourceDirectory%
-copy /y ..\Examples\SelfExtracting\ZipContentsDialog.resx             %ResourceDirectory%
+copy /y ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.resx         %ResourceDirectory%
+copy /y ..\Examples\SelfExtracting\PasswordDialog.resx                    %ResourceDirectory%
+copy /y ..\Examples\SelfExtracting\ZipContentsDialog.resx                 %ResourceDirectory%
 
-copy /y ..\Examples\WinFormsApp\zippedFile.ico           %ResourceDirectory%
+copy /y ..\Examples\WinFormsApp\zippedFile.ico                            %ResourceDirectory%
 
 
 @REM c:\netsdk3.0\bin\resgen.exe ..\Examples\SelfExtracting\WinFormsSelfExtractorStub.resx     %ResourceDirectory%\WinFormsSelfExtractorStub.resources

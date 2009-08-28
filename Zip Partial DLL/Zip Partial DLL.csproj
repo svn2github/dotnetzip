@@ -81,6 +81,8 @@
       <DependentUpon>ZipContentsDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\FolderBrowserDialogEx.cs" />
+    <Compile Include="ZipSegmentedStream.cs" />
+    <Compile Include="OffsetStream.cs" />
     <Compile Include="ZipErrorAction.cs" />
     <Compile Include="EncryptionAlgorithm.cs" />
     <Compile Include="ExtractExistingFileAction.cs" />
