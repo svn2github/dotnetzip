@@ -42,28 +42,26 @@ namespace Ionic.Zip.Examples
             "                           (attrs = H) OR (name != *.xml) \n" +
             "                           (size > 1g) AND (mtime < 2009-06-29) \n" +
             "                           (ctime > 2009-04-29) AND (size < 10kb) \n" +
-            "                         You must surround an expression that includes spaces with quotes.\n"+
-            "  -utf8                - use UTF-8 encoding for entries with comments or\n" +
-            "                         filenames that cannot be encoded with the default IBM437\n" +
-            "                         code page.\n" +
+            "                         You must surround an expression that includes spaces with quotes.\n" +
+            "  -64                  - use ZIP64 extensions, for large files or large numbers of files.\n" +
             "  -aes                 - use WinZip-compatible AES 256-bit encryption for entries\n" +
             "                         subsequently added to the archive. Requires a password.\n" +
-            "  -sfx [w|c]           - create a self-extracting archive, either a Windows or console app.\n" +
-            "  -64                  - use ZIP64 extensions, for large files or large numbers of files.\n" +
             "  -cp <codepage>       - use the specified numeric codepage for entries with comments \n" +
             "                         or filenames that cannot be encoded with the default IBM437\n" +
             "                         code page.\n" +
-            "  -p <password>        - apply the specified password for all succeeding files added.\n" +
-            "                         use \"\" to reset the password to nil.\n" +
-            "  -zc <comment>        - use the given comment for the archive.\n" +
             "  -d <path>            - use the given directory path in the archive for\n" +
             "                         succeeding items added to the archive.\n" +
-            "  -D <path>            - find files in the given directory on disk.\n" + 
+            "  -D <path>            - find files in the given directory on disk.\n" +
+            "  -p <password>        - apply the specified password for all succeeding files added.\n" +
+            "                         use \"\" to reset the password to nil.\n" +
+            "  -progress            - emit progress reports (good when creating large zips)\n" +
             "  -r-                  - don't recurse directories (default).\n" +
             "  -r+                  - recurse directories.\n" +
             "  -s <entry> 'string'  - insert an entry of the given name into the \n" +
             "                         archive, with the given string as its content.\n" +
-            "  -progress            - emit progress reports (good when creating large zips)\n" +
+            "  -sfx [w|c]           - create a self-extracting archive, either a Windows or console app.\n" +
+            "  -split <maxsize>     - produce a split zip, with the specified maximum size.\n" +
+            "                         This is not compatible with -sfx.\n" +
             "  -Tw+                 - store Windows-format extended times (default).\n" +
             "  -Tw-                 - don't store Windows-format extended times.\n" +
             "  -Tu+                 - store Unix-format extended times (default).\n" +
@@ -71,7 +69,11 @@ namespace Ionic.Zip.Examples
             "  -UTnow               - use uniform date/time, NOW, for all entries. \n" +
             "  -UTnewest            - use uniform date/time, newest entry, for all entries. \n" +
             "  -UToldest            - use uniform date/time, oldest entry, for all entries. \n" +
-            "  -UT <datetime>       - use uniform date/time, specified, for all entries. \n";
+            "  -UT <datetime>       - use uniform date/time, specified, for all entries. \n" +
+            "  -utf8                - use UTF-8 encoding for entries with comments or\n" +
+            "                         filenames that cannot be encoded with the default IBM437\n" +
+            "                         code page.\n" +
+            "  -zc <comment>        - use the given comment for the archive.\n";
 
             Console.WriteLine(UsageMessage,
                       System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
@@ -176,27 +178,48 @@ namespace Ionic.Zip.Examples
                     {
                         switch (args[i])
                         {
-                            case "-p":
-                                i++;
-                                if (args.Length <= i) Usage();
-                                zip.Password = (args[i] == "") ? null : args[i];
-                                break;
 #if NONSENSE
                             case "-flat":
                                 entryDirectoryPathInArchive = "";
                                 break;
 #endif
-                                
+
+                            case "-64":
+                                zip.UseZip64WhenSaving = Zip64Option.Always;
+                                break;
+
                             case "-aes":
                                 zip.Encryption = EncryptionAlgorithm.WinZipAes256;
                                 break;
 
-                            case "-sfx":
+                            case "-cp":
                                 i++;
                                 if (args.Length <= i) Usage();
-                                if (args[i] != "w" && args[i] != "c") Usage();
-                                flavor = new Nullable<SelfExtractorFlavor>
-                                    ((args[i] == "w") ? SelfExtractorFlavor.WinFormsApplication : SelfExtractorFlavor.ConsoleApplication);
+                                System.Int32.TryParse(args[i], out codePage);
+                                if (codePage != 0)
+                                    zip.ProvisionalAlternateEncoding = System.Text.Encoding.GetEncoding(codePage);
+                                break;
+
+                            case "-d":
+                                i++;
+                                if (args.Length <= i) Usage();
+                                entryDirectoryPathInArchive = args[i];
+                                break;
+
+                            case "-D":
+                                i++;
+                                if (args.Length <= i) Usage();
+                                directoryOnDisk = args[i];
+                                break;
+
+                            case "-p":
+                                i++;
+                                if (args.Length <= i) Usage();
+                                zip.Password = (args[i] == "") ? null : args[i];
+                                break;
+
+                            case "-progress":
+                                wantProgressReports = true;
                                 break;
 
                             case "-r-":
@@ -207,12 +230,38 @@ namespace Ionic.Zip.Examples
                                 recurseDirectories = true;
                                 break;
 
-                            case "-utf8":
-                                zip.UseUnicodeAsNecessary = true;
+                            case "-s":
+                                i++;
+                                if (args.Length <= i) Usage();
+                                string entryName = args[i];
+                                i++;
+                                if (args.Length <= i) Usage();
+                                string content = args[i];
+                                e = zip.AddEntry(entryName, entryDirectoryPathInArchive, content);
+                                //                                 if (entryComment != null)
+                                //                                 {
+                                //                                     e.Comment = entryComment;
+                                //                                     entryComment = null;
+                                //                                 }
                                 break;
 
-                            case "-progress":
-                                wantProgressReports= true;
+                            case "-sfx":
+                                i++;
+                                if (args.Length <= i) Usage();
+                                if (args[i] != "w" && args[i] != "c") Usage();
+                                flavor = new Nullable<SelfExtractorFlavor>
+                                    ((args[i] == "w") ? SelfExtractorFlavor.WinFormsApplication : SelfExtractorFlavor.ConsoleApplication);
+                                break;
+
+                            case "-split":
+                                i++;
+                                if (args.Length <= i) Usage();
+                                if (args[i].EndsWith("K") || args[i].EndsWith("k"))
+                                    zip.MaxOutputSegmentSize = Int32.Parse(args[i].Substring(0, args[i].Length - 1)) * 1024;
+                                else if (args[i].EndsWith("M") || args[i].EndsWith("m"))
+                                    zip.MaxOutputSegmentSize = Int32.Parse(args[i].Substring(0, args[i].Length - 1)) * 1024 * 1024;
+                                else
+                                    zip.MaxOutputSegmentSize = Int32.Parse(args[i]);
                                 break;
 
                             case "-Tw+":
@@ -254,28 +303,14 @@ namespace Ionic.Zip.Examples
                                 }
                                 catch
                                 {
-                                    throw new ArgumentException("-TU");
+                                    throw new ArgumentException("-UT");
                                 }
                                 break;
-                                
-                            case "-64":
-                                zip.UseZip64WhenSaving = Zip64Option.Always;
+
+                            case "-utf8":
+                                zip.UseUnicodeAsNecessary = true;
                                 break;
 
-                            case "-s":
-                                i++;
-                                if (args.Length <= i) Usage();
-                                string entryName = args[i];
-                                i++;
-                                if (args.Length <= i) Usage();
-                                string content = args[i];
-                                e = zip.AddEntry(entryName, entryDirectoryPathInArchive, content);
-//                                 if (entryComment != null)
-//                                 {
-//                                     e.Comment = entryComment;
-//                                     entryComment = null;
-//                                 }
-                                break;
 #if NOT
                             case "-c":
                                 i++;
@@ -289,27 +324,6 @@ namespace Ionic.Zip.Examples
                                 if (args.Length <= i) Usage();
                                 zip.Comment = args[i];
                                 break;
-
-                            case "-cp":
-                                i++;
-                                if (args.Length <= i) Usage();
-                                System.Int32.TryParse(args[i], out codePage);
-                                if (codePage != 0)
-                                    zip.ProvisionalAlternateEncoding = System.Text.Encoding.GetEncoding(codePage);
-                                break;
-
-                            case "-d":
-                                i++;
-                                if (args.Length <= i) Usage();
-                                entryDirectoryPathInArchive = args[i];
-                                break;
-
-                            case "-D":
-                                i++;
-                                if (args.Length <= i) Usage();
-                                directoryOnDisk = args[i];
-                                break;
-
 
                             default:
                                 #if OLD

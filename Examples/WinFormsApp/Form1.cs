@@ -89,7 +89,7 @@ namespace Ionic.Zip.Examples.WinForms
 
         private void FixTitle()
         {
-            this.Text = String.Format("DotNetZip's WinForms Zip Tool v{0}",
+            this.Text = String.Format("DotNetZip Tool v{0}",
                                       System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
         }
 
@@ -100,6 +100,18 @@ namespace Ionic.Zip.Examples.WinForms
             InitZip64List();
             InitCompressionLevelList();
             InitEncryptionList();
+            InitSplitBox();
+        }
+
+        private void InitSplitBox()
+        {
+            string[] values = { "-none-", "64kb", "128kb", "256kb", "512kb", "1mb", "2mb", "4mb", "8mb", "16mb", "32mb", "64mb", "128mb", "256mb", "512mb", "1gb" };
+            foreach (var value in values)
+                this.comboSplit.Items.Add(value);
+            this.comboSplit.SelectedIndex = 0;
+
+            this.comboSplit.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.comboSplit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDown;
         }
 
         private void InitEncryptionList()
@@ -243,6 +255,25 @@ namespace Ionic.Zip.Examples.WinForms
             options.CompressionLevel = (Ionic.Zlib.CompressionLevel)Enum.Parse(typeof(Ionic.Zlib.CompressionLevel),
                                                                                this.comboCompression.SelectedItem.ToString());
 
+
+            string arg = this.comboSplit.SelectedItem.ToString();
+
+            try
+            {
+                if (arg.EndsWith("K") || arg.EndsWith("k"))
+                    options.MaxSegmentSize = Int32.Parse(arg.Substring(0,arg.Length-1)) * 1024;
+                else if (arg.EndsWith("M") || arg.EndsWith("m"))
+                    options.MaxSegmentSize = Int32.Parse(arg.Substring(0,arg.Length-1)) * 1024 * 1024;
+                else                    
+                    options.MaxSegmentSize = Int32.Parse(arg);
+            } 
+            catch
+            {
+                // just reset to "none"
+                this.comboSplit.SelectedIndex = 0;
+                options.MaxSegmentSize = 0;
+            }
+            
             options.Zip64 = (Zip64Option)Enum.Parse(typeof(Zip64Option),
                                                     this.comboZip64.SelectedItem.ToString());
 
@@ -255,9 +286,9 @@ namespace Ionic.Zip.Examples.WinForms
                             LocalFileName = item.SubItems[1].Text,
                             DirectoryInArchive = item.SubItems[2].Text,
                             FileNameInArchive = item.SubItems[3].Text,
-                            };
+                        };
                 }
-                                                      );
+                );
 
 
             options.Comment = String.Format("Encoding:{0} || Compression:{1} || Encrypt:{2} || ZIP64:{3}\r\nCreated at {4} || {5}\r\n",
@@ -344,6 +375,33 @@ namespace Ionic.Zip.Examples.WinForms
         }
 
 
+        // I want the values in the combobox to be right-aligned.
+        private int delta = 0;
+        private void comboBox1_DrawItem(object sender, System.Windows.Forms.DrawItemEventArgs e)
+        {
+            var rc = new System.Drawing.Rectangle(e.Bounds.X + delta, e.Bounds.Y + delta,
+                                         e.Bounds.Width - delta, e.Bounds.Height - delta);
+
+            var sf = new System.Drawing.StringFormat
+            {
+                Alignment = System.Drawing.StringAlignment.Far
+            };
+
+            string str = (string)comboSplit.Items[e.Index];
+
+            if (e.State == (DrawItemState.Selected | DrawItemState.NoAccelerator
+                              | DrawItemState.NoFocusRect) ||
+                 e.State == DrawItemState.Selected)
+            {
+                e.Graphics.FillRectangle(new System.Drawing.SolidBrush(System.Drawing.Color.CornflowerBlue), rc);
+                e.Graphics.DrawString(str, this.comboSplit.Font, new System.Drawing.SolidBrush(System.Drawing.Color.Cyan), rc, sf);
+            }
+            else
+            {
+                e.Graphics.FillRectangle(new System.Drawing.SolidBrush(System.Drawing.Color.White), rc);
+                e.Graphics.DrawString(str, this.comboSplit.Font, new System.Drawing.SolidBrush(System.Drawing.Color.Black), rc, sf);
+            }
+        }
 
         
         private bool _firstFocusInExeTextBox = true;
@@ -402,6 +460,7 @@ namespace Ionic.Zip.Examples.WinForms
                 {
                     zip1.ProvisionalAlternateEncoding = System.Text.Encoding.GetEncoding(options.Encoding);
                     zip1.Comment = options.Comment;
+                    zip1.MaxOutputSegmentSize = options.MaxSegmentSize;
                     zip1.Password = (options.Password != "") ? options.Password : null;
                     zip1.Encryption = options.Encryption;
                     zip1.EmitTimesInWindowsFormatWhenSaving = options.WindowsTimes;
@@ -664,6 +723,7 @@ namespace Ionic.Zip.Examples.WinForms
                 {
                     tbZipToCreate.Text = System.Text.RegularExpressions.Regex.Replace(tbZipToCreate.Text, "(?i:)\\.zip$", ".exe");
                 }
+                this.comboSplit.Enabled = false;
             }
             else if (this.comboFlavor.SelectedIndex == 0)
             {
@@ -672,8 +732,11 @@ namespace Ionic.Zip.Examples.WinForms
                 {
                     tbZipToCreate.Text = System.Text.RegularExpressions.Regex.Replace(tbZipToCreate.Text, "(?i:)\\.exe$", ".zip");
                 }
+                this.comboSplit.Enabled = true;
             }
         }
+
+        
         private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
             //this.tbPassword.Enabled = (this.comboBox3.SelectedItem.ToString() != "None");
@@ -1853,6 +1916,7 @@ namespace Ionic.Zip.Examples.WinForms
         public bool OpenExplorer;
         public String Selection;
     }
+    
     public class SaveWorkerOptions
     {
         public string ZipName;
@@ -1864,6 +1928,7 @@ namespace Ionic.Zip.Examples.WinForms
         public string ExeOnUnpack;
         public string ExtractDirectory;
         public int ZipFlavor;
+        public int MaxSegmentSize;
         public Ionic.Zlib.CompressionLevel CompressionLevel;
         public Ionic.Zip.EncryptionAlgorithm Encryption;
         public Zip64Option Zip64;

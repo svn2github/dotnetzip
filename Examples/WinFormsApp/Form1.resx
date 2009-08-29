@@ -124,13 +124,13 @@
     <value>True</value>
   </metadata>
   <data name="richTextBox1.Text" xml:space="preserve">
-    <value>This is DotNetZip, a free zip tool.  For you programmer types, you may be interested to learn that it is built in C#, on .NET.  
+    <value>This is DotNetZip, a free zip tool.  It reads or creates zip files.  The tool is built on the DotNetZip library.  
 
-This zip tool is part of the DotNetZip project, an open-source effort to build a zip library and tools for .NET.  The DotNetZip project delivers this zip tool, but also a .NET managed-code library for manipulating ZIP archives, as well as various command-line tools for creating and unpacking zip files.  
+This zip tool and the library that it uses are part of the DotNetZip project, an open-source effort to build a zip library and tools for .NET.  In addition to the library and the tool, the DotNetZip project delivers various command-line tools for creating and unpacking zip files.  
 
 The DotNetZip library enables any .NET application to read and write ZIP files, simply and easily.  This graphical tool is just one example of the things you can build with the library. 
 
-The DotNetZip library supports many advanced ZIP features like ZIP64, WinZip-compatible AES encryption, Unicode or arbitrary code pages, self-extracting archives, archive and entry comments, and more.  DotNetZip has a simple and clean programming interface, which takes advantage of nice .NET features like eventing and generic collections.  There is a full helpfile with plenty of code examples to get you started. 
+The DotNetZip library supports many advanced ZIP features like ZIP64, WinZip-compatible AES encryption, Unicode or arbitrary code pages, self-extracting archives, archive and entry comments, split archives, and more.  DotNetZip has a simple and clean programming interface, which takes advantage of nice .NET features like eventing and generic collections.  There is a full helpfile with plenty of code examples to get you started. 
 
 DotNetZip is really nice to use with .NET apps, but it can also be used from Powershell scripts, as well as any COM-compliant language or environment. For example, you can write VBScript code that uses DotNetZip, to script the creation of AES-encrypted ZIP files.
 
