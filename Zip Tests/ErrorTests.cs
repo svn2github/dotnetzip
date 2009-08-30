@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-26 23:54:21>
+// Time-stamp: <2009-August-29 13:46:25>
 //
 // ------------------------------------------------------------------
 //
@@ -31,9 +31,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 //using Ionic.Zip;
 using Ionic.Zip.Tests.Utilities;
-
-// disable compile-time warning: "XXX is obsolete: 'YYY'" 
-#pragma warning disable 618
 
 
 namespace Ionic.Zip.Tests.Error
@@ -92,14 +89,13 @@ namespace Ionic.Zip.Tests.Error
 
         [TestMethod]
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
-        public void CreateZip_AddFileFromString_BlankName()
+        public void CreateZip_AddEntry_String_BlankName()
         {
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_AddFileFromString_BlankName.zip");
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            string ZipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_AddEntry_String_BlankName.zip");
+            using (ZipFile zip = new ZipFile())
             {
-                zip.AddFileFromString("", "foo", "This is the content.");
-                zip.Save();
+                zip.AddEntry("", "foo", "This is the content.");
+                zip.Save(ZipFileToCreate);
             }
         }
 
@@ -153,8 +149,6 @@ namespace Ionic.Zip.Tests.Error
                     {
                         ZipEntry e = zip[Path.GetFileName(filenames[j])];
                         if (flavor == 4)
-                            e.Extract("unpack", false);
-                        else if (flavor == 5)
                             e.Extract("unpack");
                         else 
                             e.Extract("unpack", (ExtractExistingFileAction) flavor);
@@ -177,7 +171,7 @@ namespace Ionic.Zip.Tests.Error
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Error_Extract_ExistingFileWithoutOverwrite_NoArg()
         {
-            _Internal_ExtractExisting(5);
+            _Internal_ExtractExisting(4);
         }
 
 
@@ -210,12 +204,6 @@ namespace Ionic.Zip.Tests.Error
         }
         
 
-        [TestMethod]
-        [ExpectedException(typeof(Ionic.Zip.ZipException))]
-        public void Error_Extract_ExistingFileWithoutOverwrite_False()
-        {
-            _Internal_ExtractExisting(4);
-        }
 
         [TestMethod]
         [ExpectedException(typeof(Ionic.Zip.ZipException))]

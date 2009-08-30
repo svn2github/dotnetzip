@@ -15,7 +15,7 @@
     <Name>Documentation</Name>
     <!-- SHFB properties -->
     <OutputPath>.\Help\</OutputPath>
-    <HtmlHelpName>DotNetZipLib-v1.8</HtmlHelpName>
+    <HtmlHelpName>DotNetZipLib-v1.9</HtmlHelpName>
     <ProjectSummary>DotNetZip is a small, easy-to-use class library for manipulating .zip files. It can enable .NET applications written in VB.NET, C#, any .NET language, to easily create, read, and update zip files.  DotNetZip is donationware:  http://cheeso.members.winisp.net/DotNetZipDonate.aspx</ProjectSummary>
     <MissingTags>Summary, Parameter, Returns, AutoDocumentCtors, Namespace, TypeParameter</MissingTags>
     <VisibleItems>InheritedMembers, InheritedFrameworkMembers, Protected, SealedProtected</VisibleItems>
@@ -28,7 +28,7 @@
     <WorkingPath>
     </WorkingPath>
     <FrameworkVersion>2.0.50727</FrameworkVersion>
-    <HelpTitle>Ionic Zip Library v1.8</HelpTitle>
+    <HelpTitle>Ionic Zip Library v1.9</HelpTitle>
     <FeedbackEMailAddress>dpchiesa%40hotmail.com</FeedbackEMailAddress>
     <PresentationStyle>Prototype</PresentationStyle>
     <DocumentationSources>
