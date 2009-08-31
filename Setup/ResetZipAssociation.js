@@ -49,12 +49,10 @@ var msiMessageStatusYes = 6;
 var msiMessageStatusNo = 7;
 
 
-var verbose = true;
+var verbose = false;
 
 function DisplayMessageBox(message, options)
 {
-    if (!verbose) return 0;
-
     if (options == null)
     {
         options = msiMessageTypeUser + msiMessageTypeOk + msiMessageTypeDefault1;
@@ -80,7 +78,7 @@ function DisplayMessageBox(message, options)
 
 function DisplayDiagnostic(message)
 {
-    if (!verbose) return 0;
+    if (verbose== false) return 0;
 
     if (typeof(Session) == undefined)
     {
@@ -99,77 +97,100 @@ function DisplayDiagnostic(message)
 
 function mytrace(arg)
 {
-
-            try
-            {
-                var junkTest = WSHShell.RegRead(regValue2 + arg);
-            }
-            catch (e2b)
-            {
-            }
-
+    if (verbose == false) return;
+    // This just causes a regRead to be logged.
+    // Then in PerfMon or RegMon, you can use it as a "trace"
+    try
+    {
+        var junkTest = WSHShell.RegRead(regValue2 + arg);
+    }
+    catch (e2b)
+    {
+    }
 }
 
 
-var WSHShell = new ActiveXObject("WScript.Shell");
 
 
-// get the stored association for zip files, if any
-var regValue1 = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Dino Chiesa\\DotNetZip Tools v1.9\\PriorZipAssociation";
-var regValue2 = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\.zip\\";
-
-try 
+function RestoreRegistry()
 {
-    var currentAssociation = WSHShell.RegRead(regValue2);
+    var WSHShell = new ActiveXObject("WScript.Shell");
 
-    DisplayDiagnostic("Current assoc for .zip: " + currentAssociation);
+    // get the stored association for zip files, if any
+    var regValue1 = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Dino Chiesa\\DotNetZip Tools v1.9\\PriorZipAssociation";
+    var regValue2 = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\.zip\\";
+    var parkingLot = "__DeleteThis";
 
-    if (currentAssociation == "DotNetZip.zip.1")
+    try 
     {
-        var priorAssociation = WSHShell.RegRead(regValue1);
-            DisplayDiagnostic("prior assoc for .zip: " + priorAssociation);
-        if (priorAssociation != "")
+        var currentAssociation = WSHShell.RegRead(regValue2);
+
+        DisplayDiagnostic("Current assoc for .zip: " + currentAssociation);
+        var phase = ""; 
+
+
+        if (currentAssociation == "DotNetZip.zip.1")
+            phase = "1";
+        else if (currentAssociation == "")
+            phase = "2";
+
+        DisplayDiagnostic("phase " + phase);
+
+        if (phase == "1" || phase=="2")
         {
-            mytrace("A");
-            try
+            var priorAssociation = null;
+            if (phase=="1")
+                priorAssociation= WSHShell.RegRead(regValue1);
+            else
+                priorAssociation= WSHShell.RegRead(regValue2 + parkingLot);
+
+            DisplayDiagnostic("prior assoc for .zip: " + priorAssociation);
+            if (priorAssociation != "")
             {
-            mytrace("B");
-                var stillInstalled = WSHShell.RegRead(regValue2 + "OpenWithProgIds\\" + priorAssociation);
-                // the value will be the empty string
-                DisplayDiagnostic("the prior app is still installed.");
-            mytrace("C");
-                WSHShell.RegWrite(regValue2, priorAssociation );
-            mytrace("D");
-                DisplayDiagnostic("A-OK.");
-            mytrace("E");
+                mytrace("A"+phase);
+                try
+                {
+                    mytrace("B"+phase);
+                    var stillInstalled = WSHShell.RegRead(regValue2 + "OpenWithProgIds\\" + priorAssociation);
+                    // the value will be the empty string
+                    DisplayDiagnostic("the prior app is still installed.");
+                    mytrace("C");
+                    if (phase=="1")
+                        WSHShell.RegWrite(regValue2 + parkingLot, priorAssociation );
+                    else 
+                    {
+                        WSHShell.RegWrite(regValue2, priorAssociation );
+                        WSHShell.RegDelete(regValue2 + parkingLot);
+                    }
+                }
+                catch (e2a)
+                {
+                    mytrace("F");
+                    DisplayDiagnostic("the prior app is NOT still installed.");
+                    WSHShell.RegWrite(regValue2, "CompressedFolder");
+                }
             }
-            catch (e2a)
+            else
             {
-            mytrace("F");
-                DisplayDiagnostic("the prior app is NOT still installed.");
+                mytrace("G");
+                DisplayDiagnostic("the prior assoc is empty?");
                 WSHShell.RegWrite(regValue2, "CompressedFolder");
             }
         }
         else
         {
-            mytrace("G");
-            DisplayDiagnostic("the prior assoc is empty?");
-            WSHShell.RegWrite(regValue2, "CompressedFolder");
+            DisplayDiagnostic("the associated app has changed.");
+            // The association has been changed since install of DotNetZip.
+            // We won't try to reset it. 
         }
-            mytrace("H");
-        WSHShell.RegDelete(regValue1);
     }
-    else
+    catch (e1)
     {
-        DisplayDiagnostic("the associated app has changed.");
-        // The association has been changed since install of DotNetZip.
-        // We won't try to reset it. 
+        DisplayDiagnostic("there is no associated app.");
+        WSHShell.RegWrite(regValue2, "CompressedFolder");
     }
 }
-catch (e1)
-{
-    DisplayDiagnostic("there is no associated app.");
-    WSHShell.RegWrite(regValue2, "CompressedFolder");
-}
 
 
+
+RestoreRegistry();
