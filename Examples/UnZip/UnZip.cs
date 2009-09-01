@@ -53,6 +53,8 @@ namespace Ionic.Zip.Examples
                   "       <entryname>       unzip only the specified filename.\n\n" +
                   "  unzip -l <zipfile>\n" +
                   "     lists the entries in the zip archive.\n" +
+                  "  unzip -i <zipfile>\n" +
+                  "     displays full information about all the entries in the zip archive.\n" +
                   "  unzip -t <zipfile> [-p <password>] [-cp <codepage>]\n" +
                   "     tests the zip archive.\n" +
                   "  unzip -?\n" +
@@ -65,6 +67,7 @@ namespace Ionic.Zip.Examples
         {
             Extract,
             List,
+            Info,
             Test
         }
 
@@ -100,6 +103,49 @@ namespace Ionic.Zip.Examples
             {
                 switch (args[i])
                 {
+                    case "-cp":
+                        i++;
+                        if (args.Length <= i) Usage();
+                        if (codePage != 0) Usage();
+                        System.Int32.TryParse(args[i], out codePage);
+                        break;
+
+                    case "-d":
+                        i++;
+                        if (args.Length <= i) Usage();
+                        if (targdir != null) Usage();
+                        if (extractToConsole) Usage();
+                        if (action != ActionDesired.Extract) Usage();
+                        targdir = args[i];
+                        break;
+                        
+                    case "-f":
+                        wantFlatten = true;
+                        if (action != ActionDesired.Extract) Usage();
+                        break;
+
+                    case "-i":
+                        if (password != null) Usage();
+                        if (targdir != null) Usage();
+                        if (wantQuiet) Usage();
+                        if (entriesToExtract.Count > 0) Usage();
+                        action = ActionDesired.Info;
+                        break;
+
+                    case "-l":
+                        if (password != null) Usage();
+                        if (targdir != null) Usage();
+                        if (wantQuiet) Usage();
+                        if (entriesToExtract.Count > 0) Usage();
+                        if (behaviorForExistingFile == ExtractExistingFileAction.OverwriteSilently) Usage();
+                        action = ActionDesired.List;
+                        break;
+
+                    case "-o":
+                        behaviorForExistingFile = ExtractExistingFileAction.OverwriteSilently;
+                        if (action != ActionDesired.Extract) Usage();
+                        break;
+                        
                     case "-p":
                         i++;
                         if (args.Length <= i) Usage();
@@ -112,44 +158,11 @@ namespace Ionic.Zip.Examples
                         wantQuiet = true;
                         break;
 
-                    case "-o":
-                        behaviorForExistingFile = ExtractExistingFileAction.OverwriteSilently;
-                        if (action != ActionDesired.Extract) Usage();
-                        break;
-                        
-                    case "-f":
-                        wantFlatten = true;
-                        if (action != ActionDesired.Extract) Usage();
-                        break;
-
                     case "-t":
                         action = ActionDesired.Test;
-                        if (entriesToExtract.Count > 0) Usage();
-                        break;
-
-                    case "-d":
-                        i++;
-                        if (args.Length <= i) Usage();
                         if (targdir != null) Usage();
-                        if (extractToConsole) Usage();
-                        if (action != ActionDesired.Extract) Usage();
-                        targdir = args[i];
-                        break;
-
-                    case "-cp":
-                        i++;
-                        if (args.Length <= i) Usage();
-                        if (codePage != 0) Usage();
-                        System.Int32.TryParse(args[i], out codePage);
-                        break;
-
-                    case "-l":
-                        if (password != null) Usage();
-                        if (targdir != null) Usage();
-                        if (wantQuiet) Usage();
+                        //if (wantQuiet) Usage();
                         if (entriesToExtract.Count > 0) Usage();
-                        if (behaviorForExistingFile == ExtractExistingFileAction.OverwriteSilently) Usage();
-                        action = ActionDesired.List;
                         break;
 
                     case "-?":
@@ -190,40 +203,38 @@ namespace Ionic.Zip.Examples
                         // extract specified entries
                         foreach (var entryToExtract in entriesToExtract)
                         {
-                        // find the entry
+                            // find the entry
                             ZipEntry e= zip[entryToExtract];
-                        if (e == null)
-                        {
-                            System.Console.WriteLine("  entry ({0}) does not exist in the zip archive.", entryToExtract);
-                        }
-                        else
-                        {
-                            
-//                             if ((password != null) && !(zip[entryToExtract].UsesEncryption))
-//                             {
-//                                 System.Console.WriteLine("  That entry ({0}) does not require a password to extract.", entryToExtract);
-//                                 password = null;
-//                             }
-                            if (wantFlatten) e.FileName = System.IO.Path.GetFileName(e.FileName);
-
-                            if (password == null)
+                            if (e == null)
                             {
-                                if (e.UsesEncryption)
-                                    System.Console.WriteLine("  That entry ({0}) requires a password to extract.", entryToExtract);
-                                else if (extractToConsole)
-                                    e.Extract(outstream);
-                                else
-                                    e.Extract(targdir, behaviorForExistingFile);
+                                System.Console.WriteLine("  entry ({0}) does not exist in the zip archive.", entryToExtract);
                             }
                             else
                             {
-                                if (extractToConsole)
-                                    e.ExtractWithPassword(outstream, password);
+                                if (wantFlatten) e.FileName = System.IO.Path.GetFileName(e.FileName);
+
+                                if (password == null)
+                                {
+                                    if (e.UsesEncryption)
+                                        System.Console.WriteLine("  That entry ({0}) requires a password to extract.", entryToExtract);
+                                    else if (extractToConsole)
+                                        e.Extract(outstream);
+                                    else
+                                        e.Extract(targdir, behaviorForExistingFile);
+                                }
                                 else
-                                    e.ExtractWithPassword(targdir, behaviorForExistingFile, password);
+                                {
+                                    if (extractToConsole)
+                                        e.ExtractWithPassword(outstream, password);
+                                    else
+                                        e.ExtractWithPassword(targdir, behaviorForExistingFile, password);
+                                }
                             }
                         }
-                        }
+                    }
+                    else if (action == ActionDesired.Info)
+                    {
+                        System.Console.WriteLine("{0}", zip.Info);
                     }
                     else
                     {
