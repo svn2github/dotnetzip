@@ -855,10 +855,10 @@ There is a GPL-licensed library called SharpZipLib that writes zip
 files, it can be found at
 http://www.sharpdevelop.net/OpenSource/SharpZipLib/Default.aspx
 
-This example library is not based on SharpZipLib.  
+This library is not based on SharpZipLib.  
 
-I think there is a Zip library as part of the Mono project.  This
-library is also not based on that.
+I think there may be a Zip library shipped as part of the Mono
+project.  This library is also not based on that.
 
 Now that the Java class library is open source, there is at least one
 open-source Java implementation for zip.  This implementation is not
