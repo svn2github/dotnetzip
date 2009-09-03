@@ -1030,18 +1030,18 @@ namespace Ionic.Zip.Examples.WinForms
                 int n = 1;
                 using (ZipFile zip = ZipFile.Read(zipFile))
                 {
-                    foreach (ZipEntry entry in zip)
+                    foreach (ZipEntry entry in zip.EntriesSorted)
                     {
                         ListViewItem item = new ListViewItem(n.ToString());
                         n++;
                         string[] subitems = new string[] {
-                        entry.FileName.Replace("/","\\"),
-                        entry.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
-                        entry.UncompressedSize.ToString(),
-                        String.Format("{0,5:F0}%", entry.CompressionRatio),
-                        entry.CompressedSize.ToString(),
-                        (entry.UsesEncryption) ? "Y" : "N",
-                        String.Format("{0:X8}", entry.Crc)};
+                            entry.FileName.Replace("/","\\"),
+                            entry.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
+                            entry.UncompressedSize.ToString(),
+                            String.Format("{0,5:F0}%", entry.CompressionRatio),
+                            entry.CompressedSize.ToString(),
+                            (entry.UsesEncryption) ? "Y" : "N",
+                            String.Format("{0:X8}", entry.Crc)};
 
                         foreach (String s in subitems)
                         {

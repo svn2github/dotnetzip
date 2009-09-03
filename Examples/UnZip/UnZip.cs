@@ -249,7 +249,7 @@ namespace Ionic.Zip.Examples
 
                         Int64 totalUncompressedSize = 0;
                         bool header = true;
-                        foreach (ZipEntry e in zip)
+                        foreach (ZipEntry e in zip.EntriesSorted)
                         {
                             if (!wantQuiet)
                             {

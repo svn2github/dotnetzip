@@ -504,7 +504,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DotNetZip Tools v1.9"
         "ProductCode" = "8:{B32D02FE-10A9-4904-B912-F347E98982D6}"
-        "PackageCode" = "8:{6FB4D92A-1E66-4169-A0C8-E6D914415FE7}"
+        "PackageCode" = "8:{81FCC189-6F85-4CC6-8EDA-F06EADF447CE}"
         "UpgradeCode" = "8:{BEF05388-A74D-4383-BD87-61940DF83E20}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
