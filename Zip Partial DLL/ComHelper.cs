@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-08 23:07:11>
+// Time-stamp: <2009-September-08 23:32:57>
 //
 // ------------------------------------------------------------------
 //
@@ -63,6 +63,7 @@ namespace Ionic.Zip
             return ZipFile.IsZipFile(filename, true);
         }
 
+#if !NETCF    
         /// <summary>
         ///  A wrapper for <see cref="ZipFile.CheckZip(string)"/>
         /// </summary>
@@ -80,7 +81,8 @@ namespace Ionic.Zip
         {
             ZipFile.FixZipDirectory(filename);
         }
-
+#endif
+        
         /// <summary>
         ///  A wrapper for <see cref="ZipFile.LibraryVersion"/>
         /// </summary>
