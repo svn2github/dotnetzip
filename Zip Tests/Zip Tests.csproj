@@ -115,6 +115,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\TestCheckZip.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="zips\appnote-iz-latest.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

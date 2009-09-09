@@ -15,7 +15,7 @@
 ' ------------------------------------------------------------------
 '
 ' last saved (in emacs): 
-' Time-stamp: <2009-July-03 16:02:14>
+' Time-stamp: <2009-September-08 22:21:31>
 '
 ' ------------------------------------------------------------------
 '
@@ -77,6 +77,7 @@ Sub Main()
     Else
         WScript.Echo "VbsUnzip.vbs - unzip a zip file using the Shell.Application object."
         WScript.Echo "  usage: VbsUnzip.vbs  <pathToZip>  <extractLocation>"
+        WScript.Quit(1)
     End If
     
 End Sub

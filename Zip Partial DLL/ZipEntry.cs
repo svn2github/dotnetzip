@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-08 17:02:03>
+// Time-stamp: <2009-September-08 23:14:04>
 //
 // ------------------------------------------------------------------
 //
@@ -179,21 +179,26 @@ namespace Ionic.Zip
         ///
         /// <remarks>
         ///
-        /// <para> This value corresponds to the "last modified" time in the NTFS file times
-        /// as described in <see
-        /// href="http://www.pkware.com/documents/casestudies/APPNOTE.TXT">the Zip
-        /// specification</see>.  This value is different from <see cref="LastModified" />.
+        /// <para>
+        ///   This value corresponds to the "last modified" time in the NTFS file times
+        ///   as described in <see
+        ///   href="http://www.pkware.com/documents/casestudies/APPNOTE.TXT">the Zip
+        ///   specification</see>.  When getting this property, the value may be
+        ///   different from <see cref="LastModified" />.  When setting the property,
+        ///   the <see cref="LastModified"/> property also gets set, but with a lower
+        ///   precision.
         /// </para>
         ///
         /// <para>
-        ///   Let me explain. Originally, waaaaay back in 1989 when the ZIP
-        ///   specification was originally described by the esteemed Mr. Phil Katz, the
-        ///   dominant operating system of the time was MS-DOS. MSDOS stored file times
-        ///   with a 2-second precision, because, c'mon, <em>who is ever going to need
-        ///   better resolution than THAT?</em> And so ZIP files, regardless of the
-        ///   platform on which the zip file was created, store file times in exactly
-        ///   <see href="http://www.vsft.com/hal/dostime.htm">the same format that DOS
-        ///   used in 1989</see>.
+        ///   Let me explain. It's going to take a while, so get
+        ///   comfortable. Originally, waaaaay back in 1989 when the ZIP specification
+        ///   was originally described by the esteemed Mr. Phil Katz, the dominant
+        ///   operating system of the time was MS-DOS. MSDOS stored file times with a
+        ///   2-second precision, because, c'mon, <em>who is ever going to need better
+        ///   resolution than THAT?</em> And so ZIP files, regardless of the platform on
+        ///   which the zip file was created, store file times in exactly <see
+        ///   href="http://www.vsft.com/hal/dostime.htm">the same format that DOS used
+        ///   in 1989</see>.
         /// </para>
         ///
         /// <para>
@@ -365,33 +370,37 @@ namespace Ionic.Zip
         }
 
         /// <summary>
-        /// Sets the NTFS Creation, Access, and Modified times for the given entry.
+        ///   Sets the NTFS Creation, Access, and Modified times for the given entry.
         /// </summary>
         ///
         /// <remarks>
         /// <para>
-        /// When adding an entry from a file or directory, the Creation, Access, and
-        /// Modified times for the given entry are automatically set from the filesystem
-        /// values. When adding an entry from a stream or string, the values are
-        /// implicitly set to DateTime.Now.  The application may wish to set these
-        /// values to some arbitrary value, before saving the archive.  If you set the
-        /// times using this method, the <see cref="LastModified"/> property also gets
-        /// set, to the same value provided for mtime.
+        ///   When adding an entry from a file or directory, the Creation, Access, and
+        ///   Modified times for the given entry are automatically set from the
+        ///   filesystem values. When adding an entry from a stream or string, the
+        ///   values are implicitly set to DateTime.Now.  The application may wish to
+        ///   set these values to some arbitrary value, before saving the archive, and
+        ///   can do so using the various setters.  If you want to set all of the times,
+        ///   this method is more efficient.
         /// </para>
         ///
         /// <para>
-        /// The values you set here will be retrievable with the <see cref="ModifiedTime"/>,
-        /// <see cref="CreationTime"/> and <see cref="AccessedTime"/> read-only properties.
+        ///   The values you set here will be retrievable with the <see
+        ///   cref="ModifiedTime"/>, <see cref="CreationTime"/> and <see
+        ///   cref="AccessedTime"/> properties.
         /// </para>
         ///
         /// <para>
-        /// When this method is called, the <see
-        /// cref="EmitTimesInWindowsFormatWhenSaving"/> flag is automatically set.
+        ///   When this method is called, if both <see
+        ///   cref="EmitTimesInWindowsFormatWhenSaving"/> and <see
+        ///   cref="EmitTimesInUnixFormatWhenSaving"/> are false, then the
+        ///   <c>EmitTimesInWindowsFormatWhenSaving</c> flag is automatically set.
         /// </para>
         ///
         /// <para>
-        /// DateTime values provided here without a DateTimeKind are assumed to be Local Time.
+        ///   DateTime values provided here without a DateTimeKind are assumed to be Local Time.
         /// </para>
+        ///
         /// </remarks>
         /// <param name="created">the creation time of the entry.</param>
         /// <param name="accessed">the last access time of the entry.</param>
@@ -405,14 +414,15 @@ namespace Ionic.Zip
         public void SetEntryTimes(DateTime created, DateTime accessed, DateTime modified)
         {
             _ntfsTimesAreSet = true;
-            if (created == _zeroHour) created = _win32Epoch;
-            if (accessed == _zeroHour) accessed = _win32Epoch;
-            if (modified == _zeroHour) modified = _win32Epoch;
+            if (created == _zeroHour &&  created.Kind == _zeroHour.Kind) created = _win32Epoch;
+            if (accessed == _zeroHour && accessed.Kind == _zeroHour.Kind) accessed = _win32Epoch;
+            if (modified == _zeroHour && modified.Kind == _zeroHour.Kind) modified = _win32Epoch;
             _Ctime = created.ToUniversalTime();
             _Atime = accessed.ToUniversalTime();
             _Mtime = modified.ToUniversalTime();
             _LastModified = _Mtime;
-            _emitNtfsTimes = true;
+            if (!_emitUnixTimes && !_emitNtfsTimes)
+                _emitNtfsTimes = true;
             _metadataChanged = true;
         }
 
@@ -2345,8 +2355,6 @@ namespace Ionic.Zip
                 if (_archiveStream == null)
                 {
                     _zipfile.Reset();
-
-                    Console.WriteLine("ArchiveStream");
                     _archiveStream = _zipfile.StreamForDiskNumber(_diskNumber);
                 }
                 return _archiveStream;

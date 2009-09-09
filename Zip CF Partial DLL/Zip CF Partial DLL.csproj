@@ -55,6 +55,9 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Zip Partial DLL\ComHelper.cs">
+      <Link>ComHelper.cs</Link>
+    </Compile>
     <Compile Include="..\Zip Partial DLL\EncryptionAlgorithm.cs">
       <Link>EncryptionAlgorithm.cs</Link>
     </Compile>

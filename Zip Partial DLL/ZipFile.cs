@@ -2009,7 +2009,6 @@ namespace Ionic.Zip
 
         internal Stream StreamForDiskNumber(uint diskNumber)
         {
-                    Console.WriteLine("StreamForDiskNumber");
             if (diskNumber + 1 == this._diskNumberWithCd || (diskNumber == 0 && this._diskNumberWithCd==0))
             {
                 //return (this.ReadStream as FileStream);

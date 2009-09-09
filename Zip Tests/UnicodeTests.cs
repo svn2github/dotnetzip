@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-26 23:51:07>
+// Time-stamp: <2009-September-08 23:28:33>
 //
 // ------------------------------------------------------------------
 //
@@ -131,14 +131,15 @@ namespace Ionic.Zip.Tests.Unicode
         public void Create_UnicodeEntries_Mixed()
         {
             int i;
-            string[] formats = {"弹出应用程序{0:D3}.bin", 
-                                   "n.æøåÆØÅ{0:D3}.bin",
-                               "Configurações-弹出-ÆØÅ-xx{0:D3}.bin",
-                               "file{0:D3}.bin",
-                               "Â¡¢£ ¥â° €Ãƒ †œ Ñ añoAbba{0:D3.bin}", 
-                               "А Б В Г Д Є Ж Ѕ З И І К Л М Н О П Р С Т Ф Х Ц Ч Ш Щ Ъ ЪІ Ь Ю ІА {0:D3}.b",
+            string[] formats = { "file{0:D3}.bin",         // keep this at index==0
+                                 "弹出应用程序{0:D3}.bin",   // Chinese
+                                 "codeplexの更新RSSを見てふと書いた投稿だったけど日本語情報がないかは調{0:D3}.bin", // Japanese
+                                "n.æøåÆØÅ{0:D3}.bin",      // greek
+                                "Configurações-弹出-ÆØÅ-xx{0:D3}.bin",  // portugese + Chinese
+                                "Â¡¢£ ¥â° €Ãƒ †œ Ñ añoAbba{0:D3.bin}",   //?? 
+                                "А Б В Г Д Є Ж Ѕ З И І К Л М Н О П Р С Т Ф Х Ц Ч Ш Щ Ъ ЪІ Ь Ю ІА {0:D3}.b", // Russian
                                "Ελληνικό αλφάβητο {0:D3}.b",
-                               "א ב ג ד ה ו ז ח ט י " + "{0:D3}", 
+                                "א ב ג ד ה ו ז ח ט י " + "{0:D3}",  // I don't know what this is
                                };
 
             // create the subdirectory
@@ -180,20 +181,22 @@ namespace Ionic.Zip.Tests.Unicode
                         "Incorrect number of entries in the zip file.");
 
                 i = 0;
-                // verify the filenames are (or are not) unicode
+                // Verify that the filenames do, or do not, match the names that were added.
+                // They will match if unicode was used (j==0) or if the filename used was the
+                // first in the formats list (k==0).
                 using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
                 {
                     foreach (ZipEntry e in zip2)
                     {
                         int k = i % formats.Length;
                         string fname = String.Format(formats[k], i);
-                        if (j == 0 || k == 3)
+                        if (j == 0 || k == 0)
                         {
-                            Assert.AreEqual<String>(fname, e.FileName);
+                            Assert.AreEqual<String>(fname, e.FileName, "cycle ({0},{1},{2})", i, j, k);
                         }
                         else
                         {
-                            Assert.AreNotEqual<String>(fname, e.FileName);
+                            Assert.AreNotEqual<String>(fname, e.FileName, "cycle ({0},{1},{2})", i, j, k);
                         }
                         i++;
                     }
