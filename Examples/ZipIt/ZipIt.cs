@@ -52,6 +52,7 @@ namespace Ionic.Zip.Examples
             "  -d <path>            - use the given directory path in the archive for\n" +
             "                         succeeding items added to the archive.\n" +
             "  -D <path>            - find files in the given directory on disk.\n" +
+            "  -L <level>           - compression level, 0..9 (Default is 6).\n" +
             "  -p <password>        - apply the specified password for all succeeding files added.\n" +
             "                         use \"\" to reset the password to nil.\n" +
             "  -progress            - emit progress reports (good when creating large zips)\n" +
@@ -212,6 +213,13 @@ namespace Ionic.Zip.Examples
                                 directoryOnDisk = args[i];
                                 break;
 
+                            case "-L":
+                                i++;
+                                if (args.Length <= i) Usage();
+                                zip.CompressionLevel = (Ionic.Zlib.CompressionLevel)
+                                    System.Int32.Parse(args[i]);
+                                break;
+                                
                             case "-p":
                                 i++;
                                 if (args.Length <= i) Usage();
