@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-28 14:41:09>
+// Time-stamp: <2009-September-09 23:46:30>
 //
 // ------------------------------------------------------------------
 //
@@ -2166,7 +2166,118 @@ namespace Ionic.Zip.Tests.Extended
         }
 
         
+        
+        
+
+        [TestMethod]
+        public void CompressTiff_Level9_wi8647()
+        {
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+
+            string tifFile = Path.Combine(testBin, "Resources\\wi8647.tif");
+            Assert.IsTrue(File.Exists(tifFile), "tif file does not exist ({0})",  tifFile);
+
+            byte[] chk1 = TestUtilities.ComputeChecksum(tifFile);
+            string chk1String = TestUtilities.CheckSumToString(chk1);
+
+            for (int x=0; x < (int)(Ionic.Zlib.CompressionLevel.BestCompression); x++)
+            {
+                string zipFileToCreate = Path.Combine(TopLevelDir,
+                                                      String.Format("CompressTiff_Level9-{0}.zip",x));
+                byte[] chk2 = null;
+            
+                using (var zip = new ZipFile())
+                {
+                    zip.CompressionLevel = (Ionic.Zlib.CompressionLevel) x;
+                    zip.AddFile(tifFile,"fodder");
+                    zip.Save(zipFileToCreate);
+                }
+
+                WinzipVerify(zipFileToCreate);
+            
+                Assert.AreEqual<int>(1, TestUtilities.CountEntries(zipFileToCreate), 
+                                     "The zip file created has the wrong number of entries.");
+
+                TestContext.WriteLine("---------------Reading {0}...", zipFileToCreate);
+                string extractDir = String.Format("extract{0}", x);
+                using (ZipFile zip = ZipFile.Read(zipFileToCreate))
+                {
+                    var e = zip[0];
+
+                    TestContext.WriteLine(" Entry: {0}  c({1})  u({2})",
+                                          e.FileName,
+                                          e.CompressedSize,
+                                          e.UncompressedSize);
+                    e.Extract(extractDir);
+                    string filename = Path.Combine(extractDir, e.FileName);
+                    chk2 =  TestUtilities.ComputeChecksum(filename);
+                }
+
+                string chk2String = TestUtilities.CheckSumToString(chk2);
                 
+                Assert.AreEqual<string>(chk1String, chk2String, "Cycle {0}, Checksums for ({1}) do not match.", x, tifFile);
+                TestContext.WriteLine(" Cycle {0}: Checksums match ({1}).\n", x, chk1String);
+            }
+                
+        } 
+            
+
+
+
+        [Timeout(30000), TestMethod]  // timeout in ms.  30000 = 30s
+        public void AddDirectory_ReparsePoint_wi8617()
+        {
+            _Internal_AddDirectory_ReparsePoint_wi8617(1);
+        }
+
+
+        
+        [TestMethod]
+        [ExpectedException(typeof(System.IO.PathTooLongException))]
+        public void AddDirectory_ReparsePoint_wi8617_Error1()
+        {
+            _Internal_AddDirectory_ReparsePoint_wi8617(2);
+        }
+        
+        [TestMethod]
+        [ExpectedException(typeof(System.IO.PathTooLongException))]
+        public void AddDirectory_ReparsePoint_wi8617_Error2()
+        {
+            _Internal_AddDirectory_ReparsePoint_wi8617(0);
+        }
+
+
+        private void _Internal_AddDirectory_ReparsePoint_wi8617(int flavor)
+        {
+            string zipFileToCreate = Path.Combine(TopLevelDir,
+                                                  String.Format("AddDirectory_ReparsePoint-{0}.zip",
+                                                                flavor));
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+
+            string junction = Path.Combine(dirToZip, "cycle");
+            Ionic.IO.JunctionPoint.Create(junction, dirToZip);
+            
+            using (var zip = new ZipFile())
+            {
+                if (flavor == 1)
+                    zip.AddDirectoryWillTraverseReparsePoints = false;
+                else if (flavor == 2)
+                    zip.AddDirectoryWillTraverseReparsePoints = true;
+                // else nothing
+                zip.AddDirectory(dirToZip,"fodder");
+                zip.Save(zipFileToCreate);
+            }
+
+            WinzipVerify(zipFileToCreate);
+            
+            Assert.AreEqual<int>(files.Length, TestUtilities.CountEntries(zipFileToCreate), 
+                                 "The zip file created has the wrong number of entries.");
+            
+        }
+
 
 
     }

@@ -126,6 +126,33 @@ namespace Ionic.Zip
         }
 
 
+
+        /// <summary>
+        ///   Indicates whether NTFS Reparse Points, like junctions,
+        ///   should be traversed during calls to  <c>AddDirectory()</c>.
+        /// </summary>
+        ///
+        /// <remarks>
+        ///   By default, calls to AddDirectory() will traverse NTFS
+        ///   reparse points, like mounted volumes, and directory
+        ///   junctions.  An example of a junction is the "My Music"
+        ///   directory in Windows Vista.  In some cases you may not
+        ///   want DotNetZip to traverse those directories.  In that
+        ///   case, set this property to false.
+        /// </remarks>
+        ///
+        /// <example>
+        /// <code lang="C#">
+        /// using (var zip = new ZipFile())
+        /// {
+        ///     zip.AddDirectoryWillTraverseReparsePoints = false;
+        ///     zip.AddDirectory(dirToZip,"fodder");
+        ///     zip.Save(zipFileToCreate);
+        /// }
+        /// </code>
+        /// </example>
+        public bool AddDirectoryWillTraverseReparsePoints { get; set; }
+
         
         /// <summary>
         /// Size of the IO buffer used while saving.
@@ -2483,6 +2510,7 @@ namespace Ionic.Zip
             _name = zipFileName;
             _StatusMessageTextWriter = statusMessageWriter;
             _contentsChanged = true;
+            AddDirectoryWillTraverseReparsePoints = true;  // workitem 8617
             CompressionLevel = Ionic.Zlib.CompressionLevel.Default;
             // workitem 7685
             _entries = new System.Collections.Generic.List<ZipEntry>();

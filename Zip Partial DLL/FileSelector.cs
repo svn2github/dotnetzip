@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-29 15:55:07>
+// Time-stamp: <2009-September-09 23:17:13>
 //
 // ------------------------------------------------------------------
 //
@@ -486,7 +486,7 @@ namespace Ionic
     {
         internal SelectionCriterion _Criterion;
 
-        #if NOTUSED
+#if NOTUSED
         /// <summary>
         /// The default constructor.  
         /// </summary>
@@ -497,7 +497,32 @@ namespace Ionic
         /// SelectFiles().
         /// </remarks>
         protected FileSelector() { }
-        #endif
+#endif
+        /// <summary>
+        /// Constructor that allows the caller to specify file selection criteria.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// <para>
+        /// This constructor allows the caller to specify a set of criteria for selection of files.
+        /// </para>
+        /// 
+        /// <para>
+        /// See <see cref="FileSelector.SelectionCriteria"/> for a description of the syntax of 
+        /// the selectionCriteria string.
+        /// </para>
+        /// 
+        /// <para>
+        /// By default the FileSelector will traverse NTFS Reparse Points. 
+        /// To change this, use <see cref="FileSelector(String, bool)">FileSelector(String, bool)</see>.
+        /// </para>
+        /// </remarks>
+        /// 
+        /// <param name="selectionCriteria">The criteria for file selection.</param>
+        public FileSelector(String selectionCriteria) 
+        : this(selectionCriteria, true)
+        {
+        }
 
         /// <summary>
         /// Constructor that allows the caller to specify file selection criteria.
@@ -515,10 +540,14 @@ namespace Ionic
         /// </remarks>
         /// 
         /// <param name="selectionCriteria">The criteria for file selection.</param>
-        public FileSelector(String selectionCriteria)
+        /// <param name="traverseDirectoryReparsePoints">
+        /// whether to traverse NTFS reparse points (junctions).
+        /// </param>
+        public FileSelector(String selectionCriteria, bool traverseDirectoryReparsePoints)
         {
             if (!String.IsNullOrEmpty(selectionCriteria))
                 _Criterion = _ParseCriterion(selectionCriteria);
+            TraverseReparsePoints = traverseDirectoryReparsePoints;
         }
 
 
@@ -636,7 +665,15 @@ namespace Ionic
             }
         }
 
+        /// <summary>
+        ///  Indicates whether searches will traverse NTFS reparse points, like Junctions.
+        /// </summary>
+        public bool TraverseReparsePoints
+        {
+            get; set;    
+        }
 
+        
         private enum ParseState
         {
             Start,
@@ -951,27 +988,28 @@ namespace Ionic
             {
                 if (Directory.Exists(directory))
                 {
+                    String[] filenames = System.IO.Directory.GetFiles(directory);
 
-                String[] filenames = System.IO.Directory.GetFiles(directory);
-
-                // add the files: 
-                foreach (String filename in filenames)
-                {
-                    if (Evaluate(filename))
-                        list.Add(filename);
-                }
-
-                if (recurseDirectories)
-                {
-                    // add the subdirectories:
-                    String[] dirnames = System.IO.Directory.GetDirectories(directory);
-                    foreach (String dir in dirnames)
+                    // add the files: 
+                    foreach (String filename in filenames)
                     {
-                        list.AddRange(this.SelectFiles(dir, recurseDirectories));
+                        if (Evaluate(filename))
+                            list.Add(filename);
                     }
-                }
-                    
-                }                
+
+                    if (recurseDirectories)
+                    {
+                        // add the subdirectories:
+                        String[] dirnames = System.IO.Directory.GetDirectories(directory);
+                        foreach (String dir in dirnames)
+                        {
+                            if (this.TraverseReparsePoints ||
+                                ((File.GetAttributes(dir) & FileAttributes.ReparsePoint) == 0)) 
+
+                                list.AddRange(this.SelectFiles(dir, recurseDirectories));
+                        }
+                    }
+                } 
             }
             // can get System.UnauthorizedAccessException here
             catch (System.UnauthorizedAccessException)

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-08 23:32:57>
+// Time-stamp: <2009-September-09 23:56:34>
 //
 // ------------------------------------------------------------------
 //
@@ -45,6 +45,7 @@ namespace Ionic.Zip
         ///  A wrapper for <see cref="ZipFile.IsZipFile(string)"/>
         /// </summary>
         /// <param name="filename">The filename to of the zip file to check.</param>
+        /// <returns>true if the file contains a valid zip file.</returns>
         public bool IsZipFile(string filename)
         {
             return ZipFile.IsZipFile(filename);
@@ -58,6 +59,7 @@ namespace Ionic.Zip
         /// So, here, we use a unique name.
         /// </remarks>
         /// <param name="filename">The filename to of the zip file to check.</param>
+        /// <returns>true if the file contains a valid zip file.</returns>
         public bool IsZipFileWithExtract(string filename)
         {
             return ZipFile.IsZipFile(filename, true);
@@ -68,6 +70,8 @@ namespace Ionic.Zip
         ///  A wrapper for <see cref="ZipFile.CheckZip(string)"/>
         /// </summary>
         /// <param name="filename">The filename to of the zip file to check.</param>
+        ///
+        /// <returns>true if the named zip file checks OK. Otherwise, false. </returns>
         public bool CheckZip(string filename)
         {
             return ZipFile.CheckZip(filename);
@@ -86,6 +90,9 @@ namespace Ionic.Zip
         /// <summary>
         ///  A wrapper for <see cref="ZipFile.LibraryVersion"/>
         /// </summary>
+        /// <returns>
+        ///  the version number on the DotNetZip assembly, formatted as a string.
+        /// </returns>
         public string GetZipLibraryVersion()
         {
             return ZipFile.LibraryVersion.ToString();

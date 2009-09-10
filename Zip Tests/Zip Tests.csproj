@@ -39,6 +39,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\vsp\UnitTestProgressMonitor\CopyDataChannel\bin\Debug\Ionic.CopyData.dll</HintPath>
     </Reference>
+    <Reference Include="Ionic.IO.JunctionPoint, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="Ionic.Zip, Version=1.7.1.11, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Zip Full DLL\bin\Debug\Ionic.Zip.dll</HintPath>
@@ -115,6 +116,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\Ionic.IO.JunctionPoint.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\wi8647.tif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\TestCheckZip.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

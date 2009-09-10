@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-28 15:16:01>
+// Time-stamp: <2009-September-09 23:38:05>
 //
 // ------------------------------------------------------------------
 //
@@ -93,13 +93,18 @@ namespace Ionic.Zip.Tests.Utilities
             if (GotException != null) throw GotException;
         }
 
-        
+
         public static void ClearReadOnly(string dirname)
         {
+            // don't traverse reparse points
+            if ((File.GetAttributes(dirname) & FileAttributes.ReparsePoint) != 0)
+                return;
+
             foreach (var d in Directory.GetDirectories(dirname))
             {
                 ClearReadOnly(d); // recurse
             }
+
             foreach (var f in Directory.GetFiles(dirname))
             {
                 // clear ReadOnly and System attributes
@@ -118,7 +123,7 @@ namespace Ionic.Zip.Tests.Utilities
         }
 
 
-        
+
         #endregion
 
 
@@ -151,7 +156,7 @@ namespace Ionic.Zip.Tests.Utilities
             CreateAndFillFileText(filename, size, null);
         }
 
-        
+
         internal static void CreateAndFillFileText(string filename, Int64 size, System.Action<Int64> update)
         {
             Int64 bytesRemaining = size;
@@ -159,7 +164,7 @@ namespace Ionic.Zip.Tests.Utilities
             if (size > 128 * 1024)
             {
                 RandomTextGenerator rtg = new RandomTextGenerator();
-                
+
                 // fill the file with text data, selecting large blocks at a time
                 using (StreamWriter sw = File.CreateText(filename))
                 {
@@ -169,7 +174,7 @@ namespace Ionic.Zip.Tests.Utilities
                         sw.Write(generatedText);
                         sw.Write("\n\n");
                         bytesRemaining -= (generatedText.Length + 2);
-                        
+
                         if (update != null)
                             update(size - bytesRemaining);
 
@@ -178,31 +183,31 @@ namespace Ionic.Zip.Tests.Utilities
             }
             else
             {
-                
-            // fill the file with text data, selecting one word at a time
-            using (StreamWriter sw = File.CreateText(filename))
-            {
-                do
-                {
-                    // pick a word at random
-                    string selectedWord = LoremIpsumWords[_rnd.Next(LoremIpsumWords.Length)];
-                    if (bytesRemaining < selectedWord.Length + 1)
-                    {
-                        sw.Write(selectedWord.Substring(0, (int)bytesRemaining));
-                        bytesRemaining = 0;
-                    }
-                    else
-                    {
-                        sw.Write(selectedWord);
-                        sw.Write(" ");
-                        bytesRemaining -= (selectedWord.Length + 1);
-                    }
-                    if (update != null)
-                        update(size - bytesRemaining);
 
-                } while (bytesRemaining > 0);
-                sw.Close();
-            }
+                // fill the file with text data, selecting one word at a time
+                using (StreamWriter sw = File.CreateText(filename))
+                {
+                    do
+                    {
+                        // pick a word at random
+                        string selectedWord = LoremIpsumWords[_rnd.Next(LoremIpsumWords.Length)];
+                        if (bytesRemaining < selectedWord.Length + 1)
+                        {
+                            sw.Write(selectedWord.Substring(0, (int)bytesRemaining));
+                            bytesRemaining = 0;
+                        }
+                        else
+                        {
+                            sw.Write(selectedWord);
+                            sw.Write(" ");
+                            bytesRemaining -= (selectedWord.Length + 1);
+                        }
+                        if (update != null)
+                            update(size - bytesRemaining);
+
+                    } while (bytesRemaining > 0);
+                    sw.Close();
+                }
             }
         }
 
@@ -211,7 +216,7 @@ namespace Ionic.Zip.Tests.Utilities
             CreateAndFillFileText(Filename, Line, size, null);
         }
 
-        
+
         internal static void CreateAndFillFileText(string Filename, string Line, Int64 size, System.Action<Int64> update)
         {
             Int64 bytesRemaining = size;
@@ -246,12 +251,12 @@ namespace Ionic.Zip.Tests.Utilities
         {
             _CreateAndFillBinary(Filename, size, false, null);
         }
-        
+
         internal static void CreateAndFillFileBinary(string Filename, Int64 size, System.Action<Int64> update)
         {
             _CreateAndFillBinary(Filename, size, false, update);
         }
-        
+
         internal static void CreateAndFillFileBinaryZeroes(string Filename, Int64 size, System.Action<Int64> update)
         {
             _CreateAndFillBinary(Filename, size, true, update);
@@ -294,9 +299,9 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal enum FileFlavor
         {
-            text=0, binary=1,
+            text = 0, binary = 1,
         }
-        
+
         internal static void CreateAndFillFile(string filename, Int64 size, FileFlavor flavor)
         {
             if (size == 0)
@@ -414,8 +419,8 @@ namespace Ionic.Zip.Tests.Utilities
             do
             {
                 x = (char)(_rnd.Next(range) + start);
-                
-            } while (x=='^' || x=='&' || x=='"' || x=='>'|| x=='<');
+
+            } while (x == '^' || x == '&' || x == '"' || x == '>' || x == '<');
             return x;
         }
 
@@ -549,7 +554,7 @@ namespace Ionic.Zip.Tests.Utilities
                 for (int j = 0; j < filecount; j++)
                 {
                     int n = _rnd.Next(2);
-                    filename = String.Format("file{0:D4}.{1}", j, (n==0)? "txt" : "bin");
+                    filename = String.Format("file{0:D4}.{1}", j, (n == 0) ? "txt" : "bin");
                     TestUtilities.CreateAndFillFile(Path.Combine(subdir, filename),
                                                     _rnd.Next(settings[4]) + settings[5],
                                                     (FileFlavor)n);
@@ -572,10 +577,10 @@ namespace Ionic.Zip.Tests.Utilities
             int numFilesToCreate = _rnd.Next(23) + 14;
             return GenerateFilesFlat(subdir, numFilesToCreate);
         }
-        
+
         internal static string[] GenerateFilesFlat(string subdir, int numFilesToCreate)
         {
-            return GenerateFilesFlat(subdir, numFilesToCreate, 5000, 39000);            
+            return GenerateFilesFlat(subdir, numFilesToCreate, 5000, 39000);
         }
 
         internal static string[] GenerateFilesFlat(string subdir, int numFilesToCreate, int size)
@@ -591,7 +596,7 @@ namespace Ionic.Zip.Tests.Utilities
             }
             return FilesToZip;
         }
-        
+
         internal static string[] GenerateFilesFlat(string subdir, int numFilesToCreate, int lowSize, int highSize)
         {
             if (!Directory.Exists(subdir))
@@ -601,11 +606,11 @@ namespace Ionic.Zip.Tests.Utilities
             for (int i = 0; i < numFilesToCreate; i++)
             {
                 FilesToZip[i] = Path.Combine(subdir, String.Format("testfile{0:D3}.txt", i));
-                TestUtilities.CreateAndFillFileText(FilesToZip[i], _rnd.Next(highSize-lowSize) + lowSize);
+                TestUtilities.CreateAndFillFileText(FilesToZip[i], _rnd.Next(highSize - lowSize) + lowSize);
             }
             return FilesToZip;
         }
-        
+
 
         internal static string GetTestBinDir(string startingPoint)
         {
@@ -626,7 +631,7 @@ namespace Ionic.Zip.Tests.Utilities
 
 
 
-        
+
 
         internal static int Exec_NoContext(string program, string args, bool waitForExit, out string output)
         {
@@ -640,9 +645,9 @@ namespace Ionic.Zip.Tests.Utilities
                         WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
                         UseShellExecute = false,
                     }
-                    
+
                 };
-            
+
             if (waitForExit)
             {
                 StringBuilder sb = new StringBuilder();
@@ -650,12 +655,12 @@ namespace Ionic.Zip.Tests.Utilities
                 p.StartInfo.RedirectStandardError = true;
                 // must read at least one of the stderr or stdout asynchronously,
                 // to avoid deadlock
-                Action<Object,System.Diagnostics.DataReceivedEventArgs> stdErrorRead = (o,e) =>
+                Action<Object, System.Diagnostics.DataReceivedEventArgs> stdErrorRead = (o, e) =>
                 {
                     if (!String.IsNullOrEmpty(e.Data))
                         sb.Append(e.Data);
                 };
-                
+
                 p.ErrorDataReceived += new System.Diagnostics.DataReceivedEventHandler(stdErrorRead);
                 p.Start();
                 p.BeginErrorReadLine();
@@ -753,7 +758,7 @@ namespace Ionic.Zip.Tests.Utilities
         {
             _rnd = new System.Random();
         }
-        
+
         #region Context
         private TestContext testContextInstance;
 
@@ -776,7 +781,7 @@ namespace Ionic.Zip.Tests.Utilities
         #endregion
 
 
-        
+
         #region Test Init and Cleanup
         //
         // You can use the following additional attributes as you write your tests:
@@ -809,12 +814,12 @@ namespace Ionic.Zip.Tests.Utilities
         #endregion
 
 
-        
+
         internal string Exec(string program, string args)
         {
             return Exec(program, args, true);
         }
-        
+
         internal string Exec(string program, string args, bool waitForExit)
         {
             if (args == null)
@@ -891,7 +896,7 @@ namespace Ionic.Zip.Tests.Utilities
         protected static void CreateLargeFilesWithChecksums(string subdir, int numFiles, out string[] filesToZip, out Dictionary<string, byte[]> checksums)
         {
             // create a bunch of files
-            filesToZip = TestUtilities.GenerateFilesFlat(subdir, numFiles, 256*1024, 3*1024*1024);
+            filesToZip = TestUtilities.GenerateFilesFlat(subdir, numFiles, 256 * 1024, 3 * 1024 * 1024);
             DateTime atMidnight = new DateTime(DateTime.Now.Year,
                                                DateTime.Now.Month,
                                                DateTime.Now.Day);
@@ -915,12 +920,12 @@ namespace Ionic.Zip.Tests.Utilities
         }
 
 
-        
-        protected static void VerifyChecksums(string extractDir, 
-            System.Collections.Generic.IEnumerable<String> filesToCheck, 
+
+        protected static void VerifyChecksums(string extractDir,
+            System.Collections.Generic.IEnumerable<String> filesToCheck,
             Dictionary<string, byte[]> checksums)
         {
-            int count= 0;
+            int count = 0;
             foreach (var fqPath in filesToCheck)
             {
                 var f = Path.GetFileName(fqPath);
@@ -939,24 +944,24 @@ namespace Ionic.Zip.Tests.Utilities
     }
 
 
-    
+
     public static class Extensions
     {
 
         public static IEnumerable<string> SplitByWords(this string subject)
-        {  
+        {
             List<string> tokens = new List<string>();
             Regex regex = new Regex(@"\s+");
-            tokens.AddRange(regex.Split(subject));  
-  
-            return tokens;  
+            tokens.AddRange(regex.Split(subject));
+
+            return tokens;
         }
 
         // Capitalize
         public static string Capitalize(this string subject)
         {
             if (subject.Length < 2) return subject.ToUpper();
-            return subject.Substring(0,1).ToUpper() +
+            return subject.Substring(0, 1).ToUpper() +
                 subject.Substring(1);
         }
 
@@ -965,19 +970,19 @@ namespace Ionic.Zip.Tests.Utilities
         {
             while (subject.EndsWith(".") ||
                    subject.EndsWith(",") ||
-                   subject.EndsWith(";")||
+                   subject.EndsWith(";") ||
                    subject.EndsWith("?") ||
                    subject.EndsWith("!"))
-                subject = subject.Substring(0,subject.Length-1);
+                subject = subject.Substring(0, subject.Length - 1);
             return subject;
         }
     }
 
 
-    
+
     public class RandomTextGenerator
     {
-        static string[] uris =  new string[]
+        static string[] uris = new string[]
             {
                 // "Through the Looking Glass", by Lewis Carroll (~181k)
                 "http://www.gutenberg.org/files/12/12.txt",
@@ -999,13 +1004,13 @@ namespace Ionic.Zip.Tests.Utilities
             markov = new SimpleMarkovChain(seedText);
         }
 
-        
+
         public string Generate(int length)
         {
             return markov.GenerateText(length);
         }
 
-        
+
         private static string GetPageMarkup(string uri)
         {
             string pageData = null;
@@ -1017,7 +1022,7 @@ namespace Ionic.Zip.Tests.Utilities
         }
     }
 
-    
+
     /// <summary>
     /// Implements a simple Markov chain for text.
     /// </summary>
@@ -1032,37 +1037,37 @@ namespace Ionic.Zip.Tests.Utilities
     {
         Dictionary<String, List<String>> table = new Dictionary<String, List<String>>();
         System.Random rnd = new System.Random();
-            
+
         public SimpleMarkovChain(string seed)
         {
             string NEWLINE = "\n";
-            string key= NEWLINE;
+            string key = NEWLINE;
             var sr = new StringReader(seed);
             string line;
             while ((line = sr.ReadLine()) != null)
             {
                 foreach (var word in line.SplitByWords())
                 {
-                    var w = (word=="") ? NEWLINE : word; // newline
+                    var w = (word == "") ? NEWLINE : word; // newline
                     if (word == "\r") w = NEWLINE;
-                        
-                    if (!table.ContainsKey(key)) table.Add(key,new List<string>());
+
+                    if (!table.ContainsKey(key)) table.Add(key, new List<string>());
                     table[key].Add(w);
                     key = w.ToLower().TrimPunctuation();
                 }
             }
-            if (!table.ContainsKey(key)) table.Add(key,new List<string>());
+            if (!table.ContainsKey(key)) table.Add(key, new List<string>());
             table[key].Add(NEWLINE);
             key = NEWLINE;
         }
 
-            
+
         internal void Diag()
         {
             Console.WriteLine("There are {0} keys in the table", table.Keys.Count);
             foreach (string s in table.Keys)
             {
-                string x= s.Replace("\n", "�");
+                string x = s.Replace("\n", "�");
                 var y = table[s].ToArray();
                 Console.WriteLine("  {0}: {1}", x, String.Join(", ", y));
             }
@@ -1070,11 +1075,11 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal void ShowList(string word)
         {
-            string x= word.Replace("\n", "�");
+            string x = word.Replace("\n", "�");
             if (table.ContainsKey(word))
             {
                 var y = table[word].ToArray();
-                var z = Array.ConvertAll(y,  x1 => x1.Replace("\n", "�"));
+                var z = Array.ConvertAll(y, x1 => x1.Replace("\n", "�"));
                 Console.WriteLine("  {0}: {1}", x, String.Join(", ", z));
             }
             else
@@ -1086,7 +1091,7 @@ namespace Ionic.Zip.Tests.Utilities
         {
             get
             {
-                if (_keywords== null)
+                if (_keywords == null)
                     _keywords = new List<String>(table.Keys);
                 return _keywords;
             }
@@ -1167,30 +1172,30 @@ namespace Ionic.Zip.Tests.Utilities
             return _InternalGenerate(chosenStartWord, StopCriterion.NumberOfWords, minimumWords);
         }
 
-        
+
         private string _InternalGenerate(string start, StopCriterion crit, int limit)
         {
-            string w1= start.ToLower();
+            string w1 = start.ToLower();
             StringBuilder sb = new StringBuilder();
             sb.Append(start.Capitalize());
-                
+
             int consecutiveNewLines = 0;
-            string word= null;
+            string word = null;
             string priorWord = null;
 
             // About the stop criteria:
             // we keep going til we reach the specified number of words or chars, with the added
             // proviso that we have to complete the in-flight sentence when the limit is reached.
-            
-            for (int i= 0;
-                 (crit==StopCriterion.NumberOfWords && i < limit) ||
-                     (crit==StopCriterion.NumberOfChars && sb.Length < limit) ||
-                     consecutiveNewLines==0 ;
+
+            for (int i = 0;
+                 (crit == StopCriterion.NumberOfWords && i < limit) ||
+                     (crit == StopCriterion.NumberOfChars && sb.Length < limit) ||
+                     consecutiveNewLines == 0;
                  i++)
             {
                 if (table.ContainsKey(w1))
                 {
-                    var list= table[w1];
+                    var list = table[w1];
                     int ix = rnd.Next(list.Count);
                     priorWord = word;
                     word = list[ix];
@@ -1205,11 +1210,11 @@ namespace Ionic.Zip.Tests.Utilities
                         // words that end sentences get a newline
                         if (word.EndsWith("."))
                         {
-                            if (consecutiveNewLines==0 || consecutiveNewLines==1)
+                            if (consecutiveNewLines == 0 || consecutiveNewLines == 1)
                                 sb.Append("\n");
                             consecutiveNewLines++;
                         }
-                        else consecutiveNewLines=0;
+                        else consecutiveNewLines = 0;
                     }
                     w1 = word.ToLower().TrimPunctuation();
                 }
@@ -1218,17 +1223,17 @@ namespace Ionic.Zip.Tests.Utilities
         }
 
 
-        
+
         private enum StopCriterion
         {
             NumberOfWords,
             NumberOfChars
         }
-        
+
     }
 
 
-    
+
     public class RandomTextInputStream : Stream
     {
         RandomTextGenerator _rtg;
@@ -1236,16 +1241,16 @@ namespace Ionic.Zip.Tests.Utilities
         Int64 _bytesRead;
         System.Text.Encoding _encoding;
 
-        
+
         public RandomTextInputStream(Int64 length)
-            : this(length, System.Text.Encoding.GetEncoding("ascii") )
+            : this(length, System.Text.Encoding.GetEncoding("ascii"))
         {
         }
 
         public RandomTextInputStream(Int64 length, System.Text.Encoding encoding)
             : base()
         {
-            _desiredLength= length;
+            _desiredLength = length;
             _rtg = new RandomTextGenerator();
             _encoding = encoding;
         }
@@ -1263,9 +1268,9 @@ namespace Ionic.Zip.Tests.Utilities
                 remainingBytesToRead = unchecked((int)(_desiredLength - _bytesRead));
 
 
-            int totalBytesToRead= remainingBytesToRead;
+            int totalBytesToRead = remainingBytesToRead;
             byte[] src = _encoding.GetBytes(_rtg.Generate(maxChunkSize));
-            int nBlocks= 0;
+            int nBlocks = 0;
             while (remainingBytesToRead > 0)
             {
                 int chunksize = (remainingBytesToRead > maxChunkSize) ? maxChunkSize : remainingBytesToRead;
@@ -1303,7 +1308,7 @@ namespace Ionic.Zip.Tests.Utilities
 
         public override long Length
         {
-            get { return _desiredLength; }  
+            get { return _desiredLength; }
         }
 
         public override long Position
@@ -1327,12 +1332,12 @@ namespace Ionic.Zip.Tests.Utilities
                 throw new NotImplementedException();
             _desiredLength = value;
         }
-        
+
         public override void Flush()
         {
         }
     }
 
 
-    
+
 }

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-19 20:09:03>
+// Time-stamp: <2009-September-09 23:20:50>
 //
 // ------------------------------------------------------------------
 //
@@ -488,7 +488,8 @@ namespace Ionic.Zip
             }
             if (Verbose) StatusMessageTextWriter.WriteLine("adding selection '{0}' from dir '{1}'...",
                                                                selectionCriteria, directoryOnDisk);
-            Ionic.FileSelector ff = new Ionic.FileSelector(selectionCriteria);
+            Ionic.FileSelector ff = new Ionic.FileSelector(selectionCriteria,
+                                                           AddDirectoryWillTraverseReparsePoints);
             var filesToAdd = ff.SelectFiles(directoryOnDisk, recurseDirectories);
                 
             if (Verbose) StatusMessageTextWriter.WriteLine("found {0} files...", filesToAdd.Count);
@@ -578,7 +579,8 @@ namespace Ionic.Zip
         /// <returns>a collection of ZipEntry objects that conform to the inclusion spec</returns>
         public ICollection<ZipEntry> SelectEntries(String selectionCriteria)
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector(selectionCriteria);
+            Ionic.FileSelector ff = new Ionic.FileSelector(selectionCriteria,
+                                                           AddDirectoryWillTraverseReparsePoints);
             return ff.SelectEntries(this);
         }
 
@@ -650,7 +652,8 @@ namespace Ionic.Zip
         /// <returns>a collection of ZipEntry objects that conform to the inclusion spec</returns>
         public ICollection<ZipEntry> SelectEntries(String selectionCriteria, string directoryPathInArchive)
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector(selectionCriteria);
+            Ionic.FileSelector ff = new Ionic.FileSelector(selectionCriteria,
+                                                           AddDirectoryWillTraverseReparsePoints);
             return ff.SelectEntries(this, directoryPathInArchive);
         }
 

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-29 00:15:49>
+// Time-stamp: <2009-September-10 00:10:33>
 //
 // ------------------------------------------------------------------
 //
@@ -1711,27 +1711,9 @@ namespace Ionic.Zip
             if (level > 0 || rootDirectoryPathInArchive != "")
             {
                 baseDir = ZipEntry.Create(directoryName, dirForEntries);
-                //baseDir.BufferSize = BufferSize;
                 baseDir.ProvisionalAlternateEncoding = this.ProvisionalAlternateEncoding;  // workitem 6410
-                //baseDir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
                 baseDir.MarkAsDirectory();
                 baseDir._zipfile = this;
-
-                // Previously, we used to test for the existence of the directory and 
-                // throw if it exists.  But that seems silly. We will still throw 
-                // if a file exists and the action is AddOnly.  But for a directory, 
-                // it does not matter if it already exists.  So no throw. 
-
-                //if (action == AddOrUpdateAction.AddOnly)
-                //    InsureUniqueEntry(baseDir);
-                //else
-                //{
-                //    // For updates, remove the old entry before adding the new. 
-                //    ZipEntry e = this[baseDir.FileName];
-                //    if (e != null)
-                //        RemoveEntry(e);
-                //}
-
 
                 // check for uniqueness:
                 ZipEntry e = this[baseDir.FileName];
@@ -1758,9 +1740,16 @@ namespace Ionic.Zip
             String[] dirnames = Directory.GetDirectories(directoryName);
             foreach (String dir in dirnames)
             {
-                AddOrUpdateDirectoryImpl(dir, rootDirectoryPathInArchive, action, level + 1);
+                // workitem 8617: Optionally traverse reparse points
+#if NETCF
+                FileAttributes fileAttrs = (FileAttributes) NetCfFile.GetAttributes(dir);
+#else
+                FileAttributes fileAttrs = System.IO.File.GetAttributes(dir);
+#endif
+                if (this.AddDirectoryWillTraverseReparsePoints ||
+                    ((fileAttrs & FileAttributes.ReparsePoint) == 0)) 
+                    AddOrUpdateDirectoryImpl(dir, rootDirectoryPathInArchive, action, level + 1);
             }
-            //_contentsChanged = true;
 
             if (level == 0)
                 OnAddCompleted();
