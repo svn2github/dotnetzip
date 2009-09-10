@@ -13,12 +13,14 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 </style>
 </head>
 
-<!-- @SortOrder 2 --> 
+<!-- @SortOrder 5 --> 
 
 <body>
 <h1>DotNetZip works with the .NET Compact Framework</h1>
 
-<p>As of v1.7.1.10, there is a special version of DotNetZip that runs on the .NET Compact Framework v2.0 or v3.5.
+<p>
+There is a special version of DotNetZip, specifically built for the
+.NET Compact Framework v2.0 or v3.5.
 </p>
 
 <p>The programming model is exactly the same as for the regular
@@ -27,7 +29,8 @@ DotNetZip library. There are a few differences in operation.</p>
 <ol>
 
 <li>The CF version of DotNetZip is not able to produce Self-extracting
-archives.  The ZipFile.SaveSelfExtractor() method is not available in
+archives.  The <span style="font-family:
+Courier;">ZipFile.SaveSelfExtractor()</span> method is not available in
 the CF version of DotNetZip. There's no strong technical reason for this
 limnitation; I just didn't think it would be of mainstream interest, and
 in order to keep the size of the library down, I omitted that part from

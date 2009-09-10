@@ -14,15 +14,16 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 </style>
 </head>
 
-<!-- @SortOrder 2 --> 
+<!-- @SortOrder 4 --> 
 
 <body>
 <h1>DotNetZip can be used from COM Environments</h1>
 
-<p>As of v1.8.2.3, you can use DotNetZip from COM environments, via an
+<p>You can use DotNetZip from COM environments, via an
 IDispatch (late bound) interface. This means you can call into the DotNetZip
 library (the Ionic.Zip.dll assembly) from programming environments like PHP,
-Perl, Javascript, and VBScript, among others.  </p>
+Perl, Javascript, and VBScript (including old-school ASP pages), among others.  
+</p>
 
 <p> Doing this requires you to install the Ionic.Zip.dll (or
 Ionic.Zip.Reduced.dll) for COM use on the computer. There are 2 distinct
@@ -33,55 +34,68 @@ steps: </p>
 <li>Register for COM use: <span style="font-family: Courier;">regasm Ionic.Zip.dll</span></li>
 </ol>
 
-<p>You will need to be local administrator in order to perform these steps on
-a computer. You need to perform those steps just once.   </p>
+<p>You will need to be local administrator in order to perform these
+steps on a computer. You need to perform those steps just once.  </p>
 
 <p>If you download the DotNetZip Runtime Installer MSI, it will do these
 steps for you when it installs.  </p>
 
 <h2>Using the COM interface to DotNetZip</h2>
 
-<p>Via the COM exposure, applications written in COM-capable
-environments like old-school ASP using VBScript or Javascript, VBScript
-or Javascript running in Windows Script Host, PHP, Perl, and others, can
-create instances of the ZipFile class, add entries, and save archives,
-as any .NET application could.  Most of DotNetZip's advanced features
-are available to these COM environments, including ZIP64 support,
-self-extracting archives, password-protected zip files, AES Encryption,
-and Unicode support. COM environments can also read zip files and
-extract files from zip files.  </p>
+<p>Via the COM exposure, applications written in COM-capable environments like
+old-school ASP using VBScript or Javascript, VBScript or Javascript running in Windows
+Script Host, PHP, Perl, and others, can create instances of the ZipFile class, add
+entries, and save archives, as any .NET application could.  Most of DotNetZip's advanced
+features are available to these COM environments, including ZIP64 support,
+self-extracting archives, password-protected zip files, AES Encryption, spanned Zip
+files, and Unicode support. Beyond creating zips, COM environments can also read zips,
+modify them, or extract files from zip files.</p>
 
-<p>
-Some of the advanced features of DotNetZip are not available through COM,
-including eventing, and streaming.
-</p>
+<p> Some of the advanced features of DotNetZip are not available through
+COM, including eventing, and streaming. </p>
 
 <h3>IDispatch</h3>
 
 <p> The key classes in DotNetZip that are exposed to COM are: ZipFile,
 ZipEntry, and the various ZipExceptions.  These are all exposed via
 IDispatch interfaces - late binding only.  (For those familiar with
-.NET, DotNetZip is decorated with ClassInterfaceType.AutoDispatch.)
-There is no explicit typelib exposed by DotNetZip.  </p>
+.NET, DotNetZip is decorated with <span style="font-family:
+Courier;">ClassInterfaceType.AutoDispatch</span>.)  There is no explicit
+typelib exposed by DotNetZip.  </p>
+
+<p>COM supports calling instance methods and properties on .NET classes; COM does not
+support calling static methods on .NET objects via interop.  To allow the various static
+methods on the ZipFile class, such as <span style="font-family:
+Courier;">ZipFile.CheckZip()</span> and <span style="font-family:
+Courier;">ZipFile.IsZipFile()</span>, to be called from COM, DotNetZip includes a
+ComHelper class. Instead of calling <span style="font-family:
+Courier;">ZipFile.IsZipFile()</span>, which is inaccessible to COM clients because it is
+a static method, COM clients should call <span style="font-family:
+Courier;">Ionic.Zip.ComHelper.IsZipFile()</span>.  Use ComHelper as you would, any other
+class. The methods on the class are documented as with all the other classes in
+DotNetZip.  If you are not programming DotNetZip from COM, you don't need the ComHelper
+class. </p>
+
 
 <h3>Overloaded Methods</h3>
 
-<p>
-It seems that COM does not directly support calling overloaded methods, Only the
-simplest method in a method group is directly available to COM callers.  For example,
-consider ZipFile.AddFile.  There are two overloads.  Only the overload that
-accepts a single string will be accessible via the name "AddFile" to COM clients. </p>
+<p> COM does not directly support calling overloaded methods.  In a .NET
+assembbly exposed to COM via interop, only the simplest method in a
+method group is directly available to COM callers.  For example,
+consider <span style="font-family: Courier;">ZipFile.AddFile</span>.  There are two overloads.  Only the overload
+that accepts a single string will be accessible via the name "AddFile"
+to COM clients. </p>
 
-<p> In most cases the
-thing you need to accomplish is achievable anyway.  In the AddFile() case, setting
-the FileName on the entry after calling AddFile() will do the trick.  </p>
+<p> In most cases the thing you need to accomplish is achievable anyway.
+In the <span style="font-family: Courier;">AddFile()</span> case, setting the FileName on the entry after calling
+<span style="font-family: Courier;">AddFile()</span> will do the trick.  </p>
 
 <p>Also, the overloaded methods <em>are available</em>, via "mangled"
 names: each successive overload gets a numeric suffix.  Consider the
-ExtractSelectedEntries method; there are 5 overloads. The first,
-simplest, is available via the name ExtractSelectedEntries.  Then,
-additional overloads are available via ExtractSelectedEntries_2,
-ExtractSelectedEntries_3, and so on. The same is true for other
+<span style="font-family: Courier;">ZipFile.ExtractSelectedEntries</span> method group; there are 5 overloads. The first,
+simplest, is available via the name <span style="font-family: Courier;">ExtractSelectedEntries</span>.  Then,
+additional overloads are available via <span style="font-family: Courier;">ExtractSelectedEntries_2</span>,
+<span style="font-family: Courier;">ExtractSelectedEntries_3</span>, and so on. The same is true for other
 overloaded methods on the ZipFile and ZipEntry classes. 
 </p>
 
@@ -268,11 +282,11 @@ overloaded methods on the ZipFile and ZipEntry classes.
 <td>ExtractSelectedEntries_3</td>
 </tr>
 <tr>
-<td>ExtractSelectedEntries(string, string,string)</td>
+<td>ExtractSelectedEntries(string, string, string)</td>
 <td>ExtractSelectedEntries_4</td>
 </tr>
 <tr>
-<td>ExtractSelectedEntries(string, string,string,ExtractExistingFileAction)</td>
+<td>ExtractSelectedEntries(string, string, string, ExtractExistingFileAction)</td>
 <td>ExtractSelectedEntries_5</td>
 </tr>
 
@@ -365,8 +379,9 @@ overloaded methods on the ZipFile and ZipEntry classes.
 </table>
 
 
-<p>The bad news is that the mappings between names and actual methods will change over releases of DotNetZip.
-</p>
+<p>The bad news is that the mappings between names and actual methods
+will change over releases of DotNetZip.  This means depending on these
+names is a bit fragile, but it will work.</p>
 
 
 
@@ -374,11 +389,18 @@ overloaded methods on the ZipFile and ZipEntry classes.
 
 <p>After you call .Dispose() on the ZipFile object, you should destroy
 it completely.  In VBSCript, this is done by setting the object
-reference to Nothing.  You can't reuse the object instance for another
-zip file.  If for example, you want to read and extract a number of ZIP
-files in a loop, then you'll need to instantiate a new ZipFile object to
-read each one. 
+reference to Nothing.
 </p>
+
+<h3>The usage model for the ZipFile object</h3>
+
+<p> After you initialize a ZipFile object, you can't reuse the same
+object instance for another zip file.  If for example, you have a set of
+6 zip files, and you want to read and extract them in a loop, then
+you'll need to instantiate a new ZipFile object to read each one.  You
+should call Dispose() on each one when you're finished, and then set it
+to null/Nothing.  </p>
+
 
 <h3>For enumerations</h3>
 
@@ -430,6 +452,8 @@ then downloads it to the requesting client.  The Zip archive will use
 </pre>
 
 
+
+
 <h2>Using DotNetZip in Javascript</h2>
 
 <p> This example dynamically creates a zipfile, using AES 256-bit encryption. 
@@ -446,7 +470,8 @@ try
     var zip = new ActiveXObject("Ionic.Zip.ZipFile");
 
     WScript.echo("setting the encryption...");
-    zip.Encryption = 3;
+    // 3 = AES256, 2 = AES128, 1 = PKZIP, 0 = none
+    zip.Encryption = 3;  
 
     WScript.echo("setting the password...");
     zip.Password = "This is the Password.";
@@ -473,9 +498,8 @@ catch (e2)
 }
 </pre>
 
-<p> This example lists entries in a zipfile.
+<p> This example lists the entries in a zipfile.
 </p>
-
 
 <pre lang="Javascript" numberLines="true" outlining="true"
   title="Listing entries in a Zip archive">
@@ -512,9 +536,56 @@ catch (e2)
 
 
 
+<p> This example checks a ZipFile using the ComHelper class.
+</p>
+
+<pre lang="Javascript" numberLines="true" outlining="true"
+  title="Checking a file to see if it is a Zip archive">
+
+function checkZip(filename)
+{
+    var obj = new ActiveXObject("Ionic.Zip.ComHelper");
+    return obj.IsZipFile(filename);
+}
+
+function checkZipWithExtract(filename)
+{
+    var obj = new ActiveXObject("Ionic.Zip.ComHelper");
+    return obj.IsZipFileWithExtract(filename);
+}
+
+function main()
+{
+    var result;
+    var args = WScript.Arguments;
+
+    if (args.Length == 1) 
+    {
+        result = checkZip(args(0));
+    }
+    else if (args.Length == 2 && args(0) == "-x") 
+    {
+        result = checkZipWithExtract(args(1));
+    }
+    else 
+    {
+        WScript.Echo("TestCheckZip.js - check a zipfile using Javascript.");
+        WScript.Echo("  usage: TestCheckZip.js [-x]  <pathToZip>");
+        WScript.Quit(1);
+    }
+
+    WScript.Echo((result==0)?"That zip is not OK":"That zip is OK");
+    WScript.Quit(0);
+}
+
+main();
+</pre>
+
+
+
 <h2>Using DotNetZip in VBScript</h2>
 
-<p> This example dynamically creates a zipfile, using AES 256-bit encryption. 
+<p> This example creates a zipfile, using AES 256-bit encryption. 
 </p>
 
 
@@ -528,7 +599,8 @@ catch (e2)
   dim zip 
   set zip = CreateObject("Ionic.Zip.ZipFile")
 
-  WScript.echo("using AES256 encryption...")
+  WScript.echo("Setting the encryption...")
+  ' 3=AES256, 2=AES128, 1=PKZIP, 0=none
   zip.Encryption = 3
 
   WScript.echo("setting the password...")
@@ -580,6 +652,7 @@ catch (e2)
   WScript.echo("Done.")
 
 </pre>
+
 
 
 <p> This example lists the entries in a zipfile, and extracts some of them.
@@ -646,7 +719,7 @@ method, as described above.  </p>
             zip.Password = password
           End If
 
-          zip.ExtractSelectedEntries "name = *.xml", Null, extractLocation, OverwriteSilently
+          zip.ExtractSelectedEntries_5 "name = *.xml", Null, extractLocation, OverwriteSilently
 
           zip.Dispose
           zip = Nothing

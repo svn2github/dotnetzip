@@ -58,6 +58,7 @@ DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Gir
   <ItemGroup>
     <Content Include="About.htm" />
     <Content Include="COM.htm" />
+    <Content Include="Powershell.htm" />
     <Content Include="CompactFramework.htm" />
     <Content Include="Examples-VB.htm" />
     <Content Include="Example-ASPNET.htm" />
