@@ -417,8 +417,8 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        /// The value set here applies to all entries subsequently added to the
-        /// <c>ZipFile</c>.
+        ///   The value set here applies to all entries subsequently added to the
+        ///   <c>ZipFile</c>.
         /// </para>
         ///
         /// <para>
@@ -431,19 +431,9 @@ namespace Ionic.Zip
         ///   notwithstanding the names PKWare uses for these time formats, any of them
         ///   can be read and written by any computer, on any operating system.  But,
         ///   there are no guarantees that a program running on Mac or Linux will
-        ///   gracefully handle NTFS Formatted times, or that a non-DotNetZip-powered
-        ///   application running on Windows will be able to handle file times in Unix
-        ///   format.
-        /// </para>
-        ///
-        /// <para>
-        ///   Some tools on Mac do not correctly read the "Windows" format timestamps,
-        ///   and actually report the zip file as corrupted if it includes those
-        ///   timestamps, even though the format for "windows" timestamps is specified
-        ///   in the PKWARE specification.  And there may be examples of the converse
-        ///   too. There may be examples of tools that run on Windows that cannot read
-        ///   zip files if they include "Unix-formatted" timestamps. I don't know of
-        ///   examples like this, but it wouldn't surprise me if they existed.
+        ///   gracefully handle a zip file with "Windows" Formatted times, or that an
+        ///   application that does not use DotNetZip but runs on Windows will be able to
+        ///   handle file times in Unix format.
         /// </para>
         ///
         /// <para>
@@ -548,23 +538,13 @@ namespace Ionic.Zip
         ///   legal and valid to produce a zip file that contains timestamps encoded in
         ///   the Unix format as well as in the Windows format, in addition to the <see
         ///   cref="ZipEntry.LastModified">LastModified</see> time attached to each
-        ///   entry in the zip archive, a time that is always stored in "DOS format". And,
-        ///   notwithstanding the names PKWare uses for these time formats, any of them
-        ///   can be read and written by any computer, on any operating system.  But,
-        ///   there are no guarantees that a program running on Mac or Linux will
-        ///   gracefully handle NTFS Formatted times, or that a non-DotNetZip-powered
-        ///   application running on Windows will be able to handle file times in Unix
-        ///   format.
-        /// </para>
-        ///
-        /// <para>
-        ///   Some tools on Mac do not correctly read the "Windows" format timestamps,
-        ///   and actually report the zip file as corrupted if it includes those
-        ///   timestamps, even though the format for "windows" timestamps is specified
-        ///   in the PKWARE specification.  And there may be examples of the converse
-        ///   too. There may be examples of tools that run on Windows that cannot read
-        ///   zip files if they include "Unix-formatted" timestamps. I don't know of
-        ///   examples like this, but it wouldn't surprise me if they existed.
+        ///   entry in the zip archive, a time that is always stored in "DOS
+        ///   format". And, notwithstanding the names PKWare uses for these time
+        ///   formats, any of them can be read and written by any computer, on any
+        ///   operating system.  But, there are no guarantees that a program running on
+        ///   Mac or Linux will gracefully handle a zip file with "Windows" Formatted
+        ///   times, or that an application that does not use DotNetZip but runs on
+        ///   Windows will be able to handle file times in Unix format.
         /// </para>
         ///
         /// <para>
