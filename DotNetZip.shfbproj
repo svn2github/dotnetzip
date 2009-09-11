@@ -56,13 +56,13 @@ DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Gir
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="About.htm" />
-    <Content Include="COM.htm" />
-    <Content Include="Powershell.htm" />
-    <Content Include="CompactFramework.htm" />
-    <Content Include="Examples-VB.htm" />
-    <Content Include="Example-ASPNET.htm" />
-    <Content Include="Examples.htm" />
+    <Content Include="ChmContent\About.htm" />
+    <Content Include="ChmContent\COM.htm" />
+    <Content Include="ChmContent\Powershell.htm" />
+    <Content Include="ChmContent\CompactFramework.htm" />
+    <Content Include="ChmContent\Examples-VB.htm" />
+    <Content Include="ChmContent\Example-ASPNET.htm" />
+    <Content Include="ChmContent\Examples.htm" />
   </ItemGroup>
   <!-- Import the SHFB build targets -->
   <Import Project="$(SHFBROOT)\SandcastleHelpFileBuilder.targets" />
