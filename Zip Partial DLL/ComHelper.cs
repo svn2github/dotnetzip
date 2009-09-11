@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-09 23:56:34>
+// Time-stamp: <2009-September-11 11:03:32>
 //
 // ------------------------------------------------------------------
 //
@@ -42,7 +42,7 @@ namespace Ionic.Zip
     public class ComHelper
     {
         /// <summary>
-        ///  A wrapper for <see cref="ZipFile.IsZipFile(string)"/>
+        ///  A wrapper for <see cref="ZipFile.IsZipFile(string)">ZipFile.IsZipFile(string)</see>
         /// </summary>
         /// <param name="filename">The filename to of the zip file to check.</param>
         /// <returns>true if the file contains a valid zip file.</returns>
@@ -52,7 +52,7 @@ namespace Ionic.Zip
         }
 
         /// <summary>
-        ///  A wrapper for <see cref="ZipFile.IsZipFile(string, bool)"/>
+        ///  A wrapper for <see cref="ZipFile.IsZipFile(string, bool)">ZipFile.IsZipFile(string, bool)</see>
         /// </summary>
         /// <remarks>
         /// We cannot use "overloaded" Method names in COM interop.
@@ -67,7 +67,7 @@ namespace Ionic.Zip
 
 #if !NETCF    
         /// <summary>
-        ///  A wrapper for <see cref="ZipFile.CheckZip(string)"/>
+        ///  A wrapper for <see cref="ZipFile.CheckZip(string)">ZipFile.CheckZip(string)</see>
         /// </summary>
         /// <param name="filename">The filename to of the zip file to check.</param>
         ///
@@ -78,7 +78,7 @@ namespace Ionic.Zip
         }
 
         /// <summary>
-        ///  A wrapper for <see cref="ZipFile.FixZipDirectory(string)"/>
+        ///  A wrapper for <see cref="ZipFile.FixZipDirectory(string)">ZipFile.FixZipDirectory(string)</see>
         /// </summary>
         /// <param name="filename">The filename to of the zip file to fix.</param>
         public void FixZipDirectory(string filename)
@@ -88,7 +88,7 @@ namespace Ionic.Zip
 #endif
         
         /// <summary>
-        ///  A wrapper for <see cref="ZipFile.LibraryVersion"/>
+        ///  A wrapper for <see cref="ZipFile.LibraryVersion">ZipFile.LibraryVersion</see>
         /// </summary>
         /// <returns>
         ///  the version number on the DotNetZip assembly, formatted as a string.

@@ -20,7 +20,7 @@ DotNetZip background
 
 Many people seem to think, incorrectly, that the classes in the
 System.IO.Compression namespace, like GZipStream or DeflateStream, can
-create or read zip files.  This is not correct.
+create or read zip files. Not true.
 
 The System.IO.Compression namespace, starting with v2.0 for the desktop
 Framework and v3.5 for the Compact Framework, includes base class
@@ -99,7 +99,9 @@ License
 --------
 
 This software is open source. It is released under the Microsoft Public
-License of October 2006.  See the License.txt file for details.
+License of October 2006.  The use of the "Microsoft Public License" does
+not mean it is licensed by Microsoft.  See the License.txt file for
+details.
 
 
 
@@ -453,14 +455,14 @@ The likely answer is:  use Ionic.Zip.dll.
 
 That's the mainstream library, the full library, and it includes all the
 capability.  If you have particular requirements, like you want a
-smaller library, of you want to exclude the Self-Extracting stuf, or you
-only want the ZLIB capability, then you may want to choose a different
-assembly.  
+smaller library, or you want to exclude the Self-Extracting stuff, or
+you only want the ZLIB capability, then you may want to choose a
+different assembly.
 
 Here's a summary of the options.
 
 
-Use case                                       Reference this DLL
+Usage scenario                                 Reference this DLL
 ------------------------------------------------------------------
 reading or writing Zip files                   Ionic.Zip.dll
 
@@ -482,12 +484,11 @@ reading or writing Zip files, but never        Ionic.Zip.Reduced.dll
 
 
 
-The implication for users of this library is that you should never
-reference both Ionic.Zlib.dll and Ionic.Zip.dll in the same application.
-If your application does both Zlib and Zip stuff, you need only add a
-reference to Ionic.Zip.dll.  Ionic.Zip.dll includes all the capability
-in Ionic.Zlib.dll.  You always need to reference only a single Ionic DLL,
-regardless whether you use Zlib or Zip or both.
+Never reference both Ionic.Zlib.dll and Ionic.Zip.dll in the same
+application.  If your application does both Zlib and Zip stuff, you need
+only add a reference to Ionic.Zip.dll.  Ionic.Zip.dll includes all the
+capability in Ionic.Zlib.dll.  You always need to reference only a
+single Ionic DLL, regardless whether you use Zlib or Zip or both.
 
 
 
@@ -535,7 +536,8 @@ assembly              ~size   comment
 -------------------------------------------------------
 Ionic.Zlib.dll          86k   {Deflate,GZip,Zlib}Stream and ZlibCodec
 
-Ionic.Zip.dll          400k   includes ZLIB and SFX, and selector
+Ionic.Zip.dll          500k   includes ZLIB and SFX, and selector, 
+                              ComHelper class
 
 Ionic.Zip.Partial.dll  278k   includes SFX, depends on a separate Ionic.Zlib.dll
                               You should probably never reference this

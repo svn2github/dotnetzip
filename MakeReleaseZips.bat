@@ -74,7 +74,7 @@ goto :END
   @REM "C:\Program Files\EWSoftware\Sandcastle Help File Builder\SandcastleBuilderConsole.exe" DotNetZip.shfb
 
   c:\.net3.5\msbuild.exe  /p:Configuration=Release   Dotnetzip.shfbproj
-  move Help\DotNetZipLib-v*.chm ..\releases\v%version%-%stamp%
+  move Help\out\DotNetZipLib-v*.chm ..\releases\v%version%-%stamp%
 
 goto :EOF
 @REM end subroutine

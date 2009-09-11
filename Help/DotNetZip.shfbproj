@@ -14,7 +14,7 @@
     <RootNamespace>Documentation</RootNamespace>
     <Name>Documentation</Name>
     <!-- SHFB properties -->
-    <OutputPath>.\Help\</OutputPath>
+    <OutputPath>.\out\</OutputPath>
     <HtmlHelpName>DotNetZipLib-v1.9</HtmlHelpName>
     <ProjectSummary>DotNetZip is a small, easy-to-use class library for manipulating .zip files. It can enable .NET applications written in VB.NET, C#, any .NET language, to easily create, read, and update zip files.  DotNetZip is donationware:  http://cheeso.members.winisp.net/DotNetZipDonate.aspx</ProjectSummary>
     <MissingTags>Summary, Parameter, Returns, AutoDocumentCtors, Namespace, TypeParameter</MissingTags>
@@ -32,8 +32,8 @@
     <FeedbackEMailAddress>dpchiesa%40hotmail.com</FeedbackEMailAddress>
     <PresentationStyle>Prototype</PresentationStyle>
     <DocumentationSources>
-      <DocumentationSource sourceFile=".\Zip Full DLL\bin\Debug\Ionic.Zip.dll" xmlns="" />
-      <DocumentationSource sourceFile=".\Zip Full DLL\bin\Debug\Ionic.Zip.xml" xmlns="" />
+      <DocumentationSource sourceFile="..\Zip Full DLL\bin\Debug\Ionic.Zip.dll" xmlns="" />
+      <DocumentationSource sourceFile="..\Zip Full DLL\bin\Debug\Ionic.Zip.xml" xmlns="" />
     </DocumentationSources>
     <NamespaceSummaries>
       <NamespaceSummaryItem name="(global)" isDocumented="False" xmlns="" />
@@ -48,6 +48,7 @@ v2.0 base class library.
 DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Girls Club in Pennsylvania, USA.  http://cheeso.members.winisp.net/DotNetZipDonate.aspx</NamespaceSummaryItem>
       <NamespaceSummaryItem name="Ionic.Zlib" isDocumented="True" xmlns="">Ionic.Zlib namespace includes classes for doing ZLIB, DEFLATE, and GZIP compression and decompression, according to RFC1950, RFC1951, and RFC 1952.  It includes stream classes that can directly replace the DeflateStream and GZipStream classes that are included in the Base Class Library of the .NET Framework.</NamespaceSummaryItem>
     </NamespaceSummaries>
+    <CopyrightText>Copyright 2009, Dino Chiesa</CopyrightText>
   </PropertyGroup>
   <!-- There are no properties for these two groups but they need to appear in
        order for Visual Studio to perform the build. -->
@@ -56,13 +57,17 @@ DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Gir
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="ChmContent\About.htm" />
-    <Content Include="ChmContent\COM.htm" />
-    <Content Include="ChmContent\Powershell.htm" />
-    <Content Include="ChmContent\CompactFramework.htm" />
-    <Content Include="ChmContent\Examples-VB.htm" />
-    <Content Include="ChmContent\Example-ASPNET.htm" />
-    <Content Include="ChmContent\Examples.htm" />
+    <Content Include="Introduction\About.htm" />
+    <Content Include="Introduction\GettingStarted.htm" />
+    <Content Include="Introduction\COM.htm" />
+    <Content Include="Introduction\Powershell.htm" />
+    <Content Include="Introduction\CompactFramework.htm" />
+    <Content Include="Introduction\Examples-VB.htm" />
+    <Content Include="Introduction\Example-ASPNET.htm" />
+    <Content Include="Introduction\Examples.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Introduction\" />
   </ItemGroup>
   <!-- Import the SHFB build targets -->
   <Import Project="$(SHFBROOT)\SandcastleHelpFileBuilder.targets" />

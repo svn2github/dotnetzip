@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-03 13:38:25>
+// Time-stamp: <2009-September-11 11:07:00>
 //
 // ------------------------------------------------------------------
 //
@@ -36,20 +36,24 @@ namespace Ionic.Zip
     public partial class ZipFile
     {
         /// <summary>
-        /// Checks a zip file to see if its directory is consistent.
+        ///   Checks a zip file to see if its directory is consistent.
         /// </summary>
         ///
         /// <remarks>
         ///
-        /// <para> In cases of data error, the directory within a zip file can get out of
-        ///     synch with the entries in the zip file.  This method checks the given
-        ///     zip file and returns true if this has occurred.  </para>
+        /// <para>
+        ///   In cases of data error, the directory within a zip file can get out
+        ///   of synch with the entries in the zip file.  This method checks the
+        ///   given zip file and returns true if this has occurred.
+        /// </para>
         ///
         /// <para> This method may take a long time to run for large zip files.  </para>
         ///
         /// <para>
-        /// This method is not supported in the Reduced or Compact
-        /// Framework versions of DotNetZip.
+        ///   This method is not supported in the Reduced or Compact Framework
+        ///   versions of DotNetZip.  Developers using COM can use the <see
+        ///   cref="ComHelper.CheckZip(String)">ComHelper.CheckZip(String)</see>
+        ///   method.
         /// </para>
         /// 
         /// </remarks>
@@ -68,24 +72,28 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// Checks a zip file to see if its directory is consistent, 
-        /// and optionally fixes the directory if necessary. 
+        ///   Checks a zip file to see if its directory is consistent, 
+        ///   and optionally fixes the directory if necessary. 
         /// </summary>
         ///
         /// <remarks>
         ///
-        /// <para> In cases of data error, the directory within a zip file can get out of
-        ///     synch with the entries in the zip file.  This method checks the given
-        ///     zip file, and returns true if this has occurred. It also optionally
-        ///     fixes the zipfile, saving the fixed copy in <em>Name</em>_Fixed.zip.</para>
-        ///
-        /// <para> This method may take a long time to run for large zip files.  It will
-        ///     take even longer if the file actually needs to be fixed, and if
-        ///     <c>fixIfNecessary</c> is true.  </para>
+        /// <para>
+        ///   In cases of data error, the directory within a zip file can get out of
+        ///   synch with the entries in the zip file.  This method checks the given
+        ///   zip file, and returns true if this has occurred. It also optionally
+        ///   fixes the zipfile, saving the fixed copy in <em>Name</em>_Fixed.zip.
+        /// </para>
         ///
         /// <para>
-        /// This method is not supported in the Reduced or Compact
-        /// Framework versions of DotNetZip.
+        ///   This method may take a long time to run for large zip files.  It
+        ///   will take even longer if the file actually needs to be fixed, and if
+        ///   <c>fixIfNecessary</c> is true.
+        /// </para>
+        ///
+        /// <para>
+        ///   This method is not supported in the Reduced or Compact
+        ///   Framework versions of DotNetZip.
         /// </para>
         /// 
         /// </remarks>
@@ -188,20 +196,24 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// Rewrite the directory within a zipfile.
+        ///   Rewrite the directory within a zipfile.
         /// </summary>
         /// 
         /// <remarks>
         ///
-        /// <para> In cases of data error, the directory in a zip file can get out of
-        ///     synch with the entries in the zip file.  This method returns true if
-        ///     this has occurred.  </para>
+        /// <para>
+        ///   In cases of data error, the directory in a zip file can get out of
+        ///   synch with the entries in the zip file.  This method returns true if
+        ///   this has occurred.
+        /// </para>
         ///
         /// <para> This can take a long time for large zip files. </para>
         ///
         /// <para>
-        /// This method is not supported in the Reduced or Compact
-        /// Framework versions of DotNetZip.
+        ///   This method is not supported in the Reduced or Compact Framework
+        ///   versions of DotNetZip.  Developers using COM can use the <see
+        ///   cref="ComHelper.FixZipDirectory(String)">ComHelper.FixZipDirectory(String)</see>
+        ///   method.
         /// </para>
         /// 
         /// </remarks>

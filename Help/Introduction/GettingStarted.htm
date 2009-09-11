@@ -1,0 +1,85 @@
+<html>
+<head>
+<title>Getting Started with DotNetZip</title>
+<style>
+p,body,a,tr,td
+             { font-family: Verdana, Arial, Helvetica; font-size: 10pt }
+h1,h2,h3,h4,h5,h6
+             { font-family: Verdana, Arial, Helvetica; font-weight: normal; font-style: normal; }
+h1           { font-size: 20pt }
+h2           { font-size: 18pt; font-weight:bold; color: navy }
+h3           { font-size: 16pt; font-weight:bold; color: #483d8b }
+h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2px; }
+</style>
+</head>
+
+<!-- @SortOrder 8 --> 
+
+<body>
+<h1>Getting Started with DotNetZip</h1>
+
+<p>This page describes how to get started using DotNetZip.</p>
+
+<h2>Which DLL to use?</h2>
+
+<p>The binary releases of DotNetZip include multiple distinct DLLs or
+assemblies.  Which one should you use?
+</p>
+
+<p>The likely answer is: <em>Ionic.Zip.dll</em></p>
+
+<p>That's the mainstream library, the full library, and it includes all the
+capability of DotNetZip.  The other DLLs are reduced in various ways, to suite particular requirements.
+</p>
+
+<p>For example,  you may want a
+smaller library, or you want to exclude the Self-Extracting capability, or
+you only want the ZLIB capability.  In these cases, you may want to choose a
+different assembly.
+</p>
+
+<p>Here's a summary of the options.
+
+<table border='1'>
+<tr>
+<td style='color:white;Background:Navy;'><strong>Usage scenario</strong></td>
+<td style='color:white;Background:Navy;'><strong>DLL</strong></td>
+</tr>
+
+<tr><td> Basic
+reading or writing Zip files</td><td> Ionic.Zip.dll</td>
+</tr>
+
+<tr><td>raw block or stream compression </td><td>Ionic.Zlib.dll</td></tr>
+
+<tr><td>both raw compression as well as reading or writing Zip files </td><td>Ionic.Zip.dll</td></tr>
+
+
+<tr><td>reading or writing Zip files on Compact Framework </td><td>Ionic.Zip.CF.dll</td></tr>
+
+
+<tr><td>raw compression on Compact Framework </td><td>Ionic.Zlib.CF.dll</td></tr>
+
+<tr><td>both raw compression as well as reading or writing Zip files on CF </td><td>Ionic.Zip.CF.dll</td></tr>
+
+<tr><td>reading or writing Zip files, but never creating a self-extracting archive </td><td>Ionic.Zip.Reduced.dll</td></tr>
+</table>
+
+
+<p>Never reference both Ionic.Zlib.dll and Ionic.Zip.dll in the same
+application.  If your application does both Zlib and Zip things, you
+need only add a reference to Ionic.Zip.dll.  Ionic.Zip.dll includes all
+the capability in Ionic.Zlib.dll.  You always need to reference only a
+single Ionic DLL, regardless whether you use Zlib or Zip or both.  </p>
+
+<p>If you use COM, then you want to reference the main DLL,
+Ionic.Zip.dll.  The correct DLL will automatically be installed in the GAC, and
+registered for use with COM, if you install the DotNetZip Runtime
+library via the .MSI installer.  If you don't use the .MSI installer, you
+will have to perform these steps yourself.  Consult the documentation on
+using DotNetZip with COM for more information.
+</p>
+
+
+</body>
+</html>

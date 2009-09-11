@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-29 00:18:40>
+// Time-stamp: <2009-September-11 12:36:48>
 //
 // ------------------------------------------------------------------
 //
@@ -156,7 +156,7 @@ namespace Ionic.Zip
         /// ExtractExistingFileAction)"/>. </para>
         ///
         /// <para>
-        /// See the remarks on the LastModified property, for some details 
+        /// See the remarks on the <see cref="LastModified"/> property, for some details 
         /// about how the last modified time of the created file is set.
         /// </para>
         /// </remarks>
@@ -296,7 +296,7 @@ namespace Ionic.Zip
         /// cref="ExtractWithPassword(ExtractExistingFileAction,string)"/>.</para>
         ///
         /// <para>
-        /// See the remarks on the LastModified property, for some details 
+        /// See the remarks on the <see cref="LastModified"/> property, for some details 
         /// about how the last modified time of the created file is set.
         /// </para>
         /// </remarks>
@@ -318,7 +318,7 @@ namespace Ionic.Zip
         /// 
         /// <remarks>
         /// <para>
-        /// See the remarks on the LastModified property, for some details 
+        /// See the remarks on the <see cref="LastModified"/> property, for some details 
         /// about how the last modified time of the created file is set.
         /// </para>
         /// </remarks>
@@ -342,7 +342,7 @@ namespace Ionic.Zip
         /// </summary>
         /// 
         /// <remarks>
-        /// See the remarks on the LastModified property, for some details 
+        /// See the remarks on the <see cref="LastModified"/> property, for some details 
         /// about how the last modified time of the created file is set.
         /// </remarks>
         ///
@@ -364,7 +364,7 @@ namespace Ionic.Zip
         /// </summary>
         /// 
         /// <remarks>
-        /// See the remarks on the LastModified property, for some details 
+        /// See the remarks on the <see cref="LastModified"/> property, for some details 
         /// about how the last modified time of the created file is set.
         /// </remarks>
         /// 
