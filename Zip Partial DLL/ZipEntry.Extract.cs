@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-11 12:36:48>
+// Time-stamp: <2009-September-11 20:49:01>
 //
 // ------------------------------------------------------------------
 //
@@ -744,13 +744,13 @@ namespace Ionic.Zip
                 
                 ExitTry: ;
             }
-            catch (Exception ex1)
+            catch (Exception)
             {
                 _ioOperationCanceled = true;
-                if (ex1 as Ionic.Zip.ZipException == null)
-                    // wrap the original exception and throw
-                    throw new ZipException("Cannot extract", ex1);
-                else
+//                 if (ex1 as Ionic.Zip.ZipException == null)
+//                     // wrap the original exception and throw
+//                     throw new ZipException("Cannot extract", ex1);
+//                 else
                     throw;
             }
             finally
@@ -1215,7 +1215,8 @@ namespace Ionic.Zip
                 return false;
             }
 
-            throw new ZipException("Cannot extract.", new ArgumentException("Invalid input.", "outstream"));
+            // throw new ZipException("Cannot extract.", new ArgumentException("Invalid input.", "outstream"));
+            throw new ArgumentException("Invalid input.", "outstream");
         }
 
 

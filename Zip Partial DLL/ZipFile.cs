@@ -2598,8 +2598,9 @@ namespace Ionic.Zip
             set
             {
                 if (value != null)
-                    throw new ZipException("You may not set this to a non-null ZipEntry value.",
-                                           new ArgumentException("this[int]"));
+                    throw new InvalidOperationException("You may not set this to a non-null ZipEntry value.");
+//                     throw new ZipException("You may not set this to a non-null ZipEntry value.",
+//                                            new ArgumentException("this[int]"));
                 RemoveEntry(_entries[ix]);
             }
         }
@@ -3211,15 +3212,8 @@ namespace Ionic.Zip
                 {
                     if (_name != null)
                     {
-                        try
-                        {
-                            _readstream = File.OpenRead(_name);
-                            _ReadStreamIsOurs = true;
-                        }
-                        catch (System.IO.IOException ioe)
-                        {
-                            throw new ZipException("Error opening the file", ioe);
-                        }
+                        _readstream = File.OpenRead(_name);
+                        _ReadStreamIsOurs = true;
                     }
                 }
                 return _readstream;

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-29 13:46:25>
+// Time-stamp: <2009-September-11 21:12:08>
 //
 // ------------------------------------------------------------------
 //
@@ -60,7 +60,7 @@ namespace Ionic.Zip.Tests.Error
 
 
         [TestMethod]
-        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        [ExpectedException(typeof(System.ArgumentException))]
         public void Error_Read_NullStream()
         {
             System.IO.Stream s = null;
@@ -217,7 +217,7 @@ namespace Ionic.Zip.Tests.Error
 
 
         [TestMethod]
-        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        [ExpectedException(typeof(Ionic.Zip.BadReadException))]
         public void Error_Read_InvalidZip()
         {
             string SourceDir = CurrentDir;
@@ -243,7 +243,7 @@ namespace Ionic.Zip.Tests.Error
 
         
         [TestMethod]
-        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        [ExpectedException(typeof(System.InvalidOperationException))]
         public void Error_Set_ZipEntry()
         {
             Directory.SetCurrentDirectory(TopLevelDir);
