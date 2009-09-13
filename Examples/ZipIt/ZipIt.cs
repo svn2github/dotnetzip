@@ -52,6 +52,8 @@ namespace Ionic.Zip.Examples
             "  -d <path>            - use the given directory path in the archive for\n" +
             "                         succeeding items added to the archive.\n" +
             "  -D <path>            - find files in the given directory on disk.\n" +
+            "  -j-                  - do not traverse NTFS junctions\n" +
+            "  -j+                  - traverse NTFS junctions (default)\n" +
             "  -L <level>           - compression level, 0..9 (Default is 6).\n" +
             "  -p <password>        - apply the specified password for all succeeding files added.\n" +
             "                         use \"\" to reset the password to nil.\n" +
@@ -212,7 +214,15 @@ namespace Ionic.Zip.Examples
                                 if (args.Length <= i) Usage();
                                 directoryOnDisk = args[i];
                                 break;
-
+                                
+                            case "-j-":
+                                zip.AddDirectoryWillTraverseReparsePoints = false;
+                                break;
+                                
+                            case "-j+":
+                                zip.AddDirectoryWillTraverseReparsePoints = true;
+                                break;
+                                    
                             case "-L":
                                 i++;
                                 if (args.Length <= i) Usage();
@@ -347,23 +357,14 @@ namespace Ionic.Zip.Examples
                                 }
                                 #else
                                 {
-                                    if (args[i].Contains("\\"))
-                                    {
-                                        if (directoryOnDisk != null)
-                                            throw new Exception("Don't specify a path in the filespec and also with -d");
+                                    bool wantRecurse = recurseDirectories || args[i].Contains("\\");
+//                                         Console.WriteLine("spec({0})", args[i]);
+//                                         Console.WriteLine("dir({0})", directoryOnDisk);
+//                                         Console.WriteLine("dirInArc({0})", entryDirectoryPathInArchive);
+//                                         Console.WriteLine("recurse({0})", recurseDirectories);
 
-                                        string dir = System.IO.Path.GetDirectoryName(args[i]);
-                                        string spec = System.IO.Path.GetFileName(args[i]);
-                                        //bool wantRecurse = recurseDirectories || System.IO.Directory.Exists(args[i]); 
-                                        zip.UpdateSelectedFiles(spec, dir, entryDirectoryPathInArchive,
-                                                            recurseDirectories);
-                                    }
-                                    else
-                                    {
-                                    bool wantRecurse = recurseDirectories || System.IO.Directory.Exists(args[i]); 
-                                    zip.UpdateSelectedFiles(args[i], directoryOnDisk, entryDirectoryPathInArchive,
-                                                            wantRecurse);
-                                    }
+                                        zip.UpdateSelectedFiles(args[i], directoryOnDisk, entryDirectoryPathInArchive,
+                                                                wantRecurse);
                                 }
                                 #endif
                                     
