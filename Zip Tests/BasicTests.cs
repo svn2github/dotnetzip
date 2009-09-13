@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-27 00:53:16>
+// Time-stamp: <2009-September-13 17:50:31>
 //
 // ------------------------------------------------------------------
 //
@@ -1295,14 +1295,22 @@ namespace Ionic.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_VerifyThatStreamRemainsOpenAfterSave()
         {
-            bool[] ForceCompressionOptions = { true, false };
+            Ionic.Zlib.CompressionLevel[] compressionLevelOptions = {
+                Ionic.Zlib.CompressionLevel.None,
+                Ionic.Zlib.CompressionLevel.BestSpeed,
+                Ionic.Zlib.CompressionLevel.Default,
+                Ionic.Zlib.CompressionLevel.BestCompression,
+            };
+
             string[] Passwords = { null, Path.GetRandomFileName() };
 
             for (int j = 0; j < Passwords.Length; j++)
             {
-                for (int k = 0; k < ForceCompressionOptions.Length; k++)
+                for (int k = 0; k < compressionLevelOptions.Length; k++)
                 {
-                    TestContext.WriteLine("\n\n---------------------------------\nTrial ({0},{1}):  Password='{2}' Compression={3}\n", j, k, Passwords[j], ForceCompressionOptions[k]);
+                    TestContext.WriteLine("\n\n---------------------------------\n" +
+                                          "Trial ({0},{1}):  Password='{2}' Compression={3}\n",
+                                          j, k, Passwords[j], compressionLevelOptions[k]);
                     Directory.SetCurrentDirectory(TopLevelDir);
                     string dirToZip = Path.GetRandomFileName();
                     Directory.CreateDirectory(dirToZip);
@@ -1323,9 +1331,10 @@ namespace Ionic.Zip.Tests.Basic
                     Assert.IsTrue(ms.CanSeek, String.Format("Trial {0}: The output MemoryStream does not do Seek.", k));
                     using (ZipFile zip1 = new ZipFile())
                     {
-                        zip1.ForceNoCompression = ForceCompressionOptions[k];
+                        zip1.CompressionLevel = compressionLevelOptions[k];
                         zip1.Password = Passwords[j];
-                        zip1.Comment = String.Format("Trial ({0},{1}):  Password='{2}' Compression={3}\n", j, k, Passwords[j], ForceCompressionOptions[k]);
+                        zip1.Comment = String.Format("Trial ({0},{1}):  Password='{2}' Compression={3}\n",
+                                                     j, k, Passwords[j], compressionLevelOptions[k]);
                         zip1.AddDirectory(dirToZip);
                         zip1.Save(ms);
                     }
@@ -2164,6 +2173,7 @@ namespace Ionic.Zip.Tests.Basic
                 entriesAdded++;
             }
 
+#pragma warning disable 618
             using (ZipFile zip = new ZipFile())
             {
                 zip.ForceNoCompression = true;
@@ -2171,6 +2181,7 @@ namespace Ionic.Zip.Tests.Basic
                 zip.Comment = CommentOnArchive;
                 zip.Save(zipFileToCreate);
             }
+#pragma warning restore 618
 
             int entriesFound = 0;
             using (ZipFile zip = ZipFile.Read(zipFileToCreate))

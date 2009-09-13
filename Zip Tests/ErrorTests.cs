@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-11 21:12:08>
+// Time-stamp: <2009-September-13 17:44:51>
 //
 // ------------------------------------------------------------------
 //
@@ -335,7 +335,7 @@ namespace Ionic.Zip.Tests.Error
                 using (ZipFile zip = new ZipFile(ZipFileToCreate))
                 {
                     zip.TempFileFolder = TempFileFolder;
-                    zip.ForceNoCompression = true;
+                    zip.CompressionLevel = Ionic.Zlib.CompressionLevel.None;
 
                     TestContext.WriteLine("Zipping {0} files...", filenames.Length);
 

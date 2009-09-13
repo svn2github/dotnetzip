@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-09 23:46:30>
+// Time-stamp: <2009-September-13 17:46:56>
 //
 // ------------------------------------------------------------------
 //
@@ -132,6 +132,8 @@ namespace Ionic.Zip.Tests.Extended
                 var checksums = new Dictionary<string, string>();
 
                 TestContext.WriteLine("---------------Creating {0}...", zipFileToCreate);
+
+#pragma warning disable 618
                 using (ZipFile zip2 = new ZipFile())
                 {
                     if (j > 0)
@@ -151,7 +153,8 @@ namespace Ionic.Zip.Tests.Extended
                     }
 
                     zip2.Save(zipFileToCreate);
-                }
+                } 
+#pragma warning restore 618
 
                 TestContext.WriteLine("---------------Reading {0}...", zipFileToCreate);
                 using (ZipFile zip3 = ZipFile.Read(zipFileToCreate))
@@ -181,10 +184,16 @@ namespace Ionic.Zip.Tests.Extended
         [TestMethod]
         public void ReadZip_OpenReader()
         {
-            bool[] forceCompressionOptions = { true, false };
+            Ionic.Zlib.CompressionLevel[] compressionLevelOptions = {
+                Ionic.Zlib.CompressionLevel.None,
+                Ionic.Zlib.CompressionLevel.BestSpeed,
+                Ionic.Zlib.CompressionLevel.Default,
+                Ionic.Zlib.CompressionLevel.BestCompression,
+            };
+
             string[] passwords = { null, Path.GetRandomFileName(), "EE", "***()"};
 
-            for (int j = 0; j < forceCompressionOptions.Length; j++)
+            for (int j = 0; j < compressionLevelOptions.Length; j++)
             {
                 for (int k = 0; k < passwords.Length; k++)
                 {
@@ -207,12 +216,11 @@ namespace Ionic.Zip.Tests.Extended
 
                     using (ZipFile zip1 = new ZipFile())
                     {
-                        zip1.ForceNoCompression = forceCompressionOptions[j];
+                        zip1.CompressionLevel = compressionLevelOptions[j];
                         zip1.Password = passwords[k];
                         zip1.AddDirectory(subdir, Path.GetFileName(subdir));
                         zip1.Save(zipFileToCreate);
                     }
-
 
                     // Verify the files are in the zip
                     Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), entriesAdded,
@@ -341,6 +349,7 @@ namespace Ionic.Zip.Tests.Extended
 
             // 5. create the zip file with all those things in it
             _doubleReadCallbacks = 0;  // will be updated by the ReadTwiceCallback
+#pragma warning disable 618
             using (ZipFile zip = new ZipFile())
             {
                 zip.WillReadTwiceOnInflation = ReadTwiceCallback;
@@ -354,6 +363,7 @@ namespace Ionic.Zip.Tests.Extended
                 zip.AddFile(CompressedFile, Path.GetFileName(Subdir));
                 zip.Save(zipFileToCreate);
             }
+#pragma warning restore 618
 
             // 6. check results
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), 4,
@@ -1455,8 +1465,13 @@ namespace Ionic.Zip.Tests.Extended
         [TestMethod]
         public void Extract_ImplicitPassword()
         {
-            bool[] forceCompressionOptions = { true, false };
-            for (int k = 0; k < forceCompressionOptions.Length; k++)
+            Ionic.Zlib.CompressionLevel[] compressionLevelOptions = {
+                Ionic.Zlib.CompressionLevel.None,
+                Ionic.Zlib.CompressionLevel.BestSpeed,
+                Ionic.Zlib.CompressionLevel.Default,
+                Ionic.Zlib.CompressionLevel.BestCompression,
+            };
+            for (int k = 0; k < compressionLevelOptions.Length; k++)
             {
                 string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Extract_ImplicitPassword-{0}.zip", k));
 
@@ -1469,7 +1484,7 @@ namespace Ionic.Zip.Tests.Extended
                 using (ZipFile zip1 = new ZipFile())
                 {
                     zip1.Comment = "Brick walls are there for a reason: to let you show how badly you want your goal.";
-                    zip1.ForceNoCompression = forceCompressionOptions[k];
+                    zip1.CompressionLevel = compressionLevelOptions[k];
                     for (int i = 0; i < files.Length; i++)
                     {
                         passwords[i] = TestUtilities.GenerateRandomPassword();

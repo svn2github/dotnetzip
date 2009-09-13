@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-26 23:55:00>
+// Time-stamp: <2009-September-13 17:49:11>
 //
 // ------------------------------------------------------------------
 //
@@ -44,9 +44,15 @@ namespace Ionic.Zip.Tests.Password
         {
             int i;
             string[] Passwords = { null, "Password!", TestUtilities.GenerateRandomPassword(), "A" };
-            bool[] ForceCompressionOptions = { true, false };
 
-            for (int k = 0; k < ForceCompressionOptions.Length; k++)
+            Ionic.Zlib.CompressionLevel[] compressionLevelOptions = {
+                Ionic.Zlib.CompressionLevel.None,
+                Ionic.Zlib.CompressionLevel.BestSpeed,
+                Ionic.Zlib.CompressionLevel.Default,
+                Ionic.Zlib.CompressionLevel.BestCompression,
+            };
+
+            for (int k = 0; k < compressionLevelOptions.Length; k++)
             {
                 for (int j = 0; j < Passwords.Length; j++)
                 {
@@ -79,7 +85,7 @@ namespace Ionic.Zip.Tests.Password
                     var sw = new StringWriter();
                     using (ZipFile zip = new ZipFile(ZipFileToCreate, sw))
                     {
-                        zip.ForceNoCompression = ForceCompressionOptions[k];
+                        zip.CompressionLevel = compressionLevelOptions[k];
                         zip.Password = Passwords[j];
                         zip.AddDirectory(Path.GetFileName(DirToZip));
                         zip.Save();
