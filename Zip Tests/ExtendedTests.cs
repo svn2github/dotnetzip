@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-13 17:46:56>
+// Time-stamp: <2009-September-14 04:21:11>
 //
 // ------------------------------------------------------------------
 //
@@ -1128,10 +1128,11 @@ namespace Ionic.Zip.Tests.Extended
                         _txrx.Send(String.Format("pb 2 max {0}", e.TotalBytesToTransfer));
                         _pb2Set = true;
                     }
-                    _txrx.Send(String.Format("status Saving {0} :: [{2}/{3}] ({1:N0}%)",
+                    _txrx.Send(String.Format("status Saving {0} :: [{1}/{2}mb] ({3:N0}%)",
                                              e.CurrentEntry.FileName,
-                                             ((double)e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer),
-                                             e.BytesTransferred, e.TotalBytesToTransfer));
+                                             e.BytesTransferred/(1024*1024), e.TotalBytesToTransfer/(1024*1024),
+                                             ((double)e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer)
+                                             ));
                     msg = String.Format("pb 2 value {0}", e.BytesTransferred);
                     _txrx.Send(msg);
                     Assert.IsTrue(e.BytesTransferred <= e.TotalBytesToTransfer);
@@ -1240,7 +1241,9 @@ namespace Ionic.Zip.Tests.Extended
             Action<Int64> progressUpdate = (x) =>
                 {
                     _txrx.Send(String.Format("pb 1 value {0}", x));
-                    _txrx.Send(String.Format("status Creating a large file, ({0}/{1})", x, filesize));
+                    _txrx.Send(String.Format("status Creating a large file, ({0}/{1}mb) ({2:N0}%)",
+                                             x/(1024*1024), filesize/(1024*1024),
+                                             ((double)x) / (0.01 * filesize) ));
                 };
             
             TestUtilities.CreateAndFillFileBinaryZeroes(filename, filesize, progressUpdate);

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-30 17:58:58>
+// Time-stamp: <2009-September-14 06:02:19>
 //
 // ------------------------------------------------------------------
 //
@@ -465,6 +465,7 @@ namespace Ionic.Zip.Tests.Zip64
         private int _sizeBase;
         private int _sizeRandom;
         int _numSaving;
+        int _totalToSave;
         
         private void zip64_SaveProgress(object sender, SaveProgressEventArgs e)
         {
@@ -484,6 +485,7 @@ namespace Ionic.Zip.Tests.Zip64
                         _txrx.Send(String.Format("pb 1 max {0}", e.EntriesTotal));
                         _pb1Set = true;
                     }
+                    _totalToSave = e.EntriesTotal;
                     _pb2Set = false;
 
                     if (e.CurrentEntry.Source == ZipEntrySource.Stream &&
@@ -503,7 +505,7 @@ namespace Ionic.Zip.Tests.Zip64
                         _pb2Set = true;
                     }
                     _txrx.Send(String.Format("status Saving entry {0}/{1} :: {2} :: {3}/{4}mb {5:N0}%",
-                                             _numSaving, e.EntriesTotal,
+                                             _numSaving, _totalToSave,
                                              e.CurrentEntry.FileName,
                                              e.BytesTransferred/(1024*1024), e.TotalBytesToTransfer/(1024*1024),
                                              ((double)e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer)));
@@ -554,8 +556,9 @@ namespace Ionic.Zip.Tests.Zip64
                                              verb,
                                              _numExtracted, _numFilesToExtract,
                                              e.CurrentEntry.FileName,
-                                             ((double)e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer),
-                                             e.BytesTransferred/(1024*1024), e.TotalBytesToTransfer/(1024*1024)
+                                             e.BytesTransferred/(1024*1024),
+                                             e.TotalBytesToTransfer/(1024*1024),
+                                             ((double)e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer)
                                              ));
                     string msg = String.Format("pb 2 value {0}", e.BytesTransferred);
                     _txrx.Send(msg);
@@ -1126,11 +1129,12 @@ namespace Ionic.Zip.Tests.Zip64
 
                 string status = sw.ToString();
                 TestContext.WriteLine(status);
-
+                File.Delete(nameOfFodderFile);
                 _txrx.Send("status Extracting the file...");
                 _txrx.Send("pb 0 step");
 
                 sw = new StringWriter();
+                verb = "Extracting";
                 using (var zip = ZipFile.Read(zipFileToCreate, sw))
                 {
                     Assert.AreEqual<int>(1, zip.Entries.Count,
