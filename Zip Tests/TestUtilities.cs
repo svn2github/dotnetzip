@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-09 23:38:05>
+// Time-stamp: <2009-September-13 22:15:08>
 //
 // ------------------------------------------------------------------
 //
@@ -571,34 +571,31 @@ namespace Ionic.Zip.Tests.Utilities
         }
 
 
-
         internal static string[] GenerateFilesFlat(string subdir)
         {
-            int numFilesToCreate = _rnd.Next(23) + 14;
-            return GenerateFilesFlat(subdir, numFilesToCreate);
+            return GenerateFilesFlat(subdir, 0);
         }
 
         internal static string[] GenerateFilesFlat(string subdir, int numFilesToCreate)
         {
-            return GenerateFilesFlat(subdir, numFilesToCreate, 5000, 39000);
+            return GenerateFilesFlat(subdir, numFilesToCreate, 0, 0);
         }
 
         internal static string[] GenerateFilesFlat(string subdir, int numFilesToCreate, int size)
         {
-            if (!Directory.Exists(subdir))
-                Directory.CreateDirectory(subdir);
-
-            string[] FilesToZip = new string[numFilesToCreate];
-            for (int i = 0; i < numFilesToCreate; i++)
-            {
-                FilesToZip[i] = Path.Combine(subdir, String.Format("testfile{0:D3}.txt", i));
-                TestUtilities.CreateAndFillFileText(FilesToZip[i], size);
-            }
-            return FilesToZip;
+            return GenerateFilesFlat(subdir, numFilesToCreate, size, size);
         }
 
         internal static string[] GenerateFilesFlat(string subdir, int numFilesToCreate, int lowSize, int highSize)
         {
+            if (numFilesToCreate==0)
+                numFilesToCreate = _rnd.Next(23) + 14;
+
+            if (lowSize == highSize && lowSize == 0)
+            {
+                lowSize = 5000;
+                highSize = 39000;
+            }
             if (!Directory.Exists(subdir))
                 Directory.CreateDirectory(subdir);
 
@@ -867,10 +864,21 @@ namespace Ionic.Zip.Tests.Utilities
 
 
 
-        protected static void CreateFilesAndChecksums(string subdir, out string[] filesToZip, out Dictionary<string, byte[]> checksums)
+        internal static void CreateFilesAndChecksums(string subdir,
+                                                     out string[] filesToZip,
+                                                     out Dictionary<string, byte[]> checksums)
+        {
+            CreateFilesAndChecksums(subdir, 0, 0, out filesToZip, out checksums);
+        }
+        
+        internal static void CreateFilesAndChecksums(string subdir,
+                                                     int numFiles,
+                                                     int baseSize,
+                                                     out string[] filesToZip,
+                                                     out Dictionary<string, byte[]> checksums)
         {
             // create a bunch of files
-            filesToZip = TestUtilities.GenerateFilesFlat(subdir);
+            filesToZip = TestUtilities.GenerateFilesFlat(subdir, numFiles, baseSize);
             DateTime atMidnight = new DateTime(DateTime.Now.Year,
                                                DateTime.Now.Month,
                                                DateTime.Now.Day);

@@ -336,7 +336,7 @@
             this.comboEncryption.Size = new System.Drawing.Size(122, 21);
             this.comboEncryption.TabIndex = 80;
             this.toolTip1.SetToolTip(this.comboEncryption, "AES is not compatible with all other zip tools.");
-            this.comboEncryption.SelectedIndexChanged += new System.EventHandler(this.comboBox3_SelectedIndexChanged);
+            this.comboEncryption.SelectedIndexChanged += new System.EventHandler(this.comboEncryption_SelectedIndexChanged);
             // 
             // tbPassword
             // 

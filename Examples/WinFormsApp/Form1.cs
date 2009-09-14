@@ -754,9 +754,21 @@ namespace Ionic.Zip.Examples.WinForms
         }
 
         
-        private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
+        private void comboEncryption_SelectedIndexChanged(object sender, EventArgs e)
         {
             //this.tbPassword.Enabled = (this.comboBox3.SelectedItem.ToString() != "None");
+            if (this.comboEncryption.SelectedIndex == 0)
+            {
+                this.label9.Enabled = false;
+                this.tbPassword.Enabled = false;
+                this.chkHidePassword.Enabled = false;
+            }
+            else 
+            {
+                this.label9.Enabled = true;
+                this.tbPassword.Enabled = true;
+                this.chkHidePassword.Enabled = true;
+            }
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -977,7 +989,7 @@ namespace Ionic.Zip.Examples.WinForms
         {
             _SelectComboBoxItem(this.comboEncryption, s);
             //tbPassword.Text = "";
-            comboBox3_SelectedIndexChanged(null, null);
+            comboEncryption_SelectedIndexChanged(null, null);
         }
 
         private void _SelectComboBoxItem(ComboBox c, string s)

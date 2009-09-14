@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-08 23:12:22>
+// Time-stamp: <2009-September-14 00:26:23>
 //
 // ------------------------------------------------------------------
 //
@@ -1025,16 +1025,47 @@ namespace Ionic.Zip.Tests
             string subdir = Path.Combine(TopLevelDir, "files");
 
             string[] filesToZip;
-            Dictionary<string, byte[]> checksums;
+            Dictionary<string, byte[]> checksums = null;
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
+            //CreateFilesAndChecksums(subdir, 2, 32, out filesToZip, out checksums);
+
+#if NOT
+            // debugging 
+            Directory.CreateDirectory(subdir);
+            DateTime atMidnight = new DateTime(DateTime.Now.Year,
+                                               DateTime.Now.Month,
+                                               DateTime.Now.Day,
+                                               11,11,11);
+            filesToZip = new String[2];
+            for (int z=0; z < 2; z++)
+            {
+                string fname = Path.Combine(subdir, String.Format("file{0:D3}.txt", z));
+                File.WriteAllText(fname, "12341234123412341234123412341234");
+                File.SetLastWriteTime(fname, atMidnight);
+                File.SetLastAccessTime(fname, atMidnight);
+                File.SetCreationTime(fname, atMidnight);
+                filesToZip[z]= fname;
+            }
+#endif
+            TestContext.WriteLine("Test Unzip with 7zip");
+            TestContext.WriteLine("============================================");
+
+            // marker file
+            // using (File.Create(Path.Combine(TopLevelDir, "DotNetZip-" + ZipFile.LibraryVersion.ToString()))) ;
 
             var compressionLevels = Enum.GetValues(typeof(Ionic.Zlib.CompressionLevel));
             int i=0;
             foreach (var compLevel in compressionLevels)
             {
+                TestContext.WriteLine("---------------------------------");
+                TestContext.WriteLine("Trial {0}", i);
+                TestContext.WriteLine("CompressionLevel = {0}", compLevel);
                 string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Compat_7z_Unzip_Password_NonSeekableOutput.{0}.zip",i));
                 string password=  Path.GetRandomFileName();
+                //string password = "0123456789ABCDEF"; 
                 string extractDir = Path.Combine(TopLevelDir, String.Format("extract.{0}",i));
+
+                TestContext.WriteLine("Password = {0}", password);
 
                 // Create the zip archive with DotNetZip
                 Directory.SetCurrentDirectory(TopLevelDir);
