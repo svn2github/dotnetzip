@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-13 17:38:50>
+// Time-stamp: <2009-September-14 16:22:50>
 //
 // ------------------------------------------------------------------
 //
@@ -423,11 +423,6 @@ namespace Ionic.Zip
             _LastModified = _Mtime;
             if (!_emitUnixTimes && !_emitNtfsTimes)
                 _emitNtfsTimes = true;
-            
- Console.WriteLine("***ZipEntry.SetEntryTimes:   ({0}) _emitNtfsTimes({1})...",
-                   FileName,
-                   _emitNtfsTimes);
-            
             _metadataChanged = true;
         }
 
