@@ -239,6 +239,7 @@ namespace Ionic.Zip.Examples.WinForms
                 {
                     ZipName = this.tbZipToCreate.Text,
                     Selection = this.tbSelectionToZip.Text,
+                    TraverseJunctions = this.chkTraverseJunctions.Checked,
                     Encoding = "ibm437",
                     ZipFlavor = this.comboFlavor.SelectedIndex,
                     Password = this.tbPassword.Text,
@@ -465,6 +466,7 @@ namespace Ionic.Zip.Examples.WinForms
                     zip1.Encryption = options.Encryption;
                     zip1.EmitTimesInWindowsFormatWhenSaving = options.WindowsTimes;
                     zip1.EmitTimesInUnixFormatWhenSaving = options.UnixTimes;
+                    zip1.AddDirectoryWillTraverseReparsePoints = options.TraverseJunctions;
                     foreach (ItemToAdd item in options.Entries)
                     {
                         var e = zip1.AddItem(item.LocalFileName, item.DirectoryInArchive);
@@ -719,20 +721,35 @@ namespace Ionic.Zip.Examples.WinForms
             if (this.comboFlavor.SelectedIndex == 1 || this.comboFlavor.SelectedIndex == 2)
             {
                 // intelligently change the name of the thing to create
+                // It's an SFX, swap out ZIP and insert EXE
                 if (this.tbZipToCreate.Text.ToUpper().EndsWith(".ZIP"))
                 {
                     tbZipToCreate.Text = System.Text.RegularExpressions.Regex.Replace(tbZipToCreate.Text, "(?i:)\\.zip$", ".exe");
                 }
+                // enable/disable other dependent UI elements
+                this.label17.Enabled = false;
                 this.comboSplit.Enabled = false;
+                this.label15.Enabled = true;
+                this.tbDefaultExtractDirectory.Enabled = true;
+                this.label16.Enabled = true;
+                this.tbExeOnUnpack.Enabled = true;
             }
             else if (this.comboFlavor.SelectedIndex == 0)
             {
                 // intelligently change the name of the thing to create
+                // It's a regular ZIP, so swap out EXE and insert ZIP
                 if (this.tbZipToCreate.Text.ToUpper().EndsWith(".EXE"))
                 {
                     tbZipToCreate.Text = System.Text.RegularExpressions.Regex.Replace(tbZipToCreate.Text, "(?i:)\\.exe$", ".zip");
                 }
+
+                // enable/disable other dependent UI elements
+                this.label17.Enabled = true;
                 this.comboSplit.Enabled = true;
+                this.label15.Enabled = false;
+                this.tbDefaultExtractDirectory.Enabled = false;
+                this.label16.Enabled = false;
+                this.tbExeOnUnpack.Enabled = false;
             }
         }
 
@@ -1921,7 +1938,7 @@ namespace Ionic.Zip.Examples.WinForms
     {
         public string ZipName;
         public string Selection;
-        //public String DirInArchive;
+        public bool TraverseJunctions;
         public string Encoding;
         public string Comment;
         public string Password;

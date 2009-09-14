@@ -82,6 +82,7 @@
             this.comboFlavor = new System.Windows.Forms.ComboBox();
             this.btnCreateZipBrowse = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.chkTraverseJunctions = new System.Windows.Forms.CheckBox();
             this.tbDirectoryInArchive = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
             this.label14 = new System.Windows.Forms.Label();
@@ -115,7 +116,7 @@
             this.tbDirectoryToZip.Location = new System.Drawing.Point(104, 13);
             this.tbDirectoryToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbDirectoryToZip.Name = "tbDirectoryToZip";
-            this.tbDirectoryToZip.Size = new System.Drawing.Size(499, 20);
+            this.tbDirectoryToZip.Size = new System.Drawing.Size(384, 20);
             this.tbDirectoryToZip.TabIndex = 10;
             this.tbDirectoryToZip.Leave += new System.EventHandler(this.tbDirectoryToZip_Leave);
             // 
@@ -133,7 +134,7 @@
             // btnZipupDirBrowse
             // 
             this.btnZipupDirBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnZipupDirBrowse.Location = new System.Drawing.Point(609, 13);
+            this.btnZipupDirBrowse.Location = new System.Drawing.Point(492, 13);
             this.btnZipupDirBrowse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnZipupDirBrowse.Name = "btnZipupDirBrowse";
             this.btnZipupDirBrowse.Size = new System.Drawing.Size(24, 20);
@@ -152,6 +153,7 @@
             this.btnZipUp.Size = new System.Drawing.Size(66, 26);
             this.btnZipUp.TabIndex = 140;
             this.btnZipUp.Text = "Zip All";
+            this.toolTip1.SetToolTip(this.btnZipUp, "actually save the Zip file. ");
             this.btnZipUp.UseVisualStyleBackColor = true;
             this.btnZipUp.Click += new System.EventHandler(this.btnZipup_Click);
             // 
@@ -165,6 +167,7 @@
             this.btnCancel.Size = new System.Drawing.Size(66, 26);
             this.btnCancel.TabIndex = 90;
             this.btnCancel.Text = "Cancel";
+            this.toolTip1.SetToolTip(this.btnCancel, "cancel the currently running operation");
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
@@ -300,6 +303,7 @@
             this.tbComment.Size = new System.Drawing.Size(499, 20);
             this.tbComment.TabIndex = 100;
             this.tbComment.Text = "-zip file comment here-";
+            this.toolTip1.SetToolTip(this.tbComment, "a comment to embed in the zip file");
             this.tbComment.Leave += new System.EventHandler(this.tbComment_Leave);
             this.tbComment.Enter += new System.EventHandler(this.tbComment_Enter);
             // 
@@ -683,6 +687,7 @@
             this.tbExeOnUnpack.Size = new System.Drawing.Size(499, 20);
             this.tbExeOnUnpack.TabIndex = 120;
             this.tbExeOnUnpack.Text = "-command line to execute here-";
+            this.toolTip1.SetToolTip(this.tbExeOnUnpack, "command to run upon successful extract of SFX");
             this.tbExeOnUnpack.Leave += new System.EventHandler(this.tbExeOnUnpack_Leave);
             this.tbExeOnUnpack.Enter += new System.EventHandler(this.tbExeOnUnpack_Enter);
             // 
@@ -710,6 +715,7 @@
             this.tbDefaultExtractDirectory.TabIndex = 110;
             this.tbDefaultExtractDirectory.Tag = "b";
             this.tbDefaultExtractDirectory.Text = "-default extract directory-";
+            this.toolTip1.SetToolTip(this.tbDefaultExtractDirectory, "optional default extraction directory for SFX");
             this.tbDefaultExtractDirectory.Leave += new System.EventHandler(this.tbDefaultExtractDirectory_Leave);
             this.tbDefaultExtractDirectory.Enter += new System.EventHandler(this.tbDefaultExtractDirectory_Enter);
             // 
@@ -750,6 +756,7 @@
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.chkTraverseJunctions);
             this.groupBox1.Controls.Add(this.tbDirectoryToZip);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.btnZipupDirBrowse);
@@ -766,6 +773,21 @@
             this.groupBox1.TabIndex = 103;
             this.groupBox1.TabStop = false;
             // 
+            // chkTraverseJunctions
+            // 
+            this.chkTraverseJunctions.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkTraverseJunctions.AutoSize = true;
+            this.chkTraverseJunctions.Checked = true;
+            this.chkTraverseJunctions.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkTraverseJunctions.Location = new System.Drawing.Point(531, 15);
+            this.chkTraverseJunctions.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.chkTraverseJunctions.Name = "chkTraverseJunctions";
+            this.chkTraverseJunctions.Size = new System.Drawing.Size(109, 17);
+            this.chkTraverseJunctions.TabIndex = 125;
+            this.chkTraverseJunctions.Text = "traverse junctions";
+            this.toolTip1.SetToolTip(this.chkTraverseJunctions, "traverse directory junctions\\r\\nand symlinks when adding");
+            this.chkTraverseJunctions.UseVisualStyleBackColor = true;
+            // 
             // tbDirectoryInArchive
             // 
             this.tbDirectoryInArchive.AcceptsReturn = true;
@@ -776,8 +798,7 @@
             this.tbDirectoryInArchive.Name = "tbDirectoryInArchive";
             this.tbDirectoryInArchive.Size = new System.Drawing.Size(499, 20);
             this.tbDirectoryInArchive.TabIndex = 14;
-            this.toolTip1.SetToolTip(this.tbDirectoryInArchive, "Selection criteria.  eg, (name = *.* and size> 1000) etc.  Also use atime/mtime/c" +
-                    "time and attributes. (HRSA)");
+            this.toolTip1.SetToolTip(this.tbDirectoryInArchive, "the directory to use within the archive.");
             // 
             // button1
             // 
@@ -788,7 +809,7 @@
             this.button1.Size = new System.Drawing.Size(24, 20);
             this.button1.TabIndex = 21;
             this.button1.Text = "+";
-            this.toolTip1.SetToolTip(this.button1, "Add Selected files to Zip");
+            this.toolTip1.SetToolTip(this.button1, "Add Selected files to the list of files to Save in the Zip");
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -848,6 +869,7 @@
             this.btnClearItemsToZip.Size = new System.Drawing.Size(102, 26);
             this.btnClearItemsToZip.TabIndex = 130;
             this.btnClearItemsToZip.Text = "Remove Checked";
+            this.toolTip1.SetToolTip(this.btnClearItemsToZip, "remove any checked files from the list of files to save in the zip");
             this.btnClearItemsToZip.UseVisualStyleBackColor = true;
             this.btnClearItemsToZip.Click += new System.EventHandler(this.btnClearItemsToZip_Click);
             // 
@@ -860,6 +882,7 @@
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(100, 20);
             this.textBox1.TabIndex = 100;
+            this.toolTip1.SetToolTip(this.textBox1, "edit the value");
             this.textBox1.Visible = false;
             this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
             // 
@@ -1049,6 +1072,7 @@
         private System.Windows.Forms.CheckBox chkWindowsTime;
         private System.Windows.Forms.ComboBox comboSplit;
         private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.CheckBox chkTraverseJunctions;
     }
 }
 
