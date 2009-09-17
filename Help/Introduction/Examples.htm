@@ -213,14 +213,15 @@ different directory hierarchy in the zip file.</p>
 
 <hr>
 
-<p>Add content obtained from a stream into a zip archive. Also, add a
-comment to the entry that was added from the stream.</p>
+<p>Add content obtained from a stream (MemoryStrean, FileStream, etc)
+into a zip archive. Also, add a comment to the entry that was added from
+the stream.</p>
 
 <pre lang="cs" numberLines="true" outlining="true"
   title="Streams">
-  using (ZipFile zip = ZipFile.Read())
+  using (ZipFile zip = new ZipFile())
   {
-    ZipEntry e= zip.AddFileStream("Content-From-Stream.bin", "basedirectory", StreamToRead);
+    ZipEntry e= zip.AddEntry("Content-From-Stream.bin", "basedirectory", StreamToRead);
     e.Comment = "The content for entry in the zip file was obtained from a stream";
     zip.AddFile("Readme.txt");
     zip.Save(ZipToCreate);

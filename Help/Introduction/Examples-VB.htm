@@ -132,7 +132,7 @@ End Using
 
 
 <hr>
-<p>Create a zip using ZIP64 extensions: </p>
+<p>This example creates a zip using ZIP64 extensions. ZIP64 allows you to exceed 4gb in a zip, or 65535 entries in a zip. </p>
 
 <pre lang="VB" numberLines="true" outlining="true"
   title="Create a Zip that uses ZIP64 extensions">
@@ -152,18 +152,38 @@ End Using
 
 
 <hr>
-<p>Create a zip file, add a file, and also add an entry from a string:</p>
+
+<p>Create a zip file, add a file, and also add an entry from a
+string.  When the zip is unzipped, the content from the string will be
+inserted into the file "Readme.txt". </p>
 
 <pre lang="VB" numberLines="true" outlining="true"
   title="Create 3">
 Dim Content As String = "This string will be the content of the Readme.txt file in the zip archive."
 Using zip1 As ZipFile = New ZipFile
-    zip1.AddFileFromString("Readme.txt", "", Content)
+    zip1.AddEntry("Readme.txt", "", "This is the readme content...")
     zip1.AddFile("MyDocuments\Resume.doc", "files")
     zip1.Comment = ("This zip file was created at " & DateTime.Now.ToString("G"))
     zip1.Save("Content.zip")
 End Using
 </pre>
+
+<hr>
+
+<p>Create a zip file, and add an entry taking content from a stream, like a MemoryStream or a FileStream.
+</p>
+
+<pre lang="VB" numberLines="true" outlining="true"
+  title="Create 4">
+Dim Content As String = "This string will be the content of the Readme.txt file in the zip archive."
+Using zip1 As ZipFile = New ZipFile
+    zip1.AddEntry("Readme.txt", "", stream)
+    zip1.AddFile("MyDocuments\Resume.doc", "files")
+    zip1.Comment = ("This zip file was created at " & DateTime.Now.ToString("G"))
+    zip1.Save("Content.zip")
+End Using
+</pre>
+
 
 
 <hr>
@@ -257,6 +277,42 @@ Using zip2 As ZipFile = ZipFile.Read("Content.zip")
     zip2.Save
 End Using
 </pre>
+
+
+
+<hr>
+<p>Produce a zip file that contains embedded zip files. </p>
+
+<pre lang="VB" numberLines="true" outlining="true"
+  title="Zip containing a Zip">
+
+Public Sub Run()
+    Using s1 As Stream = ZipIntoMemory("c:\temp\dir1")
+        Using s2 As Stream = ZipIntoMemory("c:\temp\dir2")
+            Using zip1 as New ZipFile 
+                zip1.AddEntry("test1.zip", "", s1)
+                zip1.AddEntry("test2.zip", "", s2)
+                ' save to a file.  Could also save to a stream here
+                zip1.Save("Tescher.zip")
+            End Using
+        End Using
+    End Using
+End Sub
+
+Public Function ZipIntoMemory(ByVal path As String) As Stream
+    Dim ms As New MemoryStream
+    Using zip1 as New ZipFile 
+        zip1.AddDirectory(path, "Result")
+        zip1.Save(ms)
+    End Using
+    ' move the stream position to the beginning
+    ms.Seek(0,SeekOrigin.Begin)
+    Return ms
+End Function
+
+</pre>
+
+
 
 </body>
 </html>
