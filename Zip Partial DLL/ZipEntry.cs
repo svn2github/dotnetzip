@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-14 16:22:50>
+// Time-stamp: <2009-September-18 15:54:45>
 //
 // ------------------------------------------------------------------
 //
@@ -2270,6 +2270,7 @@ namespace Ionic.Zip
                 entry._Source = ZipEntrySource.Stream;
                 entry._sourceStream = stream; // may  or may not be null
                 entry._Mtime = entry._Atime = entry._Ctime = DateTime.UtcNow;
+                //entry._ntfsTimesAreSet = false;  // no need to set it
             }
             else
             {
@@ -2291,10 +2292,7 @@ namespace Ionic.Zip
                 if (File.Exists(filename) || Directory.Exists(filename))
                     entry._ExternalFileAttrs = (int)NetCfFile.GetAttributes(filename);
                 
-            entry._ntfsTimesAreSet = true;
 #else
-                //try
-                //{
                 // workitem 6878??
                 // Ionic.Zip.SharedUtilities.AdjustTime_Win32ToDotNet
                 entry._Mtime = File.GetLastWriteTimeUtc(filename);
@@ -2305,21 +2303,14 @@ namespace Ionic.Zip
                 // can only get attributes on files that exist.
                 if (File.Exists(filename) || Directory.Exists(filename))
                     entry._ExternalFileAttrs = (int)File.GetAttributes(filename);
-                // else ??
 
+#endif
                 entry._ntfsTimesAreSet = true;
                 
-                //}
-                //catch
-                //{
-                //    entry._ntfsTimesAreSet = false;
-                //    entry._Mtime = System.DateTime.Now;
-                //}
-#endif
             }
 
             entry._LastModified = entry._Mtime;
-            entry._LocalFileName = filename; // may include a path
+            entry._LocalFileName = Path.GetFullPath(filename); // workitem 8813
             entry._FileNameInArchive = nameInArchive.Replace('\\', '/');
 
             // We don't actually slurp in the file data until the caller invokes Write on this entry.

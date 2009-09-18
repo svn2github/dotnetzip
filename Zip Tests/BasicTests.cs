@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-13 17:50:31>
+// Time-stamp: <2009-September-18 15:41:58>
 //
 // ------------------------------------------------------------------
 //
@@ -2200,8 +2200,6 @@ namespace Ionic.Zip.Tests.Basic
         public void CreateZip_ForceNoCompressionSomeEntries()
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "ForceNoCompression.zip");
-            Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
-
             int entriesAdded = 0;
             String filename = null;
 
@@ -2255,6 +2253,24 @@ namespace Ionic.Zip.Tests.Basic
              "The created Zip file has an unexpected number of entries.");
         }
 
+
+        [TestMethod]
+        public void Create_WithChangeDirectory()
+        {
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Create_WithChangeDirectory.zip");
+            String filename = "Testfile.txt";
+            TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
+
+            string cwd = Directory.GetCurrentDirectory();
+            using (var zip = new ZipFile())
+            {
+                Directory.SetCurrentDirectory("\\");
+                zip.AddFile("dinoch\\dev\\dotnet\\zip\\test\\ChangeDirectory.cs", "") ;
+                Directory.SetCurrentDirectory(cwd);
+                zip.Save(zipFileToCreate);
+            }
+        }
 
     }
 }
