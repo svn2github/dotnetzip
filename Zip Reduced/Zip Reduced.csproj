@@ -147,6 +147,9 @@
     <Compile Include="..\Zlib\Zlib.cs">
       <Link>Zlib.cs</Link>
     </Compile>
+    <Compile Include="..\Zlib\ZlibBaseStream.cs">
+      <Link>ZlibBaseStream.cs</Link>
+    </Compile>
     <Compile Include="..\Zlib\ZlibCodec.cs">
       <Link>ZlibCodec.cs</Link>
     </Compile>
