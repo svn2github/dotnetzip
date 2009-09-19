@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-01 12:13:31>
+// Time-stamp: <2009-September-18 21:43:08>
 //
 // ------------------------------------------------------------------
 //
@@ -315,11 +315,11 @@ namespace Ionic.Zip
             if (hour >= 24) { day++; hour = 0; }
 
             DateTime d = System.DateTime.Now;
-            bool success = false;
+            bool success= false;
             try
             {
                 d = new System.DateTime(year, month, day, hour, minute, second, 0);
-                success = true;
+                success= true;
             }
             catch (System.ArgumentOutOfRangeException)
             {
@@ -328,18 +328,40 @@ namespace Ionic.Zip
                     try
                     {
                         d = new System.DateTime(1980, 1, 1, hour, minute, second, 0);
-                        success = true;
+                success= true;
                     }
                     catch (System.ArgumentOutOfRangeException)
                     {
                         try
                         {
                             d = new System.DateTime(1980, 1, 1, 0, 0, 0, 0);
-                            success = true;
+                success= true;
                         }
                         catch (System.ArgumentOutOfRangeException) { }
 
                     }
+                }
+                // workitem 8814
+                // my god, I can't believe how many different ways applications
+                // can mess up a simple date format.
+                else
+                {
+                    try 
+                    {
+                        while (year < 1980) year++;
+                        while (year > 2030) year--;
+                        while (month < 1) month++;
+                        while (month > 12) month--;
+                        while (day < 1) day++;
+                        while (day > 28) day--;
+                        while (minute < 0) minute++;
+                        while (minute > 59) minute--;
+                        while (second < 0) second++;
+                        while (second > 59) second--;
+                        d = new System.DateTime(year, month, day, hour, minute, second, 0);
+                        success= true;
+                    }
+                    catch (System.ArgumentOutOfRangeException) { }
                 }
             }
             if (!success)
