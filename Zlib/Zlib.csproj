@@ -130,6 +130,7 @@
     <Compile Include="Tree.cs" />
     <Compile Include="Zlib.cs" />
     <Compile Include="ZlibStream.cs" />
+    <Compile Include="ZlibBaseStream.cs" />
     <Compile Include="ZlibCodec.cs" />
     <None Include="examples\test_deflate_inflate.cs" />
     <None Include="examples\test_dict_deflate_inflate.cs" />
