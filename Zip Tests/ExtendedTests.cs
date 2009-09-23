@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-14 04:21:11>
+// Time-stamp: <2009-September-23 13:09:25>
 //
 // ------------------------------------------------------------------
 //
@@ -108,76 +108,6 @@ namespace Ionic.Zip.Tests.Extended
         }
 
 
-        [TestMethod]
-        public void CreateZip_CheckInflation()
-        {
-            // Three trials:
-            // first trial has no callback.
-            // second trial has a callback that always returns false.
-            // third trial has a callback that always returns true. 
-
-            for (int j = 0; j < 3; j++)
-            {
-                Directory.SetCurrentDirectory(TopLevelDir);
-                TestContext.WriteLine("\n\n==================Trial {0}...", j);
-                _doubleReadCallbacks = 0;
-                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("CreateZip_CheckInflation-{0}.zip", j));
-
-                int entries = _rnd.Next(3) + 3;
-                String filename = null;
-
-                string Subdir = Path.Combine(TopLevelDir, String.Format("A{0}", j));
-                Directory.CreateDirectory(Subdir);
-
-                var checksums = new Dictionary<string, string>();
-
-                TestContext.WriteLine("---------------Creating {0}...", zipFileToCreate);
-
-#pragma warning disable 618
-                using (ZipFile zip2 = new ZipFile())
-                {
-                    if (j > 0)
-                    {
-                        zip2.WillReadTwiceOnInflation = ReadTwiceCallback;
-                        _callbackAnswer = (j > 1);
-                    }
-
-                    for (int i = 0; i < entries; i++)
-                    {
-                        filename = Path.Combine(TopLevelDir, String.Format("Data{0}.bin", i));
-                        TestUtilities.CreateAndFillFileBinary(filename, _rnd.Next(44000) + 5000);
-                        zip2.AddFile(filename, "");
-
-                        var chk = TestUtilities.ComputeChecksum(filename);
-                        checksums.Add(Path.GetFileName(filename), TestUtilities.CheckSumToString(chk));
-                    }
-
-                    zip2.Save(zipFileToCreate);
-                } 
-#pragma warning restore 618
-
-                TestContext.WriteLine("---------------Reading {0}...", zipFileToCreate);
-                using (ZipFile zip3 = ZipFile.Read(zipFileToCreate))
-                {
-                    string extractDir = String.Format("extract{0}", j);
-                    foreach (var e in zip3)
-                    {
-                        TestContext.WriteLine(" Entry: {0}  c({1})  u({2})", e.FileName, e.CompressedSize, e.UncompressedSize);
-
-                        if (j != 1)
-                            Assert.IsTrue(e.CompressedSize <= e.UncompressedSize,
-                                          "In trial {0}, Entry '{1}'  has expanded ({2} > {3}).", j, e.FileName, e.CompressedSize, e.UncompressedSize);
-
-                        e.Extract(extractDir);
-                        filename = Path.Combine(extractDir, e.FileName);
-                        string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filename));
-                        Assert.IsTrue(checksums.ContainsKey(e.FileName), "Checksum is missing");
-                        Assert.AreEqual<string>(checksums[e.FileName], actualCheckString, "Checksums for ({0}) do not match.", e.FileName);
-                        TestContext.WriteLine("     Checksums match ({0}).\n", actualCheckString);
-                    }
-                }
-            }
-        }
 
 
 
@@ -295,87 +225,6 @@ namespace Ionic.Zip.Tests.Extended
         }
 
         
-
-        private int _doubleReadCallbacks = 0;
-        private bool _callbackAnswer = false;
-        public bool ReadTwiceCallback(long u, long c, string filename)
-        {
-            _doubleReadCallbacks++;
-            TestContext.WriteLine("ReadTwiceCallback: {0} {1} {2}", u, c, filename);
-            return _callbackAnswer;
-        }
-
-
-
-        [TestMethod]
-        public void Save_DoubleReadCallback()
-        {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Save_DoubleReadCallback.zip");
-
-            // 1. create the directory
-            string Subdir = Path.Combine(TopLevelDir, "DoubleReadTest");
-            Directory.CreateDirectory(Subdir);
-
-            // 2. create a small text file, which is incompressible
-            var SmallIncompressibleTextFile = Path.Combine(Subdir, "IncompressibleTextFile.txt");
-            using (var sw = File.AppendText(SmallIncompressibleTextFile))
-            {
-                sw.WriteLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-            }
-
-            // 3. make a text file
-            string LargeTextFile = Path.Combine(Subdir, "HundredKTextFile.txt");
-            TestUtilities.CreateAndFillFileText(LargeTextFile, _rnd.Next(44000) + 65000);
-
-            // 4. compress that file to make a large incompressible file
-            string CompressedFile = LargeTextFile + ".COMPRESSED";
-
-            byte[] working = new byte[0x2000];
-            int n;
-            using (var input = File.OpenRead(LargeTextFile))
-            {
-                using (var raw = File.Create(CompressedFile))
-                {
-                    using (var compressor = new Ionic.Zlib.GZipStream(raw, Ionic.Zlib.CompressionMode.Compress, Ionic.Zlib.CompressionLevel.BestCompression, true))
-                    {
-                        while ((n = input.Read(working, 0, working.Length)) > 0)
-                        {
-                            compressor.Write(working, 0, n);
-                        }
-                    }
-                }
-            }
-
-
-            // 5. create the zip file with all those things in it
-            _doubleReadCallbacks = 0;  // will be updated by the ReadTwiceCallback
-#pragma warning disable 618
-            using (ZipFile zip = new ZipFile())
-            {
-                zip.WillReadTwiceOnInflation = ReadTwiceCallback;
-                zip.AddEntry("ReadMe.txt", "", "This is the content for the Readme file. This is the content. Right here. " +
-                             "This is the content. This is it. And as you will see, this content is compressible. This " +
-                             "compressibility comees from replacing common sequences of data in the file, with codes.  " +
-                             "They call it a dictionary. There are well-known algorithms for it. DEFLATE is one of them.  " +
-                             "And that's the algorithm we're using on this text.");
-                zip.AddFile(SmallIncompressibleTextFile, Path.GetFileName(Subdir));
-                zip.AddFile(LargeTextFile, Path.GetFileName(Subdir));
-                zip.AddFile(CompressedFile, Path.GetFileName(Subdir));
-                zip.Save(zipFileToCreate);
-            }
-#pragma warning restore 618
-
-            // 6. check results
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), 4,
-                                 "The Zip file has the wrong number of entries.");
-
-            Assert.IsTrue(ZipFile.IsZipFile(zipFileToCreate, true),
-                          "The IsZipFile() method returned an unexpected result for an existing zip file.");
-
-            // 1 for the compressed file, 1 for the small incompressible text file
-            Assert.AreEqual<int>(2, _doubleReadCallbacks);
-        }
-
 
 
 

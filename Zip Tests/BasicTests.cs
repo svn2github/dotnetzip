@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-18 15:41:58>
+// Time-stamp: <2009-September-23 13:10:31>
 //
 // ------------------------------------------------------------------
 //
@@ -2151,13 +2151,11 @@ namespace Ionic.Zip.Tests.Basic
 
 
         [TestMethod]
-        public void CreateZip_ForceNoCompressionAllEntries()
+        public void CreateZip_CompressionLevelZero_AllEntries()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "ForceNoCompression.zip");
-            //_FilesToRemove.Add(zipFileToCreate);
-            Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
+            string zipFileToCreate = Path.Combine(TopLevelDir, "CompressionLevelZero.zip");
 
-            String CommentOnArchive = "BasicTests::ForceNoCompression(): This archive override the name of a directory with a one-char name.";
+            String CommentOnArchive = "BasicTests::CompressionLevelZero(): This archive override the name of a directory with a one-char name.";
 
             int entriesAdded = 0;
             String filename = null;
@@ -2173,15 +2171,14 @@ namespace Ionic.Zip.Tests.Basic
                 entriesAdded++;
             }
 
-#pragma warning disable 618
+            
             using (ZipFile zip = new ZipFile())
             {
-                zip.ForceNoCompression = true;
+                zip.CompressionLevel = Ionic.Zlib.CompressionLevel.None;
                 zip.AddDirectory(Subdir, Path.GetFileName(Subdir));
                 zip.Comment = CommentOnArchive;
                 zip.Save(zipFileToCreate);
             }
-#pragma warning restore 618
 
             int entriesFound = 0;
             using (ZipFile zip = ZipFile.Read(zipFileToCreate))
@@ -2196,6 +2193,8 @@ namespace Ionic.Zip.Tests.Basic
              "The created Zip file has an unexpected number of entries.");
         }
 
+
+        
         [TestMethod]
         public void CreateZip_ForceNoCompressionSomeEntries()
         {

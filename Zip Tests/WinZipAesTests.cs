@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-13 17:50:57>
+// Time-stamp: <2009-September-23 13:10:55>
 //
 // ------------------------------------------------------------------
 //
@@ -540,9 +540,7 @@ namespace Ionic.Zip.Tests.WinZipAes
             {
                 zip1.Encryption = EncryptionAlgorithm.WinZipAes256;
                 zip1.Password = password;
-#pragma warning disable 618
-                zip1.ForceNoCompression = true;
-#pragma warning restore 618
+                zip1.CompressionLevel = Ionic.Zlib.CompressionLevel.None;
 
                 for (int i = 0; i < entries; i++)
                 {
