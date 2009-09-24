@@ -80,7 +80,8 @@
        Text="ILMerge cannot be found. You need to download and install ILMerge in order to build DotNetZip."
        Condition="!Exists('$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe')" />
 
-    <Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot;   /keyfile:..\Ionic.snk    /t:library  /xmldocs /out:&quot;$(IntermediateOutputPath)$(TargetFileName)&quot;  @(AssembliesToMerge -> '&quot;%(Fullpath)&quot;', ' ') " />
+    <Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot; /keyfile:..\Ionic.snk  /t:library  /xmldocs /out:&quot;$(IntermediateOutputPath)$(TargetFileName)&quot;  @(AssembliesToMerge -> '&quot;%(Fullpath)&quot;', ' ') " />
+
     <!-- for some reason the XML doc file does not get copied automatically from obj\Debug to bin\Debug. -->
     <!-- we do it here explicitly. -->
     <Copy SourceFiles="$(IntermediateOutputPath)$(AssemblyName).XML" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" />
@@ -137,9 +138,4 @@
       <Name>Zlib DLL</Name>
     </ProjectReference>
   </ItemGroup>
-  <!--
-  <PropertyGroup>
-    <PostBuildEvent>"\Program Files\Microsoft\ILMerge\ILMerge.exe"    /keyfile:..\..\..\Ionic.snk    /t:library  /xmldocs /out:Ionic.Zip.dll   Ionic.Zip.Partial.dll Ionic.Zlib.dll</PostBuildEvent>
-  </PropertyGroup>
--->
 </Project>

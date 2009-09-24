@@ -8,7 +8,6 @@ goto START
 
  Thu, 19 Jun 2008  22:17
 
-
 -------------------------------------------------------
 
 
@@ -36,7 +35,10 @@ echo version is %version%
 c:\.net3.5\msbuild.exe DotNetZip.sln /p:Configuration=Debug
 c:\.net3.5\msbuild.exe DotNetZip.sln /p:Configuration=Release
 
-echo "making release dir ..\releases\v%version%-%stamp%"
+call :CheckSign
+if ERRORLEVEL 1 (exit /b %ERRORLEVEL%)
+
+echo making release dir ..\releases\v%version%-%stamp%
 mkdir ..\releases\v%version%-%stamp%
 
 call :MakeHelpFile
@@ -59,11 +61,64 @@ call :MakeSrcZip
 goto :END
 
 
---------------------------------------------
-@REM MakeHelpFile subroutine
-@REM example output zipfile name:  DotNetZipLib-v1.5.chm
 
+--------------------------------------------
+:CheckSign
+
+  @REM check the digital sig on the various DLLs
+
+  SETLOCAL EnableExtensions EnableDelayedExpansion
+  echo.
+  echo +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  echo.
+  echo Checking signatures...
+  echo.
+
+    set verbose=1
+    set rcode=0
+    set ccount=0
+    set okcount=0
+    set notsigned=0
+    for /R %%D in (*.dll) do (
+        call :BACKTICK pubkey c:\netsdk2.0\bin\sn.exe -q -T "%%D"
+        set /a ccount=!ccount!+1
+        If "!pubkey:~-44!"=="does not represent a strongly named assembly" (
+            set /a notsigned=!notsigned!+1
+            if %verbose% GTR 0 (echo !pubkey!)
+        ) else (
+            if %verbose% GTR 0 (echo %%D  !pubkey!)
+            If /i "!pubkey:~-16!"=="edbe51ad942a3f5c" (
+                set /a okcount=!okcount!+1
+            ) else (
+                set /a rcode=!rcode!+1
+            )
+        )
+    )
+
+    if %verbose% GTR 0 (
+      echo Checked !ccount! files 
+      echo !notsigned! were not signed
+      echo !okcount! were signed, with the correct key
+      echo !rcode! were signed, with the wrong key
+    )
+
+    if !rcode! GTR 0 exit /b !rcode!
+    if !okcount! LSS 67 exit /b !okcount!
+
+  echo.
+  echo.
+  
+  endlocal
+
+goto :EOF
+-------------------------------------------------------
+
+
+
+--------------------------------------------
 :MakeHelpFile
+
+  @REM example output hedklp file name:  DotNetZipLib-v1.5.chm
 
   echo.
   echo +++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -77,17 +132,15 @@ goto :END
   move Help\out\DotNetZipLib-v*.chm ..\releases\v%version%-%stamp%
 
 goto :EOF
-@REM end subroutine
 --------------------------------------------
 
 
 
 
 --------------------------------------------
-@REM MakeDevelopersRedist subroutine
-@REM example output zipfile name:  DotNetZipLib-DevKit-v1.5.zip
-
 :MakeDevelopersRedist
+
+  @REM example output zipfile name:  DotNetZipLib-DevKit-v1.5.zip
 
   echo.
   echo +++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -148,16 +201,14 @@ goto :EOF
   cd ..\..\DotNetZip
 
 goto :EOF
-@REM end subroutine
 --------------------------------------------
 
 
 
 --------------------------------------------
-@REM MakeRuntimeRedist subroutine
-@REM example output zipfile name:  DotNetZipLib-Runtime-v1.5.zip
-
 :MakeRuntimeRedist
+
+  @REM example output zipfile name:  DotNetZipLib-Runtime-v1.5.zip
 
   echo.
   echo +++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -187,15 +238,12 @@ goto :EOF
   cd ..\..\..
 
 goto :EOF
-@REM end subroutine
 --------------------------------------------
 
 
 
 
 --------------------------------------------
-@REM MakeZipUtils subroutine
-
 :MakeZipUtils
 
   echo.
@@ -218,16 +266,14 @@ goto :EOF
     cd ..\..\..\..
 
 goto :EOF
-@REM end subroutine
 --------------------------------------------
 
 
 
 --------------------------------------------
-@REM MakeUtilsMsi subroutine
-@REM example output zipfile name:   DotNetZipUtils-v1.8.msi
-
 :MakeUtilsMsi
+
+  @REM example output zipfile name:   DotNetZipUtils-v1.8.msi
 
   echo.
   echo +++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -241,15 +287,14 @@ goto :EOF
   move Setup\Release\DotNetZipUtils.msi ..\releases\v%version%-%stamp%\DotNetZipUtils-v%version%.msi
 
 goto :EOF
-@REM end subroutine
 --------------------------------------------
 
 
---------------------------------------------
-@REM MakeRuntimeMsi subroutine
-@REM example output zipfile name:   DotNetZip-Runtime-v1.8.msi
 
+--------------------------------------------
 :MakeRuntimeMsi
+
+  @REM example output zipfile name:   DotNetZip-Runtime-v1.8.msi
 
   echo.
   echo +++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -263,14 +308,12 @@ goto :EOF
   move RuntimeSetup\release\DotNetZipLib-Runtime.msi ..\releases\v%version%-%stamp%\DotNetZipLib-Runtime-v%version%.msi
 
 goto :EOF
-@REM end subroutine
 --------------------------------------------
 
 
 
 
 --------------------------------------------
-@REM MakeSrcZip subroutine
 :MakeSrcZip
 
   echo.
@@ -298,28 +341,42 @@ goto :EOF
 
     cd DotNetZip
 
-@REM    del /q Library\Resources\*.*
-@REM
-@REM    c:\cygwin\bin\find.exe .  -type f | grep -v  _tfs | grep -v notused | grep -v -i setup.exe | grep -v \~ | grep -v \#  | grep -v Documentation | grep -v CodePlex-Readme.txt | grep -v semantic.cache | grep -v sln.cache | grep -v TestResults | grep -v .suo > %tfile1%
-@REM
-@REM
-@REM    @for /f "usebackq" %%W in (%tfile1%) do call :ZIPONE %%W
-
 goto :EOF
-@REM end subroutine
 --------------------------------------------
 
 
-@REM 
-@REM --------------------------------------------
-@REM @REM ZIPONE subroutine
-@REM 
-@REM :ZIPONE
-@REM %zipit% ..\%zipfile%  %1
-@REM goto :EOF
-@REM @REM end subroutine
-@REM --------------------------------------------
-@REM 
+--------------------------------------------
+:BACKTICK
+    call :GET_CMDLINE %*
+    set varspec=%1
+    setlocal EnableDelayedExpansion
+    for /f "usebackq delims==" %%I in (`%CMDLINE%`) do set output=%%I
+    endlocal & set %varspec%=%output%
+    goto :EOF
+
+--------------------------------------------
+
+--------------------------------------------
+:GET_CMDLINE
+    @REM given a set of params [0..n], sets CMDLINE to 
+    @REM the join of params[1..n]
+    setlocal enableextensions EnableDelayedExpansion
+    set PRIOR=
+    set PARAMS=
+    shift
+    :GET_PARAMs_LOOP
+    if [%1]==[] goto GET_PARAMS_DONE
+    set PARAMS=%PARAMS% %1
+    shift
+    goto GET_PARAMS_LOOP
+    :GET_PARAMS_DONE
+    REM strip the first space
+    set PARAMS=%PARAMS:~1%
+    endlocal & set CMDLINE=%PARAMS%
+    goto :EOF
+--------------------------------------------
+
+
 
 
 

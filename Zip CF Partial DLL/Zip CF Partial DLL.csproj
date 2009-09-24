@@ -17,7 +17,7 @@
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <NativePlatformName>Windows Mobile 6 Standard SDK</NativePlatformName>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\Ionic.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\Ionic.snk</AssemblyOriginatorKeyFile>
     <FormFactorID>
     </FormFactorID>
     <SccProjectName>SAK</SccProjectName>
@@ -127,7 +127,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Ionic.pfx" />
+    <None Include="..\Ionic.snk" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Zlib CF\Zlib CF DLL.csproj">

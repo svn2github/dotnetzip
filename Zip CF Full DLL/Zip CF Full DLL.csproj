@@ -75,8 +75,8 @@
     <Message Text="TargetFileName= $(TargetFileName)" />
     <!-- produce the merged assembly - putting the output in the "IntermediateOutputPath" eg obj\Debug or obj\Release -->
     <Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot;  /targetplatform:v2,&quot;C:\Program Files\Microsoft.NET\SDK\CompactFramework\v2.0\Debugger\BCL&quot;  /keyfile:..\Ionic.snk    /t:library  /xmldocs /out:&quot;$(IntermediateOutputPath)$(TargetFileName)&quot;  @(AssembliesToMerge -> '&quot;%(Fullpath)&quot;', ' ') " />
-<!--  Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot;   /targetplatform:v2,&quot;C:\Program Files\Microsoft.NET\SDK\CompactFramework\v2.0\Debugger\BCL&quot;   /keyfile:..\Ionic.snk    /t:library  /xmldocs /out:bin\Debug\Ionic.Zip.CF.dll &quot;..\Zip CF Partial DLL\bin\Debug\Ionic.Zip.CF.Partial.dll&quot;  &quot;..\Zlib CF\bin\Debug\Ionic.Zlib.CF.dll&quot; " / -->
   </Target>
+
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="AfterBuild">
@@ -92,7 +92,5 @@
       <Name>Zlib CF DLL</Name>
     </ProjectReference>
   </ItemGroup>
-  <PropertyGroup>
-    <PostBuildEvent>"\Program Files\Microsoft\ILMerge\ILMerge.exe"  /targetplatform:v2,"C:\Program Files\Microsoft.NET\SDK\CompactFramework\v2.0\Debugger\BCL"   /keyfile:..\..\..\Ionic.snk    /t:library  /xmldocs /out:Ionic.Zip.CF.dll   Ionic.Zip.CF.Partial.dll  Ionic.Zlib.CF.dll</PostBuildEvent>
-  </PropertyGroup>
+
 </Project>

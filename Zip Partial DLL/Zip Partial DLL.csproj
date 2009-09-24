@@ -10,7 +10,7 @@
     <RootNamespace>Ionic.Zip</RootNamespace>
     <AssemblyName>Ionic.Zip.Partial</AssemblyName>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\Ionic.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\Ionic.snk</AssemblyOriginatorKeyFile>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -110,6 +110,7 @@
     <Compile Include="ZipFile.Selector.cs" />
     <Compile Include="ZipFile.SaveSelfExtractor.cs" />
     <Compile Include="ZipFile.x-IEnumerable.cs" />
+    <None Include="..\Ionic.snk" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
