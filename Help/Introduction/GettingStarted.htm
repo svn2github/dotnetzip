@@ -20,11 +20,116 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 
 <p>This page describes how to get started using DotNetZip.</p>
 
+<h2>What download to choose?</h2>
+
+<p> Different <a
+href="http://dotnetzip.codeplex.com/Release/ProjectReleases.aspx">downloads
+of DotNetZip are available</a>.  Which one you choose depends on what
+you want to do.  </p>
+
+<table border='1'>
+<tr>
+  <td style='color:white;Background:Navy;'><strong>If your goal is...</strong></td>
+  <td style='color:white;Background:Navy;'><strong>Download this...</strong></td>
+  <td style='color:white;Background:Navy;'><strong>which contains...</strong></td>
+</tr>
+
+
+<tr>
+  <td>To read the documentation for the library and tools</td>
+  <td>DotNetZipLib-*.chm</td>
+  <td>a compiled helpfile containing all the documentation.</td>
+</tr>
+
+
+<tr>
+  <td>To build .NET, COM, or PowerShell apps that use the Zip
+      library.
+  </td>
+
+  <td>DotNetZipLib-DevKit-vx.x.zip</td>
+
+  <td>the signed DLLs for Zip and Zlib, for both the desktop and Compact
+      Framework; the XML Documentation file for intellisense; the
+      compiled help file (CHM); and the License.
+  </td>
+</tr>
+
+
+<tr> 
+  <td>To modify or view the source code for the Zip & Zlib Libraries,
+      the setup (msi) project, or the examples.  </td>
+
+  <td>DotNetzip-src-vx.x.x.x.zip</td>
+
+  <td>the VS2008 solution, containing a number of VS projects and the
+      source code for the library and various examples that use the
+      library.  </td>
+</tr>
+
+
+<tr>
+  <td>To distribute .NET applications that use the Zip library, or if
+      you want to run a .NET application that depends on this library.
+  </td>
+
+  <td>DotNetZipLib-Runtime-vx.x.zip</td>
+
+  <td>the signed DLLs for Zip and Zlib, for both the desktop and Compact
+      Framework; and the License.  This is a strict subset of the DevKit 
+      download.
+  </td>
+</tr>
+
+
+<tr>
+  <td>To distribute .NET applications that use the Zip library, or if
+      you want to run a .NET application that depends on this library.
+  </td>
+
+  <td>DotNetZipLib-Runtime-vx.x.msi</td>
+
+  <td>an .MSI version of the Runtime release, containing signed DLLs for
+      Zip and Zlib, for both the desktop and Compact Framework; and the
+      License.  </td> 
+
+</tr>
+
+<tr>
+  <td>To create, read, or modify ZIP files from within a Windows GUI interface, 
+      or from the command line, or from within batch files.
+  </td>
+
+  <td>DotNetZipUtils-v1.8.zip</td>
+
+  <td>a set of exe tools (command-line and GUI) that rely on the
+      DotNetZip library, to create and manage zip files.  </td>
+</tr>
+
+
+<tr>
+  <td>To create, read, or modify ZIP files from within a Windows GUI interface, 
+      or from the command line, or from within batch files.
+  </td>
+
+  <td>DotNetZipUtils-v1.8.msi</td>
+
+  <td>an .MSI version of the Utils download.  This installs a set of exe
+      tools (command-line and GUI) that rely on the DotNetZip library,
+      to create and manage zip files.  There's also an
+      uninstaller. </td> </tr>
+
+</table>
+
+
+
+
 <h2>Which DLL to use?</h2>
 
-<p>The binary releases of DotNetZip include multiple distinct DLLs or
-assemblies.  Which one should you use?
-</p>
+<p>When you are building an application that manipulates ZIP files, you
+will want to use one of the binary releases of DotNetZip.  These
+releases include multiple distinct DLLs or assemblies.  Which one should
+you use?  </p>
 
 <p>The likely answer is: <em>Ionic.Zip.dll</em></p>
 

@@ -27,7 +27,7 @@
     </SandcastlePath>
     <WorkingPath>
     </WorkingPath>
-    <FrameworkVersion>2.0.50727</FrameworkVersion>
+    <FrameworkVersion>3.0</FrameworkVersion>
     <HelpTitle>Ionic Zip Library v1.9</HelpTitle>
     <FeedbackEMailAddress>dpchiesa%40hotmail.com</FeedbackEMailAddress>
     <PresentationStyle>Prototype</PresentationStyle>
@@ -57,17 +57,28 @@ DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Gir
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="Introduction\Introduction.htm" />
     <Content Include="Introduction\About.htm" />
     <Content Include="Introduction\GettingStarted.htm" />
     <Content Include="Introduction\COM.htm" />
     <Content Include="Introduction\Powershell.htm" />
     <Content Include="Introduction\CompactFramework.htm" />
-    <Content Include="Introduction\Examples-VB.htm" />
-    <Content Include="Introduction\Example-ASPNET.htm" />
-    <Content Include="Introduction\Examples.htm" />
+    <Content Include="Examples\Examples.htm" />
+    <Content Include="Examples\VB.htm" />
+    <Content Include="Examples\ASPNET-Csharp.htm" />
+    <Content Include="Examples\ASPNET-VB.htm" />
+    <Content Include="Examples\CSharp.htm" />
+    <Content Include="Tools\Tools.htm" />
+    <Content Include="Tools\CmdLine.htm" />
+    <Content Include="Tools\GUI.htm" />
+    <Content Include="Tools\ZipTool1.png" />
+    <Content Include="Tools\ZipTool2.png" />
+    <Content Include="Tools\ZipTool3.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Introduction\" />
+    <Folder Include="Examples\" />
+    <Folder Include="Tools\" />
   </ItemGroup>
   <!-- Import the SHFB build targets -->
   <Import Project="$(SHFBROOT)\SandcastleHelpFileBuilder.targets" />
