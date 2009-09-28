@@ -63,8 +63,9 @@ namespace Ionic.Zip.Examples
             "  -s <entry> 'string'  - insert an entry of the given name into the \n" +
             "                         archive, with the given string as its content.\n" +
             "  -sfx [w|c]           - create a self-extracting archive, either a Windows or console app.\n" +
-            "  -split <maxsize>     - produce a split zip, with the specified maximum size.\n" +
-            "                         This is not compatible with -sfx.\n" +
+            "  -split <maxsize>     - produce a split zip, with the specified maximum size. You can\n" +
+            "                         optionally use kb or mb as a suffix to the size. \n" +
+            "                         -split is not compatible with -sfx.\n" +
             "  -Tw+                 - store Windows-format extended times (default).\n" +
             "  -Tw-                 - don't store Windows-format extended times.\n" +
             "  -Tu+                 - store Unix-format extended times (default).\n" +
