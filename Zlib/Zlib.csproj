@@ -137,8 +137,12 @@
     <None Include="examples\test_flush_sync.cs" />
     <None Include="examples\test_large_deflate_inflate.cs" />
     <None Include="examples\test_stream_deflate_inflate.cs" />
-    <None Include="..\Ionic.snk" />
     <Content Include="LICENSE.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Ionic.snk" >
+      <Link>Ionic.snk</Link>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

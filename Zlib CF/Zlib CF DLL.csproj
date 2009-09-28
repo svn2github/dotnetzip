@@ -93,7 +93,11 @@
       <Link>ZlibStream.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <None Include="..\Ionic.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Ionic.snk" >
+      <Link>Ionic.snk</Link>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

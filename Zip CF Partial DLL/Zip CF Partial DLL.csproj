@@ -127,7 +127,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Ionic.snk" />
+    <None Include="..\Ionic.snk" >
+      <Link>Ionic.snk</Link>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Zlib CF\Zlib CF DLL.csproj">
