@@ -1,12 +1,12 @@
 <%@ Page 
     Language="C#" 
-    Debug="true" %>
-
+    Debug="true" 
+%>
 
 
 <%@ Import Namespace="System.Text" %>
 <%@ Import Namespace="System.IO" %>
-<%@ Import Namespace="Ionic.Utils.Zip" %>
+<%@ Import Namespace="Ionic.Zip" %>
 <%@ Import Namespace="System.Collections.Generic" %>
 
 <script language="C#" runat="server">
@@ -16,7 +16,7 @@
 // This .aspx page demonstrates how to use the DotNetZip library from within ASP.NET.
 // 
 // To run it, 
-//  1. drop the Ionic.Utils.Zip.dll into the \bin directory of yoru asp.net app
+//  1. drop the Ionic.Zip.dll into the \bin directory of yoru asp.net app
 //  2. create a subdirectory called "fodder" in your web app directory.
 //  3. copy into that directory a variety of random files.
 //  4. insure your web.config is properly set up (See below)
@@ -41,17 +41,27 @@
 //      </system.web>
 //      <system.codedom>
 //        <compilers>
-//          <compiler language="c#;cs;csharp" extension=".cs" warningLevel="4" type="Microsoft.CSharp.CSharpCodeProvider, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+//          <compiler language="c#;cs;csharp"
+//                extension=".cs"
+//                warningLevel="4"
+//                type="Microsoft.CSharp.CSharpCodeProvider, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
 //            <providerOption name="CompilerVersion" value="v3.5" />
 //            <providerOption name="WarnAsError" value="false" />
 //          </compiler>
-//        </compilers>
+//    
+//          <compiler language="vb;vbs;visualbasic;vbscript" 
+//                    extension=".vb"
+//                    warningLevel="4"
+//                    type="Microsoft.VisualBasic.VBCodeProvider, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+//            <providerOption name="CompilerVersion" value="v3.5" />
+//            <providerOption name="OptionInfer" value="false" />
+//            <providerOption name="WarnAsError" value="false" />
+//          </compiler>
+//    
 //      </system.codedom>
 //    </configuration>
 //    
 //    
-// If you use medium trust, then you will need v1.6 of DotNetZip, at a minimum.
-//
 
 
 
@@ -102,7 +112,6 @@ public void btnGo_Click (Object sender, EventArgs e)
             if (chkbox.Checked)
             {
                 ErrorMessage.InnerHtml += String.Format("adding file: {0}<br/>\n", lbl.Text);
-
                 filesToInclude.Add(System.IO.Path.Combine(sMappedPath,lbl.Text));
             }
         }
@@ -111,34 +120,47 @@ public void btnGo_Click (Object sender, EventArgs e)
     if (filesToInclude.Count==0)
     {
         ErrorMessage.InnerHtml += "You did not select any files?<br/>\n";
-
     }
     else
     {
         Response.Clear();
+        Response.BufferOutput= false;  
 
         System.Web.HttpContext c= System.Web.HttpContext.Current;
-        String ReadmeText= String.Format("README.TXT\n\nHello!\n\nThis is a zip file that was dynamically generated at {0}\nby an ASP.NET Page running on the machine named '{1}'.\nThe server type is: {2}\n", 
+        String ReadmeText= String.Format("README.TXT\n\nHello!\n\n" +
+                                         "This is a zip file that was dynamically generated at {0}\n" +
+                                         "by an ASP.NET Page running on the machine named '{1}'.\n" +
+                                         "The server type is: {2}\n"+
+                                         "The password used: {3}\n", 
+                                         "Encryption: {4}\n", 
                                          System.DateTime.Now.ToString("G"),
                                          System.Environment.MachineName,
-                                         c.Request.ServerVariables["SERVER_SOFTWARE"]
+                                         c.Request.ServerVariables["SERVER_SOFTWARE"],
+                                         tbPassword.Text,
+                                         (chkUseAes.Checked)?EncryptionAlgorithm.WinZipAes256.ToString() : "None"
                                          );
         string archiveName= String.Format("archive-{0}.zip", DateTime.Now.ToString("yyyy-MMM-dd-HHmmss")); 
         Response.ContentType = "application/zip";
         Response.AddHeader("content-disposition", "filename=" + archiveName);
-  
-        using (ZipFile zip = new ZipFile(Response.OutputStream))
+ 
+        using (ZipFile zip = new ZipFile())
         {
-            foreach (var f in filesToInclude)
+            // the Readme.txt file will not be password-protected.
+            zip.AddEntry("Readme.txt", "", ReadmeText, Encoding.Default);
+            if (!String.IsNullOrEmpty(tbPassword.Text))
             {
-                zip.AddFile(f, "files");
+                zip.Password = tbPassword.Text;
+                if (chkUseAes.Checked)
+                    zip.Encryption = EncryptionAlgorithm.WinZipAes256;
             }
-            zip.AddFileFromString("Readme.txt", "", ReadmeText);
-            zip.Save();
+                
+            // filesToInclude is a string[] or List<String>
+            zip.AddFiles(filesToInclude, "files");
+            
+            zip.Save(Response.OutputStream);
         }
-        Response.End();
+        Response.Close();
     }
-
 }
 
 </script>
@@ -156,11 +178,20 @@ public void btnGo_Click (Object sender, EventArgs e)
 
       <h3> <span id="Title" runat="server" />Zip Files from ASP.NET </h3>
 
-      <p>This page uses the .NET Zip library 
-      (see <a href="http://www.codeplex/com/DotNetZip">http://www.codeplex/com/DotNetZip</a>) 
-       to dynamically create a zip archive, and then download it to the browser through Response.OutputStream</p>
+      <p>This page uses the .NET Zip library (see <a
+      href="http:///DotNetZip.codeplex.com">http://DotNetZip.codeplex.com</a>)
+      to dynamically create a zip archive, and then download it to the
+      browser through Response.OutputStream.  This page is implemented in C#.</p>
 
-      <span class="SampleTitle"><b>Check the boxes to select the files, then click the button to zip them up.</b></span>
+      <span class="SampleTitle"><b>Check the boxes to select the files, set a password if you like, 
+      then click the button to zip them up.</b></span>
+      <br/>
+      <br/>
+      Password: <asp:TextBox id="tbPassword" Password='true' Text="" AutoPostBack runat="server"/>
+      <span style="color:Red">(Optional)</span>
+      <br/>
+      <br/>
+      Use AES?: <asp:CheckBox id="chkUseAes" AutoPostBack runat="server"/>
       <br/>
       <br/>
       <asp:Button id="btnGo" Text="Zip checked files" AutoPostBack OnClick="btnGo_Click" runat="server"/>
