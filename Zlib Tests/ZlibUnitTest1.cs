@@ -1515,6 +1515,100 @@ Max Ehrmann c.1920
 
 
 
+
+        private bool PerformTrialWi8870(byte[] buffer)
+        {
+            Exception saved = null;
+            bool stop = false;
+            TestContext.WriteLine("\n\nOriginal");
+
+            byte[] compressedBytes = null;
+            using (MemoryStream ms1 = new MemoryStream())
+            {
+                using (DeflateStream compressor = new DeflateStream(ms1, CompressionMode.Compress, false))
+                {
+                    compressor.Write(buffer, 0, buffer.Length);
+                }
+                compressedBytes = ms1.ToArray();
+            }
+                
+            TestContext.WriteLine("Compressed {0} bytes into {1} bytes",
+                              buffer.Length, compressedBytes.Length);
+                
+            byte[] decompressed= null;
+            using (MemoryStream ms2 = new MemoryStream())
+            {
+                using (var deflateStream = new DeflateStream(ms2, CompressionMode.Decompress, false))
+                {
+                    deflateStream.Write(compressedBytes, 0, compressedBytes.Length);
+                }
+            }
+
+            TestContext.WriteLine("Decompressed");
+
+            if (stop)
+            {
+                bool check = true;
+                if (buffer.Length != decompressed.Length)
+                {
+                    TestContext.WriteLine("Different lengths.");
+                    check = false;
+                }
+                else
+                {
+                    for (int i=0; i < buffer.Length; i++)
+                    {
+                        if (buffer[i] != decompressed[i])
+                        {
+                            TestContext.WriteLine("byte {0} differs", i);
+                            check = false;
+                            break;
+                        }
+                    }
+                }
+
+                Assert.IsTrue(check,"Data check: A-OK");
+            }
+
+            return stop;
+        }
+
+
+
+        
+        private byte[] RandomizeBuffer(int length)
+        {
+            byte[] buffer = new byte[length];
+            int mod1 = 86 + _rnd.Next(46)/2 + 1;
+            int mod2 = 50 + _rnd.Next(72)/2 + 1;
+            for (int i=0; i < length; i++)
+            {
+                if (i > 200)
+                    buffer[i] = (byte)(i % mod1);
+                else if (i > 100)
+                    buffer[i] = (byte)(i % mod2);
+                else if (i > 42)
+                    buffer[i] = (byte)(i % 33);
+                else buffer[i]= (byte)i;
+            }
+            return buffer;
+        }
+        
+
+        
+        [TestMethod]
+        public void Zlib_DeflateStream_wi8870()
+        {
+            bool stop = false;
+            for (int j = 0; j < 1000 && !stop; j++)
+            {
+                byte[] buffer = RandomizeBuffer(117+(_rnd.Next(3)*100));
+                stop = PerformTrialWi8870(buffer);
+            }
+        }
+
+        
+
         private int DoCrc(string filename)
         {
             byte[] working = new byte[WORKING_BUFFER_SIZE];
@@ -1648,9 +1742,6 @@ Max Ehrmann c.1920
 "\n";
 
         static string[] LoremIpsumWords;
-
-
-
     }
 
     
