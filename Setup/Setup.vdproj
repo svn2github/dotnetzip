@@ -33,6 +33,30 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_4ADC6320CB5A23DFF593EA7C95D93FF3"
+        "OwnerKey" = "8:_1095DCE16DF54952900B158E667C1D5F"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_4ADC6320CB5A23DFF593EA7C95D93FF3"
+        "OwnerKey" = "8:_F7DA600A0D264B64822406B06AD1BFDE"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_4ADC6320CB5A23DFF593EA7C95D93FF3"
+        "OwnerKey" = "8:_CB8DB966CAC04B37B66694A2F4A5443F"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_4ADC6320CB5A23DFF593EA7C95D93FF3"
+        "OwnerKey" = "8:_C761E906187B41B991150E5027BA2F8A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_55305BF6BB5145EEB8F0F3C6EF49DB73"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -101,6 +125,12 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_1095DCE16DF54952900B158E667C1D5F"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_4ADC6320CB5A23DFF593EA7C95D93FF3"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -275,6 +305,32 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_4ADC6320CB5A23DFF593EA7C95D93FF3"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zip, Version=1.9.0.11, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                }
+            "SourcePath" = "8:Ionic.Zip.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_23BCB24D0FEF491DB38964CE9740634B"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_55305BF6BB5145EEB8F0F3C6EF49DB73"
             {
             "SourcePath" = "8:Uninstall.cmd"
@@ -442,14 +498,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DotNetZip Tools v1.9"
-        "ProductCode" = "8:{FC7A996B-29CA-48BF-ACD8-0BA0C38C8F61}"
-        "PackageCode" = "8:{9499EB0C-ED21-4B47-9762-1A7270DCB684}"
+        "ProductCode" = "8:{2D1E45E1-AAB3-43FC-AE63-5A37B019144C}"
+        "PackageCode" = "8:{CCD59C44-9E89-4CF1-A0B3-A6CA728D5474}"
         "UpgradeCode" = "8:{BEF05388-A74D-4383-BD87-61940DF83E20}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.9.00029"
+        "ProductVersion" = "8:1.9.00031"
         "Manufacturer" = "8:Dino Chiesa"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://dotnetzip.codeplex.com/Thread/List.aspx"
@@ -1553,7 +1609,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_1095DCE16DF54952900B158E667C1D5F"
             {
-            "SourcePath" = "8:..\\Examples\\ZipIt\\obj\\Release\\ZipIt.exe"
+            "SourcePath" = "8:..\\Examples\\ZipIt\\obj\\Debug\\ZipIt.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_23BCB24D0FEF491DB38964CE9740634B"
@@ -1581,7 +1637,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_C761E906187B41B991150E5027BA2F8A"
             {
-            "SourcePath" = "8:..\\Examples\\WinFormsApp\\obj\\Release\\DotNetZip-WinFormsTool.exe"
+            "SourcePath" = "8:..\\Examples\\WinFormsApp\\obj\\Debug\\DotNetZip-WinFormsTool.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_23BCB24D0FEF491DB38964CE9740634B"
@@ -1609,7 +1665,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_CB8DB966CAC04B37B66694A2F4A5443F"
             {
-            "SourcePath" = "8:..\\Examples\\SelfExtracting\\obj\\Release\\ConvertZipToSfx.exe"
+            "SourcePath" = "8:..\\Examples\\SelfExtracting\\obj\\Debug\\ConvertZipToSfx.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_23BCB24D0FEF491DB38964CE9740634B"
@@ -1637,7 +1693,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_F7DA600A0D264B64822406B06AD1BFDE"
             {
-            "SourcePath" = "8:..\\Examples\\UnZip\\obj\\Release\\UnZip.exe"
+            "SourcePath" = "8:..\\Examples\\UnZip\\obj\\Debug\\UnZip.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_23BCB24D0FEF491DB38964CE9740634B"
