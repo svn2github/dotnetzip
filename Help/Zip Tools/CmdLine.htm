@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>DotNetZip Command-Line Tools</title>
+<title>ZipIt.exe and UnZip.exe</title>
 <style>
 p,body,a,tr,td
              { font-family: Verdana, Arial, Helvetica; font-size: 10pt }
@@ -19,10 +19,10 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 <body>
 <h1>DotNetZip Command-Line Tools</h1>
 
-
-<p>The Tools/Utilities downloads for DotNetZip include a set of
-tools that can be used from the command line to manipulate zip files
-from within batch scripts, or CMD.exe windows.  </p>
+<p>The Tools/Utilities downloads for DotNetZip include a pair of tools -
+Zipit.exe and Unzip.exe - that can be used from the command line to
+manipulate zip files from within batch scripts, or CMD.exe windows.
+</p>
 
 
 <h2>ZipIt.exe</h2>
@@ -42,7 +42,7 @@ create split or spanned archives. And there are many other options. </p>
 <h3>Usage</h3>
 <pre  numberLines="true" outlining="true" >
 
-   ZipIt.exe &lt;ZipFileToCreate&gt; [arguments]
+ZipIt.exe &lt;ZipFileToCreate&gt; [arguments]
 
 arguments:
   &lt;directory&gt; | &lt;file&gt; - a directory or file to add to the archive.
@@ -415,7 +415,7 @@ from the command line or from a batch file. </p>
 <h3>Usage</h3>
 
 <pre>
-  unzip [options] &lt;zipfile&gt; [&lt;entryname&gt;...]
+  UnZip.exe [options] &lt;zipfile&gt; [&lt;entryname&gt;...]
      unzips all files in the archive.
      options:
        -o                overwrite existing files if necessary.
@@ -499,6 +499,20 @@ from the command line or from a batch file. </p>
   extract the entries in the zipfile, into the directory 'ex1'. The directory will 
   be created if it does not exist.  Any directory hierarchy within the zip file
   will be ignored or "flattened" upon extraction.
+  </td>
+</tr>
+
+
+<tr>
+  <td colspan='2' class="code">UnZip.exe Package.zip -o -d ex1 </td>
+</tr>
+
+<tr>
+  <td>&nbsp;</td>
+  <td>
+  extract the entries in the zipfile, into the directory 'ex1'. The directory will 
+  be created if it does not exist.  During extraction, any existing files in the 
+  directory hierarchy will be overwritten if necessary.
   </td>
 </tr>
 

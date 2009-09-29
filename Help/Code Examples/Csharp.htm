@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>DotNetZip Examples (C#)</title>
+<title>C#</title>
 <style>
 p,body,a,tr,td
              { font-family: Verdana, Arial, Helvetica; font-size: 10pt }
@@ -413,7 +413,7 @@ save. </p>
   string content = "......whatever....";  
   using (ZipFile zip = new ZipFile())
   {
-    ZipEntry e = zip.AddFileFromString("README.txt", "", content);
+    ZipEntry e = zip.AddEntry("README.txt", "", content);
     e.Comment = "This entry in the zip archive was created from a string.";
     zip.Save("archive-2008july12.zip");
   }

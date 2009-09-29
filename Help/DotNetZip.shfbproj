@@ -46,9 +46,11 @@ This implementation utilizes a DeflateStream class implemented in managed code, 
 v2.0 base class library.
 
 DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Girls Club in Pennsylvania, USA.  http://cheeso.members.winisp.net/DotNetZipDonate.aspx</NamespaceSummaryItem>
-      <NamespaceSummaryItem name="Ionic.Zlib" isDocumented="True" xmlns="">Ionic.Zlib namespace includes classes for doing ZLIB, DEFLATE, and GZIP compression and decompression, according to RFC1950, RFC1951, and RFC 1952.  It includes stream classes that can directly replace the DeflateStream and GZipStream classes that are included in the Base Class Library of the .NET Framework.</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="Ionic.Zlib" isDocumented="True" xmlns="">Ionic.Zlib namespace includes classes for doing ZLIB, DEFLATE, and GZIP compression and decompression, according to RFC 1950, RFC 1951, and RFC 1952.  It includes stream classes that can directly replace the DeflateStream and GZipStream classes that are included in the Base Class Library of the .NET Framework.</NamespaceSummaryItem>
     </NamespaceSummaries>
     <CopyrightText>Copyright 2009, Dino Chiesa</CopyrightText>
+    <RootNamespaceContainer>True</RootNamespaceContainer>
+    <RootNamespaceTitle>Reference</RootNamespaceTitle>
   </PropertyGroup>
   <!-- There are no properties for these two groups but they need to appear in
        order for Visual Studio to perform the build. -->
@@ -63,22 +65,22 @@ DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Gir
     <Content Include="Introduction\COM.htm" />
     <Content Include="Introduction\Powershell.htm" />
     <Content Include="Introduction\CompactFramework.htm" />
-    <Content Include="Examples\Examples.htm" />
-    <Content Include="Examples\VB.htm" />
-    <Content Include="Examples\ASPNET-Csharp.htm" />
-    <Content Include="Examples\ASPNET-VB.htm" />
-    <Content Include="Examples\CSharp.htm" />
-    <Content Include="Tools\Tools.htm" />
-    <Content Include="Tools\CmdLine.htm" />
-    <Content Include="Tools\GUI.htm" />
-    <Content Include="Tools\ZipTool1.png" />
-    <Content Include="Tools\ZipTool2.png" />
-    <Content Include="Tools\ZipTool3.png" />
+    <Content Include="Code Examples\Code Examples.htm" />
+    <Content Include="Code Examples\VB.htm" />
+    <Content Include="Code Examples\ASPNET-Csharp.htm" />
+    <Content Include="Code Examples\ASPNET-VB.htm" />
+    <Content Include="Code Examples\CSharp.htm" />
+    <Content Include="Zip Tools\Zip Tools.htm" />
+    <Content Include="Zip Tools\CmdLine.htm" />
+    <Content Include="Zip Tools\GUI.htm" />
+    <Content Include="Zip Tools\ZipTool1.png" />
+    <Content Include="Zip Tools\ZipTool2.png" />
+    <Content Include="Zip Tools\ZipTool3.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Introduction\" />
-    <Folder Include="Examples\" />
-    <Folder Include="Tools\" />
+    <Folder Include="Code Examples\" />
+    <Folder Include="Zip Tools\" />
   </ItemGroup>
   <!-- Import the SHFB build targets -->
   <Import Project="$(SHFBROOT)\SandcastleHelpFileBuilder.targets" />
