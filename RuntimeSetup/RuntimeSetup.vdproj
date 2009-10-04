@@ -57,6 +57,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_894283E6B4AAEB6C41932D002961BF8E"
+        "OwnerKey" = "8:_F0E7822379794ABEB5C8C61DF4702C0E"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_A149741495264BFAB63E64F051DD131A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -77,6 +83,12 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_8591E98F51A9419D8E3AED36E87FDAEB"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_894283E6B4AAEB6C41932D002961BF8E"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -220,9 +232,14 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Zlib, Version=1.9.0.11, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zlib, Version=1.9.0.12, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
+                    "_026FA1A09193DE7F761C3B416A289327"
+                    {
+                    "Name" = "8:Ionic.Zlib.dll"
+                    "Attributes" = "3:512"
+                    }
                 }
             "SourcePath" = "8:Ionic.Zlib.dll"
             "TargetName" = "8:"
@@ -302,6 +319,37 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_894283E6B4AAEB6C41932D002961BF8E"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zlib.CF, Version=1.9.0.12, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_894283E6B4AAEB6C41932D002961BF8E"
+                    {
+                    "Name" = "8:Ionic.Zlib.CF.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:Ionic.Zlib.CF.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_BA94E3FEA0604E3CB81AD42B1EF9D747"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A149741495264BFAB63E64F051DD131A"
             {
             "SourcePath" = "8:FixupMsi.js"
@@ -326,9 +374,14 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Zip.Partial, Version=1.9.0.11, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zip.Partial, Version=1.9.0.12, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
+                    "_D92520705F8EB940E3AB22A58CCE225B"
+                    {
+                    "Name" = "8:Ionic.Zip.Partial.dll"
+                    "Attributes" = "3:512"
+                    }
                 }
             "SourcePath" = "8:Ionic.Zip.Partial.dll"
             "TargetName" = "8:"
@@ -404,14 +457,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DotNetZip Runtime v1.9"
-        "ProductCode" = "8:{ADE108A8-96E3-4675-B193-035496CCDD87}"
-        "PackageCode" = "8:{D333F6E6-EDFD-4E6F-961B-6AEA9103E7B8}"
+        "ProductCode" = "8:{FB84F356-C7E0-47E1-9D0B-6B45A7679386}"
+        "PackageCode" = "8:{935CA673-6FB0-4213-97C0-8349321687D0}"
         "UpgradeCode" = "8:{FFE64B5A-5286-48BC-908A-C04137C29C94}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.9.0006"
+        "ProductVersion" = "8:1.9.0007"
         "Manufacturer" = "8:Dino Chiesa"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://dotnetzip.codeplex.com/Thread/List.aspx"

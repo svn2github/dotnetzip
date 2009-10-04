@@ -192,7 +192,7 @@ namespace Ionic.Zip.Tests.Zip64
                         // This bit adds a bunch of null streams. They are set just-in-time
                         // in the SaveProgress method.
                         for (int i = 0; i < numFilesToAdd; i++)
-                            zip.AddEntry("random" + i + ".txt", "", Stream.Null);
+                            zip.AddEntry("random" + i + ".txt", Stream.Null);
 
                         zip.Save(zipFileToCreate);
                     }

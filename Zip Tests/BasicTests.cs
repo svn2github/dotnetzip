@@ -339,7 +339,7 @@ namespace Ionic.Zip.Tests.Basic
                     var b = new byte[_rnd.Next(1000)+1000];
                     _rnd.NextBytes(b);
                     string filename = String.Format("Filename{0:D3}.bin", i);
-                    var e = zip1.AddEntry(filename, "data", b);
+                    var e = zip1.AddEntry(Path.Combine("data", filename), b);
                     dict.Add(e.FileName, b);
                 }
                 zip1.Save(zipFileToCreate);
@@ -1028,10 +1028,12 @@ namespace Ionic.Zip.Tests.Basic
             string status = sw.ToString();
             TestContext.WriteLine("save output: " + status);
 
-            Assert.IsTrue(status.Length > 24 * entries, "Insufficient status messages on the StatusTexWriter?");
+            Assert.IsTrue(status.Length > 24 * entries, "Insufficient status messages on the StatusTextWriter? ({0}!>{1})",
+                status.Length, 24 * entries);
 
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), entries,
-                    "The zip file created has the wrong number of entries.");
+            int n = TestUtilities.CountEntries(zipFileToCreate);
+            Assert.AreEqual<int>(n, entries,
+                    "The zip file created has the wrong number of entries. ({0}!={1})", n, entries);
         }
 
 
@@ -1859,7 +1861,7 @@ namespace Ionic.Zip.Tests.Basic
                 for (int i = 0; i < fileCount; i++)
                 {
                     // use the local filename (not fully qualified)
-                    ZipEntry e = zip.AddEntry("file" + i.ToString(), "",
+                    ZipEntry e = zip.AddEntry("file" + i.ToString(),
                             "FileContent: This file has these attributes: " + attributeCombos[i].ToString());
                     TestContext.WriteLine("Adding {0}    [{1}]", e.FileName, attributeCombos[i].ToString());
                     e.Attributes = attributeCombos[i];

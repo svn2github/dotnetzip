@@ -93,6 +93,9 @@
     <Compile Include="..\Zip Partial DLL\ZipEntry.Write.cs">
       <Link>ZipEntry.Write.cs</Link>
     </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipEntrySource.cs">
+      <Link>ZipEntrySource.cs</Link>
+    </Compile>
     <Compile Include="..\Zip Partial DLL\ZipErrorAction.cs">
       <Link>ZipErrorAction.cs</Link>
     </Compile>
@@ -162,7 +165,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Ionic.snk" >
+    <None Include="..\Ionic.snk">
       <Link>Ionic.snk</Link>
     </None>
   </ItemGroup>

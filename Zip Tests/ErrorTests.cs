@@ -94,7 +94,7 @@ namespace Ionic.Zip.Tests.Error
             string ZipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_AddEntry_String_BlankName.zip");
             using (ZipFile zip = new ZipFile())
             {
-                zip.AddEntry("", "foo", "This is the content.");
+                zip.AddEntry("", "This is the content.");
                 zip.Save(ZipFileToCreate);
             }
         }

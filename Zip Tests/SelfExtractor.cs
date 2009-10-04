@@ -80,7 +80,7 @@ namespace Ionic.Zip.Tests
                     zip1.AddDirectory(Subdir, Path.GetFileName(Subdir));
                     zip1.Comment = "This will be embedded into a self-extracting exe";
                     MemoryStream ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ReadmeString));
-                    zip1.AddEntry("Readme.txt", "", ms1);
+                    zip1.AddEntry("Readme.txt", ms1);
                     zip1.SaveSelfExtractor(SfxFileToCreate, trials[k]);
                 }
 
@@ -152,7 +152,7 @@ namespace Ionic.Zip.Tests
                 zip1.AddFile(filename, Path.GetFileName(Subdir));
                 zip1.Comment = "This will be embedded into a self-extracting exe";
                 MemoryStream ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ReadmeString));
-                zip1.AddEntry("Readme.txt", "", ms1);
+                zip1.AddEntry("Readme.txt", ms1);
                 zip1.SaveSelfExtractor(SfxFileToCreate, flavor, UnpackDirectory);
             }
 
@@ -274,7 +274,7 @@ namespace Ionic.Zip.Tests
                 zip.AddDirectory(Subdir, Path.GetFileName(Subdir));
                 zip.Comment = "This will be embedded into a self-extracting exe";
                 MemoryStream ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ReadmeString));
-                zip.AddEntry("Readme.txt", "", ms1);
+                zip.AddEntry("Readme.txt", ms1);
                 zip.SaveSelfExtractor(ExeFileToCreate, Ionic.Zip.SelfExtractorFlavor.ConsoleApplication,
                                       UnpackDirectory);
             }
@@ -455,7 +455,7 @@ namespace Ionic.Zip.Tests
                     zip.AddDirectory(Subdir, Path.GetFileName(Subdir));
                     zip.Comment = "This will be embedded into a self-extracting exe";
                     MemoryStream ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ReadmeString));
-                    zip.AddEntry("Readme.txt", "", ms1);
+                    zip.AddEntry("Readme.txt", ms1);
                     if (k != 0) zip.AddFile(postExtractExe);
 
                     zip.SaveSelfExtractor(ExeFileToCreate,

@@ -1320,12 +1320,12 @@ namespace Ionic.Zip.Tests
                 for (int i=0; i < dirCount; i++)
                 {
                     String dir = new String( (char) (65+i), i+1 );
-                    zip.AddEntry("Readme.txt", dir, "This is the content for the Readme.txt in directory " + dir);
+                    zip.AddEntry(Path.Combine(dir,"Readme.txt"), "This is the content for the Readme.txt in directory " + dir);
                     int subDirCount = _rnd.Next(3) + 2;
                     for (int j =0; j < subDirCount; j++)
                     {
                         String subdir = Path.Combine(dir, new String((char) (90-j), 3 ));
-                        zip.AddEntry("Readme.txt", subdir, "This is the content for the Readme.txt in directory " + subdir);
+                        zip.AddEntry(Path.Combine(subdir, "Readme.txt"), "This is the content for the Readme.txt in directory " + subdir);
                     }
                 }
                 zip.Save(zipFileToCreate);

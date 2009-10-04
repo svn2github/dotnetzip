@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-23 13:09:25>
+// Time-stamp: <2009-October-04 01:10:27>
 //
 // ------------------------------------------------------------------
 //
@@ -333,7 +333,7 @@ namespace Ionic.Zip.Tests.Extended
                 Assert.IsTrue(e1.IsDirectory,
                               "The IsDirectory property was not set as expected.");
                 zip1.AddDirectoryByName("Directory2");
-                zip1.AddEntry("Readme.txt", "Directory2", "This is the content");
+                zip1.AddEntry(Path.Combine("Directory2", "Readme.txt"), "This is the content");
                 Assert.IsTrue(zip1["Directory2"].IsDirectory,
                               "The IsDirectory property was not set as expected.");
                 zip1.Save(zipFileToCreate);
@@ -482,7 +482,7 @@ namespace Ionic.Zip.Tests.Extended
             using (ZipFile zip1 = new ZipFile())
             {
                 MemoryStream ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(InputString));
-                zip1.AddEntry("Test.xml", "Woo", ms1);
+                zip1.AddEntry("woo\\Test.xml", ms1);
                 zip1.Save(zipFileToCreate);
 
                 MemoryStream ms2 = new MemoryStream();
@@ -531,7 +531,7 @@ namespace Ionic.Zip.Tests.Extended
                     zip1.Password = Passwords[k];
                     for (int i = 0; i < InputStrings.Length; i++)
                     {
-                        zip1.AddEntry(String.Format("Lorem{0}.txt", i + 1), "", InputStrings[i]);
+                        zip1.AddEntry(String.Format("Lorem{0}.txt", i + 1), InputStrings[i]);
                     }
                     zip1.Save();
                 }
@@ -557,7 +557,7 @@ namespace Ionic.Zip.Tests.Extended
                 {
                     //zip2.Password = password;
                     var ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(UpdateString));
-                    zip3.UpdateEntry("Lorem1.txt", "", ms1);
+                    zip3.UpdateEntry("Lorem1.txt", ms1);
                     zip3.Save();
                 }
 
@@ -622,7 +622,7 @@ namespace Ionic.Zip.Tests.Extended
                             {
                                 string entryName = String.Format("File{0}.txt", d + 1);
                                 // add each string using the given encoding
-                                zip1.AddEntry(entryName, "", contentStrings[d], encodings[c]);
+                                zip1.AddEntry(entryName, contentStrings[d], encodings[c]);
                             }
                             zip1.Save();
                         }
@@ -794,7 +794,7 @@ namespace Ionic.Zip.Tests.Extended
                     zip1.AddDirectoryByName(DirName);
                     DirsAdded.Add(DirName.Replace("\\", "/") + "/");
                     if (n % 2 == 0) zip1.Password = password;
-                    zip1.AddEntry(new System.String((char)(n + 48), 3) + ".txt", DirName, "Hello, Dolly!");
+                    zip1.AddEntry(Path.Combine(DirName, new System.String((char)(n + 48), 3) + ".txt"), "Hello, Dolly!");
                     if (n % 2 == 0) zip1.Password = null;
                 }
                 zip1.Save();
@@ -920,7 +920,7 @@ namespace Ionic.Zip.Tests.Extended
                     {
                         zip1.SaveProgress += SaveProgress;
                         zip1.Comment = "This is the comment on the zip archive.";
-                        zip1.AddEntry("ReadThis.txt","", "This is the content for the readme file in the archive.");
+                        zip1.AddEntry("ReadThis.txt", "This is the content for the readme file in the archive.");
                         zip1.Save();
                     }
                     entriesAdded++;
@@ -1104,7 +1104,7 @@ namespace Ionic.Zip.Tests.Extended
             {
                 zip1.SaveProgress += LF_SaveProgress;
                 zip1.Comment = "This is the comment on the zip archive.";
-                zip1.AddEntry("Readme.txt", "", "This is some content.");
+                zip1.AddEntry("Readme.txt", "This is some content.");
                 zip1.AddDirectory(DirToZip, Path.GetFileName(DirToZip));
                 zip1.BufferSize = 65536 * 8; // 512k
                 zip1.CodecBufferSize = 65536 * 2; // 128k
@@ -1688,7 +1688,7 @@ namespace Ionic.Zip.Tests.Extended
                             zip.UseZip64WhenSaving = z64[j];
                             if (!String.IsNullOrEmpty(dirNames[k]))
                                 zip.AddDirectoryByName(dirNames[k]);
-                            zip.AddEntry("File1.txt", dirNames[k], textToEncode);
+                            zip.AddEntry(Path.Combine(dirNames[k], "File1.txt"), textToEncode);
                             zip.Save(zipFile);
                         }
 
@@ -1769,7 +1769,7 @@ namespace Ionic.Zip.Tests.Extended
                         for (int k=0; k < N; k++)
                             zip.AddDirectoryByName(Path.GetRandomFileName());
                         
-                        zip.AddEntry("File1.txt", "", textToEncode);
+                        zip.AddEntry("File1.txt", textToEncode);
                         zip.AddFile(fileToZip, Path.GetRandomFileName());
                         zip.Save(zipFile);
                     }
@@ -2146,6 +2146,143 @@ namespace Ionic.Zip.Tests.Extended
         }
 
 
+
+        [TestMethod]
+        public void AddEntry_JitProvided()
+        {
+            Ionic.Zlib.CompressionLevel[] compressionLevelOptions = {
+                Ionic.Zlib.CompressionLevel.None,
+                Ionic.Zlib.CompressionLevel.BestSpeed,
+                Ionic.Zlib.CompressionLevel.Default,
+                Ionic.Zlib.CompressionLevel.BestCompression,
+            };
+            
+            EncryptionAlgorithm[] crypto = {
+                EncryptionAlgorithm.None, 
+                EncryptionAlgorithm.WinZipAes128,
+                EncryptionAlgorithm.WinZipAes256,
+            };
+            
+            for (int i=0; i < crypto.Length; i++)
+            {
+                for (int k = 0; k < compressionLevelOptions.Length; k++)
+                {
+                    string zipFileToCreate = Path.Combine(TopLevelDir,String.Format("AddEntry_JitProvided.{0}.{1}.zip", i,k));
+            
+                    Directory.SetCurrentDirectory(TopLevelDir);
+                    string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+                    var files = TestUtilities.GenerateFilesFlat(dirToZip);
+                    
+                    string password = Path.GetRandomFileName();
+
+                    using (var zip = new ZipFile())
+                    {
+                        TestContext.WriteLine("=================================");
+                        TestContext.WriteLine("Creating {0}...", Path.GetFileName(zipFileToCreate));
+                        TestContext.WriteLine("Encryption({0})  Compression({1})  pw({2})", 
+                                              crypto[i].ToString(), compressionLevelOptions[k].ToString(), password);
+
+                        zip.Password = password;
+                        zip.Encryption = crypto[i];
+                        zip.CompressionLevel = compressionLevelOptions[k];
+
+                        foreach (var file in files)
+                            zip.AddEntry(file,
+                                         (name) =>  File.Open(name, FileMode.Open, FileAccess.Read, FileShare.ReadWrite ),
+                                         (name, stream) =>  stream.Close()
+                                         );
+                        zip.Save(zipFileToCreate);
+                    }
+
+                    if (crypto[i] == EncryptionAlgorithm.None)
+                        WinzipVerify(zipFileToCreate);
+                    else
+                        WinzipVerify(zipFileToCreate, password);
+            
+                    Assert.AreEqual<int>(files.Length, TestUtilities.CountEntries(zipFileToCreate), 
+                                         "Trial ({0},{1}): The zip file created has the wrong number of entries.", i, k);
+                }
+            }
+        }
+
+
+        
+        [TestMethod]
+        public void AddEntry_WriteDelegate()
+        {
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            var files = TestUtilities.GenerateFilesFlat(dirToZip, _rnd.Next(4)+3, 40000, 72000);
+
+            EncryptionAlgorithm[] crypto = {
+                EncryptionAlgorithm.None, 
+                EncryptionAlgorithm.PkzipWeak,
+                EncryptionAlgorithm.WinZipAes128,
+                EncryptionAlgorithm.WinZipAes256,
+            };
+            
+            for (int i=0; i < crypto.Length; i++)
+            {
+                _Internal_AddEntry_WriteDelegate(files, crypto[i], i);
+            }
+        }
+
+
+        
+        private void _Internal_AddEntry_WriteDelegate(string[] files, EncryptionAlgorithm crypto, int cycle)
+        {
+            int BufferSize = 2048;
+
+            Ionic.Zlib.CompressionLevel[] compressionLevelOptions = {
+                Ionic.Zlib.CompressionLevel.None,
+                Ionic.Zlib.CompressionLevel.BestSpeed,
+                Ionic.Zlib.CompressionLevel.Default,
+                Ionic.Zlib.CompressionLevel.BestCompression,
+            };
+            
+            for (int k = 0; k < compressionLevelOptions.Length; k++)
+            {
+                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("AddEntry_WriteDelegate.{0}.{1}.zip", cycle, k));
+                string password = Path.GetRandomFileName();
+            
+                using (var zip = new ZipFile())
+                {
+                    TestContext.WriteLine("=================================");
+                    TestContext.WriteLine("Creating {0}...", Path.GetFileName(zipFileToCreate));
+                    TestContext.WriteLine("Encryption({0})  Compression({1})  pw({2})", 
+                                          crypto.ToString(), compressionLevelOptions[k].ToString(), password);
+
+                    zip.Password = password;
+                    zip.Encryption = crypto;
+                    zip.CompressionLevel = compressionLevelOptions[k];
+
+                    foreach (var file in files)
+                    {
+                        zip.AddEntry(file, (name,output) =>
+                            {
+                                using (var input = File.Open(name, FileMode.Open, FileAccess.Read, FileShare.ReadWrite ))
+                                {
+                                    byte[] buffer = new byte[BufferSize];
+                                    int n;
+                                    while ((n = input.Read(buffer, 0, buffer.Length)) != 0)
+                                    {
+                                        output.Write(buffer, 0, n);
+                                    }
+                                }
+                            });
+                    }
+                    
+                    zip.Save(zipFileToCreate);
+                }
+
+                WinzipVerify(zipFileToCreate, password);
+            
+                Assert.AreEqual<int>(files.Length, TestUtilities.CountEntries(zipFileToCreate), 
+                                     "Trial ({0},{1}): The zip file created has the wrong number of entries.", cycle, k);
+            }
+        }
+
+       
 
     }
 }

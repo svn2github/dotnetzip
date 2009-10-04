@@ -157,7 +157,7 @@ namespace Ionic.Zip.Tests.Update
                 zip[0].LastModified = DateTime.Now - new TimeSpan(7 * 31, 0, 0);
                 zip.Password = password;
                 zip.Encryption = EncryptionAlgorithm.WinZipAes256;
-                zip.AddEntry(Path.GetRandomFileName(), "", buffer);
+                zip.AddEntry(Path.GetRandomFileName(), buffer);
                 zip.Save();
             }
 

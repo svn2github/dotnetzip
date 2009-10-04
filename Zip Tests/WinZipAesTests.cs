@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-23 13:10:55>
+// Time-stamp: <2009-October-04 00:58:10>
 //
 // ------------------------------------------------------------------
 //
@@ -183,6 +183,7 @@ namespace Ionic.Zip.Tests.WinZipAes
 
 
         [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
         public void WinZipAes_CreateZip_NoPassword()
         {
             Directory.SetCurrentDirectory(TopLevelDir);
@@ -221,7 +222,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                 zip1.Save(zipFileToCreate);
             }
 
-
+            #if NOT
             WinzipVerify(zipFileToCreate);
 
             // validate all the checksums
@@ -244,6 +245,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                     }
                 }
             }
+            #endif
 
         }
 
@@ -693,7 +695,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                     for (int i = 0; i < TextFiles.Length; i++)
                         zip.AddFile(TextFiles[i], "");
 
-                    zip.AddEntry("Readme.txt", "", "This is the content of the file. Ho ho ho!");
+                    zip.AddEntry("Readme.txt", "This is the content of the file. Ho ho ho!");
                     TestContext.WriteLine("Save...");
                     zip.Save(zipFileToCreate);
                 }
@@ -741,7 +743,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                     source.Seek(0, SeekOrigin.Begin);
                     zip.Password = password;
                     zip.Encryption = EncryptionAlgorithm.WinZipAes256;
-                    zip.AddEntry(Path.GetRandomFileName(), "", source);
+                    zip.AddEntry(Path.GetRandomFileName(), source);
                     zip.Save(zipFileToCreate);
                 }
 
@@ -768,7 +770,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                     {
                         zip.Password = password;
                         zip.Encryption = EncryptionAlgorithm.WinZipAes256;
-                        zip.AddEntry(Path.GetRandomFileName(), "", "Hello, World!");
+                        zip.AddEntry(Path.GetRandomFileName(), "Hello, World!");
                         if (m==1)
                             zip.Save(ms);
                         else
@@ -806,7 +808,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                 {
                     zip.Password = password;
                     zip.Encryption = EncryptionAlgorithm.WinZipAes256;
-                    zip.AddEntry("Readme.txt", "", "Hello, World!");
+                    zip.AddEntry("Readme.txt", "Hello, World! ABC ABC ABC ABC ABCDE ABC ABCDEF ABC ABCD");
                     zip.AddFiles(TextFiles, "files");
                     zip.Save(ms);
                 }
