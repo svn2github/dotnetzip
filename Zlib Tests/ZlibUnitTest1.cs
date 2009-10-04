@@ -1518,7 +1518,6 @@ Max Ehrmann c.1920
 
         private bool PerformTrialWi8870(byte[] buffer)
         {
-            Exception saved = null;
             bool stop = false;
             TestContext.WriteLine("\n\nOriginal");
 
