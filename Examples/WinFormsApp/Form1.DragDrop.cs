@@ -1,5 +1,22 @@
+// DotNetZip\Examples\WinFormsApp\Form1.DragDrop.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2009 Dino Chiesa
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
 
-namespace Ionic.Zip.Examples.WinForms
+
+namespace DotNetZip.Examples.WinForms
 {
 
     using System;

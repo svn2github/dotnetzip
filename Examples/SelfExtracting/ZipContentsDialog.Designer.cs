@@ -1,4 +1,4 @@
-﻿namespace Ionic.Zip
+﻿namespace DotNetZip.Examples
 {
     partial class ZipContentsDialog
     {

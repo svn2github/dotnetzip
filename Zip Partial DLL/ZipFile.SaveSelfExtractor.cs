@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-25 13:01:56>
+// Time-stamp: <2009-October-06 12:38:37>
 //
 // ------------------------------------------------------------------
 //
@@ -103,16 +103,16 @@ namespace Ionic.Zip
                 ReferencedAssemblies= new List<string>{
                     "System.dll", "System.Windows.Forms.dll", "System.Drawing.dll"},
                 CopyThroughResources = new List<string>{
-                    "Ionic.Zip.WinFormsSelfExtractorStub.resources",
-                    "Ionic.Zip.PasswordDialog.resources",
-                    "Ionic.Zip.ZipContentsDialog.resources"},
+                    "DotNetZip.Examples.WinFormsSelfExtractorStub.resources",
+                    "DotNetZip.Examples.PasswordDialog.resources",
+                    "DotNetZip.Examples.ZipContentsDialog.resources"},
                 ResourcesToCompile = new List<string>{
                     "Ionic.Zip.Resources.WinFormsSelfExtractorStub.cs",
-                    "Ionic.Zip.WinFormsSelfExtractorStub", // .Designer.cs
+                    "DotNetZip.Examples.WinFormsSelfExtractorStub", // .Designer.cs
                     "Ionic.Zip.Resources.PasswordDialog.cs",
-                    "Ionic.Zip.PasswordDialog",             //.Designer.cs"
+                    "DotNetZip.Examples.PasswordDialog",             //.Designer.cs"
                     "Ionic.Zip.Resources.ZipContentsDialog.cs",
-                    "Ionic.Zip.ZipContentsDialog",             //.Designer.cs"
+                    "DotNetZip.Examples.ZipContentsDialog",             //.Designer.cs"
                     "Ionic.Zip.Resources.FolderBrowserDialogEx.cs",
                 }
             },
@@ -124,53 +124,6 @@ namespace Ionic.Zip
             }
         };
 
-
-#if OLDSTYLE
-        private string SfxSaveTemporary()
-        {
-            var tempFileName = System.IO.Path.Combine(TempFileFolder, System.IO.Path.GetRandomFileName() + ".zip");
-            Stream outstream = null;
-            try
-            {
-                bool save_contentsChanged = _contentsChanged;
-                outstream = new System.IO.FileStream(tempFileName, System.IO.FileMode.CreateNew);
-                if (outstream == null)
-                    throw new BadStateException(String.Format("Cannot open the temporary file ({0}) for writing.", tempFileName));
-                if (Verbose) StatusMessageTextWriter.WriteLine("Saving temp zip file....");
-                // write an entry in the zip for each file
-                int n = 0;
-                foreach (ZipEntry e in _entries)
-                {
-                    OnSaveEntry(n, e, true);
-                    e.Write(outstream);
-                    n++;
-                    OnSaveEntry(n, e, false);
-                    if (_saveOperationCanceled)
-                        break;
-                }
-
-                if (!_saveOperationCanceled)
-                {
-                    WriteCentralDirectoryStructure(outstream);
-                    outstream.Close();
-                    outstream = null;
-                }
-                _contentsChanged = save_contentsChanged;
-            }
-
-            finally
-            {
-                if (outstream != null)
-                {
-                    try { outstream.Close(); }
-                    catch { }
-                    try { outstream.Dispose(); }
-                    catch { }
-                }
-            }
-            return tempFileName;
-        }
-#endif
 
 
         //string _defaultExtractLocation;
@@ -602,14 +555,13 @@ namespace Ionic.Zip
                 // add the Ionic.Utils.Zip DLL as an embedded resource
                 cp.EmbeddedResources.Add(a1.Location);
 
-                //Console.WriteLine("Resources in this assembly:");
-                //foreach (string rsrc in a2.GetManifestResourceNames())
-                //{
-                //    Console.WriteLine(rsrc);
-                //}
-                //Console.WriteLine();
-
-                //Console.WriteLine("reading source code resources:");
+//                 Console.WriteLine("Resources in this assembly:");
+//                 foreach (string rsrc in a2.GetManifestResourceNames())
+//                 {
+//                    Console.WriteLine(rsrc);
+//                 }
+//                 Console.WriteLine();
+//                 Console.WriteLine("reading source code resources:");
 
 
                 // concatenate all the source code resources into a single module

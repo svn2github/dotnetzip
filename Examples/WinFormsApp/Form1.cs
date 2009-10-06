@@ -1,10 +1,27 @@
-﻿using System;
+﻿// DotNetZip\Examples\WinFormsApp\Form1.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2009 Dino Chiesa
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
 using Ionic.Zip;
 
-namespace Ionic.Zip.Examples.WinForms
+namespace DotNetZip.Examples.WinForms
 {
     public partial class Form1 : Form
     {
@@ -260,6 +277,7 @@ namespace Ionic.Zip.Examples.WinForms
                 {
                     ZipName = this.tbZipToCreate.Text,
                     Selection = this.tbSelectionToZip.Text,
+                    //Recurse = this.chkRecurse.Checked,
                     TraverseJunctions = this.chkTraverseJunctions.Checked,
                     Encoding = "ibm437",
                     ZipFlavor = this.comboFlavor.SelectedIndex,
@@ -514,7 +532,7 @@ namespace Ionic.Zip.Examples.WinForms
             }
             catch (System.Exception exc1)
             {
-                MessageBox.Show(String.Format("Exception while zipping:\n{0}\n\n{1}", exc1.ToString(), exc1.StackTrace.ToString()));
+                MessageBox.Show(String.Format("Exception while zipping:\n{0}\n\n{1}", exc1.Message, exc1.StackTrace.ToString()));
                 btnCancel_Click(null, null);
             }
         }
@@ -709,15 +727,7 @@ namespace Ionic.Zip.Examples.WinForms
 
         private void btnZipup_Click(object sender, EventArgs e)
         {
-            //int count = 0;
-            //foreach (ListViewItem item in this.listView2.Items)
-            //{
-            //    if (count < 10)
-            //        MessageBox.Show(String.Format("item ='{0}'   folder='{1}' ??={2}", item.Text, item.SubItems[0].Text, item.SubItems[1].Text));
-            //    count++;
-            //}
-
-            // I put this condition here to avoid starting the zip while editing a textbox 
+            // Do not start zipping while editing a textbox 
             // in listView2. 
             if (!textBox1.Visible)
                 KickoffZipup();
@@ -1486,14 +1496,13 @@ namespace Ionic.Zip.Examples.WinForms
 
         private void button1_Click(object sender, EventArgs e)
         {
-            //_disableMasterChecking = true;
             int nAdded = 0;
             PauseUI(null);
             try
-            {
+            {  
                 // do file selection, add each item into the list box
-                var fs = new Ionic.FileSelector(this.tbSelectionToZip.Text);
-                var files = fs.SelectFiles(this.tbDirectoryToZip.Text, true);
+                var fs = new global::Ionic.FileSelector(this.tbSelectionToZip.Text,this.chkTraverseJunctions.Checked);
+                var files = fs.SelectFiles(this.tbDirectoryToZip.Text, this.chkRecurse.Checked);
                 this.listView2.BeginUpdate();
                 foreach (String f in files)
                 {

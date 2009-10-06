@@ -1,4 +1,4 @@
-﻿namespace Ionic.Zip.Examples.WinForms
+﻿namespace DotNetZip.Examples.WinForms
 {
     partial class Form1
     {
@@ -91,15 +91,16 @@
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.btnClearItemsToZip = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.listView2 = new ListViewEx.ListViewEx();
             this.chCheckbox = new System.Windows.Forms.ColumnHeader();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.chkRecurse = new System.Windows.Forms.CheckBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -116,7 +117,7 @@
             this.tbDirectoryToZip.Location = new System.Drawing.Point(104, 13);
             this.tbDirectoryToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbDirectoryToZip.Name = "tbDirectoryToZip";
-            this.tbDirectoryToZip.Size = new System.Drawing.Size(384, 20);
+            this.tbDirectoryToZip.Size = new System.Drawing.Size(321, 20);
             this.tbDirectoryToZip.TabIndex = 10;
             this.tbDirectoryToZip.Leave += new System.EventHandler(this.tbDirectoryToZip_Leave);
             // 
@@ -134,7 +135,7 @@
             // btnZipupDirBrowse
             // 
             this.btnZipupDirBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnZipupDirBrowse.Location = new System.Drawing.Point(492, 13);
+            this.btnZipupDirBrowse.Location = new System.Drawing.Point(432, 13);
             this.btnZipupDirBrowse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnZipupDirBrowse.Name = "btnZipupDirBrowse";
             this.btnZipupDirBrowse.Size = new System.Drawing.Size(24, 20);
@@ -756,6 +757,7 @@
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.chkRecurse);
             this.groupBox1.Controls.Add(this.chkTraverseJunctions);
             this.groupBox1.Controls.Add(this.tbDirectoryToZip);
             this.groupBox1.Controls.Add(this.label1);
@@ -886,43 +888,6 @@
             this.textBox1.Visible = false;
             this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
             // 
-            // tabPage3
-            // 
-            this.tabPage3.Controls.Add(this.richTextBox1);
-            this.tabPage3.Controls.Add(this.pictureBox1);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
-            this.tabPage3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.tabPage3.Size = new System.Drawing.Size(651, 522);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "About";
-            this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // richTextBox1
-            // 
-            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.richTextBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.richTextBox1.Location = new System.Drawing.Point(54, 20);
-            this.richTextBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(585, 497);
-            this.richTextBox1.TabIndex = 2;
-            this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
-            this.richTextBox1.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBox1_LinkClicked);
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = global::Ionic.Zip.Examples.WinForms.Properties.Resources.zippedFile;
-            this.pictureBox1.Location = new System.Drawing.Point(6, 20);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(42, 52);
-            this.pictureBox1.TabIndex = 1;
-            this.pictureBox1.TabStop = false;
-            // 
             // listView2
             // 
             this.listView2.AllowColumnReorder = true;
@@ -968,6 +933,58 @@
             // columnHeader3
             // 
             this.columnHeader3.Text = "File name in Archive";
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.richTextBox1);
+            this.tabPage3.Controls.Add(this.pictureBox1);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.tabPage3.Size = new System.Drawing.Size(651, 522);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "About";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // richTextBox1
+            // 
+            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.richTextBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.richTextBox1.Location = new System.Drawing.Point(54, 20);
+            this.richTextBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.Size = new System.Drawing.Size(585, 497);
+            this.richTextBox1.TabIndex = 2;
+            this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
+            this.richTextBox1.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBox1_LinkClicked);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::DotNetZip.Examples.WinForms.Properties.Resources.zippedFile;
+            this.pictureBox1.Location = new System.Drawing.Point(6, 20);
+            this.pictureBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(42, 52);
+            this.pictureBox1.TabIndex = 1;
+            this.pictureBox1.TabStop = false;
+            // 
+            // chkRecurse
+            // 
+            this.chkRecurse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkRecurse.AutoSize = true;
+            this.chkRecurse.Checked = true;
+            this.chkRecurse.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkRecurse.Location = new System.Drawing.Point(466, 15);
+            this.chkRecurse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.chkRecurse.Name = "chkRecurse";
+            this.chkRecurse.Size = new System.Drawing.Size(61, 17);
+            this.chkRecurse.TabIndex = 126;
+            this.chkRecurse.Text = "recurse";
+            this.toolTip1.SetToolTip(this.chkRecurse, "traverse directory junctions\\r\\nand symlinks when adding");
+            this.chkRecurse.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -1073,6 +1090,7 @@
         private System.Windows.Forms.ComboBox comboSplit;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.CheckBox chkTraverseJunctions;
+        private System.Windows.Forms.CheckBox chkRecurse;
     }
 }
 

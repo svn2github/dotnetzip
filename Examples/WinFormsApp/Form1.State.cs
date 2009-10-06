@@ -1,10 +1,27 @@
+// DotNetZip\Examples\WinFormsApp\Form1.State.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2009 Dino Chiesa
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
 using Ionic.Zip;
 
-namespace Ionic.Zip.Examples.WinForms
+namespace DotNetZip.Examples.WinForms
 {
     public partial class Form1
     {
@@ -86,6 +103,11 @@ namespace Ionic.Zip.Examples.WinForms
                     x = (Int32)AppCuKey.GetValue(_rvn_OpenExplorer, 1);
                     this.chkOpenExplorer.Checked = (x != 0);
 
+                    x = (Int32)AppCuKey.GetValue(_rvn_TraverseJunctions, 1);
+                    this.chkTraverseJunctions.Checked = (x != 0);
+
+                    x = (Int32)AppCuKey.GetValue(_rvn_RecurseDirs, 1);
+                    this.chkRecurse.Checked = (x != 0);
 
                 
                     // get the MRU list of selection expressions
@@ -169,7 +191,8 @@ namespace Ionic.Zip.Examples.WinForms
                 AppCuKey.SetValue(_rvn_HidePassword, this.chkHidePassword.Checked ? 1 : 0);
                 AppCuKey.SetValue(_rvn_Overwrite, this.chkOverwrite.Checked ? 1 : 0);
                 AppCuKey.SetValue(_rvn_OpenExplorer, this.chkOpenExplorer.Checked ? 1 : 0);
-
+                AppCuKey.SetValue(_rvn_TraverseJunctions, this.chkTraverseJunctions.Checked ? 1 : 0);
+                AppCuKey.SetValue(_rvn_RecurseDirs, this.chkRecurse.Checked ? 1 : 0);
 
                 // the selection completion list
                 var converted = _selectionCompletions.ToList().ConvertAll(z => z.XmlEscapeIexcl());
@@ -239,6 +262,8 @@ namespace Ionic.Zip.Examples.WinForms
         private static string _AppRegyPath = "Software\\Dino Chiesa\\DotNetZip Winforms Tool";
         private static string _rvn_FormTab = "FormTab";
         private static string _rvn_Geometry = "Geometry";
+        private static string _rvn_TraverseJunctions = "TraverseJunctions";
+        private static string _rvn_RecurseDirs = "RecurseDirs";
         private static string _rvn_HidePassword = "HidePassword";
         private static string _rvn_Overwrite = "Overwrite";
         private static string _rvn_OpenExplorer = "OpenExplorer";

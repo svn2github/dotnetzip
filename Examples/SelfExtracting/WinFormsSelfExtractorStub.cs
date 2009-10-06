@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-13 12:38:15>
+// Time-stamp: <2009-October-06 12:31:28>
 //
 // ------------------------------------------------------------------
 //
@@ -26,7 +26,7 @@
 //
 // ------------------------------------------------------------------
 
-namespace Ionic.Zip
+namespace DotNetZip.Examples
 {
     // The using statements must be inside the namespace scope, because when the SFX is being 
     // generated, this module gets concatenated with other source code and then compiled.
@@ -35,7 +35,9 @@ namespace Ionic.Zip
     using System.Reflection;
     using System.IO;
     using System.Windows.Forms;
-
+    using System.Diagnostics;
+    using Ionic.Zip;
+    
     public partial class WinFormsSelfExtractorStub : Form
     {
         //const string IdString = "DotNetZip Self Extractor, see http://www.codeplex.com/DotNetZip";
@@ -304,7 +306,7 @@ namespace Ionic.Zip
         }
 
 
-        private void DoExtract(Object p)
+        private void DoExtract(Object obj)
         {
             string targetDirectory = txtExtractDirectory.Text;
             global::Ionic.Zip.ExtractExistingFileAction WantOverwrite = chk_Overwrite.Checked
@@ -448,7 +450,7 @@ namespace Ionic.Zip
                 if (w == null) w = "c:\\windows";
                 try
                 {
-                    System.Diagnostics.Process.Start(Path.Combine(w, "explorer.exe"), targetDirectory);
+                    Process.Start(Path.Combine(w, "explorer.exe"), targetDirectory);
                 }
                 catch { }
             }
@@ -459,13 +461,16 @@ namespace Ionic.Zip
                 try
                 {
                     string[] args = this.txtPostUnpackCmdLine.Text.Split( new char[] {' '}, 2);
-                    
-                    if (args.Length > 1)
-                        System.Diagnostics.Process.Start(args[0], args[1]);
-                    else if (args.Length == 1)
-                        System.Diagnostics.Process.Start(args[0]);
+                    if (args.Length > 0)
+                    {
+                        ProcessStartInfo startInfo = new ProcessStartInfo(args[0]);
+                        startInfo.WorkingDirectory = targetDirectory;
+                        if (args.Length > 1) startInfo.Arguments = args[1];
+
+                        // Process is IDisposable
+                        using (Process p = Process.Start(startInfo)) { }
+                    }
                     // else, nothing.
-                                             
                 }
                 catch {  }
             }

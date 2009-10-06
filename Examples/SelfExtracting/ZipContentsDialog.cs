@@ -1,9 +1,27 @@
-namespace Ionic.Zip
+// DotNetZip\Examples\SelfExtracting\ZipContentsDialog.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2009 Dino Chiesa
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+
+namespace DotNetZip.Examples
 {
     using System;
     using System.Collections.Generic;
     using System.Windows.Forms;
-
+    using Ionic.Zip;
+    
     public partial class ZipContentsDialog : Form
     {
         public ZipContentsDialog()

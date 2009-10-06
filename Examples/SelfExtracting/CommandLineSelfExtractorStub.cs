@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-12 19:34:22>
+// Time-stamp: <2009-October-06 12:37:40>
 //
 // ------------------------------------------------------------------
 //
@@ -35,6 +35,7 @@ namespace Ionic.Zip
     using System.Reflection;
     using System.Resources;
     using System.IO;
+    using System.Diagnostics;
     using Ionic.Zip;
 
     public class SelfExtractor
@@ -311,21 +312,21 @@ namespace Ionic.Zip
                     {
                         string[] args = PostUnpackCmdLine.Split( new char[] {' '}, 2);
 
-                        Directory.SetCurrentDirectory(TargetDirectory);
-                        System.Diagnostics.Process p = null;
-                        if (args.Length > 1)
-                            p = System.Diagnostics.Process.Start(args[0], args[1]);
-                    
-                        else if (args.Length == 1)
-                            p = System.Diagnostics.Process.Start(args[0]);
-                        // else, nothing.
-
-                        if (p!=null)
+                        if (args.Length > 0)
                         {
-                            p.WaitForExit();
-                            rc = p.ExitCode;
+                            ProcessStartInfo startInfo = new ProcessStartInfo(args[0]);
+                            startInfo.WorkingDirectory = TargetDirectory;
+                            if (args.Length > 1) startInfo.Arguments = args[1];
+                        
+                            using (Process p = Process.Start(startInfo))
+                            {
+                                if (p!=null)
+                                {
+                                    p.WaitForExit();
+                                    rc = p.ExitCode;
+                                }
+                            }
                         }
-                                             
                     }
                     catch
                     {
