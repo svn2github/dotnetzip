@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-06 16:50:38>
+// Time-stamp: <2009-October-07 11:57:46>
 //
 // ------------------------------------------------------------------
 //
@@ -42,11 +42,11 @@ namespace DotNetZip.Examples
     
     public partial class WinFormsSelfExtractorStub : Form
     {
-        //const string IdString = "DotNetZip Self Extractor, see http://www.codeplex.com/DotNetZip";
-        const string DllResourceName = "Ionic.Zip.dll";
-
-        int entryCount;
-
+        private const string DllResourceName = "Ionic.Zip.dll";
+        private int entryCount;
+        private bool Interactive;
+        private ManualResetEvent postUpackExeDone;
+            
         delegate void ExtractEntryProgress(ExtractProgressEventArgs e);
 
         void _SetDefaultExtractLocation()
@@ -96,7 +96,24 @@ namespace DotNetZip.Examples
             return s;
         }
 
-                
+
+        private bool SetInteractiveFlag()
+        {
+            bool result = false;
+            Boolean.TryParse("@@QUIET", out result); 
+            Interactive = !result;
+            return Interactive;
+        }
+
+        
+        private bool PostUnpackCmdLineIsSet()
+        {
+            string s = txtPostUnpackCmdLine.Text;
+            bool result = !(s.StartsWith("@@") && s.EndsWith("POST_UNPACK_CMD_LINE"));
+            return result;
+        }
+
+        
         
         void _SetPostUnpackCmdLine()
         {
@@ -112,17 +129,15 @@ namespace DotNetZip.Examples
             {
                 // If there is nothing set for the CMD to execute after unpack, then
                 // disable all the UI associated to that bit.
-                this.txtPostUnpackCmdLine.Enabled = false;
-                this.txtPostUnpackCmdLine.Visible = false;
-                this.chk_ExeAfterUnpack.Enabled = false;
-                this.chk_ExeAfterUnpack.Visible = false;
+                txtPostUnpackCmdLine.Enabled = txtPostUnpackCmdLine.Visible = false;
+                chk_ExeAfterUnpack.Enabled = chk_ExeAfterUnpack.Visible = false;
                 // workitem 8925
                 this.chk_Remove.Enabled = this.chk_Remove.Visible = false;
                 
                 // adjust the position of all the remaining UI
                 int delta = this.progressBar1.Location.Y - this.chk_ExeAfterUnpack.Location.Y ;
 
-                this.MinimumSize = new System.Drawing.Size(this.MinimumSize.Width, this.MinimumSize.Height - (delta -8));
+                this.MinimumSize = new System.Drawing.Size(this.MinimumSize.Width, this.MinimumSize.Height - (delta -4));
                 
                 MoveDown(this.chk_Overwrite, delta);
                 MoveDown(this.chk_OpenExplorer, delta);
@@ -131,7 +146,7 @@ namespace DotNetZip.Examples
                 MoveDown(this.lblExtractDir, delta);
                 
                 // finally, adjust the size of the form
-                this.Size = new System.Drawing.Size(this.Width, this.Height - (delta-8));
+                this.Size = new System.Drawing.Size(this.Width, this.Height - (delta-4));
 
                 // Add the size to the txtComment, because it is anchored to the bottom.
                 // When we shrink the size of the form, the txtComment shrinks also.
@@ -174,9 +189,8 @@ namespace DotNetZip.Examples
             this.MaximumSize = new System.Drawing.Size(this.MaximumSize.Width, this.MinimumSize.Height);
                     
             this.Size = new System.Drawing.Size(this.Width, this.MinimumSize.Height);
-                    
-            //this.lblStatus.Text = String.Format("size: ({0}, {1})", this.Width, this.Height);
-        }
+        }                    
+
 
 
         
@@ -188,7 +202,8 @@ namespace DotNetZip.Examples
             entryCount= 0;
             _SetDefaultExtractLocation();
             _SetPostUnpackCmdLine();
-
+            SetInteractiveFlag();
+            
             try
             {
                 if (!String.IsNullOrEmpty(zip.Comment))
@@ -265,6 +280,48 @@ namespace DotNetZip.Examples
             
 
 
+        
+        private void Form_Shown(object sender, EventArgs e)
+        {
+            if (!Interactive)
+            {
+                RemoveInteractiveComponents();
+                KickoffExtract();
+            }
+        }
+
+        
+        private void RemoveInteractiveComponents()
+        {
+            if (this.btnContents.Visible)
+            {
+                txtPostUnpackCmdLine.Enabled = txtPostUnpackCmdLine.Visible = false;
+                chk_ExeAfterUnpack.Enabled = chk_ExeAfterUnpack.Visible = false;
+                chk_Remove.Enabled = chk_Remove.Visible = false;
+                chk_Overwrite.Enabled = chk_Overwrite.Visible = false;
+                chk_OpenExplorer.Checked = false;
+                chk_OpenExplorer.Enabled = chk_OpenExplorer.Visible = false;
+                btnDirBrowse.Enabled = btnDirBrowse.Visible = false;
+                btnContents.Enabled = btnContents.Visible = false;
+                btnExtract.Enabled = btnExtract.Visible = false;
+                
+                // adjust the position of all the remaining UI
+                int delta = this.progressBar1.Location.Y - this.chk_OpenExplorer.Location.Y ;
+                
+                this.MinimumSize = new System.Drawing.Size(this.MinimumSize.Width, this.MinimumSize.Height - (delta -4));
+                MoveDown(this.txtExtractDirectory, delta);
+                MoveDown(this.lblExtractDir, delta);
+                
+                // finally, adjust the size of the form
+                this.Size = new System.Drawing.Size(this.Width, this.Height - (delta-4));
+
+                if (txtComment.Visible)
+                    this.txtComment.Size = new System.Drawing.Size(this.txtComment.Width,
+                                                                   this.txtComment.Height + delta);
+            }
+         }
+                
+            
         // workitem 8925
         private void chk_ExeAfterUnpack_CheckedChanged(object sender, EventArgs e)
         {
@@ -326,12 +383,17 @@ namespace DotNetZip.Examples
             this.txtPostUnpackCmdLine.Enabled = false;
             this.btnDirBrowse.Enabled = false;
             this.btnExtract.Text = "Extracting...";
-            System.Threading.Thread _workerThread = new System.Threading.Thread(this.DoExtract);
-            _workerThread.Name = "Zip Extractor thread";
-            _workerThread.Start(null);
+
+            ThreadPool.QueueUserWorkItem(new WaitCallback(DoExtract), null);
+            
+            //System.Threading.Thread _workerThread = new System.Threading.Thread(this.DoExtract);
+            //_workerThread.Name = "Zip Extractor thread";
+            //_workerThread.Start(null);
+            
             this.Cursor = Cursors.WaitCursor;
         }
 
+        
 
         private void DoExtract(Object obj)
         {
@@ -456,6 +518,8 @@ namespace DotNetZip.Examples
                 Application.Exit();
             }
 
+
+            // optionally provide a status report
             if (didNotOverwrite.Count > 0)
             {
                 UnzipStatusReport f = new UnzipStatusReport();
@@ -485,8 +549,10 @@ namespace DotNetZip.Examples
                 catch { }
             }
 
+
             // optionally execute a command
-            if (this.chk_ExeAfterUnpack.Visible && this.chk_ExeAfterUnpack.Checked)
+            postUpackExeDone = new ManualResetEvent(false);
+            if (this.chk_ExeAfterUnpack.Checked && PostUnpackCmdLineIsSet())
             {
                 try
                 {
@@ -500,12 +566,23 @@ namespace DotNetZip.Examples
                         };
                         ThreadPool.QueueUserWorkItem(new WaitCallback(StartPostUnpackProc), args);
                     }
+                    else postUpackExeDone.Set();
+
                     // else, nothing.
                 }
-                catch {  }
+                catch { postUpackExeDone.Set();  }
+            }
+            else postUpackExeDone.Set();
+
+            // quit if this is non-interactive
+            if (!Interactive)
+            {
+                postUpackExeDone.WaitOne();
+                Application.Exit();
             }
         }
 
+        
 
         
         // workitem 8925
@@ -588,8 +665,11 @@ namespace DotNetZip.Examples
                     }
                 }
             }
+
+            postUpackExeDone.Set();
         }
 
+        
         
         
         private void SetUiDone()
@@ -609,6 +689,8 @@ namespace DotNetZip.Examples
             }
         }
 
+
+        
         private void ExtractProgress(object sender, ExtractProgressEventArgs e)
         {
             if (e.EventType == ZipProgressEventType.Extracting_EntryBytesWritten)
@@ -624,6 +706,7 @@ namespace DotNetZip.Examples
                 e.Cancel = true;
         }
 
+        
         private void StepArchiveProgress(ExtractProgressEventArgs e)
         {
             if (this.progressBar1.InvokeRequired)
@@ -899,9 +982,9 @@ namespace DotNetZip.Examples
             this.ResumeLayout(false);
             this.PerformLayout();
         }
-        
     } 
 
+    
     class WinFormsSelfExtractorStubProgram
     {
         /// <summary>
@@ -910,9 +993,22 @@ namespace DotNetZip.Examples
         [STAThread]
         static void Main()
         {
+            // For Debugging
+//                 if ( !AttachConsole(-1) )  // Attach to a parent process console
+//                     AllocConsole(); // Alloc a new console
+
+            
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new WinFormsSelfExtractorStub());
         }
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        private static extern bool AllocConsole();
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        private static extern bool AttachConsole(int pid);
+
+        
     }
 }

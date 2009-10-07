@@ -248,9 +248,9 @@
             this.MinimumSize = new System.Drawing.Size(484, 336);
             this.Name = "WinFormsSelfExtractorStub";
             this.Text = "DotNetZip Self-extractor (www.codeplex.com/DotNetZip)";
+            this.Shown += new System.EventHandler(this.Form_Shown);
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion

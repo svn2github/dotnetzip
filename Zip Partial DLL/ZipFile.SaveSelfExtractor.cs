@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-06 23:30:45>
+// Time-stamp: <2009-October-07 12:07:22>
 //
 // ------------------------------------------------------------------
 //
@@ -212,11 +212,55 @@ namespace Ionic.Zip
         ///
         /// <remarks>
         /// <para>
-        ///   This applies only to SFX files created with Flavor =
-        ///   <c>SelfExtractorFlavor.ConsoleApplication</c>.  By default, the extractor will
-        ///   emit a message to the console for each entry extracted. If you set this to
-        ///   true, no messages will be emitted during successful operation.
+        ///   This option affects the way the generated SFX runs. By default it is
+        ///   false.  When you set it to true,...
         /// </para>
+        ///
+        /// <list type="table">
+        ///   <listheader>
+        ///     <term>Flavor</term>
+        ///     <description>Behavior</description>
+        ///   </listheader>
+        /// 
+        ///   <item>
+        ///     <term><c>ConsoleApplication</c></term>
+        ///     <description>no messages will be emitted during successful operation. 
+        ///     </description>
+        ///   </item>
+        ///
+        ///   <item>
+        ///     <term><c>WinFormsApplication</c></term>
+        ///     <description>the SFX extracts automatically when the application
+        ///        is launched, with no additional user input.
+        ///     </description>
+        ///   </item>
+        /// </list>
+        ///
+        /// <para>
+        ///   When you set it to false,...
+        /// </para>
+        ///
+        /// <list type="table">
+        ///   <listheader>
+        ///     <term>Flavor</term>
+        ///     <description>Behavior</description>
+        ///   </listheader>
+        /// 
+        ///   <item>
+        ///     <term><c>ConsoleApplication</c></term>
+        ///     <description>the extractor will emit a
+        ///   message to the console for each entry extracted.
+        ///     </description>
+        ///   </item>
+        ///
+        ///   <item>
+        ///     <term><c>WinFormsApplication</c></term>
+        ///     <description>the SFX presents a forms UI and allows the user to select
+        ///       options before extracting. 
+        ///     </description>
+        ///   </item>
+        /// </list>
+        ///
         /// </remarks>
         public bool Quiet
         {
