@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-06 12:31:28>
+// Time-stamp: <2009-October-06 16:50:38>
 //
 // ------------------------------------------------------------------
 //
@@ -34,8 +34,10 @@ namespace DotNetZip.Examples
     using System;
     using System.Reflection;
     using System.IO;
+    using System.Collections.Generic;
     using System.Windows.Forms;
     using System.Diagnostics;
+    using System.Threading;   // ThreadPool, WaitCallback
     using Ionic.Zip;
     
     public partial class WinFormsSelfExtractorStub : Form
@@ -67,6 +69,9 @@ namespace DotNetZip.Examples
 
             this.txtExtractDirectory.Text = "@@EXTRACTLOCATION";
 
+            this.txtExtractDirectory.Text = ReplaceEnvVars(this.txtExtractDirectory.Text);
+
+            
             if (this.txtExtractDirectory.Text.StartsWith("@@") && 
                 this.txtExtractDirectory.Text.EndsWith("EXTRACTLOCATION"))
             {
@@ -77,6 +82,21 @@ namespace DotNetZip.Examples
         }
 
 
+        // workitem 8893
+        private string ReplaceEnvVars(string v)
+        {
+            string s= v;
+            System.Collections.IDictionary envVars = Environment.GetEnvironmentVariables();
+            foreach (System.Collections.DictionaryEntry de in envVars)
+            {
+                string t = "%" + de.Key + "%";
+                s= s.Replace(t, de.Value as String);
+            }
+                
+            return s;
+        }
+
+                
         
         void _SetPostUnpackCmdLine()
         {
@@ -85,6 +105,8 @@ namespace DotNetZip.Examples
             
             this.txtPostUnpackCmdLine.Text = "@@POST_UNPACK_CMD_LINE";
 
+            this.txtPostUnpackCmdLine.Text = ReplaceEnvVars(this.txtPostUnpackCmdLine.Text);
+            
             if (this.txtPostUnpackCmdLine.Text.StartsWith("@@") && 
                 this.txtPostUnpackCmdLine.Text.EndsWith("POST_UNPACK_CMD_LINE"))
             {
@@ -94,26 +116,22 @@ namespace DotNetZip.Examples
                 this.txtPostUnpackCmdLine.Visible = false;
                 this.chk_ExeAfterUnpack.Enabled = false;
                 this.chk_ExeAfterUnpack.Visible = false;
-
+                // workitem 8925
+                this.chk_Remove.Enabled = this.chk_Remove.Visible = false;
+                
                 // adjust the position of all the remaining UI
-                int delta = this.txtPostUnpackCmdLine.Height;
+                int delta = this.progressBar1.Location.Y - this.chk_ExeAfterUnpack.Location.Y ;
 
-                this.MinimumSize = new System.Drawing.Size(this.MinimumSize.Width, this.MinimumSize.Height - (delta + 8));
+                this.MinimumSize = new System.Drawing.Size(this.MinimumSize.Width, this.MinimumSize.Height - (delta -8));
                 
-                 MoveDown(this.chk_Overwrite, delta);
-                 MoveDown(this.chk_OpenExplorer, delta);
-                 MoveDown(this.btnDirBrowse, delta);
-                 MoveDown(this.txtExtractDirectory, delta);
-                 MoveDown(this.lblExtractDir, delta);
-                 //MoveDown(this.txtComment, delta);
-                 //MoveDown(this.lblComment, delta);
-                          
-//                 moveup(this.btnContents, delta);
-//                 MoveUp(this.btnCancel, delta);
-//                 MoveUp(this.btnExtract, delta);
+                MoveDown(this.chk_Overwrite, delta);
+                MoveDown(this.chk_OpenExplorer, delta);
+                MoveDown(this.btnDirBrowse, delta);
+                MoveDown(this.txtExtractDirectory, delta);
+                MoveDown(this.lblExtractDir, delta);
                 
-                 // finally, adjust the size of the form
-                this.Size = new System.Drawing.Size(this.Width, this.Height - (delta + 8));
+                // finally, adjust the size of the form
+                this.Size = new System.Drawing.Size(this.Width, this.Height - (delta-8));
 
                 // Add the size to the txtComment, because it is anchored to the bottom.
                 // When we shrink the size of the form, the txtComment shrinks also.
@@ -121,8 +139,18 @@ namespace DotNetZip.Examples
                 this.txtComment.Size = new System.Drawing.Size(this.txtComment.Width,
                                                                this.txtComment.Height + delta);
             }
+            else
+            {
+                // workitem 8925
+                // there is a comment line.  Do we also want to remove files after executing it?
+                bool result = false;
+                Boolean.TryParse("@@REMOVE_AFTER_EXECUTE", out result);
+                this.chk_Remove.Checked = result;
+            }
+            
         }
 
+        
         private void MoveDown (System.Windows.Forms.Control c, int delta)
         {
             c.Location = new System.Drawing.Point(c.Location.X, c.Location.Y + delta);
@@ -134,6 +162,24 @@ namespace DotNetZip.Examples
                                       Ionic.Zip.ZipFile.LibraryVersion.ToString());
         }
 
+
+        private void HideComment()
+        {
+            int smallerHeight = this.MinimumSize.Height - (this.txtComment.Height+this.lblComment.Height+5);
+            
+            lblComment.Visible = false;
+            txtComment.Visible = false;
+
+            this.MinimumSize = new System.Drawing.Size(this.MinimumSize.Width, smallerHeight);
+            this.MaximumSize = new System.Drawing.Size(this.MaximumSize.Width, this.MinimumSize.Height);
+                    
+            this.Size = new System.Drawing.Size(this.Width, this.MinimumSize.Height);
+                    
+            //this.lblStatus.Text = String.Format("size: ({0}, {1})", this.Width, this.Height);
+        }
+
+
+        
         public WinFormsSelfExtractorStub()
         {
             InitializeComponent();
@@ -142,42 +188,29 @@ namespace DotNetZip.Examples
             entryCount= 0;
             _SetDefaultExtractLocation();
             _SetPostUnpackCmdLine();
-            
+
             try
             {
-                if ((zip.Comment != null) && (zip.Comment != ""))
+                if (!String.IsNullOrEmpty(zip.Comment))
                 {
                     txtComment.Text = zip.Comment;
                 }
                 else
                 {
-                    lblComment.Visible = false;
-                    txtComment.Visible = false;
-                    
-                    this.MinimumSize = new System.Drawing.Size(this.MinimumSize.Width, this.MinimumSize.Height -
-                                                               (this.txtComment.Height+this.lblComment.Height+5));
-                    
-                    this.MaximumSize = new System.Drawing.Size(this.MaximumSize.Width, this.MinimumSize.Height);
-                    
-                    this.Size = new System.Drawing.Size(this.Width, this.MinimumSize.Height);
-                    
-                    //this.lblStatus.Text = String.Format("size: ({0}, {1})", this.Width, this.Height);
+                    HideComment();
                 }
             }
             catch (Exception e1)
             {
+                // why would this ever fail?  Not sure. 
                 this.lblStatus.Text = "exception while resetting size: " + e1.ToString();
                 
-                // why would this ever fail?  Not sure. 
-                lblComment.Visible = false;
-                txtComment.Visible = false;
-                this.MinimumSize = new System.Drawing.Size(this.MinimumSize.Width, this.MinimumSize.Height -
-                                                           (this.txtComment.Height+this.lblComment.Height+5));
-                
-                this.Size = new System.Drawing.Size(this.Width, this.MinimumSize.Height);
+                HideComment();
             }
         }
 
+
+        
 
         static WinFormsSelfExtractorStub()
         {
@@ -186,68 +219,61 @@ namespace DotNetZip.Examples
         }
 
 
-        #if ORIG
-            static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
-            {
-                Assembly a1 = Assembly.GetExecutingAssembly();
-                Stream s = a1.GetManifestResourceStream(DllResourceName);
-                byte[] block = new byte[s.Length];
-                s.Read(block, 0, block.Length);
-                Assembly a2 = Assembly.Load(block);
-                return a2;
-            }
-        #else
-            
-            static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
-            {
-                // super defensive
-                Assembly a1 = Assembly.GetExecutingAssembly();
-                if (a1==null)
-                    throw new Exception("GetExecutingAssembly returns null.");
+        static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
+        {
+            // super defensive
+            Assembly a1 = Assembly.GetExecutingAssembly();
+            if (a1==null)
+                throw new Exception("GetExecutingAssembly returns null.");
 
-                string[] tokens = args.Name.Split(',');
+            string[] tokens = args.Name.Split(',');
             
-                String[] names = a1.GetManifestResourceNames();
+            String[] names = a1.GetManifestResourceNames();
             
-                if (names==null)
-                    throw new Exception("GetManifestResourceNames returns null.");
+            if (names==null)
+                throw new Exception("GetManifestResourceNames returns null.");
 
-                // workitem 7978
-                Stream s = null;
-                foreach (string n in names)
+            // workitem 7978
+            Stream s = null;
+            foreach (string n in names)
+            {
+                string root = n.Substring(0,n.Length-4);
+                string ext = n.Substring(n.Length-3);
+                if (root.Equals(tokens[0])  && ext.ToLower().Equals("dll"))
                 {
-                    string root = n.Substring(0,n.Length-4);
-                    string ext = n.Substring(n.Length-3);
-                    if (root.Equals(tokens[0])  && ext.ToLower().Equals("dll"))
-                    {
-                        s= a1.GetManifestResourceStream(n);
-                        if (s!=null) break;
-                    }
+                    s= a1.GetManifestResourceStream(n);
+                    if (s!=null) break;
                 }
-            
-                if (s==null)
-                    throw new Exception(String.Format("GetManifestResourceStream returns null. Available resources: [{0}]",
-                                                      String.Join("|", names)));
-
-                byte[] block = new byte[s.Length];
-            
-                if (block==null)
-                    throw new Exception(String.Format("Cannot allocated buffer of length({0}).", s.Length));
-
-                s.Read(block, 0, block.Length);
-                Assembly a2 = Assembly.Load(block);
-                if (a2==null)
-                    throw new Exception("Assembly.Load(block) returns null");
-            
-                return a2;
             }
             
-        #endif
+            if (s==null)
+                throw new Exception(String.Format("GetManifestResourceStream returns null. Available resources: [{0}]",
+                                                  String.Join("|", names)));
+
+            byte[] block = new byte[s.Length];
+            
+            if (block==null)
+                throw new Exception(String.Format("Cannot allocated buffer of length({0}).", s.Length));
+
+            s.Read(block, 0, block.Length);
+            Assembly a2 = Assembly.Load(block);
+            if (a2==null)
+                throw new Exception("Assembly.Load(block) returns null");
+            
+            return a2;
+        }
+            
+
+
+        // workitem 8925
+        private void chk_ExeAfterUnpack_CheckedChanged(object sender, EventArgs e)
+        {
+            this.chk_Remove.Enabled = (this.chk_ExeAfterUnpack.Checked);
+        }
 
 
         private void btnDirBrowse_Click(object sender, EventArgs e)
         {
-            
             Ionic.Utils.FolderBrowserDialogEx dlg1 = new Ionic.Utils.FolderBrowserDialogEx();
             dlg1.Description = "Select a folder for the extracted files:";
             dlg1.ShowNewFolderButton = true;
@@ -295,6 +321,7 @@ namespace DotNetZip.Examples
             this.chk_OpenExplorer.Enabled = false;
             this.chk_Overwrite.Enabled = false;
             this.chk_ExeAfterUnpack.Enabled = false;
+            this.chk_Remove.Enabled = false;           // workitem 8925
             this.txtExtractDirectory.Enabled = false;
             this.txtPostUnpackCmdLine.Enabled = false;
             this.btnDirBrowse.Enabled = false;
@@ -308,6 +335,7 @@ namespace DotNetZip.Examples
 
         private void DoExtract(Object obj)
         {
+            List<string> itemsExtracted = new List<String>();
             string targetDirectory = txtExtractDirectory.Text;
             global::Ionic.Zip.ExtractExistingFileAction WantOverwrite = chk_Overwrite.Checked
                 ? global::Ionic.Zip.ExtractExistingFileAction.OverwriteSilently
@@ -333,6 +361,7 @@ namespace DotNetZip.Examples
                         {
                             entry.Extract(targetDirectory, WantOverwrite);
                             entryCount++;
+                            itemsExtracted.Add(entry.FileName);
                         }
                         catch (Exception ex1)
                         {
@@ -383,6 +412,7 @@ namespace DotNetZip.Examples
                             {
                                 entry.ExtractWithPassword(targetDirectory, WantOverwrite, currentPassword);
                                 entryCount++;
+                                itemsExtracted.Add(entry.FileName);
                                 done= true;
                             }
                             catch (Exception ex2)
@@ -460,23 +490,108 @@ namespace DotNetZip.Examples
             {
                 try
                 {
-                    string[] args = this.txtPostUnpackCmdLine.Text.Split( new char[] {' '}, 2);
-                    if (args.Length > 0)
+                    string[] cmd = this.txtPostUnpackCmdLine.Text.Split( new char[] {' '}, 2);
+                    if (cmd.Length > 0)
                     {
-                        ProcessStartInfo startInfo = new ProcessStartInfo(args[0]);
-                        startInfo.WorkingDirectory = targetDirectory;
-                        if (args.Length > 1) startInfo.Arguments = args[1];
-
-                        // Process is IDisposable
-                        using (Process p = Process.Start(startInfo)) { }
+                        object[] args = { cmd,
+                                          this.chk_Remove.Checked,
+                                          itemsExtracted,
+                                          targetDirectory
+                        };
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(StartPostUnpackProc), args);
                     }
                     // else, nothing.
                 }
                 catch {  }
             }
         }
-        
 
+
+        
+        // workitem 8925
+        private delegate void StatusProvider(string h, string m);
+        
+        private void ProvideStatus(string header, string message)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new StatusProvider(this.ProvideStatus), new object[] { header, message }); 
+            }
+            else
+            {
+                UnzipStatusReport f = new UnzipStatusReport();
+                f.Header= header;
+                f.Message= message;
+                f.ShowDialog();
+            }
+        }
+
+
+        
+        // workitem 8925
+        private void StartPostUnpackProc(object arg)
+        {
+            Object[] args = (object[]) arg;
+            String[] cmd = (String[]) args[0];
+            bool removeAfter = (bool) args[1];
+            
+            List<String> itemsToRemove = (List<String>) args[2];
+            String basePath = (String) args[3] ;
+            
+            ProcessStartInfo startInfo = new ProcessStartInfo(cmd[0]);
+            startInfo.WorkingDirectory = basePath;
+            if (cmd.Length > 1) startInfo.Arguments = cmd[1];
+
+            // Process is IDisposable
+            using (Process p = Process.Start(startInfo))
+            {
+                if (p!=null)
+                {
+                    p.WaitForExit();
+                    if (p.ExitCode == 0)
+                    {
+                        if (removeAfter)
+                        {
+                            List<string> failedToRemove = new List<String>();
+                            foreach (string s in itemsToRemove)
+                            {
+                                string fullPath = Path.Combine(basePath,s);
+                                try 
+                                {
+                                    if (File.Exists(fullPath))
+                                        File.Delete(fullPath);
+                                    else if (Directory.Exists(fullPath))
+                                        Directory.Delete(fullPath, true);
+                                }
+                                catch
+                                {
+                                    failedToRemove.Add(s);
+                                }
+                                
+                                if (failedToRemove.Count > 0)
+                                {
+                                    string header = (failedToRemove.Count == 1)
+                                        ? "This file was not removed:"
+                                        : String.Format("These {0} files were not removed:",
+                                                        failedToRemove.Count);
+                                    
+                                    string message = String.Join("\r\n", failedToRemove.ToArray());
+                                    ProvideStatus(header, message);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ProvideStatus("Error Executing", 
+                                      String.Format("Post-extract command failed, exit code {0}", p.ExitCode));
+                    }
+                }
+            }
+        }
+
+        
+        
         private void SetUiDone()
         {
             if (this.btnExtract.InvokeRequired)

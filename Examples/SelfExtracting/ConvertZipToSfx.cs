@@ -142,7 +142,11 @@ namespace Ionic.Zip.Examples
             using (ZipFile zip = ZipFile.Read(ZipFileToConvert, Console.Out))
             {
                 zip.Comment = ZipComment;
-                zip.SaveSelfExtractor(TargetName, flavor, ExtractDir, ExeOnUnpack);
+                SelfExtractorSaveOptions sfxOptions = new SelfExtractorSaveOptions();
+                sfxOptions.Flavor = flavor;
+                sfxOptions.DefaultExtractDirectory = ExtractDir;
+                sfxOptions.PostExtractCommandLine = ExeOnUnpack;
+                zip.SaveSelfExtractor(TargetName, sfxOptions );
             }
         }
 

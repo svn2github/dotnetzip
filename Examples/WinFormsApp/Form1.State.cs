@@ -108,6 +108,9 @@ namespace DotNetZip.Examples.WinForms
 
                     x = (Int32)AppCuKey.GetValue(_rvn_RecurseDirs, 1);
                     this.chkRecurse.Checked = (x != 0);
+                    
+                    x = (Int32)AppCuKey.GetValue(_rvn_RemoveFiles, 1);
+                    this.chkRemoveFiles.Checked = (x != 0);
 
                 
                     // get the MRU list of selection expressions
@@ -193,6 +196,7 @@ namespace DotNetZip.Examples.WinForms
                 AppCuKey.SetValue(_rvn_OpenExplorer, this.chkOpenExplorer.Checked ? 1 : 0);
                 AppCuKey.SetValue(_rvn_TraverseJunctions, this.chkTraverseJunctions.Checked ? 1 : 0);
                 AppCuKey.SetValue(_rvn_RecurseDirs, this.chkRecurse.Checked ? 1 : 0);
+                AppCuKey.SetValue(_rvn_RemoveFiles, this.chkRemoveFiles.Checked ? 1 : 0);
 
                 // the selection completion list
                 var converted = _selectionCompletions.ToList().ConvertAll(z => z.XmlEscapeIexcl());
@@ -264,6 +268,7 @@ namespace DotNetZip.Examples.WinForms
         private static string _rvn_Geometry = "Geometry";
         private static string _rvn_TraverseJunctions = "TraverseJunctions";
         private static string _rvn_RecurseDirs = "RecurseDirs";
+        private static string _rvn_RemoveFiles = "RemoveFiles";
         private static string _rvn_HidePassword = "HidePassword";
         private static string _rvn_Overwrite = "Overwrite";
         private static string _rvn_OpenExplorer = "OpenExplorer";

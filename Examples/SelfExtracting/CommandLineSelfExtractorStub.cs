@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-06 12:37:40>
+// Time-stamp: <2009-October-06 22:29:51>
 //
 // ------------------------------------------------------------------
 //
@@ -35,6 +35,7 @@ namespace Ionic.Zip
     using System.Reflection;
     using System.Resources;
     using System.IO;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using Ionic.Zip;
 
@@ -44,8 +45,13 @@ namespace Ionic.Zip
 
         string TargetDirectory = "@@EXTRACTLOCATION";
         string PostUnpackCmdLine = "@@POST_UNPACK_CMD_LINE";
-        bool ListOnly = false;
-        bool Verbose = false;
+        bool ReplacedEnvVarsForTargetDirectory;
+        bool ReplacedEnvVarsForCmdLine;
+        bool ListOnly;
+        bool Verbose;
+        bool ReallyVerbose;
+        bool RemoveFilesAfterExe;
+        bool SkipPostUnpackCommand;
         string Password = null;
         int overwriteOption;  
 
@@ -67,21 +73,77 @@ namespace Ionic.Zip
             // code, potentially replacing @@POST_UNPACK_CMD_LINE with an actual value.
             // The test here checks to see if it has been set. 
 
-            return !(PostUnpackCmdLine.StartsWith("@@") && 
+            bool result = !(PostUnpackCmdLine.StartsWith("@@") && 
                      PostUnpackCmdLine.EndsWith("POST_UNPACK_CMD_LINE"));
+
+            if (result && ReplacedEnvVarsForCmdLine == false)
+            {
+                PostUnpackCmdLine= ReplaceEnvVars(PostUnpackCmdLine);
+                ReplacedEnvVarsForCmdLine = true;
+            }
+            
+            return result;
         }
+
 
         private bool TargetDirectoryIsSet()
         {
-            return !(TargetDirectory.StartsWith("@@") && 
+            bool result = !(TargetDirectory.StartsWith("@@") && 
                      TargetDirectory.EndsWith("EXTRACTLOCATION"));
+
+            if (result && ReplacedEnvVarsForTargetDirectory == false)
+            {
+                TargetDirectory= ReplaceEnvVars(TargetDirectory);
+                ReplacedEnvVarsForTargetDirectory = true;
+            }
+            return result;
+        }
+
+
+
+        private string ReplaceEnvVars(string s)
+        {
+            System.Collections.IDictionary envVars = Environment.GetEnvironmentVariables();
+            foreach (System.Collections.DictionaryEntry de in envVars)
+            {
+                string t = "%" + de.Key + "%";
+                s= s.Replace(t, de.Value as String);
+            }
+                
+            return s;
+        }
+
+                
+        private bool SetRemoveFilesFlag()
+        {
+            bool result = false;
+            Boolean.TryParse("@@REMOVE_AFTER_EXECUTE", out result); 
+            RemoveFilesAfterExe = result;
+            return result;
+        }
+
+
+        private bool SetVerboseFlag()
+        {
+            bool result = false;
+            Boolean.TryParse("@@QUIET", out result); 
+            Verbose = !result;
+            return Verbose;
+        }
+
+
+        
+        // ctor
+        private SelfExtractor()
+        {
+            SetRemoveFilesFlag();
+            SetVerboseFlag();
+            PostUnpackCmdLineIsSet();
+            TargetDirectoryIsSet();
         }
 
         // ctor
-        private SelfExtractor() { }
-
-        // ctor
-        public SelfExtractor(string[] args)
+        public SelfExtractor(string[] args) : this()
         {
             string specifiedDirectory = null;
             for (int i = 0; i < args.Length; i++)
@@ -113,11 +175,26 @@ namespace Ionic.Zip
                     case "-l":
                         ListOnly = true;
                         break;
+                    case "-r+":
+                        RemoveFilesAfterExe = true;
+                        break;
+                    case "-r-":
+                        RemoveFilesAfterExe = false;
+                        break;
+                    case "-x":
+                        SkipPostUnpackCommand = true;
+                        break;
                     case "-?":
                         GiveUsageAndExit();
                         break;
-                    case "-v":
-                        Verbose = true;
+                    case "-v-":
+                        Verbose = false;
+                        break;
+                    case "-v+":
+                        if (Verbose)
+                            ReallyVerbose = true;
+                        else
+                            Verbose = true;
                         break;
                     default:
                         // positional args
@@ -140,7 +217,7 @@ namespace Ionic.Zip
                     TargetDirectory = ".";  // cwd
             }
 
-            if (ListOnly && ((overwriteOption!= 0) || Verbose || (specifiedDirectory != null)))
+            if (ListOnly && ((overwriteOption!= 0) || (specifiedDirectory != null)))
             {
                 Console.WriteLine("Inconsistent options.\n");
                 GiveUsageAndExit();
@@ -203,6 +280,8 @@ namespace Ionic.Zip
         public int Run()
         {
             //System.Diagnostics.Debugger.Break();
+
+            List<String> itemsExtracted= new List<String>();
             
         global::Ionic.Zip.ExtractExistingFileAction WantOverwrite =
             (overwriteOption == 0) ?
@@ -230,7 +309,7 @@ namespace Ionic.Zip
                     bool header = true;
                     foreach (global::Ionic.Zip.ZipEntry entry in zip)
                     {
-                        if (ListOnly || Verbose)
+                        if (ListOnly || ReallyVerbose)
                         {
                             if (header)
                             {
@@ -257,33 +336,40 @@ namespace Ionic.Zip
 
                         if (!ListOnly)
                         {
+                            if (Verbose && !ReallyVerbose)
+                                System.Console.WriteLine("{0}", entry.FileName);
+                                
                             if (entry.Encryption == global::Ionic.Zip.EncryptionAlgorithm.None)
                             {
                                 try
                                 {
                                     entry.Extract(TargetDirectory, WantOverwrite);
+                                    itemsExtracted.Add(entry.FileName);
                                 }
                                 catch (Exception ex1)
                                 {
-                                    Console.WriteLine("Failed to extract entry {0} -- {1}", entry.FileName, ex1.Message);
+                                    Console.WriteLine("  Error -- {0}", ex1.Message);
                                     rc++;
-                                    break;
                                 }
                             }
                             else
                             {
                                 if (Password == null)
+                                {
                                     Console.WriteLine("Cannot extract entry {0} without a password.", entry.FileName);
+                                    rc++;
+                                }
                                 else
                                 {
                                     try
                                     {
                                         entry.ExtractWithPassword(TargetDirectory, WantOverwrite, Password);
+                                        itemsExtracted.Add(entry.FileName);
                                     }
                                     catch (Exception ex2)
                                     {
-                                        // probably want a retry here in the case of bad password.
-                                        Console.WriteLine("Failed to extract entry {0} -- {1}", entry.FileName, ex2.Message);
+                                        Console.WriteLine("  Error -- {0}", ex2.Message);
+                                        rc++;
                                     }
                                 }
                             }
@@ -298,9 +384,10 @@ namespace Ionic.Zip
             }
 
             if (rc != 0) return rc;
+
             
             // potentially execute the embedded command
-            if (PostUnpackCmdLineIsSet())
+            if (PostUnpackCmdLineIsSet() && !SkipPostUnpackCommand)
             {
                 if (ListOnly)
                 {
@@ -324,12 +411,34 @@ namespace Ionic.Zip
                                 {
                                     p.WaitForExit();
                                     rc = p.ExitCode;
+                                    // workitem 8925
+                                    if (p.ExitCode == 0)
+                                    {
+                                        if (RemoveFilesAfterExe)
+                                        {
+                                            foreach (string s in itemsExtracted)
+                                            {
+                                                string fullPath = Path.Combine(TargetDirectory,s);
+                                                try 
+                                                {
+                                                    if (File.Exists(fullPath))
+                                                        File.Delete(fullPath);
+                                                    else if (Directory.Exists(fullPath))
+                                                        Directory.Delete(fullPath, true);
+                                                }
+                                                catch
+                                                {
+                                                }
+                                            }
+                                        }
+                                    }                                    
                                 }
                             }
                         }
                     }
-                    catch
+                    catch (Exception exc1)
                     {
+                        System.Console.WriteLine("{0}", exc1);
                         rc = 5;
                     }
                     
@@ -340,44 +449,112 @@ namespace Ionic.Zip
         }
 
 
+        
         private void GiveUsageAndExit()
         {
             Assembly a = Assembly.GetExecutingAssembly();
             string s = Path.GetFileName(a.Location);
             Console.WriteLine("DotNetZip Command-Line Self Extractor, see http://DotNetZip.codeplex.com/");
             Console.WriteLine("usage:\n  {0} [-o|-n] [-v] [-p password] [<directory>]", s);
-            Console.WriteLine("    Extracts entries from the archive. If any files to be extracted already\n" +
-                              "    exist, the program will stop.\n  Options:\n" +
-                              "    -o   - overwrite any existing files upon extraction.\n" +
-                              "    -n   - do not overwrite any existing files upon extraction.\n" +
-                              "    -v   - verbose.\n");
+
+            string more = "    Extracts entries from the archive. If any files to be extracted already\n" +
+                          "    exist, the program will stop.\n  Options:\n" +
+                          "    -o   - overwrite any existing files upon extraction.\n" +
+                          "    -n   - do not overwrite any existing files upon extraction.\n" +
+                          "{0}" +
+                          "{1}" +
+                          "{2}";
+
+
+            string removeString = PostUnpackCmdLineIsSet()
+                ? String.Format("    -r+  - remove files after the optional post-unpack exe completes{0}.\n" +
+                                "    -r-  - don't remove files after the optional post-unpack exe completes{1}.\n",
+                                RemoveFilesAfterExe ? " (default)" : "",
+                                RemoveFilesAfterExe ?  "" : " (default)")
+                : "";
+
+
+            string verbString = String.Format("    -v-   - turn OFF verbose messages{0}.\n"+
+                                              "    -v+   - turn ON verbose messages{1}.\n",
+                                              Verbose ?  "" : " (default)",
+                                              Verbose ? " (default)" : "");
+                
+            string cmdString = PostUnpackCmdLineIsSet() 
+                ? String.Format("    -x   - don't run the post-unpack exe.\n           [cmd is: {0}]\n",
+                              PostUnpackCmdLine)
+                : "" ;
+
+        
+            Console.WriteLine(more, removeString, cmdString, verbString);
+
             
             if (TargetDirectoryIsSet()) 
-                Console.WriteLine("  default extract dir: {0}\n",TargetDirectory);
+                Console.WriteLine("  default extract dir: {0}\n", TargetDirectory);
 
 
             Console.WriteLine("  {0} -l", s);
             Console.WriteLine("    Lists entries in the archive.");
+            FreeConsole();
             Environment.Exit(1);
         }
 
 
-
+        [STAThread]
         public static int Main(string[] args)
         {
+            int left = Console.CursorLeft;
+            int top = Console.CursorTop;
+            bool wantPause = (left==0 && top==0);
             int rc = 0;
             try
             {
                 SelfExtractor me = new SelfExtractor(args);
+                
+                // Hide my own console window if there is no parent console
+                // (which means, it was launched rom explorer).
+                if (!me.Verbose)
+                {
+                    IntPtr myHandle = Process.GetCurrentProcess().MainWindowHandle;
+                    ShowWindow(myHandle, SW_HIDE);
+                }
+                
                 rc = me.Run();
+                
+                // If there was an error, and this is a new console, and
+                // we're still displaying the console, then do a
+                // ReadLine.  This gives the user a chance to read the
+                // window error messages before dismissing.
+                if (rc != 0 && wantPause && me.Verbose)
+                {
+                    //Console.WriteLine("rc({0})  wantPause({1}) verbose({2})", rc, wantPause, me.Verbose);
+                    Console.Write("<ENTER> to continue...");
+                    Console.ReadLine();
+                }
+                
             }
             catch (System.Exception exc1)
             {
                 Console.WriteLine("Exception while extracting: {0}", exc1.ToString());
                 rc = 255;
             }
+
+            FreeConsole();
             return rc;
         }
+
+        private static readonly int SW_HIDE= 0;
+        
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern Boolean ShowWindow(IntPtr hWnd, Int32 nCmdShow);
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        private static extern bool AttachConsole(int pid);
+        
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        private static extern bool AllocConsole();
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        private static extern bool FreeConsole();
 
     }
 }

@@ -70,6 +70,8 @@
             this.tbZipToOpen = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label18 = new System.Windows.Forms.Label();
+            this.chkRemoveFiles = new System.Windows.Forms.CheckBox();
             this.label17 = new System.Windows.Forms.Label();
             this.comboSplit = new System.Windows.Forms.ComboBox();
             this.chkUnixTime = new System.Windows.Forms.CheckBox();
@@ -82,6 +84,7 @@
             this.comboFlavor = new System.Windows.Forms.ComboBox();
             this.btnCreateZipBrowse = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.chkRecurse = new System.Windows.Forms.CheckBox();
             this.chkTraverseJunctions = new System.Windows.Forms.CheckBox();
             this.tbDirectoryInArchive = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
@@ -100,7 +103,6 @@
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.chkRecurse = new System.Windows.Forms.CheckBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -117,7 +119,7 @@
             this.tbDirectoryToZip.Location = new System.Drawing.Point(104, 13);
             this.tbDirectoryToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbDirectoryToZip.Name = "tbDirectoryToZip";
-            this.tbDirectoryToZip.Size = new System.Drawing.Size(321, 20);
+            this.tbDirectoryToZip.Size = new System.Drawing.Size(356, 20);
             this.tbDirectoryToZip.TabIndex = 10;
             this.tbDirectoryToZip.Leave += new System.EventHandler(this.tbDirectoryToZip_Leave);
             // 
@@ -135,7 +137,7 @@
             // btnZipupDirBrowse
             // 
             this.btnZipupDirBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnZipupDirBrowse.Location = new System.Drawing.Point(432, 13);
+            this.btnZipupDirBrowse.Location = new System.Drawing.Point(466, 13);
             this.btnZipupDirBrowse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnZipupDirBrowse.Name = "btnZipupDirBrowse";
             this.btnZipupDirBrowse.Size = new System.Drawing.Size(24, 20);
@@ -585,6 +587,8 @@
             // 
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.label18);
+            this.groupBox2.Controls.Add(this.chkRemoveFiles);
             this.groupBox2.Controls.Add(this.label17);
             this.groupBox2.Controls.Add(this.comboSplit);
             this.groupBox2.Controls.Add(this.chkUnixTime);
@@ -616,9 +620,30 @@
             this.groupBox2.Margin = new System.Windows.Forms.Padding(0);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.groupBox2.Size = new System.Drawing.Size(639, 185);
+            this.groupBox2.Size = new System.Drawing.Size(639, 208);
             this.groupBox2.TabIndex = 104;
             this.groupBox2.TabStop = false;
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(6, 186);
+            this.label18.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(66, 13);
+            this.label18.TabIndex = 126;
+            this.label18.Text = "remove files:";
+            // 
+            // chkRemoveFiles
+            // 
+            this.chkRemoveFiles.AutoSize = true;
+            this.chkRemoveFiles.Location = new System.Drawing.Point(104, 185);
+            this.chkRemoveFiles.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.chkRemoveFiles.Name = "chkRemoveFiles";
+            this.chkRemoveFiles.Size = new System.Drawing.Size(15, 14);
+            this.chkRemoveFiles.TabIndex = 125;
+            this.toolTip1.SetToolTip(this.chkRemoveFiles, "remove files after running post-extract command");
+            this.chkRemoveFiles.UseVisualStyleBackColor = true;
             // 
             // label17
             // 
@@ -689,6 +714,7 @@
             this.tbExeOnUnpack.TabIndex = 120;
             this.tbExeOnUnpack.Text = "-command line to execute here-";
             this.toolTip1.SetToolTip(this.tbExeOnUnpack, "command to run upon successful extract of SFX");
+            this.tbExeOnUnpack.TextChanged += new System.EventHandler(this.tbExeOnUnpack_TextChanged);
             this.tbExeOnUnpack.Leave += new System.EventHandler(this.tbExeOnUnpack_Leave);
             this.tbExeOnUnpack.Enter += new System.EventHandler(this.tbExeOnUnpack_Enter);
             // 
@@ -775,18 +801,33 @@
             this.groupBox1.TabIndex = 103;
             this.groupBox1.TabStop = false;
             // 
+            // chkRecurse
+            // 
+            this.chkRecurse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkRecurse.AutoSize = true;
+            this.chkRecurse.Checked = true;
+            this.chkRecurse.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkRecurse.Location = new System.Drawing.Point(502, 15);
+            this.chkRecurse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.chkRecurse.Name = "chkRecurse";
+            this.chkRecurse.Size = new System.Drawing.Size(61, 17);
+            this.chkRecurse.TabIndex = 126;
+            this.chkRecurse.Text = "recurse";
+            this.toolTip1.SetToolTip(this.chkRecurse, "recurse directories when adding");
+            this.chkRecurse.UseVisualStyleBackColor = true;
+            // 
             // chkTraverseJunctions
             // 
             this.chkTraverseJunctions.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.chkTraverseJunctions.AutoSize = true;
             this.chkTraverseJunctions.Checked = true;
             this.chkTraverseJunctions.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkTraverseJunctions.Location = new System.Drawing.Point(531, 15);
+            this.chkTraverseJunctions.Location = new System.Drawing.Point(572, 15);
             this.chkTraverseJunctions.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.chkTraverseJunctions.Name = "chkTraverseJunctions";
-            this.chkTraverseJunctions.Size = new System.Drawing.Size(109, 17);
+            this.chkTraverseJunctions.Size = new System.Drawing.Size(68, 17);
             this.chkTraverseJunctions.TabIndex = 125;
-            this.chkTraverseJunctions.Text = "traverse junctions";
+            this.chkTraverseJunctions.Text = "junctions";
             this.toolTip1.SetToolTip(this.chkTraverseJunctions, "traverse directory junctions\\r\\nand symlinks when adding");
             this.chkTraverseJunctions.UseVisualStyleBackColor = true;
             // 
@@ -852,7 +893,7 @@
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(11, 278);
+            this.checkBox1.Location = new System.Drawing.Point(12, 301);
             this.checkBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(15, 14);
@@ -904,11 +945,11 @@
             this.listView2.DoubleClickActivation = false;
             this.listView2.FullRowSelect = true;
             this.listView2.GridLines = true;
-            this.listView2.Location = new System.Drawing.Point(6, 273);
+            this.listView2.Location = new System.Drawing.Point(6, 297);
             this.listView2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.listView2.MultiSelect = false;
             this.listView2.Name = "listView2";
-            this.listView2.Size = new System.Drawing.Size(639, 180);
+            this.listView2.Size = new System.Drawing.Size(639, 151);
             this.listView2.TabIndex = 98;
             this.listView2.UseCompatibleStateImageBehavior = false;
             this.listView2.View = System.Windows.Forms.View.Details;
@@ -970,21 +1011,6 @@
             this.pictureBox1.Size = new System.Drawing.Size(42, 52);
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
-            // 
-            // chkRecurse
-            // 
-            this.chkRecurse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.chkRecurse.AutoSize = true;
-            this.chkRecurse.Checked = true;
-            this.chkRecurse.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkRecurse.Location = new System.Drawing.Point(466, 15);
-            this.chkRecurse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.chkRecurse.Name = "chkRecurse";
-            this.chkRecurse.Size = new System.Drawing.Size(61, 17);
-            this.chkRecurse.TabIndex = 126;
-            this.chkRecurse.Text = "recurse";
-            this.toolTip1.SetToolTip(this.chkRecurse, "traverse directory junctions\\r\\nand symlinks when adding");
-            this.chkRecurse.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -1091,6 +1117,8 @@
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.CheckBox chkTraverseJunctions;
         private System.Windows.Forms.CheckBox chkRecurse;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.CheckBox chkRemoveFiles;
     }
 }
 

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-July-26 23:55:44>
+// Time-stamp: <2009-October-06 22:49:29>
 //
 // ------------------------------------------------------------------
 //
@@ -153,7 +153,11 @@ namespace Ionic.Zip.Tests
                 zip1.Comment = "This will be embedded into a self-extracting exe";
                 MemoryStream ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ReadmeString));
                 zip1.AddEntry("Readme.txt", ms1);
-                zip1.SaveSelfExtractor(SfxFileToCreate, flavor, UnpackDirectory);
+                SelfExtractorSaveOptions sfxOptions = new SelfExtractorSaveOptions();
+                sfxOptions.Flavor = flavor;
+                sfxOptions.Quiet = true;
+                sfxOptions.DefaultExtractDirectory = UnpackDirectory;
+                zip1.SaveSelfExtractor(SfxFileToCreate, sfxOptions);
             }
 
             // verify count
@@ -173,7 +177,11 @@ namespace Ionic.Zip.Tests
                 zip1.Comment = "The password is: " + password;
                 zip1.Password = password;
                 zip1.AddFile(filename, Path.GetFileName(Subdir));
-                zip1.SaveSelfExtractor(SfxFileToCreate, flavor, UnpackDirectory);
+                SelfExtractorSaveOptions sfxOptions = new SelfExtractorSaveOptions();
+                sfxOptions.Flavor = flavor;
+                sfxOptions.Quiet = true;
+                sfxOptions.DefaultExtractDirectory = UnpackDirectory;
+                zip1.SaveSelfExtractor(SfxFileToCreate, sfxOptions);
             }
 
             // verify count
@@ -239,8 +247,6 @@ namespace Ionic.Zip.Tests
             }
 
             // verify the unpacked files?
-
-
         }
 
 
@@ -275,8 +281,10 @@ namespace Ionic.Zip.Tests
                 zip.Comment = "This will be embedded into a self-extracting exe";
                 MemoryStream ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ReadmeString));
                 zip.AddEntry("Readme.txt", ms1);
-                zip.SaveSelfExtractor(ExeFileToCreate, Ionic.Zip.SelfExtractorFlavor.ConsoleApplication,
-                                      UnpackDirectory);
+                SelfExtractorSaveOptions sfxOptions = new SelfExtractorSaveOptions();
+                sfxOptions.Flavor = Ionic.Zip.SelfExtractorFlavor.ConsoleApplication;
+                sfxOptions.DefaultExtractDirectory = UnpackDirectory;
+                zip.SaveSelfExtractor(ExeFileToCreate, sfxOptions);
             }
 
             var psi = new System.Diagnostics.ProcessStartInfo(ExeFileToCreate);
@@ -335,9 +343,10 @@ namespace Ionic.Zip.Tests
                     zip.AddDirectory(Subdir, Path.GetFileName(Subdir));
                     zip.Comment = "For testing purposes, please extract to:  " + DesiredUnpackDirectory;
                     if (Passwords[k] != null) zip.Comment += String.Format("\r\n\r\nThe password for all entries is:  {0}\n", Passwords[k]);
-                    zip.SaveSelfExtractor(ExeFileToCreate,
-                                          Ionic.Zip.SelfExtractorFlavor.WinFormsApplication,
-                                          DesiredUnpackDirectory);
+                    SelfExtractorSaveOptions sfxOptions = new SelfExtractorSaveOptions();
+                    sfxOptions.Flavor = Ionic.Zip.SelfExtractorFlavor.WinFormsApplication;
+                    sfxOptions.DefaultExtractDirectory = DesiredUnpackDirectory;
+                    zip.SaveSelfExtractor(ExeFileToCreate, sfxOptions);
                 }
 
                 // run the self-extracting EXE we just created 
@@ -458,10 +467,15 @@ namespace Ionic.Zip.Tests
                     zip.AddEntry("Readme.txt", ms1);
                     if (k != 0) zip.AddFile(postExtractExe);
 
-                    zip.SaveSelfExtractor(ExeFileToCreate,
-                                          Ionic.Zip.SelfExtractorFlavor.ConsoleApplication,
-                                          UnpackDirectory,
-                                          postExtractExe);
+                    SelfExtractorSaveOptions sfxOptions = new SelfExtractorSaveOptions();
+                    sfxOptions.Flavor = Ionic.Zip.SelfExtractorFlavor.ConsoleApplication;
+                    sfxOptions.DefaultExtractDirectory = UnpackDirectory;
+                    sfxOptions.Quiet = true;
+
+                    // in the case of k==0, this exe does not exist.  It will result in
+                    // a return code of 5.  In k == 1, the exe exists and will succeed.
+                    sfxOptions.PostExtractCommandLine= postExtractExe;
+                    zip.SaveSelfExtractor(ExeFileToCreate, sfxOptions);
                 }
 
                 TestContext.WriteLine("status output: " + sw.ToString());
@@ -470,7 +484,7 @@ namespace Ionic.Zip.Tests
                 System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo(ExeFileToCreate);
                 psi.WorkingDirectory = TopLevelDir;
                 psi.UseShellExecute = false;
-                psi.CreateNoWindow = true;
+                psi.CreateNoWindow = true; // false;
                 System.Diagnostics.Process process = System.Diagnostics.Process.Start(psi);
                 process.WaitForExit();
                 int rc = process.ExitCode;
@@ -481,6 +495,7 @@ namespace Ionic.Zip.Tests
                 else
                     Assert.AreEqual<Int32>(5, rc, "In trial {0}, the exit code was unexpected.", k);
 
+                
                 // now, compare the output in UnpackDirectory with the original
                 string DirToCheck = Path.Combine(TopLevelDir, Path.Combine(UnpackDirectory, "A"));
                 // verify the checksum of each file matches with its brother

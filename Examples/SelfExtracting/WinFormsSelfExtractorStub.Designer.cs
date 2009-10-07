@@ -34,16 +34,17 @@
             this.txtExtractDirectory = new System.Windows.Forms.TextBox();
             this.lblExtractDir = new System.Windows.Forms.Label();
             this.btnDirBrowse = new System.Windows.Forms.Button();
-            this.chk_Overwrite = new System.Windows.Forms.CheckBox();
             this.chk_OpenExplorer = new System.Windows.Forms.CheckBox();
+            this.chk_Overwrite = new System.Windows.Forms.CheckBox();
+            this.chk_ExeAfterUnpack = new System.Windows.Forms.CheckBox();
+            this.txtPostUnpackCmdLine = new System.Windows.Forms.TextBox();
+            this.chk_Remove = new System.Windows.Forms.CheckBox();
             this.lblComment = new System.Windows.Forms.Label();
             this.txtComment = new System.Windows.Forms.TextBox();
             this.btnContents = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.progressBar2 = new System.Windows.Forms.ProgressBar();
             this.lblStatus = new System.Windows.Forms.Label();
-            this.txtPostUnpackCmdLine = new System.Windows.Forms.TextBox();
-            this.chk_ExeAfterUnpack = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btnExtract
@@ -72,7 +73,7 @@
             // 
             this.txtExtractDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtExtractDirectory.Location = new System.Drawing.Point(8, 147);
+            this.txtExtractDirectory.Location = new System.Drawing.Point(8, 125);
             this.txtExtractDirectory.Name = "txtExtractDirectory";
             this.txtExtractDirectory.Size = new System.Drawing.Size(417, 20);
             this.txtExtractDirectory.TabIndex = 2;
@@ -81,7 +82,7 @@
             // 
             this.lblExtractDir.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblExtractDir.AutoSize = true;
-            this.lblExtractDir.Location = new System.Drawing.Point(5, 131);
+            this.lblExtractDir.Location = new System.Drawing.Point(5, 109);
             this.lblExtractDir.Name = "lblExtractDir";
             this.lblExtractDir.Size = new System.Drawing.Size(100, 13);
             this.lblExtractDir.TabIndex = 3;
@@ -90,7 +91,7 @@
             // btnDirBrowse
             // 
             this.btnDirBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDirBrowse.Location = new System.Drawing.Point(431, 144);
+            this.btnDirBrowse.Location = new System.Drawing.Point(431, 122);
             this.btnDirBrowse.Name = "btnDirBrowse";
             this.btnDirBrowse.Size = new System.Drawing.Size(25, 23);
             this.btnDirBrowse.TabIndex = 4;
@@ -98,29 +99,64 @@
             this.btnDirBrowse.UseVisualStyleBackColor = true;
             this.btnDirBrowse.Click += new System.EventHandler(this.btnDirBrowse_Click);
             // 
-            // chk_Overwrite
-            // 
-            this.chk_Overwrite.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.chk_Overwrite.AutoSize = true;
-            this.chk_Overwrite.Location = new System.Drawing.Point(8, 193);
-            this.chk_Overwrite.Name = "chk_Overwrite";
-            this.chk_Overwrite.Size = new System.Drawing.Size(130, 17);
-            this.chk_Overwrite.TabIndex = 6;
-            this.chk_Overwrite.Text = "Overwrite existing files";
-            this.chk_Overwrite.UseVisualStyleBackColor = true;
-            // 
             // chk_OpenExplorer
             // 
             this.chk_OpenExplorer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.chk_OpenExplorer.AutoSize = true;
             this.chk_OpenExplorer.Checked = true;
             this.chk_OpenExplorer.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chk_OpenExplorer.Location = new System.Drawing.Point(8, 173);
+            this.chk_OpenExplorer.Location = new System.Drawing.Point(8, 151);
             this.chk_OpenExplorer.Name = "chk_OpenExplorer";
             this.chk_OpenExplorer.Size = new System.Drawing.Size(152, 17);
-            this.chk_OpenExplorer.TabIndex = 7;
+            this.chk_OpenExplorer.TabIndex = 13;
             this.chk_OpenExplorer.Text = "Open Explorer after extract";
             this.chk_OpenExplorer.UseVisualStyleBackColor = true;
+            // 
+            // chk_Overwrite
+            // 
+            this.chk_Overwrite.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.chk_Overwrite.AutoSize = true;
+            this.chk_Overwrite.Location = new System.Drawing.Point(8, 171);
+            this.chk_Overwrite.Name = "chk_Overwrite";
+            this.chk_Overwrite.Size = new System.Drawing.Size(130, 17);
+            this.chk_Overwrite.TabIndex = 14;
+            this.chk_Overwrite.Text = "Overwrite existing files";
+            this.chk_Overwrite.UseVisualStyleBackColor = true;
+            // 
+            // chk_ExeAfterUnpack
+            // 
+            this.chk_ExeAfterUnpack.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.chk_ExeAfterUnpack.AutoSize = true;
+            this.chk_ExeAfterUnpack.Checked = true;
+            this.chk_ExeAfterUnpack.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chk_ExeAfterUnpack.Location = new System.Drawing.Point(8, 191);
+            this.chk_ExeAfterUnpack.Name = "chk_ExeAfterUnpack";
+            this.chk_ExeAfterUnpack.Size = new System.Drawing.Size(131, 17);
+            this.chk_ExeAfterUnpack.TabIndex = 15;
+            this.chk_ExeAfterUnpack.Text = "Execute after unpack:";
+            this.chk_ExeAfterUnpack.UseVisualStyleBackColor = true;
+            this.chk_ExeAfterUnpack.CheckedChanged += new System.EventHandler(this.chk_ExeAfterUnpack_CheckedChanged);
+            // 
+            // txtPostUnpackCmdLine
+            // 
+            this.txtPostUnpackCmdLine.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtPostUnpackCmdLine.Location = new System.Drawing.Point(145, 189);
+            this.txtPostUnpackCmdLine.Name = "txtPostUnpackCmdLine";
+            this.txtPostUnpackCmdLine.ReadOnly = true;
+            this.txtPostUnpackCmdLine.Size = new System.Drawing.Size(312, 20);
+            this.txtPostUnpackCmdLine.TabIndex = 16;
+            // 
+            // chk_Remove
+            // 
+            this.chk_Remove.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.chk_Remove.AutoSize = true;
+            this.chk_Remove.Location = new System.Drawing.Point(8, 211);
+            this.chk_Remove.Name = "chk_Remove";
+            this.chk_Remove.Size = new System.Drawing.Size(271, 17);
+            this.chk_Remove.TabIndex = 17;
+            this.chk_Remove.Text = "Remove files after executing post-unpack command";
+            this.chk_Remove.UseVisualStyleBackColor = true;
             // 
             // lblComment
             // 
@@ -141,7 +177,7 @@
             this.txtComment.Name = "txtComment";
             this.txtComment.ReadOnly = true;
             this.txtComment.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtComment.Size = new System.Drawing.Size(448, 104);
+            this.txtComment.Size = new System.Drawing.Size(448, 82);
             this.txtComment.TabIndex = 9;
             // 
             // btnContents
@@ -150,7 +186,7 @@
             this.btnContents.Location = new System.Drawing.Point(235, 268);
             this.btnContents.Name = "btnContents";
             this.btnContents.Size = new System.Drawing.Size(90, 23);
-            this.btnContents.TabIndex = 10;
+            this.btnContents.TabIndex = 20;
             this.btnContents.Text = "Show Contents";
             this.btnContents.UseVisualStyleBackColor = true;
             this.btnContents.Click += new System.EventHandler(this.btnContents_Click);
@@ -163,6 +199,7 @@
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(449, 10);
             this.progressBar1.TabIndex = 11;
+            this.progressBar1.TabStop = false;
             // 
             // progressBar2
             // 
@@ -172,6 +209,7 @@
             this.progressBar2.Name = "progressBar2";
             this.progressBar2.Size = new System.Drawing.Size(449, 11);
             this.progressBar2.TabIndex = 12;
+            this.progressBar2.TabStop = false;
             // 
             // lblStatus
             // 
@@ -182,34 +220,12 @@
             this.lblStatus.Size = new System.Drawing.Size(0, 13);
             this.lblStatus.TabIndex = 13;
             // 
-            // txtPostUnpackCmdLine
-            // 
-            this.txtPostUnpackCmdLine.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtPostUnpackCmdLine.Location = new System.Drawing.Point(145, 211);
-            this.txtPostUnpackCmdLine.Name = "txtPostUnpackCmdLine";
-            this.txtPostUnpackCmdLine.ReadOnly = true;
-            this.txtPostUnpackCmdLine.Size = new System.Drawing.Size(312, 20);
-            this.txtPostUnpackCmdLine.TabIndex = 14;
-            // 
-            // chk_ExeAfterUnpack
-            // 
-            this.chk_ExeAfterUnpack.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.chk_ExeAfterUnpack.AutoSize = true;
-            this.chk_ExeAfterUnpack.Checked = true;
-            this.chk_ExeAfterUnpack.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chk_ExeAfterUnpack.Location = new System.Drawing.Point(8, 213);
-            this.chk_ExeAfterUnpack.Name = "chk_ExeAfterUnpack";
-            this.chk_ExeAfterUnpack.Size = new System.Drawing.Size(131, 17);
-            this.chk_ExeAfterUnpack.TabIndex = 15;
-            this.chk_ExeAfterUnpack.Text = "Execute after unpack:";
-            this.chk_ExeAfterUnpack.UseVisualStyleBackColor = true;
-            // 
             // WinFormsSelfExtractorStub
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(468, 300);
+            this.Controls.Add(this.chk_Remove);
             this.Controls.Add(this.chk_ExeAfterUnpack);
             this.Controls.Add(this.txtPostUnpackCmdLine);
             this.Controls.Add(this.lblStatus);
@@ -254,5 +270,6 @@
         private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.TextBox txtPostUnpackCmdLine;
         private System.Windows.Forms.CheckBox chk_ExeAfterUnpack;
+        private System.Windows.Forms.CheckBox chk_Remove;
     }
 }

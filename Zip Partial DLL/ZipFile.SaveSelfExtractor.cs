@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-06 12:38:37>
+// Time-stamp: <2009-October-06 23:30:45>
 //
 // ------------------------------------------------------------------
 //
@@ -85,7 +85,178 @@ namespace Ionic.Zip
         WinFormsApplication,
     }
 
+    /// <summary>
+    /// The options for generating a self-extracting archive.
+    /// </summary>
+    public class SelfExtractorSaveOptions
+    {
+        /// <summary>
+        ///   The type of SFX to create.
+        /// </summary>
+        public SelfExtractorFlavor Flavor
+        {
+            get;set;
+        }
 
+        /// <summary>
+        ///   The command to run after extration.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// <para>
+        ///   This is optional. Leave it empty (<c>null</c> in C# or <c>Nothing</c> in
+        ///   VB) to run no command after extraction.
+        /// </para>
+        ///
+        /// <para>
+        ///   If it is non-empty, the SFX will execute the command specified in this
+        ///   string on the user's machine, after unpacking the archive.
+        /// </para>
+        ///
+        /// <para>
+        ///   If the flavor of the SFX is <c>SelfExtractorFlavor.ConsoleApplication</c>,
+        ///   then the SFX starts a new process, using this string as the post-extract
+        ///   command line, and using the extract directory as the working directory for
+        ///   the process.  The SFX waits for the process to exit.  The exit code of the
+        ///   post-extract command line is returned as the exit code of the command-line
+        ///   self-extractor exe.  A non-zero exit code is typically used to indicated a
+        ///   failure by the program. In the case of an SFX, a non-zero exit code may
+        ///   indicate a failure during extraction, OR, it may indicate a failure of the
+        ///   run-on-extract program if specified. There is no way to distinguish these
+        ///   conditions from the calling shell, aside from parsing output.
+        /// </para>
+        ///
+        /// <para>
+        ///   If the flavor of the SFX is
+        ///   <c>SelfExtractorFlavor.WinFormsApplication</c>, then the SFX starts a new
+        ///   process, using this string as the post-extract command line, and using the
+        ///   extract directory as the working directory for the process. 
+        /// </para>
+        ///
+        /// <para>
+        ///   You can specify environment variables within this string, with
+        ///   <c>%NAME%</c>. The value of these variables will be expanded at the time
+        ///   the SFX is run. Example: <c>%WINDIR%\system32\xcopy.exe</c> may expand at
+        ///   runtime to <c>c:\Windows\System32\xcopy.exe</c>.
+        /// </para>
+        ///
+        /// <para>
+        ///   By combining this with the <c>RemoveUnpackedFilesAfterExecute</c> flag,
+        ///   you can create an SFX that extracts itself, runs a file that was
+        ///   extracted, then deletes all the files that were extracted. If you want it
+        ///   to run "invisibly" then set <c>Flavor</c> to
+        ///   <c>SelfExtractorFlavor.ConsoleApplication</c>, and set <c>Quiet</c> to
+        ///   true.  You may also want to specify the default extract location, with
+        ///   <c>DefaultExtractDirectory</c>.
+        /// </para>
+        ///
+        /// </remarks>
+        public String PostExtractCommandLine
+        {
+            get;set;
+        }
+        
+        /// <summary>
+        ///   The default extract directory the user will see when
+        ///   running the self-extracting archive.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// <para>
+        ///   Passing null (or Nothing in VB) here will cause the Self Extractor to use
+        ///   the the user's personal directory (<see
+        ///   cref="Environment.SpecialFolder.Personal"/>) for the default extract
+        ///   location.
+        /// </para>
+        ///
+        /// <para>
+        ///   This is only a default location.  The actual extract location will be
+        ///   settable on the command line when the SFX is executed.
+        /// </para>
+        ///
+        /// <para>
+        ///   You can specify environment variables within this string,
+        ///   with <c>%NAME%</c>. The value of these variables will be
+        ///   expanded at the time the SFX is run. Example:
+        ///   <c>%USERPROFILE%\Documents\unpack</c> may expand at runtime to
+        ///   <c>c:\users\melvin\Documents\unpack</c>. 
+        /// </para>
+        /// </remarks>
+        public String DefaultExtractDirectory
+        {
+            get;set;
+        }
+
+        /// <summary>
+        ///   The name of an .ico file in the filesystem to use for the application icon
+        ///   for the generated SFX.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// <para>
+        ///   Normally, DotNetZip will embed an "zipped folder" icon into the generated
+        ///   SFX.  If you prefer to use a different icon, you can specify it here. It
+        ///   should be a .ico file.  This file is passed as the <c>/win32icon</c>
+        ///   option to the csc.exe compiler when constructing the SFX file.
+        /// </para>
+        /// </remarks>
+        ///
+        public string IconFile
+        {
+            get;set;    
+        }
+        
+        /// <summary>
+        ///   Whether the ConsoleApplication SFX will be quiet during extraction.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// <para>
+        ///   This applies only to SFX files created with Flavor =
+        ///   <c>SelfExtractorFlavor.ConsoleApplication</c>.  By default, the extractor will
+        ///   emit a message to the console for each entry extracted. If you set this to
+        ///   true, no messages will be emitted during successful operation.
+        /// </para>
+        /// </remarks>
+        public bool Quiet
+        {
+            get;set;    
+        }
+
+        
+        /// <summary>
+        ///   Whether to remove the files that have been unpacked, after executing the
+        ///   PostUnpackCommand.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// <para>
+        ///   If true, and if there is a PostUnpackCommand, and if the command runs
+        ///   successfully, then the files that the SFX unpacked will be removed,
+        ///   afterwards.  If the command does not complete successfully (non-zero
+        ///   return code) then the files will not be removed.
+        /// </para>
+        ///
+        /// <para>
+        ///   Setting this flag, and setting <c>Flavor</c> to
+        ///   <c>SelfExtractorFlavor.ConsoleApplication</c>, and setting <c>Quiet</c> to
+        ///   true, results in an SFX that extracts itself, runs a file that was
+        ///   extracted, then deletes all the files that were extracted, with no
+        ///   intervention by the user.  You may also want to specify the default
+        ///   extract location, with <c>DefaultExtractDirectory</c>.
+        /// </para>
+        ///
+        /// </remarks>
+        public bool RemoveUnpackedFilesAfterExecute
+        {
+            get;set;
+        }
+        
+    }
+
+
+
+    
     partial class ZipFile
     {
         class ExtractorSettings
@@ -205,40 +376,51 @@ namespace Ionic.Zip
         /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
         public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor)
         {
-            SaveSelfExtractor(exeToGenerate, flavor, null, null, null);
+            SelfExtractorSaveOptions options = new SelfExtractorSaveOptions();
+            options.Flavor = flavor;
+            SaveSelfExtractor(exeToGenerate, options);
         }
 
         
 
         /// <summary>
-        /// Saves the ZipFile instance to a self-extracting zip archive, using the specified 
-        /// default extract directory. 
+        ///   Saves the ZipFile instance to a self-extracting zip archive, using the specified 
+        ///   save options. 
         /// </summary>
+        ///
         /// <remarks>
         /// <para>
-        /// This method saves a self extracting archive, with a specified default extracting
-        /// location.  Actually, the default extract directory applies only if the flavor is <see
-        /// cref="SelfExtractorFlavor.WinFormsApplication"/>.  See the documentation for <see
-        /// cref="SaveSelfExtractor(string , SelfExtractorFlavor)"/> for more details.
+        ///   This method saves a self extracting archive, using the specified save
+        ///   options. These options include the flavor of the SFX, the default extract
+        ///   directory, the icon file, and so on.  See the documentation
+        ///   for <see cref="SaveSelfExtractor(string , SelfExtractorFlavor)"/> for more
+        ///   details.
         /// </para>
         ///
         /// <para>
-        /// The user who runs the SFX will have the opportunity to change the extract directory
-        /// before extracting.  If at the time of extraction, the specified directory does not
-        /// exist, the SFX will create the directory before extracting the files.
+        ///   The user who runs the SFX will have the opportunity to change the extract
+        ///   directory before extracting. If at the time of extraction, the specified
+        ///   directory does not exist, the SFX will create the directory before
+        ///   extracting the files.
         /// </para>
+        /// 
         /// </remarks>
         ///
         /// <example>
-        /// This example saves a self-extracting archive that will use c:\ExtractHere as the default 
-        /// extract location.
+        ///   This example saves a self-extracting archive that will use c:\ExtractHere
+        ///   as the default extract location.
         /// <code>
         /// string DirectoryPath = "c:\\Documents\\Project7";
         /// using (ZipFile zip = new ZipFile())
         /// {
         ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath));
         ///     zip.Comment = "This will be embedded into a self-extracting console-based exe";
-        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication, "c:\\ExtractHere");
+        ///     SelfExtractorOptions options = new SelfExtractorOptions();
+        ///     options.Flavor = SelfExtractorFlavor.ConsoleApplication;
+        ///     options.DefaultExtractDirectory = "%USERPROFILE%\\ExtractHere";
+        ///     options.PostExtractCommandLine = ExeToRunAfterExtract;
+        ///     options.RemoveUnpackedFilesAfterExecute = true;
+        ///     zip.SaveSelfExtractor("archive.exe", options);
         /// }
         /// </code>
         /// <code lang="VB">
@@ -246,174 +428,19 @@ namespace Ionic.Zip
         /// Using zip As New ZipFile()
         ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath))
         ///     zip.Comment = "This will be embedded into a self-extracting console-based exe"
-        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication, "c:\ExtractHere");
+        ///     Dim options As New SelfExtractorOptions()
+        ///     options.Flavor = SelfExtractorFlavor.ConsoleApplication
+        ///     options.DefaultExtractDirectory = "%USERPROFILE%\\ExtractHere"
+        ///     options.PostExtractCommandLine = ExeToRunAfterExtract
+        ///     options.RemoveUnpackedFilesAfterExecute = True
+        ///     zip.SaveSelfExtractor("archive.exe", options)
         /// End Using
         /// </code>
         /// </example>
         /// 
         /// <param name="exeToGenerate">The name of the EXE to generate.</param>
-        /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
-        /// <param name="defaultExtractDirectory">
-        /// The default extract directory the user will see when running the self-extracting 
-        /// archive. Passing null (or Nothing in VB) here will cause the Self Extractor to 
-        /// use the the user's personal directory 
-        /// (<see cref="Environment.SpecialFolder.Personal"/>) for the default extract 
-        /// location.
-        /// </param>
-        public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor, string defaultExtractDirectory)
-        {
-            SaveSelfExtractor(exeToGenerate, flavor, defaultExtractDirectory, null, null);
-        }
-
-
-        
-        /// <summary>
-        /// Saves the ZipFile instance to a self-extracting zip archive, using the specified 
-        /// default extract directory, and a post-extract command to run.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// This method saves a self extracting archive, with a specified default
-        /// extracting location, and a command to run after extraction.  Actually, the
-        /// default extract directory applies only if the flavor is <see
-        /// cref="SelfExtractorFlavor.WinFormsApplication"/>.  See the documentation for
-        /// <see cref="SaveSelfExtractor(string , SelfExtractorFlavor)"/> for more
-        /// details.
-        /// </para>
-        ///
-        /// <para>
-        /// The user who runs the SFX will have the opportunity to change the extract directory
-        /// before extracting.  If at the time of extraction, the specified directory does not
-        /// exist, the SFX will create the directory before extracting the files.
-        /// </para>
-        /// </remarks>
-        ///
-        /// <example>
-        /// This example saves a self-extracting archive that will use c:\ExtractHere as the default 
-        /// extract location.
-        /// <code>
-        /// string DirectoryPath = "c:\\Documents\\Project7";
-        /// using (ZipFile zip = new ZipFile())
-        /// {
-        ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath));
-        ///     zip.Comment = "This will be embedded into a self-extracting console-based exe";
-        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication, "c:\\ExtractHere");
-        /// }
-        /// </code>
-        /// <code lang="VB">
-        /// Dim DirectoryPath As String = "c:\Documents\Project7"
-        /// Using zip As New ZipFile()
-        ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath))
-        ///     zip.Comment = "This will be embedded into a self-extracting console-based exe"
-        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication, "c:\ExtractHere");
-        /// End Using
-        /// </code>
-        /// </example>
-        /// 
-        /// <param name="exeToGenerate">The name of the EXE to generate.</param>
-        /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
-        /// <param name="defaultExtractDirectory">
-        /// The default extract directory the user will see when running the self-extracting
-        /// archive. Passing null (or Nothing in VB) here, if flavor is
-        /// <c>SelfExtractorFlavor.WinFormsApplication</c>, will cause the Self Extractor to
-        /// use the the user's personal directory (<see
-        /// cref="Environment.SpecialFolder.Personal"/>) for the default extract location.
-        /// Passing null when flavor is <c>SelfExtractorFlavor.ConsoleApplication</c> will
-        /// cause the self-extractor to use the current directory for the default extract
-        /// location; it will also be settable on the command line when the SFX is executed.
-        /// </param>
-        /// <param name ="postExtractCommandToExecute">
-        /// The command to execute on the user's machine, after unpacking the archive. If the
-        /// flavor is <c>SelfExtractorFlavor.ConsoleApplication</c>, then the SFX changes the
-        /// current directory to the extract directory, and starts the post-extract command
-        /// and waits for it to exit.  The exit code of the post-extract command line is
-        /// returned as the exit code of the self-extractor exe.  A non-zero exit code is
-        /// typically used to indicated a failure by the program. In the case of an SFX, a
-        /// non-zero exit code may indicate a failure during extraction, OR, it may indicate a
-        /// failure of the run-on-extract program if specified. There is no way to distinguish
-        /// these conditions from the calling shell, aside from parsing output.  The GUI self
-        /// extractor simply starts the post-extract command and exits; it does not wait for
-        /// the command to exit first.
-        /// </param>
-        public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor, string defaultExtractDirectory, string postExtractCommandToExecute)
-        {
-            SaveSelfExtractor(exeToGenerate, flavor, defaultExtractDirectory, postExtractCommandToExecute, null);
-        }
-
-        
-
-        /// <summary>
-        /// Saves the ZipFile instance to a self-extracting zip archive, using the specified 
-        /// default extract directory, post-extract command, and icon. 
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// This method saves a self extracting archive, with a specified default
-        /// extracting location, a command to run after extraction, and application
-        /// icon.  Actually, the default extract directory applies only if the flavor is
-        /// <see cref="SelfExtractorFlavor.WinFormsApplication"/>.  See the
-        /// documentation for <see cref="SaveSelfExtractor(string ,
-        /// SelfExtractorFlavor)"/> for more details.
-        /// </para>
-        ///
-        /// <para>
-        /// The user who runs the SFX will have the opportunity to change the extract directory
-        /// before extracting.  If at the time of extraction, the specified directory does not
-        /// exist, the SFX will create the directory before extracting the files.
-        /// </para>
-        /// </remarks>
-        ///
-        /// <example>
-        /// This example saves a self-extracting archive that will use c:\ExtractHere as the default 
-        /// extract location.
-        /// <code>
-        /// string DirectoryPath = "c:\\Documents\\Project7";
-        /// using (ZipFile zip = new ZipFile())
-        /// {
-        ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath));
-        ///     zip.Comment = "This will be embedded into a self-extracting console-based exe";
-        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication, "c:\\ExtractHere");
-        /// }
-        /// </code>
-        /// <code lang="VB">
-        /// Dim DirectoryPath As String = "c:\Documents\Project7"
-        /// Using zip As New ZipFile()
-        ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath))
-        ///     zip.Comment = "This will be embedded into a self-extracting console-based exe"
-        ///     zip.SaveSelfExtractor("archive.exe", SelfExtractorFlavor.ConsoleApplication, "c:\ExtractHere");
-        /// End Using
-        /// </code>
-        /// </example>
-        /// 
-        /// <param name="exeToGenerate">The name of the EXE to generate.</param>
-        /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
-        /// <param name="defaultExtractDirectory">
-        /// The default extract directory the user will see when running the self-extracting
-        /// archive. Passing null (or Nothing in VB) here, if flavor is
-        /// <c>SelfExtractorFlavor.WinFormsApplication</c>, will cause the Self Extractor to
-        /// use the the user's personal directory (<see
-        /// cref="Environment.SpecialFolder.Personal"/>) for the default extract location.
-        /// Passing null when flavor is <c>SelfExtractorFlavor.ConsoleApplication</c> will
-        /// cause the self-extractor to use the current directory for the default extract
-        /// location; it will also be settable on the command line when the SFX is executed.
-        /// </param>
-        /// <param name ="postExtractCommandToExecute">
-        /// The command to execute on the user's machine, after unpacking the archive. If the
-        /// flavor is <c>SelfExtractorFlavor.ConsoleApplication</c>, then the SFX changes the
-        /// current directory to the extract directory, and starts the post-extract command
-        /// and waits for it to exit.  The exit code of the post-extract command line is
-        /// returned as the exit code of the self-extractor exe.  A non-zero exit code is
-        /// typically used to indicated a failure by the program. In the case of an SFX, a
-        /// non-zero exit code may indicate a failure during extraction, OR, it may indicate a
-        /// failure of the run-on-extract program if specified. There is no way to distinguish
-        /// these conditions from the calling shell, aside from parsing output.  The GUI self
-        /// extractor simply starts the post-extract command and exits; it does not wait for
-        /// the command to exit first.
-        /// </param>
-        /// <param name ="iconFile">
-        /// the name of a .ico file in the filesystem to use for the application icon
-        /// </param>
-        public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor, string defaultExtractDirectory, string postExtractCommandToExecute, string iconFile)
+        /// <param name="options">provides the options for how to save the Self-extracting archive.</param>
+        public void SaveSelfExtractor(string exeToGenerate, SelfExtractorSaveOptions options)
         {
             // Save an SFX that is both an EXE and a ZIP.
 
@@ -432,12 +459,14 @@ namespace Ionic.Zip
             _contentsChanged = true;
             _fileAlreadyExists = File.Exists(_name);
 
-            _SaveSfxStub(exeToGenerate, flavor, defaultExtractDirectory, postExtractCommandToExecute, iconFile);
+            _SaveSfxStub(exeToGenerate, options);
 
             Save();
             _SavingSfx = false;
         }
 
+
+        
 
         private void ExtractResourceToFile(Assembly a, string resourceName, string filename)
         {
@@ -460,7 +489,7 @@ namespace Ionic.Zip
         }
 
 
-        private void _SaveSfxStub(string exeToGenerate, SelfExtractorFlavor flavor, string defaultExtractLocation, string postExtractCmdLine, string nameOfIconFile)
+        private void _SaveSfxStub(string exeToGenerate, SelfExtractorSaveOptions options)
         {
             bool removeIconFile = false;
             string StubExe = null;
@@ -494,7 +523,7 @@ namespace Ionic.Zip
                 ExtractorSettings settings = null;
                 foreach (var x in SettingsList)
                 {
-                    if (x.Flavor == flavor)
+                    if (x.Flavor == options.Flavor)
                     {
                         settings = x;
                         break;
@@ -502,7 +531,7 @@ namespace Ionic.Zip
                 }
 
                 if (settings == null)
-                    throw new BadStateException(String.Format("While saving a Self-Extracting Zip, Cannot find that flavor ({0})?", flavor));
+                    throw new BadStateException(String.Format("While saving a Self-Extracting Zip, Cannot find that flavor ({0})?", options.Flavor));
 
                 // This is the list of referenced assemblies.  Ionic.Zip is needed here.
                 // Also if it is the winforms (gui) extractor, we need other referenced assemblies,
@@ -520,19 +549,23 @@ namespace Ionic.Zip
 
                 Assembly a2 = Assembly.GetExecutingAssembly();
                 
-                if (nameOfIconFile==null)
+                if (String.IsNullOrEmpty(options.IconFile))
                 {
+                    // use the embedded ico file. But we must unpack it, in order to
+                    // specify it on the cmdline of csc.exe.  So, use the removeIconFile
+                    // flag to make sure to clean this up later.
                     removeIconFile = true;
-                    nameOfIconFile = GenerateTempPathname("ico", null);
+                    string nameOfIconFile = GenerateTempPathname("ico", null);
                     ExtractResourceToFile(a2, "Ionic.Zip.Resources.zippedFile.ico", nameOfIconFile);
                     cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", nameOfIconFile);
                 }
-                else if (nameOfIconFile!="")
-                    cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", nameOfIconFile);
+                else 
+                    cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", options.IconFile);
                 
                 //cp.IncludeDebugInformation = true;
                 cp.OutputAssembly = StubExe;
-                if (flavor == SelfExtractorFlavor.WinFormsApplication)
+                
+                if (options.Flavor == SelfExtractorFlavor.WinFormsApplication)
                     cp.CompilerOptions += " /target:winexe";
 
                 if (cp.CompilerOptions == "")
@@ -576,10 +609,22 @@ namespace Ionic.Zip
 
                 // Set the default extract location if it is available, and if supported.
 
-                bool haveLocation = (defaultExtractLocation != null);
-                if (haveLocation)
-                    defaultExtractLocation = defaultExtractLocation.Replace("\"", "").Replace("\\", "\\\\");
+                string extractLoc = options.DefaultExtractDirectory;
+                if (extractLoc != null)
+                {
+                    // remove double-quotes and replace slash with double-slash.
+                    // This, because the value is going to be embedded into a
+                    // cs file as a quoted string, and it needs to be escaped. 
+                    extractLoc = extractLoc.Replace("\"", "").Replace("\\", "\\\\");
+                }
 
+                string postExCmdLine = options.PostExtractCommandLine;
+                if (postExCmdLine  != null)
+                {
+                    postExCmdLine = options.PostExtractCommandLine.Replace("\\","\\\\");
+                }
+
+                
                 foreach (string rc in settings.ResourcesToCompile)
                 {
                     //Console.WriteLine("  trying to read stream: ({0})", rc);
@@ -591,11 +636,14 @@ namespace Ionic.Zip
                         while (sr.Peek() >= 0)
                         {
                             string line = sr.ReadLine();
-                            if (haveLocation)
-                                line = line.Replace("@@EXTRACTLOCATION", defaultExtractLocation);
+                            if (extractLoc != null)
+                                line = line.Replace("@@EXTRACTLOCATION", extractLoc);
                             
-                            if (postExtractCmdLine != null)
-                                line = line.Replace("@@POST_UNPACK_CMD_LINE", postExtractCmdLine.Replace("\\","\\\\"));
+                            line = line.Replace("@@REMOVE_AFTER_EXECUTE", options.RemoveUnpackedFilesAfterExecute.ToString());
+                            line = line.Replace("@@QUIET", options.Quiet.ToString());
+                            
+                            if (postExCmdLine != null)
+                                line = line.Replace("@@POST_UNPACK_CMD_LINE", postExCmdLine);
                             
                             sb.Append(line).Append("\n");
                         }
@@ -669,12 +717,11 @@ namespace Ionic.Zip
                         try { File.Delete(StubExe); }
                         catch { }
                     }
-                    if (removeIconFile && File.Exists(nameOfIconFile))
+                    if (removeIconFile && File.Exists(options.IconFile))
                     {
-                        try { File.Delete(nameOfIconFile); }
+                        try { File.Delete(options.IconFile); }
                         catch { }
                     }
-
                 }
                 catch { }
 

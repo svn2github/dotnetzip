@@ -71,6 +71,8 @@ namespace DotNetZip.Examples.WinForms
             this.tbSelectionToZip.AutoCompleteMode = AutoCompleteMode.Suggest;
             this.tbSelectionToZip.AutoCompleteSource = AutoCompleteSource.CustomSource;
             this.tbSelectionToZip.AutoCompleteCustomSource = _selectionCompletions;
+
+            tbExeOnUnpack_TextChanged(null, null);
         }
 
         private void SetListView2()
@@ -277,13 +279,13 @@ namespace DotNetZip.Examples.WinForms
                 {
                     ZipName = this.tbZipToCreate.Text,
                     Selection = this.tbSelectionToZip.Text,
-                    //Recurse = this.chkRecurse.Checked,
                     TraverseJunctions = this.chkTraverseJunctions.Checked,
                     Encoding = "ibm437",
                     ZipFlavor = this.comboFlavor.SelectedIndex,
                     Password = this.tbPassword.Text,
                     WindowsTimes = this.chkWindowsTime.Checked,
                     UnixTimes = this.chkUnixTime.Checked,
+                    RemoveFilesAfterExe = this.chkRemoveFiles.Checked,
                     };
 
             if (this.comboEncoding.SelectedIndex != 0)
@@ -466,10 +468,33 @@ namespace DotNetZip.Examples.WinForms
                 this.tbExeOnUnpack.ForeColor = System.Drawing.SystemColors.InactiveCaption;
                 _firstFocusInExeTextBox = true;
                 this.tbExeOnUnpack.Text = TB_EXE_ON_UNPACK_NOTE;
+                this.label18.Enabled = false;
+                this.chkRemoveFiles.Enabled = false;
+            }
+            else
+            {
+                this.label18.Enabled = true;
+                this.chkRemoveFiles.Enabled = true;
             }
         }
 
+        
+        private void tbExeOnUnpack_TextChanged(object sender, EventArgs e)
+        {
+            if (this.tbExeOnUnpack.Text != TB_EXE_ON_UNPACK_NOTE && this.tbExeOnUnpack.Text != "")
+            {
+                this.label18.Enabled = true;
+                this.chkRemoveFiles.Enabled = true;
+            }
+            else
+            {
+                this.label18.Enabled = false;
+                this.chkRemoveFiles.Enabled = false;
+            }
+        }
 
+        
+        
         private void SetProgressBars()
         {
             if (this.progressBar1.InvokeRequired)
@@ -522,10 +547,19 @@ namespace DotNetZip.Examples.WinForms
                     zip1.UseZip64WhenSaving = options.Zip64;
                     zip1.CompressionLevel = options.CompressionLevel;
 
-                    if (options.ZipFlavor == 1)
-                        zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.WinFormsApplication, options.ExtractDirectory, options.ExeOnUnpack);
-                    else if (options.ZipFlavor == 2)
-                        zip1.SaveSelfExtractor(options.ZipName, SelfExtractorFlavor.ConsoleApplication, options.ExtractDirectory, options.ExeOnUnpack);
+                    if (options.ZipFlavor == 2 || options.ZipFlavor == 1)
+                    {
+                        SelfExtractorSaveOptions sfxOptions = new SelfExtractorSaveOptions()
+                        {
+                            Flavor =   (options.ZipFlavor == 1)?SelfExtractorFlavor.WinFormsApplication:
+                                SelfExtractorFlavor.ConsoleApplication,
+                            DefaultExtractDirectory = options.ExtractDirectory,
+                            PostExtractCommandLine = options.ExeOnUnpack,
+                            RemoveUnpackedFilesAfterExecute = options.RemoveFilesAfterExe,
+                        };
+
+                        zip1.SaveSelfExtractor(options.ZipName, sfxOptions);
+                    }
                     else
                         zip1.Save(options.ZipName);
                 }
@@ -764,6 +798,9 @@ namespace DotNetZip.Examples.WinForms
                 this.tbDefaultExtractDirectory.Enabled = true;
                 this.label16.Enabled = true;
                 this.tbExeOnUnpack.Enabled = true;
+                
+                this.label18.Enabled = true; 
+                this.chkRemoveFiles.Enabled = true;
             }
             else if (this.comboFlavor.SelectedIndex == 0)
             {
@@ -781,6 +818,8 @@ namespace DotNetZip.Examples.WinForms
                 this.tbDefaultExtractDirectory.Enabled = false;
                 this.label16.Enabled = false;
                 this.tbExeOnUnpack.Enabled = false;
+                this.label18.Enabled = false;
+                this.chkRemoveFiles.Enabled = false;
             }
         }
 
@@ -1672,6 +1711,7 @@ namespace DotNetZip.Examples.WinForms
         private string _initialFileToLoad;
         private string _lastDirectory;
 
+
     }
 
 
@@ -1784,6 +1824,7 @@ namespace DotNetZip.Examples.WinForms
         public string ZipName;
         public string Selection;
         public bool TraverseJunctions;
+        public bool RemoveFilesAfterExe;
         public string Encoding;
         public string Comment;
         public string Password;
