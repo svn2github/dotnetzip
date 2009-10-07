@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-07 14:15:13>
+// Time-stamp: <2009-October-07 15:34:11>
 //
 // ------------------------------------------------------------------
 //
@@ -1242,7 +1242,6 @@ namespace Ionic.Zip
             // and omit all the crypto stuff - the GP bitfield, and the crypto header.
             if (_UncompressedSize == 0 && _CompressedSize == 0)
             {
-                CompressionMethod = 0;
                 if (_Password != null)
                 {
                     int headerBytesToRetract = 0;
@@ -1255,6 +1254,10 @@ namespace Ionic.Zip
                         headerBytesToRetract = _aesCrypto._Salt.Length + _aesCrypto.GeneratedPV.Length;
                     }
 #endif
+
+                if (this._Source == ZipEntrySource.ZipOutputStream && !s.CanSeek)
+                    throw new ZipException("Zero bytes written, encryption in use, and non-seekable output.");
+                
                     
                     if (Encryption != EncryptionAlgorithm.None)
                     {
@@ -1274,7 +1277,10 @@ namespace Ionic.Zip
                     _EntryHeader[j++] = (byte)(_BitField & 0x00FF);
                     _EntryHeader[j++] = (byte)((_BitField & 0xFF00) >> 8);
                 }
+
+                CompressionMethod = 0;
                 Encryption = EncryptionAlgorithm.None;
+                
             }
             else if (_Password != null)
             {
@@ -1431,8 +1437,12 @@ namespace Ionic.Zip
             // ASP.NET Response.OutputStream, or stdout are non-seekable.
             // But we may also want to NOT seek in other cases, eg zip64.
             // For all cases, we just check bit 3 to see if we want to seek.
+            // There's one exception - if using a ZipOutputStream, and PKZip encryption is in use,
+            // then we set bit 3 even if the out is non-seekable. So, test
+            // for ZipOutputStream and seekable, and if so, seek back.
 
-            if ((_BitField & 0x0008) != 0x0008)
+            if ((_BitField & 0x0008) != 0x0008 ||
+                 (this._Source == ZipEntrySource.ZipOutputStream && s.CanSeek))
             {
                 // seek back and rewrite the entry header
                 var zss = s as ZipSegmentedStream;

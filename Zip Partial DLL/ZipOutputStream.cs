@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-07 14:14:30>
+// Time-stamp: <2009-October-07 16:31:58>
 //
 // ------------------------------------------------------------------
 //
@@ -93,8 +93,6 @@ namespace  Ionic.Zip
     /// </remarks>
     public class ZipOutputStream : Stream
     {
-        private Ionic.Zlib.CrcCalculatorStream _entryOutputStream;
-        
         /// <summary>
         ///   Create a ZipOutputStream.
         /// </summary>
@@ -224,6 +222,12 @@ namespace  Ionic.Zip
         ///   you set the password to a <c>null</c> value (<c>Nothing</c> in VB),
         ///   <c>Encryption</c> is reset to None.
         /// </para>
+        /// 
+        /// <para>
+        ///   Special case: if you wrap a ZipOutputStream around a non-seekable stream,
+        ///   and use encryption, and emit an entry of zero bytes, the <c>Close()</c> or
+        ///   <c>PutNextEntry()</c> following the entry will throw an exception.
+        /// </para>
         ///
         /// </remarks>
         public String Password
@@ -231,7 +235,10 @@ namespace  Ionic.Zip
             set
             {
                 if (_closed)
+                {
+                    _exceptionPending = true;
                     throw new System.InvalidOperationException("The stream has been closed.");
+                }
                 
                 _password = value;
                 if (_password == null)
@@ -276,9 +283,15 @@ namespace  Ionic.Zip
             set
             {
                 if (_closed)
+                {
+                    _exceptionPending = true;
                     throw new System.InvalidOperationException("The stream has been closed.");
+                }
                 if (value == EncryptionAlgorithm.Unsupported)
+                {
+                    _exceptionPending = true;
                     throw new InvalidOperationException("You may not set Encryption to that value.");
+                }
                 _encryption= value;
             }
         }
@@ -337,7 +350,10 @@ namespace  Ionic.Zip
             set
             {
                 if (_closed)
+                {
+                    _exceptionPending = true;
                     throw new System.InvalidOperationException("The stream has been closed.");
+                }
                 _timestamp= value;
             }
         }
@@ -416,7 +432,10 @@ namespace  Ionic.Zip
             set
             {
                 if (_closed)
+                {
+                    _exceptionPending = true;
                     throw new System.InvalidOperationException("The stream has been closed.");
+                }
                 _comment = value;
             }
         }
@@ -449,7 +468,10 @@ namespace  Ionic.Zip
             set
             {
                 if (_closed)
+                {
+                    _exceptionPending = true;
                     throw new System.InvalidOperationException("The stream has been closed.");
+                }
                 _zip64 = value;
             }
         }
@@ -701,7 +723,10 @@ namespace  Ionic.Zip
             foreach (ZipEntry ze2 in _entriesWritten)
             {
                 if (SharedUtilities.TrimVolumeAndSwapSlashes(ze1.FileName) == ze2.FileName)
+                {
+                    _exceptionPending = true;
                     throw new ArgumentException(String.Format("The entry '{0}' already exists in the zip archive.", ze1.FileName));
+                }
             }
         }
 
@@ -754,23 +779,33 @@ namespace  Ionic.Zip
         public override void Write(byte[] buffer, int offset, int count)
         {
             if (_closed)
+            {
+                _exceptionPending = true;
                 throw new System.InvalidOperationException("The stream has been closed.");
+            }
             
             if (_currentEntry==null)
+            {
+                _exceptionPending = true;
                 throw new System.InvalidOperationException("must call PutNextEntry() before Write()");
+            }
             
             if (_wantEntryHeader)
-            {
-                _entriesWritten.Add(_currentEntry);
-
-                // write out the header
-                _currentEntry.WriteHeader(_outputStream, 0);
-                _currentEntry.WriteSecurityMetadata(_outputStream);
-                _currentEntry.PrepOutputStream(_outputStream, out _outputCounter, out _encryptor, out _deflater, out _entryOutputStream);
-                _wantEntryHeader= false; 
-            }
+                _InitiateCurrentEntry();
 
             _entryOutputStream.Write(buffer, offset, count);
+        }
+
+
+        private void _InitiateCurrentEntry()
+        {
+            _entriesWritten.Add(_currentEntry);
+
+            // write out the header
+            _currentEntry.WriteHeader(_outputStream, 0);
+            _currentEntry.WriteSecurityMetadata(_outputStream);
+            _currentEntry.PrepOutputStream(_outputStream, out _outputCounter, out _encryptor, out _deflater, out _entryOutputStream);
+            _wantEntryHeader = false;
         }
 
 
@@ -780,10 +815,64 @@ namespace  Ionic.Zip
         /// </summary>
         ///
         /// <remarks>
+        /// <para>
         ///   Call this method just before calling <see cref="Write(byte[], int, int)"/>, to
         ///   specify the name of the entry that the next set of bytes written to
-        ///   the <c>ZipOutputStream</c> belongs to. 
+        ///   the <c>ZipOutputStream</c> belongs to. All subsequent calls to <c>Write</c>,
+        ///   until the next call to <c>PutNextEntry</c>, 
+        ///   will be inserted into the named entry in the zip file. 
+        /// </para>
+        ///
+        /// <para>
+        ///   If you don't call <c>Write()</c> between two calls to
+        ///   <c>PutNextEntry()</c>, the first entry is inserted into the zip file as a
+        ///   file of zero size.  This may be what you want.  
+        /// </para>
+        ///
+        /// <para>
+        ///   Because <c>PutNextEntry()</c> closes out the prior entry, if any, this
+        ///   method may throw if there is a problem with the prior entry.  One such
+        ///   condition occurs when zero bytes have been written for an entry, and
+        ///   Encryption is in use, and the wrapped stream is non-seekable.
+        /// </para>
+        ///
+        /// <para>
+        ///   This method returns the <c>ZipEntry</c>.  You can modify public properties
+        ///   on the ZipEntry, such as <see cref="ZipEntry.Encryption"/>, <see
+        ///   cref="ZipEntry.Password"/>, and so on, until the first call to
+        ///   <c>ZipOutputStream.Write()</c>.  If you modify the <c>ZipEntry</c>
+        ///   <em>after</em> having called <c>Write()</c>, you may get a runtime
+        ///   exception, or you may silently get an invalid zip archive.
+        /// </para>
+        ///
         /// </remarks>
+        ///
+        /// <example>
+        ///
+        ///   This example shows how to create a zip file, using the
+        ///   ZipOutputStream class.
+        ///
+        /// <code>
+        /// private void Zipup()
+        /// {
+        ///     using (FileStream fs raw = File.Open(_outputFileName, FileMode.Create, FileAccess.ReadWrite ))
+        ///     {
+        ///         using (var output= new ZipOutputStream(fs))
+        ///         {
+        ///             output.Password = "VerySecret!";
+        ///             output.Encryption = EncryptionAlgorithm.WinZipAes256;
+        ///             output.PutNextEntry("entry1.txt");
+        ///             byte[] buffer= System.Text.Encoding.ASCII.GetBytes("This is the content for entry #1."); 
+        ///             output.Write(buffer,0,buffer.Length);
+        ///             output.PutNextEntry("entry2.txt");  // this will be zero length
+        ///             output.PutNextEntry("entry3.txt"); 
+        ///             buffer= System.Text.Encoding.ASCII.GetBytes("This is the content for entry #3."); 
+        ///             output.Write(buffer,0,buffer.Length);
+        ///         }
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
         ///
         /// <param name="entryName">
         ///   The name of the entry to be added, including any path to be used
@@ -793,10 +882,19 @@ namespace  Ionic.Zip
         /// <returns>
         ///   The ZipEntry created.
         /// </returns>
+        ///
+        /// <exception cref="ZipException">
+        ///   Thrown if Encryption is not <c>None</c>, and the previous entry was zero
+        ///   bytes in length, and the wrapped stream is non-seekable.
+        /// </exception>
+        ///
         public ZipEntry PutNextEntry(String entryName)
         {
             if (_closed)
+            {
+                _exceptionPending = true;
                 throw new System.InvalidOperationException("The stream has been closed.");
+            }
 
             _FinishCurrentEntry();
             _currentEntry = ZipEntry.CreateForZipOutputStream(entryName);
@@ -822,6 +920,9 @@ namespace  Ionic.Zip
         {
             if (_currentEntry!=null)
             {
+                if (_wantEntryHeader)
+                    _InitiateCurrentEntry();
+                
                 _currentEntry.FinishOutputStream(_outputStream, _outputCounter, _encryptor, _deflater, _entryOutputStream);
                 _currentEntry.PostProcessOutput(_outputStream);
                 _anyEntriesUsedZip64 |= _currentEntry.OutputUsedZip64.Value;
@@ -845,9 +946,20 @@ namespace  Ionic.Zip
         /// </para>
         /// 
         /// </remarks>
+        ///
+        /// <exception cref="ZipException">
+        ///   Thrown if Encryption is not <c>None</c>, and the previous entry was zero
+        ///   bytes in length, and the wrapped stream is non-seekable.
+        /// </exception>
+        ///
         public override void Close()
         {
             if (_closed) return;
+
+            // When ZipOutputStream is used within a using clause, and an exception is thrown,
+            // Close() is invoked.  But we don't want to try to write anything in that case.
+            // Eventually the exception will be propagated to the application.
+            if (_exceptionPending) return;
 
             _FinishCurrentEntry();
             _directoryNeededZip64 = ZipOutput.WriteCentralDirectoryStructure(_outputStream,
@@ -931,6 +1043,8 @@ namespace  Ionic.Zip
         }
 
         
+        private Ionic.Zlib.CrcCalculatorStream _entryOutputStream;
+        
         private EncryptionAlgorithm _encryption;
         private ZipEntryTimestamp _timestamp;
         internal String _password;
@@ -942,6 +1056,7 @@ namespace  Ionic.Zip
         private System.Text.Encoding _provisionalAlternateEncoding;
         private bool _leaveUnderlyingStreamOpen;
         private bool _closed;
+        private bool _exceptionPending;
         private bool _anyEntriesUsedZip64, _directoryNeededZip64;
         private CountingStream _outputCounter;
         private Stream _encryptor;
