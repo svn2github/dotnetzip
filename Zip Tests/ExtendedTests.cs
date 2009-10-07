@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-05 22:47:31>
+// Time-stamp: <2009-October-07 14:02:17>
 //
 // ------------------------------------------------------------------
 //
@@ -2212,7 +2212,7 @@ namespace Ionic.Zip.Tests.Extended
         {
             Directory.SetCurrentDirectory(TopLevelDir);
             string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
-            var files = TestUtilities.GenerateFilesFlat(dirToZip, _rnd.Next(4)+3, 40000, 72000);
+            var files = TestUtilities.GenerateFilesFlat(dirToZip, _rnd.Next(14)+13, 40000, 72000);
 
             EncryptionAlgorithm[] crypto = {
                 EncryptionAlgorithm.None, 
@@ -2227,6 +2227,31 @@ namespace Ionic.Zip.Tests.Extended
             }
         }
 
+        
+        [TestMethod]
+        public void AddEntry_WriteDelegate_ZeroBytes_wi8931()
+        {
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            
+            Directory.CreateDirectory(dirToZip);
+            int fileCount = _rnd.Next(4) + 3;
+            string[] files = new string[fileCount];
+            for (int i = 0; i < fileCount; i++)
+                files[i] = TestUtilities.CreateUniqueFile("zerolength", dirToZip);
+
+            EncryptionAlgorithm[] crypto = {
+                EncryptionAlgorithm.None, 
+                EncryptionAlgorithm.PkzipWeak,
+                EncryptionAlgorithm.WinZipAes128,
+                EncryptionAlgorithm.WinZipAes256,
+            };
+            
+            for (int i=0; i < crypto.Length; i++)
+            {
+                _Internal_AddEntry_WriteDelegate(files, crypto[i], i);
+            }
+        }
 
         
         private void _Internal_AddEntry_WriteDelegate(string[] files, EncryptionAlgorithm crypto, int cycle)
@@ -2307,7 +2332,6 @@ namespace Ionic.Zip.Tests.Extended
 
         
         [TestMethod]
-        [ExpectedException(typeof(System.InvalidOperationException))]
         public void Create_ZipOutputStream_PkzipEncryption()
         {
             Directory.SetCurrentDirectory(TopLevelDir);

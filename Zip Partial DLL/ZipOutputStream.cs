@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-06 00:37:18>
+// Time-stamp: <2009-October-07 14:14:30>
 //
 // ------------------------------------------------------------------
 //
@@ -80,16 +80,6 @@ namespace  Ionic.Zip
     ///     creating zip files. <c>ZipOutputStream</c> cannot read zip files.
     ///   </item>
     ///
-    ///   <item>
-    ///     <c>EncryptionAlgorithm.PkzipWeak</c> is not supported for output by
-    ///     <c>ZipOutputStream</c>. This is because of the requirements for PKZIP encryption -
-    ///     the CRC of the stream must be known before the first block is encrypted.
-    ///     When writing the stream once, as with this class, it's not possible to know
-    ///     the CRC before it is written. Therefore, if you want to use encryption, you
-    ///     need to use one of the WinZip-AES options.  If you want to create a zip file
-    ///     that uses PKZip encryption, use <c>ZipFile</c>.
-    ///   </item>
-    /// 
     ///   <item>
     ///     <c>ZipOutputStream</c> does not support the creation of segmented or spanned
     ///     zip files.
@@ -230,8 +220,7 @@ namespace  Ionic.Zip
         ///   cref="Encryption"/> property, to specify how to encrypt the entries added
         ///   to the ZipFile.  If you set the <c>Password</c> to a non-null value and do not
         ///   set <see cref="Encryption"/>, then PKZip 2.0 ("Weak") encryption is used.
-        ///   This encryption is relatively weak but is very interoperable. The bad news
-        ///   is that PkZip 2.0 encryption is not supported for output by this class. If
+        ///   This encryption is relatively weak but is very interoperable. If
         ///   you set the password to a <c>null</c> value (<c>Nothing</c> in VB),
         ///   <c>Encryption</c> is reset to None.
         /// </para>
@@ -243,6 +232,7 @@ namespace  Ionic.Zip
             {
                 if (_closed)
                     throw new System.InvalidOperationException("The stream has been closed.");
+                
                 _password = value;
                 if (_password == null)
                 {
@@ -254,6 +244,7 @@ namespace  Ionic.Zip
                 }
             }
         }
+
         
         /// <summary>
         ///   The Encryption to use for entries added to the <c>ZipOutputStream</c>.
@@ -266,19 +257,10 @@ namespace  Ionic.Zip
         /// </para>
         /// 
         /// <para>
-        ///   <c>EncryptionAlgorithm.PkzipWeak</c> is not supported for output by
-        ///   <c>ZipOutputStream</c>. This is because of the requirements for PKZIP
-        ///   encryption - the CRC of the stream must be known before the first
-        ///   block is encrypted.  When writing the stream once, as with this
-        ///   class, it's not possible to know the CRC before it is
-        ///   written. Therefore, if you want to use encryption, you need to use
-        ///   one of the WinZip-AES options.
-        /// </para>
-        /// 
-        /// <para>
-        ///   If you set this to something other than EncryptionAlgorithm.None,
-        ///   you will also need to set the <see cref="Password"/> in order to get
-        ///   encryption.
+        ///   If you set this to something other than
+        ///   EncryptionAlgorithm.None, you will also need to set the
+        ///   <see cref="Password"/> to a non-null, non-empty value in
+        ///   order to actually get encryption on the entry.
         /// </para>
         ///
         /// </remarks>
@@ -820,6 +802,7 @@ namespace  Ionic.Zip
             _currentEntry = ZipEntry.CreateForZipOutputStream(entryName);
             _currentEntry._container = new ZipContainer(this);
             _currentEntry.FileName = entryName;
+            _currentEntry._BitField |= 0x0008;  // workitem 8932
             _currentEntry.SetEntryTimes(DateTime.Now,DateTime.Now,DateTime.Now);
             _currentEntry.CompressionLevel = CompressionLevel;
             _currentEntry.Encryption = Encryption;
