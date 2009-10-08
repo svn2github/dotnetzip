@@ -121,6 +121,9 @@
     <Compile Include="..\Zip Partial DLL\ZipFile.x-IEnumerable.cs">
       <Link>ZipFile.x-IEnumerable.cs</Link>
     </Compile>
+    <Compile Include="..\Zip Partial DLL\ZipInputStream.cs">
+      <Link>ZipInputStream.cs</Link>
+    </Compile>
     <Compile Include="..\Zip Partial DLL\ZipOutputStream.cs">
       <Link>ZipOutputStream.cs</Link>
     </Compile>
