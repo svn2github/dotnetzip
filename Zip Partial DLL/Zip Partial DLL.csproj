@@ -83,6 +83,7 @@
     <EmbeddedResource Include="Resources\FolderBrowserDialogEx.cs" />
     <Compile Include="ZipEntrySource.cs" />
     <Compile Include="ZipOutputStream.cs" />
+    <Compile Include="ZipInputStream.cs" />
     <Compile Include="ZipSegmentedStream.cs" />
     <Compile Include="ComHelper.cs" />
     <Compile Include="OffsetStream.cs" />

@@ -61,6 +61,7 @@
     <Compile Include="ErrorTests.cs" />
     <Compile Include="SplitArchives.cs" />
     <Compile Include="ExtendedTests.cs" />
+    <Compile Include="Streams.cs" />
     <Compile Include="NonSeekableOutputStream.cs" />
     <Compile Include="PasswordTests.cs" />
     <Compile Include="Progress.cs" />

@@ -129,7 +129,8 @@ various features.  The examples here are just the basics.
 
 The main type you will use to fiddle with zip files is the ZipFile
 class. Full name: Ionic.Zip.ZipFile.  You use this to create, read, or
-update zip files. 
+update zip files.  There is also a ZipOutputStream class, that offers a
+different metaphor.
 
 The simplest way to create a ZIP file in C# looks like this:
 
@@ -214,6 +215,18 @@ called "RenamedFile.txt", regardless of the name of the file originally
 added to the ZipFile.
 
 
+The second class that you can use to create zip files is the
+ZipOutputStream.  To use it, wrap it around a stream, and write to it. 
+
+      using(var s = new ZipOutputStream(output))
+      {
+        s.PutNextEntry("entry1.txt");
+        byte[] buffer = Encoding.ASCII.GetBytes("This is the content for entry #1.");
+        s.Write(buffer, 0, buffer.Length);
+      }
+
+Unlike the ZipFile class, the ZipOutputStream class can only create zip
+files. It cannot read or update zip files.
 
 
 
