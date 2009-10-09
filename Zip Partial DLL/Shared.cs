@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-18 21:43:08>
+// Time-stamp: <2009-October-08 15:57:31>
 //
 // ------------------------------------------------------------------
 //
@@ -197,12 +197,26 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// Finds a signature in the zip stream. This is useful for finding 
-        /// the end of a zip entry, for example. 
+        ///   Finds a signature in the zip stream. This is useful for finding 
+        ///   the end of a zip entry, for example, or the beginning of the next ZipEntry. 
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="SignatureToFind"></param>
-        /// <returns></returns>
+        ///
+        /// <remarks>
+        ///   <para>
+        ///     Scans through 64k at a time.
+        ///   </para>
+        ///
+        ///   <para>
+        ///     If the method fails to find the requested signature, the stream Position
+        ///     after completion of this method is unchanged. If the method succeeds in
+        ///     finding the requested signature, the stream position after completion is
+        ///     direct AFTER the signature found in the stream.
+        ///   </para>
+        /// </remarks>
+        ///
+        /// <param name="stream">The stream to search</param>
+        /// <param name="SignatureToFind">The 4-byte signature to find</param>
+        /// <returns>The number of bytes read</returns>
         protected internal static long FindSignature(System.IO.Stream stream, int SignatureToFind)
         {
             long startingPosition = stream.Position;

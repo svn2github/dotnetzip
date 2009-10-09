@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-08 01:35:17>
+// Time-stamp: <2009-October-08 16:05:02>
 //
 // ------------------------------------------------------------------
 //
@@ -90,7 +90,8 @@ namespace  Ionic.Zip
     /// <list type="bullet">
     ///   <item>
     ///     <c>ZipFile</c> can be used to read and extract zip files, in addition to
-    ///     creating zip files. <c>ZipOutputStream</c> cannot read zip files.
+    ///     creating zip files. <c>ZipOutputStream</c> cannot read zip files. If you want
+    ///     to use a stream to read zip files, check out the <see cref="ZipInputStream"/> class. 
     ///   </item>
     ///
     ///   <item>
@@ -851,7 +852,7 @@ namespace  Ionic.Zip
         ///
         /// <para>
         ///   This method returns the <c>ZipEntry</c>.  You can modify public properties
-        ///   on the ZipEntry, such as <see cref="ZipEntry.Encryption"/>, <see
+        ///   on the <c>ZipEntry</c>, such as <see cref="ZipEntry.Encryption"/>, <see
         ///   cref="ZipEntry.Password"/>, and so on, until the first call to
         ///   <c>ZipOutputStream.Write()</c>.  If you modify the <c>ZipEntry</c>
         ///   <em>after</em> having called <c>Write()</c>, you may get a runtime
@@ -863,7 +864,7 @@ namespace  Ionic.Zip
         /// <example>
         ///
         ///   This example shows how to create a zip file, using the
-        ///   ZipOutputStream class.
+        ///   <c>ZipOutputStream</c> class.
         ///
         /// <code>
         /// private void Zipup()
