@@ -1034,23 +1034,44 @@ namespace Ionic.Zip
         ///   are not able to inspect the zip file and determine the codepage that was
         ///   used for the entries contained within it.  It is left to the application
         ///   or user to determine the necessary codepage when reading zip files encoded
-        ///   this way.  If you use an incorrect codepage when reading a zipfile, you
-        ///   will get entries with filenames that are incorrect, and the incorrect
-        ///   filenames may even contain characters that are not legal for use within
-        ///   filenames in Windows. Extracting entries with illegal characters in the
-        ///   filenames will lead to exceptions. It's too bad, but this is just the way
-        ///   things are with code pages in zip files. Caveat Emptor.
+        ///   this way.  In other words, if you explicitly specify the codepage when you
+        ///   create the zipfile, you must explicitly specify the same codepage when
+        ///   reading the zipfile.
+        /// </para>
+        ///
+        /// <para>
+        ///   The way you specify the code page to use when reading a zip file varies
+        ///   depending on the tool or library you use to read the zip.  In DotNetZip,
+        ///   you use a ZipFile.Read() method that accepts an encoding parameter.  It
+        ///   isn't possible with Windows Explorer, as far as I know, to specify an
+        ///   explicit codepage to use when reading a zip.  If you use an incorrect
+        ///   codepage when reading a zipfile, you will get entries with filenames that
+        ///   are incorrect, and the incorrect filenames may even contain characters
+        ///   that are not legal for use within filenames in Windows. Extracting entries
+        ///   with illegal characters in the filenames will lead to exceptions. It's too
+        ///   bad, but this is just the way things are with code pages in zip
+        ///   files. Caveat Emptor.
+        /// </para>
+        ///
+        /// <para>
+        ///   Example: Suppose you create a zipfile, that contains entries with
+        ///   filenames that have Danish characters.  If you use <see
+        ///   cref="ProvisionalAlternateEncoding" /> equal to "iso-8859-1" (cp 28591),
+        ///   the filenames will be correctly encoded in the zip.  But, to read that
+        ///   zipfile correctly, you have to specify the same codepage at the time you
+        ///   read it. If try to read that zip file with Windows Explorer or another
+        ///   application that is not flexible with respect to the codepage used to
+        ///   decode filenames in zipfiles, you will get a filename like "Inf°.txt".
         /// </para>
         ///
         /// <para>
         ///   When using DotNetZip to read a zip archive, and the zip archive uses an
         ///   arbitrary code page, you must specify the encoding to use before or when
-        ///   the
-        /// <c>Zipfile</c> is READ.  This means you must use a <c>ZipFile.Read()</c>
-        /// method that allows you to specify a System.Text.Encoding parameter.  Setting
-        /// the ProvisionalAlternateEncoding property after your application has read in
-        /// the zip archive will not affect the entry names of entries that have already
-        /// been read in, and is probably not what you want.
+        ///   the <c>Zipfile</c> is READ.  This means you must use a <c>ZipFile.Read()</c>
+        ///   method that allows you to specify a System.Text.Encoding parameter.  Setting
+        ///   the ProvisionalAlternateEncoding property after your application has read in
+        ///   the zip archive will not affect the entry names of entries that have already
+        ///   been read in.
         /// </para>
         ///     
         /// <para>
@@ -1086,8 +1107,8 @@ namespace Ionic.Zip
         /// }
         /// </code>
         ///
-        /// <code Lang="VB">
-        /// Using zip As ZipFile = ZipFile.Read(ZipToExtract, System.Text.Encoding.fileGetencoding(950))
+        /// <code lang="VB">
+        /// Using zip As ZipFile = ZipFile.Read(ZipToExtract, System.Text.Encoding.GetEncoding("big5"))
         ///     ' retrieve and extract an entry using a name encoded with CP950
         ///     zip(MyDesiredEntry).Extract("unpack")
         /// End Using

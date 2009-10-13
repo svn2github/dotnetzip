@@ -77,7 +77,6 @@ namespace DotNetZip.Examples.WinForms
 
         private void SetListView2()
         {
-
             // The listview2 is a ListViewEx control, an extension of
             // System.Windows.Forms.ListView that allows editing of subitems using arbitrary
             // controls.  You can have a textbox, a datepicker, or other controls.
@@ -801,6 +800,7 @@ namespace DotNetZip.Examples.WinForms
                 
                 this.label18.Enabled = true; 
                 this.chkRemoveFiles.Enabled = true;
+
             }
             else if (this.comboFlavor.SelectedIndex == 0)
             {
@@ -950,9 +950,11 @@ namespace DotNetZip.Examples.WinForms
                         ch.TextAlign = HorizontalAlignment.Right;
                     listView1.Columns.Add(ch);
                 }
-
+                
                 int n = 1;
-                using (ZipFile zip = ZipFile.Read(zipFile))
+                System.Text.Encoding encoding = System.Text.Encoding.GetEncoding(comboEncoding.SelectedItem.ToString());
+                
+                using (ZipFile zip = ZipFile.Read(zipFile, encoding))
                 {
                     foreach (ZipEntry entry in zip.EntriesSorted)
                     {
@@ -1316,6 +1318,18 @@ namespace DotNetZip.Examples.WinForms
                     this.tabPage1.Controls.Add(this.progressBar2);
                 if (!this.tabPage1.Controls.Contains(this.btnCancel))
                     this.tabPage1.Controls.Add(this.btnCancel);
+                
+                // swap the comboBox for Encoding to the selected panel
+                    if (groupBox2.Controls.Contains(comboEncoding))
+                    {
+                        groupBox2.Controls.Remove(comboEncoding);
+                        tabPage1.Controls.Add(comboEncoding);
+                        int xpos = this.btnExtract.Location.X + this.btnExtract.Width - this.comboEncoding.Width;
+                        this.comboEncoding.Location = new System.Drawing.Point(xpos, 58);
+                        this.comboEncoding.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+                    }
+            this.toolTip1.SetToolTip(this.comboEncoding, "use this encoding to read the file");
+                
             }
             else if (this.tabControl1.SelectedIndex == 1)
             {
@@ -1336,6 +1350,17 @@ namespace DotNetZip.Examples.WinForms
                     this.tabPage2.Controls.Add(this.progressBar2);
                 if (!this.tabPage2.Controls.Contains(this.btnCancel))
                     this.tabPage2.Controls.Add(this.btnCancel);
+                
+                // swap the comboBox for Encoding to the selected panel
+                    if (tabPage1.Controls.Contains(comboEncoding))
+                    {
+                        tabPage1.Controls.Remove(comboEncoding);
+                        groupBox2.Controls.Add(comboEncoding);
+                        this.comboEncoding.Location = new System.Drawing.Point(104, 85);
+                        this.comboEncoding.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
+                    }
+            this.toolTip1.SetToolTip(this.comboEncoding, "use this encoding when saving the file");
+
             }
         }
 
@@ -1710,10 +1735,9 @@ namespace DotNetZip.Examples.WinForms
         private String _mostRecentEncryption;
         private string _initialFileToLoad;
         private string _lastDirectory;
-
-
     }
 
+    
 
     // The ColHeader class is a ColumnHeader object with an
     // added property for determining an ascending or descending sort.

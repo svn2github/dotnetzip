@@ -292,6 +292,7 @@
             this.comboEncoding.Name = "comboEncoding";
             this.comboEncoding.Size = new System.Drawing.Size(128, 21);
             this.comboEncoding.TabIndex = 60;
+            this.toolTip1.SetToolTip(this.comboEncoding, "use this encoding when saving the file");
             // 
             // tbComment
             // 
@@ -394,6 +395,7 @@
             this.btnOpenZip.Size = new System.Drawing.Size(60, 26);
             this.btnOpenZip.TabIndex = 14;
             this.btnOpenZip.Text = "Open";
+            this.toolTip1.SetToolTip(this.btnOpenZip, "open and read the zip file");
             this.btnOpenZip.UseVisualStyleBackColor = true;
             this.btnOpenZip.Click += new System.EventHandler(this.btnOpen_Click);
             // 
@@ -444,7 +446,7 @@
             this.tbSelectionToExtract.Location = new System.Drawing.Point(60, 58);
             this.tbSelectionToExtract.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbSelectionToExtract.Name = "tbSelectionToExtract";
-            this.tbSelectionToExtract.Size = new System.Drawing.Size(232, 20);
+            this.tbSelectionToExtract.Size = new System.Drawing.Size(278, 20);
             this.tbSelectionToExtract.TabIndex = 24;
             this.tbSelectionToExtract.Text = "*.*";
             this.toolTip1.SetToolTip(this.tbSelectionToExtract, "Selection criteria.  eg, (name = *.* and size> 1000) etc.  Also use atime/mtime/c" +
@@ -464,24 +466,26 @@
             // 
             this.chkOverwrite.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.chkOverwrite.AutoSize = true;
-            this.chkOverwrite.Location = new System.Drawing.Point(315, 58);
+            this.chkOverwrite.Location = new System.Drawing.Point(350, 58);
             this.chkOverwrite.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.chkOverwrite.Name = "chkOverwrite";
             this.chkOverwrite.Size = new System.Drawing.Size(69, 17);
             this.chkOverwrite.TabIndex = 26;
             this.chkOverwrite.Text = "overwrite";
+            this.toolTip1.SetToolTip(this.chkOverwrite, "overwrite files during extraction");
             this.chkOverwrite.UseVisualStyleBackColor = true;
             // 
             // chkOpenExplorer
             // 
             this.chkOpenExplorer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.chkOpenExplorer.AutoSize = true;
-            this.chkOpenExplorer.Location = new System.Drawing.Point(389, 58);
+            this.chkOpenExplorer.Location = new System.Drawing.Point(422, 58);
             this.chkOpenExplorer.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.chkOpenExplorer.Name = "chkOpenExplorer";
             this.chkOpenExplorer.Size = new System.Drawing.Size(91, 17);
             this.chkOpenExplorer.TabIndex = 28;
             this.chkOpenExplorer.Text = "open Explorer";
+            this.toolTip1.SetToolTip(this.chkOpenExplorer, "open explorer after extraction");
             this.chkOpenExplorer.UseVisualStyleBackColor = true;
             // 
             // btnExtractDirBrowse
@@ -662,6 +666,7 @@
             this.comboSplit.Name = "comboSplit";
             this.comboSplit.Size = new System.Drawing.Size(85, 21);
             this.comboSplit.TabIndex = 123;
+            this.toolTip1.SetToolTip(this.comboSplit, "segment size when creating a spanned archive");
             this.comboSplit.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.comboBox1_DrawItem);
             // 
             // chkUnixTime
