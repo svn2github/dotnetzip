@@ -57,6 +57,9 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SolutionInfo.cs">
+      <Link>Properties\SolutionInfo.cs</Link>
+    </Compile>
     <Compile Include="Compatibility.cs" />
     <Compile Include="ErrorTests.cs" />
     <Compile Include="SplitArchives.cs" />

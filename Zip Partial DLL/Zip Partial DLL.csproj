@@ -81,6 +81,9 @@
       <DependentUpon>ZipContentsDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\FolderBrowserDialogEx.cs" />
+    <Compile Include="..\SolutionInfo.cs">
+      <Link>Properties\SolutionInfo.cs</Link>
+    </Compile>
     <Compile Include="ZipEntrySource.cs" />
     <Compile Include="ZipOutputStream.cs" />
     <Compile Include="ZipInputStream.cs" />

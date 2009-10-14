@@ -9,7 +9,7 @@
 #  from powershell.exe prompt: 
 #     .\SetVersion.ps1  2.8.3.0
 #
-# last saved Time-stamp: <2009-June-26 13:34:43>
+# last saved Time-stamp: <2009-October-14 02:18:55>
 #
 
 
@@ -54,7 +54,8 @@ function Update-SourceVersion
 
 function Update-AllAssemblyInfoFiles ( $version )
 {
-  foreach ($file in "AssemblyInfo.cs", "AssemblyInfo.vb" ) 
+#  foreach ($file in "AssemblyInfo.cs", "AssemblyInfo.vb" ) 
+  foreach ($file in "SolutionInfo.cs" ) 
   {
     get-childitem -recurse |? {$_.Name -eq $file} | Update-SourceVersion $version ;
   }

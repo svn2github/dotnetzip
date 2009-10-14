@@ -55,7 +55,7 @@ function ZipUp-Files ( $directory )
 
 [System.Reflection.Assembly]::LoadFrom("c:\\dinoch\\bin\\Ionic.Zip.dll");
 
-$version = get-content -path 'DotNetZip\Zip Partial DLL\Properties\AssemblyInfo.cs' | select-string -pattern 'AssemblyFileVersion\("[0-9]+(\.([0-9]+|\*)){1,3}"\)'  |  %{$_ -replace "[^0-9.]",""}
+$version = get-content -path 'DotNetZip\SolutionInfo.cs' | select-string -pattern 'AssemblyFileVersion\("[0-9]+(\.([0-9]+|\*)){1,3}"\)'  |  %{$_ -replace "[^0-9.]",""}
 
 $ZipFileName = "DotNetZip-src-v$version.zip"
 

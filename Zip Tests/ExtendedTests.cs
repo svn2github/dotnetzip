@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-07 18:45:16>
+// Time-stamp: <2009-October-14 02:52:57>
 //
 // ------------------------------------------------------------------
 //
@@ -135,7 +135,7 @@ namespace Ionic.Zip.Tests.Extended
                 Ionic.Zlib.CompressionLevel.BestCompression,
             };
 
-        
+
         Zip64Option[] z64 =
             {
                 Zip64Option.Never,
@@ -1598,7 +1598,7 @@ namespace Ionic.Zip.Tests.Extended
         }
 
 
-        
+
         [TestMethod]
         public void Extended_CheckZip2()
         {
@@ -1665,6 +1665,57 @@ namespace Ionic.Zip.Tests.Extended
         }
 
 
+        [TestMethod]
+        [ExpectedException(typeof(System.ArgumentException))]
+        public void Create_DuplicateNames_DifferentFolders_wi8982_flat()
+        {
+            _Internal_DuplicateNames_DifferentFolders_wi8982(true);
+        }
+
+        [TestMethod]
+        public void Create_DuplicateNames_DifferentFolders_wi8982_PreserveHierarchy()
+        {
+            _Internal_DuplicateNames_DifferentFolders_wi8982(false);
+        }
+        
+        public void _Internal_DuplicateNames_DifferentFolders_wi8982(bool flat)
+        {
+            Directory.SetCurrentDirectory(TopLevelDir);
+
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            TestUtilities.GenerateFilesFlat(dirToZip, 3);
+            string subdir = Path.Combine(dirToZip, "subdir1");
+            TestUtilities.GenerateFilesFlat(subdir, 2);
+
+            for (int i=0; i < 2; i++)
+            {
+                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Create_DuplicateNames_DifferentFolders.{0}.zip",i));
+
+                using (var zip = new ZipFile())
+                {
+                    zip.ZipErrorAction = ZipErrorAction.Throw;
+                    if (i == 0)
+                        zip.AddDirectory(dirToZip, "fodder");
+                    else
+                    {
+                        var files = Directory.GetFiles(dirToZip, "*.*", SearchOption.AllDirectories);
+                        if (flat)
+                            zip.AddFiles(files, "fodder");
+                        else
+                            zip.AddFiles(files, true, "fodder");
+
+                    }
+                    
+                    zip.Save(zipFileToCreate);
+                }
+
+                WinzipVerify(zipFileToCreate);
+
+                Assert.AreEqual<int>(5, TestUtilities.CountEntries(zipFileToCreate),
+                                     "Trial {0}: The zip file created has the wrong number of entries.", i);
+            }
+        }
+
 
 
         [TestMethod]
@@ -1688,6 +1739,8 @@ namespace Ionic.Zip.Tests.Extended
                 }
             }
         }
+
+
 
 
 

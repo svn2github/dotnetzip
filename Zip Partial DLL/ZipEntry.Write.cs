@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-07 22:46:58>
+// Time-stamp: <2009-October-14 02:14:13>
 //
 // ------------------------------------------------------------------
 //
@@ -1001,7 +1001,7 @@ namespace Ionic.Zip
                     if (_sourceStream == null)
                     {
                         input.Close();
-#if !NETCF20
+#if !NETCF
                         input.Dispose();
 #endif
                     }

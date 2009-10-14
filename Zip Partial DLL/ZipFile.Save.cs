@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-05 20:10:09>
+// Time-stamp: <2009-October-14 02:16:06>
 //
 // ------------------------------------------------------------------
 //
@@ -159,7 +159,7 @@ namespace Ionic.Zip
                     // _temporaryFileName may remain null if we are writing to a stream.
                     // only close the stream if there is a file behind it. 
                     WriteStream.Close();
-#if !NETCF20
+#if !NETCF
                     WriteStream.Dispose();
 #endif
                     if (_saveOperationCanceled)
@@ -241,12 +241,10 @@ namespace Ionic.Zip
                 // close the stream if there is a file behind it. 
                 if (_writestream != null)
                 {
-                    //try { _writestream.Close(); }
-                    //catch { }
                     try
                     {
                         // workitem 7704
-#if NETCF20
+#if NETCF
                         _writestream.Close();
 #else
                         _writestream.Dispose();

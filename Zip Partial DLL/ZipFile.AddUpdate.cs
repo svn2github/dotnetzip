@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-08 17:12:58>
+// Time-stamp: <2009-October-14 02:36:10>
 //
 // ------------------------------------------------------------------
 //
@@ -565,9 +565,9 @@ namespace Ionic.Zip
         /// </remarks>
         ///
         /// <param name="fileNames">
-        /// The names of the files to add. Each string should refer to a file in the
-        /// filesystem.  The name of the file may be a relative path or a
-        /// fully-qualified path.
+        ///   The names of the files to add. Each string should refer to
+        ///   a file in the filesystem.  The name of the file may be a
+        ///   relative path or a fully-qualified path.
         /// </param>
         ///
         /// <param name="directoryPathInArchive">
@@ -632,8 +632,14 @@ namespace Ionic.Zip
         /// </param>
         ///
         /// <param name="preserveDirHierarchy">
-        ///   whether the entries in the zip archive will reflect the dir hierarchy that
-        ///   is present in each filename.
+        ///   whether the entries in the zip archive will reflect the directory
+        ///   hierarchy that is present in the various filenames.  For example, if <paramref name="fileNames"/>
+        ///   includes two paths, \Animalia\Chordata\Mammalia\Info.txt and
+        ///   \Plantae\Magnoliophyta\Dicotyledon\Info.txt, then calling this method with
+        ///   <paramref name="preserveDirHierarchy"/> = <c>false</c> will result in an
+        ///   exception because of a duplicate entry name, while calling this method
+        ///   with <paramref name="preserveDirHierarchy"/> = <c>true</c> will result in the
+        ///   full direcory paths being included in the entries added to the ZipFile.
         /// </param>
         /// <seealso cref="Ionic.Zip.ZipFile.AddSelectedFiles(String, String)" />
         public void AddFiles(System.Collections.Generic.IEnumerable<String> fileNames,

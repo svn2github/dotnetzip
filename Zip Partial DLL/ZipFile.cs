@@ -3012,7 +3012,7 @@ namespace Ionic.Zip
                         if (_readstream != null)
                         {
                             // workitem 7704
-#if NETCF20
+#if NETCF
                             _readstream.Close();
 #else
                             _readstream.Dispose();
@@ -3021,12 +3021,11 @@ namespace Ionic.Zip
                         }
                     }
                     // only dispose the writestream if there is a backing file 
-                    //(_temporaryFileName is not null)
                     if ((_temporaryFileName != null) && (_name != null))
                         if (_writestream != null)
                         {
                             // workitem 7704
-#if NETCF20
+#if NETCF
                             _writestream.Close();
 #else
                             _writestream.Dispose();

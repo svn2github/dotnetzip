@@ -59,6 +59,9 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\SolutionInfo.cs">
+      <Link>Properties\SolutionInfo.cs</Link>
+    </Compile>
     <Compile Include="ConvertZipToSfx.cs" />
     <EmbeddedResource Include="ZipContentsDialog.cs">
       <SubType>Form</SubType>

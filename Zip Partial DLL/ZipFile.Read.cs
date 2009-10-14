@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-07 20:46:38>
+// Time-stamp: <2009-October-14 02:15:12>
 //
 // ------------------------------------------------------------------
 //
@@ -1062,7 +1062,7 @@ namespace Ionic.Zip
                     try
                     {
                         zf._readstream.Close();
-#if !NETCF20
+#if !NETCF
                         zf._readstream.Dispose();
 #endif
                         zf._readstream = null;

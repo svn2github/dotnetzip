@@ -21,14 +21,11 @@ set stamp=%stamp:/=-%
 set stamp=%stamp: =-%
 set stamp=%stamp::=%
 
-@set tfile1=%TEMP%\makereleasezip-%RANDOM%-%stamp%.tmp
 
 @REM get the version: 
-type "Zip Partial DLL\Properties\AssemblyInfo.cs" | c:\cygwin\bin\grep AssemblyVersion | c:\cygwin\bin\sed -e 's/^.*"\(.*\)".*/\1 /' > %tfile1%
+for /f "delims==" %%I in ('type SolutionInfo.cs ^| c:\utils\grep AssemblyVersion ^| c:\utils\sed -e "s/^.*(.\(.*\).).*/\1 /"') do set longversion=%%I
 
-call c:\dinoch\bin\setz.bat type %tfile1%
-
-set version=%setz:~0,3%
+set version=%longversion:~0,3%
 echo version is %version%
 
 
@@ -381,7 +378,6 @@ goto :EOF
 
 
 :END
-if exist %tfile1% @del %tfile1%
 
 echo release zips are in releases\v%version%-%stamp%
 

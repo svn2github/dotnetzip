@@ -48,6 +48,9 @@
   </Target>
   -->
   <ItemGroup>
+    <Compile Include="..\SolutionInfo.cs">
+      <Link>Properties\SolutionInfo.cs</Link>
+    </Compile>
     <Compile Include="..\Zip Partial DLL\EncryptionAlgorithm.cs">
       <Link>EncryptionAlgorithm.cs</Link>
     </Compile>
