@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-14 02:15:12>
+// Time-stamp: <2009-October-14 23:40:45>
 //
 // ------------------------------------------------------------------
 //
@@ -1020,8 +1020,9 @@ namespace Ionic.Zip
                 {
                     // workitem 8299
                     zf._locEndOfCDS = s.Position - 4;
+                    
                     byte[] block = new byte[16];
-                    zf.ReadStream.Read(block, 0, block.Length);
+                    s.Read(block, 0, block.Length);
 
                     zf._diskNumberWithCd = BitConverter.ToUInt16(block, 2);
                     

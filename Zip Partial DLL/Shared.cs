@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-08 15:57:31>
+// Time-stamp: <2009-October-14 23:13:16>
 //
 // ------------------------------------------------------------------
 //
@@ -562,6 +562,7 @@ namespace Ionic.Zip
         private System.IO.Stream _s;
         private Int64 _bytesWritten;
         private Int64 _bytesRead;
+        private Int64 _initialOffset;
 
         /// <summary>
         /// The  constructor.
@@ -571,6 +572,14 @@ namespace Ionic.Zip
             : base()
         {
             _s = s;
+            try
+            {
+                _initialOffset = _s.Position;
+            }
+            catch
+            {
+                _initialOffset = 0L;
+            }
         }
 
         public Int64 BytesWritten
@@ -630,6 +639,12 @@ namespace Ionic.Zip
             get { return _s.Length; }   // bytesWritten??
         }
 
+        public long ComputedPosition
+        {
+            get { return _initialOffset + _bytesWritten; }
+        }
+
+        
         public override long Position
         {
             get { return _s.Position; }

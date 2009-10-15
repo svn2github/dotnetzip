@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-14 02:14:13>
+// Time-stamp: <2009-October-14 23:48:48>
 //
 // ------------------------------------------------------------------
 //
@@ -659,12 +659,12 @@ namespace Ionic.Zip
             //
             // Normally you would just store the offset before writing to the output
             // stream and be done with it.  But the possibility to use split archives
-            // makes this approach ineffective.  The reason is this: in Split archives,
-            // each file or segment is bound to a max size limit.  Also, in a split
-            // archive, a local file header must not span a segment boundary; it must be
-            // written contiguously.  If it will fit in the current segment, then the
-            // ROLH is just the current Position in the output stream.  If it won't fit,
-            // then we need a new file (segment) and the ROLH is zero.
+            // makes this approach ineffective.  In split archives, each file or segment
+            // is bound to a max size limit, and each local file header must not span a
+            // segment boundary; it must be written contiguously.  If it will fit in the
+            // current segment, then the ROLH is just the current Position in the output
+            // stream.  If it won't fit, then we need a new file (segment) and the ROLH
+            // is zero.
             //
             // But we only can know if it is possible to write a header contiguously
             // after we know the size of the local header, a size that varies with
@@ -677,7 +677,7 @@ namespace Ionic.Zip
             // scroll back.
             // 
             // All this means we have to preserve the starting offset before computing
-            // the header, and also we have to cmopute the offset later, to handle the
+            // the header, and also we have to compute the offset later, to handle the
             // case of split archives.
 
             var counter = s as CountingStream;
@@ -685,7 +685,7 @@ namespace Ionic.Zip
             // workitem 8098: ok (output)
             // This may change later, for split archives
             _RelativeOffsetOfLocalHeader = (counter != null)
-                ? counter.BytesWritten
+                ? counter.ComputedPosition // BytesWritten
                 : s.Position;
 
             int j = 0;
@@ -1099,11 +1099,11 @@ namespace Ionic.Zip
                 // use fileLength for progress updates
                 long fileLength = SetInputAndFigureFileLength(ref input);
 
-                CountingStream outputCounter;
+                CountingStream entryCounter;  // counts bytes written for this entry
                 Stream encryptor;
                 Stream deflater;
                 Ionic.Zlib.CrcCalculatorStream output;
-                PrepOutputStream(s, out outputCounter, out encryptor, out deflater, out output);
+                PrepOutputStream(s, out entryCounter, out encryptor, out deflater, out output);
 
                 // as we emit the file, the flow is:
                 // crc -> deflate -> encrypt -> count -> actually write
@@ -1126,7 +1126,7 @@ namespace Ionic.Zip
                     }
                 }
 
-                FinishOutputStream(s, outputCounter, encryptor, deflater, output);
+                FinishOutputStream(s, entryCounter, encryptor, deflater, output);
             }
             finally
             {
@@ -1197,7 +1197,7 @@ namespace Ionic.Zip
 
         
         internal void FinishOutputStream(Stream s,
-                                         CountingStream outputCounter,
+                                         CountingStream entryCounter,
                                          Stream encryptor,
                                          Stream deflater,
                                          Ionic.Zlib.CrcCalculatorStream output)
@@ -1225,7 +1225,7 @@ namespace Ionic.Zip
                 _LengthOfTrailer += 10;
             }
 #endif
-            _CompressedFileDataSize = outputCounter.BytesWritten;
+            _CompressedFileDataSize = entryCounter.BytesWritten;  // ComputedPosition;
             _CompressedSize = _CompressedFileDataSize; // may be adjusted
             _Crc32 = output.Crc;
         }
@@ -2010,7 +2010,7 @@ namespace Ionic.Zip
             // This may have changed if any of the other entries changed (eg, if a different
             // entry was removed or added.)
             var counter = outstream as CountingStream;
-            _RelativeOffsetOfLocalHeader = (counter != null) ? counter.BytesWritten : outstream.Position;
+            _RelativeOffsetOfLocalHeader = (counter != null) ? counter.ComputedPosition : outstream.Position;  // BytesWritten
 
             // copy through the header, filedata, trailer, everything...
             long remaining = this._TotalEntrySize;

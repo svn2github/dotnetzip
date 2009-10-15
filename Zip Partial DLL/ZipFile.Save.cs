@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-14 02:16:06>
+// Time-stamp: <2009-October-14 23:38:21>
 //
 // ------------------------------------------------------------------
 //
@@ -455,7 +455,7 @@ namespace Ionic.Zip
             // output stream.
 
             var output = s as CountingStream;
-            long Finish = (output != null) ? output.BytesWritten : s.Position;
+            long Finish = (output != null) ? output.ComputedPosition : s.Position;  // BytesWritten
             long Start = Finish - a.Length;
             
             // need to know which segment the EOCD record starts in
