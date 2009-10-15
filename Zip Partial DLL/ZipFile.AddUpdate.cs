@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-14 02:36:10>
+// Time-stamp: <2009-October-15 00:46:06>
 //
 // ------------------------------------------------------------------
 //
@@ -1792,6 +1792,7 @@ namespace Ionic.Zip
             //dir.BufferSize = BufferSize;
             //dir.TrimVolumeFromFullyQualifiedPaths = TrimVolumeFromFullyQualifiedPaths;
             dir.MarkAsDirectory();
+            dir.ProvisionalAlternateEncoding = this.ProvisionalAlternateEncoding;  // workitem 8984
             // set current time on this entry, by default
             dir.SetEntryTimes(DateTime.Now,DateTime.Now,DateTime.Now);
             dir.EmitTimesInWindowsFormatWhenSaving = _emitNtfsTimes;
