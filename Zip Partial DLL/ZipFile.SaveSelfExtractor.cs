@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-15 04:38:42>
+// Time-stamp: <2009-October-15 06:20:59>
 //
 // ------------------------------------------------------------------
 //
@@ -267,6 +267,21 @@ namespace Ionic.Zip
             get;set;    
         }
 
+
+        /// <summary>
+        ///   Specify what the self-extractor will do when extracting an entry
+        ///   would overwrite an existing file.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        ///   The default behavvior is to Throw.
+        /// </para>
+        /// </remarks>
+        public Ionic.Zip.ExtractExistingFileAction ExtractExistingFile
+        {
+            get;set;    
+        }
+        
         
         /// <summary>
         ///   Whether to remove the files that have been unpacked, after executing the
@@ -695,6 +710,7 @@ namespace Ionic.Zip
                             
                             line = line.Replace("@@REMOVE_AFTER_EXECUTE", options.RemoveUnpackedFilesAfterExecute.ToString());
                             line = line.Replace("@@QUIET", options.Quiet.ToString());
+                            line = line.Replace("@@EXTRACT_EXISTING_FILE", ((int)options.ExtractExistingFile).ToString());
                             
                             if (postExCmdLine != null)
                                 line = line.Replace("@@POST_UNPACK_CMD_LINE", postExCmdLine);

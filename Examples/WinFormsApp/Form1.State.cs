@@ -89,6 +89,9 @@ namespace DotNetZip.Examples.WinForms
                     if (x >= 0 && x <= 2)
                         this.comboZip64.SelectedIndex = x;
 
+                    x = (Int32)AppCuKey.GetValue(_rvn_ExtractExistingFileAction, 0);
+                    if (x >= 0 && x <= comboExistingFileAction.Items.Count)
+                        this.comboExistingFileAction.SelectedIndex = x;
 
                     x = (Int32)AppCuKey.GetValue(_rvn_FormTab, 1);
                     if (x == 0 || x == 1)
@@ -96,9 +99,6 @@ namespace DotNetZip.Examples.WinForms
 
                     x = (Int32)AppCuKey.GetValue(_rvn_HidePassword, 1);
                     this.chkHidePassword.Checked = (x != 0);
-
-                    x = (Int32)AppCuKey.GetValue(_rvn_Overwrite, 1);
-                    this.chkOverwrite.Checked = (x != 0);
 
                     x = (Int32)AppCuKey.GetValue(_rvn_OpenExplorer, 1);
                     this.chkOpenExplorer.Checked = (x != 0);
@@ -184,6 +184,9 @@ namespace DotNetZip.Examples.WinForms
                 x = this.comboZip64.SelectedIndex;
                 AppCuKey.SetValue(_rvn_Zip64Option, x);
 
+                x = this.comboExistingFileAction.SelectedIndex;
+                AppCuKey.SetValue(_rvn_ExtractExistingFileAction, x);
+
                 AppCuKey.SetValue(_rvn_FormTab, this.tabControl1.SelectedIndex);
 
                 AppCuKey.SetValue(_rvn_LastRun, System.DateTime.Now.ToString("yyyy MMM dd HH:mm:ss"));
@@ -192,7 +195,6 @@ namespace DotNetZip.Examples.WinForms
                 AppCuKey.SetValue(_rvn_Runs, x);
 
                 AppCuKey.SetValue(_rvn_HidePassword, this.chkHidePassword.Checked ? 1 : 0);
-                AppCuKey.SetValue(_rvn_Overwrite, this.chkOverwrite.Checked ? 1 : 0);
                 AppCuKey.SetValue(_rvn_OpenExplorer, this.chkOpenExplorer.Checked ? 1 : 0);
                 AppCuKey.SetValue(_rvn_TraverseJunctions, this.chkTraverseJunctions.Checked ? 1 : 0);
                 AppCuKey.SetValue(_rvn_RecurseDirs, this.chkRecurse.Checked ? 1 : 0);
@@ -270,7 +272,7 @@ namespace DotNetZip.Examples.WinForms
         private static string _rvn_RecurseDirs = "RecurseDirs";
         private static string _rvn_RemoveFiles = "RemoveFiles";
         private static string _rvn_HidePassword = "HidePassword";
-        private static string _rvn_Overwrite = "Overwrite";
+        private static string _rvn_ExtractExistingFileAction = "ExtractExistingFileAction";
         private static string _rvn_OpenExplorer = "OpenExplorer";
         private static string _rvn_ExtractLoc = "ExtractLoc";
         private static string _rvn_DirectoryToZip = "DirectoryToZip";

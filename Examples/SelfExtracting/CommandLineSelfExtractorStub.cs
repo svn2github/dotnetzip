@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-06 22:29:51>
+// Time-stamp: <2009-October-15 06:44:28>
 //
 // ------------------------------------------------------------------
 //
@@ -53,7 +53,8 @@ namespace Ionic.Zip
         bool RemoveFilesAfterExe;
         bool SkipPostUnpackCommand;
         string Password = null;
-        int overwriteOption;  
+        //Ionic.Zip.ExtractExistingFileAction Overwrite;   // cannot do - because of tricks with assembly resolution
+        int Overwrite; 
 
         // Attention: it isn't possible, with the design  of this class as it is now, to have a
         // member variable of a type from the Ionic.Zip assembly.  The class design registers
@@ -131,6 +132,13 @@ namespace Ionic.Zip
             return Verbose;
         }
 
+        private int SetOverwriteBehavior()
+        {
+            Int32 result = 0;
+            Int32.TryParse("@@EXTRACT_EXISTING_FILE", out result); 
+            Overwrite = (int) result;
+            return result;
+        }
 
         
         // ctor
@@ -138,10 +146,12 @@ namespace Ionic.Zip
         {
             SetRemoveFilesFlag();
             SetVerboseFlag();
+            SetOverwriteBehavior();            
             PostUnpackCmdLineIsSet();
             TargetDirectoryIsSet();
         }
 
+        
         // ctor
         public SelfExtractor(string[] args) : this()
         {
@@ -150,6 +160,20 @@ namespace Ionic.Zip
             {
                 switch (args[i])
                 {
+                    case "-d":
+                        i++;
+                        if (args.Length <= i)
+                        {
+                            Console.WriteLine("please supply a directory.\n");
+                            GiveUsageAndExit();
+                        }
+                        if (specifiedDirectory != null) 
+                        {
+                            Console.WriteLine("You already provided a directory.\n");
+                            GiveUsageAndExit();
+                        }
+                        specifiedDirectory = args[i];
+                        break;
                     case "-p":
                         i++;
                         if (args.Length <= i)
@@ -165,11 +189,11 @@ namespace Ionic.Zip
                         Password = args[i];
                         break;
                     case "-o":
-                        overwriteOption = 1;
+                        Overwrite = 1;
                         //WantOverwrite = ExtractExistingFileAction.OverwriteSilently;
                         break;
                     case "-n":
-                        overwriteOption= 2;
+                        Overwrite= 2;
                         //WantOverwrite = ExtractExistingFileAction.DoNotOverwrite;
                         break;
                     case "-l":
@@ -197,13 +221,8 @@ namespace Ionic.Zip
                             Verbose = true;
                         break;
                     default:
-                        // positional args
-                        if (specifiedDirectory!=null)
-                        {
-                            Console.WriteLine("unrecognized argument: '{0}'\n", args[i]);
-                            GiveUsageAndExit();
-                        }
-                        specifiedDirectory = args[i];
+                        Console.WriteLine("unrecognized argument: '{0}'\n", args[i]);
+                        GiveUsageAndExit();
                         break;
                 }
             }
@@ -217,7 +236,7 @@ namespace Ionic.Zip
                     TargetDirectory = ".";  // cwd
             }
 
-            if (ListOnly && ((overwriteOption!= 0) || (specifiedDirectory != null)))
+            if (ListOnly && ((Overwrite!= 0) || (specifiedDirectory != null)))
             {
                 Console.WriteLine("Inconsistent options.\n");
                 GiveUsageAndExit();
@@ -283,18 +302,8 @@ namespace Ionic.Zip
 
             List<String> itemsExtracted= new List<String>();
             
-        global::Ionic.Zip.ExtractExistingFileAction WantOverwrite =
-            (overwriteOption == 0) ?
-            global::Ionic.Zip.ExtractExistingFileAction.Throw // default
-            : 
-            (overwriteOption == 1) ?
-            global::Ionic.Zip.ExtractExistingFileAction.OverwriteSilently 
-            : 
-            (overwriteOption == 2) ?
-            global::Ionic.Zip.ExtractExistingFileAction.DoNotOverwrite 
-            : 
-            global::Ionic.Zip.ExtractExistingFileAction.Throw ;// default
-
+            global::Ionic.Zip.ExtractExistingFileAction WantOverwrite =
+                (Ionic.Zip.ExtractExistingFileAction) Overwrite;
 
             // There way this works:  the EXE is a ZIP file.  So
             // read from the location of the assembly, in other words the path to the exe. 
@@ -306,6 +315,15 @@ namespace Ionic.Zip
                 // workitem 7067
                 using (global::Ionic.Zip.ZipFile zip = global::Ionic.Zip.ZipFile.Read(a.Location))
                 {
+                    if (!ListOnly)
+                    {
+                        if (Verbose && !ReallyVerbose)
+                        {
+                            System.Console.Write("Extracting to {0}", TargetDirectory);
+                            System.Console.WriteLine(" (Existing file action: {0})", WantOverwrite.ToString());
+                        }
+                    }
+                        
                     bool header = true;
                     foreach (global::Ionic.Zip.ZipEntry entry in zip)
                     {
@@ -337,7 +355,7 @@ namespace Ionic.Zip
                         if (!ListOnly)
                         {
                             if (Verbose && !ReallyVerbose)
-                                System.Console.WriteLine("{0}", entry.FileName);
+                                System.Console.WriteLine("  {0}", entry.FileName);
                                 
                             if (entry.Encryption == global::Ionic.Zip.EncryptionAlgorithm.None)
                             {
@@ -455,20 +473,25 @@ namespace Ionic.Zip
             Assembly a = Assembly.GetExecutingAssembly();
             string s = Path.GetFileName(a.Location);
             Console.WriteLine("DotNetZip Command-Line Self Extractor, see http://DotNetZip.codeplex.com/");
-            Console.WriteLine("usage:\n  {0} [-o|-n] [-v] [-p password] [<directory>]", s);
+            Console.WriteLine("usage:\n  {0} [-p password] [-d <directory>]", s);
 
             string more = "    Extracts entries from the archive. If any files to be extracted already\n" +
-                          "    exist, the program will stop.\n  Options:\n" +
-                          "    -o   - overwrite any existing files upon extraction.\n" +
-                          "    -n   - do not overwrite any existing files upon extraction.\n" +
+                          "    exist, the program will stop.\n  Additional Options:\n" +
                           "{0}" +
                           "{1}" +
-                          "{2}";
+                          "{2}" +
+                          "{3}";
+            
+            string overwriteString = 
+                          String.Format("    -o    - overwrite any existing files upon extraction{0}.\n" +
+                                        "    -n    - do not overwrite any existing files upon extraction{1}.\n",
+                                        (Overwrite == 1) ? " (default)" : "",
+                                        (Overwrite == 2) ? " (default)" : "");
 
 
             string removeString = PostUnpackCmdLineIsSet()
-                ? String.Format("    -r+  - remove files after the optional post-unpack exe completes{0}.\n" +
-                                "    -r-  - don't remove files after the optional post-unpack exe completes{1}.\n",
+                ? String.Format("    -r+   - remove files after the optional post-unpack exe completes{0}.\n" +
+                                "    -r-   - don't remove files after the optional post-unpack exe completes{1}.\n",
                                 RemoveFilesAfterExe ? " (default)" : "",
                                 RemoveFilesAfterExe ?  "" : " (default)")
                 : "";
@@ -480,12 +503,12 @@ namespace Ionic.Zip
                                               Verbose ? " (default)" : "");
                 
             string cmdString = PostUnpackCmdLineIsSet() 
-                ? String.Format("    -x   - don't run the post-unpack exe.\n           [cmd is: {0}]\n",
+                ? String.Format("    -x    - don't run the post-unpack exe.\n           [cmd is: {0}]\n",
                               PostUnpackCmdLine)
                 : "" ;
 
         
-            Console.WriteLine(more, removeString, cmdString, verbString);
+            Console.WriteLine(more, overwriteString, removeString, cmdString, verbString);
 
             
             if (TargetDirectoryIsSet()) 

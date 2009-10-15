@@ -57,9 +57,11 @@
             this.btnOpenZip = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.label20 = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this.comboExistingFileAction = new System.Windows.Forms.ComboBox();
             this.tbSelectionToExtract = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
-            this.chkOverwrite = new System.Windows.Forms.CheckBox();
             this.chkOpenExplorer = new System.Windows.Forms.CheckBox();
             this.btnExtractDirBrowse = new System.Windows.Forms.Button();
             this.tbExtractDir = new System.Windows.Forms.TextBox();
@@ -94,15 +96,15 @@
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.btnClearItemsToZip = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.listView2 = new ListViewEx.ListViewEx();
             this.chCheckbox = new System.Windows.Forms.ColumnHeader();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -119,7 +121,7 @@
             this.tbDirectoryToZip.Location = new System.Drawing.Point(104, 13);
             this.tbDirectoryToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbDirectoryToZip.Name = "tbDirectoryToZip";
-            this.tbDirectoryToZip.Size = new System.Drawing.Size(356, 20);
+            this.tbDirectoryToZip.Size = new System.Drawing.Size(289, 20);
             this.tbDirectoryToZip.TabIndex = 10;
             this.tbDirectoryToZip.Leave += new System.EventHandler(this.tbDirectoryToZip_Leave);
             // 
@@ -131,13 +133,13 @@
             this.tbZipToCreate.Location = new System.Drawing.Point(104, 11);
             this.tbZipToCreate.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbZipToCreate.Name = "tbZipToCreate";
-            this.tbZipToCreate.Size = new System.Drawing.Size(499, 20);
+            this.tbZipToCreate.Size = new System.Drawing.Size(432, 20);
             this.tbZipToCreate.TabIndex = 30;
             // 
             // btnZipupDirBrowse
             // 
             this.btnZipupDirBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnZipupDirBrowse.Location = new System.Drawing.Point(466, 13);
+            this.btnZipupDirBrowse.Location = new System.Drawing.Point(399, 13);
             this.btnZipupDirBrowse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnZipupDirBrowse.Name = "btnZipupDirBrowse";
             this.btnZipupDirBrowse.Size = new System.Drawing.Size(24, 20);
@@ -150,7 +152,7 @@
             // btnZipUp
             // 
             this.btnZipUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnZipUp.Location = new System.Drawing.Point(579, 458);
+            this.btnZipUp.Location = new System.Drawing.Point(512, 458);
             this.btnZipUp.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnZipUp.Name = "btnZipUp";
             this.btnZipUp.Size = new System.Drawing.Size(66, 26);
@@ -164,7 +166,7 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.Enabled = false;
-            this.btnCancel.Location = new System.Drawing.Point(579, 489);
+            this.btnCancel.Location = new System.Drawing.Point(512, 489);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(66, 26);
@@ -181,7 +183,7 @@
             this.progressBar1.Location = new System.Drawing.Point(6, 490);
             this.progressBar1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(563, 10);
+            this.progressBar1.Size = new System.Drawing.Size(496, 10);
             this.progressBar1.TabIndex = 4;
             // 
             // progressBar2
@@ -191,7 +193,7 @@
             this.progressBar2.Location = new System.Drawing.Point(6, 503);
             this.progressBar2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.progressBar2.Name = "progressBar2";
-            this.progressBar2.Size = new System.Drawing.Size(563, 10);
+            this.progressBar2.Size = new System.Drawing.Size(496, 10);
             this.progressBar2.TabIndex = 17;
             // 
             // label1
@@ -304,7 +306,7 @@
             this.tbComment.Location = new System.Drawing.Point(104, 110);
             this.tbComment.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbComment.Name = "tbComment";
-            this.tbComment.Size = new System.Drawing.Size(499, 20);
+            this.tbComment.Size = new System.Drawing.Size(432, 20);
             this.tbComment.TabIndex = 100;
             this.tbComment.Text = "-zip file comment here-";
             this.toolTip1.SetToolTip(this.tbComment, "a comment to embed in the zip file");
@@ -375,10 +377,10 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.listView1.GridLines = true;
-            this.listView1.Location = new System.Drawing.Point(6, 85);
+            this.listView1.Location = new System.Drawing.Point(6, 115);
             this.listView1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(639, 382);
+            this.listView1.Size = new System.Drawing.Size(572, 352);
             this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -389,7 +391,7 @@
             // btnOpenZip
             // 
             this.btnOpenZip.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOpenZip.Location = new System.Drawing.Point(585, 2);
+            this.btnOpenZip.Location = new System.Drawing.Point(518, 2);
             this.btnOpenZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnOpenZip.Name = "btnOpenZip";
             this.btnOpenZip.Size = new System.Drawing.Size(60, 26);
@@ -410,16 +412,18 @@
             this.tabControl1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(659, 548);
+            this.tabControl1.Size = new System.Drawing.Size(592, 548);
             this.tabControl1.TabIndex = 96;
             this.tabControl1.Selecting += new System.Windows.Forms.TabControlCancelEventHandler(this.tabControl1_Selecting);
             this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.label20);
+            this.tabPage1.Controls.Add(this.label19);
+            this.tabPage1.Controls.Add(this.comboExistingFileAction);
             this.tabPage1.Controls.Add(this.tbSelectionToExtract);
             this.tabPage1.Controls.Add(this.label13);
-            this.tabPage1.Controls.Add(this.chkOverwrite);
             this.tabPage1.Controls.Add(this.chkOpenExplorer);
             this.tabPage1.Controls.Add(this.btnExtractDirBrowse);
             this.tabPage1.Controls.Add(this.tbExtractDir);
@@ -434,19 +438,50 @@
             this.tabPage1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.tabPage1.Size = new System.Drawing.Size(651, 522);
+            this.tabPage1.Size = new System.Drawing.Size(584, 522);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Read/Extract";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // label20
+            // 
+            this.label20.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(329, 87);
+            this.label20.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(54, 13);
+            this.label20.TabIndex = 43;
+            this.label20.Text = "encoding:";
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(6, 87);
+            this.label19.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(108, 13);
+            this.label19.TabIndex = 42;
+            this.label19.Text = "action for existing file:";
+            // 
+            // comboExistingFileAction
+            // 
+            this.comboExistingFileAction.FormattingEnabled = true;
+            this.comboExistingFileAction.Location = new System.Drawing.Point(114, 83);
+            this.comboExistingFileAction.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.comboExistingFileAction.Name = "comboExistingFileAction";
+            this.comboExistingFileAction.Size = new System.Drawing.Size(96, 21);
+            this.comboExistingFileAction.TabIndex = 41;
+            this.toolTip1.SetToolTip(this.comboExistingFileAction, "What to do when extracting a file that already exists");
             // 
             // tbSelectionToExtract
             // 
             this.tbSelectionToExtract.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbSelectionToExtract.Location = new System.Drawing.Point(60, 58);
+            this.tbSelectionToExtract.Location = new System.Drawing.Point(60, 57);
             this.tbSelectionToExtract.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbSelectionToExtract.Name = "tbSelectionToExtract";
-            this.tbSelectionToExtract.Size = new System.Drawing.Size(278, 20);
+            this.tbSelectionToExtract.Size = new System.Drawing.Size(422, 20);
             this.tbSelectionToExtract.TabIndex = 24;
             this.tbSelectionToExtract.Text = "*.*";
             this.toolTip1.SetToolTip(this.tbSelectionToExtract, "Selection criteria.  eg, (name = *.* and size> 1000) etc.  Also use atime/mtime/c" +
@@ -455,31 +490,18 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(6, 65);
+            this.label13.Location = new System.Drawing.Point(6, 61);
             this.label13.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(52, 13);
             this.label13.TabIndex = 27;
             this.label13.Text = "selection:";
             // 
-            // chkOverwrite
-            // 
-            this.chkOverwrite.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.chkOverwrite.AutoSize = true;
-            this.chkOverwrite.Location = new System.Drawing.Point(350, 58);
-            this.chkOverwrite.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.chkOverwrite.Name = "chkOverwrite";
-            this.chkOverwrite.Size = new System.Drawing.Size(69, 17);
-            this.chkOverwrite.TabIndex = 26;
-            this.chkOverwrite.Text = "overwrite";
-            this.toolTip1.SetToolTip(this.chkOverwrite, "overwrite files during extraction");
-            this.chkOverwrite.UseVisualStyleBackColor = true;
-            // 
             // chkOpenExplorer
             // 
             this.chkOpenExplorer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.chkOpenExplorer.AutoSize = true;
-            this.chkOpenExplorer.Location = new System.Drawing.Point(422, 58);
+            this.chkOpenExplorer.Location = new System.Drawing.Point(234, 85);
             this.chkOpenExplorer.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.chkOpenExplorer.Name = "chkOpenExplorer";
             this.chkOpenExplorer.Size = new System.Drawing.Size(91, 17);
@@ -491,7 +513,7 @@
             // btnExtractDirBrowse
             // 
             this.btnExtractDirBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnExtractDirBrowse.Location = new System.Drawing.Point(555, 28);
+            this.btnExtractDirBrowse.Location = new System.Drawing.Point(488, 28);
             this.btnExtractDirBrowse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnExtractDirBrowse.Name = "btnExtractDirBrowse";
             this.btnExtractDirBrowse.Size = new System.Drawing.Size(24, 26);
@@ -504,16 +526,16 @@
             // 
             this.tbExtractDir.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbExtractDir.Location = new System.Drawing.Point(60, 32);
+            this.tbExtractDir.Location = new System.Drawing.Point(60, 31);
             this.tbExtractDir.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbExtractDir.Name = "tbExtractDir";
-            this.tbExtractDir.Size = new System.Drawing.Size(489, 20);
+            this.tbExtractDir.Size = new System.Drawing.Size(422, 20);
             this.tbExtractDir.TabIndex = 22;
             // 
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(6, 39);
+            this.label11.Location = new System.Drawing.Point(6, 35);
             this.label11.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(54, 13);
@@ -523,7 +545,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(6, 13);
+            this.label10.Location = new System.Drawing.Point(6, 9);
             this.label10.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(45, 13);
@@ -534,7 +556,7 @@
             // 
             this.btnExtract.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnExtract.Enabled = false;
-            this.btnExtract.Location = new System.Drawing.Point(585, 28);
+            this.btnExtract.Location = new System.Drawing.Point(518, 80);
             this.btnExtract.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnExtract.Name = "btnExtract";
             this.btnExtract.Size = new System.Drawing.Size(60, 26);
@@ -546,7 +568,7 @@
             // btnReadZipBrowse
             // 
             this.btnReadZipBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnReadZipBrowse.Location = new System.Drawing.Point(555, 2);
+            this.btnReadZipBrowse.Location = new System.Drawing.Point(488, 2);
             this.btnReadZipBrowse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnReadZipBrowse.Name = "btnReadZipBrowse";
             this.btnReadZipBrowse.Size = new System.Drawing.Size(24, 26);
@@ -559,10 +581,10 @@
             // 
             this.tbZipToOpen.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbZipToOpen.Location = new System.Drawing.Point(60, 6);
+            this.tbZipToOpen.Location = new System.Drawing.Point(60, 5);
             this.tbZipToOpen.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbZipToOpen.Name = "tbZipToOpen";
-            this.tbZipToOpen.Size = new System.Drawing.Size(489, 20);
+            this.tbZipToOpen.Size = new System.Drawing.Size(422, 20);
             this.tbZipToOpen.TabIndex = 12;
             // 
             // tabPage2
@@ -582,7 +604,7 @@
             this.tabPage2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.tabPage2.Size = new System.Drawing.Size(651, 522);
+            this.tabPage2.Size = new System.Drawing.Size(584, 522);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Create";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -624,7 +646,7 @@
             this.groupBox2.Margin = new System.Windows.Forms.Padding(0);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.groupBox2.Size = new System.Drawing.Size(639, 208);
+            this.groupBox2.Size = new System.Drawing.Size(572, 208);
             this.groupBox2.TabIndex = 104;
             this.groupBox2.TabStop = false;
             // 
@@ -715,7 +737,7 @@
             this.tbExeOnUnpack.Location = new System.Drawing.Point(104, 158);
             this.tbExeOnUnpack.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbExeOnUnpack.Name = "tbExeOnUnpack";
-            this.tbExeOnUnpack.Size = new System.Drawing.Size(499, 20);
+            this.tbExeOnUnpack.Size = new System.Drawing.Size(432, 20);
             this.tbExeOnUnpack.TabIndex = 120;
             this.tbExeOnUnpack.Text = "-command line to execute here-";
             this.toolTip1.SetToolTip(this.tbExeOnUnpack, "command to run upon successful extract of SFX");
@@ -743,7 +765,7 @@
             this.tbDefaultExtractDirectory.Location = new System.Drawing.Point(104, 134);
             this.tbDefaultExtractDirectory.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbDefaultExtractDirectory.Name = "tbDefaultExtractDirectory";
-            this.tbDefaultExtractDirectory.Size = new System.Drawing.Size(499, 20);
+            this.tbDefaultExtractDirectory.Size = new System.Drawing.Size(432, 20);
             this.tbDefaultExtractDirectory.TabIndex = 110;
             this.tbDefaultExtractDirectory.Tag = "b";
             this.tbDefaultExtractDirectory.Text = "-default extract directory-";
@@ -774,7 +796,7 @@
             // btnCreateZipBrowse
             // 
             this.btnCreateZipBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCreateZipBrowse.Location = new System.Drawing.Point(609, 10);
+            this.btnCreateZipBrowse.Location = new System.Drawing.Point(542, 10);
             this.btnCreateZipBrowse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnCreateZipBrowse.Name = "btnCreateZipBrowse";
             this.btnCreateZipBrowse.Size = new System.Drawing.Size(24, 20);
@@ -802,7 +824,7 @@
             this.groupBox1.Margin = new System.Windows.Forms.Padding(0);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.groupBox1.Size = new System.Drawing.Size(639, 87);
+            this.groupBox1.Size = new System.Drawing.Size(572, 87);
             this.groupBox1.TabIndex = 103;
             this.groupBox1.TabStop = false;
             // 
@@ -812,7 +834,7 @@
             this.chkRecurse.AutoSize = true;
             this.chkRecurse.Checked = true;
             this.chkRecurse.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkRecurse.Location = new System.Drawing.Point(502, 15);
+            this.chkRecurse.Location = new System.Drawing.Point(435, 15);
             this.chkRecurse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.chkRecurse.Name = "chkRecurse";
             this.chkRecurse.Size = new System.Drawing.Size(61, 17);
@@ -827,7 +849,7 @@
             this.chkTraverseJunctions.AutoSize = true;
             this.chkTraverseJunctions.Checked = true;
             this.chkTraverseJunctions.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkTraverseJunctions.Location = new System.Drawing.Point(572, 15);
+            this.chkTraverseJunctions.Location = new System.Drawing.Point(505, 15);
             this.chkTraverseJunctions.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.chkTraverseJunctions.Name = "chkTraverseJunctions";
             this.chkTraverseJunctions.Size = new System.Drawing.Size(68, 17);
@@ -844,14 +866,14 @@
             this.tbDirectoryInArchive.Location = new System.Drawing.Point(104, 38);
             this.tbDirectoryInArchive.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbDirectoryInArchive.Name = "tbDirectoryInArchive";
-            this.tbDirectoryInArchive.Size = new System.Drawing.Size(499, 20);
+            this.tbDirectoryInArchive.Size = new System.Drawing.Size(432, 20);
             this.tbDirectoryInArchive.TabIndex = 14;
             this.toolTip1.SetToolTip(this.tbDirectoryInArchive, "the directory to use within the archive.");
             // 
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(609, 63);
+            this.button1.Location = new System.Drawing.Point(542, 63);
             this.button1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(24, 20);
@@ -879,7 +901,7 @@
             this.tbSelectionToZip.Location = new System.Drawing.Point(104, 63);
             this.tbSelectionToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbSelectionToZip.Name = "tbSelectionToZip";
-            this.tbSelectionToZip.Size = new System.Drawing.Size(499, 20);
+            this.tbSelectionToZip.Size = new System.Drawing.Size(432, 20);
             this.tbSelectionToZip.TabIndex = 20;
             this.tbSelectionToZip.Text = "*.*";
             this.toolTip1.SetToolTip(this.tbSelectionToZip, "Selection criteria.  eg, (name = *.* and size> 1000) etc.  Also use atime/mtime/c" +
@@ -911,7 +933,7 @@
             // btnClearItemsToZip
             // 
             this.btnClearItemsToZip.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClearItemsToZip.Location = new System.Drawing.Point(465, 458);
+            this.btnClearItemsToZip.Location = new System.Drawing.Point(398, 458);
             this.btnClearItemsToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnClearItemsToZip.Name = "btnClearItemsToZip";
             this.btnClearItemsToZip.Size = new System.Drawing.Size(102, 26);
@@ -934,6 +956,43 @@
             this.textBox1.Visible = false;
             this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
             // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.richTextBox1);
+            this.tabPage3.Controls.Add(this.pictureBox1);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.tabPage3.Size = new System.Drawing.Size(584, 522);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "About";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // richTextBox1
+            // 
+            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.richTextBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.richTextBox1.Location = new System.Drawing.Point(54, 20);
+            this.richTextBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.Size = new System.Drawing.Size(518, 497);
+            this.richTextBox1.TabIndex = 2;
+            this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
+            this.richTextBox1.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBox1_LinkClicked);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::DotNetZip.Examples.WinForms.Properties.Resources.zippedFile;
+            this.pictureBox1.Location = new System.Drawing.Point(6, 20);
+            this.pictureBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(42, 52);
+            this.pictureBox1.TabIndex = 1;
+            this.pictureBox1.TabStop = false;
+            // 
             // listView2
             // 
             this.listView2.AllowColumnReorder = true;
@@ -954,7 +1013,7 @@
             this.listView2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.listView2.MultiSelect = false;
             this.listView2.Name = "listView2";
-            this.listView2.Size = new System.Drawing.Size(639, 151);
+            this.listView2.Size = new System.Drawing.Size(572, 151);
             this.listView2.TabIndex = 98;
             this.listView2.UseCompatibleStateImageBehavior = false;
             this.listView2.View = System.Windows.Forms.View.Details;
@@ -980,53 +1039,16 @@
             // 
             this.columnHeader3.Text = "File name in Archive";
             // 
-            // tabPage3
-            // 
-            this.tabPage3.Controls.Add(this.richTextBox1);
-            this.tabPage3.Controls.Add(this.pictureBox1);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
-            this.tabPage3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.tabPage3.Size = new System.Drawing.Size(651, 522);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "About";
-            this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // richTextBox1
-            // 
-            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.richTextBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.richTextBox1.Location = new System.Drawing.Point(54, 20);
-            this.richTextBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(585, 497);
-            this.richTextBox1.TabIndex = 2;
-            this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
-            this.richTextBox1.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBox1_LinkClicked);
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = global::DotNetZip.Examples.WinForms.Properties.Resources.zippedFile;
-            this.pictureBox1.Location = new System.Drawing.Point(6, 20);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(42, 52);
-            this.pictureBox1.TabIndex = 1;
-            this.pictureBox1.TabStop = false;
-            // 
             // Form1
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(659, 548);
+            this.ClientSize = new System.Drawing.Size(592, 548);
             this.Controls.Add(this.tabControl1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.MinimumSize = new System.Drawing.Size(584, 458);
+            this.MinimumSize = new System.Drawing.Size(598, 458);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "DotNetZip Tool";
@@ -1088,7 +1110,6 @@
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.RichTextBox richTextBox1;
-        private System.Windows.Forms.CheckBox chkOverwrite;
         private System.Windows.Forms.CheckBox chkOpenExplorer;
         private System.Windows.Forms.TextBox tbSelectionToZip;
         private System.Windows.Forms.ToolTip toolTip1;
@@ -1124,6 +1145,9 @@
         private System.Windows.Forms.CheckBox chkRecurse;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.CheckBox chkRemoveFiles;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.ComboBox comboExistingFileAction;
+        private System.Windows.Forms.Label label20;
     }
 }
 

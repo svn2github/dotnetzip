@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-07 11:57:46>
+// Time-stamp: <2009-October-15 06:25:35>
 //
 // ------------------------------------------------------------------
 //
@@ -44,6 +44,7 @@ namespace DotNetZip.Examples
     {
         private const string DllResourceName = "Ionic.Zip.dll";
         private int entryCount;
+        private int Overwrite;
         private bool Interactive;
         private ManualResetEvent postUpackExeDone;
             
@@ -105,6 +106,14 @@ namespace DotNetZip.Examples
             return Interactive;
         }
 
+        private int SetOverwriteBehavior()
+        {
+            Int32 result = 0;
+            Int32.TryParse("@@EXTRACT_EXISTING_FILE", out result); 
+            Overwrite = result;
+            return result;
+        }
+
         
         private bool PostUnpackCmdLineIsSet()
         {
@@ -139,7 +148,8 @@ namespace DotNetZip.Examples
 
                 this.MinimumSize = new System.Drawing.Size(this.MinimumSize.Width, this.MinimumSize.Height - (delta -4));
                 
-                MoveDown(this.chk_Overwrite, delta);
+                //MoveDown(this.chk_Overwrite, delta);
+                MoveDown(this.comboExistingFileAction, delta);
                 MoveDown(this.chk_OpenExplorer, delta);
                 MoveDown(this.btnDirBrowse, delta);
                 MoveDown(this.txtExtractDirectory, delta);
@@ -192,6 +202,22 @@ namespace DotNetZip.Examples
         }                    
 
 
+        private void InitExtractExistingFileList()
+        {
+            List<String> _ExtractActionNames = new List<string>(Enum.GetNames(typeof(Ionic.Zip.ExtractExistingFileAction)));
+            foreach (String name in _ExtractActionNames)
+            {
+                if (!name.StartsWith("Invoke"))
+                {
+                    if (name.StartsWith("Throw"))
+                        comboExistingFileAction.Items.Add("Stop");
+                    else
+                        comboExistingFileAction.Items.Add(name);
+                }
+            }
+
+            comboExistingFileAction.SelectedIndex = Overwrite;
+        }
 
         
         public WinFormsSelfExtractorStub()
@@ -203,6 +229,8 @@ namespace DotNetZip.Examples
             _SetDefaultExtractLocation();
             _SetPostUnpackCmdLine();
             SetInteractiveFlag();
+            SetOverwriteBehavior();
+            InitExtractExistingFileList();
             
             try
             {
@@ -298,7 +326,8 @@ namespace DotNetZip.Examples
                 txtPostUnpackCmdLine.Enabled = txtPostUnpackCmdLine.Visible = false;
                 chk_ExeAfterUnpack.Enabled = chk_ExeAfterUnpack.Visible = false;
                 chk_Remove.Enabled = chk_Remove.Visible = false;
-                chk_Overwrite.Enabled = chk_Overwrite.Visible = false;
+                comboExistingFileAction.Enabled = comboExistingFileAction.Visible = false;
+                label1.Enabled = label1.Visible = false;
                 chk_OpenExplorer.Checked = false;
                 chk_OpenExplorer.Enabled = chk_OpenExplorer.Visible = false;
                 btnDirBrowse.Enabled = btnDirBrowse.Visible = false;
@@ -376,7 +405,8 @@ namespace DotNetZip.Examples
             this.btnContents.Enabled = false;
             this.btnExtract.Enabled = false;
             this.chk_OpenExplorer.Enabled = false;
-            this.chk_Overwrite.Enabled = false;
+                comboExistingFileAction.Enabled = false;
+                label1.Enabled = false;
             this.chk_ExeAfterUnpack.Enabled = false;
             this.chk_Remove.Enabled = false;           // workitem 8925
             this.txtExtractDirectory.Enabled = false;
@@ -399,9 +429,7 @@ namespace DotNetZip.Examples
         {
             List<string> itemsExtracted = new List<String>();
             string targetDirectory = txtExtractDirectory.Text;
-            global::Ionic.Zip.ExtractExistingFileAction WantOverwrite = chk_Overwrite.Checked
-                ? global::Ionic.Zip.ExtractExistingFileAction.OverwriteSilently
-                : global::Ionic.Zip.ExtractExistingFileAction.Throw;
+            global::Ionic.Zip.ExtractExistingFileAction WantOverwrite = (Ionic.Zip.ExtractExistingFileAction) Overwrite;
             bool extractCancelled = false;
             System.Collections.Generic.List<String> didNotOverwrite =
                 new System.Collections.Generic.List<String>();

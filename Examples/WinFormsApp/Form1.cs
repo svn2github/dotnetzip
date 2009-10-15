@@ -140,6 +140,7 @@ namespace DotNetZip.Examples.WinForms
             InitCompressionLevelList();
             InitEncryptionList();
             InitSplitBox();
+            InitExtractExistingFileList();
         }
 
         private void InitSplitBox()
@@ -155,7 +156,7 @@ namespace DotNetZip.Examples.WinForms
 
         private void InitEncryptionList()
         {
-            _EncryptionNames = new List<string>(Enum.GetNames(typeof(Ionic.Zip.EncryptionAlgorithm)));
+            List<String> _EncryptionNames = new List<string>(Enum.GetNames(typeof(Ionic.Zip.EncryptionAlgorithm)));
             foreach (var name in _EncryptionNames)
             {
                 if (name != "Unsupported")
@@ -167,9 +168,29 @@ namespace DotNetZip.Examples.WinForms
             this.tbPassword.Text = "";
         }
 
+
+        private void InitExtractExistingFileList()
+        {
+            List<String> _ExtractActionNames = new List<string>(Enum.GetNames(typeof(Ionic.Zip.ExtractExistingFileAction)));
+            foreach (var name in _ExtractActionNames)
+            {
+                if (!name.StartsWith("Invoke"))
+                {
+                    if (name.StartsWith("Throw"))
+                        comboExistingFileAction.Items.Add("Stop");
+                    else
+                        comboExistingFileAction.Items.Add(name);
+                }
+            }
+
+            // select the first item: 
+            comboExistingFileAction.SelectedIndex = 0;
+        }
+
+                
         private void InitEncodingsList()
         {
-            _EncodingNames = new List<string>();
+            List<String> _EncodingNames = new List<string>();
             var e = System.Text.Encoding.GetEncodings();
             foreach (var e1 in e)
             {
@@ -193,7 +214,7 @@ namespace DotNetZip.Examples.WinForms
 
         private void InitCompressionLevelList()
         {
-            _CompressionLevelNames = new List<string>(Enum.GetNames(typeof(Ionic.Zlib.CompressionLevel)));
+            List<String> _CompressionLevelNames = new List<string>(Enum.GetNames(typeof(Ionic.Zlib.CompressionLevel)));
             _CompressionLevelNames.Sort();
             foreach (var name in _CompressionLevelNames)
             {
@@ -285,6 +306,7 @@ namespace DotNetZip.Examples.WinForms
                     WindowsTimes = this.chkWindowsTime.Checked,
                     UnixTimes = this.chkUnixTime.Checked,
                     RemoveFilesAfterExe = this.chkRemoveFiles.Checked,
+                    ExtractExistingFile = this.comboExistingFileAction.SelectedIndex,                    
                     };
 
             if (this.comboEncoding.SelectedIndex != 0)
@@ -555,6 +577,7 @@ namespace DotNetZip.Examples.WinForms
                             DefaultExtractDirectory = options.ExtractDirectory,
                             PostExtractCommandLine = options.ExeOnUnpack,
                             RemoveUnpackedFilesAfterExecute = options.RemoveFilesAfterExe,
+                            ExtractExistingFile = (ExtractExistingFileAction) options.ExtractExistingFile,
                         };
 
                         zip1.SaveSelfExtractor(options.ZipName, sfxOptions);
@@ -1054,9 +1077,7 @@ namespace DotNetZip.Examples.WinForms
                 ExtractLocation = this.tbExtractDir.Text,
                 Selection = this.tbSelectionToExtract.Text,
                 OpenExplorer = this.chkOpenExplorer.Checked,
-                ExtractExisting = (this.chkOverwrite.Checked)
-                    ? ExtractExistingFileAction.OverwriteSilently
-                    : ExtractExistingFileAction.DoNotOverwrite,
+                ExtractExisting = (ExtractExistingFileAction) comboExistingFileAction.SelectedIndex,
             };
 
             _workerThread = new Thread(this.DoExtract);
@@ -1324,8 +1345,8 @@ namespace DotNetZip.Examples.WinForms
                     {
                         groupBox2.Controls.Remove(comboEncoding);
                         tabPage1.Controls.Add(comboEncoding);
-                        int xpos = this.btnExtract.Location.X + this.btnExtract.Width - this.comboEncoding.Width;
-                        this.comboEncoding.Location = new System.Drawing.Point(xpos, 58);
+                        int xpos = this.btnExtractDirBrowse.Location.X + this.btnExtractDirBrowse.Width - this.comboEncoding.Width;
+                        this.comboEncoding.Location = new System.Drawing.Point(xpos, comboExistingFileAction.Location.Y);
                         this.comboEncoding.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
                     }
             this.toolTip1.SetToolTip(this.comboEncoding, "use this encoding to read the file");
@@ -1729,9 +1750,6 @@ namespace DotNetZip.Examples.WinForms
         private static string TB_COMMENT_NOTE = "-zip file comment here-";
         private static string TB_EXTRACT_DIR_NOTE = "-default extract directory-";
         private static string TB_EXE_ON_UNPACK_NOTE = "-command line to execute here-";
-        private List<String> _EncodingNames;
-        private List<String> _CompressionLevelNames;
-        private List<String> _EncryptionNames;
         private String _mostRecentEncryption;
         private string _initialFileToLoad;
         private string _lastDirectory;
@@ -1854,6 +1872,7 @@ namespace DotNetZip.Examples.WinForms
         public string Password;
         public string ExeOnUnpack;
         public string ExtractDirectory;
+        public int ExtractExistingFile;
         public int ZipFlavor;
         public int MaxSegmentSize;
         public Ionic.Zlib.CompressionLevel CompressionLevel;
