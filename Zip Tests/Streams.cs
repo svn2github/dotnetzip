@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-08 14:43:08>
+// Time-stamp: <2009-October-15 04:17:49>
 //
 // ------------------------------------------------------------------
 //
@@ -489,7 +489,6 @@ namespace Ionic.Zip.Tests.Streams
                                              "Trial ({0},{1}): The zip file created has the wrong number of entries.", i, j);
                     }
                 }
-
             }
         }
 
@@ -828,8 +827,6 @@ namespace Ionic.Zip.Tests.Streams
                     }
                 }
 
-                // winzip does not include the base path in the filename;
-                // 7zip does. 
                 string[] filesUnzipped = Directory.GetFiles(extractDir);
 
                 // Verify the number of files extracted
@@ -838,6 +835,175 @@ namespace Ionic.Zip.Tests.Streams
             }
         }
 
+
+
+        
+        [TestMethod]
+        public void Streams_ZipInput_Encryption_zero()
+        {
+            _Internal_Streams_ZipInput_Encryption(0);
+        }
+
+        [TestMethod]
+        public void Streams_ZipInput_Encryption_zero_subdir()
+        {
+            _Internal_Streams_ZipInput_Encryption(3);
+        }
+        
+        [TestMethod]
+        public void Streams_ZipInput_Encryption_nonzero()
+        {
+            _Internal_Streams_ZipInput_Encryption(1);
+        }
+
+        
+        [TestMethod]
+        public void Streams_ZipInput_Encryption_nonzero_subdir()
+        {
+            _Internal_Streams_ZipInput_Encryption(4);
+        }
+
+        
+        [TestMethod]
+        public void Streams_ZipInput_Encryption_mixed()
+        {
+            _Internal_Streams_ZipInput_Encryption(2);
+        }
+
+        
+        [TestMethod]
+        public void Streams_ZipInput_Encryption_mixed_subdir()
+        {
+            _Internal_Streams_ZipInput_Encryption(5);
+        }
+
+        
+        
+        public void _Internal_Streams_ZipInput_Encryption(int flavor)
+        {
+            Directory.SetCurrentDirectory(TopLevelDir);
+
+            int[] fileCounts = { 1, 2, _rnd.Next(8) + 6, _rnd.Next(18) + 16, _rnd.Next(48) + 56 } ;
+            //int[] fileCounts = { 3 };
+
+             
+            for (int m=0; m < fileCounts.Length; m++)
+            {
+                string password = Path.GetRandomFileName();
+                string dirToZip = String.Format("trial{0:D2}",m);
+                if (!Directory.Exists(dirToZip)) Directory.CreateDirectory(dirToZip);
+
+                int fileCount = fileCounts[m];
+            
+                string[] files = null;
+                if (flavor == 0)
+                {
+                    // zero length files
+                    files = new string[fileCount];
+                    for (int i = 0; i < fileCount; i++)
+                        files[i] = CreateZeroLengthFile(i,dirToZip);
+                }
+                else if (flavor == 1)
+                    files = TestUtilities.GenerateFilesFlat(dirToZip, fileCount, 100, 72000);
+                else
+                {
+                    // mixed = some zero and some not
+                    files = new string[fileCount];
+                    for (int i = 0; i < fileCount; i++)
+                    {
+                        if (_rnd.Next(3) == 0)
+                            files[i] = CreateZeroLengthFile(i,dirToZip);
+                        else
+                        {
+                            files[i] = Path.Combine(dirToZip, String.Format("nonzero{0:D4}.txt", i));
+                            TestUtilities.CreateAndFillFileText(files[i], _rnd.Next(60000)+100);
+                        }
+                    }
+                }
+
+                for (int i = 0; i < crypto.Length; i++)
+                {
+                    //EncryptionAlgorithm c = EncryptionAlgorithm.WinZipAes256;
+                    EncryptionAlgorithm c = crypto[i];
+                 
+                    string zipFileToCreate = Path.Combine(TopLevelDir,
+                                                          String.Format("Streams_ZipInput_AES.{0}.count.{1:D2}.{2}.zip",
+                                                                        c.ToString(), fileCounts[m], flavor));
+                
+                    // Create the zip archive 
+                    using (var zip = new ZipFile())
+                    {
+                        zip.Password = password;
+                        zip.Encryption = c;
+                        if (flavor > 2)
+                        {
+                            zip.AddDirectoryByName("subdir");
+                            zip.AddDirectory(dirToZip, "subdir");
+                        }
+                        else
+                            zip.AddDirectory(dirToZip);
+                        
+                        zip.Save(zipFileToCreate);
+                    }
+
+                
+                    // Verify the number of files in the zip
+                    Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), files.Length,
+                                         "Incorrect number of entries in the zip file.");
+
+                    // extract the files
+                    string extractDir = String.Format("extract{0:D2}.{1:D2}", m, i);
+                    Directory.CreateDirectory(extractDir);
+
+                    byte[] buffer= new byte[2048];
+                    int n;
+                    using (var raw = File.Open(zipFileToCreate, FileMode.Open, FileAccess.Read ))
+                    {
+                        using (var input= new ZipInputStream(raw))
+                        {
+                            // set password if necessary
+                            if (crypto[i] != EncryptionAlgorithm.None)
+                                input.Password = password;
+                        
+                            ZipEntry e;
+                            while (( e = input.GetNextEntry()) != null)
+                            {
+                                TestContext.WriteLine("entry: {0}", e.FileName);
+
+                                string outputPath = Path.Combine(extractDir, e.FileName);
+
+                                if (e.IsDirectory)
+                                {
+                                    // create the directory
+                                    Directory.CreateDirectory(outputPath);
+                                }
+                                else
+                                {
+                                    // emit the file 
+                                    using (var output = File.Open(outputPath, FileMode.Create, FileAccess.ReadWrite ))
+                                    {
+                                        while ((n= input.Read(buffer,0,buffer.Length)) > 0)
+                                        {
+                                            output.Write(buffer,0,n);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    string[] filesUnzipped = (flavor > 2)
+                        ? Directory.GetFiles(Path.Combine(extractDir, "subdir" ))
+                        : Directory.GetFiles(extractDir);
+
+                    // Verify the number of files extracted
+                    Assert.AreEqual<int>(files.Length, filesUnzipped.Length,
+                                         "Incorrect number of files extracted. ({0}!={1})", files.Length, filesUnzipped.Length);
+                }
+            }
+        }
+        
+        
         
     }
 }

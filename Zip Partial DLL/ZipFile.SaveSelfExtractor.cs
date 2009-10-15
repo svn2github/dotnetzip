@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-10 20:19:21>
+// Time-stamp: <2009-October-15 04:38:42>
 //
 // ------------------------------------------------------------------
 //
@@ -535,7 +535,7 @@ namespace Ionic.Zip
 
         private void _SaveSfxStub(string exeToGenerate, SelfExtractorSaveOptions options)
         {
-            bool removeIconFile = false;
+            string nameOfIconFile= null;
             string StubExe = null;
             string TempDir = null;
             try
@@ -598,8 +598,7 @@ namespace Ionic.Zip
                     // use the embedded ico file. But we must unpack it, in order to
                     // specify it on the cmdline of csc.exe.  So, use the removeIconFile
                     // flag to make sure to clean this up later.
-                    removeIconFile = true;
-                    string nameOfIconFile = GenerateTempPathname("ico", null);
+                    nameOfIconFile = GenerateTempPathname("ico", null);
                     ExtractResourceToFile(a2, "Ionic.Zip.Resources.zippedFile.ico", nameOfIconFile);
                     cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", nameOfIconFile);
                 }
@@ -787,9 +786,9 @@ namespace Ionic.Zip
                         try { File.Delete(StubExe); }
                         catch { }
                     }
-                    if (removeIconFile && File.Exists(options.IconFile))
+                    if (nameOfIconFile!=null && File.Exists(nameOfIconFile))
                     {
-                        try { File.Delete(options.IconFile); }
+                        try { File.Delete(nameOfIconFile); }
                         catch { }
                     }
                 }

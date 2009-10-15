@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-08 17:20:54>
+// Time-stamp: <2009-October-15 04:10:02>
 //
 // ------------------------------------------------------------------
 //
@@ -229,6 +229,8 @@ namespace  Ionic.Zip
         public ZipInputStream(Stream stream, bool leaveOpen)
         {
             _inputStream = stream;
+            if (!_inputStream.CanRead)
+                throw new ZipException("The stream must be readable.");
             _container= new ZipContainer(this);
             _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437");
             _leaveUnderlyingStreamOpen = leaveOpen;
@@ -444,9 +446,9 @@ namespace  Ionic.Zip
 
             if (_LeftToRead == 0)
             {
-                _inputStream.Seek(_endOfEntry, SeekOrigin.Begin);
                 int CrcResult = _crcStream.Crc;
                 _currentEntry.VerifyCrc(CrcResult);
+                _inputStream.Seek(_endOfEntry, SeekOrigin.Begin);
             }
             
             return n;
@@ -544,12 +546,12 @@ namespace  Ionic.Zip
         /// <summary>
         /// Always returns true.
         /// </summary>
-        public override bool CanRead  { get { return true; } }
+        public override bool CanRead  { get { return true; }}
         
         /// <summary>
         /// Always returns true.
         /// </summary>
-        public override bool CanSeek  { get { return true; } }
+        public override bool CanSeek  { get { return _inputStream.CanSeek; } }
         
         /// <summary>
         /// Always returns false.
