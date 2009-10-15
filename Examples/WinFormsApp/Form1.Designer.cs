@@ -470,7 +470,7 @@
             this.comboExistingFileAction.Location = new System.Drawing.Point(114, 83);
             this.comboExistingFileAction.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.comboExistingFileAction.Name = "comboExistingFileAction";
-            this.comboExistingFileAction.Size = new System.Drawing.Size(96, 21);
+            this.comboExistingFileAction.Size = new System.Drawing.Size(104, 21);
             this.comboExistingFileAction.TabIndex = 41;
             this.toolTip1.SetToolTip(this.comboExistingFileAction, "What to do when extracting a file that already exists");
             // 
@@ -501,7 +501,7 @@
             // 
             this.chkOpenExplorer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.chkOpenExplorer.AutoSize = true;
-            this.chkOpenExplorer.Location = new System.Drawing.Point(234, 85);
+            this.chkOpenExplorer.Location = new System.Drawing.Point(236, 85);
             this.chkOpenExplorer.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.chkOpenExplorer.Name = "chkOpenExplorer";
             this.chkOpenExplorer.Size = new System.Drawing.Size(91, 17);

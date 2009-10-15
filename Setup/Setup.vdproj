@@ -309,7 +309,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Zip, Version=1.9.0.20, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zip, Version=1.9.0.24, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_4ADC6320CB5A23DFF593EA7C95D93FF3"
@@ -503,14 +503,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DotNetZip Tools v1.9"
-        "ProductCode" = "8:{2EAC6CF1-FC28-4851-A3A9-29EB0BAA34A4}"
-        "PackageCode" = "8:{F63B9CAA-1275-40F5-BF43-07FA7DB689C0}"
+        "ProductCode" = "8:{A0B25AEF-ED7E-43C6-A4DD-77403DBBC80D}"
+        "PackageCode" = "8:{68B3EE6D-3021-4359-B65E-C97F117CE28A}"
         "UpgradeCode" = "8:{BEF05388-A74D-4383-BD87-61940DF83E20}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.9.00034"
+        "ProductVersion" = "8:1.9.00035"
         "Manufacturer" = "8:Dino Chiesa"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://dotnetzip.codeplex.com/Thread/List.aspx"

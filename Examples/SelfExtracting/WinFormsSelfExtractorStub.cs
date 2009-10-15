@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-15 06:25:35>
+// Time-stamp: <2009-October-15 11:51:53>
 //
 // ------------------------------------------------------------------
 //
@@ -150,6 +150,7 @@ namespace DotNetZip.Examples
                 
                 //MoveDown(this.chk_Overwrite, delta);
                 MoveDown(this.comboExistingFileAction, delta);
+                MoveDown(this.label1, delta);
                 MoveDown(this.chk_OpenExplorer, delta);
                 MoveDown(this.btnDirBrowse, delta);
                 MoveDown(this.txtExtractDirectory, delta);
@@ -405,8 +406,8 @@ namespace DotNetZip.Examples
             this.btnContents.Enabled = false;
             this.btnExtract.Enabled = false;
             this.chk_OpenExplorer.Enabled = false;
-                comboExistingFileAction.Enabled = false;
-                label1.Enabled = false;
+            this.comboExistingFileAction.Enabled = false;
+            this.label1.Enabled = false;
             this.chk_ExeAfterUnpack.Enabled = false;
             this.chk_Remove.Enabled = false;           // workitem 8925
             this.txtExtractDirectory.Enabled = false;
@@ -422,6 +423,7 @@ namespace DotNetZip.Examples
             
             this.Cursor = Cursors.WaitCursor;
         }
+
 
         
 
@@ -584,8 +586,8 @@ namespace DotNetZip.Examples
             {
                 try
                 {
-                    string[] cmd = this.txtPostUnpackCmdLine.Text.Split( new char[] {' '}, 2);
-                    if (cmd.Length > 0)
+                    string[] cmd = SplitCommandLine(txtPostUnpackCmdLine.Text);
+                    if (cmd != null && cmd.Length > 0)
                     {
                         object[] args = { cmd,
                                           this.chk_Remove.Checked,
@@ -645,53 +647,65 @@ namespace DotNetZip.Examples
             
             ProcessStartInfo startInfo = new ProcessStartInfo(cmd[0]);
             startInfo.WorkingDirectory = basePath;
-            if (cmd.Length > 1) startInfo.Arguments = cmd[1];
-
-            // Process is IDisposable
-            using (Process p = Process.Start(startInfo))
+            startInfo.CreateNoWindow = true;
+            if (cmd.Length > 1)
             {
-                if (p!=null)
+                startInfo.Arguments = cmd[1];
+            }
+
+            try 
+            {
+                // Process is IDisposable
+                using (Process p = Process.Start(startInfo))
                 {
-                    p.WaitForExit();
-                    if (p.ExitCode == 0)
+                    if (p!=null)
                     {
-                        if (removeAfter)
+                        p.WaitForExit();
+                        if (p.ExitCode == 0)
                         {
-                            List<string> failedToRemove = new List<String>();
-                            foreach (string s in itemsToRemove)
+                            if (removeAfter)
                             {
-                                string fullPath = Path.Combine(basePath,s);
-                                try 
+                                List<string> failedToRemove = new List<String>();
+                                foreach (string s in itemsToRemove)
                                 {
-                                    if (File.Exists(fullPath))
-                                        File.Delete(fullPath);
-                                    else if (Directory.Exists(fullPath))
-                                        Directory.Delete(fullPath, true);
-                                }
-                                catch
-                                {
-                                    failedToRemove.Add(s);
-                                }
+                                    string fullPath = Path.Combine(basePath,s);
+                                    try 
+                                    {
+                                        if (File.Exists(fullPath))
+                                            File.Delete(fullPath);
+                                        else if (Directory.Exists(fullPath))
+                                            Directory.Delete(fullPath, true);
+                                    }
+                                    catch
+                                    {
+                                        failedToRemove.Add(s);
+                                    }
                                 
-                                if (failedToRemove.Count > 0)
-                                {
-                                    string header = (failedToRemove.Count == 1)
-                                        ? "This file was not removed:"
-                                        : String.Format("These {0} files were not removed:",
-                                                        failedToRemove.Count);
+                                    if (failedToRemove.Count > 0)
+                                    {
+                                        string header = (failedToRemove.Count == 1)
+                                            ? "This file was not removed:"
+                                            : String.Format("These {0} files were not removed:",
+                                                            failedToRemove.Count);
                                     
-                                    string message = String.Join("\r\n", failedToRemove.ToArray());
-                                    ProvideStatus(header, message);
+                                        string message = String.Join("\r\n", failedToRemove.ToArray());
+                                        ProvideStatus(header, message);
+                                    }
                                 }
                             }
                         }
-                    }
-                    else
-                    {
-                        ProvideStatus("Error Executing", 
-                                      String.Format("Post-extract command failed, exit code {0}", p.ExitCode));
+                        else
+                        {
+                            ProvideStatus("Error Running Post-Unpack command", 
+                                          String.Format("Post-extract command failed, exit code {0}", p.ExitCode));
+                        }
                     }
                 }
+            }
+            catch (Exception exc1)
+            {
+                ProvideStatus("Error Running Post-Unpack command", 
+                              String.Format("The post-extract command failed: {0}", exc1.Message));
             }
 
             postUpackExeDone.Set();
@@ -877,6 +891,30 @@ namespace DotNetZip.Examples
             return;
         }
 
+        // workitem 8988
+        private string[] SplitCommandLine(string cmdline)
+        {
+            // if the first char is NOT a double-quote, then just split the line
+            if (cmdline[0]!='"')
+                return cmdline.Split( new char[] {' '}, 2);
+
+            // the first char is double-quote.  Need to verify that there's another one. 
+            int ix = cmdline.IndexOf('"', 1);
+            if (ix == -1) return null;  // no double-quote - FAIL
+
+            // if the double-quote is the last char, then just return an array of ONE string
+            if (ix+1 == cmdline.Length) return new string[] { cmdline.Substring(1,ix-1) };
+            
+            if (cmdline[ix+1]!= ' ') return null; // no space following the double-quote - FAIL
+
+            // there's definitely another double quote, followed by a space
+            string[] args = new string[2];
+            args[0] = cmdline.Substring(1,ix-1);
+            while (cmdline[ix+1]==' ') ix++;  // go to next non-space char
+            args[1] = cmdline.Substring(ix+1);
+            return args;
+        }
+
 
         private int _progress2MaxFactor;
         private bool _setCancel;
@@ -936,6 +974,7 @@ namespace DotNetZip.Examples
             }
         }
 
+        
         /// <summary>
         /// Required designer variable.
         /// </summary>

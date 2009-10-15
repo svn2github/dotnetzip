@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-15 06:44:28>
+// Time-stamp: <2009-October-15 11:51:57>
 //
 // ------------------------------------------------------------------
 //
@@ -244,7 +244,31 @@ namespace Ionic.Zip
         }
 
 
+        // workitem 8988
+        private string[] SplitCommandLine(string cmdline)
+        {
+            // if the first char is NOT a double-quote, then just split the line
+            if (cmdline[0]!='"')
+                return cmdline.Split( new char[] {' '}, 2);
 
+            // the first char is double-quote.  Need to verify that there's another one. 
+            int ix = cmdline.IndexOf('"', 1);
+            if (ix == -1) return null;  // no double-quote - FAIL
+
+            // if the double-quote is the last char, then just return an array of ONE string
+            if (ix+1 == cmdline.Length) return new string[] { cmdline.Substring(1,ix-1) };
+            
+            if (cmdline[ix+1]!= ' ') return null; // no space following the double-quote - FAIL
+
+            // there's definitely another double quote, followed by a space
+            string[] args = new string[2];
+            args[0] = cmdline.Substring(1,ix-1);
+            while (cmdline[ix+1]==' ') ix++;  // go to next non-space char
+            args[1] = cmdline.Substring(ix+1);
+            return args;
+        }
+
+        
         static SelfExtractor()
         {
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(Resolver);
@@ -296,6 +320,7 @@ namespace Ionic.Zip
         }
 
 
+        
         public int Run()
         {
             //System.Diagnostics.Debugger.Break();
@@ -317,7 +342,7 @@ namespace Ionic.Zip
                 {
                     if (!ListOnly)
                     {
-                        if (Verbose && !ReallyVerbose)
+                        if (Verbose)
                         {
                             System.Console.Write("Extracting to {0}", TargetDirectory);
                             System.Console.WriteLine(" (Existing file action: {0})", WantOverwrite.ToString());
@@ -415,14 +440,18 @@ namespace Ionic.Zip
                 {
                     try
                     {
-                        string[] args = PostUnpackCmdLine.Split( new char[] {' '}, 2);
-
-                        if (args.Length > 0)
+                        string[] args = SplitCommandLine(PostUnpackCmdLine);
+                        
+                        if (args!= null && args.Length > 0)
                         {
+                            if (Verbose)
+                                System.Console.WriteLine("Running command:  {0}", PostUnpackCmdLine);
+                            
                             ProcessStartInfo startInfo = new ProcessStartInfo(args[0]);
                             startInfo.WorkingDirectory = TargetDirectory;
+                            startInfo.CreateNoWindow = true;
                             if (args.Length > 1) startInfo.Arguments = args[1];
-                        
+
                             using (Process p = Process.Start(startInfo))
                             {
                                 if (p!=null)
@@ -452,6 +481,8 @@ namespace Ionic.Zip
                                     }                                    
                                 }
                             }
+
+                            
                         }
                     }
                     catch (Exception exc1)
@@ -473,37 +504,37 @@ namespace Ionic.Zip
             Assembly a = Assembly.GetExecutingAssembly();
             string s = Path.GetFileName(a.Location);
             Console.WriteLine("DotNetZip Command-Line Self Extractor, see http://DotNetZip.codeplex.com/");
-            Console.WriteLine("usage:\n  {0} [-p password] [-d <directory>]", s);
+            Console.WriteLine("usage:\n  {0} [-p <password>] [-d <directory>]", s);
 
             string more = "    Extracts entries from the archive. If any files to be extracted already\n" +
-                          "    exist, the program will stop.\n  Additional Options:\n" +
+                          "    exist, the program will stop.\n\n    Additional Options:\n" +
                           "{0}" +
                           "{1}" +
                           "{2}" +
                           "{3}";
             
             string overwriteString = 
-                          String.Format("    -o    - overwrite any existing files upon extraction{0}.\n" +
-                                        "    -n    - do not overwrite any existing files upon extraction{1}.\n",
+                          String.Format("      -o    - overwrite any existing files upon extraction{0}.\n" +
+                                        "      -n    - do not overwrite any existing files upon extraction{1}.\n",
                                         (Overwrite == 1) ? " (default)" : "",
                                         (Overwrite == 2) ? " (default)" : "");
 
 
             string removeString = PostUnpackCmdLineIsSet()
-                ? String.Format("    -r+   - remove files after the optional post-unpack exe completes{0}.\n" +
-                                "    -r-   - don't remove files after the optional post-unpack exe completes{1}.\n",
+                ? String.Format("      -r+   - remove files after the optional post-unpack exe completes{0}.\n" +
+                                "      -r-   - don't remove files after the optional post-unpack exe completes{1}.\n",
                                 RemoveFilesAfterExe ? " (default)" : "",
                                 RemoveFilesAfterExe ?  "" : " (default)")
                 : "";
 
 
-            string verbString = String.Format("    -v-   - turn OFF verbose messages{0}.\n"+
-                                              "    -v+   - turn ON verbose messages{1}.\n",
+            string verbString = String.Format("      -v-   - turn OFF verbose messages{0}.\n"+
+                                              "      -v+   - turn ON verbose messages{1}.\n",
                                               Verbose ?  "" : " (default)",
                                               Verbose ? " (default)" : "");
                 
             string cmdString = PostUnpackCmdLineIsSet() 
-                ? String.Format("    -x    - don't run the post-unpack exe.\n           [cmd is: {0}]\n",
+                ? String.Format("      -x    - don't run the post-unpack exe.\n              [cmd is: {0}]\n",
                               PostUnpackCmdLine)
                 : "" ;
 
@@ -512,7 +543,7 @@ namespace Ionic.Zip
 
             
             if (TargetDirectoryIsSet()) 
-                Console.WriteLine("  default extract dir: {0}\n", TargetDirectory);
+                Console.WriteLine("    default extract dir: [{0}]\n", TargetDirectory);
 
 
             Console.WriteLine("  {0} -l", s);

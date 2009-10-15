@@ -212,14 +212,16 @@
             // 
             // comboExistingFileAction
             // 
+            this.comboExistingFileAction.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.comboExistingFileAction.FormattingEnabled = true;
             this.comboExistingFileAction.Location = new System.Drawing.Point(116, 167);
             this.comboExistingFileAction.Name = "comboExistingFileAction";
-            this.comboExistingFileAction.Size = new System.Drawing.Size(96, 21);
+            this.comboExistingFileAction.Size = new System.Drawing.Size(104, 21);
             this.comboExistingFileAction.TabIndex = 21;
             // 
             // label1
             // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(6, 172);
             this.label1.Name = "label1";

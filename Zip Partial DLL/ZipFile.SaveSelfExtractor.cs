@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-15 06:20:59>
+// Time-stamp: <2009-October-15 09:15:10>
 //
 // ------------------------------------------------------------------
 //
@@ -99,7 +99,7 @@ namespace Ionic.Zip
         }
 
         /// <summary>
-        ///   The command to run after extration.
+        ///   The command to run after extraction.
         /// </summary>
         ///
         /// <remarks>
@@ -110,31 +110,53 @@ namespace Ionic.Zip
         ///
         /// <para>
         ///   If it is non-empty, the SFX will execute the command specified in this
-        ///   string on the user's machine, after unpacking the archive.
+        ///   string on the user's machine, and using the extract directory as the
+        ///   working directory for the process, after unpacking the archive. The
+        ///   program to execute can include a path, if you like. If you want to execute
+        ///   a program that accepts arguments, specify the program name, followed by a
+        ///   space, and then the arguments for the program, each separated by a space,
+        ///   just as you would on a normal command line. Example: <c>program.exe arg1
+        ///   arg2</c>.  The string prior to the first space will be taken as the
+        ///   program name, and the string following the first space specifies the
+        ///   arguments to the program.
+        /// </para>
+        ///
+        /// <para>
+        ///   If you want to execute a program that has a space in the name or path of
+        ///   the file, surround the program name in double-quotes. The first character
+        ///   of the command line should be a double-quote character, and there must be
+        ///   a matching double-quote following the end of the program file name. Any
+        ///   optional arguments to the program follow that, separated by
+        ///   spaces. Example: <c>"c:\project files\program name.exe" arg1 arg2</c>.
         /// </para>
         ///
         /// <para>
         ///   If the flavor of the SFX is <c>SelfExtractorFlavor.ConsoleApplication</c>,
         ///   then the SFX starts a new process, using this string as the post-extract
-        ///   command line, and using the extract directory as the working directory for
-        ///   the process.  The SFX waits for the process to exit.  The exit code of the
-        ///   post-extract command line is returned as the exit code of the command-line
-        ///   self-extractor exe.  A non-zero exit code is typically used to indicated a
-        ///   failure by the program. In the case of an SFX, a non-zero exit code may
-        ///   indicate a failure during extraction, OR, it may indicate a failure of the
-        ///   run-on-extract program if specified. There is no way to distinguish these
-        ///   conditions from the calling shell, aside from parsing output.
+        ///   command line.  The SFX waits for the process to exit.  The exit code of
+        ///   the post-extract command line is returned as the exit code of the
+        ///   command-line self-extractor exe. A non-zero exit code is typically used to
+        ///   indicated a failure by the program. In the case of an SFX, a non-zero exit
+        ///   code may indicate a failure during extraction, OR, it may indicate a
+        ///   failure of the run-after-extract program if specified, OR, it may indicate
+        ///   the run-after-extract program could not be fuond. There is no way to
+        ///   distinguish these conditions from the calling shell, aside from parsing
+        ///   the output of the SFX. If you have Quiet set to <c>true</c>, you may not
+        ///   see error messages, if a problem occurs.
         /// </para>
         ///
         /// <para>
         ///   If the flavor of the SFX is
         ///   <c>SelfExtractorFlavor.WinFormsApplication</c>, then the SFX starts a new
         ///   process, using this string as the post-extract command line, and using the
-        ///   extract directory as the working directory for the process. 
+        ///   extract directory as the working directory for the process. The SFX does
+        ///   not wait for the command to complete, and does not check the exit code of
+        ///   the program. If the run-after-extract program cannot be fuond, a message
+        ///   box is displayed indicating that fact.
         /// </para>
         ///
         /// <para>
-        ///   You can specify environment variables within this string, with
+        ///   You can specify environment variables within this string, with a format like
         ///   <c>%NAME%</c>. The value of these variables will be expanded at the time
         ///   the SFX is run. Example: <c>%WINDIR%\system32\xcopy.exe</c> may expand at
         ///   runtime to <c>c:\Windows\System32\xcopy.exe</c>.
@@ -148,6 +170,14 @@ namespace Ionic.Zip
         ///   <c>SelfExtractorFlavor.ConsoleApplication</c>, and set <c>Quiet</c> to
         ///   true.  You may also want to specify the default extract location, with
         ///   <c>DefaultExtractDirectory</c>.
+        /// </para>
+        ///
+        /// <para>
+        ///   If you set <c>Flavor</c> to
+        ///   <c>SelfExtractorFlavor.WinFormsApplication</c>, and set <c>Quiet</c> to
+        ///   true, then a GUI with progressbars is displayed, but it is
+        ///   "non-interactive" - it accepts no input from the user.  Instead the SFX
+        ///   just automatically unpacks and exits.
         /// </para>
         ///
         /// </remarks>
@@ -690,7 +720,8 @@ namespace Ionic.Zip
                 string postExCmdLine = options.PostExtractCommandLine;
                 if (postExCmdLine  != null)
                 {
-                    postExCmdLine = options.PostExtractCommandLine.Replace("\\","\\\\");
+                    postExCmdLine = postExCmdLine.Replace("\\","\\\\");
+                    postExCmdLine = postExCmdLine.Replace("\"","\\\"");
                 }
 
                 

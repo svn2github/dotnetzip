@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-06 22:49:29>
+// Time-stamp: <2009-October-15 11:59:00>
 //
 // ------------------------------------------------------------------
 //
@@ -46,13 +46,19 @@ namespace Ionic.Zip.Tests
     {
         public SelfExtractor() : base() { }
 
+
         [TestMethod]
         public void SelfExtractor_CanRead()
         {
-            SelfExtractorFlavor[] trials = { SelfExtractorFlavor.ConsoleApplication, SelfExtractorFlavor.WinFormsApplication };
-            for (int k = 0; k < trials.Length; k++)
+            SelfExtractorFlavor[] flavors =
             {
-                string SfxFileToCreate = Path.Combine(TopLevelDir, String.Format("SelfExtractor_{0}.exe", trials[k].ToString()));
+                SelfExtractorFlavor.ConsoleApplication,
+                SelfExtractorFlavor.WinFormsApplication
+            };
+        
+            for (int k = 0; k < flavors.Length; k++)
+            {
+                string SfxFileToCreate = Path.Combine(TopLevelDir, String.Format("SelfExtractor_{0}.exe", flavors[k].ToString()));
                 string UnpackDirectory = Path.Combine(TopLevelDir, "unpack");
                 if (Directory.Exists(UnpackDirectory))
                     Directory.Delete(UnpackDirectory, true);
@@ -81,7 +87,7 @@ namespace Ionic.Zip.Tests
                     zip1.Comment = "This will be embedded into a self-extracting exe";
                     MemoryStream ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ReadmeString));
                     zip1.AddEntry("Readme.txt", ms1);
-                    zip1.SaveSelfExtractor(SfxFileToCreate, trials[k]);
+                    zip1.SaveSelfExtractor(SfxFileToCreate, flavors[k]);
                 }
 
                 TestContext.WriteLine("---------------Reading {0}...", SfxFileToCreate);
@@ -99,7 +105,6 @@ namespace Ionic.Zip.Tests
                                 filename = Path.Combine(UnpackDirectory, e.FileName);
                                 string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filename));
                                 Assert.AreEqual<string>(checksums[e.FileName], actualCheckString, "In trial {0}, Checksums for ({1}) do not match.", k, e.FileName);
-                                //TestContext.WriteLine("     Checksums match ({0}).\n", actualCheckString);
                             }
                             else
                             {
@@ -254,7 +259,7 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void SelfExtractor_Console()
         {
-            string ExeFileToCreate = Path.Combine(TopLevelDir, "SelfExtractor_Console.exe");
+            string exeFileToCreate = Path.Combine(TopLevelDir, "SelfExtractor_Console.exe");
             string UnpackDirectory = Path.Combine(TopLevelDir, "unpack");
             string ReadmeString = "Hey there!  This zipfile entry was created directly from a string in application code.";
 
@@ -284,10 +289,10 @@ namespace Ionic.Zip.Tests
                 SelfExtractorSaveOptions sfxOptions = new SelfExtractorSaveOptions();
                 sfxOptions.Flavor = Ionic.Zip.SelfExtractorFlavor.ConsoleApplication;
                 sfxOptions.DefaultExtractDirectory = UnpackDirectory;
-                zip.SaveSelfExtractor(ExeFileToCreate, sfxOptions);
+                zip.SaveSelfExtractor(exeFileToCreate, sfxOptions);
             }
 
-            var psi = new System.Diagnostics.ProcessStartInfo(ExeFileToCreate);
+            var psi = new System.Diagnostics.ProcessStartInfo(exeFileToCreate);
             psi.WorkingDirectory = TopLevelDir;
             psi.UseShellExecute = false;
             psi.CreateNoWindow = true;
@@ -319,7 +324,7 @@ namespace Ionic.Zip.Tests
             string[] Passwords = { null, "12345" };
             for (int k = 0; k < Passwords.Length; k++)
             {
-                string ExeFileToCreate = Path.Combine(TopLevelDir, String.Format("SelfExtractor_WinForms-{0}.exe", k));
+                string exeFileToCreate = Path.Combine(TopLevelDir, String.Format("SelfExtractor_WinForms-{0}.exe", k));
                 string DesiredUnpackDirectory = Path.Combine(TopLevelDir, String.Format("unpack{0}", k));
 
                 String filename = null;
@@ -346,11 +351,11 @@ namespace Ionic.Zip.Tests
                     SelfExtractorSaveOptions sfxOptions = new SelfExtractorSaveOptions();
                     sfxOptions.Flavor = Ionic.Zip.SelfExtractorFlavor.WinFormsApplication;
                     sfxOptions.DefaultExtractDirectory = DesiredUnpackDirectory;
-                    zip.SaveSelfExtractor(ExeFileToCreate, sfxOptions);
+                    zip.SaveSelfExtractor(exeFileToCreate, sfxOptions);
                 }
 
                 // run the self-extracting EXE we just created 
-                System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo(ExeFileToCreate);
+                System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo(exeFileToCreate);
                 psi.Arguments = DesiredUnpackDirectory;
                 psi.WorkingDirectory = TopLevelDir;
                 psi.UseShellExecute = false;
@@ -418,19 +423,198 @@ namespace Ionic.Zip.Tests
         }
 
 
-        [TestMethod]
-        public void SelfExtractor_Console_RunOnExit()
-        {
-            string ExeFileToCreate = Path.Combine(TopLevelDir, "SelfExtractor_Console_RunOnExit.exe");
-            string ReadmeString = "Hey there!  This zipfile entry was created directly from a string in application code.";
+        // Here's a set of SFX tests with post-extract EXEs. 
+        // We vary these parameters:
+        //  - exe exists or not - 2 trials each test. 
+        //  - exe name has spaces or not
+        //  - winforms or not
+        //  - whether to run the exe or just compile
+        //  - whether to append args or not
+        //  - force noninteractive or not (only for Winforms flavor, to allow automated tests)
 
+        [TestMethod]
+        public void SelfExtractor_RunOnExit_Console()
+        {
+            _Internal_SelfExtractor_Command("post-extract-run-on-exit-{0:D4}.exe",
+                                            SelfExtractorFlavor.ConsoleApplication,
+                                            true,   // runPostExtract
+                                            true,   // quiet
+                                            false,  // forceNoninteractive
+                                            false); // wantArgs
+        }
+
+        [TestMethod]
+        public void SelfExtractor_RunOnExit_Console_Args()
+        {
+            _Internal_SelfExtractor_Command("post-extract-run-on-exit-{0:D4}.exe",
+                                            SelfExtractorFlavor.ConsoleApplication,
+                                            true,   // runPostExtract
+                                            true,   // quiet
+                                            false,  // forceNoninteractive
+                                            true); // wantArgs
+        }
+
+        [TestMethod]
+        public void SelfExtractor_RunOnExit_WinForms()
+        {
+            _Internal_SelfExtractor_Command("post-extract-run-on-exit-{0:D4}.exe",
+                                            SelfExtractorFlavor.WinFormsApplication,
+                                            true,   // runPostExtract
+                                            true,   // quiet
+                                            false,  // forceNoninteractive
+                                            false); // wantArgs
+        }
+
+        [TestMethod]
+        public void SelfExtractor_RunOnExit_WinForms_DontRun()
+        {
+            // This test case just tests the generation (compilation) of
+            // the SFX.  It is included because the interactive winforms
+            // SFX is not performed on automated test runs.
+            _Internal_SelfExtractor_Command("post-extract-run-on-exit-{0:D4}.exe",
+                                            SelfExtractorFlavor.WinFormsApplication,
+                                            false,  // runPostExtract
+                                            true,   // quiet
+                                            false,  // forceNoninteractive
+                                            false); // wantArgs
+        }
+
+        [TestMethod]
+        public void SelfExtractor_RunOnExit_WinForms_Interactive()
+        {
+            _Internal_SelfExtractor_Command("post-extract-run-on-exit-{0:D4}.exe",
+                                            SelfExtractorFlavor.WinFormsApplication,
+                                            true,   // runPostExtract
+                                            false,  // quiet
+                                            false,  // forceNoninteractive
+                                            false); // wantArgs
+        }
+
+        [TestMethod]
+        public void SelfExtractor_RunOnExit_WinForms_NonInteractive()
+        {
+            _Internal_SelfExtractor_Command("post-extract-run-on-exit-{0:D4}.exe",
+                                            SelfExtractorFlavor.WinFormsApplication,
+                                            true,   // runPostExtract
+                                            true,   // quiet
+                                            true,   // forceNoninteractive
+                                            false); // wantArgs
+        }
+
+        [TestMethod]
+        public void SelfExtractor_RunOnExit_WinForms_NonInteractive_Args()
+        {
+            _Internal_SelfExtractor_Command("post-extract-run-on-exit-{0:D4}.exe",
+                                            SelfExtractorFlavor.WinFormsApplication,
+                                            true,   // runPostExtract
+                                            true,   // quiet
+                                            true,   // forceNoninteractive
+                                            true); // wantArgs
+        }
+
+        // ------------------------------------------------------------------ //
+        
+        [TestMethod]
+        public void SelfExtractor_RunOnExit_Console_withSpaces()
+        {
+            _Internal_SelfExtractor_Command("post extract run on exit {0:D4}.exe",
+                                            SelfExtractorFlavor.ConsoleApplication,
+                                            true,   // runPostExtract
+                                            true,   // quiet
+                                            false,  // forceNoninteractive
+                                            false); // wantArgs
+        }
+
+        
+        [TestMethod]
+        public void SelfExtractor_RunOnExit_Console_withSpaces_Args()
+        {
+            _Internal_SelfExtractor_Command("post extract run on exit {0:D4}.exe",
+                                            SelfExtractorFlavor.ConsoleApplication,
+                                            true,   // runPostExtract
+                                            true,   // quiet
+                                            false,  // forceNoninteractive
+                                            true);  // wantArgs
+        }
+        
+        [TestMethod]
+        public void SelfExtractor_RunOnExit_WinForms_withSpaces()
+        {
+            _Internal_SelfExtractor_Command("post extract run on exit {0:D4}.exe",
+                                            SelfExtractorFlavor.WinFormsApplication,
+                                            true,   // runPostExtract
+                                            true,   // quiet
+                                            false,  // forceNoninteractive
+                                            false); // wantArgs
+        }
+
+        [TestMethod]
+        public void SelfExtractor_RunOnExit_WinForms_withSpaces_DontRun()
+        {
+            // This test case just tests the generation (compilation) of
+            // the SFX.  It is included because the interactive winforms
+            // SFX is not performed on automated test runs.
+            _Internal_SelfExtractor_Command("post extract run on exit {0:D4}.exe",
+                                            SelfExtractorFlavor.WinFormsApplication,
+                                            false,  // runPostExtract
+                                            true,   // quiet
+                                            false,  // forceNoninteractive
+                                            false); // wantArgs
+        }
+        
+        [TestMethod]
+        public void SelfExtractor_RunOnExit_WinForms_withSpaces_Interactive()
+        {
+            _Internal_SelfExtractor_Command("post extract run on exit {0:D4}.exe",
+                                            SelfExtractorFlavor.WinFormsApplication,
+                                            true,   // actually run the program
+                                            false,  // quiet
+                                            false,  // forceNoninteractive
+                                            false); // wantArgs
+        }
+
+        [TestMethod]
+        public void SelfExtractor_RunOnExit_WinForms_withSpaces_NonInteractive()
+        {
+            _Internal_SelfExtractor_Command("post extract run on exit {0:D4}.exe",
+                                            SelfExtractorFlavor.WinFormsApplication,
+                                            true,   // actually run the program
+                                            true,   // quiet
+                                            true,   // forceNoninteractive
+                                            false); // wantArgs
+        }
+
+        [TestMethod]
+        public void SelfExtractor_RunOnExit_WinForms_withSpaces_NonInteractive_Args()
+        {
+            _Internal_SelfExtractor_Command("post extract run on exit {0:D4}.exe",
+                                            SelfExtractorFlavor.WinFormsApplication,
+                                            true,   // actually run the program
+                                            true,   // quiet
+                                            true,   // forceNoninteractive
+                                            true); // wantArgs
+        }
+
+        
+        public void _Internal_SelfExtractor_Command(string cmdFormat,
+                                                    SelfExtractorFlavor flavor,
+                                                    bool runPostExtract,
+                                                    bool quiet,
+                                                    bool forceNoninteractive,
+                                                    bool wantArgs)
+        {
             TestContext.WriteLine("==============================");
-            TestContext.WriteLine("SelfExtractor_Console_RunOnExit.exe");
+            TestContext.WriteLine("SelfExtractor_RunOnExit({0})", flavor.ToString());
 
             int entriesAdded = 0;
             String filename = null;
-            string postExtractExe = String.Format("post-extract-run-on-exit-{0:D4}.exe", _rnd.Next(3000));
-            int expectedReturnCode = _rnd.Next(1024) + 20;
+            string postExtractExe = String.Format(cmdFormat, _rnd.Next(3000));
+            
+            // If WinForms and want forceNoninteractive, have the post-extract-exe return 0, 
+            // else, select a random number.
+            int expectedReturnCode = (forceNoninteractive && flavor == SelfExtractorFlavor.WinFormsApplication)
+                ? 0
+                : _rnd.Next(1024) + 20;
             TestContext.WriteLine("The post-extract command ({0}) will return {1}", postExtractExe, expectedReturnCode);
             string Subdir = Path.Combine(TopLevelDir, "A");
             Directory.CreateDirectory(Subdir);
@@ -446,13 +630,19 @@ namespace Ionic.Zip.Tests
                 checksums.Add(filename, TestUtilities.CheckSumToString(chk));
                 TestContext.WriteLine("checksum({0})= ({1})", filename, checksums[filename]);
             }
-
+                
             Directory.SetCurrentDirectory(TopLevelDir);
             for (int k = 0; k < 2; k++)
             {
+                string ReadmeString = String.Format("Hey there!  This zipfile entry was created directly " +
+                                                    "from a string in application code. Flavor ({0}) Trial({1})",
+                                                    flavor.ToString(), k);
+                string exeFileToCreate = Path.Combine(TopLevelDir,
+                                                      String.Format("SelfExtractor_Command.{0}.{1}.exe",
+                                                                    flavor.ToString(), k));
                 TestContext.WriteLine("----------------------");
                 TestContext.WriteLine("Trial {0}", k);
-                string UnpackDirectory = "unpack-" + k.ToString();
+                string UnpackDirectory = String.Format("unpack.{0}", k);
 
                 if (k != 0)
                     CompileApp(expectedReturnCode, postExtractExe);
@@ -462,59 +652,100 @@ namespace Ionic.Zip.Tests
                 {
                     zip.StatusMessageTextWriter = sw;
                     zip.AddDirectory(Subdir, Path.GetFileName(Subdir));
-                    zip.Comment = "This will be embedded into a self-extracting exe";
+                    zip.Comment = String.Format("Trial options: flavor({0})  command: ({3})\r\n"+
+                                                "actuallyRun({1})\r\nquiet({2})\r\n"+
+                                                "exists? {4}\r\nexpected rc={5}",
+                                                flavor,
+                                                runPostExtract,
+                                                quiet,
+                                                postExtractExe,
+                                                k!=0,
+                                                expectedReturnCode
+                                                );
                     MemoryStream ms1 = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ReadmeString));
                     zip.AddEntry("Readme.txt", ms1);
                     if (k != 0) zip.AddFile(postExtractExe);
 
                     SelfExtractorSaveOptions sfxOptions = new SelfExtractorSaveOptions();
-                    sfxOptions.Flavor = Ionic.Zip.SelfExtractorFlavor.ConsoleApplication;
+                    sfxOptions.Flavor = flavor;
                     sfxOptions.DefaultExtractDirectory = UnpackDirectory;
-                    sfxOptions.Quiet = true;
+                    sfxOptions.Quiet = quiet;
 
-                    // in the case of k==0, this exe does not exist.  It will result in
+                    // In the case of k==0, this exe does not exist.  It will result in
                     // a return code of 5.  In k == 1, the exe exists and will succeed.
-                    sfxOptions.PostExtractCommandLine= postExtractExe;
-                    zip.SaveSelfExtractor(ExeFileToCreate, sfxOptions);
+                    if (postExtractExe.Contains(' '))
+                        sfxOptions.PostExtractCommandLine= "\"" + postExtractExe + "\"";
+                    else
+                        sfxOptions.PostExtractCommandLine= postExtractExe;
+
+                    if (wantArgs)
+                        sfxOptions.PostExtractCommandLine += " arg1 arg2";
+                    
+                    zip.SaveSelfExtractor(exeFileToCreate, sfxOptions);
                 }
 
                 TestContext.WriteLine("status output: " + sw.ToString());
 
-                TestContext.WriteLine("Running the SFX... ");
-                System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo(ExeFileToCreate);
-                psi.WorkingDirectory = TopLevelDir;
-                psi.UseShellExecute = false;
-                psi.CreateNoWindow = true; // false;
-                System.Diagnostics.Process process = System.Diagnostics.Process.Start(psi);
-                process.WaitForExit();
-                int rc = process.ExitCode;
-                TestContext.WriteLine("SFX exit code: ({0})", rc);
+                if (k != 0) File.Delete(postExtractExe);
 
-                if (k != 0)
-                    Assert.AreEqual<Int32>(expectedReturnCode, rc, "In trial {0}, the exit code did not match.", k);
-                else
-                    Assert.AreEqual<Int32>(5, rc, "In trial {0}, the exit code was unexpected.", k);
-
-                
-                // now, compare the output in UnpackDirectory with the original
-                string DirToCheck = Path.Combine(TopLevelDir, Path.Combine(UnpackDirectory, "A"));
-                // verify the checksum of each file matches with its brother
-                foreach (string fname in Directory.GetFiles(DirToCheck))
+                // Run the post-extract-exe, conditionally. 
+                // We always run, unless specifically asked not to, OR
+                // if it's a winforms app and we want it to be noninteractive and there's no EXE to run.
+                // If we try running a non-existent app, it will pop an error message, hence user interaction,
+                // which we need to avoid for the automated test. 
+                if (runPostExtract &&
+                    (k != 0 || !forceNoninteractive || flavor != SelfExtractorFlavor.WinFormsApplication))
                 {
-                    string originalName = fname.Replace("\\" + UnpackDirectory, "");
-                    if (checksums.ContainsKey(originalName))
+                    TestContext.WriteLine("Running the SFX... ");
+                    System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo(exeFileToCreate);
+                    psi.WorkingDirectory = TopLevelDir;
+                    psi.UseShellExecute = false;
+                    psi.CreateNoWindow = true; // false;
+                    System.Diagnostics.Process process = System.Diagnostics.Process.Start(psi);
+                    process.WaitForExit();
+                    int rc = process.ExitCode;
+                    TestContext.WriteLine("SFX exit code: ({0})", rc);
+
+                    // The exit code is returned only if it's a console SFX. 
+                    if (flavor == SelfExtractorFlavor.ConsoleApplication)
                     {
-                        string expectedCheckString = checksums[originalName];
-                        string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(fname));
-                        Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", fname);
+                        // The program actually runs if k != 0 
+                        if (k != 0)
+                        {
+                            // The file to execute should have returned a specific code.
+                            Assert.AreEqual<Int32>(expectedReturnCode, rc, "In trial {0}, the exit code did not match.", k);
+                        }
+                        else
+                        {
+                            // The file to execute should not have been found, hence rc==5.
+                            Assert.AreEqual<Int32>(5, rc, "In trial {0}, the exit code was unexpected.", k);
+                        }
                     }
                     else
-                        Assert.AreEqual<string>("Readme.txt", originalName);
+                        Assert.AreEqual<Int32>(0, rc, "In trial {0}, the exit code did not match.", k);
+                        
+
+                
+                    // now, compare the output in UnpackDirectory with the original
+                    string DirToCheck = Path.Combine(TopLevelDir, Path.Combine(UnpackDirectory, "A"));
+                    // verify the checksum of each file matches with its brother
+                    foreach (string fname in Directory.GetFiles(DirToCheck))
+                    {
+                        string originalName = fname.Replace("\\" + UnpackDirectory, "");
+                        if (checksums.ContainsKey(originalName))
+                        {
+                            string expectedCheckString = checksums[originalName];
+                            string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(fname));
+                            Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", fname);
+                        }
+                        else
+                            Assert.AreEqual<string>("Readme.txt", originalName);
+                    }
                 }
             }
         }
 
-
+        
 
         [TestMethod]
         [ExpectedException(typeof(Ionic.Zip.BadStateException))]
