@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-15 04:17:49>
+// Time-stamp: <2009-October-21 04:09:20>
 //
 // ------------------------------------------------------------------
 //
@@ -42,6 +42,9 @@ namespace Ionic.Zip.Tests.Streams
     [TestClass]
     public class StreamsTests : IonicTestClass
     {
+        Ionic.CopyData.Transceiver _txrx;
+
+        
         public StreamsTests() : base() { }
 
 
@@ -49,7 +52,17 @@ namespace Ionic.Zip.Tests.Streams
         [TestCleanup()]
         public void MyTestCleanupEx()
         {
+            if (_txrx!=null)
+            {
+                try
+                {
+                    _txrx.Send("stop");
+                    _txrx = null;
+                }
+                catch { }
+            }
         }
+
 
         EncryptionAlgorithm[] crypto =
             {
@@ -235,7 +248,6 @@ namespace Ionic.Zip.Tests.Streams
                 {
                     string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("AddEntry_JitProvided.{0}.{1}.zip", i, k));
 
-                    Directory.SetCurrentDirectory(TopLevelDir);
                     string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
                     var files = TestUtilities.GenerateFilesFlat(dirToZip);
 
@@ -298,9 +310,6 @@ namespace Ionic.Zip.Tests.Streams
 
         private void _TestDriver(TestCompressionLevels test, string label, bool seekable, bool zero)
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
-
-
             int[] fileCounts = new int[] { 1, 2, _rnd.Next(4) + 3, _rnd.Next(14) + 13 };
 
             for (int j = 0; j < fileCounts.Length; j++)
@@ -403,21 +412,170 @@ namespace Ionic.Zip.Tests.Streams
 
 
         [TestMethod]
-        [ExpectedException(typeof(ZipException))]
-        public void Create_ZipOutputStream_ZeroBytes_NonSeekable()
+        public void Create_ZipOutputStream_ZeroBytes_Encrypt_NonSeekable()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
+            // There was a moment when using ZipOutputStream with Encryption and a
+            // non-seekable output stream, did not work.  DotNetZip was changed to be
+            // smarter, so that works now. This test used to verify that the combination
+            // of stuff failed.  It now should succeed.
 
             string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
             Directory.CreateDirectory(dirToZip);
-            int fileCount = 3;
+            int fileCount = _rnd.Next(4)+1;
             string[] files = new string[fileCount];
             for (int i = 0; i < fileCount; i++)
                 files[i] = TestUtilities.CreateUniqueFile("zerolength", dirToZip);
 
-            _Internal_Create_ZipOutputStream(files, EncryptionAlgorithm.PkzipWeak, false, 99,
-                                             "ZipOutputStream.ZeroBytes.Nonseekable.PkzipWeak.{0}.zip");
+            for (int i = 0; i < crypto.Length; i++)
+            {
+                string format = String.Format("ZipOutputStream.ZeroBytes.filecount{0}.Encryption.{1}.NonSeekable.{2}.zip",
+                                              fileCount,
+                                              crypto[i],
+                                              "{0}");
+                                                  
+                _Internal_Create_ZipOutputStream(files, EncryptionAlgorithm.PkzipWeak, false, 99, format);
+            }
         }
+
+        
+        
+        [TestMethod, Timeout(1800000)]  // timeout is in milliseconds, (3600 * 1000) = 1 hour;
+        public void ZipOutputStream_over_65534_Entries_PkZipEncryption_DefaultCompression_AsNecessary()
+        {
+            _Internal_ZipOutputStream_Zip64_over_65534_Entries(Zip64Option.AsNecessary, EncryptionAlgorithm.PkzipWeak, Ionic.Zlib.CompressionLevel.Default);
+        }
+
+        [TestMethod, Timeout(7200000)]  // timeout is in milliseconds, (3600 * 1000) = 1 hour;
+        public void ZipOutputStream_over_65534_Entries_WinZipEncryption_DefaultCompression_AsNecessary()
+        {
+            _Internal_ZipOutputStream_Zip64_over_65534_Entries(Zip64Option.AsNecessary, EncryptionAlgorithm.WinZipAes256, Ionic.Zlib.CompressionLevel.Default);
+        }
+
+        [TestMethod, Timeout(1800000)]  // timeout is in milliseconds, (3600 * 1000) = 1 hour;
+        public void ZipOutputStream_over_65534_Entries_NoEncryption_DefaultCompression_AsNecessary()
+        {
+            _Internal_ZipOutputStream_Zip64_over_65534_Entries(Zip64Option.AsNecessary, EncryptionAlgorithm.None, Ionic.Zlib.CompressionLevel.Default);
+        }
+
+
+        [TestMethod, Timeout(30 * 60 * 1000)]  // timeout is in milliseconds, (30 * 60 * 1000) = 30 mins
+        [ExpectedException(typeof(System.InvalidOperationException))]
+        public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
+        {
+            _Internal_ZipOutputStream_Zip64_over_65534_Entries(Zip64Option.Never, EncryptionAlgorithm.PkzipWeak, Ionic.Zlib.CompressionLevel.Default);
+        }
+
+        
+        int fileCount;
+        private void _Internal_ZipOutputStream_Zip64_over_65534_Entries(Zip64Option z64option, EncryptionAlgorithm encryption, Ionic.Zlib.CompressionLevel compression)
+        {
+            // Emitting a zip file with > 65534 entries requires the use of ZIP64 in the central directory. 
+            fileCount = _rnd.Next(7616)+65534;
+            string zipFileToCreate = String.Format("ZipOutputStream.Zip64.over_65534_Entries.{0}.{1}.{2}.zip",
+                                                   z64option.ToString(), encryption.ToString(), compression.ToString());
+            
+            StartProgressMonitor(zipFileToCreate);
+            StartProgressClient(zipFileToCreate,
+                                String.Format("ZipOutputStream, {0} entries, E({1}), C({2})", fileCount,encryption.ToString(), compression.ToString()),
+                                "starting up...");
+
+            _txrx.Send("pb 0 max 2"); // 2 stages: Write, Verify
+            _txrx.Send("pb 0 value 0");
+            
+            string password = Path.GetRandomFileName();
+                    
+            string statusString = String.Format("status Encryption:{0} Compression:{1}...",
+                                                encryption.ToString(),
+                                                compression.ToString());
+            _txrx.Send(statusString);
+            
+            int dirCount= 0;
+
+            using (FileStream fs = File.Open(zipFileToCreate, FileMode.Create, FileAccess.ReadWrite))
+            {
+                using (var output = new ZipOutputStream(fs))
+                {
+                    _txrx.Send(String.Format("pb 1 max {0}", fileCount/4));
+                    _txrx.Send("pb 1 value 0");
+
+                    output.Password = password;
+                    output.Encryption = encryption;
+                    output.CompressionLevel = compression;
+                    output.EnableZip64 = z64option;
+                    for (int k=0; k<fileCount;  k++) 
+                    {
+                        if (_rnd.Next(7)==0)
+                        {
+                            // make it a directory
+                            string entryName = String.Format("{0:D4}/", k);
+                            output.PutNextEntry(entryName);
+                            dirCount++;
+                        }
+                        else
+                        {
+                            string entryName = String.Format("{0:D4}.txt", k);
+                            output.PutNextEntry(entryName);
+                            
+                            if (_rnd.Next(8)==0)
+                            {
+                                string content = String.Format("This is the content for entry #{0}.", k);
+                                byte[] buffer = Encoding.ASCII.GetBytes(content);
+                                output.Write(buffer, 0, buffer.Length);
+                            }
+                        }
+                        if (k % 4 == 0)
+                            _txrx.Send("pb 1 step");
+
+                        if (k % 100 == 0)
+                            _txrx.Send(statusString + " count " + k.ToString());
+                    }
+                }
+            }
+                
+            _txrx.Send("pb 1 max 1");
+            _txrx.Send("pb 1 value 1");
+            _txrx.Send("pb 0 step");
+
+            _txrx.Send(statusString + " Verifying...");
+
+            // exec WinZip. But the output is really large, so we pass emitOutput=false . 
+            WinzipVerify(zipFileToCreate, password, false);
+
+            Assert.AreEqual<int>(fileCount-dirCount, TestUtilities.CountEntries(zipFileToCreate),
+                                 "{0}: The zip file created has the wrong number of entries.", zipFileToCreate);
+            _txrx.Send("stop");
+        } 
+        
+
+    
+
+        void StartProgressMonitor(string progressChannel)
+        {
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+            string progressMonitorTool = Path.Combine(testBin, "Resources\\UnitTestProgressMonitor.exe");
+            string requiredDll = Path.Combine(testBin, "Resources\\Ionic.CopyData.dll");
+            Assert.IsTrue(File.Exists(progressMonitorTool), "progress monitor tool does not exist ({0})",  progressMonitorTool);
+            Assert.IsTrue(File.Exists(requiredDll), "required DLL does not exist ({0})",  requiredDll);
+
+            // start the progress monitor
+            string ignored;
+            //this.Exec(progressMonitorTool, String.Format("-channel {0}", progressChannel), false);
+            TestUtilities.Exec_NoContext(progressMonitorTool, String.Format("-channel {0}", progressChannel), false, out ignored);
+        }
+
+
+        
+        void StartProgressClient(string progressChannel, string title, string initialStatus)
+        {
+            _txrx = new Ionic.CopyData.Transceiver();
+            System.Threading.Thread.Sleep(1000);
+            _txrx.Channel = progressChannel;
+            System.Threading.Thread.Sleep(450);
+            _txrx.Send("test " + title);
+            System.Threading.Thread.Sleep(120);
+            _txrx.Send("status " + initialStatus);
+        }
+
 
 
 
@@ -441,9 +599,101 @@ namespace Ionic.Zip.Tests.Streams
         
                 
         [TestMethod]
+        public void Create_ZipOutputStream_Directories()
+        {
+            for (int i = 0; i < crypto.Length; i++)
+            {
+                for (int j = 0; j < compLevels.Length; j++)
+                {
+                    string password = Path.GetRandomFileName();
+
+                    for (int k = 0; k < 2; k++)
+                    {
+                        string zipFileToCreate = String.Format("Create_ZipOutputStream_Directories.Encryption.{0}.{1}.{2}.zip",
+                                                              crypto[i].ToString(), compLevels[j].ToString(), k);
+
+                        using (FileStream fs = File.Open(zipFileToCreate, FileMode.Create, FileAccess.ReadWrite))
+                        {
+                            using (var output = new ZipOutputStream(fs))
+                            {
+                                byte[] buffer;
+                                output.Password = password;
+                                output.Encryption = crypto[i];
+                                output.CompressionLevel = compLevels[j];
+                                output.PutNextEntry("entry1.txt");
+                                if (k == 0)
+                                {
+                                    buffer = Encoding.ASCII.GetBytes("This is the content for entry #1.");
+                                    output.Write(buffer, 0, buffer.Length);
+                                }
+
+                                output.PutNextEntry("entry2/");  // this will be a directory
+                                output.PutNextEntry("entry3.txt");
+                                if (k == 0)
+                                {
+                                    buffer = Encoding.ASCII.GetBytes("This is the content for entry #3.");
+                                    output.Write(buffer, 0, buffer.Length);
+                                }
+                                output.PutNextEntry("entry4.txt");  // this will be zero length
+                                output.PutNextEntry("entry5.txt");  // this will be zero length
+                            }
+                        }
+
+                        WinzipVerify(zipFileToCreate, password);
+
+                        Assert.AreEqual<int>(4, TestUtilities.CountEntries(zipFileToCreate),
+                                             "Trial ({0},{1}): The zip file created has the wrong number of entries.", i, j);
+                    }
+                }
+            }
+        }
+
+        
+
+        
+        
+        [TestMethod]
+        [ExpectedException(typeof(System.InvalidOperationException))]
+        public void Create_ZipOutputStream_Directories_Write()
+        {
+            for (int k = 0; k < 2; k++)
+            {
+                string zipFileToCreate = String.Format("Create_ZipOutputStream_Directories.{0}.zip", k);
+
+                using (FileStream fs = File.Open(zipFileToCreate, FileMode.Create, FileAccess.ReadWrite))
+                {
+                    using (var output = new ZipOutputStream(fs))
+                    {
+                        byte[] buffer;
+                        output.Encryption = EncryptionAlgorithm.None;
+                        output.CompressionLevel = Ionic.Zlib.CompressionLevel.BestCompression;
+                        output.PutNextEntry("entry1/");
+                        if (k == 0)
+                        {
+                            buffer = Encoding.ASCII.GetBytes("This is the content for entry #1.");
+                            // this should fail
+                            output.Write(buffer, 0, buffer.Length);
+                        }
+
+                        output.PutNextEntry("entry2/");  // this will be a directory
+                        output.PutNextEntry("entry3.txt");
+                        if (k == 0)
+                        {
+                            buffer = Encoding.ASCII.GetBytes("This is the content for entry #3.");
+                            output.Write(buffer, 0, buffer.Length);
+                        }
+                        output.PutNextEntry("entry4.txt");  // this will be zero length
+                        output.PutNextEntry("entry5.txt");  // this will be zero length
+                    }
+                }
+            }
+        }
+
+        
+                
+        [TestMethod]
         public void Create_ZipOutputStream_EmptyEntries()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
             for (int i = 0; i < crypto.Length; i++)
             {
                 for (int j = 0; j < compLevels.Length; j++)
@@ -642,8 +892,6 @@ namespace Ionic.Zip.Tests.Streams
         
         public void _Internal_Streams_7z_Zip(int flavor, string label)
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
-
             int[] fileCounts = { 1, 2, _rnd.Next(8) + 6, _rnd.Next(18) + 16, _rnd.Next(48) + 56 } ;
 
             for (int m=0; m < fileCounts.Length; m++)
@@ -739,8 +987,6 @@ namespace Ionic.Zip.Tests.Streams
 
         public void _Internal_Streams_WinZip_Zip(int flavor, string password, string label)
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
-
             int[] fileCounts = { 1, 2, _rnd.Next(8) + 6, _rnd.Next(18) + 16, _rnd.Next(48) + 56 } ;
 
             for (int m=0; m < fileCounts.Length; m++)
@@ -881,11 +1127,8 @@ namespace Ionic.Zip.Tests.Streams
         
         public void _Internal_Streams_ZipInput_Encryption(int flavor)
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
-
             int[] fileCounts = { 1, 2, _rnd.Next(8) + 6, _rnd.Next(18) + 16, _rnd.Next(48) + 56 } ;
             //int[] fileCounts = { 3 };
-
              
             for (int m=0; m < fileCounts.Length; m++)
             {

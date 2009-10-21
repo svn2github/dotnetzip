@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-14 23:38:21>
+// Time-stamp: <2009-October-21 17:01:28>
 //
 // ------------------------------------------------------------------
 //
@@ -479,7 +479,18 @@ namespace Ionic.Zip
             if (needZip64CentralDirectory)
             {
                 if (zip64 == Zip64Option.Never)
-                    throw new ZipException("The archive requires a ZIP64 Central Directory. Consider setting the UseZip64WhenSaving property.");
+                {
+#if NETCF
+                    throw new ZipException("The archive requires a ZIP64 Central Directory. Consider enabling ZIP64 extensions.");
+#else
+                    System.Diagnostics.StackFrame sf = new System.Diagnostics.StackFrame(1);
+                    if (sf.GetMethod().DeclaringType == typeof(ZipFile)) 
+                        throw new ZipException("The archive requires a ZIP64 Central Directory. Consider setting the ZipFile.UseZip64WhenSaving property.");
+                    else
+                        throw new ZipException("The archive requires a ZIP64 Central Directory. Consider setting the ZipOutputStream.EnableZip64 property.");
+#endif
+                    
+                }
 
                 a = GenZip64EndOfCentralDirectory(Start, Finish, countOfEntries, numSegments);
                 a2 = GenCentralDirectoryFooter(Start, Finish, zip64, countOfEntries, comment, encoding);
@@ -541,7 +552,7 @@ namespace Ionic.Zip
 
         private static byte[] GenCentralDirectoryFooter(long StartOfCentralDirectory,
                                                         long EndOfCentralDirectory,
-                                                          Zip64Option zip64,
+                                                        Zip64Option zip64,
                                                         int entryCount,
                                                         string comment,
                                                         System.Text.Encoding encoding)
@@ -710,8 +721,9 @@ namespace Ionic.Zip
             
             // offset 60
             // number of the disk with the start of the zip64 eocd
-            // (this will change later)
-            Array.Copy(BitConverter.GetBytes(numSegments-1), 0, bytes, i, 4);
+            // (this will change later)  (it will?)
+            uint x2 = (numSegments==0)?0:(uint)(numSegments-1);
+            Array.Copy(BitConverter.GetBytes(x2), 0, bytes, i, 4);
             i+=4;
 
             // offset 64

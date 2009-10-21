@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-15 04:10:02>
+// Time-stamp: <2009-October-21 17:19:11>
 //
 // ------------------------------------------------------------------
 //
@@ -264,12 +264,13 @@ namespace  Ionic.Zip
         /// </para>
         ///
         /// <para>
-        ///   This property is "provisional".  IBM437 is used to decode filenames and
-        ///   comments where possible, in other words, where no loss of data would
-        ///   result (when encoding and decoding is reflexive). This codepage is used
-        ///   when that encoding is not sufficient. It is possible, therefore, to have a
-        ///   given entry with a <c>Comment</c> encoded in IBM437 and a <c>FileName</c>
-        ///   encoded with the specified "provisional" codepage.
+        ///   This property is "provisional". When the entry in the zip archive is not
+        ///   explicitly marked as using UTF-8, then IBM437 is used to decode filenames
+        ///   and comments. If a loss of data would result from using IBM436 -
+        ///   specifically when encoding and decoding is not reflexive - the codepage
+        ///   specified here is used. It is possible, therefore, to have a given entry
+        ///   with a <c>Comment</c> encoded in IBM437 and a <c>FileName</c> encoded with
+        ///   the specified "provisional" codepage.
         /// </para>
         ///
         /// <para>
@@ -549,7 +550,7 @@ namespace  Ionic.Zip
         public override bool CanRead  { get { return true; }}
         
         /// <summary>
-        /// Always returns true.
+        /// Returns the value of <c>CanSeek</c> for the underlying (wrapped) stream.
         /// </summary>
         public override bool CanSeek  { get { return _inputStream.CanSeek; } }
         
@@ -607,9 +608,10 @@ namespace  Ionic.Zip
         ///   
         /// <para>
         ///   Applications can intermix calls to <c>Seek()</c> with calls to <see
-        ///   cref="GetNextEntry()"/>.  After a call to <c>Seek()</c>, <c>GetNextEntry()</c> will
-        ///   get the next <c>ZipEntry</c> that falls after the current position in the input
-        ///   stream.
+        ///   cref="GetNextEntry()"/>.  After a call to <c>Seek()</c>,
+        ///   <c>GetNextEntry()</c> will get the next <c>ZipEntry</c> that falls after
+        ///   the current position in the input stream. You're on your own for finding
+        ///   out just where to seek in the stream, to get to the various entries.
         /// </para>
         ///   
         /// </remarks>

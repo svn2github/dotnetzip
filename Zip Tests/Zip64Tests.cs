@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-14 06:02:19>
+// Time-stamp: <2009-October-21 07:57:44>
 //
 // ------------------------------------------------------------------
 //
@@ -46,11 +46,11 @@ namespace Ionic.Zip.Tests.Zip64
         private static string _HugeZipFile;
         private string GetHugeZipFile()
         {
-                if (_HugeZipFile == null)
-                {
-                    _HugeZipFile = _CreateHugeZipfile();
-                }
-                return _HugeZipFile;
+            if (_HugeZipFile == null)
+            {
+                _HugeZipFile = _CreateHugeZipfile();
+            }
+            return _HugeZipFile;
         }
 
         
@@ -93,6 +93,29 @@ namespace Ionic.Zip.Tests.Zip64
             }
         }
 
+        EncryptionAlgorithm[] crypto =
+            {
+                EncryptionAlgorithm.None, 
+                EncryptionAlgorithm.PkzipWeak,
+                EncryptionAlgorithm.WinZipAes128, 
+                EncryptionAlgorithm.WinZipAes256,
+            };
+
+        Ionic.Zlib.CompressionLevel[] compLevels =
+            {
+                Ionic.Zlib.CompressionLevel.None,
+                Ionic.Zlib.CompressionLevel.BestSpeed,
+                Ionic.Zlib.CompressionLevel.Default,
+                Ionic.Zlib.CompressionLevel.BestCompression,
+            };
+
+        Zip64Option[] z64 =
+            {
+                Zip64Option.Never,
+                Zip64Option.AsNecessary, 
+                Zip64Option.Always,
+            };
+            
 
         private Object LOCK = new Object();
 
@@ -214,18 +237,19 @@ namespace Ionic.Zip.Tests.Zip64
             }
         }
 
+
         private void CreateLinksToLargeFiles(string dirForLinks)
         {
             string current = Directory.GetCurrentDirectory();
             _txrx.Send("status Creating links");
             var namesOfLargeFiles = new String[]
-                        {
-                            //"c:\\dinoch\\PST\\archive.pst",
-                            "c:\\dinoch\\PST\\archive1.pst", 
-                            "c:\\dinoch\\PST\\Lists.pst",
-                            "c:\\dinoch\\PST\\OldStuff.pst",
-                            "c:\\dinoch\\PST\\Personal1.pst",
-                        };
+                {
+                    //"c:\\dinoch\\PST\\archive.pst",
+                    "c:\\dinoch\\PST\\archive1.pst", 
+                    "c:\\dinoch\\PST\\Lists.pst",
+                    "c:\\dinoch\\PST\\OldStuff.pst",
+                    "c:\\dinoch\\PST\\Personal1.pst",
+                };
 
             string subdir = Path.Combine(dirForLinks, "largelinks");
             Directory.CreateDirectory(subdir);
@@ -513,19 +537,19 @@ namespace Ionic.Zip.Tests.Zip64
                     _txrx.Send(msg);
                     break;
                     
-            case ZipProgressEventType.Saving_AfterWriteEntry:
-                _txrx.Send("test " +  _testTitle); // just in case it was missed
-                _txrx.Send("pb 1 step");
-                _numSaving++;
-                break;
+                case ZipProgressEventType.Saving_AfterWriteEntry:
+                    _txrx.Send("test " +  _testTitle); // just in case it was missed
+                    _txrx.Send("pb 1 step");
+                    _numSaving++;
+                    break;
                     
-            case ZipProgressEventType.Saving_Completed:
-                _txrx.Send("status Save completed");
-                _pb1Set = false;
-                _pb2Set = false;
-                _txrx.Send("pb 1 max 1");
-                _txrx.Send("pb 1 value 1");
-                break;
+                case ZipProgressEventType.Saving_Completed:
+                    _txrx.Send("status Save completed");
+                    _pb1Set = false;
+                    _pb2Set = false;
+                    _txrx.Send("pb 1 max 1");
+                    _txrx.Send("pb 1 value 1");
+                    break;
             }
         }
 
@@ -685,66 +709,58 @@ namespace Ionic.Zip.Tests.Zip64
 
         
         [TestMethod]
-        public void Zip64_Winzip_Unzip_Small()
+        public void Zip64_Winzip_Unzip_OneFile()
         {
-            EncryptionAlgorithm[] crypto =
-                {
-                    EncryptionAlgorithm.None, 
-                    EncryptionAlgorithm.PkzipWeak,
-                    EncryptionAlgorithm.WinZipAes128, 
-                    EncryptionAlgorithm.WinZipAes256,
-                };
-
-            Zip64Option[] z64 =
-                {
-                    Zip64Option.Never,
-                    Zip64Option.AsNecessary, 
-                    Zip64Option.Always,
-                };
-            
-
             string testBin = TestUtilities.GetTestBinDir(CurrentDir);
             string fileToZip = Path.Combine(testBin, "Ionic.Zip.dll");
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
-            for (int n=0; n < crypto.Length; n++)
+            for (int p=0; p < compLevels.Length; p++)
             {
-                for (int m=0; m < z64.Length; m++)
+                for (int n=0; n < crypto.Length; n++)
                 {
-                    string zipFile = Path.Combine(TopLevelDir, String.Format("Zip64-Winzip-Unzip-AES-{0}-{1}.zip", n, m));
-                    string password = Path.GetRandomFileName();
-
-                    TestContext.WriteLine("=================================");
-                    TestContext.WriteLine("Creating {0}...", Path.GetFileName(zipFile));
-                    TestContext.WriteLine("Encryption:{0}  Zip64:{1} pw={2}", 
-                        crypto[n].ToString(), z64[m].ToString(), password);
-                    using (var zip = new ZipFile())
+                    for (int m=0; m < z64.Length; m++)
                     {
-                        zip.Comment = String.Format("Encryption={0}  Zip64={1}  pw={2}", 
-                            crypto[n].ToString(), z64[m].ToString(), password);
-                        zip.Encryption = crypto[n];
-                        zip.Password = password;
-                        zip.UseZip64WhenSaving = z64[m];
-                        zip.AddFile(fileToZip, "file");
-                        zip.Save(zipFile);
-                    }
+                        string zipFile = Path.Combine(TopLevelDir, String.Format("Zip64-Winzip-Unzip.OneFile.{0}.{1}.{2}.zip",
+                                                                                 compLevels[p].ToString(),
+                                                                                 crypto[n].ToString(),
+                                                                                 z64[m].ToString()));
+                        string password = Path.GetRandomFileName();
 
-                    TestContext.WriteLine("Unzipping with WinZip...");
+                        TestContext.WriteLine("=================================");
+                        TestContext.WriteLine("Creating {0}...", Path.GetFileName(zipFile));
+                        TestContext.WriteLine("Encryption:{0}  Zip64:{1} pw={2}  compLevel={3}", 
+                                              crypto[n].ToString(), z64[m].ToString(), password, compLevels[p].ToString());
+                    
+                        using (var zip = new ZipFile())
+                        {
+                            zip.Comment = String.Format("Encryption={0}  Zip64={1}  pw={2}", 
+                                                        crypto[n].ToString(), z64[m].ToString(), password);
+                            zip.Encryption = crypto[n];
+                            zip.Password = password;
+                            zip.CompressionLevel = compLevels[p];
+                            zip.UseZip64WhenSaving = z64[m];
+                            zip.AddFile(fileToZip, "file");
+                            zip.Save(zipFile);
+                        }
+
+                        TestContext.WriteLine("Unzipping with WinZip...");
             
-                    string extractDir = String.Format("extract.{0}.{1}",n,m);
-                    Directory.CreateDirectory(extractDir);
+                        string extractDir = String.Format("extract.{0}.{1}.{2}",p,n,m);
+                        Directory.CreateDirectory(extractDir);
 
-                    // this will throw if the command has a non-zero exit code.
-                    this.Exec(wzunzip,
-                              String.Format("-s{0} -d {1} {2}\\", password, zipFile, extractDir));
+                        // this will throw if the command has a non-zero exit code.
+                        this.Exec(wzunzip,
+                                  String.Format("-s{0} -d {1} {2}\\", password, zipFile, extractDir));
+                    }
                 }
             }
         }
         
 
         
-        [Timeout(19400000), TestMethod] // in milliseconds. 7200000 = 2 hours; 194 = more than 4 hrs
+        [Timeout((int)(60 * 60 * 1000 * 5)), TestMethod] // in milliseconds. 
         public void Zip64_Winzip_Unzip_Huge()
         {
             try
@@ -828,7 +844,7 @@ namespace Ionic.Zip.Tests.Zip64
                         nCycles++;
                         _txrx.Send(String.Format("status Extracting {1}/{2} :: {0}", name, nCycles, wzzipEntryCount));
                         this.Exec(wzunzip,
-                                       String.Format("-d {0} {1}\\ {2}", zipFileToExtract, extractDir, name));
+                                  String.Format("-d {0} {1}\\ {2}", zipFileToExtract, extractDir, name));
                         string path = Path.Combine(extractDir, name);
                         _txrx.Send("pb 1 step");
                         Assert.IsTrue(File.Exists(path), "extracted file ({0}) does not exist", path);
@@ -879,17 +895,17 @@ namespace Ionic.Zip.Tests.Zip64
             {
                 int n = _rnd.Next(2);
                 fileName = string.Format("Pippo{0}.{1}", i, (n==0) ? "bin" : "txt" );
-                    if (i != 0)
+                if (i != 0)
+                {
+                    int x = _rnd.Next(6);
+                    if (x != 0)
                     {
-                        int x = _rnd.Next(6);
-                        if (x != 0)
-                        {
-                            string folderName = string.Format("folder{0}", x);
-                            fileName = Path.Combine(folderName, fileName);
-                            if (!Directory.Exists(Path.Combine(dir, folderName)))
-                                Directory.CreateDirectory(Path.Combine(dir, folderName));
-                        }
+                        string folderName = string.Format("folder{0}", x);
+                        fileName = Path.Combine(folderName, fileName);
+                        if (!Directory.Exists(Path.Combine(dir, folderName)))
+                            Directory.CreateDirectory(Path.Combine(dir, folderName));
                     }
+                }
                 fileName = Path.Combine(dir, fileName);
                 // first file is 2x larger
                 fileSize = (firstFileDone) ? (baseSize + _rnd.Next(0x880000)) : (2*baseSize);
@@ -910,13 +926,13 @@ namespace Ionic.Zip.Tests.Zip64
         {
             get
             {
-               if (_wzzip == null)
-               {
-                string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                _wzzip = Path.Combine(progfiles, "winzip\\wzzip.exe");
-                Assert.IsTrue(File.Exists(_wzzip), "exe ({0}) does not exist", _wzzip);
-               }
-               return _wzzip;
+                if (_wzzip == null)
+                {
+                    string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
+                    _wzzip = Path.Combine(progfiles, "winzip\\wzzip.exe");
+                    Assert.IsTrue(File.Exists(_wzzip), "exe ({0}) does not exist", _wzzip);
+                }
+                return _wzzip;
             }
         }
         
@@ -925,18 +941,18 @@ namespace Ionic.Zip.Tests.Zip64
         {
             get
             {
-               if (_wzunzip == null)
-               {
-                string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                _wzunzip = Path.Combine(progfiles, "winzip\\wzunzip.exe");
-                Assert.IsTrue(File.Exists(_wzunzip), "exe ({0}) does not exist", _wzunzip);
-               }
-               return _wzunzip;
+                if (_wzunzip == null)
+                {
+                    string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
+                    _wzunzip = Path.Combine(progfiles, "winzip\\wzunzip.exe");
+                    Assert.IsTrue(File.Exists(_wzunzip), "exe ({0}) does not exist", _wzunzip);
+                }
+                return _wzunzip;
             }
         }
         
         
-        [Timeout(36000000), TestMethod] // in milliseconds. 3600 000 0 = 10 hours
+        [Timeout((int)(60 * 60 * 1000 * 10)), TestMethod] // in milliseconds. 3600 000 0 = 10 hours
         public void Zip64_Winzip_Zip_Huge()
         {
             try
@@ -1002,13 +1018,13 @@ namespace Ionic.Zip.Tests.Zip64
                 FileInfo fi = new FileInfo(zipFileToCreate);
                 Assert.IsTrue(fi.Length > (long)System.UInt32.MaxValue, "The zip file ({0}) is not large enough.", zipFileToCreate);
                     
-                    // Now use DotNetZip to extract the large zip file to the bit bucket.
-                    TestContext.WriteLine("Verifying the new Zip with DotNetZip");
-                    _txrx.Send("status Verifying the zip");
-                    VerifyZip(zipFileToCreate);
+                // Now use DotNetZip to extract the large zip file to the bit bucket.
+                TestContext.WriteLine("Verifying the new Zip with DotNetZip");
+                _txrx.Send("status Verifying the zip");
+                VerifyZip(zipFileToCreate);
 
-                    _txrx.Send("pb 0 step");
-                    System.Threading.Thread.Sleep(120);
+                _txrx.Send("pb 0 step");
+                System.Threading.Thread.Sleep(120);
 
             } 
             finally
@@ -1027,7 +1043,7 @@ namespace Ionic.Zip.Tests.Zip64
 
 
         
-        [Timeout(14400000), TestMethod] // in milliseconds. 14400000 = 4 hours
+        [TestMethod, Timeout((int)(60 * 60 * 1000 * 4))] // in milliseconds. 14400000 = 4 hours
         public void Zip64_Winzip_Setup()
         {
             // not really a test.  This thing just sets up the big zip file. Can run it
@@ -1065,8 +1081,8 @@ namespace Ionic.Zip.Tests.Zip64
 
 
         
-        [TestMethod, Timeout(25200000)]
-            public void Zip64_Over_4gb()
+        [TestMethod, Timeout(25200000)]  // in milliseconds,  25,200,000 = 7 hrs
+        public void Zip64_Over_4gb()
         {
             try
             {
@@ -1167,6 +1183,168 @@ namespace Ionic.Zip.Tests.Zip64
                     }
                     catch { }
                 }
+            }
+        }
+
+
+        [TestMethod, Timeout(3600000)]  // timeout is in milliseconds, (3600 * 1000) = 1 hour;
+        public void Zip64_Over_65534_Entries_NoEncryption_DefaultCompression_AsNecessary()
+        {
+            _Internal_Zip64_Over_65534_Entries(Zip64Option.AsNecessary, EncryptionAlgorithm.None, Ionic.Zlib.CompressionLevel.Default);
+        }
+
+        [TestMethod, Timeout(3600000)]  // timeout is in milliseconds, (3600 * 1000) = 1 hour;
+        public void Zip64_Over_65534_Entries_PkZipEncryption_DefaultCompression_AsNecessary()
+        {
+            _Internal_Zip64_Over_65534_Entries(Zip64Option.AsNecessary, EncryptionAlgorithm.PkzipWeak, Ionic.Zlib.CompressionLevel.Default);
+        }
+
+        [TestMethod, Timeout(7200000)]  // timeout is in milliseconds, (3600 * 1000) = 1 hour;
+        public void Zip64_Over_65534_Entries_WinZipEncryption_DefaultCompression_AsNecessary()
+        {
+            _Internal_Zip64_Over_65534_Entries(Zip64Option.AsNecessary, EncryptionAlgorithm.WinZipAes256, Ionic.Zlib.CompressionLevel.Default);
+        }
+
+
+        [TestMethod, Timeout(3600000)]  // timeout is in milliseconds, (3600 * 1000) = 1 hour;
+        public void Zip64_Over_65534_Entries_NoEncryption_DefaultCompression_Always()
+        {
+            _Internal_Zip64_Over_65534_Entries(Zip64Option.Always, EncryptionAlgorithm.None, Ionic.Zlib.CompressionLevel.Default);
+        }
+
+        [TestMethod, Timeout(3600000)]  // timeout is in milliseconds, (3600 * 1000) = 1 hour;
+        public void Zip64_Over_65534_Entries_PkZipEncryption_DefaultCompression_Always()
+        {
+            _Internal_Zip64_Over_65534_Entries(Zip64Option.Always, EncryptionAlgorithm.PkzipWeak, Ionic.Zlib.CompressionLevel.Default);
+        }
+
+        [TestMethod, Timeout(7200000)]  // timeout is in milliseconds, (3600 * 1000) = 1 hour;
+        public void Zip64_Over_65534_Entries_WinZipEncryption_DefaultCompression_Always()
+        {
+            _Internal_Zip64_Over_65534_Entries(Zip64Option.Always, EncryptionAlgorithm.WinZipAes256, Ionic.Zlib.CompressionLevel.Default);
+        }
+
+
+        
+        
+        [TestMethod, Timeout(30 * 60 * 1000)]  // timeout is in milliseconds, (30 * 60 * 1000) = 30 mins
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        public void Zip64_Over_65534_Entries_NOZIP64()
+        {
+            _Internal_Zip64_Over_65534_Entries(Zip64Option.Never, EncryptionAlgorithm.None, Ionic.Zlib.CompressionLevel.Default);
+        }
+
+
+        int fileCount;
+        public void _Internal_Zip64_Over_65534_Entries(Zip64Option z64option, EncryptionAlgorithm encryption, Ionic.Zlib.CompressionLevel compression)
+        {
+            // Emitting a zip file with > 65534 entries requires the use of ZIP64 in the central directory. 
+            fileCount = _rnd.Next(7616)+65534;
+            //fileCount = _rnd.Next(761)+6534;
+
+            string zipFileToCreate = String.Format("Zip64.ZipFile_Over_65534_Entries.{0}.{1}.{2}.zip",
+                                                   z64option.ToString(), encryption.ToString(), compression.ToString());
+                    
+            StartProgressMonitor(zipFileToCreate);
+            StartProgressClient(zipFileToCreate,
+                                String.Format("ZipFile, {0} entries, E({1}), C({2})", fileCount,encryption.ToString(), compression.ToString()),
+                                "starting up...");
+
+            _txrx.Send("pb 0 max 3"); // 3 stages: AddEntry, Save, Verify
+            _txrx.Send("pb 0 value 0");
+            
+            string password = Path.GetRandomFileName();
+
+            string statusString = String.Format("status Encryption:{0} Compression:{1}...",
+                                                encryption.ToString(),
+                                                compression.ToString());
+            _txrx.Send(statusString);
+            int dirCount= 0;
+            using (var zip = new ZipFile())
+            {
+                _txrx.Send(String.Format("pb 1 max {0}", fileCount/4));
+                _txrx.Send("pb 1 value 0");
+                        
+                zip.Password = password;
+                zip.Encryption = encryption;
+                zip.CompressionLevel = compression;
+                zip.SaveProgress += SaveProgress2;
+                zip.UseZip64WhenSaving = z64option;
+                // save space when saving the file:
+                zip.EmitTimesInWindowsFormatWhenSaving = false;
+                zip.EmitTimesInUnixFormatWhenSaving = false;
+                
+                for (int m=0; m<fileCount;  m++) 
+                {
+                    if (_rnd.Next(7)==0)
+                    {
+                        string entryName = String.Format("{0:D5}", m);
+                        zip.AddDirectoryByName(entryName);
+                        dirCount++;
+                    }
+                    else
+                    {
+                        string entryName = String.Format("{0:D5}.txt", m);
+                        if (_rnd.Next(8)==0)
+                        {
+                            string content = String.Format("This is the content for entry #{0}.", m);
+                            byte[] buffer = System.Text.Encoding.ASCII.GetBytes(content);
+                            zip.AddEntry(entryName, buffer);
+                        }
+                        else
+                            zip.AddEntry(entryName, Stream.Null);
+                    }
+
+                    if (m % 4 == 0)
+                        _txrx.Send("pb 1 step");
+
+                    if (m % 100 == 0)
+                        _txrx.Send(statusString + " count " + m.ToString());
+                }
+
+                _txrx.Send("pb 0 step");
+                _txrx.Send(statusString + " Saving...");
+                zip.Save(zipFileToCreate);
+            }
+
+            _txrx.Send("pb 0 step");
+            _txrx.Send(statusString + " Verifying...");
+            
+            // exec WinZip. But the output is really large, so we pass emitOutput=false . 
+            WinzipVerify(zipFileToCreate, password, false);
+
+            Assert.AreEqual<int>(fileCount-dirCount, TestUtilities.CountEntries(zipFileToCreate),
+                                 "{0}: The zip file created has the wrong number of entries.", zipFileToCreate);
+
+            _txrx.Send("stop");
+        } 
+         
+
+        
+        private void SaveProgress2(object sender, SaveProgressEventArgs e)
+        {
+            switch (e.EventType)
+            {
+                case ZipProgressEventType.Saving_Started:
+                    _txrx.Send("status saving started...");
+                    _txrx.Send(String.Format("pb 1 max {0}", fileCount));
+                    _numSaving= 0;
+                    break;
+
+                case ZipProgressEventType.Saving_AfterWriteEntry:
+                    _txrx.Send("pb 1 step");
+                    _numSaving++;
+                    if (_numSaving % 50 == 0)
+                    _txrx.Send(String.Format("status Saving entry {0}/{1}",
+                                             _numSaving, fileCount));
+                    break;
+                    
+                case ZipProgressEventType.Saving_Completed:
+                    _txrx.Send("status Save completed");
+                    _txrx.Send("pb 0 value 2");
+                    _txrx.Send("pb 1 max 1");
+                    _txrx.Send("pb 1 value 1");
+                    break;
             }
         }
 

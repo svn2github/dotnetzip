@@ -46,36 +46,37 @@ namespace Ionic.Zip.Tests.Update
         public void UpdateZip_AddNewDirectory()
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "UpdateZip_AddNewDirectory.zip");
+
             String CommentOnArchive = "BasicTests::UpdateZip_AddNewDirectory(): This archive will be overwritten.";
+
+            string dirToZip = Path.Combine(TopLevelDir, "zipup");
 
             int i, j;
             int entries = 0;
-            string Subdir = null;
+            string subdir = null;
             String filename = null;
             int subdirCount = _rnd.Next(4) + 4;
             for (i = 0; i < subdirCount; i++)
             {
-                Subdir = Path.Combine(TopLevelDir, "Directory." + i);
-                Directory.CreateDirectory(Subdir);
+                subdir = Path.Combine(dirToZip, "Directory." + i);
+                Directory.CreateDirectory(subdir);
 
                 int fileCount = _rnd.Next(3) + 3;
                 for (j = 0; j < fileCount; j++)
                 {
-                    filename = Path.Combine(Subdir, "file" + j + ".txt");
+                    filename = Path.Combine(subdir, "file" + j + ".txt");
                     TestUtilities.CreateAndFillFileText(filename, _rnd.Next(12000) + 5000);
                     entries++;
                 }
             }
 
-
-            string RelativeDir = Path.GetFileName(TopLevelDir);
-
-            using (ZipFile zip = new ZipFile(zipFileToCreate))
+            using (ZipFile zip = new ZipFile())
             {
-                zip.AddDirectory(RelativeDir);
+                zip.AddDirectory(dirToZip);
                 zip.Comment = CommentOnArchive;
-                zip.Save();
+                zip.Save(zipFileToCreate);
             }
+
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), entries,
                     "The created Zip file has an unexpected number of entries.");
 
@@ -83,22 +84,18 @@ namespace Ionic.Zip.Tests.Update
             WinzipVerify(zipFileToCreate);
             
             // Now create a new subdirectory and add that one
-            Subdir = Path.Combine(TopLevelDir, "NewSubDirectory");
-            Directory.CreateDirectory(Subdir);
+            subdir = Path.Combine(TopLevelDir, "NewSubDirectory");
+            Directory.CreateDirectory(subdir);
 
-            filename = Path.Combine(Subdir, "newfile.txt");
+            filename = Path.Combine(subdir, "newfile.txt");
             TestUtilities.CreateAndFillFileText(filename, _rnd.Next(12000) + 5000);
             entries++;
 
-            string DirToAdd = Path.Combine(RelativeDir,
-                Path.GetFileName(Subdir));
-
             using (ZipFile zip = new ZipFile(zipFileToCreate))
             {
-                zip.AddDirectory(DirToAdd);
+                zip.AddDirectory(subdir);
                 zip.Comment = "OVERWRITTEN";
-                // this will overwrite the existing zip file
-
+                // this will add entries into the existing zip file
                 zip.Save();
             }
 
@@ -147,9 +144,9 @@ namespace Ionic.Zip.Tests.Update
                                  "Fie! The updated Zip file has the wrong number of entries.");
 
             // test extract (and implicitly check CRCs, passwords, etc)
-            VerifyZip(zipFileToCreate, password);        
+            VerifyZip(zipFileToCreate, password);
 
-            byte[] buffer = new byte[_rnd.Next(10000)+10000];
+            byte[] buffer = new byte[_rnd.Next(10000) + 10000];
             _rnd.NextBytes(buffer);
             using (var zip = ZipFile.Read(zipFileToCreate))
             {
@@ -162,7 +159,7 @@ namespace Ionic.Zip.Tests.Update
             }
 
             // Verify the correct number of files are in the zip
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), numFilesToCreate +1,
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), numFilesToCreate + 1,
                                  "Fie! The updated Zip file has the wrong number of entries.");
 
             // test extract (and implicitly check CRCs, passwords, etc)
@@ -170,7 +167,7 @@ namespace Ionic.Zip.Tests.Update
         }
 
 
-        
+
         private void VerifyZip(string zipfile, string password)
         {
             Stream bitBucket = Stream.Null;
@@ -188,7 +185,7 @@ namespace Ionic.Zip.Tests.Update
             System.Threading.Thread.Sleep(0x500);
         }
 
-        
+
 
         [TestMethod]
         public void UpdateZip_RemoveEntry_ByLastModTime()
@@ -746,7 +743,7 @@ namespace Ionic.Zip.Tests.Update
             }
 
             // Verify the files are in the zip
-            Assert.AreEqual<int>(entriesToBeAdded, TestUtilities.CountEntries(zipFileToCreate), 
+            Assert.AreEqual<int>(entriesToBeAdded, TestUtilities.CountEntries(zipFileToCreate),
                 "The Zip file has the wrong number of entries.");
 
             // selectively remove a few files in the zip archive
@@ -843,7 +840,7 @@ namespace Ionic.Zip.Tests.Update
             }
 
             // Verify the files are in the zip
-            Assert.AreEqual<int>(entriesToBeAdded, TestUtilities.CountEntries(zipFileToCreate), 
+            Assert.AreEqual<int>(entriesToBeAdded, TestUtilities.CountEntries(zipFileToCreate),
                 "The Zip file has the wrong number of entries.");
 
             // remove all the entries from the zip archive
@@ -1997,7 +1994,7 @@ namespace Ionic.Zip.Tests.Update
             }
         }
 
-        
+
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void UpdateZip_SetIndexer_Error()

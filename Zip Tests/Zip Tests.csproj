@@ -72,11 +72,13 @@
     <Compile Include="BasicTests.cs" />
     <Compile Include="Selector.cs" />
     <Compile Include="SelfExtractor.cs" />
-    <Compile Include="TestUtilities.cs" />
     <Compile Include="UnicodeTests.cs" />
     <Compile Include="UpdateTests.cs" />
     <Compile Include="WinZipAesTests.cs" />
     <Compile Include="Zip64Tests.cs" />
+    <Compile Include="TestUtilities.cs" />
+    <Compile Include="IonicTestClass.cs" />
+    <Compile Include="RandomTextGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="zips\winzip-sfx.exe">

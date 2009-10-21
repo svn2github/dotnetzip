@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-15 03:41:11>
+// Time-stamp: <2009-October-21 03:26:54>
 //
 // ------------------------------------------------------------------
 //
@@ -559,12 +559,6 @@ namespace Ionic.Zip
         {
             if (_container.ZipFile != null)
                 _ioOperationCanceled = _container.ZipFile.OnExtractExisting(this, path);
-        }
-
-        private void OnWriteBlock(Int64 bytesXferred, Int64 totalBytesToXfer)
-        {
-            if (_container.ZipFile != null)
-                _ioOperationCanceled = _container.ZipFile.OnSaveBlock(this, bytesXferred, totalBytesToXfer);
         }
 
         private static void ReallyDelete(string fileName)

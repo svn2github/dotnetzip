@@ -486,7 +486,7 @@ namespace Ionic.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_AddFile_OnlyZeroLengthFiles()
         {
-            _Internal_ZeroLengthFiles(_rnd.Next(33) + 3, "CreateZip_AddFile_OnlyZeroLengthFiles");
+            _Internal_ZeroLengthFiles(_rnd.Next(33) + 3, "CreateZip_AddFile_OnlyZeroLengthFiles", null);
         }
 
         [TestMethod]
@@ -498,7 +498,7 @@ namespace Ionic.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_AddFile_OneZeroLengthFile()
         {
-            _Internal_ZeroLengthFiles(1, "CreateZip_AddFile_OneZeroLengthFile");
+            _Internal_ZeroLengthFiles(1, "CreateZip_AddFile_OneZeroLengthFile", null);
         }
 
 
@@ -508,15 +508,10 @@ namespace Ionic.Zip.Tests.Basic
             _Internal_ZeroLengthFiles(1, "CreateZip_AddFile_OneZeroLengthFile_Password", Path.GetRandomFileName());
         }
 
-        private void _Internal_ZeroLengthFiles(int fileCount, string nameStub)
-        {
-            _Internal_ZeroLengthFiles(fileCount, nameStub, null);
-        }
         
         private void _Internal_ZeroLengthFiles(int fileCount, string nameStub, string password)
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, nameStub + ".zip");
-            Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
             int i;
             string[] FilesToZip = new string[fileCount];
@@ -529,13 +524,10 @@ namespace Ionic.Zip.Tests.Basic
                 zip.StatusMessageTextWriter = sw;
                 zip.Password = password;
                 for (i = 0; i < FilesToZip.Length; i++)
-                {
-                    string pathToUse = Path.Combine(Path.GetFileName(TopLevelDir),
-                        Path.GetFileName(FilesToZip[i]));
-                    zip.AddFile(pathToUse);
-                }
+                    zip.AddFile(FilesToZip[i]);
                 zip.Save(zipFileToCreate);
             }
+
             string status = sw.ToString();
             TestContext.WriteLine("save output: " + status);
 

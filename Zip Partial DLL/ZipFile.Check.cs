@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-11 11:07:00>
+// Time-stamp: <2009-October-21 16:48:27>
 //
 // ------------------------------------------------------------------
 //
@@ -203,11 +203,14 @@ namespace Ionic.Zip
         ///
         /// <para>
         ///   In cases of data error, the directory in a zip file can get out of
-        ///   synch with the entries in the zip file.  This method returns true if
-        ///   this has occurred.
+        ///   synch with the entries in the zip file.  This method attempts to fix 
+        ///   the zip file if this has occurred.
         /// </para>
         ///
         /// <para> This can take a long time for large zip files. </para>
+        ///
+        /// <para> This won't work if the zip file uses a non-standard
+        /// code page - neither IBM437 nor UTF-8. </para>
         ///
         /// <para>
         ///   This method is not supported in the Reduced or Compact Framework
@@ -236,6 +239,18 @@ namespace Ionic.Zip
         /// <summary>
         /// Provides a human-readable string with information about the ZipFile.
         /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     The information string contains 10 lines or so, about each ZipEntry,
+        ///     describing whether encryption is in use, the compressed and uncompressed
+        ///     length of the entry, the offset of the entry, and so on. As a result the
+        ///     information string can be very long for zip files that contain many
+        ///     entries.
+        ///   </para>
+        ///   <para>
+        ///     This information is mostly useful for diagnostic purposes. 
+        ///   </para>
+        /// </remarks>
         public string Info
         {
             get
