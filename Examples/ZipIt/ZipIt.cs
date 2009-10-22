@@ -42,7 +42,8 @@ namespace Ionic.Zip.Examples
             "                           (attrs = H) OR (name != *.xml) \n" +
             "                           (size > 1g) AND (mtime < 2009-06-29) \n" +
             "                           (ctime > 2009-04-29) AND (size < 10kb) \n" +
-            "                         You must surround an expression that includes spaces with quotes.\n" +
+            "                         Filenames can include full paths. You must surround a filename \n" +
+            "                         that includes spaces with single quotes.\n" +
             "  -64                  - use ZIP64 extensions, for large files or large numbers of files.\n" +
             "  -aes                 - use WinZip-compatible AES 256-bit encryption for entries\n" +
             "                         subsequently added to the archive. Requires a password.\n" +
