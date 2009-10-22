@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-15 09:15:10>
+// Time-stamp: <2009-October-22 16:24:29>
 //
 // ------------------------------------------------------------------
 //
@@ -340,6 +340,80 @@ namespace Ionic.Zip
         {
             get;set;
         }
+
+        
+        /// <summary>
+        ///   The file version number to embed into the generated EXE. It will show up, for
+        ///   example, during a mouseover in Windows Explorer.
+        /// </summary>
+        ///
+        public Version FileVersion
+        {
+            get;set;
+        }
+
+        /// <summary>
+        ///   The product version to embed into the generated EXE. It will show up, for
+        ///   example, during a mouseover in Windows Explorer.
+        /// </summary>
+        ///
+        /// <remarks>
+        ///   You can use any arbitrary string, but a human-readable version number is
+        ///   recommended. For example "v1.2 alpha" or "v4.2 RC2".  If you specify nothing,
+        ///   then there is no product version embedded into the EXE.
+        /// </remarks>
+        ///
+        public String ProductVersion
+        {
+            get;set;
+        }
+
+        /// <summary>
+        ///   The copyright notice, if any, to embed into the generated EXE. 
+        /// </summary>
+        ///
+        /// <remarks>
+        ///   It will show up, for example, while viewing properties of the file in
+        ///   Windows Explorer.  You can use any arbitrary string, but typically you
+        ///   want something like "Copyright © Dino Chiesa 2008, 2009".
+        /// </remarks>
+        ///
+        public String Copyright
+        {
+            get;set;
+        }
+
+        
+        /// <summary>
+        ///   The description to embed into the generated EXE. 
+        /// </summary>
+        ///
+        /// <remarks>
+        ///   Use any arbitrary string.  It will show up, for example, during a
+        ///   mouseover in Windows Explorer.  If you specify nothing, then the string
+        ///   "DotNetZip SFX Archive" is embedded into the EXE as the description.
+        /// </remarks>
+        ///
+        public String Description
+        {
+            get;set;
+        }
+        
+        /// <summary>
+        ///   The product name to embed into the generated EXE. 
+        /// </summary>
+        ///
+        /// <remarks>
+        ///   Use any arbitrary string. 
+        ///   It will show up, for example, while viewing properties of the EXE file in
+        ///   Windows Explorer.  
+        /// </remarks>
+        ///
+        public String ProductName
+        {
+            get;set;
+        }
+
         
     }
 
@@ -701,11 +775,38 @@ namespace Ionic.Zip
                     .Append("\n//\n// --------------------------------------------\n\n\n");
                         
                 // assembly attributes
-                sb.Append("[assembly: System.Reflection.AssemblyTitle(\"DotNetZip SFX Archive\")]\n")
-                    .Append("[assembly: System.Reflection.AssemblyProduct(\"ZipLibrary\")]\n")
-                    .Append("[assembly: System.Reflection.AssemblyCopyright(\"Copyright © Dino Chiesa 2008, 2009\")]\n")
-                    .Append(String.Format("[assembly: System.Reflection.AssemblyVersion(\"{0}\")]\n\n", ZipFile.LibraryVersion.ToString()));
- 
+                if (!String.IsNullOrEmpty(options.Description))
+                    sb.Append("[assembly: System.Reflection.AssemblyTitle(\""
+                              + options.Description.Replace("\"", "")
+                              + "\")]\n");
+                else
+                    sb.Append("[assembly: System.Reflection.AssemblyTitle(\"DotNetZip SFX Archive\")]\n");
+
+                if (!String.IsNullOrEmpty(options.ProductVersion))
+                    sb.Append("[assembly: System.Reflection.AssemblyInformationalVersion(\""
+                              + options.ProductVersion.Replace("\"", "")
+                              + "\")]\n");
+
+                string copyright = "Extractor: Copyright © Dino Chiesa 2008, 2009";
+                if (!String.IsNullOrEmpty(options.Copyright))
+                    copyright += "Contents: " + options.Copyright.Replace("\"", "");
+
+                    
+                if (!String.IsNullOrEmpty(options.ProductName))
+                    sb.Append("[assembly: System.Reflection.AssemblyProduct(\"")
+                        .Append(options.ProductName.Replace("\"", ""))
+                        .Append("\")]\n");
+                else 
+                    sb.Append("[assembly: System.Reflection.AssemblyProduct(\"DotNetZip\")]\n");
+
+
+                sb.Append("[assembly: System.Reflection.AssemblyCopyright(\"" + copyright + "\")]\n")
+                    .Append(String.Format("[assembly: System.Reflection.AssemblyVersion(\"{0}\")]\n", ZipFile.LibraryVersion.ToString()));
+                if (options.FileVersion != null)
+                    sb.Append(String.Format("[assembly: System.Reflection.AssemblyFileVersion(\"{0}\")]\n",
+                                          options.FileVersion.ToString()));
+
+                sb.Append("\n\n\n");
 
                 // Set the default extract location if it is available
                 string extractLoc = options.DefaultExtractDirectory;

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-21 17:01:28>
+// Time-stamp: <2009-October-22 13:50:33>
 //
 // ------------------------------------------------------------------
 //
@@ -384,7 +384,27 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// </remarks>
+        ///
+        /// <example>
+        ///
+        ///   This example saves the zipfile content into a MemoryStream, and
+        ///   then gets the array of bytes from that MemoryStream.
+        ///
+        /// <code lang="C#">
+        /// using (var zip = new Ionic.Zip.ZipFile())
+        /// {
+        ///     zip.CompressionLevel= Ionic.Zlib.CompressionLevel.BestCompression;
+        ///     zip.Password = "VerySecret.";
+        ///     zip.Encryption = EncryptionAlgorithm.WinZipAes128;
+        ///     zip.AddFile(sourceFileName);
+        ///     MemoryStream output = new MemoryStream();
+        ///     zip.Save(output);
         /// 
+        ///     byte[] zipbytes = output.ToArray();
+        /// }
+        /// </code>
+        /// </example>
+        ///
         /// <param name="outputStream">
         ///   The <c>System.IO.Stream</c> to write to. It must be writable.
         /// </param>

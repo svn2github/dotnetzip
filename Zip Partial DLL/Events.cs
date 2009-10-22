@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-21 17:30:25>
+// Time-stamp: <2009-October-22 14:23:20>
 //
 // ------------------------------------------------------------------
 //
@@ -52,7 +52,7 @@ namespace Ionic.Zip
     /// private void WriteEntry (String filename, Stream output)
     /// {
     ///     DataSet ds1 = ObtainDataSet();
-    ///     ds1.WriteXml(stream);
+    ///     ds1.WriteXml(output);
     /// }
     /// 
     /// private void Run()
