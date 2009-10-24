@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-22 14:23:20>
+// Time-stamp: <2009-October-23 18:56:24>
 //
 // ------------------------------------------------------------------
 //
@@ -57,7 +57,7 @@ namespace Ionic.Zip
     /// 
     /// private void Run()
     /// {
-    ///     Using zip = New ZipFile
+    ///     using (var zip = new ZipFile())
     ///     {
     ///         zip.AddEntry(zipEntryName, WriteEntry);
     ///         zip.Save(zipFileName);

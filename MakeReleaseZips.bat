@@ -378,7 +378,7 @@ goto :EOF
 
 
 :END
-
+@if exist c:\dinoch\dev\dotnet\pronounceword.exe (c:\dinoch\dev\dotnet\pronounceword.exe All Done > nul)
 echo release zips are in releases\v%version%-%stamp%
 
 endlocal

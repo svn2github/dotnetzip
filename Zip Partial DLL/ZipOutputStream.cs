@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-21 17:21:40>
+// Time-stamp: <2009-October-23 19:22:52>
 //
 // ------------------------------------------------------------------
 //
@@ -108,7 +108,7 @@ namespace  Ionic.Zip
     public class ZipOutputStream : Stream
     {
         /// <summary>
-        ///   Create a ZipOutputStream.
+        ///   Create a ZipOutputStream, wrapping an existing stream.
         /// </summary>
         ///
         /// <remarks>
@@ -165,6 +165,66 @@ namespace  Ionic.Zip
         /// </example>
         public ZipOutputStream(Stream stream)  : this (stream, false) { }
 
+
+
+        /// <summary>
+        ///   Create a ZipOutputStream that writes to a filesystem file.
+        /// </summary>
+        ///
+        /// <remarks>
+        ///   The <see cref="ZipFile"/> class is generally easier to use when creating
+        ///   zip files. The ZipOutputStream offers a different metaphor for creating a
+        ///   zip file, based on the <see cref="System.IO.Stream"/> class.
+        /// </remarks>
+        ///
+        /// <param name="fileName">
+        ///   The name of the zip file to create. 
+        /// </param>
+        ///
+        /// <example>
+        ///
+        ///   This example shows how to create a zip file, using the
+        ///   ZipOutputStream class.
+        ///
+        /// <code>
+        /// private void Zipup()
+        /// {
+        ///     if (filesToZip.Count == 0)
+        ///     {
+        ///         System.Console.WriteLine("Nothing to do.");
+        ///         return;
+        ///     }
+        /// 
+        ///     using (var output= new ZipOutputStream(outputFileName))
+        ///     {
+        ///         output.Password = "VerySecret!";
+        ///         output.Encryption = EncryptionAlgorithm.WinZipAes256;
+        ///
+        ///         foreach (string inputFileName in filesToZip)
+        ///         {
+        ///             System.Console.WriteLine("file: {0}", inputFileName);
+        ///
+        ///             output.PutNextEntry(inputFileName); 
+        ///             using (var input = File.Open(inputFileName, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Write ))
+        ///             {
+        ///                 byte[] buffer= new byte[2048];
+        ///                 int n;
+        ///                 while ((n= input.Read(buffer,0,buffer.Length)) > 0)
+        ///                 {
+        ///                     output.Write(buffer,0,n);
+        ///                 }
+        ///             }
+        ///         }
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
+        public ZipOutputStream(String fileName)
+        {
+            Stream stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite, FileShare.None );
+            _Init(stream, false);
+        }
+
         
         /// <summary>
         ///   Create a ZipOutputStream.
@@ -185,6 +245,11 @@ namespace  Ionic.Zip
         ///   to remain open after the <c>ZipOutputStream</c> has been closed.
         /// </param>
         public ZipOutputStream(Stream stream, bool leaveOpen)
+        {
+            _Init(stream, leaveOpen);
+        }
+
+        private void _Init(Stream stream, bool leaveOpen)
         {
             _outputStream = stream;
             CompressionLevel = Ionic.Zlib.CompressionLevel.Default;
