@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-23 19:22:52>
+// Time-stamp: <2009-October-23 21:02:12>
 //
 // ------------------------------------------------------------------
 //
@@ -127,7 +127,7 @@ namespace  Ionic.Zip
         ///   This example shows how to create a zip file, using the
         ///   ZipOutputStream class.
         ///
-        /// <code>
+        /// <code lang="C#">
         /// private void Zipup()
         /// {
         ///     if (filesToZip.Count == 0)
@@ -162,9 +162,37 @@ namespace  Ionic.Zip
         ///     }
         /// }
         /// </code>
+        ///
+        /// <code lang="VB">
+        /// Private Sub Zipup()
+        ///     Dim outputFileName As String = "XmlData.zip"
+        ///     Dim filesToZip As String() = Directory.GetFiles(".", "*.xml")
+        ///     If (filesToZip.Length = 0) Then
+        ///         Console.WriteLine("Nothing to do.")
+        ///     Else
+        ///         Using raw As FileStream = File.Open(outputFileName, FileMode.Create, FileAccess.ReadWrite)
+        ///             Using output As ZipOutputStream = New ZipOutputStream(raw)
+        ///                 output.Password = "VerySecret!"
+        ///                 output.Encryption = EncryptionAlgorithm.WinZipAes256
+        ///                 Dim inputFileName As String
+        ///                 For Each inputFileName In filesToZip
+        ///                     Console.WriteLine("file: {0}", inputFileName)
+        ///                     output.PutNextEntry(inputFileName)
+        ///                     Using input As FileStream = File.Open(inputFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+        ///                         Dim n As Integer
+        ///                         Dim buffer As Byte() = New Byte(2048) {}
+        ///                         Do While (n = input.Read(buffer, 0, buffer.Length) > 0)
+        ///                             output.Write(buffer, 0, n)
+        ///                         Loop
+        ///                     End Using
+        ///                 Next
+        ///             End Using
+        ///         End Using
+        ///     End If
+        /// End Sub
+        /// </code>
         /// </example>
         public ZipOutputStream(Stream stream)  : this (stream, false) { }
-
 
 
         /// <summary>
@@ -186,7 +214,7 @@ namespace  Ionic.Zip
         ///   This example shows how to create a zip file, using the
         ///   ZipOutputStream class.
         ///
-        /// <code>
+        /// <code lang="C#">
         /// private void Zipup()
         /// {
         ///     if (filesToZip.Count == 0)
@@ -205,7 +233,8 @@ namespace  Ionic.Zip
         ///             System.Console.WriteLine("file: {0}", inputFileName);
         ///
         ///             output.PutNextEntry(inputFileName); 
-        ///             using (var input = File.Open(inputFileName, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Write ))
+        ///             using (var input = File.Open(inputFileName, FileMode.Open, FileAccess.Read,
+        ///                                          FileShare.Read | FileShare.Write ))
         ///             {
         ///                 byte[] buffer= new byte[2048];
         ///                 int n;
@@ -217,6 +246,33 @@ namespace  Ionic.Zip
         ///         }
         ///     }
         /// }
+        /// </code>
+        ///
+        /// <code lang="VB">
+        /// Private Sub Zipup()
+        ///     Dim outputFileName As String = "XmlData.zip"
+        ///     Dim filesToZip As String() = Directory.GetFiles(".", "*.xml")
+        ///     If (filesToZip.Length = 0) Then
+        ///         Console.WriteLine("Nothing to do.")
+        ///     Else
+        ///         Using output As ZipOutputStream = New ZipOutputStream(outputFileName)
+        ///             output.Password = "VerySecret!"
+        ///             output.Encryption = EncryptionAlgorithm.WinZipAes256
+        ///             Dim inputFileName As String
+        ///             For Each inputFileName In filesToZip
+        ///                 Console.WriteLine("file: {0}", inputFileName)
+        ///                 output.PutNextEntry(inputFileName)
+        ///                 Using input As FileStream = File.Open(inputFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+        ///                     Dim n As Integer
+        ///                     Dim buffer As Byte() = New Byte(2048) {}
+        ///                     Do While (n = input.Read(buffer, 0, buffer.Length) > 0)
+        ///                         output.Write(buffer, 0, n)
+        ///                     Loop
+        ///                 End Using
+        ///             Next
+        ///         End Using
+        ///     End If
+        /// End Sub
         /// </code>
         /// </example>
         public ZipOutputStream(String fileName)

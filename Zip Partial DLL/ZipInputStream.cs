@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-23 20:27:29>
+// Time-stamp: <2009-October-23 21:01:16>
 //
 // ------------------------------------------------------------------
 //
@@ -176,7 +176,7 @@ namespace  Ionic.Zip
         ///   This example shows how to read a zip file, and extract entries, using the
         ///   <c>ZipInputStream</c> class.
         ///
-        /// <code>
+        /// <code lang="C#">
         /// private void Unzip()
         /// {
         ///     byte[] buffer= new byte[2048];
@@ -201,6 +201,30 @@ namespace  Ionic.Zip
         ///         }
         ///     }
         /// }
+        /// </code>
+        ///
+        /// <code lang="VB">
+        /// Private Sub UnZip()
+        ///     Dim inputFileName As String = "MyArchive.zip"
+        ///     Dim extractDir As String = "extract"
+        ///     Dim buffer As Byte() = New Byte(2048) {}
+        ///     Using raw As FileStream = File.Open(inputFileName, FileMode.Open, FileAccess.Read)
+        ///         Using input As ZipInputStream = New ZipInputStream(raw)
+        ///             Dim e As ZipEntry
+        ///             Do While (Not e = input.GetNextEntry Is Nothing)
+        ///                 If Not e.IsDirectory Then
+        ///                     Using output As FileStream = File.Open(Path.Combine(extractDir, e.FileName), _
+        ///                                                            FileMode.Create, FileAccess.ReadWrite)
+        ///                         Dim n As Integer
+        ///                         Do While (n = input.Read(buffer, 0, buffer.Length) > 0)
+        ///                             output.Write(buffer, 0, n)
+        ///                         Loop
+        ///                     End Using
+        ///                 End If
+        ///             Loop
+        ///         End Using
+        ///     End Using
+        /// End Sub
         /// </code>
         /// </example>
         public ZipInputStream(Stream stream)  : this (stream, false) { }
@@ -237,7 +261,7 @@ namespace  Ionic.Zip
         ///   This example shows how to read a zip file, and extract entries, using the
         ///   <c>ZipInputStream</c> class.
         ///
-        /// <code>
+        /// <code lang="C#">
         /// private void Unzip()
         /// {
         ///     byte[] buffer= new byte[2048];
@@ -259,6 +283,28 @@ namespace  Ionic.Zip
         ///         }
         ///     }
         /// }
+        /// </code>
+        ///
+        /// <code lang="VB">
+        /// Private Sub UnZip()
+        ///     Dim inputFileName As String = "MyArchive.zip"
+        ///     Dim extractDir As String = "extract"
+        ///     Dim buffer As Byte() = New Byte(2048) {}
+        ///     Using input As ZipInputStream = New ZipInputStream(inputFileName)
+        ///         Dim e As ZipEntry
+        ///         Do While (Not e = input.GetNextEntry Is Nothing)
+        ///             If Not e.IsDirectory Then
+        ///                 Using output As FileStream = File.Open(Path.Combine(extractDir, e.FileName), _
+        ///                                                        FileMode.Create, FileAccess.ReadWrite)
+        ///                     Dim n As Integer
+        ///                     Do While (n = input.Read(buffer, 0, buffer.Length) > 0)
+        ///                         output.Write(buffer, 0, n)
+        ///                     Loop
+        ///                 End Using
+        ///             End If
+        ///         Loop
+        ///     End Using
+        /// End Sub
         /// </code>
         /// </example>
         public ZipInputStream(String fileName)
