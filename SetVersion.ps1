@@ -9,7 +9,7 @@
 #  from powershell.exe prompt: 
 #     .\SetVersion.ps1  2.8.3.0
 #
-# last saved Time-stamp: <2009-October-14 02:18:55>
+# last saved Time-stamp: <2009-October-26 23:06:52>
 #
 
 
@@ -27,35 +27,41 @@ function Usage
 
 function Update-SourceVersion
 {
-  Param ([string]$Version)
+    Param ([string]$Version)
 
-  $NewVersion = 'AssemblyVersion("' + $Version + '")';
-  $NewFileVersion = 'AssemblyFileVersion("' + $Version + '")';
+    $NewVersion = 'AssemblyVersion("' + $Version + '")';
+    $NewFileVersion = 'AssemblyFileVersion("' + $Version + '")';
 
-  foreach ($o in $input) 
-  {
-    if ($o.Attributes -band [System.IO.FileAttributes]::ReadOnly) 
+
+    foreach ($o in $input) 
     {
-        # checkout the file for edit, using the tf.exe too, and 
-        # passing the CodePlex authn info on cmd line
-        c:\vs2008\common7\IDE\tf  edit $o.FullName $env:cplogin
+        $av = select-string AssemblyVersion $o
+        $fv = select-string AssemblyVersion $o
+
+        if ($av -ne $null -or $fv -ne $null)
+        {
+            if ($o.Attributes -band [System.IO.FileAttributes]::ReadOnly) 
+            {
+                # checkout the file for edit, using the tf.exe too, and 
+                # passing the CodePlex authn info on cmd line
+                c:\vs2008\common7\IDE\tf  edit $o.FullName $env:cplogin
+            }
+            Write-output $o.FullName
+            $TmpFile = $o.FullName + ".tmp"
+
+            get-content $o.FullName | 
+                %{$_ -replace 'AssemblyVersion\("[0-9]+(\.([0-9]+|\*)){1,3}"\)', $NewVersion } |
+                %{$_ -replace 'AssemblyFileVersion\("[0-9]+(\.([0-9]+|\*)){1,3}"\)', $NewFileVersion }  > $TmpFile
+
+            move-item $TmpFile $o.FullName -force
+        }
     }
-    Write-output $o.FullName
-    $TmpFile = $o.FullName + ".tmp"
-
-     get-content $o.FullName | 
-        %{$_ -replace 'AssemblyVersion\("[0-9]+(\.([0-9]+|\*)){1,3}"\)', $NewVersion } |
-        %{$_ -replace 'AssemblyFileVersion\("[0-9]+(\.([0-9]+|\*)){1,3}"\)', $NewFileVersion }  > $TmpFile
-
-     move-item $TmpFile $o.FullName -force
-  }
 }
 
 
 function Update-AllAssemblyInfoFiles ( $version )
 {
-#  foreach ($file in "AssemblyInfo.cs", "AssemblyInfo.vb" ) 
-  foreach ($file in "SolutionInfo.cs" ) 
+  foreach ($file in "SolutionInfo.cs", "AssemblyInfo.cs", "AssemblyInfo.vb" ) 
   {
     get-childitem -recurse |? {$_.Name -eq $file} | Update-SourceVersion $version ;
   }

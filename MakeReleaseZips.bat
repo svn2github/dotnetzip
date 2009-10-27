@@ -180,7 +180,7 @@ goto :EOF
 
   %zipit% %rzipfile%  -d Examples\WScript -D "Zip Tests\resources"  VbsCreateZip-DotNetZip.vbs  VbsUnZip-DotNetZip.vbs  TestCheckZip.js
 
-  %zipit% %rzipfile%  -d Examples  -D "Examples"  -r+  "name != *.cache and name != *.*~ and name != *.vspscc and name != Examples\*\*\bin\*.* and name != Examples\*\*\obj\*.*"
+  %zipit% %rzipfile%  -d Examples  -D "Examples"  -r+  "name != *.cache and name != *.*~ and name != *.vspscc and name != Examples\*\*\bin\*.* and name != Examples\*\*\obj\*.* and name != Examples\*\bin\*.* and name != Examples\*\obj\*.*"
 
 @REM  %zipit% %rzipfile%  -d Examples\ASPNET  -D "Examples"  GenerateZip-Csharp.aspx GenerateZip-VB.aspx
 @REM  %zipit% %rzipfile%  -d Examples\PHP     -D "Examples"  CreateZip-DotNetZip.php

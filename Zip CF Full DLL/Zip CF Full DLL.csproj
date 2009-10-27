@@ -75,6 +75,7 @@
     <Message Text="TargetFileName= $(TargetFileName)" />
     <!-- produce the merged assembly - putting the output in the "IntermediateOutputPath" eg obj\Debug or obj\Release -->
     <Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot;  /targetplatform:v2,&quot;$(ProgramFiles)\Microsoft.NET\SDK\CompactFramework\v2.0\Debugger\BCL&quot;  /keyfile:..\Ionic.snk    /t:library  /xmldocs /out:&quot;$(IntermediateOutputPath)$(TargetFileName)&quot;  @(AssembliesToMerge -> '&quot;%(Fullpath)&quot;', ' ') " />
+    <Copy SourceFiles="$(IntermediateOutputPath)$(AssemblyName).XML" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" />
   </Target>
 
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
