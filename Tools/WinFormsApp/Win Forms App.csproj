@@ -49,15 +49,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\SelfExtracting\FolderBrowserDialogEx.cs">
+    <Compile Include="..\..\Zip Partial DLL\Resources\FolderBrowserDialogEx.cs">
       <Link>FolderBrowserDialogEx.cs</Link>
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="..\SelfExtracting\PasswordDialog.cs">
+    <Compile Include="..\..\Zip Partial DLL\Resources\PasswordDialog.cs">
       <Link>PasswordDialog.cs</Link>
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="..\SelfExtracting\PasswordDialog.designer.cs">
+    <Compile Include="..\..\Zip Partial DLL\Resources\PasswordDialog.designer.cs">
       <Link>PasswordDialog.designer.cs</Link>
       <DependentUpon>PasswordDialog.cs</DependentUpon>
     </Compile>
@@ -79,10 +79,10 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="..\SolutionInfo.cs">
+    <Compile Include="..\..\SolutionInfo.cs">
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
-    <EmbeddedResource Include="..\SelfExtracting\PasswordDialog.resx">
+    <EmbeddedResource Include="..\..\Zip Partial DLL\Resources\PasswordDialog.resx">
       <Link>PasswordDialog.resx</Link>
       <DependentUpon>PasswordDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -122,7 +122,7 @@
   <ItemGroup>
     <None Include="Icon2.res" />
     <None Include="Resources\zippedFile.png" />
-    <Content Include="zippedFile.ico" />
+    <Content Include="zippedFile.ico"/>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -132,4 +132,10 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <PreBuildEvent>..\..\GetIcon.cmd</PreBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+
 </Project>

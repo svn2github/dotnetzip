@@ -61,43 +61,9 @@
   <ItemGroup>
     <Compile Include="ConvertZipToSfx.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="..\SolutionInfo.cs">
+    <Compile Include="..\..\SolutionInfo.cs">
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
-    <EmbeddedResource Include="ZipContentsDialog.cs">
-      <SubType>Form</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ZipContentsDialog.Designer.cs">
-      <DependentUpon>ZipContentsDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FolderBrowserDialogEx.cs">
-      <SubType>Component</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="PasswordDialog.cs">
-      <SubType>Form</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="PasswordDialog.Designer.cs">
-      <DependentUpon>PasswordDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="WinFormsSelfExtractorStub.cs">
-      <SubType>Form</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="WinFormsSelfExtractorStub.Designer.cs">
-      <DependentUpon>WinFormsSelfExtractorStub.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CommandLineSelfExtractorStub.cs" />
-    <EmbeddedResource Include="PasswordDialog.resx">
-      <DependentUpon>PasswordDialog.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="WinFormsSelfExtractorStub.resx">
-      <DependentUpon>WinFormsSelfExtractorStub.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ZipContentsDialog.resx">
-      <DependentUpon>ZipContentsDialog.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">

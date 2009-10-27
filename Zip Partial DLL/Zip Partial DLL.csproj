@@ -168,7 +168,8 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>..\..\GetResources.cmd</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
