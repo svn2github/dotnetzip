@@ -1,18 +1,20 @@
 ﻿Imports System
 Imports System.IO
 Imports Ionic.Zip
+Imports System.ComponentModel
 
 Public Class Form1
 
-    Private Delegate Sub ZipProgress(ByVal e As ZipProgressEventArgs)
-    Dim _operationCanceled As Boolean
-    Dim nFilesCompleted As Integer
-    Dim totalEntriesToProcess As Integer
-    Dim _appCuKey As Microsoft.Win32.RegistryKey
-    Dim _extractThread As System.Threading.Thread
-    Dim AppRegyPath As String = "Software\Ionic\VBunZip"
-    Dim rvn_ZipFile As String = "zipfile"
-    Dim rvn_ExtractDir As String = "extractdir"
+    Private _backgroundWorker1 As System.ComponentModel.BackgroundWorker
+    Private _operationCanceled As Boolean
+    Private nFilesCompleted As Integer
+    Private totalEntriesToProcess As Integer
+    Private _appCuKey As Microsoft.Win32.RegistryKey
+    Private AppRegyPath As String = "Software\Ionic\VBunZip"
+    Private rvn_ZipFile As String = "zipfile"
+    Private rvn_ExtractDir As String = "extractdir"
+
+    Private Delegate Sub ZipProgress(ByVal e As ExtractProgressEventArgs)
 
     Private Sub btnZipBrowse_Click(ByVal sender As Object, ByVal e As EventArgs) Handles btnZipBrowse.Click
         Dim openFileDialog1 As New OpenFileDialog
@@ -34,27 +36,38 @@ Public Class Form1
 
 
     Private Sub btnUnzip_Click(ByVal sender As Object, ByVal e As EventArgs) Handles btnUnzip.Click
+        If Not File.Exists(Me.tbZipToOpen.Text) Then
+            MessageBox.Show("That file does not exist", "Cannot Unzip", MessageBoxButtons.OK)
+        End If
+
         If Not String.IsNullOrEmpty(tbZipToOpen.Text) And _
-        File.Exists(Me.tbZipToOpen.Text) And _
-        Not String.IsNullOrEmpty(tbExtractDir.Text) And _
-        Directory.Exists(tbExtractDir.Text) Then
+        Not String.IsNullOrEmpty(tbExtractDir.Text) Then
+            If Not Directory.Exists(tbExtractDir.Text) Then
+                Directory.CreateDirectory(tbExtractDir.Text)
+            End If
+            nFilesCompleted = 0
+            _operationCanceled = False
             btnCancel.Enabled = True
             btnUnzip.Enabled = False
+            btnZipBrowse.Enabled = False
+            btnExtractDirBrowse.Enabled = False
+            tbZipToOpen.Enabled = False
+            tbExtractDir.Enabled = False
             KickoffExtract()
         End If
     End Sub
 
 
     Private Sub KickoffExtract()
-        If Not String.IsNullOrEmpty(tbExtractDir.Text) Then
-            lblStatus.Text = "Extracting..."
-            Dim args(2) As Object
-            args(0) = tbZipToOpen.Text
-            args(1) = tbExtractDir.Text
-            _extractThread = New System.Threading.Thread(New System.Threading.ParameterizedThreadStart(AddressOf UnzipFile))
-            _extractThread.Start(args)
-            Me.Cursor = Cursors.WaitCursor
-        End If
+        lblStatus.Text = "Extracting..."
+        Dim args(2) As String
+        args(0) = tbZipToOpen.Text
+        args(1) = tbExtractDir.Text
+        _backgroundWorker1 = New System.ComponentModel.BackgroundWorker()
+        _backgroundWorker1.WorkerSupportsCancellation = False
+        _backgroundWorker1.WorkerReportsProgress = False
+        AddHandler Me._backgroundWorker1.DoWork, New DoWorkEventHandler(AddressOf Me.UnzipFile)
+        _backgroundWorker1.RunWorkerAsync(args)
     End Sub
 
 
@@ -72,8 +85,9 @@ Public Class Form1
     End Sub
 
 
-    Private Sub UnzipFile(ByVal args As Object())
+    Private Sub UnzipFile(ByVal sender As Object, ByVal e As DoWorkEventArgs)
         Dim extractCancelled As Boolean = False
+        Dim args() As String = e.Argument
         Dim zipToRead As String = args(0)
         Dim extractDir As String = args(1)
         Try
@@ -89,15 +103,20 @@ Public Class Form1
         ResetUI()
     End Sub
 
+    
     Private Sub ResetUI()
         If btnCancel.InvokeRequired Then
             btnCancel.Invoke(New Action(AddressOf ResetUI), New Object() {})
         Else
             btnUnzip.Enabled = True
+            btnZipBrowse.Enabled = True
+            btnExtractDirBrowse.Enabled = True
             btnCancel.Enabled = False
+            tbZipToOpen.Enabled = True
+            tbExtractDir.Enabled = True
             ProgressBar1.Maximum = 1
             ProgressBar1.Value = 0
-            Me.Cursor = Cursors.Arrow
+            Me.btnUnzip.Focus()
         End If
     End Sub
 
@@ -105,24 +124,31 @@ Public Class Form1
         If ProgressBar1.InvokeRequired Then
             ProgressBar1.Invoke(New Action(Of Integer)(AddressOf SetProgressBarMax), New Object() {n})
         Else
+            ProgressBar1.Value = 0
             ProgressBar1.Maximum = n
             ProgressBar1.Step = 1
         End If
     End Sub
 
+    
     Private Sub zip_ExtractProgress(ByVal sender As Object, ByVal e As ExtractProgressEventArgs)
+        If _operationCanceled Then
+            e.Cancel = True
+            Return 
+        End If
+        
         If (e.EventType = Ionic.Zip.ZipProgressEventType.Extracting_AfterExtractEntry) Then
             StepEntryProgress(e)
         ElseIf (e.EventType = ZipProgressEventType.Extracting_BeforeExtractAll) Then
-            'StepArchiveProgress(e)
+            '' do nothing
         End If
     End Sub
 
 
-    Private Sub StepEntryProgress(ByVal e As ZipProgressEventArgs)
+    Private Sub StepEntryProgress(ByVal e As ExtractProgressEventArgs)
         If ProgressBar1.InvokeRequired Then
             ProgressBar1.Invoke(New ZipProgress(AddressOf StepEntryProgress), New Object() {e})
-        ElseIf Not _operationCanceled Then
+        Else
             ProgressBar1.PerformStep()
             System.Threading.Thread.Sleep(100)
             'set a label with status information
@@ -149,6 +175,7 @@ Public Class Form1
         _operationCanceled = True
         ProgressBar1.Maximum = 1
         ProgressBar1.Value = 0
+        lblStatus.Text = "Cancelled..."
     End Sub
 
 

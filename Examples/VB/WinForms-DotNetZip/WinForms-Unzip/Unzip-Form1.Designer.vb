@@ -38,10 +38,12 @@ Partial Class Form1
         '
         Me.tbZipToOpen.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
                     Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.tbZipToOpen.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest
+        Me.tbZipToOpen.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.FileSystem
         Me.tbZipToOpen.Location = New System.Drawing.Point(15, 23)
         Me.tbZipToOpen.Name = "tbZipToOpen"
         Me.tbZipToOpen.Size = New System.Drawing.Size(389, 20)
-        Me.tbZipToOpen.TabIndex = 0
+        Me.tbZipToOpen.TabIndex = 5
         '
         'Label1
         '
@@ -58,7 +60,7 @@ Partial Class Form1
         Me.btnZipBrowse.Location = New System.Drawing.Point(410, 22)
         Me.btnZipBrowse.Name = "btnZipBrowse"
         Me.btnZipBrowse.Size = New System.Drawing.Size(30, 23)
-        Me.btnZipBrowse.TabIndex = 2
+        Me.btnZipBrowse.TabIndex = 7
         Me.btnZipBrowse.Text = "..."
         Me.btnZipBrowse.UseVisualStyleBackColor = True
         '
@@ -68,7 +70,7 @@ Partial Class Form1
                     Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.ProgressBar1.Location = New System.Drawing.Point(12, 133)
         Me.ProgressBar1.Name = "ProgressBar1"
-        Me.ProgressBar1.Size = New System.Drawing.Size(428, 23)
+        Me.ProgressBar1.Size = New System.Drawing.Size(428, 15)
         Me.ProgressBar1.TabIndex = 3
         '
         'btnUnzip
@@ -77,14 +79,15 @@ Partial Class Form1
         Me.btnUnzip.Location = New System.Drawing.Point(365, 104)
         Me.btnUnzip.Name = "btnUnzip"
         Me.btnUnzip.Size = New System.Drawing.Size(75, 23)
-        Me.btnUnzip.TabIndex = 4
+        Me.btnUnzip.TabIndex = 0
         Me.btnUnzip.Text = "Unzip"
         Me.btnUnzip.UseVisualStyleBackColor = True
         '
         'lblStatus
         '
+        Me.lblStatus.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblStatus.AutoSize = True
-        Me.lblStatus.Location = New System.Drawing.Point(12, 173)
+        Me.lblStatus.Location = New System.Drawing.Point(12, 179)
         Me.lblStatus.Name = "lblStatus"
         Me.lblStatus.Size = New System.Drawing.Size(16, 13)
         Me.lblStatus.TabIndex = 5
@@ -94,10 +97,12 @@ Partial Class Form1
         '
         Me.tbExtractDir.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
                     Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.tbExtractDir.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest
+        Me.tbExtractDir.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.FileSystemDirectories
         Me.tbExtractDir.Location = New System.Drawing.Point(15, 68)
         Me.tbExtractDir.Name = "tbExtractDir"
         Me.tbExtractDir.Size = New System.Drawing.Size(389, 20)
-        Me.tbExtractDir.TabIndex = 6
+        Me.tbExtractDir.TabIndex = 10
         '
         'Label2
         '
@@ -114,7 +119,7 @@ Partial Class Form1
         Me.btnExtractDirBrowse.Location = New System.Drawing.Point(410, 67)
         Me.btnExtractDirBrowse.Name = "btnExtractDirBrowse"
         Me.btnExtractDirBrowse.Size = New System.Drawing.Size(30, 23)
-        Me.btnExtractDirBrowse.TabIndex = 8
+        Me.btnExtractDirBrowse.TabIndex = 12
         Me.btnExtractDirBrowse.Text = "..."
         Me.btnExtractDirBrowse.UseVisualStyleBackColor = True
         '
@@ -122,10 +127,11 @@ Partial Class Form1
         '
         Me.btnCancel.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.btnCancel.Enabled = False
-        Me.btnCancel.Location = New System.Drawing.Point(365, 162)
+        Me.btnCancel.Location = New System.Drawing.Point(365, 154)
         Me.btnCancel.Name = "btnCancel"
         Me.btnCancel.Size = New System.Drawing.Size(75, 23)
-        Me.btnCancel.TabIndex = 9
+        Me.btnCancel.TabIndex = 20
+        Me.btnCancel.TabStop = False
         Me.btnCancel.Text = "Cancel"
         Me.btnCancel.UseVisualStyleBackColor = True
         '
@@ -133,7 +139,7 @@ Partial Class Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(452, 200)
+        Me.ClientSize = New System.Drawing.Size(452, 198)
         Me.Controls.Add(Me.btnCancel)
         Me.Controls.Add(Me.btnExtractDirBrowse)
         Me.Controls.Add(Me.Label2)
@@ -145,7 +151,7 @@ Partial Class Form1
         Me.Controls.Add(Me.Label1)
         Me.Controls.Add(Me.tbZipToOpen)
         Me.Name = "Form1"
-        Me.Text = "Form1"
+        Me.Text = "DotNetZip Simple Unzip"
         Me.ResumeLayout(False)
         Me.PerformLayout()
 

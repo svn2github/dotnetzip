@@ -41,9 +41,9 @@ mkdir ..\releases\v%version%-%stamp%
 
 call :MakeDevelopersRedist
 
-@REM call :MakeRuntimeRedist
+call :MakeRuntimeRedist
 
-@REM call :MakeZipUtils
+call :MakeZipUtils
 
 @REM call :MakeUtilsMsi
 
@@ -148,7 +148,6 @@ goto :EOF
   for %%f in (..\releases\v%version%-%stamp%\%zipfile%) do set rzipfile=%%~ff
   echo zipfile is %rzipfile%
 
-
   %zipit% %rzipfile%  -s Contents.txt "This is the Developer's Kit package for DotNetZip v%version%.  This package was packed %stamp%.  In this zip you will find Debug and Release DLLs for the various versions of the Ionic.Zip class library and the Ionic.Zlib class library.  There is a separate top-level folder for each distinct version of the DLL, and within those top-level folders there are Debug and Release folders.  In the Debug folders you will find a DLL, a PDB, and an XML file for the given library, while the Release folder will have just a DLL.  The DLL is the actual library (either Debug or Release flavor), the PDB is the debug information, and the XML file is the intellisense doc for use within Visual Studio.  If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip"  -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt
 
   %zipit% %rzipfile%  -d DotNetZip-v%version%   -s Readme.txt "DotNetZip Library Developer's Kit package,  v%version% packed %stamp%.  This is the DotNetZip library.  It includes the classes in the Ionic.Zip namespace as well as the classes in the Ionic.Zlib namespace. Use this library if you want to manipulate ZIP files within .NET applications."
@@ -180,13 +179,7 @@ goto :EOF
 
   %zipit% %rzipfile%  -d Examples\WScript -D "Zip Tests\resources"  VbsCreateZip-DotNetZip.vbs  VbsUnZip-DotNetZip.vbs  TestCheckZip.js
 
-  %zipit% %rzipfile%  -d Examples  -D "Examples"  -r+  "name != *.cache and name != *.*~ and name != *.vspscc and name != Examples\*\*\bin\*.* and name != Examples\*\*\obj\*.* and name != Examples\*\bin\*.* and name != Examples\*\obj\*.*"
-
-@REM  %zipit% %rzipfile%  -d Examples\ASPNET  -D "Examples"  GenerateZip-Csharp.aspx GenerateZip-VB.aspx
-@REM  %zipit% %rzipfile%  -d Examples\PHP     -D "Examples"  CreateZip-DotNetZip.php
-@REM  %zipit% %rzipfile%  -d Examples\CompactFramework\Unzipper  -D "Examples\CF-UnZipper"  -r+  "name != *.cache and name != *.*~ and name != *.vspscc and name != Examples\CF-UnZipper\bin\*.* and name != Examples\CF-UnZipper\obj\*.*"
-@REM  %zipit% %rzipfile%  -d Examples\CSharp\CreateZip  -D "Examples\CreateZip"  -r+  "name != *.cache and name != *.*~ and name != *.vspscc and name != Examples\CreateZip\bin\*.* and name != Examples\CreateZip\obj\*.*"
-@REM  %zipit% %rzipfile%  -d Examples\CSharp\ReadZip    -D "Examples\ReadZip"    -r+  "name != *.cache and name != *.*~ and name != *.vspscc and name != Examples\ReadZip\bin\*.* and name != Examples\ReadZip\obj\*.*"
+  %zipit% %rzipfile%  -d Examples  -D "Examples"  -r+  "name != *.cache and name != *.*~ and name != *.suo and name != *.user and name != #*.*# and name != *.vspscc and name != Examples\*\*\bin\*.* and name != Examples\*\*\obj\*.* and name != Examples\*\bin\*.* and name != Examples\*\obj\*.*"
 
   cd ..\releases\v%version%-%stamp%
   for %%V in ("*.chm") do   %zipit% %zipfile%  %%V
@@ -213,21 +206,18 @@ goto :EOF
 
   echo zipfile is %rzipfile%
   %zipit% %rzipfile%    -s Contents.txt "This is the redistributable package for DotNetZip v%version%.  Packed %stamp%. In this zip you will find a separate folder for each separate version of the DLL. In each folder there is a RELEASE build DLL, suitable for redistribution with your app. If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip "   -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt
-  cd "Zip Full DLL\bin\Release"
-  %zipit% %rzipfile%  -d DotNetZip-v%version%  -s Readme.txt  "DotNetZip Redistributable Library v%version% packed %stamp%"  Ionic.Zip.dll 
-  cd ..\..\..
-  cd "Zip Reduced\bin\Release"
-  %zipit% %rzipfile%  -d DotNetZip-Reduced-v%version%  -s Readme.txt  "DotNetZip Reduced Redistributable Library v%version% packed %stamp%"  Ionic.Zip.Reduced.dll
-  cd ..\..\..
-  cd "Zlib\bin\Release"
-  %zipit% %rzipfile%  -d zlib-v%version%  -s Readme.txt  "DotNetZlib Redistributable Library v%version% packed %stamp%"  Ionic.Zlib.dll 
-  cd ..\..\..
-  cd "Zip CF Full DLL\bin\Release"
-  %zipit% %rzipfile%  -d DotNetZip-v%version%-CompactFramework  -s Readme.txt "DotNetZip Library for .NET Compact Framework v%version% packed %stamp%"  Ionic.Zip.CF.dll 
-  cd ..\..\..
-  cd "Zlib CF\bin\Release"
-  %zipit% %rzipfile%   -d Zlib-v%version%-CompactFramework   -s Readme.txt  "DotNetZlib Library for .NET Compact Framework v%version% packed %stamp%"   Ionic.Zlib.CF.dll 
-  cd ..\..\..
+
+  %zipit% %rzipfile%  -d DotNetZip-v%version% -D "Zip Full DLL\bin\Release" -s Readme.txt  "DotNetZip Redistributable Library v%version% packed %stamp%"  Ionic.Zip.dll 
+
+  %zipit% %rzipfile%  -d DotNetZip-Reduced-v%version% -D "Zip Reduced\bin\Release" -s Readme.txt  "DotNetZip Reduced Redistributable Library v%version% packed %stamp%"  Ionic.Zip.Reduced.dll
+
+
+  %zipit% %rzipfile%  -d zlib-v%version% -D "Zlib\bin\Release" -s Readme.txt  "DotNetZlib Redistributable Library v%version% packed %stamp%"  Ionic.Zlib.dll 
+
+  %zipit% %rzipfile%  -d DotNetZip-v%version%-CompactFramework -D "Zip CF Full DLL\bin\Release" -s Readme.txt "DotNetZip Library for .NET Compact Framework v%version% packed %stamp%"  Ionic.Zip.CF.dll 
+
+  %zipit% %rzipfile%   -d Zlib-v%version%-CompactFramework -D "Zlib CF\bin\Release"  -s Readme.txt  "DotNetZlib Library for .NET Compact Framework v%version% packed %stamp%"   Ionic.Zlib.CF.dll 
+
 
 goto :EOF
 --------------------------------------------
@@ -248,16 +238,12 @@ goto :EOF
     for %%f in (..\releases\v%version%-%stamp%\%zipfile%) do set rzipfile=%%~ff
 
     %zipit% %rzipfile%    -s Contents.txt "These are the DotNetZip utilities and tools, for DotNetZip v%version%.  Packed %stamp%."   -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   License.txt
-    cd Examples
-    cd ZipIt\bin\Release
-    %zipit% ..\%rzipfile%  -zc "Zip utilities v%version% packed %stamp%"  Zipit.exe Ionic.Zip.dll 
-    cd ..\..\..\Unzip\bin\Release
-    %zipit%  ..\%rzipfile%  Unzip.exe
-    cd ..\..\..\SelfExtracting\bin\Release
-    %zipit%  ..\%rzipfile%  ConvertZipToSfx.exe
-    cd ..\..\..\WinFormsApp\bin\Release
-    %zipit%  ..\%rzipfile%  DotNetZip-WinFormsTool.exe
-    cd ..\..\..\..
+
+    %zipit% %rzipfile%  -zc "Zip utilities v%version% packed %stamp%" -D Examples\C#\ZipIt\bin\Release  Zipit.exe Ionic.Zip.dll 
+    %zipit%  %rzipfile%  -D Examples\Unzip\bin\Release  Unzip.exe
+    %zipit% %rzipfile%  -D Examples\SelfExtracting\bin\Release ConvertZipToSfx.exe
+    %zipit%  %rzipfile%  -D Examples\WinFormsApp\bin\Release  DotNetZip-WinFormsTool.exe
+
 
 goto :EOF
 --------------------------------------------
@@ -369,8 +355,6 @@ goto :EOF
     endlocal & set CMDLINE=%PARAMS%
     goto :EOF
 --------------------------------------------
-
-
 
 
 

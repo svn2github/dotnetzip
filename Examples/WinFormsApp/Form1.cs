@@ -1347,9 +1347,8 @@ namespace DotNetZip.Examples.WinForms
                     {
                         groupBox2.Controls.Remove(comboEncoding);
                         tabPage1.Controls.Add(comboEncoding);
-                        int xpos = this.btnExtractDirBrowse.Location.X + this.btnExtractDirBrowse.Width - this.comboEncoding.Width;
-                        this.comboEncoding.Location = new System.Drawing.Point(xpos, comboExistingFileAction.Location.Y);
-                        this.comboEncoding.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+                        int xpos = this.tbZipToOpen.Location.X ;
+                        this.comboEncoding.Location = new System.Drawing.Point(xpos, this.tbZipToOpen.Location.Y + this.comboEncoding.Height + 4);
                     }
             this.toolTip1.SetToolTip(this.comboEncoding, "use this encoding to read the file");
                 
