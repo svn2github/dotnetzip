@@ -75,7 +75,6 @@ public void Page_Load (Object sender, EventArgs e)
         if ( !Page.IsPostBack ) {
             // populate the dropdownlist
             // must have a directory called "fodder" in the web app 
-            String homeDir = Server.MapPath(".");
             String sMappedPath= Server.MapPath("fodder");
         
             var fqFilenames= new List<String>(System.IO.Directory.GetFiles(sMappedPath));

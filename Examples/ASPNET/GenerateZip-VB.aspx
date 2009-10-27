@@ -71,7 +71,6 @@ Public Sub Page_Load (ByVal sender As Object, ByVal e As System.EventArgs)
         If Not ( Page.IsPostBack ) Then
             ' populate the dropdownlist
             ' must have a directory called "fodder" in the web app 
-            Dim homeDir as String = Server.MapPath(".")
             Dim sMappedPath as  String= Server.MapPath("fodder")
         
             Dim fqFilenames As New List(Of String)(System.IO.Directory.GetFiles(sMappedPath))

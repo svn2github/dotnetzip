@@ -56,9 +56,6 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\SolutionInfo.cs">
-      <Link>Properties\SolutionInfo.cs</Link>
-    </Compile>
     <Compile Include="..\Zlib\Crc32.cs">
       <Link>Crc32.cs</Link>
     </Compile>
@@ -96,9 +93,12 @@
       <Link>ZlibStream.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\SolutionInfo.cs">
+      <Link>Properties\SolutionInfo.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Ionic.snk" >
+    <None Include="..\Ionic.snk">
       <Link>Ionic.snk</Link>
     </None>
   </ItemGroup>

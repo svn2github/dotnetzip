@@ -19,7 +19,7 @@
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\Ionic.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\..\Ionic.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -44,20 +44,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnZip.cs" />
-    <Compile Include="..\..\SolutionInfo.cs">
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\..\..\SolutionInfo.cs">
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Zip Full DLL\Zip Full DLL.csproj">
+    <ProjectReference Include="..\..\..\Zip Full DLL\Zip Full DLL.csproj">
       <Project>{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}</Project>
       <Name>Zip Full DLL</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Ionic.snk" >
+    <None Include="..\..\..\Ionic.snk">
       <Link>Ionic.snk</Link>
     </None>
   </ItemGroup>

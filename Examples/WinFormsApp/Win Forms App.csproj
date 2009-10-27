@@ -49,9 +49,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\SolutionInfo.cs">
-      <Link>Properties\SolutionInfo.cs</Link>
-    </Compile>
     <Compile Include="..\SelfExtracting\FolderBrowserDialogEx.cs">
       <Link>FolderBrowserDialogEx.cs</Link>
       <SubType>Component</SubType>
@@ -116,7 +113,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Zip Full DLL\Zip Full DLL.csproj">
       <Project>{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}</Project>
-      <Name>Ionic.Zip Full DLL</Name>
+      <Name>Zip Full DLL</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

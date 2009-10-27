@@ -57,9 +57,6 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\SolutionInfo.cs">
-      <Link>Properties\SolutionInfo.cs</Link>
-    </Compile>
     <Compile Include="Compatibility.cs" />
     <Compile Include="ErrorTests.cs" />
     <Compile Include="SplitArchives.cs" />
@@ -68,7 +65,6 @@
     <Compile Include="NonSeekableOutputStream.cs" />
     <Compile Include="PasswordTests.cs" />
     <Compile Include="Progress.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BasicTests.cs" />
     <Compile Include="Selector.cs" />
     <Compile Include="SelfExtractor.cs" />
@@ -79,6 +75,10 @@
     <Compile Include="TestUtilities.cs" />
     <Compile Include="IonicTestClass.cs" />
     <Compile Include="RandomTextGenerator.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\SolutionInfo.cs">
+      <Link>Properties\SolutionInfo.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="zips\winzip-sfx.exe">
