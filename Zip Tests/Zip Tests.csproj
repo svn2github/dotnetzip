@@ -40,10 +40,6 @@
       <HintPath>..\..\..\..\..\vsp\UnitTestProgressMonitor\CopyDataChannel\bin\Debug\Ionic.CopyData.dll</HintPath>
     </Reference>
     <Reference Include="Ionic.IO.JunctionPoint, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
-    <Reference Include="Ionic.Zip, Version=1.7.1.11, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Zip Full DLL\bin\Debug\Ionic.Zip.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Zip.9.0, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -134,6 +130,12 @@
     <Content Include="zips\appnote-iz-latest.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Zip Full DLL\Zip Full DLL.csproj">
+      <Project>{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}</Project>
+      <Name>Zip Full DLL</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

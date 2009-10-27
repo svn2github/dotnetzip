@@ -28,16 +28,16 @@ for /f "delims==" %%I in ('type SolutionInfo.cs ^| c:\utils\grep AssemblyVersion
 set version=%longversion:~0,3%
 echo version is %version%
 
-@REM c:\.net3.5\msbuild.exe DotNetZip.sln /p:Configuration=Debug
-@REM c:\.net3.5\msbuild.exe DotNetZip.sln /p:Configuration=Release
+c:\.net3.5\msbuild.exe DotNetZip.sln /p:Configuration=Debug
+c:\.net3.5\msbuild.exe DotNetZip.sln /p:Configuration=Release
 
-@REM call :CheckSign
+call :CheckSign
 if ERRORLEVEL 1 (exit /b %ERRORLEVEL%)
 
 echo making release dir ..\releases\v%version%-%stamp%
 mkdir ..\releases\v%version%-%stamp%
 
-@REM call :MakeHelpFile
+call :MakeHelpFile
 
 call :MakeDevelopersRedist
 
@@ -45,13 +45,13 @@ call :MakeRuntimeRedist
 
 call :MakeZipUtils
 
-@REM call :MakeUtilsMsi
+call :MakeUtilsMsi
 
-@REM call :MakeRuntimeMsi
+call :MakeRuntimeMsi
 
-@REM c:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe .\clean.ps1
+c:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe .\clean.ps1
 
-@REM call :MakeSrcZip
+call :MakeSrcZip
 
 
 goto :END
