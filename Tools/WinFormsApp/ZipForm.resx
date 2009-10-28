@@ -123,6 +123,20 @@
   <metadata name="comboCompression.Locked" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+  <data name="tbSelectionToZip.ToolTip" xml:space="preserve">
+    <value>Selection criteria.  some examples: 
+name = *.xml  -- all xml files
+name != *.doc   -- any file not .doc
+atime &gt; 2009-07-02  -- also ctime and mtime
+attributes = A -- possible attributes: (HRSA)
+also logical conjunctions: 
+(name = *.xml and size&gt; 1000)
+(name != *.doc  OR attrributes = A)
+</value>
+  </data>
   <data name="richTextBox1.Text" xml:space="preserve">
     <value>This is DotNetZip, a free zip tool.  It reads or creates zip files.  The tool is built on the DotNetZip library.  
 

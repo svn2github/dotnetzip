@@ -96,15 +96,15 @@
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.btnClearItemsToZip = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.listView2 = new ListViewEx.ListViewEx();
             this.chCheckbox = new System.Windows.Forms.ColumnHeader();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -341,7 +341,7 @@
             this.comboEncryption.Name = "comboEncryption";
             this.comboEncryption.Size = new System.Drawing.Size(122, 21);
             this.comboEncryption.TabIndex = 80;
-            this.toolTip1.SetToolTip(this.comboEncryption, "AES is not compatible with all other zip tools.");
+            this.toolTip1.SetToolTip(this.comboEncryption, "AES is not compatible with some other zip tools.");
             this.comboEncryption.SelectedIndexChanged += new System.EventHandler(this.comboEncryption_SelectedIndexChanged);
             // 
             // tbPassword
@@ -780,7 +780,7 @@
             this.comboZip64.Name = "comboZip64";
             this.comboZip64.Size = new System.Drawing.Size(122, 21);
             this.comboZip64.TabIndex = 70;
-            this.toolTip1.SetToolTip(this.comboZip64, "ZIP64 is not compatible with all other zip tools.");
+            this.toolTip1.SetToolTip(this.comboZip64, "ZIP64 is not compatible with some other zip tools.");
             // 
             // comboFlavor
             // 
@@ -851,10 +851,11 @@
             this.chkTraverseJunctions.Location = new System.Drawing.Point(505, 15);
             this.chkTraverseJunctions.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.chkTraverseJunctions.Name = "chkTraverseJunctions";
-            this.chkTraverseJunctions.Size = new System.Drawing.Size(68, 17);
+            this.chkTraverseJunctions.Size = new System.Drawing.Size(68, 18);
             this.chkTraverseJunctions.TabIndex = 125;
             this.chkTraverseJunctions.Text = "junctions";
-            this.toolTip1.SetToolTip(this.chkTraverseJunctions, "traverse directory junctions\\r\\nand symlinks when adding");
+            this.toolTip1.SetToolTip(this.chkTraverseJunctions, "traverse directory junctions and \r\nsymlinks when adding");
+            this.chkTraverseJunctions.UseCompatibleTextRendering = true;
             this.chkTraverseJunctions.UseVisualStyleBackColor = true;
             // 
             // tbDirectoryInArchive
@@ -903,8 +904,7 @@
             this.tbSelectionToZip.Size = new System.Drawing.Size(432, 20);
             this.tbSelectionToZip.TabIndex = 20;
             this.tbSelectionToZip.Text = "*.*";
-            this.toolTip1.SetToolTip(this.tbSelectionToZip, "Selection criteria.  eg, (name = *.* and size> 1000) etc.  Also use atime/mtime/c" +
-                    "time and attributes. (HRSA)");
+            this.toolTip1.SetToolTip(this.tbSelectionToZip, resources.GetString("tbSelectionToZip.ToolTip"));
             // 
             // label12
             // 
@@ -955,6 +955,43 @@
             this.textBox1.Visible = false;
             this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
             // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.richTextBox1);
+            this.tabPage3.Controls.Add(this.pictureBox1);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.tabPage3.Size = new System.Drawing.Size(584, 522);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "About";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // richTextBox1
+            // 
+            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.richTextBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.richTextBox1.Location = new System.Drawing.Point(54, 20);
+            this.richTextBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.Size = new System.Drawing.Size(518, 497);
+            this.richTextBox1.TabIndex = 2;
+            this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
+            this.richTextBox1.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBox1_LinkClicked);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::Ionic.Zip.Forms.Properties.Resources.zippedFile;
+            this.pictureBox1.Location = new System.Drawing.Point(6, 20);
+            this.pictureBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(42, 52);
+            this.pictureBox1.TabIndex = 1;
+            this.pictureBox1.TabStop = false;
+            // 
             // listView2
             // 
             this.listView2.AllowColumnReorder = true;
@@ -1000,43 +1037,6 @@
             // columnHeader3
             // 
             this.columnHeader3.Text = "File name in Archive";
-            // 
-            // tabPage3
-            // 
-            this.tabPage3.Controls.Add(this.richTextBox1);
-            this.tabPage3.Controls.Add(this.pictureBox1);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
-            this.tabPage3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.tabPage3.Size = new System.Drawing.Size(584, 522);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "About";
-            this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // richTextBox1
-            // 
-            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.richTextBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.richTextBox1.Location = new System.Drawing.Point(54, 20);
-            this.richTextBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(518, 497);
-            this.richTextBox1.TabIndex = 2;
-            this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
-            this.richTextBox1.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBox1_LinkClicked);
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = global::Ionic.Zip.Forms.Properties.Resources.zippedFile;
-            this.pictureBox1.Location = new System.Drawing.Point(6, 20);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(42, 52);
-            this.pictureBox1.TabIndex = 1;
-            this.pictureBox1.TabStop = false;
             // 
             // ZipForm
             // 
