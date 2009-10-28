@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-09 21:44:00>
+// Time-stamp: <2009-October-28 02:34:09>
 //
 // ------------------------------------------------------------------
 //
@@ -414,12 +414,12 @@ namespace Ionic.Zlib
         ///  
         ///  while (compressor.TotalBytesIn != TextToCompress.Length &amp;&amp; compressor.TotalBytesOut &lt; bufferSize)
         ///  {
-        ///    compressor.Deflate(ZlibConstants.Z_NO_FLUSH);
+        ///    compressor.Deflate(FlushType.None);
         ///  }
         ///  
         ///  while (true)
         ///  {
-        ///    int rc= compressor.Deflate(ZlibConstants.Z_FINISH);
+        ///    int rc= compressor.Deflate(FlushType.Finish);
         ///    if (rc == ZlibConstants.Z_STREAM_END) break;
         ///  }
         ///  
