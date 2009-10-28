@@ -122,7 +122,7 @@
   <ItemGroup>
     <None Include="Icon2.res" />
     <None Include="Resources\zippedFile.png" />
-    <Content Include="zippedFile.ico"/>
+    <Content Include="zippedFile.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -137,5 +137,4 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-
 </Project>

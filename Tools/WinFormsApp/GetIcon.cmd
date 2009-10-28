@@ -17,7 +17,7 @@ goto START
 setlocal
 
 cd ..\..\..\..
-copy /y "Zip Partial DLL\Resources\zippedFile.ico          Tools\WinFormsApp\zippedFile.ico
+copy /y "Zip Partial DLL\Resources\zippedFile.ico"          Tools\WinFormsApp\zippedFile.ico
 
 
 endlocal
