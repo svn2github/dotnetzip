@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-23 13:10:31>
+// Time-stamp: <2009-October-28 04:15:55>
 //
 // ------------------------------------------------------------------
 //
@@ -789,7 +789,7 @@ namespace Ionic.Zip.Tests.Basic
             _txrx = new Ionic.CopyData.Transceiver();
             _txrx.Channel = progressChannel;
             _txrx.Send("test Large # of Small Files");
-            _txrx.Send("bars 2");
+            //_txrx.Send("bars 2");
             System.Threading.Thread.Sleep(120);
             
             int max1=0;
@@ -810,7 +810,6 @@ namespace Ionic.Zip.Tests.Basic
                         _txrx.Send(String.Format("status done creating {0} files", y));
                     }
                 };
-            
             
             
             int[][] settings = { 
@@ -836,6 +835,7 @@ namespace Ionic.Zip.Tests.Basic
                 int subdirCount = 0;
                 int entries = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "LargeNumberOfFiles", DirToZip, settings[m], progressUpdate, out subdirCount);
                 _numEntriesToAdd = entries;  // _numEntriesToAdd is used in LNSF_AddProgress
+                _numEntriesAdded = 0;
                 
                 _txrx.Send("pb 0 step");
 
@@ -848,6 +848,7 @@ namespace Ionic.Zip.Tests.Basic
                 {
                     zip.AddProgress += LNSF_AddProgress;
                     zip.AddDirectory(Path.GetFileName(DirToZip));
+                    _txrx.Send("test Large # of Small Files"); // for good measure
                     zip.BufferSize = 4096;
                     zip.SaveProgress += LNSF_SaveProgress;
                     zip.Save(zipFileToCreate);

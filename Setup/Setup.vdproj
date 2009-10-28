@@ -309,7 +309,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Zip, Version=1.9.0.24, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zip, Version=1.9.0.29, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_4ADC6320CB5A23DFF593EA7C95D93FF3"
@@ -503,14 +503,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DotNetZip Tools v1.9"
-        "ProductCode" = "8:{A0B25AEF-ED7E-43C6-A4DD-77403DBBC80D}"
-        "PackageCode" = "8:{68B3EE6D-3021-4359-B65E-C97F117CE28A}"
+        "ProductCode" = "8:{632CD317-A55F-498A-906B-72A0AEB6D00F}"
+        "PackageCode" = "8:{E190565B-CA62-4624-8234-3BC1A88A5D0C}"
         "UpgradeCode" = "8:{BEF05388-A74D-4383-BD87-61940DF83E20}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.9.00035"
+        "ProductVersion" = "8:1.9.00036"
         "Manufacturer" = "8:Dino Chiesa"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://dotnetzip.codeplex.com/Thread/List.aspx"
@@ -1614,7 +1614,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_1095DCE16DF54952900B158E667C1D5F"
             {
-            "SourcePath" = "8:..\\Examples\\ZipIt\\obj\\Debug\\ZipIt.exe"
+            "SourcePath" = "8:..\\Tools\\ZipIt\\obj\\Debug\\ZipIt.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_23BCB24D0FEF491DB38964CE9740634B"
@@ -1642,7 +1642,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_C761E906187B41B991150E5027BA2F8A"
             {
-            "SourcePath" = "8:..\\Examples\\WinFormsApp\\obj\\Debug\\DotNetZip-WinFormsTool.exe"
+            "SourcePath" = "8:..\\Tools\\WinFormsApp\\obj\\Debug\\DotNetZip-WinFormsTool.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_23BCB24D0FEF491DB38964CE9740634B"
@@ -1670,7 +1670,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_CB8DB966CAC04B37B66694A2F4A5443F"
             {
-            "SourcePath" = "8:..\\Examples\\SelfExtracting\\obj\\Debug\\ConvertZipToSfx.exe"
+            "SourcePath" = "8:..\\Tools\\ConvertZipToSfx\\obj\\Debug\\ConvertZipToSfx.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_23BCB24D0FEF491DB38964CE9740634B"
@@ -1698,7 +1698,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_F7DA600A0D264B64822406B06AD1BFDE"
             {
-            "SourcePath" = "8:..\\Examples\\UnZip\\obj\\Debug\\UnZip.exe"
+            "SourcePath" = "8:..\\Tools\\UnZip\\obj\\Debug\\UnZip.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_23BCB24D0FEF491DB38964CE9740634B"

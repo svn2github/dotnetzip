@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-27 06:55:37>
+// Time-stamp: <2009-October-28 05:01:09>
 //
 // ------------------------------------------------------------------
 //
@@ -749,7 +749,12 @@ namespace Ionic.Zip
                         // filesystem, in order to specify it on the cmdline of csc.exe.  We
                         // will remove this file later.
                         System.IO.Directory.CreateDirectory(TempDir);
-                        zip["zippedFile.ico"].Extract(TempDir);
+                        ZipEntry e = zip["zippedFile.ico"];
+                        // Must not extract a readonly file - it will be impossible to
+                        // delete later.
+                        if ((e.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                            e.Attributes ^= FileAttributes.ReadOnly;
+                        e.Extract(TempDir);
                         nameOfIconFile = Path.Combine(TempDir, "zippedFile.ico");
                         cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", nameOfIconFile);
                     }
@@ -945,7 +950,10 @@ namespace Ionic.Zip
                     if (Directory.Exists(TempDir))
                     {
                         try { Directory.Delete(TempDir, true); }
-                        catch { }
+                        catch (Exception exc1) 
+                        {
+                            Console.WriteLine("Exception: {0}", exc1.ToString());
+                        }
                     }
                     if (File.Exists(StubExe))
                     {
