@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using System.Windows.Forms;
 
-namespace DotNetZip.Examples.WinForms
+namespace Ionic.Zip.Forms
 {
     static class Program
     {
@@ -15,7 +13,7 @@ namespace DotNetZip.Examples.WinForms
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1(args));
+            Application.Run(new ZipForm(args));
         }
     }
 }

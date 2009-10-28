@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-15 11:51:53>
+// Time-stamp: <2009-October-27 05:47:04>
 //
 // ------------------------------------------------------------------
 //
@@ -26,7 +26,7 @@
 //
 // ------------------------------------------------------------------
 
-namespace DotNetZip.Examples
+namespace Ionic.Zip
 {
     // The using statements must be inside the namespace scope, because when the SFX is being 
     // generated, this module gets concatenated with other source code and then compiled.
@@ -39,6 +39,7 @@ namespace DotNetZip.Examples
     using System.Diagnostics;
     using System.Threading;   // ThreadPool, WaitCallback
     using Ionic.Zip;
+    using Ionic.Zip.Forms;
     
     public partial class WinFormsSelfExtractorStub : Form
     {

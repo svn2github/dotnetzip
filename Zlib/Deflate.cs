@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-23 15:32:37>
+// Time-stamp: <2009-October-27 22:47:03>
 //
 // ------------------------------------------------------------------
 //
@@ -390,8 +390,9 @@ namespace Ionic.Zlib
         {
             window_size = 2 * w_size;
 
-            // clear the hash
-            for (int i = 0; i < hash_size; i++) head[i] = 0;
+            // clear the hash - workitem 9063
+            Array.Clear(head, 0, hash_size);
+            //for (int i = 0; i < hash_size; i++) head[i] = 0;
 
             config = Config.Lookup(compressionLevel);
             switch (config.Flavor)
@@ -931,10 +932,6 @@ namespace Ionic.Zlib
                     put_short((short)~len);
                 }
 
-            //  while(len--!=0) {
-            //    put_byte(window[buf+index]);
-            //    index++;
-            //  }
             put_byte(window, buf, len);
         }
 
@@ -1502,7 +1499,10 @@ namespace Ionic.Zlib
 
                 // Skip to next match if the match length cannot increase
                 // or if the match length is less than 2:
-                if (window[match + best_len] != scan_end || window[match + best_len - 1] != scan_end1 || window[match] != window[scan] || window[++match] != window[scan + 1])
+                if (window[match + best_len]     != scan_end ||
+                    window[match + best_len - 1] != scan_end1 ||
+                    window[match]                != window[scan] ||
+                    window[++match]              != window[scan + 1])
                     continue;
 
                 // The check at best_len-1 can be removed because it will be made

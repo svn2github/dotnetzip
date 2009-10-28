@@ -1,6 +1,6 @@
-﻿namespace DotNetZip.Examples.WinForms
+﻿namespace Ionic.Zip.Forms
 {
-    partial class Form1
+    partial class ZipForm
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ZipForm));
             this.tbDirectoryToZip = new System.Windows.Forms.TextBox();
             this.tbZipToCreate = new System.Windows.Forms.TextBox();
             this.btnZipupDirBrowse = new System.Windows.Forms.Button();
@@ -1038,7 +1038,7 @@
             // 
             this.columnHeader3.Text = "File name in Archive";
             // 
-            // Form1
+            // ZipForm
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1048,11 +1048,11 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.MinimumSize = new System.Drawing.Size(598, 458);
-            this.Name = "Form1";
+            this.Name = "ZipForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "DotNetZip Tool";
-            this.Load += new System.EventHandler(this.Form1_Load);
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+            this.Load += new System.EventHandler(this.ZipForm_Load);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ZipForm_FormClosing);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();

@@ -136,7 +136,7 @@ namespace Ionic.Zip.Tests.Password
 
             string[] filenames = 
             {
-                Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
+                Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
                 Path.Combine(SourceDir, "Zip Partial DLL\\bin\\Debug\\Ionic.Zip.Partial.xml"),
             };
 
@@ -194,7 +194,7 @@ namespace Ionic.Zip.Tests.Password
 
             string[] filenames = 
             {
-                Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
+                Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
                 Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
             };
 
@@ -221,8 +221,8 @@ namespace Ionic.Zip.Tests.Password
                 for (j = 0; j < filenames.Length; j++)
                     zip[Path.GetFileName(filenames[j])].ExtractWithPassword("unpack", ExtractExistingFileAction.OverwriteSilently, "WrongPassword");
             }
-
         }
+
 
         [TestMethod]
         public void Password_AddEntryWithPasswordToExistingZip()
@@ -241,7 +241,7 @@ namespace Ionic.Zip.Tests.Password
 
             string[] filenames = 
             {
-                Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
+                Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
                 Path.Combine(SourceDir, "Zip Partial DLL\\bin\\Debug\\Ionic.Zip.Partial.xml"),
             };
 
@@ -262,7 +262,7 @@ namespace Ionic.Zip.Tests.Password
             Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), 2,
                     "The Zip file has the wrong number of entries.");
 
-            string fileX = Path.Combine(SourceDir, "Examples\\Unzip\\bin\\debug\\unzip.exe");
+            string fileX = Path.Combine(SourceDir, "Tools\\Unzip\\bin\\debug\\unzip.exe");
             string checksumX = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(fileX));
             string Password = "qw3sjknm!";
             using (ZipFile zip = new ZipFile(ZipFileToCreate))

@@ -10,6 +10,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zlib Tests", "Zlib Tests\Zlib Tests.csproj", "{047A98B2-BC96-41B4-ADD8-2167FB1B6502}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E1C14695-E75F-4317-919A-5341EA1F9C01}"
+	ProjectSection(SolutionItems) = preProject
+		DotNetZip1.vsmdi = DotNetZip1.vsmdi
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip Tests", "Zip Tests\Zip Tests.csproj", "{549466CE-5CA6-4904-BA44-58141544BE70}"
 EndProject
@@ -122,6 +125,9 @@ Global
 		SccProjectTopLevelParentUniqueName20 = DotNetZip.sln
 		SccProjectName20 = Tools/WinFormsApp
 		SccLocalPath20 = Tools\\WinFormsApp
+	EndGlobalSection
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = DotNetZip1.vsmdi
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

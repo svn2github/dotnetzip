@@ -1,4 +1,4 @@
-﻿// DotNetZip\Examples\WinFormsApp\Form1.cs
+// ZipForm.cs
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2009 Dino Chiesa
@@ -21,15 +21,15 @@ using System.Threading;
 using System.Windows.Forms;
 using Ionic.Zip;
 
-namespace DotNetZip.Examples.WinForms
+namespace Ionic.Zip.Forms
 {
-    public partial class Form1 : Form
+    public partial class ZipForm : Form
     {
         delegate void ZipProgress(ZipProgressEventArgs e);
         delegate void ButtonClick(object sender, EventArgs e);
         HiResTimer _hrt;
 
-        public Form1()
+        public ZipForm()
         {
             InitializeComponent();
 
@@ -42,7 +42,7 @@ namespace DotNetZip.Examples.WinForms
         }
 
 
-        // in Form1.DragDrop.cs
+        // in ZipForm.DragDrop.cs
         partial void SetDragDrop();
 
         private void SetTextBoxes()
@@ -112,7 +112,7 @@ namespace DotNetZip.Examples.WinForms
 
         // This constructor works to load zips from the command line.
         // It also works to allow "open With..." from Windows Explorer. 
-        public Form1(string[] args)
+        public ZipForm(string[] args)
             : this()
         {
             if (args != null && args.Length >= 1 && args[0] != null)
@@ -923,7 +923,7 @@ namespace DotNetZip.Examples.WinForms
         }
 
 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        private void ZipForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             SaveFormToRegistry();
         }
@@ -1450,7 +1450,7 @@ namespace DotNetZip.Examples.WinForms
         }
 
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void ZipForm_Load(object sender, EventArgs e)
         {
             if (_initialFileToLoad != null)
             {

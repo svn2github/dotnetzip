@@ -1,4 +1,4 @@
-// DotNetZip\Examples\SelfExtracting\ZipContentsDialog.cs
+// ZipContentsDialog.cs
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2009 Dino Chiesa
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 
-namespace DotNetZip.Examples
+namespace Ionic.Zip.Forms
 {
     using System;
     using System.Collections.Generic;

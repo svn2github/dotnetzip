@@ -1,4 +1,4 @@
-// DotNetZip\Examples\WinFormsApp\Form1.State.cs
+// Form.State.cs
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2009 Dino Chiesa
@@ -21,11 +21,10 @@ using System.Threading;
 using System.Windows.Forms;
 using Ionic.Zip;
 
-namespace DotNetZip.Examples.WinForms
+namespace Ionic.Zip.Forms
 {
-    public partial class Form1
+    public partial class ZipForm
     {
-
         /// This app uses the windows registry to store config data for itself. 
         ///     - creates a key for this DotNetZip Winforms app, if one does not exist
         ///     - stores and retrieves the most recent settings.

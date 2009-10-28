@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-15 11:51:57>
+// Time-stamp: <2009-October-27 06:54:42>
 //
 // ------------------------------------------------------------------
 //
@@ -39,7 +39,7 @@ namespace Ionic.Zip
     using System.Diagnostics;
     using Ionic.Zip;
 
-    public class SelfExtractor
+    public class CommandLineSelfExtractor
     {
         const string DllResourceName = "Ionic.Zip.dll";
 
@@ -142,7 +142,7 @@ namespace Ionic.Zip
 
         
         // ctor
-        private SelfExtractor()
+        private CommandLineSelfExtractor()
         {
             SetRemoveFilesFlag();
             SetVerboseFlag();
@@ -153,7 +153,7 @@ namespace Ionic.Zip
 
         
         // ctor
-        public SelfExtractor(string[] args) : this()
+        public CommandLineSelfExtractor(string[] args) : this()
         {
             string specifiedDirectory = null;
             for (int i = 0; i < args.Length; i++)
@@ -269,7 +269,7 @@ namespace Ionic.Zip
         }
 
         
-        static SelfExtractor()
+        static CommandLineSelfExtractor()
         {
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(Resolver);
         }
@@ -562,7 +562,7 @@ namespace Ionic.Zip
             int rc = 0;
             try
             {
-                SelfExtractor me = new SelfExtractor(args);
+                CommandLineSelfExtractor me = new CommandLineSelfExtractor(args);
                 
                 // Hide my own console window if there is no parent console
                 // (which means, it was launched rom explorer).

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-21 09:24:39>
+// Time-stamp: <2009-October-27 22:16:58>
 //
 // ------------------------------------------------------------------
 //
@@ -40,7 +40,7 @@ namespace Ionic.Zip
     [Interop.GuidAttribute("ebc25cf6-9120-4283-b972-0e5520d00004")]
     [Interop.ComVisible(true)]
 #if !NETCF
-    [Interop.ClassInterface(Interop.ClassInterfaceType.AutoDispatch)]
+    [Interop.ClassInterface(Interop.ClassInterfaceType.AutoDispatch)]  // AutoDual
 #endif
     public partial class ZipEntry
     {

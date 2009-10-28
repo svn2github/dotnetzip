@@ -1,4 +1,4 @@
-// DotNetZip\Examples\WinFormsApp\Extensions.cs
+// Extensions.cs
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2009 Dino Chiesa
@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DotNetZip.Examples.WinForms
+namespace Ionic.Zip.Forms
 {
     public static class Extensions
     {

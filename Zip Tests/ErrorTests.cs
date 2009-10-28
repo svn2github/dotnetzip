@@ -227,7 +227,7 @@ namespace Ionic.Zip.Tests.Error
             Directory.SetCurrentDirectory(TopLevelDir);
 
             string filename =
-                Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe");
+                Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe");
 
             // try reading the invalid zipfile - this should fail
             using (ZipFile zip = ZipFile.Read(filename))
@@ -461,7 +461,7 @@ namespace Ionic.Zip.Tests.Error
             for (int i = 0; i < 3; i++)
                 SourceDir = Path.GetDirectoryName(SourceDir);
 
-            string filename = Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe");
+            string filename = Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe");
             File.Copy(filename, "ThisIsAFile");
 
             string baddirname = Path.Combine(TopLevelDir, "ThisIsAFile");
@@ -532,7 +532,7 @@ namespace Ionic.Zip.Tests.Error
             // the list of filenames to add to the zip
             string[] filenames =
             {
-                Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
+                Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
                 Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
             };
 
@@ -598,8 +598,8 @@ namespace Ionic.Zip.Tests.Error
             // the list of filenames to add to the zip
             string[] filenames =
             {
-                Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "Examples\\Unzip\\bin\\Debug\\Unzip.exe"),
+                Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
+                Path.Combine(SourceDir, "Tools\\Unzip\\bin\\Debug\\Unzip.exe"),
                 Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
 
             };

@@ -1,4 +1,4 @@
-// DotNetZip\Examples\WinFormsApp\Form1.DragDrop.cs
+// Form.DragDrop.cs
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2009 Dino Chiesa
@@ -16,16 +16,15 @@
 //
 
 
-namespace DotNetZip.Examples.WinForms
+namespace Ionic.Zip.Forms
 {
-
     using System;
     using System.Drawing;
     using System.Windows.Forms;
     using DragDropLib;
     using ComIDataObject = System.Runtime.InteropServices.ComTypes.IDataObject;
 
-    public partial class Form1 : System.Windows.Forms.Form
+    public partial class ZipForm : System.Windows.Forms.Form
     {
         partial void SetDragDrop()
         {

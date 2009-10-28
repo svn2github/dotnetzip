@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-22 16:24:29>
+// Time-stamp: <2009-October-27 06:55:37>
 //
 // ------------------------------------------------------------------
 //
@@ -437,24 +437,24 @@ namespace Ionic.Zip
                 ReferencedAssemblies= new List<string>{
                     "System.dll", "System.Windows.Forms.dll", "System.Drawing.dll"},
                 CopyThroughResources = new List<string>{
-                    "DotNetZip.Examples.WinFormsSelfExtractorStub.resources",
-                    "DotNetZip.Examples.PasswordDialog.resources",
-                    "DotNetZip.Examples.ZipContentsDialog.resources"},
+                    "Ionic.Zip.WinFormsSelfExtractorStub.resources",
+                    "Ionic.Zip.Forms.PasswordDialog.resources",
+                    "Ionic.Zip.Forms.ZipContentsDialog.resources"},
                 ResourcesToCompile = new List<string>{
-                    "Ionic.Zip.Resources.WinFormsSelfExtractorStub.cs",
-                    "DotNetZip.Examples.WinFormsSelfExtractorStub", // .Designer.cs
-                    "Ionic.Zip.Resources.PasswordDialog.cs",
-                    "DotNetZip.Examples.PasswordDialog",             //.Designer.cs"
-                    "Ionic.Zip.Resources.ZipContentsDialog.cs",
-                    "DotNetZip.Examples.ZipContentsDialog",             //.Designer.cs"
-                    "Ionic.Zip.Resources.FolderBrowserDialogEx.cs",
+                    "WinFormsSelfExtractorStub.cs",
+                    "WinFormsSelfExtractorStub.Designer.cs", // .Designer.cs?
+                    "PasswordDialog.cs",
+                    "PasswordDialog.Designer.cs",             //.Designer.cs"
+                    "ZipContentsDialog.cs",
+                    "ZipContentsDialog.Designer.cs",             //.Designer.cs"
+                    "FolderBrowserDialogEx.cs",
                 }
             },
             new ExtractorSettings() {
                 Flavor = SelfExtractorFlavor.ConsoleApplication,
                 ReferencedAssemblies= new List<string> { "System.dll", },
                 CopyThroughResources = null,
-                ResourcesToCompile = new List<string>{"Ionic.Zip.Resources.CommandLineSelfExtractorStub.cs"}
+                ResourcesToCompile = new List<string>{"CommandLineSelfExtractorStub.cs"}
             }
         };
 
@@ -668,7 +668,7 @@ namespace Ionic.Zip
                     if (Verbose) StatusMessageTextWriter.WriteLine("Warning: The generated self-extracting file will not have an .exe extension.");
                 }
 
-                StubExe = GenerateTempPathname("exe", null);
+                StubExe = GenerateTempPathname("exe");
 
                 // get the Ionic.Zip assembly
                 Assembly a1 = typeof(ZipFile).Assembly;
@@ -711,153 +711,171 @@ namespace Ionic.Zip
                 cp.CompilerOptions = "";                 
 
                 Assembly a2 = Assembly.GetExecutingAssembly();
-                
-                if (String.IsNullOrEmpty(options.IconFile))
-                {
-                    // use the embedded ico file. But we must unpack it, in order to
-                    // specify it on the cmdline of csc.exe.  So, use the removeIconFile
-                    // flag to make sure to clean this up later.
-                    nameOfIconFile = GenerateTempPathname("ico", null);
-                    ExtractResourceToFile(a2, "Ionic.Zip.Resources.zippedFile.ico", nameOfIconFile);
-                    cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", nameOfIconFile);
-                }
-                else 
-                    cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", options.IconFile);
-                
-                cp.OutputAssembly = StubExe;
-                
-                if (options.Flavor == SelfExtractorFlavor.WinFormsApplication)
-                    cp.CompilerOptions += " /target:winexe";
 
-                if (cp.CompilerOptions == "")
-                    cp.CompilerOptions = null;
-
-                TempDir = GenerateTempPathname("tmp", null);
-                if ((settings.CopyThroughResources != null) && (settings.CopyThroughResources.Count != 0))
-                {
-                    System.IO.Directory.CreateDirectory(TempDir);
-                    foreach (string re in settings.CopyThroughResources)
-                    {
-                        string filename = Path.Combine(TempDir, re);
-
-                        ExtractResourceToFile(a2, re, filename);
-                        // add the file into the target assembly as an embedded resource
-                        cp.EmbeddedResources.Add(filename);
-                    }
-                }
-
-                // add the Ionic.Utils.Zip DLL as an embedded resource
-                cp.EmbeddedResources.Add(a1.Location);
-
-//                 Console.WriteLine("Resources in this assembly:");
-//                 foreach (string rsrc in a2.GetManifestResourceNames())
-//                 {
-//                    Console.WriteLine(rsrc);
-//                 }
-//                 Console.WriteLine();
-//                 Console.WriteLine("reading source code resources:");
-
-
-                // concatenate all the source code resources into a single module
+                // Use this to concatenate all the source code resources into a single module
                 var sb = new System.Text.StringBuilder();
                 
-                // in case there are compiler errors later, we allocate a
+                // In case there are compiler errors later, we allocate a
                 // source file name now.
-                string sourceFile = GenerateTempPathname("cs", null);
+                string sourceFile = GenerateTempPathname("cs");
                 
-                // file header
-                sb.Append("// " + Path.GetFileName(sourceFile) + "\n")
-                    .Append("// --------------------------------------------\n//\n")
-                    .Append("// This SFX source file was generated by DotNetZip ")
-                    .Append(ZipFile.LibraryVersion.ToString())
-                    .Append("\n//         at ")
-                    .Append(System.DateTime.Now.ToString("yyyy MMMM dd  HH:mm:ss"))
-                    .Append("\n//\n// --------------------------------------------\n\n\n");
-                        
-                // assembly attributes
-                if (!String.IsNullOrEmpty(options.Description))
-                    sb.Append("[assembly: System.Reflection.AssemblyTitle(\""
-                              + options.Description.Replace("\"", "")
-                              + "\")]\n");
-                else
-                    sb.Append("[assembly: System.Reflection.AssemblyTitle(\"DotNetZip SFX Archive\")]\n");
 
-                if (!String.IsNullOrEmpty(options.ProductVersion))
-                    sb.Append("[assembly: System.Reflection.AssemblyInformationalVersion(\""
-                              + options.ProductVersion.Replace("\"", "")
-                              + "\")]\n");
 
-                string copyright = "Extractor: Copyright © Dino Chiesa 2008, 2009";
-                if (!String.IsNullOrEmpty(options.Copyright))
-                    copyright += "Contents: " + options.Copyright.Replace("\"", "");
+                // // debugging: enumerate the resources in this assembly
+                // Console.WriteLine("Resources in this assembly:");
+                // foreach (string rsrc in a2.GetManifestResourceNames())
+                //   {
+                //     Console.WriteLine(rsrc);
+                //   }
+                // Console.WriteLine();
 
+
+                // all the source code is embedded in the DLL as a zip file.
+                using (ZipFile zip = ZipFile.Read(a2.GetManifestResourceStream("Ionic.Zip.Resources.ZippedResources.zip")))
+                {
+                    // // debugging: enumerate the files in the embedded zip
+                    // Console.WriteLine("Entries in the embbedded zip:");
+                    // foreach (ZipEntry entry in zip)
+                    //   {
+                    //     Console.WriteLine(entry.FileName);
+                    //   }
+                    // Console.WriteLine();
+                
+                    TempDir = GenerateTempPathname("tmp");
                     
-                if (!String.IsNullOrEmpty(options.ProductName))
-                    sb.Append("[assembly: System.Reflection.AssemblyProduct(\"")
-                        .Append(options.ProductName.Replace("\"", ""))
-                        .Append("\")]\n");
-                else 
-                    sb.Append("[assembly: System.Reflection.AssemblyProduct(\"DotNetZip\")]\n");
-
-
-                sb.Append("[assembly: System.Reflection.AssemblyCopyright(\"" + copyright + "\")]\n")
-                    .Append(String.Format("[assembly: System.Reflection.AssemblyVersion(\"{0}\")]\n", ZipFile.LibraryVersion.ToString()));
-                if (options.FileVersion != null)
-                    sb.Append(String.Format("[assembly: System.Reflection.AssemblyFileVersion(\"{0}\")]\n",
-                                          options.FileVersion.ToString()));
-
-                sb.Append("\n\n\n");
-
-                // Set the default extract location if it is available
-                string extractLoc = options.DefaultExtractDirectory;
-                if (extractLoc != null)
-                {
-                    // remove double-quotes and replace slash with double-slash.
-                    // This, because the value is going to be embedded into a
-                    // cs file as a quoted string, and it needs to be escaped. 
-                    extractLoc = extractLoc.Replace("\"", "").Replace("\\", "\\\\");
-                }
-
-                string postExCmdLine = options.PostExtractCommandLine;
-                if (postExCmdLine  != null)
-                {
-                    postExCmdLine = postExCmdLine.Replace("\\","\\\\");
-                    postExCmdLine = postExCmdLine.Replace("\"","\\\"");
-                }
-
-                
-                foreach (string rc in settings.ResourcesToCompile)
-                {
-                    //Console.WriteLine("  trying to read stream: ({0})", rc);
-                    Stream s = a2.GetManifestResourceStream(rc);
-                    if (s == null)
-                        throw new ZipException(String.Format("missing resource '{0}'", rc));
-                    using (StreamReader sr = new StreamReader(s))
+                    if (String.IsNullOrEmpty(options.IconFile))
                     {
-                        while (sr.Peek() >= 0)
+                        // Use the embedded ico file. But we must unpack it to the
+                        // filesystem, in order to specify it on the cmdline of csc.exe.  We
+                        // will remove this file later.
+                        System.IO.Directory.CreateDirectory(TempDir);
+                        zip["zippedFile.ico"].Extract(TempDir);
+                        nameOfIconFile = Path.Combine(TempDir, "zippedFile.ico");
+                        cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", nameOfIconFile);
+                    }
+                    else 
+                        cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", options.IconFile);
+                
+                    cp.OutputAssembly = StubExe;
+                
+                    if (options.Flavor == SelfExtractorFlavor.WinFormsApplication)
+                        cp.CompilerOptions += " /target:winexe";
+
+                    if (cp.CompilerOptions == "")
+                        cp.CompilerOptions = null;
+
+                    if ((settings.CopyThroughResources != null) && (settings.CopyThroughResources.Count != 0))
+                    {
+                        if (!Directory.Exists(TempDir)) System.IO.Directory.CreateDirectory(TempDir);
+                        foreach (string re in settings.CopyThroughResources)
                         {
-                            string line = sr.ReadLine();
-                            if (extractLoc != null)
-                                line = line.Replace("@@EXTRACTLOCATION", extractLoc);
-                            
-                            line = line.Replace("@@REMOVE_AFTER_EXECUTE", options.RemoveUnpackedFilesAfterExecute.ToString());
-                            line = line.Replace("@@QUIET", options.Quiet.ToString());
-                            line = line.Replace("@@EXTRACT_EXISTING_FILE", ((int)options.ExtractExistingFile).ToString());
-                            
-                            if (postExCmdLine != null)
-                                line = line.Replace("@@POST_UNPACK_CMD_LINE", postExCmdLine);
-                            
-                            sb.Append(line).Append("\n");
+                            string filename = Path.Combine(TempDir, re);
+
+                            ExtractResourceToFile(a2, re, filename);
+                            // add the file into the target assembly as an embedded resource
+                            cp.EmbeddedResources.Add(filename);
                         }
                     }
-                    sb.Append("\n\n");
+
+                    // add the Ionic.Utils.Zip DLL as an embedded resource
+                    cp.EmbeddedResources.Add(a1.Location);
+
+                    // file header
+                    sb.Append("// " + Path.GetFileName(sourceFile) + "\n")
+                        .Append("// --------------------------------------------\n//\n")
+                        .Append("// This SFX source file was generated by DotNetZip ")
+                        .Append(ZipFile.LibraryVersion.ToString())
+                        .Append("\n//         at ")
+                        .Append(System.DateTime.Now.ToString("yyyy MMMM dd  HH:mm:ss"))
+                        .Append("\n//\n// --------------------------------------------\n\n\n");
+                        
+                    // assembly attributes
+                    if (!String.IsNullOrEmpty(options.Description))
+                        sb.Append("[assembly: System.Reflection.AssemblyTitle(\""
+                                  + options.Description.Replace("\"", "")
+                                  + "\")]\n");
+                    else
+                        sb.Append("[assembly: System.Reflection.AssemblyTitle(\"DotNetZip SFX Archive\")]\n");
+
+                    if (!String.IsNullOrEmpty(options.ProductVersion))
+                        sb.Append("[assembly: System.Reflection.AssemblyInformationalVersion(\""
+                                  + options.ProductVersion.Replace("\"", "")
+                                  + "\")]\n");
+
+                    string copyright = "Extractor: Copyright © Dino Chiesa 2008, 2009";
+                    if (!String.IsNullOrEmpty(options.Copyright))
+                        copyright += "Contents: " + options.Copyright.Replace("\"", "");
+
+                    
+                    if (!String.IsNullOrEmpty(options.ProductName))
+                        sb.Append("[assembly: System.Reflection.AssemblyProduct(\"")
+                            .Append(options.ProductName.Replace("\"", ""))
+                            .Append("\")]\n");
+                    else 
+                        sb.Append("[assembly: System.Reflection.AssemblyProduct(\"DotNetZip\")]\n");
+
+
+                    sb.Append("[assembly: System.Reflection.AssemblyCopyright(\"" + copyright + "\")]\n")
+                        .Append(String.Format("[assembly: System.Reflection.AssemblyVersion(\"{0}\")]\n", ZipFile.LibraryVersion.ToString()));
+                    if (options.FileVersion != null)
+                        sb.Append(String.Format("[assembly: System.Reflection.AssemblyFileVersion(\"{0}\")]\n",
+                                                options.FileVersion.ToString()));
+
+                    sb.Append("\n\n\n");
+
+                    // Set the default extract location if it is available
+                    string extractLoc = options.DefaultExtractDirectory;
+                    if (extractLoc != null)
+                    {
+                        // remove double-quotes and replace slash with double-slash.
+                        // This, because the value is going to be embedded into a
+                        // cs file as a quoted string, and it needs to be escaped. 
+                        extractLoc = extractLoc.Replace("\"", "").Replace("\\", "\\\\");
+                    }
+
+                    string postExCmdLine = options.PostExtractCommandLine;
+                    if (postExCmdLine  != null)
+                    {
+                        postExCmdLine = postExCmdLine.Replace("\\","\\\\");
+                        postExCmdLine = postExCmdLine.Replace("\"","\\\"");
+                    }
+
+
+                    foreach (string rc in settings.ResourcesToCompile)
+                    {
+                        // Console.WriteLine("  trying to read entry: ({0})", rc);
+                        using (Stream s = zip[rc].OpenReader())
+                        {
+                            if (s == null)
+                                throw new ZipException(String.Format("missing resource '{0}'", rc));
+                            using (StreamReader sr = new StreamReader(s))
+                            {
+                                while (sr.Peek() >= 0)
+                                {
+                                    string line = sr.ReadLine();
+                                    if (extractLoc != null)
+                                        line = line.Replace("@@EXTRACTLOCATION", extractLoc);
+                            
+                                    line = line.Replace("@@REMOVE_AFTER_EXECUTE", options.RemoveUnpackedFilesAfterExecute.ToString());
+                                    line = line.Replace("@@QUIET", options.Quiet.ToString());
+                                    line = line.Replace("@@EXTRACT_EXISTING_FILE", ((int)options.ExtractExistingFile).ToString());
+                            
+                                    if (postExCmdLine != null)
+                                        line = line.Replace("@@POST_UNPACK_CMD_LINE", postExCmdLine);
+                            
+                                    sb.Append(line).Append("\n");
+                                }
+                            }
+                            sb.Append("\n\n");
+                        }
+                    }
                 }
 
                 string LiteralSource = sb.ToString();
 
                 #if DEBUGSFX
                 // for debugging only
-                string sourceModule = GenerateTempPathname("cs", null);
+                string sourceModule = GenerateTempPathname("cs");
                 using (StreamWriter sw = File.CreateText(sourceModule))
                 {
                     sw.Write(LiteralSource);
@@ -934,11 +952,6 @@ namespace Ionic.Zip
                         try { File.Delete(StubExe); }
                         catch { }
                     }
-                    if (nameOfIconFile!=null && File.Exists(nameOfIconFile))
-                    {
-                        try { File.Delete(nameOfIconFile); }
-                        catch { }
-                    }
                 }
                 catch { }
 
@@ -950,15 +963,11 @@ namespace Ionic.Zip
 
 
 
-        internal static string GenerateTempPathname(string extension, string ContainingDirectory)
+        internal static string GenerateTempPathname(string extension)
         {
             string candidate = null;
             String AppName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-
-            string parentDir = (ContainingDirectory == null)
-                ? System.IO.Path.GetTempPath() 
-                : ContainingDirectory;
-
+            string parentDir = System.IO.Path.GetTempPath();
             int index = 0;
             do
             {

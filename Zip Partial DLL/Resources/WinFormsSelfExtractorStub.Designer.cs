@@ -1,4 +1,4 @@
-﻿namespace DotNetZip.Examples
+﻿namespace Ionic.Zip
 {
     partial class WinFormsSelfExtractorStub
     {
