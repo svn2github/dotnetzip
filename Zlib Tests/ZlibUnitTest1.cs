@@ -250,7 +250,7 @@ namespace Ionic.Zlib.Tests
             rc = compressor.SetDictionary(dictionary);
             Assert.AreEqual<int>(ZlibConstants.Z_OK, rc, String.Format("at SetDeflateDictionary() [{0}]", compressor.Message));
 
-            long dictId = compressor.Adler32;
+            int dictId = compressor.Adler32;
 
             compressor.OutputBuffer = compr;
             compressor.NextOut = 0;

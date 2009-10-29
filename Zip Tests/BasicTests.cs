@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-28 04:15:55>
+// Time-stamp: <2009-October-28 16:36:27>
 //
 // ------------------------------------------------------------------
 //
@@ -753,10 +753,14 @@ namespace Ionic.Zip.Tests.Basic
                         _txrx.Send(String.Format("pb 1 max {0}", _numEntriesToAdd));
                         _pb1Set = true;
                     }
-                    _numEntriesAdded++;
-                    _txrx.Send(String.Format("status Adding file {0}/{1} :: {2}",
+                    if (!e.CurrentEntry.FileName.EndsWith("/"))
+                    {
+                        _numEntriesAdded++;
+                        if (_numEntriesAdded % 64 == 0)
+                        _txrx.Send(String.Format("status Adding file {0}/{1} :: {2}",
                                              _numEntriesAdded, _numEntriesToAdd, e.CurrentEntry.FileName));
-                    _txrx.Send("pb 1 step");
+                        _txrx.Send("pb 1 step");
+                    }
                     break;
                     
             case ZipProgressEventType.Adding_Completed:
@@ -860,6 +864,7 @@ namespace Ionic.Zip.Tests.Basic
                 Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), entries,
                              "The zip file created has the wrong number of entries.");
 
+                _txrx.Send("status cleaning up...");
                 // clean up for this cycle
                 Directory.Delete(DirToZip, true);
             }
