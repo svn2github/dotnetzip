@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-14 00:26:23>
+// Time-stamp: <2009-November-04 02:44:44>
 //
 // ------------------------------------------------------------------
 //
@@ -51,7 +51,8 @@ namespace Ionic.Zip.Tests
     [TestClass]
     public class Compatibility : IonicTestClass
     {
-        public Compatibility() : base()
+        public Compatibility()
+            : base()
         {
         }
 
@@ -116,61 +117,61 @@ namespace Ionic.Zip.Tests
         {
             get
             {
-               if (_sevenZip == null)
-               {
-                   string testBin = TestUtilities.GetTestBinDir(CurrentDir);
-                   _sevenZip = Path.Combine(testBin, "Resources\\7z.exe");
-                   Assert.IsTrue(File.Exists(_sevenZip), "exe ({0}) does not exist", _sevenZip);
-               }
-               return _sevenZip;
+                if (_sevenZip == null)
+                {
+                    string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+                    _sevenZip = Path.Combine(testBin, "Resources\\7z.exe");
+                    Assert.IsTrue(File.Exists(_sevenZip), "exe ({0}) does not exist", _sevenZip);
+                }
+                return _sevenZip;
             }
         }
 
 
-        
+
         private string _wzzip = null;
         private string wzzip
         {
             get
             {
-               if (_wzzip == null)
-               {
-                string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                _wzzip = Path.Combine(progfiles, "winzip\\wzzip.exe");
-                Assert.IsTrue(File.Exists(_wzzip), "exe ({0}) does not exist", _wzzip);
-               }
-               return _wzzip;
+                if (_wzzip == null)
+                {
+                    string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
+                    _wzzip = Path.Combine(progfiles, "winzip\\wzzip.exe");
+                    Assert.IsTrue(File.Exists(_wzzip), "exe ({0}) does not exist", _wzzip);
+                }
+                return _wzzip;
             }
         }
-        
-        
+
+
         private string _wzunzip = null;
         private string wzunzip
         {
             get
             {
-               if (_wzunzip == null)
-               {
-                string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                _wzunzip = Path.Combine(progfiles, "winzip\\wzunzip.exe");
-                Assert.IsTrue(File.Exists(_wzunzip), "exe ({0}) does not exist", _wzunzip);
-               }
-               return _wzunzip;
+                if (_wzunzip == null)
+                {
+                    string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
+                    _wzunzip = Path.Combine(progfiles, "winzip\\wzunzip.exe");
+                    Assert.IsTrue(File.Exists(_wzunzip), "exe ({0}) does not exist", _wzunzip);
+                }
+                return _wzunzip;
             }
         }
-        
-        
+
+
         private string _windir = null;
         private string windir
         {
             get
             {
-               if (_windir == null)
-               {
-                   _windir = System.Environment.GetEnvironmentVariable("Windir");
-                   Assert.IsTrue(Directory.Exists(_windir), "%windir% does not exist ({0})", _windir);
-               }
-               return _windir;
+                if (_windir == null)
+                {
+                    _windir = System.Environment.GetEnvironmentVariable("Windir");
+                    Assert.IsTrue(Directory.Exists(_windir), "%windir% does not exist ({0})", _windir);
+                }
+                return _windir;
             }
         }
 
@@ -179,15 +180,15 @@ namespace Ionic.Zip.Tests
         {
             get
             {
-               if (_cscriptExe == null)
-               {
-                   _cscriptExe = Path.Combine(Path.Combine(windir, "system32"), "cscript.exe");
-                   Assert.IsTrue(File.Exists(_cscriptExe), "cscript.exe does not exist ({0})", _cscriptExe);
-               }
-               return _cscriptExe;
+                if (_cscriptExe == null)
+                {
+                    _cscriptExe = Path.Combine(Path.Combine(windir, "system32"), "cscript.exe");
+                    Assert.IsTrue(File.Exists(_cscriptExe), "cscript.exe does not exist ({0})", _cscriptExe);
+                }
+                return _cscriptExe;
             }
         }
-        
+
 
         private string GetScript(string scriptName)
         {
@@ -198,14 +199,14 @@ namespace Ionic.Zip.Tests
             return script;
         }
 
-        private void VerifyFileTimes(string extractDir, 
+        private void VerifyFileTimes(string extractDir,
                                             System.Collections.Generic.IEnumerable<String> filesToCheck,
                                             bool useLowThreshold)
         {
             TimeSpan threshold = (useLowThreshold)
                 ? new TimeSpan(10000)
-                : new TimeSpan(0,0,2);
-            
+                : new TimeSpan(0, 0, 2);
+
             TestContext.WriteLine("Using threshold: ({0})", threshold.ToString());
 
             foreach (var fqPath in filesToCheck)
@@ -230,27 +231,27 @@ namespace Ionic.Zip.Tests
                     t2 = File.GetCreationTimeUtc(extractedFile);
                     delta = t1 - t2;
                     //Assert.AreEqual<DateTime>(t1, t2, "CreationTime ({0})", delta.ToString());
-                    Assert.IsTrue(delta<=threshold, "LastWriteTime ({0})", delta.ToString());
+                    Assert.IsTrue(delta <= threshold, "LastWriteTime ({0})", delta.ToString());
                 }
                 else
-                    Assert.IsTrue(delta<=threshold, "LastWriteTime ({0})", delta.ToString());
+                    Assert.IsTrue(delta <= threshold, "LastWriteTime ({0})", delta.ToString());
 
             }
         }
 
 
-        private void VerifyNtfsTimes(string extractDir, 
+        private void VerifyNtfsTimes(string extractDir,
             System.Collections.Generic.IEnumerable<String> filesToCheck)
         {
             VerifyFileTimes(extractDir, filesToCheck, true);
         }
-                
-        private void VerifyDosTimes(string extractDir, 
+
+        private void VerifyDosTimes(string extractDir,
             System.Collections.Generic.IEnumerable<String> filesToCheck)
         {
             VerifyFileTimes(extractDir, filesToCheck, false);
         }
-                
+
 
         [TestMethod]
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
@@ -268,7 +269,7 @@ namespace Ionic.Zip.Tests
 
 
 
-        
+
         [TestMethod]
         public void Compat_ShellApplication_Unzip()
         {
@@ -279,20 +280,20 @@ namespace Ionic.Zip.Tests
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
 
             var script = GetScript("VbsUnzip-ShellApp.vbs");
-            
+
             var compressionLevels = Enum.GetValues(typeof(Ionic.Zlib.CompressionLevel));
-            int i=0;
+            int i = 0;
             foreach (var compLevel in compressionLevels)
             {
                 // create and fill the directories
                 string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Compat_ShellApplication_Unzip.{0}.zip", i));
-                string extractDir = Path.Combine(TopLevelDir, String.Format("extract.{0}",i));
+                string extractDir = Path.Combine(TopLevelDir, String.Format("extract.{0}", i));
 
                 // Create the zip archive
                 Directory.SetCurrentDirectory(TopLevelDir);
                 using (ZipFile zip1 = new ZipFile())
                 {
-                    zip1.CompressionLevel = (Ionic.Zlib.CompressionLevel) compLevel;
+                    zip1.CompressionLevel = (Ionic.Zlib.CompressionLevel)compLevel;
                     //zip.StatusMessageTextWriter = System.Console.Out;
                     for (int j = 0; j < filesToZip.Length; j++)
                         zip1.AddItem(filesToZip[j], "files");
@@ -329,12 +330,12 @@ namespace Ionic.Zip.Tests
             var script = GetScript("VbsUnzip-ShellApp.vbs");
 
             var compressionLevels = Enum.GetValues(typeof(Ionic.Zlib.CompressionLevel));
-            int i=0;
+            int i = 0;
             foreach (var compLevel in compressionLevels)
             {
                 // create and fill the directories
                 string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Compat_ShellApplication_Unzip_NonSeekableOutput.{0}.zip", i));
-                string extractDir = Path.Combine(TopLevelDir, String.Format("extract.{0}",i));
+                string extractDir = Path.Combine(TopLevelDir, String.Format("extract.{0}", i));
 
                 // Create the zip archive
                 Directory.SetCurrentDirectory(TopLevelDir);
@@ -347,14 +348,14 @@ namespace Ionic.Zip.Tests
                     {
                         using (ZipFile zip1 = new ZipFile())
                         {
-                            zip1.CompressionLevel = (Ionic.Zlib.CompressionLevel) compLevel;
+                            zip1.CompressionLevel = (Ionic.Zlib.CompressionLevel)compLevel;
                             for (int j = 0; j < filesToZip.Length; j++)
                                 zip1.AddItem(filesToZip[j], "files");
                             zip1.Save(nonSeekableOut);
                         }
                     }
                 }
-                
+
                 // Verify the number of files in the zip
                 Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Length,
                                      "Incorrect number of entries in the zip file.");
@@ -372,7 +373,7 @@ namespace Ionic.Zip.Tests
             }
         }
 
-        
+
 #if SHELLAPP_UNZIP_SFX
 
         [TestMethod]
@@ -423,7 +424,7 @@ namespace Ionic.Zip.Tests
         }
 #endif
 
-        
+
 
         [TestMethod]
         public void Compat_ShellApplication_Unzip_2()
@@ -434,7 +435,7 @@ namespace Ionic.Zip.Tests
             string extractDir = Path.Combine(TopLevelDir, "extract");
             string subdir = Path.Combine(TopLevelDir, "files");
 
-            var checksums = new Dictionary<string, byte[]> ();
+            var checksums = new Dictionary<string, byte[]>();
             var filesToZip = GetSelectionOfTempFiles(_rnd.Next(13) + 8, checksums);
 
             // Create the zip archive
@@ -561,7 +562,7 @@ namespace Ionic.Zip.Tests
 
             // Create the zip archive via script
             Directory.SetCurrentDirectory(TopLevelDir);
-            
+
             string script = GetScript("VbsCreateZip-ShellApp.vbs");
 
             this.Exec(cscriptExe,
@@ -592,23 +593,48 @@ namespace Ionic.Zip.Tests
             string subdir = Path.Combine(TopLevelDir, "files");
             string extractDir = "extract";
 
+            TestContext.WriteLine("==================================================================");
+            
             Dictionary<string, byte[]> checksums = new Dictionary<string, byte[]>();
             var filesToZip = GetSelectionOfTempFiles(_rnd.Next(33) + 11, checksums);
 
-                Directory.CreateDirectory(subdir);
-                Directory.SetCurrentDirectory(subdir);
-                var w = System.Environment.GetEnvironmentVariable("Windir");
-                Assert.IsTrue(Directory.Exists(w), "%windir% does not exist ({0})", w);
-                var fsutil = Path.Combine(Path.Combine(w, "system32"), "fsutil.exe");
-                Assert.IsTrue(File.Exists(fsutil), "fsutil.exe does not exist ({0})", fsutil);
-                string ignored;
-                foreach (var f in filesToZip)
-                {
-                    Assert.IsTrue(File.Exists(f));
-                    string cmd = String.Format("hardlink create \"{0}\" \"{1}\"", Path.GetFileName(f), f);
-                    TestUtilities.Exec_NoContext(fsutil, cmd, out ignored);
-                }
+            Directory.CreateDirectory(subdir);
+            Directory.SetCurrentDirectory(subdir);
+            var w = System.Environment.GetEnvironmentVariable("Windir");
+            Assert.IsTrue(Directory.Exists(w), "%windir% does not exist ({0})", w);
+            var fsutil = Path.Combine(Path.Combine(w, "system32"), "fsutil.exe");
+            Assert.IsTrue(File.Exists(fsutil), "fsutil.exe does not exist ({0})", fsutil);
+            string ignored;
             
+            TestContext.WriteLine("validating the list of files...");
+            List<String> markedForRemoval = new List<String> ();
+            // remove those with spaces in the names.  The ShellApp (zipfldr.dll) doesn't
+            // deal with these files very well.  Or something. 
+            foreach (var f in filesToZip)
+            {
+                if (Path.GetFileName(f).IndexOf(' ') > 0)
+                    markedForRemoval.Add(f);
+            }
+            
+            foreach (var f in markedForRemoval)
+            {
+                TestContext.WriteLine("removing  {0}...", Path.GetFileName(f));
+                filesToZip.Remove(f);
+                checksums.Remove(Path.GetFileName(f));
+            }
+            
+
+            TestContext.WriteLine("--------------------------------------------");
+            TestContext.WriteLine("creating links...");
+            foreach (var f in filesToZip)
+            {
+                string shortfile= Path.GetFileName(f);
+                Assert.IsTrue(File.Exists(f));
+                string cmd = String.Format("hardlink create \"{0}\" \"{1}\"", shortfile, f);
+                TestUtilities.Exec_NoContext(fsutil, cmd, out ignored);
+            }
+
+            TestContext.WriteLine("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             // Create the zip archive via script
             Directory.SetCurrentDirectory(TopLevelDir);
             string script = GetScript("VbsCreateZip-ShellApp.vbs");
@@ -616,6 +642,45 @@ namespace Ionic.Zip.Tests
             this.Exec(cscriptExe,
                       String.Format("\"{0}\" {1} {2}", script, zipFileToCreate, subdir));
 
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // DEBUGGING!
+            if (TestUtilities.CountEntries(zipFileToCreate) != filesToZip.Count)
+            {
+                string[] linkedFiles = Directory.GetFiles(subdir);
+                
+                Action<IEnumerable<String>, string> ListFiles = (list, name) =>
+                {
+                    TestContext.WriteLine("**********************************");
+                    TestContext.WriteLine("files in ({0})", name);
+                    foreach (var s in list)
+                    {
+                        TestContext.WriteLine("  {0}", Path.GetFileName(s));
+                    }
+                    TestContext.WriteLine("----------------------------------");
+                    TestContext.WriteLine("  {0} total files", list.Count());
+                };
+                
+                ListFiles(linkedFiles, "Linked Files");
+                ListFiles(filesToZip, "selected Files");
+
+                IEnumerable<String> selection = null;
+                using (var zip = ZipFile.Read(zipFileToCreate))
+                {
+                    selection = from e in zip.Entries select e.FileName;
+                } 
+                
+                ListFiles(selection, "zipped Files");
+
+                foreach (var file in linkedFiles)
+                {
+                    if (!selection.Contains(Path.GetFileName(file)))
+                    {
+                        TestContext.WriteLine("Missing: {0}", Path.GetFileName(file));
+                    }
+                }
+            }
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            
             // Verify the number of files in the zip
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Count,
                                  "Incorrect number of entries in the zip file.");
@@ -640,7 +705,7 @@ namespace Ionic.Zip.Tests
             string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_VStudio_Zip.zip");
             string subdir = Path.Combine(TopLevelDir, "files");
             string extractDir = "extract";
-            
+
             string[] filesToZip;
             Dictionary<string, byte[]> checksums;
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
@@ -699,7 +764,7 @@ namespace Ionic.Zip.Tests
 
             // check the files in the extract dir
             VerifyChecksums(Path.Combine(extractDir, "files"), filesToZip, checksums);
-            
+
             // visual Studio's ZIP library doesn't bother with times...
             //VerifyNtfsTimes(Path.Combine(extractDir, "files"), filesToZip);
         }
@@ -713,7 +778,7 @@ namespace Ionic.Zip.Tests
             string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_COM_Zip.zip");
             string subdir = Path.Combine(TopLevelDir, "files");
             string extractDir = "extract";
-            
+
             string[] filesToZip;
             Dictionary<string, byte[]> checksums;
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
@@ -737,8 +802,8 @@ namespace Ionic.Zip.Tests
 
             // check the files in the extract dir
             VerifyChecksums(extractDir, filesToZip, checksums);
-            
-            VerifyNtfsTimes(extractDir, filesToZip);            
+
+            VerifyNtfsTimes(extractDir, filesToZip);
         }
 
 
@@ -811,12 +876,12 @@ namespace Ionic.Zip.Tests
             // run the COM script to check the ZIP archive
             string script = GetScript("TestCheckZip.js");
 
-            string testOut= this.Exec(cscriptExe,
+            string testOut = this.Exec(cscriptExe,
                                       String.Format("\"{0}\" {1}", script, zipFileToCreate));
 
             Assert.IsTrue(testOut.StartsWith("That zip is OK"));
         }
-        
+
 
         [TestMethod]
         public void Compat_COM_CheckWithExtract()
@@ -845,12 +910,12 @@ namespace Ionic.Zip.Tests
             // run the COM script to check and test-extract the ZIP archive
             string script = GetScript("TestCheckZip.js");
 
-            string testOut= this.Exec(cscriptExe,
+            string testOut = this.Exec(cscriptExe,
                                       String.Format("\"{0}\" -x {1}", script, zipFileToCreate));
 
             Assert.IsTrue(testOut.StartsWith("That zip is OK"), "output: {0}", testOut);
         }
-        
+
 
         [TestMethod]
         public void Compat_COM_CheckError()
@@ -860,12 +925,12 @@ namespace Ionic.Zip.Tests
             // run the COM script to check the (not) ZIP archive
             string script = GetScript("TestCheckZip.js");
 
-            string testOut= this.Exec(cscriptExe,
+            string testOut = this.Exec(cscriptExe,
                                       String.Format("\"{0}\" {1}", script, cscriptExe));
 
             Assert.IsTrue(testOut.StartsWith("That zip is not OK"));
         }
-        
+
 
         [TestMethod]
         public void Compat_7z_Zip_1()
@@ -902,7 +967,7 @@ namespace Ionic.Zip.Tests
             VerifyChecksums(Path.Combine(extractDir, "files"), filesToZip, checksums);
 
             VerifyNtfsTimes(Path.Combine(extractDir, "files"), filesToZip);
-            
+
         }
 
 
@@ -942,7 +1007,7 @@ namespace Ionic.Zip.Tests
             VerifyNtfsTimes(Path.Combine(extractDir, "files"), filesToZip);
         }
 
-        
+
 
         [TestMethod]
         public void Compat_7z_Unzip()
@@ -980,12 +1045,12 @@ namespace Ionic.Zip.Tests
             VerifyChecksums(Path.Combine("extract", "files"), filesToZip, checksums);
         }
 
-        
+
         [TestMethod]
         public void Compat_7z_Unzip_Password()
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_7z_Unzip_Password.zip");
-            string password=  Path.GetRandomFileName();
+            string password = Path.GetRandomFileName();
             string subdir = Path.Combine(TopLevelDir, "files");
 
             string[] filesToZip;
@@ -1018,7 +1083,7 @@ namespace Ionic.Zip.Tests
 
 
 
-                
+
         [TestMethod]
         public void Compat_7z_Unzip_Password_NonSeekableOutput()
         {
@@ -1054,16 +1119,16 @@ namespace Ionic.Zip.Tests
             // using (File.Create(Path.Combine(TopLevelDir, "DotNetZip-" + ZipFile.LibraryVersion.ToString()))) ;
 
             var compressionLevels = Enum.GetValues(typeof(Ionic.Zlib.CompressionLevel));
-            int i=0;
+            int i = 0;
             foreach (var compLevel in compressionLevels)
             {
                 TestContext.WriteLine("---------------------------------");
                 TestContext.WriteLine("Trial {0}", i);
                 TestContext.WriteLine("CompressionLevel = {0}", compLevel);
-                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Compat_7z_Unzip_Password_NonSeekableOutput.{0}.zip",i));
-                string password=  Path.GetRandomFileName();
+                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Compat_7z_Unzip_Password_NonSeekableOutput.{0}.zip", i));
+                string password = Path.GetRandomFileName();
                 //string password = "0123456789ABCDEF"; 
-                string extractDir = Path.Combine(TopLevelDir, String.Format("extract.{0}",i));
+                string extractDir = Path.Combine(TopLevelDir, String.Format("extract.{0}", i));
 
                 TestContext.WriteLine("Password = {0}", password);
 
@@ -1077,7 +1142,7 @@ namespace Ionic.Zip.Tests
                     {
                         using (ZipFile zip1 = new ZipFile())
                         {
-                            zip1.CompressionLevel = (Ionic.Zlib.CompressionLevel) compLevel;
+                            zip1.CompressionLevel = (Ionic.Zlib.CompressionLevel)compLevel;
                             zip1.Password = password;
                             zip1.AddFiles(filesToZip, "files");
                             zip1.Save(nonSeekableOut);
@@ -1150,15 +1215,15 @@ namespace Ionic.Zip.Tests
             Compat_Winzip_Zip_Variable("");
         }
 
-        
+
         [TestMethod]
         public void Compat_Winzip_Zip_Password()
         {
-            string password = Path.GetRandomFileName().Replace(".","@");
-            TestContext.WriteLine("creating zip with password ({0})", password );
-            string zipfile = Compat_Winzip_Zip_Variable("-s"+password, false);
+            string password = Path.GetRandomFileName().Replace(".", "@");
+            TestContext.WriteLine("creating zip with password ({0})", password);
+            string zipfile = Compat_Winzip_Zip_Variable("-s" + password, false);
             string extractDir = "extract";
-            
+
             // unzip with DotNetZip
             Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = ZipFile.Read(zipfile))
@@ -1168,7 +1233,7 @@ namespace Ionic.Zip.Tests
             }
         }
 
-        
+
         [TestMethod]
         public void Compat_Winzip_Zip_Normal()
         {
@@ -1219,7 +1284,7 @@ namespace Ionic.Zip.Tests
             Compat_Winzip_Zip_Variable("-ee");
         }
 
-        
+
         [TestMethod]
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Compat_Winzip_Zip_LZMA()
@@ -1227,14 +1292,14 @@ namespace Ionic.Zip.Tests
             // Unsupported compression method
             Compat_Winzip_Zip_Variable("-el");
         }
-        
 
-        
+
+
         public string Compat_Winzip_Zip_Variable(string options)
         {
             return Compat_Winzip_Zip_Variable(options, true);
         }
-        
+
         public string Compat_Winzip_Zip_Variable(string options, bool wantVerify)
         {
             // options:
@@ -1259,7 +1324,7 @@ namespace Ionic.Zip.Tests
 
             // delay between file creation and unzip
             System.Threading.Thread.Sleep(1200);
-            
+
             // exec wzzip.exe to create the zip file
             string formatString = "-a -p " + options + " -yx {0} {1}\\*.*";
             string wzzipOut = this.Exec(wzzip, String.Format(formatString, zipFileToCreate, subdir));
@@ -1325,7 +1390,7 @@ namespace Ionic.Zip.Tests
 
 
 
-        
+
         [TestMethod]
         public void Compat_Winzip_Unzip_ZeroLengthFile()
         {
@@ -1334,7 +1399,7 @@ namespace Ionic.Zip.Tests
             // create an empty file
             string filename = Path.Combine(TopLevelDir, Path.GetRandomFileName());
             using (StreamWriter sw = File.CreateText(filename)) { }
-             
+
             // Create the zip archive
             Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
@@ -1344,12 +1409,12 @@ namespace Ionic.Zip.Tests
             }
 
             // Verify the number of files in the zip
-            Assert.AreEqual<int>(1,TestUtilities.CountEntries(zipFileToCreate),
+            Assert.AreEqual<int>(1, TestUtilities.CountEntries(zipFileToCreate),
                                  "Incorrect number of entries in the zip file.");
 
             // now, test the zip
             // eg, wzunzip.exe -t test.zip  <extractdir>
-            string wzunzipOut= this.Exec(wzunzip, String.Format("-t {0}", zipFileToCreate));
+            string wzunzipOut = this.Exec(wzunzip, String.Format("-t {0}", zipFileToCreate));
 
             TestContext.WriteLine("{0}", wzunzipOut);
             Assert.IsTrue(wzunzipOut.Contains("No errors"));
@@ -1357,7 +1422,7 @@ namespace Ionic.Zip.Tests
         }
 
 
-        
+
         [TestMethod]
         public void Compat_Winzip_Unzip_Password()
         {
@@ -1367,8 +1432,8 @@ namespace Ionic.Zip.Tests
             string subdir = "fodder";
             // create a bunch of files
             var filesToZip = TestUtilities.GenerateFilesFlat(subdir);
-            string password=  Path.GetRandomFileName();
-             
+            string password = Path.GetRandomFileName();
+
             // Create the zip archive
             using (ZipFile zip1 = new ZipFile())
             {
@@ -1378,29 +1443,29 @@ namespace Ionic.Zip.Tests
             }
 
             // Verify the number of files in the zip
-            Assert.AreEqual<int>(filesToZip.Length,TestUtilities.CountEntries(zipFileToCreate),
+            Assert.AreEqual<int>(filesToZip.Length, TestUtilities.CountEntries(zipFileToCreate),
                                  "Incorrect number of entries in the zip file.");
 
             // now, test the zip
             // eg, wzunzip.exe -t test.zip  <extractdir>
-            string wzunzipOut= this.Exec(wzunzip, String.Format("-t -s{0} {1}", password, zipFileToCreate));
+            string wzunzipOut = this.Exec(wzunzip, String.Format("-t -s{0} {1}", password, zipFileToCreate));
             TestContext.WriteLine("{0}", wzunzipOut);
-            
+
             Assert.IsTrue(wzunzipOut.Contains("No errors"));
             Assert.IsFalse(wzunzipOut.Contains("At least one error was detected"));
 
             // extract the zip
             Directory.CreateDirectory(extractDir);
             // eg, wzunzip.exe -d -yx -sPassword  test.zip  <extractdir>
-            wzunzipOut= this.Exec(wzunzip, String.Format("-d -yx -s{0} {1} {2}",
+            wzunzipOut = this.Exec(wzunzip, String.Format("-d -yx -s{0} {1} {2}",
                                                                 password, zipFileToCreate, extractDir));
-            
+
             Assert.IsFalse(wzunzipOut.Contains("skipping"));
             Assert.IsFalse(wzunzipOut.Contains("incorrect"));
         }
 
 
-        
+
         [TestMethod]
         public void Compat_Winzip_Unzip_Password_NonSeekableOutput()
         {
@@ -1410,14 +1475,14 @@ namespace Ionic.Zip.Tests
             string[] filesToZip;
             Dictionary<string, byte[]> checksums;
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
-            
+
             var compressionLevels = Enum.GetValues(typeof(Ionic.Zlib.CompressionLevel));
-            int i=0;
+            int i = 0;
             foreach (var compLevel in compressionLevels)
             {
-                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Compat_Winzip_Unzip_Password_NonSeekableOutput.{0}.zip",i));
-                string extractDir = "extract"+i.ToString();
-                string password=  Path.GetRandomFileName();
+                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Compat_Winzip_Unzip_Password_NonSeekableOutput.{0}.zip", i));
+                string extractDir = "extract" + i.ToString();
+                string password = Path.GetRandomFileName();
 
                 Directory.SetCurrentDirectory(TopLevelDir);
                 // Want to test the library when saving to non-seekable output streams.  Like
@@ -1429,7 +1494,7 @@ namespace Ionic.Zip.Tests
                         // Create the zip archive
                         using (ZipFile zip1 = new ZipFile())
                         {
-                            zip1.CompressionLevel = (Ionic.Zlib.CompressionLevel) compLevel;
+                            zip1.CompressionLevel = (Ionic.Zlib.CompressionLevel)compLevel;
                             zip1.Password = password;
                             zip1.AddFiles(filesToZip, "files");
                             zip1.Save(nonSeekableOut);
@@ -1438,21 +1503,21 @@ namespace Ionic.Zip.Tests
                 }
 
                 // Verify the number of files in the zip
-                Assert.AreEqual<int>(filesToZip.Length,TestUtilities.CountEntries(zipFileToCreate),
+                Assert.AreEqual<int>(filesToZip.Length, TestUtilities.CountEntries(zipFileToCreate),
                                      "Incorrect number of entries in the zip file.");
 
                 // now, test the zip
                 // eg, wzunzip.exe -t test.zip  
-                string wzunzipOut= this.Exec(wzunzip, String.Format("-t -s{0} {1}", password, zipFileToCreate));
+                string wzunzipOut = this.Exec(wzunzip, String.Format("-t -s{0} {1}", password, zipFileToCreate));
                 TestContext.WriteLine("{0}", wzunzipOut);
-            
+
                 Assert.IsTrue(wzunzipOut.Contains("No errors"));
                 Assert.IsFalse(wzunzipOut.Contains("At least one error was detected"));
 
                 // extract the zip
                 Directory.CreateDirectory(extractDir);
                 // eg, wzunzip.exe -d -yx -sPassword  test.zip  <extractdir>
-                wzunzipOut= this.Exec(wzunzip, String.Format("-d -yx -s{0} {1} {2}",
+                wzunzipOut = this.Exec(wzunzip, String.Format("-d -yx -s{0} {1} {2}",
                                                              password, zipFileToCreate, extractDir));
                 Assert.IsFalse(wzunzipOut.Contains("skipping"));
                 Assert.IsFalse(wzunzipOut.Contains("incorrect"));
@@ -1464,7 +1529,7 @@ namespace Ionic.Zip.Tests
             }
         }
 
-        
+
 
         [TestMethod]
         public void Compat_Winzip_Unzip_SFX()
@@ -1504,12 +1569,12 @@ namespace Ionic.Zip.Tests
 
             // verify the file times
             VerifyDosTimes(Path.Combine(extractDir, "files"), filesToZip);
-        } 
+        }
 
 
 
-        
-        
+
+
         [TestMethod]
         public void Compat_Winzip_Unzip_Basic()
         {
@@ -1618,28 +1683,29 @@ namespace Ionic.Zip.Tests
                     t2 = File.GetCreationTime(orig);
                     Assert.AreEqual<DateTime>(t1, t2);
                 }
-
             }
-
         }
 
+        
         private List<string> GetSelectionOfTempFiles(Dictionary<string, byte[]> checksums)
         {
             return GetSelectionOfTempFiles(_rnd.Next(23) + 9, checksums);
         }
 
-        private List<string> GetSelectionOfTempFiles(int fileLimit, Dictionary<string, byte[]> checksums)
+        private List<string> excludedFilenames = new List<string>();
+
+
+        private List<string> GetSelectionOfTempFiles(int numFilesWanted, Dictionary<string, byte[]> checksums)
         {
-            string tmpPath = Environment.GetEnvironmentVariable("TEMP");
+            string tmpPath = Environment.GetEnvironmentVariable("TEMP"); // C:\Users\dinoch\AppData\Local\Temp
             String[] candidates = Directory.GetFiles(tmpPath);
-            var additionalFiles = new List<String>();
-            var excludedFilenames = new List<string>();
+            var theChosenOnes = new List<String>();
             int trials = 0;
             int otherSide = 0;
-
+            int minOtherSide = numFilesWanted / 3 + 1;
             do
             {
-                if (additionalFiles.Count > fileLimit && otherSide > 4) break;
+                if (theChosenOnes.Count > numFilesWanted && otherSide >= minOtherSide) break;
 
                 // randomly select a candidate
                 var f = candidates[_rnd.Next(candidates.Length)];
@@ -1648,10 +1714,10 @@ namespace Ionic.Zip.Tests
                 try
                 {
                     var fi = new FileInfo(f);
-                    if (Path.GetFileName(f)[0] == '~'
-                        || additionalFiles.Contains(f)
-                        || fi.Length > 10000000
-                        || fi.Length < 100)
+                    if (Path.GetFileName(f)[0] == '~' 
+                        || theChosenOnes.Contains(f)
+                        || fi.Length > 10000000  // too large
+                        || fi.Length < 100)      // too small 
                     {
                         excludedFilenames.Add(f);
                     }
@@ -1659,27 +1725,34 @@ namespace Ionic.Zip.Tests
                     {
                         DateTime lastwrite = File.GetLastWriteTime(f);
                         bool onOtherSideOfDst =
-                            (DateTime.Now.IsDaylightSavingTime() && !lastwrite.IsDaylightSavingTime())
-                            ||
-
+                            (DateTime.Now.IsDaylightSavingTime() && !lastwrite.IsDaylightSavingTime()) ||
                             (!DateTime.Now.IsDaylightSavingTime() && lastwrite.IsDaylightSavingTime());
 
                         if (onOtherSideOfDst)
+                            otherSide++;
+
+                        // If it's on the other side of DST,
+                        //   or
+                        // there are zero or one on *this side*
+                        //   or
+                        // we can still reach the "other side" quota.
+                        if (onOtherSideOfDst || (theChosenOnes.Count - otherSide < 2) ||
+                            ((otherSide < minOtherSide) && (numFilesWanted - theChosenOnes.Count > minOtherSide - otherSide)))
                         {
                             var key = Path.GetFileName(f);
                             var chk = TestUtilities.ComputeChecksum(f);
                             checksums.Add(key, chk);
-                            additionalFiles.Add(f);
-                            otherSide++;
+                            theChosenOnes.Add(f);
                         }
                     }
                 }
-                catch { /* gulp */ }
+                catch { /* gulp! */ }
                 trials++;
             }
             while (trials < 1000);
 
-            return additionalFiles;
+            theChosenOnes.Sort();
+            return theChosenOnes;
         }
 
 

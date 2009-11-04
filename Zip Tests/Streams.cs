@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-23 19:51:36>
+// Time-stamp: <2009-November-03 22:55:37>
 //
 // ------------------------------------------------------------------
 //
@@ -287,27 +287,6 @@ namespace Ionic.Zip.Tests.Streams
 
         private delegate void TestCompressionLevels(string[] files, EncryptionAlgorithm crypto, bool seekable, int cycle, string format, int fileOutputOption);
 
-        [TestMethod]
-        public void AddEntry_WriteDelegate()
-        {
-            _TestDriver(new TestCompressionLevels(_Internal_AddEntry_WriteDelegate), "WriteDelegate", true, false);
-        }
-
-
-        [TestMethod]
-        public void AddEntry_WriteDelegate_NonSeekable()
-        {
-            _TestDriver(new TestCompressionLevels(_Internal_AddEntry_WriteDelegate), "WriteDelegate", false, false);
-        }
-
-
-        [TestMethod]
-        public void AddEntry_WriteDelegate_ZeroBytes_wi8931()
-        {
-            _TestDriver(new TestCompressionLevels(_Internal_AddEntry_WriteDelegate), "WriteDelegate", true, true);
-        }
-
-
         private void _TestDriver(TestCompressionLevels test, string label, bool seekable, bool zero)
         {
             _TestDriver(test, label, seekable, zero, 0);
@@ -316,7 +295,7 @@ namespace Ionic.Zip.Tests.Streams
         
         private void _TestDriver(TestCompressionLevels test, string label, bool seekable, bool zero, int fileOutputOption)
         {
-            int[] fileCounts = new int[] { 1, 2, _rnd.Next(4) + 3, _rnd.Next(14) + 13 };
+            int[] fileCounts = new int[] { 1, 2, _rnd.Next(14) + 13 };
 
             for (int j = 0; j < fileCounts.Length; j++)
             {
@@ -414,6 +393,28 @@ namespace Ionic.Zip.Tests.Streams
                 Assert.AreEqual<int>(files.Length, TestUtilities.CountEntries(zipFileToCreate),
                                      "Trial ({0},{1}): The zip file created has the wrong number of entries.", cycle, k);
             }
+        }
+
+
+        
+        [TestMethod]
+        public void AddEntry_WriteDelegate()
+        {
+            _TestDriver(new TestCompressionLevels(_Internal_AddEntry_WriteDelegate), "WriteDelegate", true, false);
+        }
+
+
+        [TestMethod]
+        public void AddEntry_WriteDelegate_NonSeekable()
+        {
+            _TestDriver(new TestCompressionLevels(_Internal_AddEntry_WriteDelegate), "WriteDelegate", false, false);
+        }
+
+
+        [TestMethod]
+        public void AddEntry_WriteDelegate_ZeroBytes_wi8931()
+        {
+            _TestDriver(new TestCompressionLevels(_Internal_AddEntry_WriteDelegate), "WriteDelegate", true, true);
         }
 
 
@@ -587,8 +588,8 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
 
 
         [TestMethod]
-[ExpectedException(typeof(System.InvalidOperationException))]
-public void Create_ZipOutputStream_WriteBeforePutNextEntry()
+        [ExpectedException(typeof(System.InvalidOperationException))]
+        public void Create_ZipOutputStream_WriteBeforePutNextEntry()
         {
             string zipFileToCreate = "Create_ZipOutputStream_WriteBeforePutNextEntry.zip";
             using (FileStream fs = File.Open(zipFileToCreate, FileMode.Create, FileAccess.ReadWrite))
@@ -753,8 +754,8 @@ public void Create_ZipOutputStream_WriteBeforePutNextEntry()
 
 
         [TestMethod]
-[ExpectedException(typeof(System.ArgumentException))]
-public void Create_ZipOutputStream_DuplicateEntry()
+        [ExpectedException(typeof(System.ArgumentException))]
+        public void Create_ZipOutputStream_DuplicateEntry()
         {
             string zipFileToCreate = "Create_ZipOutputStream_DuplicateEntry.zip";
 
@@ -775,31 +776,43 @@ public void Create_ZipOutputStream_DuplicateEntry()
         [TestMethod]
         public void Create_ZipOutputStream()
         {
-            _TestDriver(new TestCompressionLevels(_Internal_Create_ZipOutputStream), "ZipOutputStream", true, false);
+            bool seekable = true;
+            bool zero = false;
+            _TestDriver(new TestCompressionLevels(_Internal_Create_ZipOutputStream), "ZipOutputStream", seekable, zero);
         }
 
         [TestMethod]
         public void Create_ZipOutputStream_file()
         {
-            _TestDriver(new TestCompressionLevels(_Internal_Create_ZipOutputStream), "ZipOutputStream", true, false, 1);
+            bool seekable = true;
+            bool zero = false;
+            int fileOutputOption = 1;
+            _TestDriver(new TestCompressionLevels(_Internal_Create_ZipOutputStream), "ZipOutputStream", seekable, zero, fileOutputOption);
         }
 
         [TestMethod]
         public void Create_ZipOutputStream_NonSeekable()
         {
-            _TestDriver(new TestCompressionLevels(_Internal_Create_ZipOutputStream), "ZipOutputStream", false, false);
+            bool seekable = false;
+            bool zero = false;
+            _TestDriver(new TestCompressionLevels(_Internal_Create_ZipOutputStream), "ZipOutputStream", seekable, zero);
         }
 
         [TestMethod]
         public void Create_ZipOutputStream_ZeroLength_wi8933()
         {
-            _TestDriver(new TestCompressionLevels(_Internal_Create_ZipOutputStream), "ZipOutputStream", true, true);
+            bool seekable = true;
+            bool zero = true;
+            _TestDriver(new TestCompressionLevels(_Internal_Create_ZipOutputStream), "ZipOutputStream", seekable, zero);
         }
         
         [TestMethod]
         public void Create_ZipOutputStream_ZeroLength_wi8933_file()
         {
-            _TestDriver(new TestCompressionLevels(_Internal_Create_ZipOutputStream), "ZipOutputStream", true, true, 1);
+            bool seekable = true;
+            bool zero = true;
+            int fileOutputOption = 1;
+            _TestDriver(new TestCompressionLevels(_Internal_Create_ZipOutputStream), "ZipOutputStream", seekable, zero, fileOutputOption);
         }
 
         
@@ -856,6 +869,8 @@ public void Create_ZipOutputStream_DuplicateEntry()
                     }
                     output.CompressionLevel = compLevels[k];
 
+                    byte[] buffer = new byte[BufferSize];
+                    int n;
                     foreach (var file in files)
                     {
                         TestContext.WriteLine("file: {0}", file);
@@ -863,8 +878,6 @@ public void Create_ZipOutputStream_DuplicateEntry()
                         output.PutNextEntry(file);
                         using (var input = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Write))
                         {
-                            byte[] buffer = new byte[BufferSize];
-                            int n;
                             while ((n = input.Read(buffer, 0, buffer.Length)) > 0)
                             {
                                 output.Write(buffer, 0, n);
@@ -880,6 +893,146 @@ public void Create_ZipOutputStream_DuplicateEntry()
                                      "Trial ({0},{1}): The zip file created has the wrong number of entries.", cycle, k);
             }
         }
+
+
+
+        [TestMethod]
+        public void ZipOutputStream_Parallel()
+        {
+            int _sizeBase      = 1024 * 1024;
+            int _sizeRange     = 256 * 1024;
+            //int _sizeBase      = 1024 * 256;
+            //int _sizeRange     = 256 * 12;
+            var sw             = new System.Diagnostics.Stopwatch();
+            byte[] buffer      = new byte[0x8000];
+            int n              = 0; 
+            TimeSpan[] ts      = new TimeSpan[2];
+            int nFiles         = _rnd.Next(6) + 6;
+            //int nFiles         = 2;
+            string[] filenames = new string[nFiles];
+            string dirToZip    = Path.Combine(TopLevelDir, "dirToZip");
+
+            TestContext.WriteLine("Creating {0} fodder files...", nFiles);
+
+            Directory.CreateDirectory(dirToZip);
+            
+            sw.Start();
+            
+            for (int x=0; x < nFiles; x++) 
+            {
+                filenames[x] = Path.Combine(dirToZip, String.Format("file{0:000}.txt", x));
+                using (var output = File.Create(filenames[x]))
+                {
+                    using (Stream input = new Ionic.Zip.Tests.Utilities.RandomTextInputStream(_sizeBase + _rnd.Next(_sizeRange)))
+                    {
+                        while ((n = input.Read(buffer, 0, buffer.Length)) != 0)
+                        {
+                            output.Write(buffer, 0, n);
+                        }
+                    }
+                }
+            }
+            sw.Stop();
+            TestContext.WriteLine("file generation took {0}", sw.Elapsed);
+            
+            for (int i = 0; i < crypto.Length; i++)
+            {
+                int c = (i + 2) % crypto.Length;
+                //int c = i;
+                for (int j = 0; j < compLevels.Length; j++)
+                {
+                    string password = Path.GetRandomFileName();
+
+                    // I wanna do 2 cycles if there is compression, so I can compare MT
+                    // vs 1T compression.  The first cycle will ALWAYS use the threaded
+                    // compression, the 2nd will NEVER use it.  If
+                    // CompressionLevel==None, then just do one cycle.
+                    //
+                    int kCycles = (compLevels[j] == Ionic.Zlib.CompressionLevel.None)
+                        ? 1
+                        : 2;
+                            
+                    for (int k = 0; k < kCycles; k++)
+                    {
+                        // Also, I use Stopwatch to time the compression, and compare.
+                        // In light of that, I wanna do one warmup, and then one timed
+                        // trial (for t==0..2).  But here again, if CompressionLevel==None, then I
+                        // don't want to do a timing comparison, so I don't need 2 trials. 
+                        // Therefore, in that case, the "warmup" is the only trial I want to do.
+                        // So when k==1 and Compression==None, do no cycles at all. 
+                        // 
+                        int tCycles = (compLevels[j] == Ionic.Zlib.CompressionLevel.None)
+                            ? ((k==0) ? 1 : 0)
+                            : 2;
+                            
+                        for (int t=0; t < tCycles;  t++) 
+                        {
+                            TestContext.WriteLine(new String('-', 72));
+                            string zipFileToCreate = String.Format("ZipOutputStream_Parallel.E-{0}.C-{1}.{2}.{3}timed.zip",
+                                                                   crypto[c].ToString(), compLevels[j].ToString(),
+                                                                   (compLevels[j] == Ionic.Zlib.CompressionLevel.None)
+                                                                   ? "NA"
+                                                                   : (k==0)?"1T":"MT",
+                                                                   (t==0)?"not-":"");
+
+                            TestContext.WriteLine("Trial {0}.{1}.{2}.{3}", i,j,k,t);
+                            TestContext.WriteLine("Create zip file {0}", zipFileToCreate);
+                        
+                            sw.Reset();
+                            sw.Start();
+                            using (var output = new ZipOutputStream(zipFileToCreate))
+                            {
+                                if (k==0)
+                                    output.ParallelDeflateThreshold = -1L;   // never
+                                else
+                                    output.ParallelDeflateThreshold = 0L; // always
+                            
+                                output.Password = password;
+                                output.Encryption = crypto[c]; // maybe "None"
+                                output.CompressionLevel = compLevels[j];
+
+                                for (int x=0; x < nFiles; x++) 
+                                {
+                                    output.PutNextEntry(Path.GetFileName(filenames[x]));
+                                    using (var input = File.Open(filenames[x], FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Write))
+                                    {
+                                        while ((n = input.Read(buffer, 0, buffer.Length)) > 0)
+                                        {
+                                            output.Write(buffer, 0, n);
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            sw.Stop();
+                            ts[k]= sw.Elapsed;
+                            TestContext.WriteLine("compression took {0}", ts[k]);
+
+                            //if (t==0)
+                            WinzipVerify(zipFileToCreate, password);
+
+                            Assert.AreEqual<int>(nFiles, TestUtilities.CountEntries(zipFileToCreate),
+                                                 "Trial ({0}.{1}.{2}.{3}): The zip file created has the wrong number of entries.", i, j, k, t);
+                            
+                        }
+                    }
+
+#if NOT_DEBUGGING
+                    // parallel is not always faster! 
+                    if (_sizeBase > 256 * 1024 &&
+                        compLevels[j] != Ionic.Zlib.CompressionLevel.None &&
+                        compLevels[j] != Ionic.Zlib.CompressionLevel.BestSpeed &&
+                        crypto[c] != EncryptionAlgorithm.WinZipAes256  &&
+                        crypto[c] != EncryptionAlgorithm.WinZipAes128 )
+                        Assert.IsTrue(ts[0]>ts[1], "Whoops! Cycle {0}.{1} (crypto({4}) Comp({5})): Parallel deflate is slower ({2}<{3})",
+                                      i, j, ts[0], ts[1],
+                                      crypto[c],
+                                      compLevels[j]);
+#endif                    
+                }
+            }
+        }
+
 
 
 

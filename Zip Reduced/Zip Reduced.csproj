@@ -150,6 +150,9 @@
     <Compile Include="..\Zlib\InfTree.cs">
       <Link>InfTree.cs</Link>
     </Compile>
+    <Compile Include="..\Zlib\ParallelDeflateOutputStream.cs">
+      <Link>ParallelDeflateOutputStream.cs</Link>
+    </Compile>
     <Compile Include="..\Zlib\Tree.cs">
       <Link>Tree.cs</Link>
     </Compile>

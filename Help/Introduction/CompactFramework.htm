@@ -24,25 +24,29 @@ There is a special version of DotNetZip, specifically built for the
 </p>
 
 <p>The programming model is exactly the same as for the regular
-DotNetZip library. There are a few differences in operation.</p>
+DotNetZip library. There are a few features not supported in the CF version of DotNetZip:</p>
 
 <ol>
 
-<li>The CF version of DotNetZip is not able to produce Self-extracting
-archives.  The <span style="font-family:
+<li><strong>Self-extracting
+archives.</strong>  The <span style="font-family:
 Courier;">ZipFile.SaveSelfExtractor()</span> method is not available in
 the CF version of DotNetZip. There's no strong technical reason for this
 limnitation; I just didn't think it would be of mainstream interest, and
 in order to keep the size of the library down, I omitted that part from
-the CF version.  It amounts to about a 220k savings.
+the CF version.  It amounts to about a 120k savings.
+</li>
 
-
-<li>The CF version does not support encryption using WinZipAes128 or
+<li><strong>WinZip AES encryption.</strong> The CF version does not support encryption using WinZipAes128 or
 WinZipAes256.  This is because the crypto classes from the .NET
 Framework are not available on .NET CF.  I would have to write my own
 SHA1HMAC() and so on, which I haven't got 'round to doing, especially
 because no one is clamoring for it.
+</li>
 
+<li>ParallelDeflateStream. I don't believe processors for CF are multi-core, so 
+a parallel deflater would offer no benefit. 
+</li>
 
 </ol>
 

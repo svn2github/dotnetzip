@@ -121,6 +121,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Crc32.cs" />
+    <Compile Include="ParallelDeflateOutputStream.cs" />
     <Compile Include="DeflateStream.cs" />
     <Compile Include="GZipStream.cs" />
     <Compile Include="ZlibConstants.cs" />

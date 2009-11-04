@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-20 09:56:07>
+// Time-stamp: <2009-November-04 02:41:24>
 //
 // ------------------------------------------------------------------
 //
@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Net;
+using System.Linq;
 using System.IO;
 using Ionic.Zip;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -236,7 +237,7 @@ namespace Ionic.Zip.Tests.Utilities
 
 
 
-        protected static void VerifyChecksums(string extractDir,
+        protected void VerifyChecksums(string extractDir,
             System.Collections.Generic.IEnumerable<String> filesToCheck,
             Dictionary<string, byte[]> checksums)
         {
@@ -253,7 +254,34 @@ namespace Ionic.Zip.Tests.Utilities
                 count++;
             }
 
-            Assert.AreEqual<Int32>(count, checksums.Count, "Not all of the expected files were found in the extract directory.");
+            if (checksums.Count < count)
+            {
+                TestContext.WriteLine("There are {0} more extracted files than checksums", count - checksums.Count);
+                foreach (var file in filesToCheck)
+                {
+                    if (!checksums.ContainsKey(file))
+                    {
+                        TestContext.WriteLine("Missing: {0}", Path.GetFileName(file));
+                    }
+                }
+            }
+            
+            if (checksums.Count > count)
+            {
+                TestContext.WriteLine("There are {0} more checksums than extracted files", checksums.Count - count);
+                foreach (var file in checksums.Keys)
+                {
+                    var selection = from f in filesToCheck where Path.GetFileName(f).Equals(file) select f;
+                    
+                    if (selection.Count() == 0)
+                    {
+                        TestContext.WriteLine("Missing: {0}", Path.GetFileName(file));
+                    }
+                }
+            }
+            
+            
+            Assert.AreEqual<Int32>(checksums.Count, count, "There's a mismatch between the checksums and the extracted files.");
         }
     }
 

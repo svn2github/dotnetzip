@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-28 14:05:04>
+// Time-stamp: <2009-November-03 15:40:51>
 //
 // ------------------------------------------------------------------
 //
@@ -599,9 +599,10 @@ namespace Ionic.Zlib
         {
             if (dstate == null)
                 throw new ZlibException("No Deflate State!");
-            int ret = dstate.End();
+            // TODO: dinoch Tue, 03 Nov 2009  15:39 (test this)
+            //int ret = dstate.End();
             dstate = null;
-            return ret;
+            return ZlibConstants.Z_OK; //ret;
         }
 
         /// <summary>

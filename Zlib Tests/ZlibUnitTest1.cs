@@ -12,7 +12,7 @@ namespace Ionic.Zlib.Tests
     /// Summary description for UnitTest1
     /// </summary>
     [TestClass]
-    public class UnitTest1
+    public class UnitTest1  
     {
         private System.Random _rnd;
 
@@ -513,66 +513,39 @@ namespace Ionic.Zlib.Tests
         [TestMethod]
         public void Zlib_CompressString()
         {
-            String original = @"Go placidly amid the noise and haste, and remember what peace there may be in silence. 
-
-As far as possible, without surrender, be on good terms with all persons. Speak your truth quietly and clearly; and listen to others, even to the dull and the ignorant, they too have their story. Avoid loud and aggressive persons, they are vexations to the spirit. 
-
-If you compare yourself with others, you may become vain and bitter; for always there will be greater and lesser persons than yourself. Enjoy your achievements as well as your plans. Keep interested in your own career, however humble; it is a real possession in the changing fortunes of time. 
-
-Exercise caution in your business affairs, for the world is full of trickery. But let this not blind you to what virtue there is; many persons strive for high ideals, and everywhere life is full of heroism. Be yourself. Especially, do not feign affection. Neither be cynical about love, for in the face of all aridity and disenchantment it is perennial as the grass. 
-
-Take kindly to the counsel of the years, gracefully surrendering the things of youth. Nurture strength of spirit to shield you in sudden misfortune. But do not distress yourself with imaginings. Many fears are born of fatigue and loneliness. 
-
-Beyond a wholesome discipline, be gentle with yourself. You are a child of the universe, no less than the trees and the stars; you have a right to be here. And whether or not it is clear to you, no doubt the universe is unfolding as it should. 
-
-Therefore be at peace with God, whatever you conceive Him to be, and whatever your labors and aspirations, in the noisy confusion of life, keep peace in your soul. 
-
-With all its sham, drudgery and broken dreams, it is still a beautiful world. 
-
-Be cheerful. Strive to be happy.
-
-Max Ehrmann c.1920
-";
-            TestContext.WriteLine("Original.Length: {0}", original.Length);
-            byte[] compressed = ZlibStream.CompressString(original);
+            TestContext.WriteLine("Original.Length: {0}", GoPlacidly.Length);
+            byte[] compressed = ZlibStream.CompressString(GoPlacidly);
             TestContext.WriteLine("compressed.Length: {0}", compressed.Length);
-            Assert.IsTrue(compressed.Length < original.Length);
+            Assert.IsTrue(compressed.Length < GoPlacidly.Length);
 
             string uncompressed = ZlibStream.UncompressString(compressed);
-            Assert.AreEqual<Int32>(original.Length, uncompressed.Length);
+            Assert.AreEqual<Int32>(GoPlacidly.Length, uncompressed.Length);
         }
 
         [TestMethod]
         public void GZip_CompressString()
         {
-            String original = @"Go placidly amid the noise and haste, and remember what peace there may be in silence. 
-
-As far as possible, without surrender, be on good terms with all persons. Speak your truth quietly and clearly; and listen to others, even to the dull and the ignorant, they too have their story. Avoid loud and aggressive persons, they are vexations to the spirit. 
-
-If you compare yourself with others, you may become vain and bitter; for always there will be greater and lesser persons than yourself. Enjoy your achievements as well as your plans. Keep interested in your own career, however humble; it is a real possession in the changing fortunes of time. 
-
-Exercise caution in your business affairs, for the world is full of trickery. But let this not blind you to what virtue there is; many persons strive for high ideals, and everywhere life is full of heroism. Be yourself. Especially, do not feign affection. Neither be cynical about love, for in the face of all aridity and disenchantment it is perennial as the grass. 
-
-Take kindly to the counsel of the years, gracefully surrendering the things of youth. Nurture strength of spirit to shield you in sudden misfortune. But do not distress yourself with imaginings. Many fears are born of fatigue and loneliness. 
-
-Beyond a wholesome discipline, be gentle with yourself. You are a child of the universe, no less than the trees and the stars; you have a right to be here. And whether or not it is clear to you, no doubt the universe is unfolding as it should. 
-
-Therefore be at peace with God, whatever you conceive Him to be, and whatever your labors and aspirations, in the noisy confusion of life, keep peace in your soul. 
-
-With all its sham, drudgery and broken dreams, it is still a beautiful world. 
-
-Be cheerful. Strive to be happy.
-
-Max Ehrmann c.1920
-";
-            TestContext.WriteLine("Original.Length: {0}", original.Length);
-            byte[] compressed = GZipStream.CompressString(original);
+            TestContext.WriteLine("Original.Length: {0}", GoPlacidly.Length);
+            byte[] compressed = GZipStream.CompressString(GoPlacidly);
             TestContext.WriteLine("compressed.Length: {0}", compressed.Length);
-            Assert.IsTrue(compressed.Length < original.Length);
+            Assert.IsTrue(compressed.Length < GoPlacidly.Length);
 
             string uncompressed = GZipStream.UncompressString(compressed);
-            Assert.AreEqual<Int32>(original.Length, uncompressed.Length);
+            Assert.AreEqual<Int32>(GoPlacidly.Length, uncompressed.Length);
         }
+
+        [TestMethod]
+        public void Deflate_CompressString()
+        {
+            TestContext.WriteLine("Original.Length: {0}", GoPlacidly.Length);
+            byte[] compressed = DeflateStream.CompressString(GoPlacidly);
+            TestContext.WriteLine("compressed.Length: {0}", compressed.Length);
+            Assert.IsTrue(compressed.Length < GoPlacidly.Length);
+
+            string uncompressed = DeflateStream.UncompressString(compressed);
+            Assert.AreEqual<Int32>(GoPlacidly.Length, uncompressed.Length);
+        }
+
 
         
         [TestMethod]
@@ -581,12 +554,11 @@ Max Ehrmann c.1920
             System.IO.MemoryStream msSinkCompressed;
             System.IO.MemoryStream msSinkDecompressed;
             ZlibStream zOut;
-            String helloOriginal = "'What would things have been like [in Russia] if during periods of mass arrests people had not simply sat there, paling with terror at every bang on the downstairs door and at every step on the staircase, but understood they had nothing to lose and had boldly set up in the downstairs hall an ambush of half a dozen people?' -- Alexander Solzhenitsyn";
 
             // first, compress:
             msSinkCompressed = new System.IO.MemoryStream();
             zOut = new ZlibStream(msSinkCompressed, CompressionMode.Compress, CompressionLevel.BestCompression, true);
-            CopyStream(StringToMemoryStream(helloOriginal), zOut);
+            CopyStream(StringToMemoryStream(IhaveaDream), zOut);
             zOut.Close();
 
             // at this point, msSinkCompressed contains the compressed bytes
@@ -599,7 +571,7 @@ Max Ehrmann c.1920
 
             string result = MemoryStreamToString(msSinkDecompressed);
             TestContext.WriteLine("decompressed: {0}", result);
-            Assert.AreEqual<String>(helloOriginal, result);
+            Assert.AreEqual<String>(IhaveaDream, result);
         }
 
 
@@ -611,11 +583,12 @@ Max Ehrmann c.1920
             System.IO.MemoryStream msSinkCompressed;
             System.IO.MemoryStream msSinkDecompressed;
             
-            String helloOriginal = "'What would things have been like [in Russia] if during periods of mass arrests people had not simply sat there, paling with terror at every bang on the downstairs door and at every step on the staircase, but understood they had nothing to lose and had boldly set up in the downstairs hall an ambush of half a dozen people?' -- Alexander Solzhenitsyn";
-            
             // first, compress:
             msSinkCompressed = new System.IO.MemoryStream();
-            ZlibStream zIn= new ZlibStream(StringToMemoryStream(helloOriginal), CompressionMode.Compress, CompressionLevel.BestCompression, true);
+            ZlibStream zIn= new ZlibStream(StringToMemoryStream(WhatWouldThingsHaveBeenLike),
+                                           CompressionMode.Compress,
+                                           CompressionLevel.BestCompression,
+                                           true);
             CopyStream(zIn, msSinkCompressed);
 
             // At this point, msSinkCompressed contains the compressed bytes.
@@ -627,7 +600,7 @@ Max Ehrmann c.1920
 
             string result = MemoryStreamToString(msSinkDecompressed);
             TestContext.WriteLine("decompressed: {0}", result);
-            Assert.AreEqual<String>(helloOriginal, result);
+            Assert.AreEqual<String>(WhatWouldThingsHaveBeenLike, result);
         }
 
 
@@ -639,7 +612,7 @@ Max Ehrmann c.1920
             string fileName = System.IO.Path.Combine(TopLevelDir, "Zlib_CodecTest.txt");
             CreateAndFillFileText(fileName, sz);
 
-            byte[] UncompressedBytes = ReadFile(fileName);
+            byte[] UncompressedBytes = System.IO.File.ReadAllBytes(fileName);
 
             foreach (Ionic.Zlib.CompressionLevel level in Enum.GetValues(typeof(Ionic.Zlib.CompressionLevel)))
             {
@@ -653,13 +626,11 @@ Max Ehrmann c.1920
         }
 
 
-
+#if UNNECESSARY
         private byte[] ReadFile(string f)
         {
             System.IO.FileInfo fi = new System.IO.FileInfo(f);
-
             byte[] buffer = new byte[fi.Length];
-            //DecompressedBytes = new byte[fi.Length];
 
             using (var readStream = System.IO.File.OpenRead(f))
             {
@@ -667,7 +638,7 @@ Max Ehrmann c.1920
             }
             return buffer;
         }
-
+#endif
 
 
 
@@ -689,44 +660,25 @@ Max Ehrmann c.1920
 
             decompressor.OutputBuffer = buffer;
 
-            // pass 1: deflate 
-            do
+            for (int pass = 0; pass < 2; pass++)
             {
-                decompressor.NextOut = 0;
-                decompressor.AvailableBytesOut = buffer.Length;
-                rc = decompressor.Inflate(FlushType.None);
-
-                if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
-                    throw new Exception("inflating: " + decompressor.Message);
-
-                //TestContext.WriteLine("got {0} decompressed bytes.", buffer.Length - decompressor.AvailableBytesOut);
-                ms.Write(decompressor.OutputBuffer, 0, buffer.Length - decompressor.AvailableBytesOut);
-
-                //TestContext.WriteLine("TBO({0}).", decompressor.TotalBytesOut);
-                // at this point the OutputBuffer contains a batch of compressed bytes.
-            }
-            while (decompressor.AvailableBytesIn > 0 || decompressor.AvailableBytesOut == 0);
-
-            // pass 2: finish and flush
-            do
-            {
-                decompressor.NextOut = 0;
-                decompressor.AvailableBytesOut = buffer.Length;
-                rc = decompressor.Inflate(FlushType.Finish);
-
-                if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
-                    throw new Exception("inflating: " + decompressor.Message);
-
-                //TestContext.WriteLine("got {0} decompressed bytes.", buffer.Length - decompressor.AvailableBytesOut);
-                if (buffer.Length - decompressor.AvailableBytesOut > 0)
+                FlushType flush = (pass==0)
+                    ? FlushType.None
+                    : FlushType.Finish;
+                do
                 {
-                    ms.Write(buffer, 0, buffer.Length - decompressor.AvailableBytesOut);
+                    decompressor.NextOut = 0;
+                    decompressor.AvailableBytesOut = buffer.Length;
+                    rc = decompressor.Inflate(flush);
+
+                    if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
+                        throw new Exception("inflating: " + decompressor.Message);
+
+                    if (buffer.Length - decompressor.AvailableBytesOut > 0)
+                        ms.Write(decompressor.OutputBuffer, 0, buffer.Length - decompressor.AvailableBytesOut);
                 }
-
-                //TestContext.WriteLine("TBO({0}).", decompressor.TotalBytesOut);
+                while (decompressor.AvailableBytesIn > 0 || decompressor.AvailableBytesOut == 0);
             }
-            while (decompressor.AvailableBytesIn > 0 || decompressor.AvailableBytesOut == 0);
-
 
             decompressor.EndInflate();
             TestContext.WriteLine("TBO({0}).", decompressor.TotalBytesOut);
@@ -771,46 +723,25 @@ Max Ehrmann c.1920
 
             compressor.OutputBuffer = buffer;
 
-            // pass 1: deflate 
-            do
-            //&&  < bufferSize)
+            for (int pass = 0; pass < 2; pass++)
             {
-                compressor.NextOut = 0;
-                compressor.AvailableBytesOut = buffer.Length;
-                rc = compressor.Deflate(FlushType.None);
-
-                if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
-                    throw new Exception("deflating: " + compressor.Message);
-
-                //totalBytes += (CompressedBytes.Length - compressor.AvailableBytesOut);
-                Console.WriteLine("got {0} compressed bytes.", buffer.Length - compressor.AvailableBytesOut);
-                ms.Write(compressor.OutputBuffer, 0, buffer.Length - compressor.AvailableBytesOut);
-
-                Console.WriteLine("TBO({0}).", compressor.TotalBytesOut);
-                // at this point the OutputBuffer contains a batch of compressed bytes.
-            }
-            while (compressor.AvailableBytesIn > 0 || compressor.AvailableBytesOut == 0);
-
-            // pass 2: finish and flush
-            do
-            {
-                compressor.NextOut = 0;
-                compressor.AvailableBytesOut = buffer.Length;
-                rc = compressor.Deflate(FlushType.Finish);
-
-                if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
-                    throw new Exception("deflating: " + compressor.Message);
-
-                Console.WriteLine("got {0} compressed bytes.", buffer.Length - compressor.AvailableBytesOut);
-                if (buffer.Length - compressor.AvailableBytesOut > 0)
+                FlushType flush = (pass==0)
+                    ? FlushType.None
+                    : FlushType.Finish;
+                do
                 {
-                    ms.Write(buffer, 0, buffer.Length - compressor.AvailableBytesOut);
+                    compressor.NextOut = 0;
+                    compressor.AvailableBytesOut = buffer.Length;
+                    rc = compressor.Deflate(flush);
+
+                    if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
+                        throw new Exception("deflating: " + compressor.Message);
+
+                    if (buffer.Length - compressor.AvailableBytesOut > 0)
+                        ms.Write(compressor.OutputBuffer, 0, buffer.Length - compressor.AvailableBytesOut);
                 }
-
-                Console.WriteLine("TBO({0}).", compressor.TotalBytesOut);
+                while (compressor.AvailableBytesIn > 0 || compressor.AvailableBytesOut == 0);
             }
-            while (compressor.AvailableBytesIn > 0 || compressor.AvailableBytesOut == 0);
-
 
             compressor.EndDeflate();
             Console.WriteLine("TBO({0}).", compressor.TotalBytesOut);
@@ -1094,9 +1025,14 @@ Max Ehrmann c.1920
         [TestMethod]
         public void Zlib_DeflateStream_InMemory()
         {
-            string TextToCompress = "Until he extends the circle of his compassion to all living things, man will not himself find peace. - Albert Schweitzer, early 20th-century German Nobel Peace Prize-winning mission doctor and theologian.";
-
-            CompressionLevel[] levels = {CompressionLevel.Level0, CompressionLevel.Level1, CompressionLevel.Default, CompressionLevel.Level7, CompressionLevel.BestCompression};
+            String TextToCompress = UntilHeExtends;
+            
+            CompressionLevel[] levels = {CompressionLevel.Level0,
+                                         CompressionLevel.Level1,
+                                         CompressionLevel.Default,
+                                         CompressionLevel.Level7,
+                                         CompressionLevel.BestCompression};
+            
             // compress with various Ionic levels, and System.IO.Compression (default level)
             for (int k= 0; k < levels.Length + 1; k++)
             {
@@ -1156,7 +1092,7 @@ Max Ehrmann c.1920
         [TestMethod]
         public void Zlib_CloseTwice()
         {
-            string TextToCompress = "I expect to pass through the world but once. Any good therefore that I can do, or any kindness I can show to any creature, let me do it now. Let me not defer it, for I shall not pass this way again.";
+            string TextToCompress = LetMeDoItNow;
 
             for (int i = 0; i < 3; i++)
             {
@@ -1226,7 +1162,7 @@ Max Ehrmann c.1920
         [ExpectedException(typeof(System.ObjectDisposedException))]
         public void Zlib_DisposedException_DeflateStream()
         {
-            string TextToCompress = "I expect to pass through the world but once. Any good therefore that I can do, or any kindness I can show to any creature, let me do it now. Let me not defer it, for I shall not pass this way again.";
+            string TextToCompress = LetMeDoItNow;
 
                 MemoryStream ms1= new MemoryStream();
 
@@ -1267,7 +1203,7 @@ Max Ehrmann c.1920
         [ExpectedException(typeof(System.ObjectDisposedException))]
         public void Zlib_DisposedException_GZipStream()
         {
-            string TextToCompress = "I expect to pass through the world but once. Any good therefore that I can do, or any kindness I can show to any creature, let me do it now. Let me not defer it, for I shall not pass this way again.";
+            string TextToCompress =  IhaveaDream;
 
             MemoryStream ms1= new MemoryStream();
 
@@ -1307,7 +1243,7 @@ Max Ehrmann c.1920
         [ExpectedException(typeof(System.ObjectDisposedException))]
         public void Zlib_DisposedException_ZlibStream()
         {
-            string TextToCompress = "I expect to pass through the world but once. Any good therefore that I can do, or any kindness I can show to any creature, let me do it now. Let me not defer it, for I shall not pass this way again.";
+            string TextToCompress =  IhaveaDream;
 
             MemoryStream ms1= new MemoryStream();
 
@@ -1345,8 +1281,6 @@ Max Ehrmann c.1920
 
         
  
-        private const int WORKING_BUFFER_SIZE = 4000;
-
         [TestMethod]
         public void Zlib_Streams_VariousSizes()
         {
@@ -1359,9 +1293,8 @@ Max Ehrmann c.1920
                 // both binary and text files
                 for (int m = 0; m < 2; m++)
                 {
-                    string FileToCompress = null;
                     int sz = _rnd.Next(Sizes[p]) + Sizes[p];
-                    FileToCompress = System.IO.Path.Combine(TopLevelDir, String.Format("Zlib_Streams.{0}.{1}", sz, (m == 0) ? "txt" : "bin"));
+                    string FileToCompress = System.IO.Path.Combine(TopLevelDir, String.Format("Zlib_Streams.{0}.{1}", sz, (m == 0) ? "txt" : "bin"));
                     Assert.IsFalse(System.IO.File.Exists(FileToCompress), "The temporary file '{0}' already exists.", FileToCompress);
                     TestContext.WriteLine("Creating file {0}   {1} bytes", FileToCompress, sz);
                     if (m == 0)
@@ -1433,13 +1366,9 @@ Max Ehrmann c.1920
                                             }
 
                                             n = -1;
-                                            while (n != 0)
+                                            while ((n = input.Read(working, 0, working.Length)) != 0)
                                             {
-                                                if (n > 0)
-                                                {
-                                                    compressor.Write(working, 0, n);
-                                                }
-                                                n = input.Read(working, 0, working.Length);
+                                                compressor.Write(working, 0, n);
                                             }
 
                                         }
@@ -1516,10 +1445,9 @@ Max Ehrmann c.1920
 
 
 
-        private bool PerformTrialWi8870(byte[] buffer)
+        private void PerformTrialWi8870(byte[] buffer)
         {
-            bool stop = false;
-            TestContext.WriteLine("\n\nOriginal");
+            TestContext.WriteLine("Original");
 
             byte[] compressedBytes = null;
             using (MemoryStream ms1 = new MemoryStream())
@@ -1532,7 +1460,7 @@ Max Ehrmann c.1920
             }
                 
             TestContext.WriteLine("Compressed {0} bytes into {1} bytes",
-                              buffer.Length, compressedBytes.Length);
+                                  buffer.Length, compressedBytes.Length);
                 
             byte[] decompressed= null;
             using (MemoryStream ms2 = new MemoryStream())
@@ -1541,35 +1469,32 @@ Max Ehrmann c.1920
                 {
                     deflateStream.Write(compressedBytes, 0, compressedBytes.Length);
                 }
+                decompressed = ms2.ToArray();
             }
 
             TestContext.WriteLine("Decompressed");
 
-            if (stop)
+
+            bool check = true;
+            if (buffer.Length != decompressed.Length)
             {
-                bool check = true;
-                if (buffer.Length != decompressed.Length)
+                TestContext.WriteLine("Different lengths.");
+                check = false;
+            }
+            else
+            {
+                for (int i=0; i < buffer.Length; i++)
                 {
-                    TestContext.WriteLine("Different lengths.");
-                    check = false;
-                }
-                else
-                {
-                    for (int i=0; i < buffer.Length; i++)
+                    if (buffer[i] != decompressed[i])
                     {
-                        if (buffer[i] != decompressed[i])
-                        {
-                            TestContext.WriteLine("byte {0} differs", i);
-                            check = false;
-                            break;
-                        }
+                        TestContext.WriteLine("byte {0} differs", i);
+                        check = false;
+                        break;
                     }
                 }
-
-                Assert.IsTrue(check,"Data check: A-OK");
             }
 
-            return stop;
+            Assert.IsTrue(check,"Data check failed.");
         }
 
 
@@ -1598,16 +1523,109 @@ Max Ehrmann c.1920
         [TestMethod]
         public void Zlib_DeflateStream_wi8870()
         {
-            bool stop = false;
-            for (int j = 0; j < 1000 && !stop; j++)
+            for (int j = 0; j < 1000; j++)
             {
                 byte[] buffer = RandomizeBuffer(117+(_rnd.Next(3)*100));
-                stop = PerformTrialWi8870(buffer);
+                PerformTrialWi8870(buffer);
             }
         }
 
         
 
+        
+        [TestMethod]
+        public void Zlib_ParallelDeflateStream()
+        {
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+            TestContext.WriteLine("{0}: Zlib_ParallelDeflateStream Start", sw.Elapsed);
+            
+            int sz = 256*1024 + _rnd.Next(120000);
+            string FileToCompress = System.IO.Path.Combine(TopLevelDir, String.Format("Zlib_ParallelDeflateStream.{0}.txt", sz));
+
+            CreateAndFillFileText( FileToCompress, sz);
+            
+            TestContext.WriteLine("{0}: Created file: {1}", sw.Elapsed, FileToCompress );
+            
+            byte[] original = File.ReadAllBytes(FileToCompress);
+
+            int crc1 = DoCrc(FileToCompress);
+            
+            TestContext.WriteLine("{0}: Original CRC: {1:X8}", sw.Elapsed, crc1 );
+
+            byte[] working = new byte[WORKING_BUFFER_SIZE];
+            int n = -1;
+            long originalLength; 
+            MemoryStream ms1 = new MemoryStream();
+            {
+                using (FileStream fs1 = File.OpenRead(FileToCompress))
+                {
+                    originalLength = fs1.Length;
+                    using (var compressor = new Ionic.Zlib.ParallelDeflateOutputStream(ms1, true))
+                    {
+                        while ((n = fs1.Read(working, 0, working.Length)) != 0)
+                        {
+                            compressor.Write(working, 0, n);
+                        }                    
+                    }
+                }
+                ms1.Seek(0, SeekOrigin.Begin);
+            }
+            
+            TestContext.WriteLine("{0}: Compressed {1} bytes into {2} bytes", sw.Elapsed,
+                                  originalLength, ms1.Length);
+
+            var crc = new Ionic.Zlib.CRC32();
+            int crc2= 0;
+            byte[] decompressedBytes= null;
+            using (MemoryStream ms2 = new MemoryStream())
+            {
+                using (var decompressor = new DeflateStream(ms1, CompressionMode.Decompress, false))
+                {
+                    while ((n = decompressor.Read(working, 0, working.Length)) != 0)
+                    {
+                        ms2.Write(working, 0, n);
+                    }                    
+                }
+                TestContext.WriteLine("{0}: Decompressed", sw.Elapsed);
+                TestContext.WriteLine("{0}: Decompressed length: {1}", sw.Elapsed, ms2.Length);
+                ms2.Seek(0, SeekOrigin.Begin);
+                crc2 = crc.GetCrc32(ms2);
+                decompressedBytes = ms2.ToArray();
+                TestContext.WriteLine("{0}: Decompressed CRC: {1:X8}", sw.Elapsed, crc2 );
+            }
+            
+
+            TestContext.WriteLine("{0}: Checking...", sw.Elapsed );
+
+            bool check = true;
+            if (originalLength != decompressedBytes.Length)
+            {
+                TestContext.WriteLine("Different lengths.");
+                check = false;
+            }
+            else
+            {
+                for (int i = 0; i < decompressedBytes.Length; i++)
+                {
+                    if (original[i] != decompressedBytes[i])
+                    {
+                        TestContext.WriteLine("byte {0} differs", i);
+                        check = false;
+                        break;
+                    }
+                }
+            }
+
+            Assert.IsTrue(check,"Data check failed");
+            TestContext.WriteLine("{0}: Done...", sw.Elapsed );
+        }
+
+
+        
+
+
+        
         private int DoCrc(string filename)
         {
             byte[] working = new byte[WORKING_BUFFER_SIZE];
@@ -1678,7 +1696,55 @@ Max Ehrmann c.1920
             }
         }
 
+        internal static string LetMeDoItNow = "I expect to pass through the world but once. Any good therefore that I can do, or any kindness I can show to any creature, let me do it now. Let me not defer it, for I shall not pass this way again. -- Anonymous, although some have attributed it to Stephen Grellet";
+        
+        internal static string UntilHeExtends = "Until he extends the circle of his compassion to all living things, man will not himself find peace. - Albert Schweitzer, early 20th-century German Nobel Peace Prize-winning mission doctor and theologian.";
 
+        internal static string WhatWouldThingsHaveBeenLike = "'What would things have been like [in Russia] if during periods of mass arrests people had not simply sat there, paling with terror at every bang on the downstairs door and at every step on the staircase, but understood they had nothing to lose and had boldly set up in the downstairs hall an ambush of half a dozen people?' -- Alexander Solzhenitsyn";
+
+        internal static string GoPlacidly =
+            @"Go placidly amid the noise and haste, and remember what peace there may be in silence. 
+
+As far as possible, without surrender, be on good terms with all persons. Speak your truth quietly and clearly; and listen to others, even to the dull and the ignorant, they too have their story. Avoid loud and aggressive persons, they are vexations to the spirit. 
+
+If you compare yourself with others, you may become vain and bitter; for always there will be greater and lesser persons than yourself. Enjoy your achievements as well as your plans. Keep interested in your own career, however humble; it is a real possession in the changing fortunes of time. 
+
+Exercise caution in your business affairs, for the world is full of trickery. But let this not blind you to what virtue there is; many persons strive for high ideals, and everywhere life is full of heroism. Be yourself. Especially, do not feign affection. Neither be cynical about love, for in the face of all aridity and disenchantment it is perennial as the grass. 
+
+Take kindly to the counsel of the years, gracefully surrendering the things of youth. Nurture strength of spirit to shield you in sudden misfortune. But do not distress yourself with imaginings. Many fears are born of fatigue and loneliness. 
+
+Beyond a wholesome discipline, be gentle with yourself. You are a child of the universe, no less than the trees and the stars; you have a right to be here. And whether or not it is clear to you, no doubt the universe is unfolding as it should. 
+
+Therefore be at peace with God, whatever you conceive Him to be, and whatever your labors and aspirations, in the noisy confusion of life, keep peace in your soul. 
+
+With all its sham, drudgery and broken dreams, it is still a beautiful world. 
+
+Be cheerful. Strive to be happy.
+
+Max Ehrmann c.1920
+";
+
+        
+        internal static string IhaveaDream = @"Let us not wallow in the valley of despair, I say to you today, my friends.
+
+And so even though we face the difficulties of today and tomorrow, I still have a dream. It is a dream deeply rooted in the American dream.
+
+I have a dream that one day this nation will rise up and live out the true meaning of its creed: 'We hold these truths to be self-evident, that all men are created equal.'
+
+I have a dream that one day on the red hills of Georgia, the sons of former slaves and the sons of former slave owners will be able to sit down together at the table of brotherhood.
+
+I have a dream that one day even the state of Mississippi, a state sweltering with the heat of injustice, sweltering with the heat of oppression, will be transformed into an oasis of freedom and justice.
+
+I have a dream that my four little children will one day live in a nation where they will not be judged by the color of their skin but by the content of their character. 
+
+I have a dream today!
+
+I have a dream that one day, down in Alabama, with its vicious racists, with its governor having his lips dripping with the words of 'interposition' and 'nullification' -- one day right there in Alabama little black boys and black girls will be able to join hands with little white boys and white girls as sisters and brothers.
+
+I have a dream today!
+
+I have a dream that one day every valley shall be exalted, and every hill and mountain shall be made low, the rough places will be made plain, and the crooked places will be made straight; 'and the glory of the Lord shall be revealed and all flesh shall see it together.'2
+";
 
         internal static string LoremIpsum =
 "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Integer " +
@@ -1741,6 +1807,9 @@ Max Ehrmann c.1920
 "\n";
 
         static string[] LoremIpsumWords;
+
+        private const int WORKING_BUFFER_SIZE = 0x4000;
+
     }
 
     
