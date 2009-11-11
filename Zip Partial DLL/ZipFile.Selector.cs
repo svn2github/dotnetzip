@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-September-27 14:17:12>
+// Time-stamp: <2009-November-11 05:55:04>
 //
 // ------------------------------------------------------------------
 //
@@ -1209,7 +1209,6 @@ namespace Ionic
                     list.Add(e);
             }
 
-            //return list.AsReadOnly();
             return list;
         }
 
@@ -1257,6 +1256,12 @@ namespace Ionic
             var list = new List<Ionic.Zip.ZipEntry>();
             // workitem 8559
             string slashSwapped = (directoryPathInArchive==null) ? null : directoryPathInArchive.Replace("/","\\");
+            // workitem 9174
+            if (slashSwapped != null)
+            {
+                while (slashSwapped.EndsWith("\\"))
+                    slashSwapped= slashSwapped.Substring(0, slashSwapped.Length-1);
+            }
             foreach (Ionic.Zip.ZipEntry e in zip)
             {
                 if (directoryPathInArchive == null || (Path.GetDirectoryName(e.FileName) == directoryPathInArchive)
@@ -1265,8 +1270,7 @@ namespace Ionic
                         list.Add(e);
             }
 
-            //return list.AsReadOnly();
-            return list.AsReadOnly();
+            return list;
         }
 
     }

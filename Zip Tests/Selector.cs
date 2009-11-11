@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-August-19 20:14:13>
+// Time-stamp: <2009-November-11 05:52:15>
 //
 // ------------------------------------------------------------------
 //
@@ -1144,20 +1144,25 @@ namespace Ionic.Zip.Tests
 
             TestContext.WriteLine("====================================================");
             TestContext.WriteLine("Selecting entries by directory...");
-            count1 = 0;
-            using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
+
+            for (int j = 0; j < 2; j++)
             {
-                for (i = 0; i < subdirCount; i++)
+                count1 = 0;
+                using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
                 {
-                    string dirInArchive = new System.String(new char[] { (char)(i + 65) });
-                    var selected1 = zip1.SelectEntries("*.*", dirInArchive);
-                    count1 += selected1.Count;
-                    TestContext.WriteLine("--------------\nfiles in dir {0} ({1}):",
-                                          dirInArchive, selected1.Count);
-                    foreach (ZipEntry e in selected1)
-                        TestContext.WriteLine(e.FileName);
+                    for (i = 0; i < subdirCount; i++)
+                    {
+                        string dirInArchive = new System.String(new char[] { (char)(i + 65) });
+                        if (j==1) dirInArchive += "\\";
+                        var selected1 = zip1.SelectEntries("*.*", dirInArchive);
+                        count1 += selected1.Count;
+                        TestContext.WriteLine("--------------\nfiles in dir {0} ({1}):",
+                                              dirInArchive, selected1.Count);
+                        foreach (ZipEntry e in selected1)
+                            TestContext.WriteLine(e.FileName);
+                    }
+                    Assert.AreEqual<Int32>(entries, count1);
                 }
-                Assert.AreEqual<Int32>(entries, count1);
             }
 
 
