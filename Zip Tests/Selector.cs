@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-November-11 05:52:15>
+// Time-stamp: <2009-November-11 12:55:33>
 //
 // ------------------------------------------------------------------
 //
@@ -1415,6 +1415,44 @@ namespace Ionic.Zip.Tests
         }
 
 
+
+        [TestMethod]
+        public void Selector_SelectFiles_DirName_wi9176()
+        {
+            // workitem 9176
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectFiles_DirName_wi8245_2.zip");
+            Directory.SetCurrentDirectory(TopLevelDir);
+            SetupFiles();
+
+            for (int i=0; i<2;  i++) 
+            {
+                string d = fodderDirectory;
+                if (i == 1) d += "\\";
+                TestContext.WriteLine("===============================================");
+                TestContext.WriteLine("AddSelectedFiles()");
+                using (ZipFile zip1 = new ZipFile())
+                {
+                    zip1.AddSelectedFiles("name = *.bin", d, "", true);
+                    zip1.Save(zipFileToCreate);
+                }
+
+                Assert.IsTrue(TestUtilities.CountEntries(zipFileToCreate) > 1,
+                              "The Zip file has the wrong number of entries.");
+                int eCount=0 ;
+                using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
+                {
+                    foreach (var e in zip1)
+                    {
+                        if (e.FileName.Contains("/")) eCount++;
+                    }
+                }
+                
+                Assert.AreEqual<Int32>(0, eCount,
+                                      "There zip entry filenames incorrectly include a path.");
+            }
+        }
+
+        
 
 
         [TestMethod]
