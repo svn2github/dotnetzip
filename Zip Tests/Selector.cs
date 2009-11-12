@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-November-11 12:55:33>
+// Time-stamp: <2009-November-12 07:44:53>
 //
 // ------------------------------------------------------------------
 //
@@ -174,6 +174,17 @@ namespace Ionic.Zip.Tests
                     "Extremely-Long-Filename-{0:D3}-with-a-repeated-segment-{0:D3}-{0:D3}-{0:D3}-{0:D3}",
                     
                 };
+
+                    string[] dirs =
+                    {
+                        "dir1", 
+                        "dir1\\dirA", 
+                        "dir1\\dirB",
+                        "dir2"
+                    };
+
+                foreach (string s in dirs)                
+                    Directory.CreateDirectory(s);                
                 
                 int fileCount = _rnd.Next(95) + 95;
                 for (int j = 0; j < fileCount; j++)
@@ -220,6 +231,14 @@ namespace Ionic.Zip.Tests
                         File.SetLastWriteTime(filename, x);
                     }
 
+                    // maybe move to a subdir
+                    n= _rnd.Next(6);
+                    if (n<4)
+                    {
+                        string newFilename = Path.Combine(dirs[n], Path.GetFileName(filename));
+                        File.Move(filename, newFilename);
+                        filename = newFilename;
+                    }
 
                     // mark some of the files as hidden, system, readonly, etc
                     if (j % 9 == 0)
@@ -692,7 +711,6 @@ namespace Ionic.Zip.Tests
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_ExtractSelectedEntries.zip");
 
-
             SetupFiles();
 
             TestContext.WriteLine("====================================================");
@@ -724,10 +742,53 @@ namespace Ionic.Zip.Tests
                 zip1.ExtractSelectedEntries(crit, null, extractDir, ExtractExistingFileAction.OverwriteSilently);
             }
 
+
+            // workitem 9174: test ExtractSelectedEntries using a directoryPathInArchive
+            List<String> dirs = new List<String>();
+            // first, get the list of directories used by all entries 
+            TestContext.WriteLine("Reading zip, ...");
+            using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
+            {
+                foreach (var e in zip1)
+                {
+                    TestContext.WriteLine("entry {0}", e.FileName);
+                    string p = Path.GetDirectoryName(e.FileName.Replace("/", "\\"));
+                    if (!dirs.Contains(p)) dirs.Add(p);
+                }
+            }
+
+            // with or without trailing slash
+            for (int i=0; i<2;  i++) 
+            {
+                int grandTotal = 0;
+                    extractDir = String.Format("extract.{0}", i);
+                for (int j=0; j<dirs.Count;  j++) 
+                {
+                    string d= dirs[j];
+                    if (i==1) d+= "\\";
+                    TestContext.WriteLine("====================================================");
+                    TestContext.WriteLine("Reading zip, ExtractSelectedEntries() by name, with directoryInArchive({0})...", d);
+                    using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
+                    {
+                        string crit = "name = *.bin";
+                        TestContext.WriteLine("Criteria({0})", crit);
+                        var s = zip1.SelectEntries(crit, d);
+                        TestContext.WriteLine("  {0} entries", s.Count);
+                        grandTotal+= s.Count;
+                        zip1.ExtractSelectedEntries(crit, d, extractDir, ExtractExistingFileAction.OverwriteSilently);
+                    }
+                }
+                TestContext.WriteLine("====================================================");
+                TestContext.WriteLine("Total for all dirs: {0} entries", grandTotal);
+
+                var extracted = Directory.GetFiles(extractDir, "*.bin", SearchOption.AllDirectories);
+                
+                Assert.AreEqual<Int32>(grandTotal, extracted.Length);
+            }
         }
 
 
-
+        
 
         [TestMethod]
         public void Selector_SelectEntries_ByName()
