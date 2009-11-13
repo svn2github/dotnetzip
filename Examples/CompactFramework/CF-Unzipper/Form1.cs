@@ -228,11 +228,10 @@ namespace SmartDeviceProject3
 
                 // re-populate the treeview with the extracted files:
                 AddChildren(tvFolders.SelectedNode.Parent);
-
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Exception! " + ex);
+                MessageBox.Show(ex.ToString());
             }
         }
 
@@ -255,7 +254,7 @@ namespace SmartDeviceProject3
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Whoops! " + ex);
+                MessageBox.Show(ex.ToString());
             }
         }
 
