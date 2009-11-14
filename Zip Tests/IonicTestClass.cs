@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-November-04 02:41:24>
+// Time-stamp: <2009-November-13 18:07:28>
 //
 // ------------------------------------------------------------------
 //
@@ -39,7 +39,7 @@ namespace Ionic.Zip.Tests.Utilities
     {
         protected System.Random _rnd;
         protected System.Collections.Generic.List<string> _FilesToRemove = new System.Collections.Generic.List<string>();
-        protected string CurrentDir = null;
+        protected static string CurrentDir = null;
         protected string TopLevelDir = null;
         string wzunzip = null;
 
@@ -77,8 +77,13 @@ namespace Ionic.Zip.Tests.Utilities
         // You can use the following additional attributes as you write your tests:
         //
         // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
+        [ClassInitialize]
+        public static void BaseClassInitialize(TestContext testContext) 
+        {
+            CurrentDir = Directory.GetCurrentDirectory();
+            Assert.AreNotEqual<string>(Path.GetFileName(CurrentDir), "Temp", "at startup");
+        }
+
         //
         // Use ClassCleanup to run code after all tests in a class have run
         // [ClassCleanup()]
@@ -90,7 +95,8 @@ namespace Ionic.Zip.Tests.Utilities
         [TestInitialize()]
         public void MyTestInitialize()
         {
-            TestUtilities.Initialize(ref CurrentDir, ref TopLevelDir);
+            if (CurrentDir == null) CurrentDir = Directory.GetCurrentDirectory();
+            TestUtilities.Initialize(out TopLevelDir);
             _FilesToRemove.Add(TopLevelDir);
             Directory.SetCurrentDirectory(TopLevelDir);
         }

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-20 01:12:15>
+// Time-stamp: <2009-November-13 17:50:10>
 //
 // ------------------------------------------------------------------
 //
@@ -47,13 +47,10 @@ namespace Ionic.Zip.Tests.Utilities
 
         #region Test Init and Cleanup
 
-        internal static void Initialize(ref string CurrentDir, ref string TopLevelDir)
+        internal static void Initialize(out string TopLevelDir)
         {
-            CurrentDir = Directory.GetCurrentDirectory();
-            Assert.AreNotEqual<string>(Path.GetFileName(CurrentDir), "Temp", "at startup");
             TopLevelDir = TestUtilities.GenerateUniquePathname("tmp");
             Directory.CreateDirectory(TopLevelDir);
-
             Directory.SetCurrentDirectory(Path.GetDirectoryName(TopLevelDir));
         }
 
