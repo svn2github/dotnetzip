@@ -24,7 +24,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 </p>
 
 
-<p>DotNetZip works on Windows-powered PCs with the full .NET Framework, and also runs on Windows Mobile devices that use the .NET Compact Framework. Create and read zip files in VB, C#, or any .NET language. DotNetZip supports these scenarios:</p>
+<p>DotNetZip works on Windows-powered PCs with the full .NET Framework, and also runs on Windows Mobile devices that use the .NET Compact Framework. Create and read zip files in VB, C#, or any .NET language. The library can also be used from COM enironments, like PHP, Classivc ASP, or VBSCript.   DotNetZip supports these scenarios:</p>
 <ul>
 <li>creating a zip archive, adding files or directories into the archive</li>
 <li> listing files in an archive, extracting files from an archive</li>
@@ -54,23 +54,18 @@ charity. </p>
 <h2>Example Usage</h2>
 <pre lang="cs" numberLines="true" outlining="true"
   title="Example: creating a zip file">
-   try
-   {
-     using (ZipFile zip = new ZipFile("MyZipFile.zip")
-     {
-       zip.AddFile("c:\\images\\personal\\7440-N49th.png");
-       zip.AddFile("c:\\Desktop\\2008-Regional-Sales-Report.pdf");
-       zip.AddFile("ReadMe.txt");
-       zip.Save();
-     }
-   }
-   catch (System.Exception ex1)
-   {
-     System.Console.Error.WriteLine("exception: " + ex1);
-   }
+  using (ZipFile zip = new ZipFile("MyZipFile.zip")
+  {
+    zip.AddFile("c:\\images\\personal\\7440-N49th.png");
+    zip.AddFile("c:\\Desktop\\2008-Regional-Sales-Report.pdf");
+    zip.AddFile("ReadMe.txt");
+    zip.Save();
+  }
 </pre>
 
-<p>Tons more examples on <A href="http://www.codeplex.com/DotNetZip">Codeplex</a>, and in the helpfile.</p>
+<p>Tons more examples on <A
+href="http://dotnetzip.codeplex.com/wikipage?title=Examples">Codeplex</a>,
+and later in this helpfile.</p>
 
 
 

@@ -1,7 +1,7 @@
 
 <html>
 <head>
-<title>COM Environments</title>
+<title>COM - Classic ASP, PHP, VB6, JavaScript, VBScript</title>
 <style>
 p,body,a,tr,td
              { font-family: Verdana, Arial, Helvetica; font-size: 10pt }
@@ -14,7 +14,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 </style>
 </head>
 
-<!-- @SortOrder 40 --> 
+<!-- @SortOrder 70 --> 
 
 <body>
 <h1>DotNetZip can be used from COM Environments</h1>
@@ -25,20 +25,22 @@ library (the Ionic.Zip.dll assembly) from programming environments like PHP,
 Perl, Javascript, and VBScript (including old-school ASP pages), among others.  
 </p>
 
-<p> Doing this requires you to install the Ionic.Zip.dll (or
-Ionic.Zip.Reduced.dll) for COM use on the computer. There are 2 distinct
-steps: </p>
+<p>If you download and install the DotNetZip Runtime MSI package, it
+will set up DotNetZip for use with COM.  </p>
+
+<p>If for some reason you prefer to not use the MSI package, then you will need to perform some manual steps to enable DotNetZip for COM usage. </p>
 
 <ol>
+<li>open a CMD.exe prompt.</li>
 <li>Install into the GAC: <span style="font-family: Courier;">gacutil -i Ionic.Zip.dll</span></li>
 <li>Register for COM use: <span style="font-family: Courier;">regasm Ionic.Zip.dll</span></li>
 </ol>
 
-<p>You will need to be local administrator in order to perform these
-steps on a computer. You need to perform those steps just once.  </p>
+<p><i>Notes:</i> You will need to be local administrator in order to
+perform these steps. You need to perform those steps just once, on each
+computer where COM applications will run that use DotNetZip. The gacutil
+and regasm tools are included in the .NET Framework SDK. </p>
 
-<p>If you download the DotNetZip Runtime Installer MSI, it will do these
-steps for you when it installs.  </p>
 
 <h2>Using the COM interface to DotNetZip</h2>
 
@@ -598,17 +600,17 @@ main();
   zip.Password = "This is the Password."
 
   WScript.echo("adding a selection of files...")
-  zip.AddSelectedFiles("*.js")
-  zip.AddSelectedFiles("*.vbs")
+  zip.AddSelectedFiles "*.js" 
+  zip.AddSelectedFiles "*.vbs"
 
   WScript.echo("setting the save name...")
   zip.Name = filename
 
   WScript.echo("Saving...")
-  zip.Save()
+  zip.Save
 
   WScript.echo("Disposing...")
-  zip.Dispose()
+  zip.Dispose
 
   zip = Nothing
 
@@ -635,10 +637,10 @@ main();
   zip.Password = "This is the Password."
 
   WScript.echo("extracting all files...")
-  zip.ExtractAll("DotNetZip-extract")
+  zip.ExtractAll "DotNetZip-extract"
 
   WScript.echo("Disposing...")
-  zip.Dispose()
+  zip.Dispose
 
   WScript.echo("Done.")
 
@@ -658,7 +660,7 @@ main();
     Set zip = CreateObject("Ionic.Zip.ZipFile")
     
     WScript.echo("Initialize (Read)...")
-    zip.Initialize(filename)
+    zip.Initialize filename
 
     Set fso = CreateObject("Scripting.FileSystemObject")
     If Not fso.FolderExists("unpack") Then
@@ -682,7 +684,7 @@ main();
     Next
 
     WScript.echo("Disposing...")
-    zip.Dispose()
+    zip.Dispose
 
     WScript.echo("Done.")
 
@@ -704,7 +706,7 @@ method, as described above.  </p>
           Dim zip 
           Set zip = CreateObject("Ionic.Zip.ZipFile")
 
-          zip.Initialize(filename)
+          zip.Initialize filename
 
           If password <> "" Then
             zip.Password = password

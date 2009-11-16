@@ -51,7 +51,7 @@ If Request.Form("Submit") = "Download" Then
         Next
 
         selectedEntry.Extract_3(ms)
-        zip.Dispose()
+        zip.Dispose
 
         dim fred
         fred = ms.ToArray
