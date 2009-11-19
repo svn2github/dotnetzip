@@ -577,7 +577,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                 {
                     if (!e.IsDirectory)
                     {
-                        Assert.AreEqual<short>(0, e.CompressionMethod);
+                        Assert.AreEqual<short>(0, (short)e.CompressionMethod);
 
                         e.ExtractWithPassword("unpack", password);
 

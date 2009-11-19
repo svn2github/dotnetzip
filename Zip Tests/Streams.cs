@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-November-03 22:55:37>
+// Time-stamp: <2009-November-19 15:07:20>
 //
 // ------------------------------------------------------------------
 //
@@ -479,13 +479,13 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
         {
             // Emitting a zip file with > 65534 entries requires the use of ZIP64 in the central directory. 
             fileCount = _rnd.Next(7616)+65534;
+            string txrxLabel = String.Format("ZipOutputStream #({0}) E({1}) C({2})",
+                                             fileCount,encryption.ToString(), compression.ToString());
             string zipFileToCreate = String.Format("ZipOutputStream.Zip64.over_65534_Entries.{0}.{1}.{2}.zip",
                                                    z64option.ToString(), encryption.ToString(), compression.ToString());
             
             StartProgressMonitor(zipFileToCreate);
-            StartProgressClient(zipFileToCreate,
-                                String.Format("ZipOutputStream, {0} entries, E({1}), C({2})", fileCount,encryption.ToString(), compression.ToString()),
-                                "starting up...");
+            StartProgressClient(zipFileToCreate, txrxLabel, "starting up...");
 
             _txrx.Send("pb 0 max 2"); // 2 stages: Write, Verify
             _txrx.Send("pb 0 value 0");
@@ -503,6 +503,8 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
             {
                 using (var output = new ZipOutputStream(fs))
                 {
+                    _txrx.Send("test " + txrxLabel);
+                    System.Threading.Thread.Sleep(400);
                     _txrx.Send(String.Format("pb 1 max {0}", fileCount/4));
                     _txrx.Send("pb 1 value 0");
 
@@ -534,8 +536,8 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                         if (k % 4 == 0)
                             _txrx.Send("pb 1 step");
 
-                        if (k % 100 == 0)
-                            _txrx.Send(statusString + " count " + k.ToString());
+                        if (k % 128 == 0)
+                            _txrx.Send(String.Format("{0} ({1}/{2})", statusString, k, fileCount));
                     }
                 }
             }
@@ -544,6 +546,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
             _txrx.Send("pb 1 value 1");
             _txrx.Send("pb 0 step");
 
+            System.Threading.Thread.Sleep(400);
             _txrx.Send(statusString + " Verifying...");
 
             // exec WinZip. But the output is really large, so we pass emitOutput=false . 

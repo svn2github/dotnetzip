@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-21 16:48:27>
+// Time-stamp: <2009-November-19 11:25:39>
 //
 // ------------------------------------------------------------------
 //
@@ -269,7 +269,10 @@ namespace Ionic.Zip
                 {
                     builder.Append(string.Format("  version needed to extract: 0x{0:X4}\n", this._versionNeededToExtract));
                 }
-                builder.Append(string.Format("  disk number with CD: 0x{0:X8}\n", this._diskNumberWithCd));
+
+                builder.Append(string.Format("  uses ZIP64: {0}\n", this.InputUsesZip64));
+
+                builder.Append(string.Format("  disk number with CD: {0}\n", this._diskNumberWithCd));
                 foreach (ZipEntry entry in this._entries)
                 {
                     builder.Append(entry.Info);

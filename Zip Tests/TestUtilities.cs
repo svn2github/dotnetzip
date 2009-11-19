@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-November-13 17:50:10>
+// Time-stamp: <2009-November-19 11:32:52>
 //
 // ------------------------------------------------------------------
 //
@@ -313,8 +313,8 @@ namespace Ionic.Zip.Tests.Utilities
         {
             //string nameOfFileToCreate = GenerateUniquePathname(extension, ContainingDirectory);
             string nameOfFileToCreate = Path.Combine(ContainingDirectory, String.Format("{0}.{1}", Path.GetRandomFileName(), extension));
-            var fs = File.Create(nameOfFileToCreate);
-            fs.Close();
+            // create an empty file
+            using (var fs = File.Create(nameOfFileToCreate));
             return nameOfFileToCreate;
         }
 
