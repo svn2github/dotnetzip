@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-November-19 11:32:52>
+// Time-stamp: <2009-November-22 10:28:13>
 //
 // ------------------------------------------------------------------
 //
@@ -314,7 +314,7 @@ namespace Ionic.Zip.Tests.Utilities
             //string nameOfFileToCreate = GenerateUniquePathname(extension, ContainingDirectory);
             string nameOfFileToCreate = Path.Combine(ContainingDirectory, String.Format("{0}.{1}", Path.GetRandomFileName(), extension));
             // create an empty file
-            using (var fs = File.Create(nameOfFileToCreate));
+            using (var fs = File.Create(nameOfFileToCreate)) { }
             return nameOfFileToCreate;
         }
 
@@ -509,6 +509,16 @@ namespace Ionic.Zip.Tests.Utilities
             // delta == 65 means uppercase
             // delta == 97 means lowercase
             return (char)(_rnd.Next(26) + delta);
+        }
+
+        public static char GetOneRandomLowercaseAsciiChar()
+        {
+            return (char)(_rnd.Next(26) + 97);
+        }
+        
+        public static char GetOneRandomUppercaseAsciiChar()
+        {
+            return (char)(_rnd.Next(26) + 65);
         }
 
 

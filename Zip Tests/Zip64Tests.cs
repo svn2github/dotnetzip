@@ -1,3 +1,5 @@
+#define REMOTE_FILESYSTEM
+
 // Zip64Tests.cs
 // ------------------------------------------------------------------
 //
@@ -15,7 +17,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-21 07:57:44>
+// Time-stamp: <2009-November-22 10:29:01>
 //
 // ------------------------------------------------------------------
 //
@@ -124,10 +126,13 @@ namespace Ionic.Zip.Tests.Zip64
         {
             lock (LOCK)
             {
-                string tempDir = System.Environment.GetEnvironmentVariable("TEMP");
-
+#if REMOTE_FILESYSTEM
+                string homeDir = "t:\\tdir";
+#else
+                string homeDir = System.Environment.GetEnvironmentVariable("TEMP");
+#endif
                 // look for existing directories, and re-use the large zip file there, if it exists.
-                var oldDirs = Directory.GetDirectories(tempDir, "*.Zip64Tests");
+                var oldDirs = Directory.GetDirectories(homeDir, "*.Zip64Tests");
                 string zipFileToCreate = null;
                 foreach (var dir in oldDirs)
                 {
@@ -157,14 +162,18 @@ namespace Ionic.Zip.Tests.Zip64
                 {
                     // remember this directory so we can restore later
                     string originalDir = Directory.GetCurrentDirectory();
+                    //string testDir = TestUtilities.GenerateUniquePathname("Zip64Tests");
 
-                    string TempDir = TestUtilities.GenerateUniquePathname("Zip64Tests");
+                    string pname = Path.GetFileName(TestUtilities.GenerateUniquePathname("Zip64Tests"));
+                    
+                    string testDir = Path.Combine(homeDir, pname);
 
+                    // CurrentDir is the dir that holds the test temp directory (or directorIES)
                     Directory.SetCurrentDirectory(CurrentDir);
-                    Directory.CreateDirectory(TempDir);
-                    Directory.SetCurrentDirectory(Path.GetDirectoryName(TempDir));
+                    Directory.CreateDirectory(testDir);
+                    Directory.SetCurrentDirectory(Path.GetDirectoryName(testDir));
 
-                    zipFileToCreate = Path.Combine(TempDir, "Zip64Data.zip");
+                    zipFileToCreate = Path.Combine(testDir, "Zip64Data.zip");
                     
                     TestContext.WriteLine("Creating a new zip file: {0}", zipFileToCreate);
                     
@@ -176,16 +185,17 @@ namespace Ionic.Zip.Tests.Zip64
                     _txrx.Send("bars 3");
                     _txrx.Send(String.Format("pb 0 max {0}", 3));
 
-                    Directory.SetCurrentDirectory(TempDir);
+                    Directory.SetCurrentDirectory(testDir);
 
                     // create a directory with some files in it, to zip
+#if REMOTE_FILESYSTEM
+                    string dirToZip = "t:\\tdir\\largefiles";
+#else
                     string dirToZip = "dir";
                     Directory.CreateDirectory(dirToZip);
-
-                    // create a few files in that directory
-                    int numFilesToAdd = _rnd.Next(4) + 6;
-                    //int numFilesToAdd = 1;
-
+#endif
+                    // these params define the size range for the large, random text files
+                    // that are created in the opener delegate.
                     _sizeBase =   0x20000000;
                     _sizeRandom = 0x01000000;
 
@@ -193,10 +203,15 @@ namespace Ionic.Zip.Tests.Zip64
 
                     // Add links to a few very large files into the same directory.
                     // We do this because creating such large files will take a very very long time.
-
                     CreateLinksToLargeFiles(dirToZip);
 
-                    Directory.SetCurrentDirectory(TempDir); // again
+                    Directory.SetCurrentDirectory(testDir); // again
+
+                    OpenDelegate opener = (x) =>
+                        {
+                            return new Ionic.Zip.Tests.Utilities.RandomTextInputStream(_sizeBase + _rnd.Next(_sizeRandom));
+                        };
+
 
                     // pb1 and pb2 will be set in the SaveProgress handler
                     _txrx.Send("pb 0 step");
@@ -206,16 +221,29 @@ namespace Ionic.Zip.Tests.Zip64
                     using (ZipFile zip = new ZipFile())
                     {
                         zip.SaveProgress += zip64_SaveProgress;
+                        zip.AddProgress += zip64_AddProgress;
                         zip.UpdateDirectory(dirToZip, "");
+                        foreach (var e in zip)
+                        {
+                            if (e.FileName.EndsWith(".pst") ||
+                                e.FileName.EndsWith(".ost") ||
+                                e.FileName.EndsWith(".zip"))
+                                e.CompressionMethod = CompressionMethod.None;
+                        }
                         zip.UseZip64WhenSaving = Zip64Option.Always;
                         // use large buffer to speed up save for large files:
                         zip.BufferSize = 1024 * 756;
                         zip.CodecBufferSize = 1024 * 128;
                     
-                        // This bit adds a bunch of null streams. They are set just-in-time
-                        // in the SaveProgress method.
+                        // This bit adds a bunch of entries.  The streams are opened in
+                        // the opener delegate.  
+                        int numFilesToAdd = _rnd.Next(4) + 6;
                         for (int i = 0; i < numFilesToAdd; i++)
-                            zip.AddEntry("random" + i + ".txt", Stream.Null);
+                        {
+                            string filename = TestUtilities.GetOneRandomUppercaseAsciiChar() +
+                                Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".txt";
+                            zip.AddEntry(filename, opener, null); 
+                        }
 
                         zip.Save(zipFileToCreate);
                     }
@@ -223,9 +251,12 @@ namespace Ionic.Zip.Tests.Zip64
                     _txrx.Send("pb 0 step");
                     System.Threading.Thread.Sleep(120);
 
+#if REMOTE_FILESYSTEM
+#else
                     Directory.Delete(dirToZip, true);
                     _txrx.Send("pb 0 step");
                     System.Threading.Thread.Sleep(120);
+#endif
 
                     _txrx.Send("stop");
                 
@@ -240,11 +271,13 @@ namespace Ionic.Zip.Tests.Zip64
 
         private void CreateLinksToLargeFiles(string dirForLinks)
         {
+#if REMOTE_FILESYSTEM
+#else
             string current = Directory.GetCurrentDirectory();
             _txrx.Send("status Creating links");
             var namesOfLargeFiles = new String[]
                 {
-                    //"c:\\dinoch\\PST\\archive.pst",
+                    "c:\\dinoch\\PST\\archive.pst",
                     "c:\\dinoch\\PST\\archive1.pst", 
                     "c:\\dinoch\\PST\\Lists.pst",
                     "c:\\dinoch\\PST\\OldStuff.pst",
@@ -272,6 +305,7 @@ namespace Ionic.Zip.Tests.Zip64
                 TestUtilities.Exec_NoContext(fsutil, cmd, out ignored);
             }
             Directory.SetCurrentDirectory(current);
+#endif            
         }
         
 
@@ -511,15 +545,6 @@ namespace Ionic.Zip.Tests.Zip64
                     }
                     _totalToSave = e.EntriesTotal;
                     _pb2Set = false;
-
-                    if (e.CurrentEntry.Source == ZipEntrySource.Stream &&
-                        e.CurrentEntry.InputStream == Stream.Null)
-                    {
-                        Stream s = new Ionic.Zip.Tests.Utilities.RandomTextInputStream(_sizeBase + _rnd.Next(_sizeRandom));
-                        e.CurrentEntry.InputStream = s;
-                        e.CurrentEntry.LastModified = DateTime.Now;
-                    }
-                    
                     break;
                     
                 case ZipProgressEventType.Saving_EntryBytesRead:
@@ -554,6 +579,24 @@ namespace Ionic.Zip.Tests.Zip64
         }
 
 
+        
+        void zip64_AddProgress(object sender, AddProgressEventArgs e)
+        {
+            switch (e.EventType)
+            {
+                case ZipProgressEventType.Adding_Started:
+                    _txrx.Send("status Adding files to the zip...");
+                    break;
+                case ZipProgressEventType.Adding_AfterAddEntry:
+                    _txrx.Send(String.Format("status Adding file {0}", e.CurrentEntry.FileName));
+                    break;
+                case ZipProgressEventType.Adding_Completed:
+                    _txrx.Send("status Added all files");
+                    break;
+            }
+        }
+
+        
         
         private int _numExtracted;
         private int _numFilesToExtract;
@@ -678,9 +721,12 @@ namespace Ionic.Zip.Tests.Zip64
                         zip.BufferSize = 65536*8; // 65536 * 8 = 512k
                         zip.Save();
                     }
-                    
-                    string status = sw.ToString();
-                    TestContext.WriteLine(status);
+
+                string status = sw.ToString();
+                TestContext.WriteLine("status:");
+                foreach (string line in status.Split('\n'))
+                    TestContext.WriteLine(line);
+
 
                     _txrx.Send("status Verifying the zip");
                     _txrx.Send("pb 0 step");
@@ -1144,7 +1190,10 @@ namespace Ionic.Zip.Tests.Zip64
                 }
 
                 string status = sw.ToString();
-                TestContext.WriteLine(status);
+                TestContext.WriteLine("status:");
+                foreach (string line in status.Split('\n'))
+                    TestContext.WriteLine(line);
+
                 File.Delete(nameOfFodderFile);
                 _txrx.Send("status Extracting the file...");
                 _txrx.Send("pb 0 step");
@@ -1166,8 +1215,10 @@ namespace Ionic.Zip.Tests.Zip64
                 }
 
                 status = sw.ToString();
-                TestContext.WriteLine(status);
-                
+                TestContext.WriteLine("status:");
+                foreach (string line in status.Split('\n'))
+                    TestContext.WriteLine(line);
+
                 _txrx.Send("pb 0 step");
 
                 System.Threading.Thread.Sleep(120);
@@ -1348,6 +1399,126 @@ namespace Ionic.Zip.Tests.Zip64
             }
         }
 
+
+
+        
+        [Timeout(24000000), TestMethod]    // 18,000,000 = 7.5 hrs
+        public void Zip64_AutomaticSelection_wi9214()
+        {
+            //string zipFileToCreate = Path.Combine(TopLevelDir, "Zip64-AutoSelect.zip");
+            string zipFileToCreate = Path.Combine("t:\\tdir", "Zip64-AutoSelect.zip");
+            // Test whether opening a zip64 file and then re-saving, allows the file to remain valid.
+            // Must use a huge zpi64 file (bonafide over 4gb) in order to verify this.
+            // want to check that UseZip64WhenSaving is automatically selected as appropriate.
+            
+            Assert.IsFalse(File.Exists(zipFileToCreate), "The ZIP file already exists ({0})",  zipFileToCreate);
+            
+            _txrx = new Ionic.CopyData.Transceiver();
+            try
+            {
+                string newComment = "This is an updated comment on the first entry > 4gb. (" + DateTime.Now.ToString("u") +")";
+                string zipFileToUpdate = GetHugeZipFile(); // this may take a long time
+                Assert.IsTrue(File.Exists(zipFileToUpdate), "The required ZIP file does not exist ({0})",  zipFileToUpdate);
+
+                // start the progress monitor
+                string progressChannel = "Zip64-AutoSelect";
+                StartProgressMonitor(progressChannel);
+                StartProgressClient(progressChannel, "Zip64 Auto", "Creating files");
+                
+                // make sure the zip is larger than the 4.2gb size
+                FileInfo fi = new FileInfo(zipFileToUpdate);
+                Assert.IsTrue(fi.Length > (long)System.UInt32.MaxValue, "The zip file ({0}) is not large enough.", zipFileToUpdate);
+                TestContext.WriteLine("Verifying the zip file...");
+                _txrx.Send("status Verifying the zip");
+                VerifyZip(zipFileToUpdate); // can take an hour or more
+
+                TestContext.WriteLine("Updating the zip file...");
+                _txrx.Send("status Updating the zip file...");
+                // update the zip with that new folder+file
+                var sw = new StringWriter();
+                using (ZipFile zip = ZipFile.Read(zipFileToUpdate))
+                {
+                    // required:  the option must be set automatically and intelligently
+                    Assert.IsTrue(zip.UseZip64WhenSaving == Zip64Option.Always,
+                                  "The UseZip64WhenSaving option is set incorrectly ({0})", 
+                                  zip.UseZip64WhenSaving);
+                    
+                    // according to workitem 9214, the comment must be modified on an entry larger than 4gb.
+                    ZipEntry e = null;
+                    foreach (var e2 in zip)
+                    {
+                        if (e2.UncompressedSize > (long)System.UInt32.MaxValue)
+                        {
+                            e = e2;
+                            break;
+                        }
+                    } 
+                    Assert.IsTrue(e != null &&  e.UncompressedSize > (long)System.UInt32.MaxValue,
+                                  "No entry in the zip file is large enough.");
+                    
+                    e.Comment = newComment;
+                    zip.SaveProgress += zip64_SaveProgress;
+                    zip.StatusMessageTextWriter = sw;
+                    zip.Save(zipFileToCreate);
+                }
+                string status = sw.ToString();
+                TestContext.WriteLine("status:");
+                foreach (string line in status.Split('\n'))
+                    TestContext.WriteLine(line);
+                    
+                _txrx.Send("status Verifying the updated zip");
+                VerifyZip(zipFileToCreate); // can take an hour or more
+
+                // finally, verify that the comment is correct. 
+                _txrx.Send("status checking the updated comment");
+                using (ZipFile zip = ZipFile.Read(zipFileToCreate))
+                {
+                    // required:  the option must eb set automatically and intelligently
+                    Assert.IsTrue(zip.UseZip64WhenSaving == Zip64Option.Always,
+                                  "The UseZip64WhenSaving option is set incorrectly ({0})", 
+                                  zip.UseZip64WhenSaving);
+                    
+                    ZipEntry e = null;
+                    foreach (var e2 in zip)
+                    {
+                        if (e2.UncompressedSize > (long)System.UInt32.MaxValue)
+                        {
+                            e = e2;
+                            break;
+                        }
+                    } 
+                    Assert.IsTrue(e != null &&  e.UncompressedSize > (long)System.UInt32.MaxValue,
+                                  "No entry in the zip file is large enough.");
+                    
+                    Assert.AreEqual<String>(newComment, e.Comment, "The comment on the entry is unexpected.");
+                    
+                    TestContext.WriteLine("The comment on the entry is {0}", e.Comment);
+                }
+            }
+            finally
+            {
+                if (_txrx!=null)
+                {
+                    try
+                    {
+                        _txrx.Send("stop");
+                        _txrx = null;
+                    }
+                    catch { }
+                }
+
+                if (File.Exists(zipFileToCreate))
+                {
+                    try 
+                    {
+                        File.Delete(zipFileToCreate);
+                    }
+                    catch { }   
+                }
+            }
+                
+                
+        }
 
         
         

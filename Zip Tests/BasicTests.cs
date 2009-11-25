@@ -2323,7 +2323,7 @@ namespace Ionic.Zip.Tests.Basic
                 else
                 {
                     // create an empty file
-                    using (var fs = File.Create(filename));
+                    using (var fs = File.Create(filename)) { }
                 }
             }
 
