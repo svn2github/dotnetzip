@@ -21,8 +21,7 @@
     <VisibleItems>InheritedMembers, InheritedFrameworkMembers, Protected, SealedProtected</VisibleItems>
     <HtmlHelp1xCompilerPath>
     </HtmlHelp1xCompilerPath>
-    <HtmlHelp2xCompilerPath>
-    </HtmlHelp2xCompilerPath>
+    <HtmlHelp2xCompilerPath>c:\Program Files\Common Files\microsoft shared\Help 2.0 Compiler\</HtmlHelp2xCompilerPath>
     <SandcastlePath>
     </SandcastlePath>
     <WorkingPath>
@@ -51,6 +50,7 @@ DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Gir
     <CopyrightText>Copyright 2009, Dino Chiesa</CopyrightText>
     <RootNamespaceContainer>True</RootNamespaceContainer>
     <RootNamespaceTitle>Reference</RootNamespaceTitle>
+    <HelpFileFormat>Help1xAndHelp2x</HelpFileFormat>
   </PropertyGroup>
   <!-- There are no properties for these two groups but they need to appear in
        order for Visual Studio to perform the build. -->

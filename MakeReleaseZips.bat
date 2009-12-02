@@ -39,6 +39,8 @@ mkdir ..\releases\v%version%-%stamp%
 
 call :MakeHelpFile
 
+call :MakeIntegratedHelpMsi
+
 call :MakeDevelopersRedist
 
 call :MakeRuntimeRedist
@@ -148,7 +150,7 @@ goto :EOF
   for %%f in (..\releases\v%version%-%stamp%\%zipfile%) do set rzipfile=%%~ff
   echo zipfile is %rzipfile%
 
-  %zipit% %rzipfile%  -s Contents.txt "This is the Developer's Kit package for DotNetZip v%version%.  This package was packed %stamp%.  In this zip you will find Debug and Release DLLs for the various versions of the Ionic.Zip class library and the Ionic.Zlib class library.  There is a separate top-level folder for each distinct version of the DLL, and within those top-level folders there are Debug and Release folders.  In the Debug folders you will find a DLL, a PDB, and an XML file for the given library, while the Release folder will have just a DLL.  The DLL is the actual library (either Debug or Release flavor), the PDB is the debug information, and the XML file is the intellisense doc for use within Visual Studio.  If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip"  -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt
+  %zipit% %rzipfile%  -s Contents.txt "This is the Developer's Kit package for DotNetZip v%version%.  This package was packed %stamp%.  In this zip you will find Debug and Release DLLs for the various versions of the Ionic.Zip class library and the Ionic.Zlib class library.  There is a separate top-level folder for each distinct version of the DLL, and within those top-level folders there are Debug and Release folders.  In the Debug folders you will find a DLL, a PDB, and an XML file for the given library, while the Release folder will have just a DLL.  The DLL is the actual library (either Debug or Release flavor), the PDB is the debug information, and the XML file is the intellisense doc for use within Visual Studio.  There is also a .chm file, which is a viewable help file.  In addition you will find the MSI file for the VS2008-integrated help.  If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip"  -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt
 
   %zipit% %rzipfile%  -d DotNetZip-v%version%   -s Readme.txt "DotNetZip Library Developer's Kit package,  v%version% packed %stamp%.  This is the DotNetZip library.  It includes the classes in the Ionic.Zip namespace as well as the classes in the Ionic.Zlib namespace. Use this library if you want to manipulate ZIP files within .NET applications."
 
@@ -178,6 +180,8 @@ goto :EOF
   %zipit% %rzipfile%  -d Zlib-v%version%-CompactFramework\Release  -D "Zlib CF\bin\Release"  Ionic.Zlib.CF.dll 
 
   %zipit% %rzipfile%  -d Examples\WScript -D "Zip Tests\resources"  VbsCreateZip-DotNetZip.vbs  VbsUnZip-DotNetZip.vbs  TestCheckZip.js
+
+  %zipit% %rzipfile%  -d VS2008-IntegratedHelp  -s Readme.txt  "This MSI installs the DotNetZip help content into the VisualStudio Integrated help system. After installing this MSI, pressing F1 within Visual Studio, with your cursor on a type defined within the DotNetZip assembly, will open the appropriate help within Visual Studio."   -D Help-VS-Integrated\HelpIntegration\Debug DotNetZip-HelpIntegration.msi
 
   %zipit% %rzipfile%  -d Examples  -D "Examples"  -r+  "name != *.cache and name != *.*~ and name != *.suo and name != *.user and name != #*.*# and name != *.vspscc and name != Examples\*\*\bin\*.* and name != Examples\*\*\obj\*.* and name != Examples\*\bin\*.* and name != Examples\*\obj\*.*"
 
@@ -265,6 +269,28 @@ goto :EOF
   echo waiting for Setup\release\DotNetZipUtils.msi
   c:\dinoch\dev\dotnet\AwaitFile Setup\Release\DotNetZipUtils.msi
   move Setup\Release\DotNetZipUtils.msi ..\releases\v%version%-%stamp%\DotNetZipUtils-v%version%.msi
+
+goto :EOF
+--------------------------------------------
+
+
+
+
+--------------------------------------------
+:MakeIntegratedHelpMsi
+
+  @REM example output zipfile name:  DotNetZip-HelpIntegration.msi
+
+  echo.
+  echo +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  echo.
+  echo Making the Integrated help MSI...
+  echo.
+
+  c:\vs2008\Common7\ide\devenv.exe HelpIntegration.sln  /build Debug  /project HelpIntegration
+  echo waiting for Help-VS-Integrated\HelpIntegration\Debug\DotNetZip-HelpIntegration.msi
+  c:\dinoch\dev\dotnet\AwaitFile Help-VS-Integrated\HelpIntegration\Debug\DotNetZip-HelpIntegration.msi
+  @REM move  Help-VS-Integrated\HelpIntegration\Debug\DotNetZip-HelpIntegration.msi  ..\releases\v%version%-%stamp%\DotNetZip-HelpIntegration.msi
 
 goto :EOF
 --------------------------------------------
