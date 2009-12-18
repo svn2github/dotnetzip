@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs): 
-// Time-stamp: <2009-October-28 06:09:15>
+// Time-stamp: <2009-December-15 14:57:29>
 //
 // ------------------------------------------------------------------
 //
@@ -586,20 +586,18 @@ namespace Ionic
         ///
         /// <para>
         /// Specify values for the file attributes as a string with one or more of the
-        /// characters H,R,S,A,I in any order, implying Hidden, ReadOnly, System, Archive,
-        /// and NotContextIndexed, 
-        /// respectively.  To specify a time, use YYYY-MM-DD-HH:mm:ss as the format.  If you
-        /// omit the HH:mm:ss portion, it is assumed to be 00:00:00 (midnight). The value for a
-        /// size criterion is expressed in integer quantities of bytes, kilobytes (use k or kb
-        /// after the number), megabytes (m or mb), or gigabytes (g or gb).  The value for a
-        /// name is a pattern to match against the filename, potentially including wildcards.
-        /// The pattern follows CMD.exe glob rules: * implies one or more of any character,
-        /// while ? implies one character.  If the name pattern contains any slashes, it is
-        /// matched to the entire filename, including the path; otherwise, it is matched
-        /// against only the filename without the path.  This means a pattern of "*\*.*" matches 
-        /// all files one directory level deep, while a pattern of "*.*" matches all files in 
-        /// all directories.    
-        /// </para> 
+        /// characters H,R,S,A,I in any order, implying Hidden, ReadOnly, System, Archive, and
+        /// NotContextIndexed, respectively.  To specify a time, use YYYY-MM-DD-HH:mm:ss or
+        /// YYYY/MM/DD-HH:mm:ss as the format.  If you omit the HH:mm:ss portion, it is assumed
+        /// to be 00:00:00 (midnight). The value for a size criterion is expressed in integer
+        /// quantities of bytes, kilobytes (use k or kb after the number), megabytes (m or mb),
+        /// or gigabytes (g or gb).  The value for a name is a pattern to match against the
+        /// filename, potentially including wildcards.  The pattern follows CMD.exe glob rules:
+        /// * implies one or more of any character, while ?  implies one character.  If the name
+        /// pattern contains any slashes, it is matched to the entire filename, including the
+        /// path; otherwise, it is matched against only the filename without the path.  This
+        /// means a pattern of "*\*.*" matches all files one directory level deep, while a
+        /// pattern of "*.*" matches all files in all directories.  </para>
         ///
         /// <para>
         /// To specify a name pattern that includes spaces, use single quotes around the pattern.
@@ -650,6 +648,12 @@ namespace Ionic
         ///   <item>
         ///     <term>mtime > 2009-01-01</term>
         ///     <description>all files with a last modified time after January 1st, 2009.
+        ///     </description>
+        ///   </item>
+        ///   
+        ///   <item>
+        ///     <term>ctime > 2009/01/01-03:00:00</term>
+        ///     <description>all files with a created time after 3am (local time), on January 1st, 2009.
         ///     </description>
         ///   </item>
         ///   
@@ -826,7 +830,28 @@ namespace Ionic
                         }
                         catch (FormatException)
                         {
-                            t = DateTime.ParseExact(tokens[i + 2], "yyyy-MM-dd", null);
+                            try
+                            {
+                                t = DateTime.ParseExact(tokens[i + 2], "yyyy/MM/dd-HH:mm:ss", null);
+                            }
+                            catch (FormatException)
+                            {
+                                try
+                                {
+                                    t = DateTime.ParseExact(tokens[i + 2], "yyyy/MM/dd", null);
+                                }
+                                catch (FormatException)
+                                {
+                                    try
+                                    {
+                                        t = DateTime.ParseExact(tokens[i + 2], "MM/dd/yyyy", null);
+                                    }
+                                    catch (FormatException)
+                                    {
+                                        t = DateTime.ParseExact(tokens[i + 2], "yyyy-MM-dd", null);
+                                    }
+                                }
+                            }
                         }
                         t= DateTime.SpecifyKind(t, DateTimeKind.Local).ToUniversalTime();
                         current = new TimeCriterion

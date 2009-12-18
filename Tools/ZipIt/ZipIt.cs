@@ -27,9 +27,6 @@ namespace Ionic.Zip.Examples
     {
         private static void Usage()
         {
-            //"  -c <comment>          - use the given comment for the next file added to the archive.\n" +
-            //"  -flat                - store the files in a flat dir structure; do not use the \n" +
-            //"                         directory paths from the source files.\n" +
             string UsageMessage =
             "Zipit.exe:  zip up a directory, file, or a set of them, into a zipfile.\n" +
             "            Depends on Ionic's DotNetZip library. This is version {0} of the utility.\n" +
@@ -40,7 +37,8 @@ namespace Ionic.Zip.Examples
             "                           *.txt \n" +
             "                           (name = *.txt) OR (name = *.xml) \n" +
             "                           (attrs = H) OR (name != *.xml) \n" +
-            "                           (size > 1g) AND (mtime < 2009-06-29) \n" +
+            "                           (ctime < 2009/02/28-10:20:00) \n" +
+            "                           (size > 1g) AND (mtime < 2009-12-10) \n" +
             "                           (ctime > 2009-04-29) AND (size < 10kb) \n" +
             "                         Filenames can include full paths. You must surround a filename \n" +
             "                         that includes spaces with single quotes.\n" +
@@ -49,10 +47,12 @@ namespace Ionic.Zip.Examples
             "                         subsequently added to the archive. Requires a password.\n" +
             "  -cp <codepage>       - use the specified numeric codepage for entries with comments \n" +
             "                         or filenames that cannot be encoded with the default IBM437\n" +
-            "                         code page.\n" +
+            "                         code page. (cannot be used with -utf8 option)\n" +
             "  -d <path>            - use the given directory path in the archive for\n" +
             "                         succeeding items added to the archive.\n" +
             "  -D <path>            - find files in the given directory on disk.\n" +
+            "  -e<s,r,q,a>          - when there is an error reading a file to be zipped, either skip\n" +
+            "                         the file, retry, quit, or ask the user what to do.\n"+
             "  -j-                  - do not traverse NTFS junctions\n" +
             "  -j+                  - traverse NTFS junctions (default)\n" +
             "  -L <level>           - compression level, 0..9 (Default is 6).\n" +
@@ -63,10 +63,11 @@ namespace Ionic.Zip.Examples
             "  -r+                  - recurse directories.\n" +
             "  -s <entry> 'string'  - insert an entry of the given name into the \n" +
             "                         archive, with the given string as its content.\n" +
-            "  -sfx [w|c]           - create a self-extracting archive, either a Windows or console app.\n" +
+            "  -sfx [w|c]           - create a self-extracting archive, either a Windows or console app." +
+            "                         (cannot be used with -split)\n"+
             "  -split <maxsize>     - produce a split zip, with the specified maximum size. You can\n" +
             "                         optionally use kb or mb as a suffix to the size. \n" +
-            "                         -split is not compatible with -sfx.\n" +
+            "                         (-split cannot be used with -sfx).\n" +
             "  -Tw+                 - store Windows-format extended times (default).\n" +
             "  -Tw-                 - don't store Windows-format extended times.\n" +
             "  -Tu+                 - store Unix-format extended times (default).\n" +
@@ -77,7 +78,7 @@ namespace Ionic.Zip.Examples
             "  -UT <datetime>       - use uniform date/time, specified, for all entries. \n" +
             "  -utf8                - use UTF-8 encoding for entries with comments or\n" +
             "                         filenames that cannot be encoded with the default IBM437\n" +
-            "                         code page.\n" +
+            "                         code page. (cannot be used with -cp option)\n" +
             "  -zc <comment>        - use the given comment for the archive.\n";
 
             Console.WriteLine(UsageMessage,
@@ -133,6 +134,35 @@ namespace Ionic.Zip.Examples
         }
 
 
+        // Ask the user what he wants to do
+        public static void ZipError(object sender, ZipErrorEventArgs e)
+        {
+            Console.WriteLine("Error reading {0}...", e.FileName);
+            Console.WriteLine("   Exception: {0}...", e.Exception);
+            ZipEntry entry = e.CurrentEntry;
+            string response = null;
+            do
+            {
+                Console.Write("Retry, Skip, or Quit ? (R/S/Q) ");
+                response = Console.ReadLine();
+                Console.WriteLine();
+                
+            } while (response != null &&
+                     response[0]!='S' && response[0]!='s' &&
+                     response[0]!='R' && response[0]!='r' &&
+                     response[0]!='Q' && response[0]!='q');
+
+
+            e.Cancel = (response[0]=='Q' || response[0]=='q');
+
+            if (response[0]=='S' || response[0]=='s')
+                entry.ZipErrorAction = ZipErrorAction.Skip;
+            else if (response[0]=='R' || response[0]=='r')
+                entry.ZipErrorAction = ZipErrorAction.Retry;
+        }
+
+        
+
         static void CtrlC_Handler(object sender, ConsoleCancelEventArgs args)
         {
             isCanceled = true;
@@ -170,12 +200,12 @@ namespace Ionic.Zip.Examples
                 ZipEntry e = null;
                 int _UseUniformTimestamp = 0;
                 DateTime _fixedTimestamp= System.DateTime.Now;
-                //string entryComment = null;
                 string entryDirectoryPathInArchive = "";
                 string directoryOnDisk = null;
                 bool recurseDirectories = false;
-                
-                using (ZipFile zip = new ZipFile(args[0])) // read/update an existing zip, or create a new one.
+
+                // read/update an existing zip, or create a new one.
+                using (ZipFile zip = new ZipFile(args[0])) 
                 {
                     zip.StatusMessageTextWriter = System.Console.Error;
                     zip.SaveProgress += SaveProgress;
@@ -183,11 +213,21 @@ namespace Ionic.Zip.Examples
                     {
                         switch (args[i])
                         {
-#if NONSENSE
-                            case "-flat":
-                                entryDirectoryPathInArchive = "";
+                            case "-es":
+                                zip.ZipErrorAction = ZipErrorAction.Skip;
                                 break;
-#endif
+
+                            case "-er":
+                                zip.ZipErrorAction = ZipErrorAction.Retry;
+                                break;
+
+                            case "-eq":
+                                zip.ZipErrorAction = ZipErrorAction.Throw;
+                                break;
+
+                            case "-ea":
+                                zip.ZipError += ZipError;
+                                break;
 
                             case "-64":
                                 zip.UseZip64WhenSaving = Zip64Option.Always;

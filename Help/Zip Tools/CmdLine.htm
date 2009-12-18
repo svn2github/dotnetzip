@@ -50,6 +50,7 @@ arguments:
                            *.txt
                            (name = *.txt) OR (name = *.xml)
                            (attrs = H) OR (name != *.xml)
+                           (ctime &lt; 2009/02/28-10:20:00)
                            (size &gt; 1g) AND (mtime &lt; 2009-06-29)
                            (ctime &gt; 2009-04-29) AND (size &lt; 10kb)
                          Filenames can include full paths. You must surround a filename 
@@ -63,6 +64,8 @@ arguments:
   -d &lt;path&gt;            - use the given directory path in the archive for
                          succeeding items added to the archive.
   -D &lt;path&gt;            - find files in the given directory on disk.
+  -e&lt;s,r,q,a&gt;          - when there is an error reading a file to be zipped, either skip
+                         the file, retry, quit, or ask the user what to do.
   -j-                  - do not traverse NTFS junctions
   -j+                  - traverse NTFS junctions (default)
   -L &lt;level&gt;           - compression level, 0..9 (Default is 6).
@@ -234,7 +237,7 @@ well. The times are taken to be expressed in <em>local time</em>.  </p>
 <p> Specify values for the file attributes as a string with one or more
 of the characters H,R,S,A in any order, implying Hidden, ReadOnly,
 System, and Archive, respectively.  To specify a time, use
-YYYY-MM-DD-HH:mm:ss as the format.  If you omit the HH:mm:ss portion, it
+YYYY-MM-DD-HH:mm:ss or YYYY/MM/DD-HH:mm:ss as the format.  If you omit the HH:mm:ss portion, it
 is assumed to be 00:00:00 (midnight). The value for a size criterion is
 expressed in integer quantities of bytes, kilobytes (use k or kb after
 the number), megabytes (m or mb), or gigabytes (g or gb).  The value for
@@ -276,26 +279,26 @@ have spaces in the filename.  The full criteria string for that would be
 </tr>
 
 <tr>
-  <td colspan='2' class="code">mtime &gt; 07/01/2009</td>
+  <td colspan='2' class="code">mtime &gt; 2009-07-14</td>
 </tr>
 
 <tr>
   <td>&nbsp;</td>
 
-  <td>any file with a <em>last modified time</em> after midnight on 1 July
+  <td>any file with a <em>last modified time</em> after midnight on 14 July
   2009. There is also ctime and atime for <em>created time</em> and <em>accessed
   time</em>.
   </td>
 </tr>
 
 <tr>
-  <td  colspan='2' class="code">ctime > 07/01/2009:07:53:00</td>
+  <td  colspan='2' class="code">ctime > 2009-07-14-07:53:00</td>
 </tr>
 
 <tr>
   <td>&nbsp;</td>
 
-  <td>any file with a <em>created time</em> after 7:53am on 1 July 2009. 
+  <td>any file with a <em>created time</em> after 7:53am (local time) on 14 July 2009. 
   </td>
 </tr>
 
@@ -365,7 +368,7 @@ same as above.
 </tr>
 
 <tr>
-  <td colspan='2' class="code">(mtime &gt;= 07/01/2009) and (mtime &lt; 07/02/2009)</td>
+  <td colspan='2' class="code">(mtime &gt;= 2009-07-01) and (mtime &lt; 2009-07-02)</td>
 </tr>
 
 <tr>
@@ -377,7 +380,7 @@ any file modified on July 1st.  From midnight to midnight.
 </tr>
 
 <tr>
-  <td colspan='2' class="code">(name = *.jpg) AND (mtime &gt;= 07/01/2009) and (mtime &lt; 07/02/2009)</td>
+  <td colspan='2' class="code">(name = *.jpg) AND (mtime &gt;= 2009/07/01) and (mtime &lt; 2009/07/02)</td>
 </tr>
 
 <tr>
@@ -389,7 +392,7 @@ any .jpg file modified on July 1st.
 </tr>
 
 <tr>
-  <td colspan='2' class="code">(name = *.jpg) and (size &gt;= 100kb) and (mtime &gt;= 07/01/2009) and (mtime &lt; 07/02/2009)</td>
+  <td colspan='2' class="code">(name = *.jpg) and (size &gt;= 100kb) and (mtime &gt;= 2009/07/01) and (mtime &lt; 2009/07/02)</td>
 </tr>
 
 <tr>
