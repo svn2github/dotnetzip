@@ -22,7 +22,7 @@ set stamp=%stamp: =-%
 set stamp=%stamp::=%
 
 
-@REM get the version: 
+@REM get the version:
 for /f "delims==" %%I in ('type SolutionInfo.cs ^| c:\utils\grep AssemblyVersion ^| c:\utils\sed -e "s/^.*(.\(.*\).).*/\1 /"') do set longversion=%%I
 
 set version=%longversion:~0,3%
@@ -94,7 +94,7 @@ goto :END
     )
 
     if %verbose% GTR 0 (
-      echo Checked !ccount! files 
+      echo Checked !ccount! files
       echo !notsigned! were not signed
       echo !okcount! were signed, with the correct key
       echo !rcode! were signed, with the wrong key
@@ -105,7 +105,7 @@ goto :END
 
   echo.
   echo.
-  
+
   endlocal
 
 goto :EOF
@@ -160,24 +160,24 @@ goto :EOF
   %zipit% %rzipfile%  -d DotNetZip-v%version%-Reduced  -s Readme.txt "DotNetZip Reduced Library, Developer's Kit package, v%version% packed %stamp%.   This is the reduced version of the DotNetZip library.  It includes the classes in the Ionic.Zip namespace as well as the classes in the Ionic.Zlib namespace.  The reduced library differs from the full library in that it lacks the ability to save self-Extracting archives (aka SFX files), and is much smaller than the full library."
 
   %zipit% %rzipfile%  -d DotNetZip-v%version%-Reduced\Debug   -D "Zip Reduced\bin\Debug"   Ionic.Zip.Reduced.dll Ionic.Zip.Reduced.pdb Ionic.Zip.Reduced.XML
-  %zipit% %rzipfile%  -d DotNetZip-v%version%-Reduced\Release -D "Zip Reduced\bin\Release" Ionic.Zip.Reduced.dll 
+  %zipit% %rzipfile%  -d DotNetZip-v%version%-Reduced\Release -D "Zip Reduced\bin\Release" Ionic.Zip.Reduced.dll
 
-  %zipit% %rzipfile%  -d DotNetZip-v%version%-CompactFramework  -s Readme.txt  "DotNetZip CF Library v%version% packed %stamp%. This assembly is built for the Compact Framework v2.0 or later, and includes all the classes in the Ionic.Zip namespace, as well as all the classes in the Ionic.Zlib namespace. Use this library if you want to manipulate ZIP files in smart-device applications, and if you want to use ZLIB compression directly, or if you want to use the compressing stream classes like GZipStream, DeflateStream, or ZlibStream." 
+  %zipit% %rzipfile%  -d DotNetZip-v%version%-CompactFramework  -s Readme.txt  "DotNetZip CF Library v%version% packed %stamp%. This assembly is built for the Compact Framework v2.0 or later, and includes all the classes in the Ionic.Zip namespace, as well as all the classes in the Ionic.Zlib namespace. Use this library if you want to manipulate ZIP files in smart-device applications, and if you want to use ZLIB compression directly, or if you want to use the compressing stream classes like GZipStream, DeflateStream, or ZlibStream."
 
 
   %zipit% %rzipfile%  -d DotNetZip-v%version%-CompactFramework\Debug    -D "Zip CF Full DLL\bin\Debug"   Ionic.Zip.CF.dll Ionic.Zip.CF.pdb Ionic.Zip.CF.XML
-  %zipit% %rzipfile%  -d DotNetZip-v%version%-CompactFramework\Release  -D "Zip CF Full DLL\bin\Release" Ionic.Zip.CF.dll 
+  %zipit% %rzipfile%  -d DotNetZip-v%version%-CompactFramework\Release  -D "Zip CF Full DLL\bin\Release" Ionic.Zip.CF.dll
 
   %zipit% %rzipfile%  -d Zlib-v%version%  -s Readme.txt  "DotNetZlib v%version% packed %stamp%.  This is the Ionic.Zlib assembly; it includes only the classes in the Ionic.Zlib namespace. Use this library if you want to take advantage of ZLIB compression directly, or if you want to use the compressing stream classes like GZipStream, DeflateStream, or ZlibStream."
 
 
   %zipit% %rzipfile%  -d Zlib-v%version%\Debug    -D "Zlib\bin\Debug"    Ionic.Zlib.dll Ionic.Zlib.pdb Ionic.Zlib.XML
-  %zipit% %rzipfile%  -d Zlib-v%version%\Release  -D "Zlib\bin\Release"  Ionic.Zlib.dll 
+  %zipit% %rzipfile%  -d Zlib-v%version%\Release  -D "Zlib\bin\Release"  Ionic.Zlib.dll
 
-  %zipit% %rzipfile%  -d Zlib-v%version%-CompactFramework  -s Readme.txt  "DotNetZlib CF v%version% packed %stamp%. This is the Ionic.Zlib library packaged for the .NET Compact Framework v2.0 or later.  Use this library if you want to take advantage of ZLIB compression directly from within Smart device applications, or if you want to use the compressing stream classes like GZipStream, DeflateStream, or ZlibStream." 
+  %zipit% %rzipfile%  -d Zlib-v%version%-CompactFramework  -s Readme.txt  "DotNetZlib CF v%version% packed %stamp%. This is the Ionic.Zlib library packaged for the .NET Compact Framework v2.0 or later.  Use this library if you want to take advantage of ZLIB compression directly from within Smart device applications, or if you want to use the compressing stream classes like GZipStream, DeflateStream, or ZlibStream."
 
   %zipit% %rzipfile%  -d Zlib-v%version%-CompactFramework\Debug    -D "Zlib CF\bin\Debug"    Ionic.Zlib.CF.dll Ionic.Zlib.CF.pdb Ionic.Zlib.CF.XML
-  %zipit% %rzipfile%  -d Zlib-v%version%-CompactFramework\Release  -D "Zlib CF\bin\Release"  Ionic.Zlib.CF.dll 
+  %zipit% %rzipfile%  -d Zlib-v%version%-CompactFramework\Release  -D "Zlib CF\bin\Release"  Ionic.Zlib.CF.dll
 
   %zipit% %rzipfile%  -d Examples\WScript -D "Zip Tests\resources"  VbsCreateZip-DotNetZip.vbs  VbsUnZip-DotNetZip.vbs  TestCheckZip.js
 
@@ -211,16 +211,16 @@ goto :EOF
   echo zipfile is %rzipfile%
   %zipit% %rzipfile%    -s Contents.txt "This is the redistributable package for DotNetZip v%version%.  Packed %stamp%. In this zip you will find a separate folder for each separate version of the DLL. In each folder there is a RELEASE build DLL, suitable for redistribution with your app. If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip "   -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt
 
-  %zipit% %rzipfile%  -d DotNetZip-v%version% -D "Zip Full DLL\bin\Release" -s Readme.txt  "DotNetZip Redistributable Library v%version% packed %stamp%"  Ionic.Zip.dll 
+  %zipit% %rzipfile%  -d DotNetZip-v%version% -D "Zip Full DLL\bin\Release" -s Readme.txt  "DotNetZip Redistributable Library v%version% packed %stamp%"  Ionic.Zip.dll
 
   %zipit% %rzipfile%  -d DotNetZip-Reduced-v%version% -D "Zip Reduced\bin\Release" -s Readme.txt  "DotNetZip Reduced Redistributable Library v%version% packed %stamp%"  Ionic.Zip.Reduced.dll
 
 
-  %zipit% %rzipfile%  -d zlib-v%version% -D "Zlib\bin\Release" -s Readme.txt  "DotNetZlib Redistributable Library v%version% packed %stamp%"  Ionic.Zlib.dll 
+  %zipit% %rzipfile%  -d zlib-v%version% -D "Zlib\bin\Release" -s Readme.txt  "DotNetZlib Redistributable Library v%version% packed %stamp%"  Ionic.Zlib.dll
 
-  %zipit% %rzipfile%  -d DotNetZip-v%version%-CompactFramework -D "Zip CF Full DLL\bin\Release" -s Readme.txt "DotNetZip Library for .NET Compact Framework v%version% packed %stamp%"  Ionic.Zip.CF.dll 
+  %zipit% %rzipfile%  -d DotNetZip-v%version%-CompactFramework -D "Zip CF Full DLL\bin\Release" -s Readme.txt "DotNetZip Library for .NET Compact Framework v%version% packed %stamp%"  Ionic.Zip.CF.dll
 
-  %zipit% %rzipfile%   -d Zlib-v%version%-CompactFramework -D "Zlib CF\bin\Release"  -s Readme.txt  "DotNetZlib Library for .NET Compact Framework v%version% packed %stamp%"   Ionic.Zlib.CF.dll 
+  %zipit% %rzipfile%   -d Zlib-v%version%-CompactFramework -D "Zlib CF\bin\Release"  -s Readme.txt  "DotNetZlib Library for .NET Compact Framework v%version% packed %stamp%"   Ionic.Zlib.CF.dll
 
 
 goto :EOF
@@ -243,10 +243,10 @@ goto :EOF
 
     %zipit% %rzipfile%    -s Contents.txt "These are the DotNetZip utilities and tools, for DotNetZip v%version%.  Packed %stamp%."   -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   License.txt
 
-    %zipit% %rzipfile%  -zc "Zip utilities v%version% packed %stamp%" -D Examples\C#\ZipIt\bin\Release  Zipit.exe Ionic.Zip.dll 
-    %zipit%  %rzipfile%  -D Examples\Unzip\bin\Release  Unzip.exe
-    %zipit% %rzipfile%  -D Examples\SelfExtracting\bin\Release ConvertZipToSfx.exe
-    %zipit%  %rzipfile%  -D Examples\WinFormsApp\bin\Release  DotNetZip-WinFormsTool.exe
+    %zipit% %rzipfile%  -zc "Zip utilities v%version% packed %stamp%" -D Tools\ZipIt\bin\Release  Zipit.exe Ionic.Zip.dll
+    %zipit% %rzipfile%  -D Tools\Unzip\bin\Release            Unzip.exe
+    %zipit% %rzipfile%  -D Tools\ConvertZipToSfx\bin\Release  ConvertZipToSfx.exe
+    %zipit% %rzipfile%  -D Tools\WinFormsApp\bin\Release      DotNetZip-WinFormsTool.exe
 
 
 goto :EOF
@@ -331,7 +331,7 @@ goto :EOF
     @REM set zipfile=DotNetZip-src-v%version%.zip
 
     cd..
-    @REM Delete any existing files 
+    @REM Delete any existing files
     for %%f in (DotNetZip-src-v*.zip) do del %%f
 
     c:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe  DotNetZip\ZipSrc.ps1
@@ -364,7 +364,7 @@ goto :EOF
 
 --------------------------------------------
 :GET_CMDLINE
-    @REM given a set of params [0..n], sets CMDLINE to 
+    @REM given a set of params [0..n], sets CMDLINE to
     @REM the join of params[1..n]
     setlocal enableextensions EnableDelayedExpansion
     set PRIOR=
