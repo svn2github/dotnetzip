@@ -287,7 +287,7 @@ goto :EOF
   echo Making the Integrated help MSI...
   echo.
 
-  c:\vs2008\Common7\ide\devenv.exe HelpIntegration.sln  /build Debug  /project HelpIntegration
+  c:\vs2008\Common7\ide\devenv.exe Help-VS-Integrated\HelpIntegration.sln  /build Debug  /project HelpIntegration
   echo waiting for Help-VS-Integrated\HelpIntegration\Debug\DotNetZip-HelpIntegration.msi
   c:\dinoch\dev\dotnet\AwaitFile Help-VS-Integrated\HelpIntegration\Debug\DotNetZip-HelpIntegration.msi
   @REM move  Help-VS-Integrated\HelpIntegration\Debug\DotNetZip-HelpIntegration.msi  ..\releases\v%version%-%stamp%\DotNetZip-HelpIntegration.msi

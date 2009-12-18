@@ -323,7 +323,7 @@
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
         "TargetPlatform" = "3:0"
-        "PreBuildEvent" = "8:"
+        "PreBuildEvent" = "8:copy \"C:\\Program Files\\Microsoft Visual Studio 2008 SDK\\HelpIntegrationWizard\\MSHelp2\\MSHelp2_RegTables__RTL_---_---.msm\" \"$(ProjectDir)\\CollectionFiles\""
         "PostBuildEvent" = "8:\"$(ProjectDir)\\CollectionFiles\\FixRegTables.exe\" \"$(BuiltOuputPath)\" \"$(ProjectDir)\\\""
         "RunPostBuildEvent" = "3:0"
         }
