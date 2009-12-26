@@ -1,7 +1,7 @@
 
 <html>
 <head>
-<title>COM - Classic ASP, PHP, VB6, JavaScript, VBScript</title>
+<title>COM - ASP, PHP, VB6, JavaScript, VBScript</title>
 <style>
 p,body,a,tr,td
              { font-family: Verdana, Arial, Helvetica; font-size: 10pt }
@@ -14,7 +14,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 </style>
 </head>
 
-<!-- @SortOrder 70 --> 
+<!-- @SortOrder 70 -->
 
 <body>
 <h1>DotNetZip can be used from COM Environments</h1>
@@ -22,7 +22,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 <p>You can use DotNetZip from COM environments, via an
 IDispatch (late bound) interface. This means you can call into the DotNetZip
 library (the Ionic.Zip.dll assembly) from programming environments like PHP,
-Perl, Javascript, and VBScript (including old-school ASP pages), among others.  
+Perl, Javascript, and VBScript (including old-school ASP pages), among others.
 </p>
 
 <p>If you download and install the DotNetZip Runtime MSI package, it
@@ -98,7 +98,7 @@ names: each successive overload gets a numeric suffix.  Consider the
 simplest, is available via the name <span style="font-family: Courier;">ExtractSelectedEntries</span>.  Then,
 additional overloads are available via <span style="font-family: Courier;">ExtractSelectedEntries_2</span>,
 <span style="font-family: Courier;">ExtractSelectedEntries_3</span>, and so on. The same is true for other
-overloaded methods on the ZipFile and ZipEntry classes. 
+overloaded methods on the ZipFile and ZipEntry classes.
 </p>
 
 
@@ -436,7 +436,7 @@ then downloads it to the requesting client.  The Zip archive will use
   if (file_exists($zipOutput))
   {
     header('Cache-Control: no-cache, must-revalidate');
-    header('Content-Type: application/x-zip'); 
+    header('Content-Type: application/x-zip');
     header('Content-Disposition: attachment; filename=' . $fname);
     header('Content-Length: ' . filesize($zipOutput));
     readfile($zipOutput);
@@ -449,7 +449,7 @@ then downloads it to the requesting client.  The Zip archive will use
 
 <h2>Using DotNetZip in Javascript</h2>
 
-<p> This example dynamically creates a zipfile, using AES 256-bit encryption. 
+<p> This example dynamically creates a zipfile, using AES 256-bit encryption.
 </p>
 
 
@@ -457,14 +457,14 @@ then downloads it to the requesting client.  The Zip archive will use
   title="Create a Zip">
 var filename = "C:\\temp\\ZipFile-created-from-javascript-" + generateTimestamp() + ".zip";
 
-try 
+try
 {
     WScript.echo("Instantiating a ZipFile object...");
     var zip = new ActiveXObject("Ionic.Zip.ZipFile");
 
     WScript.echo("setting the encryption...");
     // 3 = AES256, 2 = AES128, 1 = PKZIP, 0 = none
-    zip.Encryption = 3;  
+    zip.Encryption = 3;
 
     WScript.echo("setting the password...");
     zip.Password = "This is the Password.";
@@ -499,7 +499,7 @@ catch (e2)
 
 var filename = "C:\\temp\\CompressedData.zip";
 
-try 
+try
 {
     WScript.echo("Instantiating a ZipFile object...");
     var zip = new ActiveXObject("Ionic.Zip.ZipFile");
@@ -552,15 +552,15 @@ function main()
     var result;
     var args = WScript.Arguments;
 
-    if (args.Length == 1) 
+    if (args.Length == 1)
     {
         result = checkZip(args(0));
     }
-    else if (args.Length == 2 && args(0) == "-x") 
+    else if (args.Length == 2 && args(0) == "-x")
     {
         result = checkZipWithExtract(args(1));
     }
-    else 
+    else
     {
         WScript.Echo("TestCheckZip.js - check a zipfile using Javascript.");
         WScript.Echo("  usage: TestCheckZip.js [-x]  <pathToZip>");
@@ -578,18 +578,18 @@ main();
 
 <h2>Using DotNetZip in VBScript</h2>
 
-<p> This example creates a zipfile, using AES 256-bit encryption. 
+<p> This example creates a zipfile, using AES 256-bit encryption.
 </p>
 
 
 <pre lang="VBScript" numberLines="true" outlining="true"
   title="Create a Zip">
 
-  dim filename 
+  dim filename
   filename = "C:\temp\ZipFile-created-from-VBScript.zip"
 
   WScript.echo("Instantiating a ZipFile object...")
-  dim zip 
+  dim zip
   set zip = CreateObject("Ionic.Zip.ZipFile")
 
   WScript.echo("Setting the encryption...")
@@ -600,7 +600,7 @@ main();
   zip.Password = "This is the Password."
 
   WScript.echo("adding a selection of files...")
-  zip.AddSelectedFiles "*.js" 
+  zip.AddSelectedFiles "*.js"
   zip.AddSelectedFiles "*.vbs"
 
   WScript.echo("setting the save name...")
@@ -627,7 +627,7 @@ main();
   title="Extract all entries from a Zip">
 
   WScript.echo("Instantiating a ZipFile object...")
-  dim zip 
+  dim zip
   set zip = CreateObject("Ionic.Zip.ZipFile")
 
   WScript.echo("Initialize (Read)...")
@@ -658,7 +658,7 @@ main();
     Dim zip
     WScript.echo("Instantiating a ZipFile object...")
     Set zip = CreateObject("Ionic.Zip.ZipFile")
-    
+
     WScript.echo("Initialize (Read)...")
     zip.Initialize filename
 
@@ -667,7 +667,7 @@ main();
         fso.CreateFolder("unpack")
     End If
 
-    ' Any call to ZipEntry.Extract() will put files into the 
+    ' Any call to ZipEntry.Extract() will put files into the
     ' current working directory.  So set it here:
     Set objShell = CreateObject("Wscript.Shell")
     objShell.CurrentDirectory = "unpack"
@@ -703,7 +703,7 @@ method, as described above.  </p>
           Dim OverwriteSilently
           OverwriteSilently = 1
 
-          Dim zip 
+          Dim zip
           Set zip = CreateObject("Ionic.Zip.ZipFile")
 
           zip.Initialize filename

@@ -13,7 +13,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 </style>
 </head>
 
-<!-- @SortOrder 50 --> 
+<!-- @SortOrder 50 -->
 
 <body>
 <h1>DotNetZip works with the .NET Compact Framework</h1>
@@ -37,16 +37,17 @@ in order to keep the size of the library down, I omitted that part from
 the CF version.  It amounts to about a 120k savings.
 </li>
 
-<li><strong>WinZip AES encryption.</strong> The CF version does not support encryption using WinZipAes128 or
-WinZipAes256.  This is because the crypto classes from the .NET
-Framework are not available on .NET CF.  I would have to write my own
-SHA1HMAC() and so on, which I haven't got 'round to doing, especially
-because no one is clamoring for it.
-</li>
+<li><strong>WinZip AES encryption.</strong> The CF version does not
+support encryption using WinZipAes128 or WinZipAes256.  This is because
+the crypto classes from the .NET Framework are not available on .NET CF.
+I would have to write my own SHA1HMAC() and so on, which I haven't got
+'round to doing, especially because no one is clamoring for it.  </li>
 
-<li>ParallelDeflateStream. I don't believe processors for CF are multi-core, so 
-a parallel deflater would offer no benefit. 
-</li>
+<li><strong>ParallelDeflateStream</strong>. Most mobile devices do not
+use multicore processors, so a parallel deflater would offer no
+benefit. Even aside from that, parallel deflation shows its strength
+when cmopressing larger files, and when larger memory resources are
+available. Both of these are unlikely in .NET CF applications.  </li>
 
 </ol>
 
@@ -63,10 +64,10 @@ need to use Visual Studio 2008 or later.  </p>
 </li>
 
 <li>Create a smart device project.  Specify that it will use the .NET
-Compact Framework v2.0 or v3.5. 
+Compact Framework v2.0 or v3.5.
 </li>
 
-<li>Add a Reference to the CF Library for DotNetZip.  
+<li>Add a Reference to the CF Library for DotNetZip.
 The filename is Ionic.Zip.CF.dll </li>
 
 <li>Build your application as normal. </li>
@@ -76,8 +77,8 @@ The filename is Ionic.Zip.CF.dll </li>
 
 <h2>About the Project Design</h2>
 
-<p>If you are a developer who wants to modify or extend the DotNetZip library itself, 
-the following may be of interest. 
+<p>If you are a developer who wants to modify or extend the DotNetZip library itself,
+the following may be of interest.
 </p>
 
 <p> The CF-Library project in the DotNetZip source distribution includes
