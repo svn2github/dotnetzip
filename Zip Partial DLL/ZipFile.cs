@@ -129,6 +129,41 @@ namespace Ionic.Zip
         }
 
 
+        /// <summary>
+        ///   Whether to sort the ZipEntries before saving the file.
+        /// </summary>
+        ///
+        /// <remarks>
+        ///   The default is false.  If you have a large number of zip entries, the sort
+        ///   alone can consume significant time.
+        /// </remarks>
+        ///
+        /// <example>
+        /// <code lang="C#">
+        /// using (var zip = new ZipFile())
+        /// {
+        ///     zip.AddFiles(filesToAdd);
+        ///     zip.SortEntriesBeforeSaving = true;
+        ///     zip.Save(name);
+        /// }
+        /// </code>
+        ///
+        /// <code lang="VB">
+        /// Using zip As New ZipFile
+        ///     zip.AddFiles(filesToAdd)
+        ///     zip.SortEntriesBeforeSaving = True
+        ///     zip.Save(name)
+        /// End Using
+        /// </code>
+        /// </example>
+        ///
+        public bool SortEntriesBeforeSaving
+        {
+            get;
+            set;
+        }
+
+
 
         /// <summary>
         ///   Indicates whether NTFS Reparse Points, like junctions, should be

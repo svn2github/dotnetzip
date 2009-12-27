@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2009-December-26 15:14:16>
+// Time-stamp: <2009-December-27 10:43:33>
 //
 // ------------------------------------------------------------------
 //
@@ -106,10 +106,12 @@ namespace Ionic.Zip
                 if (_entries.Count >= 0xFFFF && _zip64 == Zip64Option.Never)
                     throw new ZipException("The number of entries is 65535 or greater. Consider setting the UseZip64WhenSaving property on the ZipFile instance.");
 
-                {
+
                     // write an entry in the zip for each file
                     int n = 0;
-                    foreach (ZipEntry e in _entries.Values)
+                    // workitem 9831
+                    ICollection<ZipEntry> c = (SortEntriesBeforeSaving) ? EntriesSorted : Entries;
+                    foreach (ZipEntry e in c) // _entries.Values
                     {
                         OnSaveEntry(n, e, true);
                         e.Write(WriteStream);
@@ -124,7 +126,7 @@ namespace Ionic.Zip
                         if (e.IncludedInMostRecentSave)
                             thisSaveUsedZip64 |= e.OutputUsedZip64.Value;
                     }
-                }
+
 
 
                 if (_saveOperationCanceled)
@@ -137,7 +139,7 @@ namespace Ionic.Zip
                     : 1;
 
                 bool directoryNeededZip64 = ZipOutput.WriteCentralDirectoryStructure(WriteStream,
-                                                         _entries.Values,
+                                                         c,
                                                          _numberOfSegmentsForMostRecentSave,
                                                          _zip64,
                                                          Comment,
