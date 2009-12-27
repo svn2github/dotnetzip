@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2009-December-26 22:25:29>
+// Time-stamp: <2009-December-27 01:04:23>
 //
 // ------------------------------------------------------------------
 //
@@ -466,54 +466,73 @@ namespace Ionic.Zip
         }
 
 
-        private static System.Random _rnd = new System.Random();
-
         /// <summary>
-        /// Return a random filename, suitable for use as a temporary file.
+        /// Create a pseudo-random filename, suitable for use as a temporary file, and open it.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// The System.IO.Path.GetRandomFileName() method is not available on the Compact
-        /// Framework, so this library provides its own substitute.
+        /// Framework, so this library provides its own substitute on NETCF.
+        /// </para>
+        /// <para>
+        /// produces a filename of the form DotNetZip-xxxxxxxx.tmp, where xxxxxxxx is replaced
+        /// by randomly chosen characters, and creates that file.
+        /// </para>
         /// </remarks>
-        /// <returns>a filename of the form DotNetZip-xxxxxxxx.tmp, where xxxxxxxx is replaced
-        /// by randomly chosen characters.</returns>
-        public static string GetTempFilename()
+        public static void CreateAndOpenUniqueTempFile(string dir, out Stream fs, out string filename)
         {
-            string candidate = null;
-            do
+            // workitem 9763
+            // http://dotnet.org.za/markn/archive/2006/04/15/51594.aspx
+            // try 3 times:
+            for (int i = 0; i < 3; i++)
             {
-                candidate = "DotNetZip-" + GenerateRandomStringImpl(8, 97) + ".tmp";
-            } while (System.IO.File.Exists(candidate));
-
-            return candidate;
+                try
+                {
+                    filename = Path.Combine(dir, InternalGetTempFileName());
+                    fs = new FileStream(filename, FileMode.CreateNew);
+                    return;
+                }
+                catch (IOException)
+                {
+                    if (i == 2) throw;
+                }
+            }
+            throw new IOException();
         }
 
+#if NETCF
+        public static string InternalGetTempFileName()
+        {
+            return "DotNetZip-" + GenerateRandomStringImpl(8,0) + ".tmp";
+        }
 
         private static string GenerateRandomStringImpl(int length, int delta)
         {
             bool WantMixedCase = (delta == 0);
+            System.Random rnd = new System.Random();
 
             string result = "";
             char[] a = new char[length];
 
             for (int i = 0; i < length; i++)
             {
+               // delta == 65 means uppercase
+               // delta == 97 means lowercase
                 if (WantMixedCase)
-                    delta = (_rnd.Next(2) == 0) ? 65 : 97;
-                a[i] = GetOneRandomChar(delta);
+                    delta = (rnd.Next(2) == 0) ? 65 : 97;
+                a[i] = (char)(rnd.Next(26) + delta);
             }
 
             result = new System.String(a);
             return result;
         }
-
-
-        private static char GetOneRandomChar(int delta)
+#else
+        public static string InternalGetTempFileName()
         {
-            // delta == 65 means uppercase
-            // delta == 97 means lowercase
-            return (char)(_rnd.Next(26) + delta);
+            return "DotNetZip-" + Path.GetRandomFileName().Substring(0, 8) + ".tmp";
         }
+
+#endif
 
 
         /// <summary>

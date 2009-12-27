@@ -1263,7 +1263,11 @@ namespace  Ionic.Zip
                     if (cs != null)
                     {
                         wrappedStream = cs.WrappedStream;
-                        cs.Dispose();
+#if NETCF
+                    cs.Close();
+#else
+                    cs.Dispose();
+#endif                        
                     }
                     else
                     {
@@ -1272,7 +1276,11 @@ namespace  Ionic.Zip
 
                     if (!_leaveUnderlyingStreamOpen)
                     {
-                        wrappedStream.Dispose();
+#if NETCF
+                    wrappedStream.Close();
+#else
+                    wrappedStream.Dispose();
+#endif
                     }
                     _outputStream = null;
                 }

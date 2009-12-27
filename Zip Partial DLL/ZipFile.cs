@@ -3194,31 +3194,21 @@ namespace Ionic.Zip
 
         private Stream WriteStream
         {
+            // workitem 9763
             get
             {
-                if (_writestream == null)
+                if (_writestream != null) return _writestream;
+                if (_name == null) return _writestream;
+
+                if (_maxOutputSegmentSize != 0)
                 {
-                    if (_name != null)
-                    {
-                        if (_maxOutputSegmentSize != 0)
-                        {
-                            _writestream =  ZipSegmentedStream.ForWriting(this._name, _maxOutputSegmentSize);
-                        }
-                        else
-                        {
-                            if (TempFileFolder == ".")
-                                _temporaryFileName = SharedUtilities.GetTempFilename();
-                            else if (TempFileFolder != null)
-                                _temporaryFileName = Path.Combine(TempFileFolder, SharedUtilities.GetTempFilename());
-                            else // null
-                            {
-                                var d = Path.GetDirectoryName(_name);
-                                _temporaryFileName = Path.Combine(d, SharedUtilities.GetTempFilename());
-                            }
-                            _writestream = new FileStream(_temporaryFileName, FileMode.CreateNew);
-                        }
-                    }
+                    _writestream =  ZipSegmentedStream.ForWriting(this._name, _maxOutputSegmentSize);
+                    return _writestream;
                 }
+
+                SharedUtilities.CreateAndOpenUniqueTempFile(TempFileFolder ?? Path.GetDirectoryName(_name),
+                                                            out _writestream,
+                                                            out _temporaryFileName);
                 return _writestream;
             }
             set
