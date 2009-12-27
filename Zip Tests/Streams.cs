@@ -843,27 +843,12 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                 string zipFileToCreate = Path.Combine(TopLevelDir, String.Format(format, k));
                 string password = Path.GetRandomFileName();
 
-                ZipOutputStream output = null;
-                if (fileOutputOption == 0)
-                {
-                    Stream raw = File.Open(zipFileToCreate, FileMode.Create, FileAccess.ReadWrite);
-
-                    // conditionally use a non-seekable output stream
-                    if (!seekable)
-                        raw = new Ionic.Zip.Tests.NonSeekableOutputStream(raw);
-                    
-                    output = new ZipOutputStream(raw);
-                }
-                else
-                {
-                    output = new ZipOutputStream(zipFileToCreate);
-                }
                 TestContext.WriteLine("=================================");
                 TestContext.WriteLine("Creating {0}...", Path.GetFileName(zipFileToCreate));
                 TestContext.WriteLine("Encryption({0})  Compression({1})  pw({2})",
                                       crypto.ToString(), compLevels[k].ToString(), password);
 
-                using (output)
+                using (ZipOutputStream output = GetZipOutputStream(seekable, fileOutputOption, zipFileToCreate))
                 {
                     if (crypto != EncryptionAlgorithm.None)
                     {
@@ -887,7 +872,6 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                             }
                         }
                     }
-
                 }
 
                 WinzipVerify(zipFileToCreate, password);
@@ -895,6 +879,26 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                 Assert.AreEqual<int>(files.Length, TestUtilities.CountEntries(zipFileToCreate),
                                      "Trial ({0},{1}): The zip file created has the wrong number of entries.", cycle, k);
             }
+        }
+
+        private static ZipOutputStream GetZipOutputStream(bool seekable, int fileOutputOption, string zipFileToCreate)
+        {
+            ZipOutputStream output = null;
+            if (fileOutputOption == 0)
+            {
+                Stream raw = File.Open(zipFileToCreate, FileMode.Create, FileAccess.ReadWrite);
+
+                // conditionally use a non-seekable output stream
+                if (!seekable)
+                    raw = new Ionic.Zip.Tests.NonSeekableOutputStream(raw);
+
+                output = new ZipOutputStream(raw);
+            }
+            else
+            {
+                output = new ZipOutputStream(zipFileToCreate);
+            }
+            return output;
         }
 
 

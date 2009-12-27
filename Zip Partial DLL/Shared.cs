@@ -1,28 +1,28 @@
 // Shared.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2006, 2007, 2008, 2009 Dino Chiesa and Microsoft Corporation.  
+// Copyright (c) 2006, 2007, 2008, 2009 Dino Chiesa and Microsoft Corporation.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-November-13 10:05:23>
+// last saved (in emacs):
+// Time-stamp: <2009-December-26 22:25:29>
 //
 // ------------------------------------------------------------------
 //
 // This module defines some shared utility classes and methods.
 //
 // Created: Tue, 27 Mar 2007  15:30
-// 
+//
 
 using System;
 using System.IO;
@@ -44,7 +44,7 @@ namespace Ionic.Zip
         {
             if (!File.Exists(fileName))
                 throw new System.IO.FileNotFoundException(fileName);
-            
+
             long fileLength = 0L;
             FileShare fs = FileShare.ReadWrite;
 #if !NETCF
@@ -58,10 +58,10 @@ namespace Ionic.Zip
             return fileLength;
         }
 
-                        
+
 #if LEGACY
         /// <summary>
-        /// Round the given DateTime value to an even second value.  
+        /// Round the given DateTime value to an even second value.
         /// </summary>
         ///
         /// <remarks>
@@ -119,7 +119,7 @@ namespace Ionic.Zip
         }
 
         /// <summary>
-        /// Utility routine for transforming path names. 
+        /// Utility routine for transforming path names.
         /// </summary>
         /// <param name="pathName">source path.</param>
         /// <returns>transformed path</returns>
@@ -177,7 +177,7 @@ namespace Ionic.Zip
             return x;
         }
 
-        
+
         internal static int ReadEntrySignature(System.IO.Stream s)
         {
             // handle the case of ill-formatted zip archives - includes a data descriptor
@@ -210,7 +210,7 @@ namespace Ionic.Zip
             return x;
         }
 
-        
+
         internal static int ReadInt(System.IO.Stream s)
         {
             return _ReadFourBytes(s, "Could not read block - no data!  (position 0x{0:X8})");
@@ -251,8 +251,8 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        ///   Finds a signature in the zip stream. This is useful for finding 
-        ///   the end of a zip entry, for example, or the beginning of the next ZipEntry. 
+        ///   Finds a signature in the zip stream. This is useful for finding
+        ///   the end of a zip entry, for example, or the beginning of the next ZipEntry.
         /// </summary>
         ///
         /// <remarks>
@@ -311,7 +311,7 @@ namespace Ionic.Zip
                 }
                 else break;
                 if (success) break;
-                
+
             } while (true);
 
             if (!success)
@@ -327,8 +327,8 @@ namespace Ionic.Zip
         }
 
 
-        // If I have a time in the .NET environment, and I want to use it for 
-        // SetWastWriteTime() etc, then I need to adjust it for Win32. 
+        // If I have a time in the .NET environment, and I want to use it for
+        // SetWastWriteTime() etc, then I need to adjust it for Win32.
         internal static DateTime AdjustTime_Reverse(DateTime time)
         {
             if (time.Kind == DateTimeKind.Utc) return time;
@@ -343,7 +343,7 @@ namespace Ionic.Zip
         }
 
         // If I read a time from a file with GetLastWriteTime() (etc), I need
-        // to adjust it for display in the .NET environment.  
+        // to adjust it for display in the .NET environment.
         internal static DateTime AdjustTime_Forward(DateTime time)
         {
             if (time.Kind == DateTimeKind.Utc) return time;
@@ -415,7 +415,7 @@ namespace Ionic.Zip
                 // can mess up a simple date format.
                 else
                 {
-                    try 
+                    try
                     {
                         while (year < 1980) year++;
                         while (year > 2030) year--;
@@ -451,7 +451,7 @@ namespace Ionic.Zip
         {
             // The time is passed in here only for purposes of writing LastModified to the
             // zip archive. It should always be LocalTime, but we convert anyway.  And,
-            // since the time is being written out, it needs to be adjusted. 
+            // since the time is being written out, it needs to be adjusted.
 
             time = time.ToLocalTime();
             // workitem 7966
@@ -473,9 +473,9 @@ namespace Ionic.Zip
         /// </summary>
         /// <remarks>
         /// The System.IO.Path.GetRandomFileName() method is not available on the Compact
-        /// Framework, so this library provides its own substitute. 
+        /// Framework, so this library provides its own substitute.
         /// </remarks>
-        /// <returns>a filename of the form DotNetZip-xxxxxxxx.tmp, where xxxxxxxx is replaced 
+        /// <returns>a filename of the form DotNetZip-xxxxxxxx.tmp, where xxxxxxxx is replaced
         /// by randomly chosen characters.</returns>
         public static string GetTempFilename()
         {
@@ -521,7 +521,7 @@ namespace Ionic.Zip
         /// </summary>
         /// <remarks>
         /// This could be gracefully handled with an extension attribute, but
-        /// This assembly is built for .NET 2.0, so I cannot use them. 
+        /// This assembly is built for .NET 2.0, so I cannot use them.
         /// </remarks>
         internal static int ReadWithRetry(System.IO.Stream s, byte[] buffer, int offset, int count, string FileName)
         {
@@ -539,7 +539,7 @@ namespace Ionic.Zip
                 {
 
 #if !NETCF
-                    // Check if we can call GetHRForException, 
+                    // Check if we can call GetHRForException,
                     // which makes unmanaged code calls.
                     var p = new SecurityPermission(SecurityPermissionFlag.UnmanagedCode);
                     if (p.IsUnrestricted())
@@ -605,7 +605,7 @@ namespace Ionic.Zip
 
 
 
-    /// <summary> 
+    /// <summary>
     /// A Stream wrapper, used for bookkeeping on input or output
     /// streams.  In some cases, it is not possible to get the Position
     /// of a stream, let's say, on a write-only output stream like
@@ -636,6 +636,14 @@ namespace Ionic.Zip
             catch
             {
                 _initialOffset = 0L;
+            }
+        }
+
+        public Stream WrappedStream
+        {
+            get
+            {
+                return _s;
             }
         }
 
@@ -676,6 +684,7 @@ namespace Ionic.Zip
         {
             get { return _s.CanRead; }
         }
+
         public override bool CanSeek
         {
             get { return _s.CanSeek; }
@@ -701,7 +710,7 @@ namespace Ionic.Zip
             get { return _initialOffset + _bytesWritten; }
         }
 
-        
+
         public override long Position
         {
             get { return _s.Position; }
@@ -720,6 +729,7 @@ namespace Ionic.Zip
         {
             _s.SetLength(value);
         }
+
     }
 
 

@@ -105,7 +105,7 @@ namespace Ionic.Zip.Tests
             using (ZipFile zip = ZipFile.Read(zipFileToCreate, sw, ReadProgress1))
             {
                 // this should be fine
-                zip[1]= null;
+                zip.RemoveEntry(zip[1]);
                 zip.Save();                
             }
             TestContext.WriteLine(sw.ToString());

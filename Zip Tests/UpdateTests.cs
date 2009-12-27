@@ -1,21 +1,21 @@
 // UpdateTests.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.  
+// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-August-12 15:53:37>
+// last saved (in emacs):
+// Time-stamp: <2009-December-26 23:48:53>
 //
 // ------------------------------------------------------------------
 //
@@ -82,7 +82,7 @@ namespace Ionic.Zip.Tests.Update
 
 
             WinzipVerify(zipFileToCreate);
-            
+
             // Now create a new subdirectory and add that one
             subdir = Path.Combine(TopLevelDir, "NewSubDirectory");
             Directory.CreateDirectory(subdir);
@@ -234,7 +234,7 @@ namespace Ionic.Zip.Tests.Update
             int numRemoved = 0;
             using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
             {
-                // We cannot remove the entry from the list, within the context of 
+                // We cannot remove the entry from the list, within the context of
                 // an enumeration of said list.
                 // So we add the doomed entry to a list to be removed
                 // later.
@@ -249,7 +249,7 @@ namespace Ionic.Zip.Tests.Update
                     }
                 }
 
-                // pass 2: actually remove the entry. 
+                // pass 2: actually remove the entry.
                 foreach (ZipEntry zombie in EntriesToRemove)
                     zip2.RemoveEntry(zombie);
 
@@ -350,7 +350,7 @@ namespace Ionic.Zip.Tests.Update
                     repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                                      s1);
 
-                    // verify the content of the updated file. 
+                    // verify the content of the updated file.
                     var sr = new StreamReader(Path.Combine("extract", s1));
                     string sLine = sr.ReadLine();
                     sr.Close();
@@ -424,21 +424,28 @@ namespace Ionic.Zip.Tests.Update
                 int renameCount = 0;
                 using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
                 {
+                    List<ZipEntry> toRename = new List<ZipEntry>();
                     foreach (ZipEntry e in zip2)
                     {
                         if (_rnd.Next(2) == 1)
-                        {
-                            var newname = (k == 0)
-                                ? e.FileName + "-renamed"
-                                : "renamed_files\\" + e.FileName;
-
-                            TestContext.WriteLine("  renaming {0} to {1}", e.FileName, newname);
-                            e.FileName = newname;
-                            e.Comment = "renamed";
-                            renameCount++;
-                        }
+                            toRename.Add(e);
                     }
+
+                    foreach (ZipEntry e in toRename)
+                    {
+                        var newname = (k == 0)
+                            ? e.FileName + "-renamed"
+                            : "renamed_files\\" + e.FileName;
+
+                        TestContext.WriteLine("  renaming {0} to {1}", e.FileName, newname);
+                        e.FileName = newname;
+                        e.Comment = "renamed";
+                        renameCount++;
+                    }
+
                     zip2.Comment = String.Format("This archive has been modified. {0} files have been renamed.", renameCount);
+                    Assert.IsTrue(renameCount > 1, "Not enough files were selected to be renamed ({0}).",
+                                  renameCount);
                     zip2.Save();
                 }
 
@@ -458,7 +465,7 @@ namespace Ionic.Zip.Tests.Update
                         repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                                          origFilename);
 
-                        // verify the content of the updated file. 
+                        // verify the content of the updated file.
                         var sr = new StreamReader(Path.Combine(dir, s1));
                         string sLine = sr.ReadLine();
                         sr.Close();
@@ -563,7 +570,7 @@ namespace Ionic.Zip.Tests.Update
                         repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                                          s1);
 
-                        // verify the content of the updated file. 
+                        // verify the content of the updated file.
                         var sr = new StreamReader(Path.Combine(dir, s1));
                         string sLine = sr.ReadLine();
                         sr.Close();
@@ -681,7 +688,7 @@ namespace Ionic.Zip.Tests.Update
                             repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                                              s1);
 
-                            // verify the content of the updated file. 
+                            // verify the content of the updated file.
                             var sr = new StreamReader(Path.Combine("extract", s1));
                             string sLine = sr.ReadLine();
                             sr.Close();
@@ -781,7 +788,7 @@ namespace Ionic.Zip.Tests.Update
                     repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                                      s1);
 
-                    // verify the content of the updated file. 
+                    // verify the content of the updated file.
                     var sr = new StreamReader(Path.Combine("extract", s1));
                     string sLine = sr.ReadLine();
                     sr.Close();
@@ -940,7 +947,7 @@ namespace Ionic.Zip.Tests.Update
                         s, System.DateTime.Now.ToString("yyyy-MM-dd"));
                     zip3[s].Extract("extract");
 
-                    // verify the content of the updated file. 
+                    // verify the content of the updated file.
                     var sr = new StreamReader(Path.Combine("extract", s));
                     string sLine = sr.ReadLine();
                     sr.Close();
@@ -967,7 +974,7 @@ namespace Ionic.Zip.Tests.Update
                         repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                             s1);
 
-                        // verify the content of the updated file. 
+                        // verify the content of the updated file.
                         var sr = new StreamReader(Path.Combine("extract", s1));
                         string sLine = sr.ReadLine();
                         sr.Close();
@@ -1063,7 +1070,7 @@ namespace Ionic.Zip.Tests.Update
                         System.DateTime.Now.ToString("yyyy-MM-dd"));
                     zip3[s].Extract("extract");
 
-                    // verify the content of the updated file. 
+                    // verify the content of the updated file.
                     var sr = new StreamReader(Path.Combine("extract", s));
                     string sLine = sr.ReadLine();
                     sr.Close();
@@ -1155,7 +1162,7 @@ namespace Ionic.Zip.Tests.Update
                         s, System.DateTime.Now.ToString("yyyy-MM-dd"));
                     zip3[s].ExtractWithPassword("extract", Password);
 
-                    // verify the content of the updated file. 
+                    // verify the content of the updated file.
                     var sr = new StreamReader(Path.Combine("extract", s));
                     string sLine = sr.ReadLine();
                     sr.Close();
@@ -1182,7 +1189,7 @@ namespace Ionic.Zip.Tests.Update
                         repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                             s1);
 
-                        // verify the content of the updated file. 
+                        // verify the content of the updated file.
                         var sr = new StreamReader(Path.Combine("extract", s1));
                         string sLine = sr.ReadLine();
                         sr.Close();
@@ -1279,7 +1286,7 @@ namespace Ionic.Zip.Tests.Update
                         s, System.DateTime.Now.ToString("yyyy-MM-dd"));
                     zip3[s].ExtractWithPassword("extract", password2);
 
-                    // verify the content of the updated file. 
+                    // verify the content of the updated file.
                     var sr = new StreamReader(Path.Combine("extract", s));
                     string sLine = sr.ReadLine();
                     sr.Close();
@@ -1306,7 +1313,7 @@ namespace Ionic.Zip.Tests.Update
                         repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                             s1);
 
-                        // verify the content of the updated file. 
+                        // verify the content of the updated file.
                         var sr = new StreamReader(Path.Combine("extract", s1));
                         string sLine = sr.ReadLine();
                         sr.Close();
@@ -1403,7 +1410,7 @@ namespace Ionic.Zip.Tests.Update
                         s, System.DateTime.Now.ToString("yyyy-MM-dd"));
                     zip3[s].Extract("extract");
 
-                    // verify the content of the updated file. 
+                    // verify the content of the updated file.
                     var sr = new StreamReader(Path.Combine("extract", s));
                     string sLine = sr.ReadLine();
                     sr.Close();
@@ -1429,7 +1436,7 @@ namespace Ionic.Zip.Tests.Update
                         repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                             s1);
 
-                        // verify the content of the updated file. 
+                        // verify the content of the updated file.
                         var sr = new StreamReader(Path.Combine("extract", s1));
                         string sLine = sr.ReadLine();
                         sr.Close();
@@ -1536,7 +1543,7 @@ namespace Ionic.Zip.Tests.Update
                         s, System.DateTime.Now.ToString("yyyy-MM-dd"));
                     zip4[s].Extract("extract");
 
-                    // verify the content of the updated file. 
+                    // verify the content of the updated file.
                     var sr = new StreamReader(Path.Combine("extract", s));
                     string sLine = sr.ReadLine();
                     sr.Close();
@@ -1562,7 +1569,7 @@ namespace Ionic.Zip.Tests.Update
                         repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                             s1);
 
-                        // verify the content of the updated file. 
+                        // verify the content of the updated file.
                         var sr = new StreamReader(Path.Combine("extract", s1));
                         string sLine = sr.ReadLine();
                         sr.Close();
@@ -1658,7 +1665,7 @@ namespace Ionic.Zip.Tests.Update
                         s, System.DateTime.Now.ToString("yyyy-MM-dd"));
                     zip3[s].Extract("extract");
 
-                    // verify the content of the updated file. 
+                    // verify the content of the updated file.
                     var sr = new StreamReader(Path.Combine("extract", s));
                     string sLine = sr.ReadLine();
                     sr.Close();
@@ -1684,7 +1691,7 @@ namespace Ionic.Zip.Tests.Update
                         repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                             s1);
 
-                        // verify the content of the updated file. 
+                        // verify the content of the updated file.
                         var sr = new StreamReader(Path.Combine("extract", s1));
                         string sLine = sr.ReadLine();
                         sr.Close();
@@ -1780,7 +1787,7 @@ namespace Ionic.Zip.Tests.Update
                         s, System.DateTime.Now.ToString("yyyy-MM-dd"));
                     zip3[s].ExtractWithPassword("extract", Password);
 
-                    // verify the content of the updated file. 
+                    // verify the content of the updated file.
                     var sr = new StreamReader(Path.Combine("extract", s));
                     string sLine = sr.ReadLine();
                     sr.Close();
@@ -1806,7 +1813,7 @@ namespace Ionic.Zip.Tests.Update
                         repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                             s1);
 
-                        // verify the content of the updated file. 
+                        // verify the content of the updated file.
                         var sr = new StreamReader(Path.Combine("extract", s1));
                         string sLine = sr.ReadLine();
                         sr.Close();
@@ -1903,7 +1910,7 @@ namespace Ionic.Zip.Tests.Update
                         s, System.DateTime.Now.ToString("yyyy-MM-dd"));
                     zip3[s].ExtractWithPassword("extract", Password2);
 
-                    // verify the content of the updated file. 
+                    // verify the content of the updated file.
                     var sr = new StreamReader(Path.Combine("extract", s));
                     string sLine = sr.ReadLine();
                     sr.Close();
@@ -1930,7 +1937,7 @@ namespace Ionic.Zip.Tests.Update
                         repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                             s1);
 
-                        // verify the content of the updated file. 
+                        // verify the content of the updated file.
                         var sr = new StreamReader(Path.Combine("extract", s1));
                         string sLine = sr.ReadLine();
                         sr.Close();
@@ -1987,7 +1994,7 @@ namespace Ionic.Zip.Tests.Update
             // should fail.
             using (ZipFile z = ZipFile.Read(zipFileToCreate))
             {
-                // Try Adding a file again.  THIS SHOULD THROW. 
+                // Try Adding a file again.  THIS SHOULD THROW.
                 ZipEntry e = z.AddFile(filename, "");
                 z.Comment = "UpdateTests::UpdateZip_AddFile_ExistingFile_Error(): This archive has been updated.";
                 z.Save();
@@ -2048,7 +2055,7 @@ namespace Ionic.Zip.Tests.Update
                     {
                         // try setting the indexer to a non-null value
                         // THIS SHOULD FAIL.
-                        zip2[s] = zip2[AllFileNames[0]];
+                        zip2[s] = zip2[2];
                         numRemoved++;
                     }
                 }

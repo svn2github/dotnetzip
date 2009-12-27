@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2009-December-18 11:35:59>
+// Time-stamp: <2009-December-26 22:35:19>
 //
 // ------------------------------------------------------------------
 //
@@ -35,7 +35,6 @@
 // It adds these novel methods:
 //
 //  - PutNextEntry
-//  - Close
 //
 //
 // ------------------------------------------------------------------
@@ -391,7 +390,7 @@ namespace  Ionic.Zip
         {
             set
             {
-                if (_closed)
+                if (_disposed)
                 {
                     _exceptionPending = true;
                     throw new System.InvalidOperationException("The stream has been closed.");
@@ -439,7 +438,7 @@ namespace  Ionic.Zip
             }
             set
             {
-                if (_closed)
+                if (_disposed)
                 {
                     _exceptionPending = true;
                     throw new System.InvalidOperationException("The stream has been closed.");
@@ -506,7 +505,7 @@ namespace  Ionic.Zip
             }
             set
             {
-                if (_closed)
+                if (_disposed)
                 {
                     _exceptionPending = true;
                     throw new System.InvalidOperationException("The stream has been closed.");
@@ -579,7 +578,7 @@ namespace  Ionic.Zip
         ///   you want an encoded Comment, for example using code page 950 "Big-5
         ///   Chinese".  DotNetZip will encode the comment in the code page specified by
         ///   <see cref="ProvisionalAlternateEncoding"/>, at the time of the call to
-        ///   <c>Close()</c>.
+        ///   <c>Close()</c> or <c>Dispose</c>.
         /// </para>
         ///
         /// </remarks>
@@ -588,7 +587,7 @@ namespace  Ionic.Zip
             get { return _comment; }
             set
             {
-                if (_closed)
+                if (_disposed)
                 {
                     _exceptionPending = true;
                     throw new System.InvalidOperationException("The stream has been closed.");
@@ -624,7 +623,7 @@ namespace  Ionic.Zip
             }
             set
             {
-                if (_closed)
+                if (_disposed)
                 {
                     _exceptionPending = true;
                     throw new System.InvalidOperationException("The stream has been closed.");
@@ -953,15 +952,17 @@ namespace  Ionic.Zip
 
         private void InsureUniqueEntry(ZipEntry ze1)
         {
+            var f = SharedUtilities.TrimVolumeAndSwapSlashes(ze1.FileName) ;
             foreach (ZipEntry ze2 in _entriesWritten)
             {
-                if (SharedUtilities.TrimVolumeAndSwapSlashes(ze1.FileName) == ze2.FileName)
+                if (f == ze2.FileName)
                 {
                     _exceptionPending = true;
                     throw new ArgumentException(String.Format("The entry '{0}' already exists in the zip archive.", ze1.FileName));
                 }
             }
         }
+
 
         internal Stream OutputStream
         {
@@ -1018,7 +1019,7 @@ namespace  Ionic.Zip
         /// <param name="count">the number of bytes to write.</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            if (_closed)
+            if (_disposed)
             {
                 _exceptionPending = true;
                 throw new System.InvalidOperationException("The stream has been closed.");
@@ -1126,7 +1127,7 @@ namespace  Ionic.Zip
         ///
         public ZipEntry PutNextEntry(String entryName)
         {
-            if (_closed)
+            if (_disposed)
             {
                 _exceptionPending = true;
                 throw new System.InvalidOperationException("The stream has been closed.");
@@ -1146,7 +1147,7 @@ namespace  Ionic.Zip
 
             _currentEntry.EmitTimesInWindowsFormatWhenSaving = ((_timestamp & ZipEntryTimestamp.Windows) != 0);
             _currentEntry.EmitTimesInUnixFormatWhenSaving = ((_timestamp & ZipEntryTimestamp.Unix) != 0);
-            _currentEntry._container = new ZipContainer(this);
+            //_currentEntry._container = new ZipContainer(this);
             InsureUniqueEntry(_currentEntry);
             _wantEntryHeader= true;
 
@@ -1217,48 +1218,68 @@ namespace  Ionic.Zip
         }
 
 
+
         /// <summary>
-        ///   Close the stream.
+        /// Dispose the stream
         /// </summary>
         ///
         /// <remarks>
         /// <para>
-        ///   This method writes the Zip Central directory, then Closes the stream.  The
-        ///   application must call Close() in order to produce a valid zip file.
+        ///   This method writes the Zip Central directory, then closes the stream.  The
+        ///   application must call Dispose() (or Close) in order to produce a valid zip file.
         /// </para>
         ///
         /// <para>
-        ///   Typically the application will call <c>Close()</c> implicitly, via a <c>using</c>
+        ///   Typically the application will call <c>Dispose()</c> implicitly, via a <c>using</c>
         ///   statement in C#, or a <c>Using</c> statement in VB.
         /// </para>
         ///
         /// </remarks>
         ///
-        public override void Close()
+        /// <param name="notCalledFromFinalizer">set this to true, always.</param>
+        protected override void Dispose(bool notCalledFromFinalizer)
         {
-            if (_closed) return;
+            if (_disposed) return;
 
-            // When ZipOutputStream is used within a using clause, and an exception is
-            // thrown within the scope of the using, Close() is invoked implicitly
-            // before processing the initial exception.  In that case, _exceptionPending
-            // is true, and we don't want to try to write anything.  It can cause
-            // additional exceptions that mask the original one.  Eventually the
-            // original exception will be propagated to the application.
-            if (_exceptionPending) return;
+            if (notCalledFromFinalizer)
+            {
+                // When ZipOutputStream is used within a using clause, and an exception is
+                // thrown within the scope of the using, Close()/Dispose() is invoked implicitly
+                // before processing the initial exception.  In that case, _exceptionPending
+                // is true, and we don't want to try to write anything.  It can cause
+                // additional exceptions that mask the original one.  Eventually the
+                // original exception will be propagated to the application.
+                if (!_exceptionPending)
+                {
+                    _FinishCurrentEntry();
+                    _directoryNeededZip64 = ZipOutput.WriteCentralDirectoryStructure(_outputStream,
+                                                                                     _entriesWritten,
+                                                                                     1, // _numberOfSegmentsForMostRecentSave,
+                                                                                     _zip64,
+                                                                                     Comment,
+                                                                                     ProvisionalAlternateEncoding);
+                    Stream wrappedStream = null;
+                    CountingStream cs = _outputStream as CountingStream;
+                    if (cs != null)
+                    {
+                        wrappedStream = cs.WrappedStream;
+                        cs.Dispose();
+                    }
+                    else
+                    {
+                        wrappedStream = _outputStream;
+                    }
 
-            _FinishCurrentEntry();
-            _directoryNeededZip64 = ZipOutput.WriteCentralDirectoryStructure(_outputStream,
-                                                                             _entriesWritten,
-                                                                             1, // _numberOfSegmentsForMostRecentSave,
-                                                                             _zip64,
-                                                                             Comment,
-                                                                             ProvisionalAlternateEncoding);
-
-            if (!_leaveUnderlyingStreamOpen)
-                _outputStream.Close();
-
-            _closed= true;
+                    if (!_leaveUnderlyingStreamOpen)
+                    {
+                        wrappedStream.Dispose();
+                    }
+                    _outputStream = null;
+                }
+            }
+            _disposed = true;
         }
+
 
 
         /// <summary>
@@ -1340,7 +1361,7 @@ namespace  Ionic.Zip
         private int _entryCount;
         private System.Text.Encoding _provisionalAlternateEncoding;
         private bool _leaveUnderlyingStreamOpen;
-        private bool _closed;
+        private bool _disposed;
         private bool _exceptionPending;
         private bool _anyEntriesUsedZip64, _directoryNeededZip64;
         private CountingStream _outputCounter;

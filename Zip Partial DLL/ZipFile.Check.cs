@@ -1,21 +1,21 @@
 // ZipFile.Check.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa.  
+// Copyright (c) 2009 Dino Chiesa.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-November-19 11:25:39>
+// last saved (in emacs):
+// Time-stamp: <2009-December-26 14:45:40>
 //
 // ------------------------------------------------------------------
 //
@@ -55,7 +55,7 @@ namespace Ionic.Zip
         ///   cref="ComHelper.CheckZip(String)">ComHelper.CheckZip(String)</see>
         ///   method.
         /// </para>
-        /// 
+        ///
         /// </remarks>
         ///
         /// <param name="zipFileName">The filename to of the zip file to check.</param>
@@ -72,8 +72,8 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        ///   Checks a zip file to see if its directory is consistent, 
-        ///   and optionally fixes the directory if necessary. 
+        ///   Checks a zip file to see if its directory is consistent,
+        ///   and optionally fixes the directory if necessary.
         /// </summary>
         ///
         /// <remarks>
@@ -95,18 +95,18 @@ namespace Ionic.Zip
         ///   This method is not supported in the Reduced or Compact
         ///   Framework versions of DotNetZip.
         /// </para>
-        /// 
+        ///
         /// </remarks>
         ///
         /// <param name="zipFileName">The filename to of the zip file to check.</param>
         ///
         /// <param name="fixIfNecessary">If true, the method will fix the zip file if
         ///     necessary.</param>
-        /// 
+        ///
         /// <param name="messages">
-        /// a collection of messages generated while checking, indicating any problems that are found. 
+        /// a collection of messages generated while checking, indicating any problems that are found.
         /// </param>
-        /// 
+        ///
         /// <returns>true if the named zip is OK; false if the file needs to be fixed.</returns>
         ///
         /// <seealso cref="CheckZip(string)"/>
@@ -198,12 +198,12 @@ namespace Ionic.Zip
         /// <summary>
         ///   Rewrite the directory within a zipfile.
         /// </summary>
-        /// 
+        ///
         /// <remarks>
         ///
         /// <para>
         ///   In cases of data error, the directory in a zip file can get out of
-        ///   synch with the entries in the zip file.  This method attempts to fix 
+        ///   synch with the entries in the zip file.  This method attempts to fix
         ///   the zip file if this has occurred.
         /// </para>
         ///
@@ -218,7 +218,7 @@ namespace Ionic.Zip
         ///   cref="ComHelper.FixZipDirectory(String)">ComHelper.FixZipDirectory(String)</see>
         ///   method.
         /// </para>
-        /// 
+        ///
         /// </remarks>
         ///
         /// <param name="zipFileName">The filename to of the zip file to fix.</param>
@@ -248,7 +248,7 @@ namespace Ionic.Zip
         ///     entries.
         ///   </para>
         ///   <para>
-        ///     This information is mostly useful for diagnostic purposes. 
+        ///     This information is mostly useful for diagnostic purposes.
         ///   </para>
         /// </remarks>
         public string Info
@@ -273,7 +273,7 @@ namespace Ionic.Zip
                 builder.Append(string.Format("  uses ZIP64: {0}\n", this.InputUsesZip64));
 
                 builder.Append(string.Format("  disk number with CD: {0}\n", this._diskNumberWithCd));
-                foreach (ZipEntry entry in this._entries)
+                foreach (ZipEntry entry in this._entries.Values)
                 {
                     builder.Append(entry.Info);
                 }
@@ -282,7 +282,7 @@ namespace Ionic.Zip
         }
 
 
- 
+
     }
 
 }

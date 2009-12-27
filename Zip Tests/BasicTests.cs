@@ -1458,34 +1458,6 @@ namespace Ionic.Zip.Tests.Basic
 
 
 
-        [TestMethod]
-        public void Basic_Set_ZipEntry()
-        {
-            Directory.SetCurrentDirectory(TopLevelDir);
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Basic_Set_ZipEntry.zip");
-            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
-            var files = TestUtilities.GenerateFilesFlat(dirToZip);
-
-            using (ZipFile zip = new ZipFile())
-            {
-                zip.AddFiles(files);
-                zip.Save(zipFileToCreate);
-            }
-
-            int count = TestUtilities.CountEntries(zipFileToCreate);
-            Assert.IsTrue(count > 0);
-
-            using (ZipFile zip = ZipFile.Read(zipFileToCreate))
-            {
-                // this should be fine
-                zip[1] = null;
-                zip.Save();
-            }
-            Assert.AreEqual<Int32>(count, TestUtilities.CountEntries(zipFileToCreate) + 1);
-        }
-
-
-
 
         [TestMethod]
         public void Extract_IntoMemoryStream()

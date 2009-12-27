@@ -242,27 +242,6 @@ namespace Ionic.Zip.Tests.Error
 
 
         
-        [TestMethod]
-        [ExpectedException(typeof(System.InvalidOperationException))]
-        public void Error_Set_ZipEntry()
-        {
-            Directory.SetCurrentDirectory(TopLevelDir);
-            string  zipFileToCreate = Path.Combine(TopLevelDir, "Error_Set_ZipEntry.zip");
-            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
-            var files = TestUtilities.GenerateFilesFlat(dirToZip);
-
-            using (ZipFile zip = new ZipFile())
-            {
-                zip.AddFiles(files);
-                zip.Save(zipFileToCreate);
-            }
-            
-            using (ZipFile zip = ZipFile.Read(zipFileToCreate))
-            {
-                // this should throw
-                zip[1]= zip[0];
-            }
-        }
 
 
         [TestMethod]

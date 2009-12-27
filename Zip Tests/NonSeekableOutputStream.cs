@@ -2,19 +2,14 @@
 // ------------------------------------------------------------------
 //
 // Need a non-seekable output stream to test ZIP construction.
-// 
-// Author: Admin
-// built on host: DINOCH-2
-// Created Thu Jul 30 22:32:18 2009
 //
-// last saved: 
-// Time-stamp: <2009-August-01 09:50:24>
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2009 by Dino Chiesa
 // All rights reserved!
 //
 // ------------------------------------------------------------------
+
 
 using System;
 using System.IO;
@@ -26,14 +21,13 @@ namespace Ionic.Zip.Tests
     {
         protected Stream _s;
         protected bool  _disposed;
-        // ctor
+
         public NonSeekableOutputStream (Stream s) : base()
         {
             if (!s.CanWrite)
                 throw new NotSupportedException();
             _s = s;
         }
-
 
         public override int Read(byte[] buffer, int offset, int count)
         {
@@ -44,11 +38,12 @@ namespace Ionic.Zip.Tests
         {
             _s.Write(buffer, offset, count);
         }
-        
+
         public override bool CanRead
         {
             get { return false; }
         }
+
         public override bool CanSeek
         {
             get { return false; }
@@ -74,7 +69,7 @@ namespace Ionic.Zip.Tests
             get { return _s.Position; }
             set { _s.Position = value; }
         }
-        
+
         public override long Seek(long offset, System.IO.SeekOrigin origin)
         {
             throw new NotSupportedException();
@@ -84,7 +79,7 @@ namespace Ionic.Zip.Tests
         {
             _s.SetLength(value);
         }
-        
+
         protected override void Dispose(bool disposing)
         {
             try
@@ -92,7 +87,7 @@ namespace Ionic.Zip.Tests
                 if (!_disposed)
                 {
                     if (disposing && (this._s != null))
-                        this._s.Close();
+                        this._s.Dispose();
                     _disposed = true;
                 }
             }
@@ -101,6 +96,6 @@ namespace Ionic.Zip.Tests
                 base.Dispose(disposing);
             }
         }
-        
+
     }
 }
