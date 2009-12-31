@@ -1,21 +1,21 @@
 // BasicTests.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.  
+// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-November-19 11:33:26>
+// last saved (in emacs):
+// Time-stamp: <2009-December-27 10:52:48>
 //
 // ------------------------------------------------------------------
 //
@@ -43,7 +43,7 @@ namespace Ionic.Zip.Tests.Basic
     {
         EncryptionAlgorithm[] crypto =
             {
-                EncryptionAlgorithm.None, 
+                EncryptionAlgorithm.None,
                 EncryptionAlgorithm.PkzipWeak,
                 EncryptionAlgorithm.WinZipAes128,
                 EncryptionAlgorithm.WinZipAes256,
@@ -618,7 +618,7 @@ namespace Ionic.Zip.Tests.Basic
                     e.Extract("unpack");
                     string PathToExtractedFile = Path.Combine("unpack", e.FileName);
 
-                    // if it is a file.... 
+                    // if it is a file....
                     if (checksums.ContainsKey(e.FileName))
                     {
                         // verify the checksum of the file is correct
@@ -829,7 +829,7 @@ namespace Ionic.Zip.Tests.Basic
                 };
 
 
-            int[][] settings = { 
+            int[][] settings = {
                 new int[] {71, 21, 97, 27, 200, 200 },
                 new int[] {51, 171, 47, 197, 100, 100 },
             };
@@ -867,6 +867,7 @@ namespace Ionic.Zip.Tests.Basic
                     zip.AddDirectory(Path.GetFileName(DirToZip));
                     _txrx.Send("test Large # of Small Files"); // for good measure
                     zip.BufferSize = 4096;
+                    zip.SortEntriesBeforeSaving = true;
                     zip.SaveProgress += LNSF_SaveProgress;
                     zip.Save(zipFileToCreate);
                 }
@@ -1056,7 +1057,7 @@ namespace Ionic.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_AddDirectory()
         {
-            TestTrial[] trials = { 
+            TestTrial[] trials = {
                 new TestTrial { arg=null, re="^file(\\d+).ext$"},
                 new TestTrial { arg="", re="^file(\\d+).ext$"},
                 new TestTrial { arg=null, re="^file(\\d+).ext$"},
@@ -1108,7 +1109,7 @@ namespace Ionic.Zip.Tests.Basic
                         //Assert.IsFalse(e.FileName.StartsWith("dir"),
                         //       String.Format("The Zip entry '{0}' is not rooted in top level directory.", e.FileName));
 
-                        // check the filename: 
+                        // check the filename:
                         //RE.Match m0 = RE.Regex.Match(e.FileName, fnameRegex[k]);
                         // Assert.IsTrue(m0 != null, "No match");
                         // Assert.AreEqual<int>(m0.Groups.Count, 2,
@@ -1126,7 +1127,7 @@ namespace Ionic.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_AddDirectory_Nested()
         {
-            TestTrial[] trials = { 
+            TestTrial[] trials = {
                 new TestTrial { arg=null, re="^dir(\\d){3}/(file(\\d+).ext)?$"},
                 new TestTrial { arg="", re="^dir(\\d){3}/(file(\\d+).ext)?$"},
                 new TestTrial { arg=null, re="^dir(\\d){3}/(file(\\d+).ext)?$"},
@@ -1421,7 +1422,7 @@ namespace Ionic.Zip.Tests.Basic
                     repeatedLine = String.Format("This line is repeated over and over and over in file {0}", s);
                     zip2[s].Extract("extract");
 
-                    // verify the content of the updated file. 
+                    // verify the content of the updated file.
                     var sr = new StreamReader(Path.Combine("extract", s));
                     string actualLine = sr.ReadLine();
                     sr.Close();
@@ -1830,9 +1831,9 @@ namespace Ionic.Zip.Tests.Basic
             string zipFileToCreate = Path.Combine(TopLevelDir, "CreateAndExtract_SetAndVerifyAttributes.zip");
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
-            // Here, we build a list of combinations of FileAttributes to try. 
+            // Here, we build a list of combinations of FileAttributes to try.
             // We cannot simply do an exhaustic combination because (a) not all combinations are valid, and (b)
-            // if you SetAttributes(file,Compressed) (also with Encrypted, ReparsePoint) it does not "work."  So those attributes 
+            // if you SetAttributes(file,Compressed) (also with Encrypted, ReparsePoint) it does not "work."  So those attributes
             // must be excluded.
             FileAttributes[] attributeCombos = {
                 FileAttributes.ReadOnly,
@@ -1929,7 +1930,7 @@ namespace Ionic.Zip.Tests.Basic
                         || fi.Length > 10000000
                         // there are some weird files on my system that cause this test to fail!
                         // the GetLastWrite() method returns the "wrong" time - does not agree with
-                        // what is shown in Explorer or in a cmd.exe dir output.  So I exclude those 
+                        // what is shown in Explorer or in a cmd.exe dir output.  So I exclude those
                         // files here.
                         //|| filename.EndsWith(".cer")
                         //|| filename.EndsWith(".msrcincident")
@@ -1952,10 +1953,10 @@ namespace Ionic.Zip.Tests.Basic
                     var lastWrite = File.GetLastWriteTime(filename);
                     var fi = new FileInfo(filename);
 
-                    // Rounding to nearest even second was necessary when DotNetZip did 
+                    // Rounding to nearest even second was necessary when DotNetZip did
                     // not process NTFS times in the NTFS Extra field. Since v1.8.0.5, this
                     // is no longer the case.
-                    // var tm = TestUtilities.RoundToEvenSecond(lastWrite); 
+                    // var tm = TestUtilities.RoundToEvenSecond(lastWrite);
 
                     var tm = lastWrite;
                     // hop out of the try block if the file is from TODAY.  (heuristic to avoid currently open files)
@@ -2257,7 +2258,7 @@ namespace Ionic.Zip.Tests.Basic
             using (ZipFile zip = new ZipFile())
             {
                 string filename = Path.Combine(subdir, String.Format("FileToBeAdded-{0:D2}.txt", _rnd.Next(1000)));
-                TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);                    
+                TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
                 var e = zip.AddFile(filename,"zipped");
                 e.CompressionMethod = CompressionMethod.None;
                 zip.Save(zipFileToCreate);
@@ -2268,7 +2269,7 @@ namespace Ionic.Zip.Tests.Basic
 
             using (ZipFile zip = ZipFile.Read(zipFileToCreate))
             {
-                foreach (var e in  zip) 
+                foreach (var e in  zip)
                 {
                     Assert.AreEqual<String>("None", e.CompressionMethod.ToString());
                 }
@@ -2282,7 +2283,7 @@ namespace Ionic.Zip.Tests.Basic
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "GetInfo.zip");
             String filename = null;
-            int n; 
+            int n;
             string subdir = Path.Combine(TopLevelDir, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
             Directory.CreateDirectory(subdir);
 
@@ -2320,13 +2321,13 @@ namespace Ionic.Zip.Tests.Basic
                 TestContext.WriteLine("Info: (len({0}))", info.Length);
                 foreach (var line in info.Split('\n'))
                     TestContext.WriteLine(line);
-                
+
                 Assert.IsTrue(info.Length > 300, "Suspect info string (length({0}))", info.Length);
             }
         }
 
-        
-        
+
+
 
         [TestMethod]
         public void Create_WithChangeDirectory()
