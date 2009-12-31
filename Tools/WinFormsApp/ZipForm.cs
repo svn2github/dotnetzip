@@ -8,7 +8,7 @@
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
@@ -57,17 +57,17 @@ namespace Ionic.Zip.Forms
 
             this.tbExtractDir.AutoCompleteMode = AutoCompleteMode.Suggest;
             this.tbExtractDir.AutoCompleteSource = AutoCompleteSource.FileSystemDirectories;
-            
+
             this.tbZipToOpen.AutoCompleteMode = AutoCompleteMode.Suggest;
             this.tbZipToOpen.AutoCompleteSource = AutoCompleteSource.FileSystem;
-            
+
             this.tbZipToCreate.AutoCompleteMode = AutoCompleteMode.Suggest;
             this.tbZipToCreate.AutoCompleteSource = AutoCompleteSource.FileSystem;
 
             this.tbSelectionToExtract.AutoCompleteMode = AutoCompleteMode.Suggest;
             this.tbSelectionToExtract.AutoCompleteSource = AutoCompleteSource.CustomSource;
             this.tbSelectionToExtract.AutoCompleteCustomSource = _selectionCompletions;
-            
+
             this.tbSelectionToZip.AutoCompleteMode = AutoCompleteMode.Suggest;
             this.tbSelectionToZip.AutoCompleteSource = AutoCompleteSource.CustomSource;
             this.tbSelectionToZip.AutoCompleteCustomSource = _selectionCompletions;
@@ -81,7 +81,7 @@ namespace Ionic.Zip.Forms
             // System.Windows.Forms.ListView that allows editing of subitems using arbitrary
             // controls.  You can have a textbox, a datepicker, or other controls.
             // I want the user to be able to modify the directory-in-archive value in the
-            // list, which is why ListViewEx is interesting. 
+            // list, which is why ListViewEx is interesting.
 
             // I also want a checkbox associated to each list item, but I don't want the
             // checkbox attached to the first subitem, as it normally is in a ListView. So I
@@ -91,7 +91,7 @@ namespace Ionic.Zip.Forms
 
             // Next twist is I want the checkbox label to be uneditable, which is easy
             // by just installing a  listView2_BeforeLabelEdit method and always cancelling
-            // it. (e.CancelEdit = true). 
+            // it. (e.CancelEdit = true).
 
             // And then there is a "master checkbox" at the column header that indicates
             // whether the state of all checkboxes in the list is the same. With the "check
@@ -99,7 +99,7 @@ namespace Ionic.Zip.Forms
             // or unchecked.
 
             // The final thing is I want the checkbox for each item to change state only if I
-            // click on the checkbox itself, rather than "anywhere in the item row".  
+            // click on the checkbox itself, rather than "anywhere in the item row".
 
             this.listView2.SubItemClicked += new ListViewEx.SubItemEventHandler(listView2_SubItemClicked);
             this.listView2.SubItemEndEditing += new ListViewEx.SubItemEndEditingEventHandler(listView2_SubItemEndEditing);
@@ -111,7 +111,7 @@ namespace Ionic.Zip.Forms
 
 
         // This constructor works to load zips from the command line.
-        // It also works to allow "open With..." from Windows Explorer. 
+        // It also works to allow "open With..." from Windows Explorer.
         public ZipForm(string[] args)
             : this()
         {
@@ -163,7 +163,7 @@ namespace Ionic.Zip.Forms
                     comboEncryption.Items.Add(name);
             }
 
-            // select the first item: 
+            // select the first item:
             comboEncryption.SelectedIndex = 0;
             this.tbPassword.Text = "";
         }
@@ -183,11 +183,11 @@ namespace Ionic.Zip.Forms
                 }
             }
 
-            // select the first item: 
+            // select the first item:
             comboExistingFileAction.SelectedIndex = 0;
         }
 
-                
+
         private void InitEncodingsList()
         {
             List<String> _EncodingNames = new List<string>();
@@ -208,7 +208,7 @@ namespace Ionic.Zip.Forms
                 comboEncoding.Items.Add(name);
             }
 
-            // select the first item: 
+            // select the first item:
             comboEncoding.SelectedIndex = 0;
         }
 
@@ -224,7 +224,7 @@ namespace Ionic.Zip.Forms
                 }
             }
 
-            // select the 2nd item, "Default": 
+            // select the 2nd item, "Default":
             comboCompression.SelectedIndex = 2;
         }
 
@@ -233,7 +233,7 @@ namespace Ionic.Zip.Forms
             this.comboFlavor.Items.Add("traditional Zip");
             this.comboFlavor.Items.Add("Self-extractor (GUI)");
             this.comboFlavor.Items.Add("Self-extractor (CMD)");
-            // select the first item: 
+            // select the first item:
             comboFlavor.SelectedIndex = 0;
         }
 
@@ -246,7 +246,7 @@ namespace Ionic.Zip.Forms
                 comboZip64.Items.Add(name);
             }
 
-            // select the first item: 
+            // select the first item:
             comboZip64.SelectedIndex = 0;
         }
 
@@ -306,7 +306,7 @@ namespace Ionic.Zip.Forms
                     WindowsTimes = this.chkWindowsTime.Checked,
                     UnixTimes = this.chkUnixTime.Checked,
                     RemoveFilesAfterExe = this.chkRemoveFiles.Checked,
-                    ExtractExistingFile = this.comboExistingFileAction.SelectedIndex,                    
+                    ExtractExistingFile = this.comboExistingFileAction.SelectedIndex,
                     };
 
             if (this.comboEncoding.SelectedIndex != 0)
@@ -314,7 +314,7 @@ namespace Ionic.Zip.Forms
 
             options.Encryption = (EncryptionAlgorithm)Enum.Parse(typeof(EncryptionAlgorithm),
                                                                  this.comboEncryption.SelectedItem.ToString());
-            
+
             options.CompressionLevel = (Ionic.Zlib.CompressionLevel)Enum.Parse(typeof(Ionic.Zlib.CompressionLevel),
                                                                                this.comboCompression.SelectedItem.ToString());
 
@@ -327,16 +327,16 @@ namespace Ionic.Zip.Forms
                     options.MaxSegmentSize = Int32.Parse(arg.Substring(0,arg.Length-1)) * 1024;
                 else if (arg.EndsWith("M") || arg.EndsWith("m"))
                     options.MaxSegmentSize = Int32.Parse(arg.Substring(0,arg.Length-1)) * 1024 * 1024;
-                else                    
+                else
                     options.MaxSegmentSize = Int32.Parse(arg);
-            } 
+            }
             catch
             {
                 // just reset to "none"
                 this.comboSplit.SelectedIndex = 0;
                 options.MaxSegmentSize = 0;
             }
-            
+
             options.Zip64 = (Zip64Option)Enum.Parse(typeof(Zip64Option),
                                                     this.comboZip64.SelectedItem.ToString());
 
@@ -367,7 +367,7 @@ namespace Ionic.Zip.Forms
 
             if (this.tbExeOnUnpack.Text != TB_EXE_ON_UNPACK_NOTE)
                 options.ExeOnUnpack = this.tbExeOnUnpack.Text;
-            
+
             if (this.tbDefaultExtractDirectory.Text != TB_EXTRACT_DIR_NOTE)
                 options.ExtractDirectory = this.tbDefaultExtractDirectory.Text;
 
@@ -466,7 +466,7 @@ namespace Ionic.Zip.Forms
             }
         }
 
-        
+
         private bool _firstFocusInExeTextBox = true;
         private void tbExeOnUnpack_Enter(object sender, EventArgs e)
         {
@@ -499,7 +499,7 @@ namespace Ionic.Zip.Forms
             }
         }
 
-        
+
         private void tbExeOnUnpack_TextChanged(object sender, EventArgs e)
         {
             if (this.tbExeOnUnpack.Text != TB_EXE_ON_UNPACK_NOTE && this.tbExeOnUnpack.Text != "")
@@ -514,8 +514,8 @@ namespace Ionic.Zip.Forms
             }
         }
 
-        
-        
+
+
         private void SetProgressBars()
         {
             if (this.progressBar1.InvokeRequired)
@@ -556,7 +556,7 @@ namespace Ionic.Zip.Forms
                     {
                         var e = zip1.AddItem(item.LocalFileName, item.DirectoryInArchive);
                         // use a different name in the archive if appropriate
-                        if (!String.IsNullOrEmpty(item.FileNameInArchive) && item.FileNameInArchive != System.IO.Path.GetFileName(item.LocalFileName)) 
+                        if (!String.IsNullOrEmpty(item.FileNameInArchive) && item.FileNameInArchive != System.IO.Path.GetFileName(item.LocalFileName))
                             e.FileName = item.FileNameInArchive;
                     }
 
@@ -677,7 +677,7 @@ namespace Ionic.Zip.Forms
 
 #if NOT_SPEEDY
                         // Sleep here just to show the progress bar, when the number of files is small,
-                        // or when all done. 
+                        // or when all done.
                         // You may not want this for actual use!
                         if (this.progressBar2.Value == this.progressBar2.Maximum)
                             Thread.Sleep(350);
@@ -766,12 +766,28 @@ namespace Ionic.Zip.Forms
         {
             var dlg1 = new SaveFileDialog
             {
-                FileName = System.IO.Path.GetFileName(this.tbZipToCreate.Text),
-                InitialDirectory = System.IO.Path.GetDirectoryName(this.tbZipToCreate.Text),
                 OverwritePrompt = false,
                 Title = "Where would you like to save the generated Zip file?",
                 Filter = "ZIP files|*.zip",
             };
+
+            try
+            {
+                dlg1.FileName = System.IO.Path.GetFileName(this.tbZipToCreate.Text);
+            }
+            catch
+            {
+                dlg1.FileName = "";
+            }
+
+            try
+            {
+                dlg1.InitialDirectory = System.IO.Path.GetDirectoryName(this.tbZipToCreate.Text);
+            }
+            catch
+            {
+                dlg1.InitialDirectory = "";
+            }
 
             var result = dlg1.ShowDialog();
             if (result == DialogResult.OK)
@@ -783,8 +799,8 @@ namespace Ionic.Zip.Forms
 
         private void btnZipup_Click(object sender, EventArgs e)
         {
-            // Do not start zipping while editing a textbox 
-            // in listView2. 
+            // Do not start zipping while editing a textbox
+            // in listView2.
             if (!textBox1.Visible)
                 KickoffZipup();
         }
@@ -820,8 +836,8 @@ namespace Ionic.Zip.Forms
                 this.tbDefaultExtractDirectory.Enabled = true;
                 this.label16.Enabled = true;
                 this.tbExeOnUnpack.Enabled = true;
-                
-                this.label18.Enabled = true; 
+
+                this.label18.Enabled = true;
                 this.chkRemoveFiles.Enabled = true;
 
             }
@@ -846,7 +862,7 @@ namespace Ionic.Zip.Forms
             }
         }
 
-        
+
         private void comboEncryption_SelectedIndexChanged(object sender, EventArgs e)
         {
             //this.tbPassword.Enabled = (this.comboBox3.SelectedItem.ToString() != "None");
@@ -856,7 +872,7 @@ namespace Ionic.Zip.Forms
                 this.tbPassword.Enabled = false;
                 this.chkHidePassword.Enabled = false;
             }
-            else 
+            else
             {
                 this.label9.Enabled = true;
                 this.tbPassword.Enabled = true;
@@ -973,12 +989,12 @@ namespace Ionic.Zip.Forms
                         ch.TextAlign = HorizontalAlignment.Right;
                     listView1.Columns.Add(ch);
                 }
-                
+
                 int n = 1;
                 System.Text.Encoding encoding = (comboEncoding.SelectedIndex > 0)
                     ? System.Text.Encoding.GetEncoding(comboEncoding.SelectedItem.ToString())
                     : System.Text.Encoding.GetEncoding("IBM437");
-                    
+
                 using (ZipFile zip = ZipFile.Read(zipFile, encoding))
                 {
                     foreach (ZipEntry entry in zip.EntriesSorted)
@@ -1144,7 +1160,7 @@ namespace Ionic.Zip.Forms
                 if (!_selectionCompletions.Contains(this.tbSelectionToZip.Text))
                 {
                     if (_selectionCompletions.Count >= _MaxMruListSize)
-                        _selectionCompletions.RemoveAt(0); 
+                        _selectionCompletions.RemoveAt(0);
                     _selectionCompletions.Add(this.tbSelectionToZip.Text);
                 }
             }
@@ -1218,7 +1234,7 @@ namespace Ionic.Zip.Forms
                                     currentPassword = t;
                                 }
 
-                                if (currentPassword == null) // cancel all 
+                                if (currentPassword == null) // cancel all
                                 {
                                     _setCancel = true;
                                     currentPassword = "";
@@ -1296,7 +1312,7 @@ namespace Ionic.Zip.Forms
             PasswordDialog dlg1 = new PasswordDialog();
             dlg1.EntryName = entryName;
 
-            // ask for password in a loop until user enters a proper one, 
+            // ask for password in a loop until user enters a proper one,
             // or clicks skip or cancel.
             bool done = false;
             do
@@ -1319,8 +1335,8 @@ namespace Ionic.Zip.Forms
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Recycle the progress bars the cancel button, and the status textbox.  
-            // An alternative way to accomplish a similar thing is to visually place 
+            // Recycle the progress bars the cancel button, and the status textbox.
+            // An alternative way to accomplish a similar thing is to visually place
             // the progress bars OFF the tabs.
             if (this.tabControl1.SelectedIndex == 0)
             {
@@ -1341,7 +1357,7 @@ namespace Ionic.Zip.Forms
                     this.tabPage1.Controls.Add(this.progressBar2);
                 if (!this.tabPage1.Controls.Contains(this.btnCancel))
                     this.tabPage1.Controls.Add(this.btnCancel);
-                
+
                 // swap the comboBox for Encoding to the selected panel
                     if (groupBox2.Controls.Contains(comboEncoding))
                     {
@@ -1351,7 +1367,7 @@ namespace Ionic.Zip.Forms
                         this.comboEncoding.Location = new System.Drawing.Point(xpos, this.tbZipToOpen.Location.Y + this.comboEncoding.Height + 4);
                     }
             this.toolTip1.SetToolTip(this.comboEncoding, "use this encoding to read the file");
-                
+
             }
             else if (this.tabControl1.SelectedIndex == 1)
             {
@@ -1372,7 +1388,7 @@ namespace Ionic.Zip.Forms
                     this.tabPage2.Controls.Add(this.progressBar2);
                 if (!this.tabPage2.Controls.Contains(this.btnCancel))
                     this.tabPage2.Controls.Add(this.btnCancel);
-                
+
                 // swap the comboBox for Encoding to the selected panel
                     if (tabPage1.Controls.Contains(comboEncoding))
                     {
@@ -1456,7 +1472,7 @@ namespace Ionic.Zip.Forms
             {
                 // select the page that opens zip files.
                 this.tabControl1.SelectedIndex = 0;
-                //this.tabPage1.Select(); 
+                //this.tabPage1.Select();
                 this.tbZipToOpen.Text = _initialFileToLoad;
                 btnOpen_Click(null, null);
             }
@@ -1497,8 +1513,8 @@ namespace Ionic.Zip.Forms
 
                 // The data is an array of file paths.
                 // If it is a single file and ends in .zip, then we know how to open it
-                // and display the contents. 
-                // If it is more than one file, then we don't know what to do with it. 
+                // and display the contents.
+                // If it is more than one file, then we don't know what to do with it.
                 if (filePaths.Length == 1)
                 {
                     DisplayZipFile(filePaths[0]);
@@ -1529,7 +1545,7 @@ namespace Ionic.Zip.Forms
                     subitem = new ListViewItem.ListViewSubItem();
                     //subitem.Text = String.IsNullOrEmpty(_lastDirectory) ? this.tbDirectoryInArchive.Text : _lastDirectory;
                     subitem.Text = String.IsNullOrEmpty(_lastDirectory)
-                        ? System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(f)) 
+                        ? System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(f))
                         : _lastDirectory;
                     item.SubItems.Add(subitem);
 
@@ -1549,8 +1565,8 @@ namespace Ionic.Zip.Forms
         {
             //this.AcceptButton = null;
 
-            // Prevent editing the 0th column - it's the checkbox.  We want the checkbox 
-            // label to remain "". 
+            // Prevent editing the 0th column - it's the checkbox.  We want the checkbox
+            // label to remain "".
             if (e.SubItem == 0) return;
 
             this.listView2.StartEditing(this.textBox1, e.Item, e.SubItem);
@@ -1585,7 +1601,7 @@ namespace Ionic.Zip.Forms
             int nAdded = 0;
             PauseUI(null);
             try
-            {  
+            {
                 // do file selection, add each item into the list box
                 var fs = new global::Ionic.FileSelector(this.tbSelectionToZip.Text,this.chkTraverseJunctions.Checked);
                 var files = fs.SelectFiles(this.tbDirectoryToZip.Text, this.chkRecurse.Checked);
@@ -1622,10 +1638,10 @@ namespace Ionic.Zip.Forms
                 if (!_selectionCompletions.Contains(this.tbSelectionToZip.Text))
                 {
                     if (_selectionCompletions.Count >= _MaxMruListSize)
-                        _selectionCompletions.RemoveAt(0); 
+                        _selectionCompletions.RemoveAt(0);
                     _selectionCompletions.Add(this.tbSelectionToZip.Text);
                 }
-                
+
             }
             catch
             { }
@@ -1648,7 +1664,7 @@ namespace Ionic.Zip.Forms
 
             // After removing all the checked items, all items  are now unchecked.
             // We can set the mast checkbox to unchecked.  But, we have to protect
-            // against infinite recursion. 
+            // against infinite recursion.
             _disableMasterChecking = true;
             this.checkBox1.Checked = false;
             _disableMasterChecking = false;
@@ -1662,7 +1678,7 @@ namespace Ionic.Zip.Forms
         bool _disableMasterChecking = false;
         private void checkBox1_CheckedChanged_1(object sender, EventArgs e)
         {
-            // prevent infinite recursion. 
+            // prevent infinite recursion.
             if (_disableMasterChecking) return;
 
             // if we have a mixed state, then it happened programmatically
@@ -1691,7 +1707,7 @@ namespace Ionic.Zip.Forms
             int ix = this.listView2.GetSubItemAt(p.X, p.Y, out lvi);
 
             // lvi is null when the checkchange comes from a non-mouse event, like when
-            // a new item is being added to the list.  
+            // a new item is being added to the list.
             if (lvi == null) return;
 
             // ix is 0 when the checkbox is the thing that was tickled with the mouse.
@@ -1735,7 +1751,7 @@ namespace Ionic.Zip.Forms
         private void listView2_BeforeLabelEdit(object sender, LabelEditEventArgs e)
         {
             // never let the use edit the label associated to the main listview item,
-            // the label on the item checkbox.  
+            // the label on the item checkbox.
             e.CancelEdit = true;
         }
 
@@ -1756,7 +1772,7 @@ namespace Ionic.Zip.Forms
         private string _lastDirectory;
     }
 
-    
+
 
     // The ColHeader class is a ColumnHeader object with an
     // added property for determining an ascending or descending sort.
@@ -1861,7 +1877,7 @@ namespace Ionic.Zip.Forms
         public bool OpenExplorer;
         public String Selection;
     }
-    
+
     public class SaveWorkerOptions
     {
         public string ZipName;
@@ -1894,11 +1910,11 @@ namespace Ionic.Zip.Forms
 
     internal class HiResTimer
     {
-        // usage: 
-        // 
+        // usage:
+        //
         //  hrt= new HiResTimer();
         //  hrt.Start();
-        //     ... do work ... 
+        //     ... do work ...
         //  hrt.Stop();
         //  System.Console.WriteLine("elapsed time: {0:N4}", hrt.Seconds);
         //
