@@ -768,8 +768,8 @@ namespace Ionic.Zip.Tests.Update
                     // add this file to the list
                     FilesToRemove.Add(filename);
 
-                    // use the indexer to remove the file from the zip archive
-                    zip2[filename] = null;
+                    // remove the file from the zip archive
+                    zip2.RemoveEntry(filename) ;
                 }
 
                 zip2.Comment = "This archive has been modified. Some files have been removed.";
@@ -1999,70 +1999,6 @@ namespace Ionic.Zip.Tests.Update
                 z.Comment = "UpdateTests::UpdateZip_AddFile_ExistingFile_Error(): This archive has been updated.";
                 z.Save();
             }
-        }
-
-
-        [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void UpdateZip_SetIndexer_Error()
-        {
-            // select the name of the zip file
-            string zipFileToCreate = Path.Combine(TopLevelDir, "UpdateZip_SetIndexer_Error.zip");
-
-            // create the subdirectory
-            string Subdir = Path.Combine(TopLevelDir, "A");
-            Directory.CreateDirectory(Subdir);
-
-            // create the files
-            int fileCount = _rnd.Next(13) + 24;
-
-            string filename = null;
-            int entriesToBeAdded = 0;
-            for (int j = 0; j < fileCount; j++)
-            {
-                filename = Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
-                TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
-                entriesToBeAdded++;
-            }
-
-            // Add the files to the zip, save the zip
-            Directory.SetCurrentDirectory(TopLevelDir);
-            using (ZipFile zip1 = new ZipFile())
-            {
-                String[] filenames = Directory.GetFiles("A");
-                zip1.Password = "Wheeee!!";
-                foreach (String f in filenames)
-                    zip1.AddFile(f, "");
-
-                zip1.Comment = "UpdateTests::UpdateZip_SetIndexer_Error(): This archive will be updated.";
-                zip1.Save(zipFileToCreate);
-            }
-
-            // Verify the files are in the zip
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), entriesToBeAdded,
-                "The Zip file has the wrong number of entries.");
-
-            // selectively remove a few files in the zip archive
-            int Threshold = _rnd.Next(fileCount - 1) + 1;
-            int numRemoved = 0;
-            using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
-            {
-                var AllFileNames = zip2.EntryFileNames;
-                foreach (String s in AllFileNames)
-                {
-                    int fileNum = Int32.Parse(s.Substring(4, 3));
-                    if (fileNum < Threshold)
-                    {
-                        // try setting the indexer to a non-null value
-                        // THIS SHOULD FAIL.
-                        zip2[s] = zip2[2];
-                        numRemoved++;
-                    }
-                }
-                zip2.Comment = "UpdateTests::UpdateZip_SetIndexer_Error(): This archive has been updated.";
-                zip2.Save();
-            }
-
         }
 
     }

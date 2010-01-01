@@ -687,13 +687,6 @@ namespace Ionic.Zip
         public bool ContainsEntry(string name)
         {
             return _entries.ContainsKey(name);
-
-//             foreach (var e in _entries)
-//             {
-//                 if (e.FileName == name)
-//                     return true;
-//             }
-//             return false;
         }
 
 
@@ -713,8 +706,20 @@ namespace Ionic.Zip
         /// </remarks>
         public bool CaseSensitiveRetrieval
         {
-            get { return _CaseSensitiveRetrieval; }
-            set { _CaseSensitiveRetrieval = value; }
+            get
+            {
+                return _CaseSensitiveRetrieval;
+            }
+
+            set
+            {
+                // workitem 9868
+                if (value != _CaseSensitiveRetrieval)
+                {
+                    _CaseSensitiveRetrieval = value;
+                    _initEntriesDictionary();
+                }
+            }
         }
 
 
@@ -2517,6 +2522,17 @@ namespace Ionic.Zip
         }
 
 
+
+        private void _initEntriesDictionary()
+        {
+            // workitem 9868
+            StringComparer sc = (CaseSensitiveRetrieval) ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
+            _entries = (_entries == null)
+                ? new Dictionary<String,ZipEntry>(sc)
+                : new Dictionary<String,ZipEntry>(_entries, sc);
+        }
+
+
         private void _InitInstance(string zipFileName, TextWriter statusMessageWriter)
         {
             // create a new zipfile
@@ -2528,9 +2544,9 @@ namespace Ionic.Zip
 #if !NETCF
             ParallelDeflateThreshold = 512 * 1024;
 #endif
-            // workitem 7685
-            //            _entries = new System.Collections.Generic.List<ZipEntry>();
-            _entries = new Dictionary<String,ZipEntry>();
+            // workitem 7685, 9868
+            _initEntriesDictionary();
+
             if (File.Exists(_name))
             {
                 if (FullScan)
@@ -2610,36 +2626,37 @@ namespace Ionic.Zip
         ///
         /// <remarks>
         /// <para>
-        ///   Retrieval by the string-based indexer is done on a case-insensitive basis,
-        ///   by default.  Set the <see cref="CaseSensitiveRetrieval"/> property to use
-        ///   case-sensitive comparisons.
+        ///   This property is read-only.
         /// </para>
         ///
         /// <para>
-        ///   This property is read-write. When setting the value, the only legal value
-        ///   is <c>null</c> (<c>Nothing</c> in VB). Setting the value to <c>null</c> is
-        ///   equivalent to calling <see cref="ZipFile.RemoveEntry(String)"/> with the
-        ///   filename.
+        ///   The <see cref="CaseSensitiveRetrieval"/> property on the <c>ZipFile</c>
+        ///   determines whether retrieval via this indexer is done via case-sensitive
+        ///   comparisons. By default, retrieval is not case sensitive.  This makes
+        ///   sense on Windows, in which filesystems are not case sensitive.
         /// </para>
         ///
         /// <para>
-        ///   If you assign a non-null value, the setter will throw an exception.
+        ///   Regardless of case-sensitivity, it is not always the case that
+        ///   <c>this[value].FileName == value</c>. In other words, the <c>FileName</c>
+        ///   property of the <c>ZipEntry</c> retrieved with this indexer, may or may
+        ///   not be equal to the index value.
         /// </para>
         ///
         /// <para>
-        ///   It is can be true that <c>this[value].FileName == value</c>, but not
-        ///   always. In other words, the <c>FileName</c> property of the
-        ///   <c>ZipEntry</c> you retrieve with this indexer, can be equal to the index
-        ///   value, but not always.  In the case of directory entries in the archive,
-        ///   you may retrieve them with the name of the directory with no trailing
-        ///   slash, even though in the entry itself, the actual <see
-        ///   cref="ZipEntry.FileName"/> property may include a trailing slash.  In
-        ///   other words, for a directory entry named "dir1", you may find
-        ///   <c>zip["dir1"].FileName == "dir1/"</c>. Also, for any entry with slashes,
-        ///   they are stored in the zip file as forward slashes, but you may retrieve
-        ///   them with either forward or backslashes.  So,
-        ///   <c>zip["dir1\\entry1.txt"].FileName == "dir1/entry.txt"</c>.
+        ///   This is because DotNetZip performs a normalization of filenames passed to
+        ///   this indexer, before attempting to retrieve the item.  That normalization
+        ///   includes: removal of a volume letter and colon, swapping backward slashes
+        ///   for forward slashes.  So, <c>zip["dir1\\entry1.txt"].FileName ==
+        ///   "dir1/entry.txt"</c>.
         /// </para>
+        ///
+        /// <para>
+        ///   Directory entries in the zip file may be retrieved via this indexer only
+        ///   with names that have a trailing slash. DotNetZip automatically appends a
+        ///   trailing slash to the names of any directory entries added to a zip.
+        /// </para>
+        ///
         /// </remarks>
         ///
         /// <example>
@@ -2688,6 +2705,14 @@ namespace Ionic.Zip
         {
             get
             {
+                var key = SharedUtilities.NormalizePathForUseInZipFile(fileName);
+                if (_entries.ContainsKey(key))
+                    return _entries[key];
+                else return null;
+
+
+#if MESSY
+
                 foreach (ZipEntry e in _entries.Values)
                 {
                     if (this.CaseSensitiveRetrieval)
@@ -2733,13 +2758,8 @@ namespace Ionic.Zip
 
                 }
                 return null;
-            }
 
-            set
-            {
-                if (value != null)
-                    throw new ArgumentException("You may not set this to a non-null ZipEntry value.");
-                RemoveEntry(fileName);
+#endif
             }
         }
 
@@ -2992,7 +3012,7 @@ namespace Ionic.Zip
             //if (!_entries.Values.Contains(entry))
             //    throw new ArgumentException("The entry you specified does not exist in the zip archive.");
 
-            _entries.Remove(SharedUtilities.TrimVolumeAndSwapSlashes(entry.FileName));
+            _entries.Remove(SharedUtilities.NormalizePathForUseInZipFile(entry.FileName));
             _zipEntriesAsList = null;
 
 #if NOTNEEDED

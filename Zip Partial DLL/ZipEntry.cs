@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2009-December-26 20:07:27>
+// Time-stamp: <2009-December-31 20:17:34>
 //
 // ------------------------------------------------------------------
 //
@@ -53,7 +53,7 @@ namespace Ionic.Zip
         /// </remarks>
         public ZipEntry()
         {
-            _CompressionMethod = (Int16) CompressionMethod.Deflate;
+            _CompressionMethod = (Int16)CompressionMethod.Deflate;
         }
 
         /// <summary>
@@ -767,20 +767,28 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// The name of the filesystem file, referred to by the ZipEntry.
+        ///   The name of the filesystem file, referred to by the ZipEntry.
         /// </summary>
         ///
         /// <remarks>
-        /// <para>
-        /// This may be different than the path used in the archive itself. What I mean is,
-        /// if you call <c>Zip.AddFile("fooo.txt", AlternativeDirectory)</c>, then the
-        /// path used for the <c>ZipEntry</c> within the zip archive will be different than this path.
-        /// This path is used to locate the thing-to-be-zipped on disk.
-        /// </para>
+        ///  <para>
+        ///    This property specifies the thing-to-be-zipped on disk, and is set only
+        ///    when the <c>ZipEntry</c> is being created from a filesystem file.  If the
+        ///    <c>ZipFile</c> is instantiated by reading an existing .zip archive, then
+        ///    the LocalFileName will be <c>null</c> (<c>Nothing</c> in VB).
+        ///  </para>
         ///
-        /// <para>
-        /// If the entry is being added from a stream, then this is null (Nothing in VB).
-        /// </para>
+        ///  <para>
+        ///    When it is set, the value of this property may be different than <see
+        ///    cref="FileName"/>, which is the path used in the archive itself.  If you
+        ///    call <c>Zip.AddFile("foop.txt", AlternativeDirectory)</c>, then the path
+        ///    used for the <c>ZipEntry</c> within the zip archive will be different
+        ///    than this path.
+        ///  </para>
+        ///
+        ///  <para>
+        ///   If the entry is being added from a stream, then this is null (Nothing in VB).
+        ///  </para>
         ///
         /// </remarks>
         /// <seealso cref="FileName"/>
@@ -860,6 +868,9 @@ namespace Ionic.Zip
             get { return _FileNameInArchive; }
             set
             {
+                if (_container.ZipFile == null)
+                    throw new ZipException("Cannot rename ZipEntry; not supported in ZipOutputStream/ZipInputStream.");
+
                 // rename the entry!
                 if (String.IsNullOrEmpty(value)) throw new ZipException("The FileName must be non empty and non-null.");
 
@@ -867,20 +878,12 @@ namespace Ionic.Zip
                 // workitem 8180
                 if (_FileNameInArchive == filename) return; // nothing to do
 
-                // workitem 8047 - renaming to a name that already exists
-                if (_container.ZipFile != null)
-                {
-                    this._container.ZipFile.RemoveEntry(this);
-                    this._container.ZipFile.InternalAddEntry(filename, this);
-                }
-                else if (this._container.ContainsEntry(filename))
-                {
-                    throw new ZipException(String.Format("Cannot rename {0} to {1}; an entry by that name already exists in the archive.", _FileNameInArchive, filename));
-
-                }
+                // workitem 8047 - when renaming, must remove old and then add a new entry
+                this._container.ZipFile.RemoveEntry(this);
+                this._container.ZipFile.InternalAddEntry(filename, this);
 
                 _FileNameInArchive = filename;
-                if (_container.ZipFile != null) _container.ZipFile.NotifyEntryChanged();
+                _container.ZipFile.NotifyEntryChanged();
                 _metadataChanged = true;
             }
         }
@@ -1375,9 +1378,9 @@ namespace Ionic.Zip
                 if (this._Source == ZipEntrySource.ZipFile && _sourceIsEncrypted)
                     throw new InvalidOperationException("Cannot change compression method on encrypted entries read from archives.");
 
-                _CompressionMethod = (Int16) value;
+                _CompressionMethod = (Int16)value;
 
-                if (_CompressionMethod == (Int16) Ionic.Zip.CompressionMethod.None)
+                if (_CompressionMethod == (Int16)Ionic.Zip.CompressionMethod.None)
                     CompressionLevel = Ionic.Zlib.CompressionLevel.None;
                 else
                     CompressionLevel = Ionic.Zlib.CompressionLevel.Default;
@@ -2149,11 +2152,6 @@ namespace Ionic.Zip
             {
                 if (String.IsNullOrEmpty(directoryPathInArchive))
                 {
-                    //if (filename.EndsWith("\\"))
-                    //{
-                    //    result = Path.GetFileName(filename.Substring(0, filename.Length - 1));
-                    //}
-                    //else
                     result = Path.GetFileName(filename);
                 }
                 else
@@ -2163,10 +2161,8 @@ namespace Ionic.Zip
                 }
             }
 
-            result = SharedUtilities.TrimVolumeAndSwapSlashes(result);
-            result = SharedUtilities.NormalizeFwdSlashPath(result);
-
-            while (result.StartsWith("/")) result = result.Substring(1);
+            //result = Path.GetFullPath(result);
+            result = SharedUtilities.NormalizePathForUseInZipFile(result);
 
             return result;
         }
@@ -2280,8 +2276,7 @@ namespace Ionic.Zip
             }
 
             entry._LastModified = entry._Mtime;
-            entry._FileNameInArchive = nameInArchive.Replace('\\', '/');
-
+            entry._FileNameInArchive = SharedUtilities.NormalizePathForUseInZipFile(nameInArchive);
             // We don't actually slurp in the file data until the caller invokes Write on this entry.
 
             return entry;

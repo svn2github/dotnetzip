@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2009-December-27 01:04:23>
+// Time-stamp: <2009-December-31 19:22:52>
 //
 // ------------------------------------------------------------------
 //
@@ -95,6 +95,7 @@ namespace Ionic.Zip
         }
 #endif
 
+#if YOU_LIKE_REDUNDANT_CODE
         internal static string NormalizePath(string path)
         {
             // remove leading single dot slash
@@ -108,30 +109,44 @@ namespace Ionic.Zip
             path = re.Replace(path, "$1$3");
             return path;
         }
+#endif
 
-        internal static string NormalizeFwdSlashPath(string path)
+        private static string SimplifyFwdSlashPath(string path)
         {
             if (path.StartsWith("./")) path = path.Substring(2);
             path = path.Replace("/./", "/");
-            var re = new System.Text.RegularExpressions.Regex(@"^(.*/)b?([^/\\.]+/\\.\\./)(.+)$");
+            // Replace foo/anything/../bar with foo/bar
+            var re = new System.Text.RegularExpressions.Regex(@"^(.*/)?([^/\\.]+/\\.\\./)(.+)$");
             path = re.Replace(path, "$1$3");
             return path;
         }
 
+
         /// <summary>
-        /// Utility routine for transforming path names.
+        /// Utility routine for transforming path names from filesystem format (on Windows that means backslashes) to
+        /// a format suitable for use within zipfiles. This means trimming the volume letter and colon (if any) And
+        /// swapping backslashes for forward slashes.
         /// </summary>
         /// <param name="pathName">source path.</param>
         /// <returns>transformed path</returns>
-        public static string TrimVolumeAndSwapSlashes(string pathName)
+        public static string NormalizePathForUseInZipFile(string pathName)
         {
-            //return (((pathname[1] == ':') && (pathname[2] == '\\')) ? pathname.Substring(3) : pathname)
-            //    .Replace('\\', '/');
+            // boundary case
             if (String.IsNullOrEmpty(pathName)) return pathName;
-            if (pathName.Length < 2) return pathName.Replace('\\', '/');
-            return (((pathName[1] == ':') && (pathName[2] == '\\')) ? pathName.Substring(3) : pathName)
-                .Replace('\\', '/');
+
+            // trim volume if necessary
+            if ((pathName.Length >= 2)  && ((pathName[1] == ':') && (pathName[2] == '\\')))
+                pathName =  pathName.Substring(3);
+
+            // swap slashes
+            pathName = pathName.Replace('\\', '/');
+
+            // trim all leading slashes
+            while (pathName.StartsWith("/")) pathName = pathName.Substring(1);
+
+            return SimplifyFwdSlashPath(pathName);
         }
+
 
         static System.Text.Encoding ibm437 = System.Text.Encoding.GetEncoding("IBM437");
         static System.Text.Encoding utf8 = System.Text.Encoding.GetEncoding("UTF-8");

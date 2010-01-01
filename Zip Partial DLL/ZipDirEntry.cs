@@ -181,11 +181,11 @@ namespace Ionic.Zip
             if ((zde._BitField & 0x0800) == 0x0800)
             {
                 // UTF-8 is in use
-                zde._LocalFileName = Ionic.Zip.SharedUtilities.Utf8StringFromBuffer(block);
+                zde._FileNameInArchive = Ionic.Zip.SharedUtilities.Utf8StringFromBuffer(block);
             }
             else
             {
-                zde._LocalFileName = Ionic.Zip.SharedUtilities.StringFromBuffer(block, expectedEncoding);
+                zde._FileNameInArchive = Ionic.Zip.SharedUtilities.StringFromBuffer(block, expectedEncoding);
             }
 
             // Console.WriteLine("\nEntry : {0}", zde._LocalFileName);
@@ -195,12 +195,11 @@ namespace Ionic.Zip
             // Console.WriteLine("  CRC:                  0x{0:X8}", zde._Crc32);
             // Console.WriteLine("  Comp / Uncomp:        0x{0:X8} ({0})   0x{1:X8} ({1})", zde._CompressedSize, zde._UncompressedSize);
             
-            zde._FileNameInArchive = zde._LocalFileName;
+            //zde._FileNameInArchive = zde._LocalFileName;
 
             if (zde.AttributesIndicateDirectory) zde.MarkAsDirectory();  // may append a slash to filename if nec.
-
             // workitem 6898
-            if (zde._LocalFileName.EndsWith("/")) zde.MarkAsDirectory();
+            else if (zde._FileNameInArchive.EndsWith("/")) zde.MarkAsDirectory();
 
             zde._CompressedFileDataSize = zde._CompressedSize;
             if ((zde._BitField & 0x01) == 0x01)

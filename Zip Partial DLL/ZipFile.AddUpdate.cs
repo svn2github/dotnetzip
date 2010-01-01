@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2009-December-26 20:08:10>
+// Time-stamp: <2009-December-31 17:43:44>
 //
 // ------------------------------------------------------------------
 //
@@ -659,7 +659,8 @@ namespace Ionic.Zip
                 {
                     if (directoryPathInArchive != null)
                     {
-                        string s = SharedUtilities.NormalizePath(Path.Combine(directoryPathInArchive, Path.GetDirectoryName(f)));
+                        //string s = SharedUtilities.NormalizePath(Path.Combine(directoryPathInArchive, Path.GetDirectoryName(f)));
+                        string s = Path.GetFullPath(Path.Combine(directoryPathInArchive, Path.GetDirectoryName(f)));
                         this.AddFile(f, s);
                     }
                     else
@@ -1490,6 +1491,7 @@ namespace Ionic.Zip
 
         private ZipEntry _InternalAddEntry(ZipEntry ze)
         {
+            // stamp all the props onto the entry
             ze.CompressionLevel = CompressionLevel;
             ze.ExtractExistingFile = ExtractExistingFile;
             ze.ZipErrorAction = this.ZipErrorAction;
@@ -1500,8 +1502,8 @@ namespace Ionic.Zip
             ze.Encryption = Encryption;
             ze.EmitTimesInWindowsFormatWhenSaving = _emitNtfsTimes;
             ze.EmitTimesInUnixFormatWhenSaving = _emitUnixTimes;
-            string key = InsureUniqueEntry(ze);
-            InternalAddEntry(key,ze);
+            //string key = DictionaryKeyForEntry(ze);
+            InternalAddEntry(ze.FileName,ze);
             AfterAddEntry(ze);
             return ze;
         }
@@ -1701,20 +1703,12 @@ namespace Ionic.Zip
         }
 
 
-        private string InsureUniqueEntry(ZipEntry ze1)
-        {
-            var filename = SharedUtilities.TrimVolumeAndSwapSlashes(ze1.FileName);
-            //if (_entries.ContainsKey(filename))
-            //throw new ArgumentException(String.Format("The entry '{0}' already exists in the zip archive.", ze1.FileName));
+//         private string DictionaryKeyForEntry(ZipEntry ze1)
+//         {
+//             var filename = SharedUtilities.NormalizePathForUseInZipFile(ze1.FileName);
+//             return filename;
+//         }
 
-            return filename;
-
-//             foreach (ZipEntry ze2 in _entries)
-//             {
-//                 if (u == ze2.FileName)
-//                     throw new ArgumentException(String.Format("The entry '{0}' already exists in the zip archive.", ze1.FileName));
-//             }
-        }
 
         /// <summary>
         ///   Adds the contents of a filesystem directory to a Zip file archive.
@@ -1872,8 +1866,8 @@ namespace Ionic.Zip
             dir.EmitTimesInUnixFormatWhenSaving = _emitUnixTimes;
             dir._Source = ZipEntrySource.Stream;
             dir._container = new ZipContainer(this);
-            string key = InsureUniqueEntry(dir);
-            InternalAddEntry(key,dir);
+            //string key = DictionaryKeyForEntry(dir);
+            InternalAddEntry(dir.FileName,dir);
             AfterAddEntry(dir);
             return dir;
         }
@@ -1931,11 +1925,8 @@ namespace Ionic.Zip
                 baseDir.EmitTimesInUnixFormatWhenSaving = _emitUnixTimes;
                 baseDir._container = new ZipContainer(this);
 
-                // check for uniqueness:
-
-                //ZipEntry e = this[baseDir.FileName];
-                //if (e == null)
-
+                // add the directory only if it does not exist.
+                // It's not an error if it already exists.
                 if (!_entries.ContainsKey(baseDir.FileName))
                 {
                     InternalAddEntry(baseDir.FileName,baseDir);

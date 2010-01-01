@@ -1153,9 +1153,7 @@ namespace Ionic.Zip
                 if (zf.Verbose)
                     zf.StatusMessageTextWriter.WriteLine("entry {0}", de.FileName);
 
-                string key = zf.InsureUniqueEntry(de);
-
-                zf._entries.Add(key,de);
+                zf._entries.Add(de.FileName,de);
 
                 // workitem 9214
                 if (de._InputUsesZip64) inputUsesZip64 = true;
@@ -1206,9 +1204,7 @@ namespace Ionic.Zip
                 if (zf.Verbose)
                     zf.StatusMessageTextWriter.WriteLine("  {0}", e.FileName);
 
-                string key = zf.InsureUniqueEntry(e);
-
-                zf._entries.Add(key,e);
+                zf._entries.Add(e.FileName,e);
                 firstEntry = false;
             }
 
@@ -1224,7 +1220,7 @@ namespace Ionic.Zip
                 ZipEntry e1 = zf._entries[de.FileName];
                 if (e1 != null){
                     e1._Comment = de.Comment;
-                    if (de.AttributesIndicateDirectory) e1.MarkAsDirectory();
+                    if (de.IsDirectory) e1.MarkAsDirectory();
                 }
             }
 
