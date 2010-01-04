@@ -8,14 +8,14 @@
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-October-20 01:11:01>
+// last saved (in emacs):
+// Time-stamp: <2009-December-31 23:26:12>
 //
 // ------------------------------------------------------------------
 //
@@ -48,6 +48,9 @@ namespace Ionic.Zip.Tests.Utilities
 
                 // The Naval War of 1812, by Theodore Roosevelt (968k)
                 "http://www.gutenberg.org/dirs/etext05/7trnv10.txt",
+
+                // On Prayer and the Contemplative Life, by Thomas Aquinas (440k)
+                "http://www.gutenberg.org/files/22295/22295.txt",
             };
 
         SimpleMarkovChain markov;
@@ -171,7 +174,7 @@ namespace Ionic.Zip.Tests.Utilities
         /// </summary>
         ///
         /// <remarks>
-        /// The first sentence will start with the given start word. 
+        /// The first sentence will start with the given start word.
         /// </remarks>
         ///
         /// <param name="minimumLength">
@@ -194,7 +197,7 @@ namespace Ionic.Zip.Tests.Utilities
         /// </summary>
         ///
         /// <remarks>
-        /// The first sentence will start with the given start word. 
+        /// The first sentence will start with the given start word.
         /// </remarks>
         ///
         /// <param name="minimumWords">
