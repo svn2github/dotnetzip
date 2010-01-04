@@ -2906,7 +2906,9 @@ namespace Ionic.Zip
                 {
                     coll.Add(e);
                 }
-                coll.Sort( (x,y) => { return String.Compare(x.FileName,y.FileName); });
+                StringComparison sc = (CaseSensitiveRetrieval) ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+                coll.Sort( (x,y) => { return String.Compare(x.FileName,y.FileName, sc); });
                 return coll.AsReadOnly();
             }
         }
