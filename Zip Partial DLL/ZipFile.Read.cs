@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2009-December-26 15:11:48>
+// Time-stamp: <2010-January-05 13:12:34>
 //
 // ------------------------------------------------------------------
 //
@@ -1209,32 +1209,39 @@ namespace Ionic.Zip
             }
 
             // read the zipfile's central directory structure here.
-            ZipEntry de;
-            while ((de = ZipEntry.ReadDirEntry(zf)) != null)
+            // workitem 9912
+            // But, because it may be corrupted, ignore errors.
+            try
             {
-                // Housekeeping: Since ZipFile exposes ZipEntry elements in the enumerator,
-                // we need to copy the comment that we grab from the ZipDirEntry
-                // into the ZipEntry, so the application can access the comment.
-                // Also since ZipEntry is used to Write zip files, we need to copy the
-                // file attributes to the ZipEntry as appropriate.
-                ZipEntry e1 = zf._entries[de.FileName];
-                if (e1 != null){
-                    e1._Comment = de.Comment;
-                    if (de.IsDirectory) e1.MarkAsDirectory();
+                ZipEntry de;
+                while ((de = ZipEntry.ReadDirEntry(zf)) != null)
+                {
+                    // Housekeeping: Since ZipFile exposes ZipEntry elements in the enumerator,
+                    // we need to copy the comment that we grab from the ZipDirEntry
+                    // into the ZipEntry, so the application can access the comment.
+                    // Also since ZipEntry is used to Write zip files, we need to copy the
+                    // file attributes to the ZipEntry as appropriate.
+                    ZipEntry e1 = zf._entries[de.FileName];
+                    if (e1 != null){
+                        e1._Comment = de.Comment;
+                        if (de.IsDirectory) e1.MarkAsDirectory();
+                    }
                 }
+
+                // workitem 8299
+                if (zf._locEndOfCDS > 0)
+                    zf.ReadStream.Seek(zf._locEndOfCDS, SeekOrigin.Begin);
+
+                ReadCentralDirectoryFooter(zf);
+
+                if (zf.Verbose && !String.IsNullOrEmpty(zf.Comment))
+                    zf.StatusMessageTextWriter.WriteLine("Zip file Comment: {0}", zf.Comment);
+            }
+            catch
+            {
             }
 
-            // workitem 8299
-            if (zf._locEndOfCDS > 0)
-                zf.ReadStream.Seek(zf._locEndOfCDS, SeekOrigin.Begin);
-
-            ReadCentralDirectoryFooter(zf);
-
-            if (zf.Verbose && !String.IsNullOrEmpty(zf.Comment))
-                zf.StatusMessageTextWriter.WriteLine("Zip file Comment: {0}", zf.Comment);
-
             zf.OnReadCompleted();
-
         }
 
 

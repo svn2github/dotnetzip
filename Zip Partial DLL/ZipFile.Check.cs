@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2009-December-26 14:45:40>
+// Time-stamp: <2010-January-05 13:15:32>
 //
 // ------------------------------------------------------------------
 //
@@ -51,7 +51,11 @@ namespace Ionic.Zip
         ///
         /// <para>
         ///   This method is not supported in the Reduced or Compact Framework
-        ///   versions of DotNetZip.  Developers using COM can use the <see
+        ///   versions of DotNetZip.
+        /// </para>
+        ///
+        /// <para>
+        ///   Developers using COM can use the <see
         ///   cref="ComHelper.CheckZip(String)">ComHelper.CheckZip(String)</see>
         ///   method.
         /// </para>
@@ -214,7 +218,11 @@ namespace Ionic.Zip
         ///
         /// <para>
         ///   This method is not supported in the Reduced or Compact Framework
-        ///   versions of DotNetZip.  Developers using COM can use the <see
+        ///   versions of DotNetZip.
+        /// </para>
+        ///
+        /// <para>
+        ///   Developers using COM can use the <see
         ///   cref="ComHelper.FixZipDirectory(String)">ComHelper.FixZipDirectory(String)</see>
         ///   method.
         /// </para>
@@ -280,7 +288,6 @@ namespace Ionic.Zip
                 return builder.ToString();
             }
         }
-
 
 
     }
