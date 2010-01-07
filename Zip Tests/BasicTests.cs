@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2009-December-27 10:52:48>
+// Time-stamp: <2010-January-06 23:27:37>
 //
 // ------------------------------------------------------------------
 //
@@ -2328,11 +2328,9 @@ namespace Ionic.Zip.Tests.Basic
 
 
 
-
         [TestMethod]
         public void Create_WithChangeDirectory()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
             string zipFileToCreate = Path.Combine(TopLevelDir, "Create_WithChangeDirectory.zip");
             String filename = "Testfile.txt";
             TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
@@ -2341,9 +2339,362 @@ namespace Ionic.Zip.Tests.Basic
             using (var zip = new ZipFile())
             {
                 Directory.SetCurrentDirectory("\\");
-                zip.AddFile("dinoch\\dev\\dotnet\\zip\\test\\ChangeDirectory.cs", "");
+                zip.AddFile("dinoch\\dev\\dotnet\\zip\\DotNetZip\\Zip Tests\\BasicTests.cs", "");
                 Directory.SetCurrentDirectory(cwd);
                 zip.Save(zipFileToCreate);
+            }
+        }
+
+
+
+
+        private void VerifyEntries(string zipFile,
+                                   Variance variance,
+                                   int[] values,
+                                   EncryptionAlgorithm[] a,
+                                   int stage,
+                                   int compFlavor,
+                                   int encryptionFlavor)
+        {
+            using (var zip = ZipFile.Read(zipFile))
+            {
+                foreach (ZipEntry e in zip)
+                {
+                    var compCheck = false;
+                    if (variance == Variance.Method)
+                    {
+                        compCheck = (e.CompressionMethod == (CompressionMethod)values[stage]);
+                    }
+                    else
+                    {
+                        // Variance.Level
+                        CompressionMethod expectedMethod =
+                            ((Ionic.Zlib.CompressionLevel)values[stage] == Ionic.Zlib.CompressionLevel.None)
+                            ? CompressionMethod.None
+                            : CompressionMethod.Deflate;
+                        compCheck = (e.CompressionMethod == expectedMethod);
+                    }
+
+                    Assert.IsTrue(compCheck,
+                                  "Unexpected compression method ({0}) on entry ({1}) variance({2}) flavor({3},{4}) stage({5})",
+                                  e.CompressionMethod,
+                                  e.FileName,
+                                  variance,
+                                  compFlavor, encryptionFlavor,
+                                  stage
+                                  );
+
+                    var cryptoCheck = (e.Encryption == a[stage]);
+
+                    Assert.IsTrue(cryptoCheck,
+                                  "Unexpected encryption ({0}) on entry ({1}) variance({2}) flavor({3},{4}) stage({5})",
+                                  e.Encryption,
+                                  e.FileName,
+                                  variance,
+                                  compFlavor,
+                                  encryptionFlavor,
+                                  stage
+                                  );
+                }
+            }
+        }
+
+
+
+        private void QuickCreateZipAndChecksums(string zipFile,
+                                                Variance variance,
+                                                object compressionMethodOrLevel,
+                                                EncryptionAlgorithm encryption,
+                                                string password,
+                                                out string[] files,
+                                                out Dictionary<string, byte[]> checksums
+                                                )
+        {
+            string srcDir = TestUtilities.GetTestSrcDir(CurrentDir);
+            files = Directory.GetFiles(srcDir, "*.cs", SearchOption.TopDirectoryOnly);
+            checksums = new Dictionary<string, byte[]>();
+            foreach (string f in  files)
+            {
+                var chk = TestUtilities.ComputeChecksum(f);
+                var key = Path.GetFileName(f);
+                checksums.Add(key, chk);
+            }
+
+            using (var zip = new ZipFile())
+            {
+                if (variance == Variance.Level)
+                {
+                    zip.CompressionLevel= (Ionic.Zlib.CompressionLevel) compressionMethodOrLevel;
+                }
+                else
+                {
+                    if ((Ionic.Zip.CompressionMethod)compressionMethodOrLevel == CompressionMethod.None)
+                        zip.CompressionLevel = Ionic.Zlib.CompressionLevel.None;
+                }
+
+                if (password != null)
+                {
+                    zip.Password = password;
+                    zip.Encryption = encryption;
+                }
+                zip.AddFiles(files, "");
+                zip.Save(zipFile);
+            }
+
+            int count = TestUtilities.CountEntries(zipFile);
+            Assert.IsTrue(count > 5,
+                          "Unexpected number of entries ({0}) in the zip file.", count);
+        }
+
+        enum Variance
+        {
+            Method = 0 ,
+            Level = 1
+        }
+
+
+        private string GeneratePassword()
+        {
+            return TestUtilities.GenerateRandomPassword();
+            //return TestUtilities.GenerateRandomAsciiString(9);
+            //return "Alphabet";
+        }
+
+        private void _Internal_Resave(string zipFile,
+                                      Variance variance,
+                                      int[] values,
+                                      EncryptionAlgorithm[] cryptos,
+                                      int compFlavor,
+                                      int encryptionFlavor
+                                      )
+        {
+            // Create a zip file, then re-save it with changes in compression methods,
+            // compression levels, and/or encryption.  The methods/levels, cryptos are
+            // for original and re-saved values. This tests whether we can update a zip
+            // entry with changes in those properties.
+
+            string[] passwords = new string[2];
+            passwords[0]= (cryptos[0]==EncryptionAlgorithm.None) ? null : GeneratePassword();
+            passwords[1]= passwords[0] ?? ((cryptos[1]==EncryptionAlgorithm.None) ? null : GeneratePassword());
+
+            //TestContext.WriteLine("  crypto: '{0}'  '{1}'", crypto[0]??"-NONE-", passwords[1]??"-NONE-");
+            TestContext.WriteLine("  crypto: '{0}'  '{1}'", cryptos[0], cryptos[1]);
+
+
+            // first, create a zip file
+            string[] filesToZip;
+            Dictionary<string, byte[]> checksums;
+            QuickCreateZipAndChecksums(zipFile, variance, values[0], cryptos[0], passwords[0], out filesToZip, out checksums);
+
+
+            // check that the zip was constructed as expected
+            VerifyEntries(zipFile, variance, values, cryptos, 0, compFlavor, encryptionFlavor);
+
+
+            // modify some properties (CompressionLevel, CompressionMethod, and/or Encryption) on each entry
+            using (var zip = ZipFile.Read(zipFile))
+            {
+                zip.Password = passwords[1];
+                foreach (ZipEntry e in zip)
+                {
+                    if (variance == Variance.Method)
+                        e.CompressionMethod = (CompressionMethod)values[1];
+                    else
+                        e.CompressionLevel = (Ionic.Zlib.CompressionLevel)values[1];
+
+                    e.Encryption = cryptos[1];
+                }
+                zip.Save();
+            }
+
+
+            // Check that the zip was modified as expected
+            VerifyEntries(zipFile, variance, values, cryptos, 1, compFlavor, encryptionFlavor);
+
+
+            // now extract the items and verify checksums
+            string extractDir = null;
+            int c=0;
+            do
+            {
+                extractDir = String.Format("ex{0}", c++);
+            }while(Directory.Exists(extractDir));
+
+            // extract
+            using (var zip = ZipFile.Read(zipFile))
+            {
+                zip.Password = passwords[1];
+                zip.ExtractAll(extractDir);
+            }
+
+            VerifyChecksums(extractDir, filesToZip, checksums);
+        }
+
+
+
+        private void _Internal_Resave(Variance variance, int compFlavor, int encryptionFlavor)
+        {
+            // Check that re-saving a zip, after modifying properties on
+            // each entry, actually does what we want.
+            if (encryptionFlavor == 0)
+                TestContext.WriteLine("Resave workdir: {0}", TopLevelDir);
+
+            string rootname = String.Format("Resave_Compression{0}_{1}_Encryption_{2}.zip",
+                                            variance, compFlavor, encryptionFlavor);
+
+            string zipFileToCreate = Path.Combine(TopLevelDir, rootname);
+
+            int[] values = null;
+
+            switch (variance)
+            {
+                case Variance.Method:
+                    switch(compFlavor)
+                    {
+                        case 0:
+                            values = new int[] {(int)CompressionMethod.Deflate, (int)CompressionMethod.Deflate};
+                            break;
+                        case 1:
+                            values = new int[] {(int)CompressionMethod.Deflate, (int)CompressionMethod.None};
+                            break;
+                        case 2:
+                            values = new int[] {(int)CompressionMethod.None, (int)CompressionMethod.Deflate};
+                            break;
+                        case 3:
+                            values = new int[] {(int)CompressionMethod.None, (int)CompressionMethod.None};
+                            break;
+                    }
+                    break;
+                case Variance.Level:
+                    switch(compFlavor)
+                    {
+                        case 0:
+                            values = new int[] {(int)Ionic.Zlib.CompressionLevel.Default, (int)Ionic.Zlib.CompressionLevel.Default};
+                            break;
+                        case 1:
+                            values = new int[] {(int)Ionic.Zlib.CompressionLevel.Default, (int)Ionic.Zlib.CompressionLevel.None};
+                            break;
+                        case 2:
+                            values = new int[] {(int)Ionic.Zlib.CompressionLevel.None, (int)Ionic.Zlib.CompressionLevel.Default};
+                            break;
+                        case 3:
+                            values = new int[] {(int)Ionic.Zlib.CompressionLevel.None, (int)Ionic.Zlib.CompressionLevel.None};
+                            break;
+                    }
+                    break;
+            }
+
+
+
+            EncryptionAlgorithm[] c = null;
+            switch(encryptionFlavor)
+            {
+                case 0:
+                    c = new EncryptionAlgorithm[] {EncryptionAlgorithm.None, EncryptionAlgorithm.None};
+                    break;
+                case 1:
+                    c = new EncryptionAlgorithm[] {EncryptionAlgorithm.None, EncryptionAlgorithm.WinZipAes128};
+                    break;
+                case 2:
+                    c = new EncryptionAlgorithm[] {EncryptionAlgorithm.WinZipAes128, EncryptionAlgorithm.None};
+                    break;
+                case 3:
+                    c = new EncryptionAlgorithm[] {EncryptionAlgorithm.WinZipAes128, EncryptionAlgorithm.WinZipAes128};
+                    break;
+                case 4:
+                    c = new EncryptionAlgorithm[] {EncryptionAlgorithm.None, EncryptionAlgorithm.PkzipWeak};
+                    break;
+                case 5:
+                    c = new EncryptionAlgorithm[] {EncryptionAlgorithm.PkzipWeak, EncryptionAlgorithm.None};
+                    break;
+                case 6:
+                    c = new EncryptionAlgorithm[] {EncryptionAlgorithm.WinZipAes128, EncryptionAlgorithm.PkzipWeak};
+                    break;
+                case 7:
+                    c = new EncryptionAlgorithm[] {EncryptionAlgorithm.PkzipWeak, EncryptionAlgorithm.WinZipAes128};
+                    break;
+            }
+
+            TestContext.WriteLine("Resave {0} {1} {2} file({3})", variance, compFlavor, encryptionFlavor, Path.GetFileName(zipFileToCreate));
+
+            _Internal_Resave(zipFileToCreate, variance, values, c, compFlavor, encryptionFlavor);
+        }
+
+
+        [TestMethod]
+        public void Resave_CompressionMethod_0()
+        {
+            for (int i=0; i<8;  i++)
+            {
+                _Internal_Resave(Variance.Method, 0, i);
+            }
+        }
+
+
+        [TestMethod]
+        public void Resave_CompressionMethod_1()
+        {
+            for (int i=0; i<8;  i++)
+            {
+                if (i!=3)
+                    _Internal_Resave(Variance.Method, 1, i);
+            }
+        }
+
+        [TestMethod]
+        public void Resave_CompressionMethod_2()
+        {
+            for (int i=0; i<8;  i++)
+            {
+                _Internal_Resave(Variance.Method, 2, i);
+            }
+        }
+
+        [TestMethod]
+        public void Resave_CompressionMethod_3()
+        {
+            for (int i=0; i<8;  i++)
+            {
+                _Internal_Resave(Variance.Method, 3, i);
+            }
+        }
+
+
+        [TestMethod]
+        public void Resave_CompressionLevel_0()
+        {
+            for (int i=0; i<8;  i++)
+            {
+                _Internal_Resave(Variance.Level, 0, i);
+            }
+        }
+
+
+        [TestMethod]
+        public void Resave_CompressionLevel_1()
+        {
+            for (int i=0; i<8;  i++)
+            {
+                if (i!=3)
+                    _Internal_Resave(Variance.Level, 1, i);
+            }
+        }
+
+        [TestMethod]
+        public void Resave_CompressionLevel_2()
+        {
+            for (int i=0; i<8;  i++)
+            {
+                _Internal_Resave(Variance.Level, 2, i);
+            }
+        }
+
+        [TestMethod]
+        public void Resave_CompressionLevel_3()
+        {
+            for (int i=0; i<8;  i++)
+            {
+                _Internal_Resave(Variance.Level, 3, i);
             }
         }
 

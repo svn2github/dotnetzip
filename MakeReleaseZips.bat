@@ -8,7 +8,7 @@ goto START
 
  created: Thu, 19 Jun 2008  22:17
 
- Time-stamp: <2010-January-05 13:33:45>
+ Time-stamp: <2010-January-07 01:33:43>
 
 -------------------------------------------------------
 
@@ -102,8 +102,16 @@ goto :END
       echo !rcode! were signed, with the wrong key
     )
 
-    if !rcode! GTR 0 exit /b !rcode!
-    if !okcount! LSS 67 exit /b !okcount!
+    if !rcode! GTR 0 (
+      echo.
+      echo Some of the assemblies are incorrectly signed.
+      exit /b !rcode!
+    )
+    if !okcount! LSS 67 (
+      echo.
+      echo There are not enough correctly signed assemblies.
+      exit /b !okcount!
+    )
 
   echo.
   echo.

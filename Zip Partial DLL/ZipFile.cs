@@ -1646,7 +1646,7 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// The Encryption to use for entries added to the <c>ZipFile</c>.
+        ///   The Encryption to use for entries added to the <c>ZipFile</c>.
         /// </summary>
         ///
         /// <remarks>
@@ -1658,8 +1658,8 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        ///   If you set this to something other than EncryptionAlgorithm.None, you will
-        ///   also need to set the <see cref="Password"/>.
+        ///   If you set this to something other than EncryptionAlgorithm.None, you
+        ///   will also need to set the <see cref="Password"/>.
         /// </para>
         ///
         /// <para>
@@ -1678,11 +1678,11 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        ///   If you read a <c>ZipFile</c>, you cannot modify the <c>Encryption</c> on
-        ///   an encrypted entry, except by extracting the entry with the original
-        ///   password (if any), removing the original entry from the <c>ZipFile</c> via
-        ///   <see cref="ZipFile.RemoveEntry(ZipEntry)"/>, and then adding a new entry
-        ///   with a non-empty <c>Password</c> and a valid <c>Encryption</c> setting.
+        ///   If you read a <c>ZipFile</c>, you can modify the <c>Encryption</c> on an
+        ///   encrypted entry, only by setting the <c>Encryption</c> property on the
+        ///   <c>ZipEntry</c> itself.  Setting the <c>Encryption</c> property on the
+        ///   <c>ZipFile</c>, once it has been created via a call to
+        ///   <c>ZipFile.Read()</c>, does not affect entries that were previously read.
         /// </para>
         ///
         /// <para>
@@ -1696,6 +1696,16 @@ namespace Ionic.Zip
         ///   creating the zip archive. Upon re-reading that archive, to extract
         ///   entries, applications should use the original password or passwords, if
         ///   any.
+        /// </para>
+        ///
+        /// <para>
+        ///   Suppose an application reads a <c>ZipFile</c>, and there is an encrypted
+        ///   entry.  Setting the <c>Encryption</c> property on that <c>ZipFile</c> and
+        ///   then adding new entries (via <c>AddFile()</c>, <c>AddEntry()</c>, etc)
+        ///   and then calling <c>Save()</c> on the <c>ZipFile</c> does not update the
+        ///   <c>Encryption</c> on any of the entries that had previously been in the
+        ///   <c>ZipFile</c>.  The <c>Encryption</c> property applies only to the
+        ///   newly-added entries.
         /// </para>
         ///
         /// </remarks>

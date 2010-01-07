@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2009-December-31 17:43:44>
+// Time-stamp: <2010-January-06 16:51:18>
 //
 // ------------------------------------------------------------------
 //
@@ -1492,12 +1492,12 @@ namespace Ionic.Zip
         private ZipEntry _InternalAddEntry(ZipEntry ze)
         {
             // stamp all the props onto the entry
+            ze._container = new ZipContainer(this);
             ze.CompressionLevel = CompressionLevel;
             ze.ExtractExistingFile = ExtractExistingFile;
             ze.ZipErrorAction = this.ZipErrorAction;
             ze.SetCompression = SetCompression;
             ze.ProvisionalAlternateEncoding = ProvisionalAlternateEncoding;
-            ze._container = new ZipContainer(this);
             ze.Password = _Password;
             ze.Encryption = Encryption;
             ze.EmitTimesInWindowsFormatWhenSaving = _emitNtfsTimes;
@@ -1859,13 +1859,13 @@ namespace Ionic.Zip
         public ZipEntry AddDirectoryByName(string directoryNameInArchive)
         {
             ZipEntry dir = ZipEntry.CreateFromNothing(directoryNameInArchive);    // workitem 9073
+            dir._container = new ZipContainer(this);
             dir.MarkAsDirectory();
             dir.ProvisionalAlternateEncoding = this.ProvisionalAlternateEncoding;  // workitem 8984
             dir.SetEntryTimes(DateTime.Now,DateTime.Now,DateTime.Now);
             dir.EmitTimesInWindowsFormatWhenSaving = _emitNtfsTimes;
             dir.EmitTimesInUnixFormatWhenSaving = _emitUnixTimes;
             dir._Source = ZipEntrySource.Stream;
-            dir._container = new ZipContainer(this);
             //string key = DictionaryKeyForEntry(dir);
             InternalAddEntry(dir.FileName,dir);
             AfterAddEntry(dir);
@@ -1919,11 +1919,11 @@ namespace Ionic.Zip
             if (level > 0 || rootDirectoryPathInArchive != "")
             {
                 baseDir = ZipEntry.CreateFromFile(directoryName, dirForEntries);
+                baseDir._container = new ZipContainer(this);
                 baseDir.ProvisionalAlternateEncoding = this.ProvisionalAlternateEncoding;  // workitem 6410
                 baseDir.MarkAsDirectory();
                 baseDir.EmitTimesInWindowsFormatWhenSaving = _emitNtfsTimes;
                 baseDir.EmitTimesInUnixFormatWhenSaving = _emitUnixTimes;
-                baseDir._container = new ZipContainer(this);
 
                 // add the directory only if it does not exist.
                 // It's not an error if it already exists.

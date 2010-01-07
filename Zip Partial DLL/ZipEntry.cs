@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2009-December-31 20:17:34>
+// Time-stamp: <2010-January-06 23:22:39>
 //
 // ------------------------------------------------------------------
 //
@@ -54,6 +54,9 @@ namespace Ionic.Zip
         public ZipEntry()
         {
             _CompressionMethod = (Int16)CompressionMethod.Deflate;
+            _CompressionLevel = Ionic.Zlib.CompressionLevel.Default;
+            _Encryption = EncryptionAlgorithm.None;
+            _Source = ZipEntrySource.None;
         }
 
         /// <summary>
@@ -736,36 +739,6 @@ namespace Ionic.Zip
         }
 
 
-
-        /// <summary>
-        ///   Sets the compression level to be used for the entry when saving the zip
-        ///   archive.
-        /// </summary>
-        ///
-        /// <remarks>
-        ///  <para>
-        ///    Varying the compression level used on entries can affect the
-        ///    size-vs-speed tradeoff when compression and decompressing data streams
-        ///    or files.
-        ///  </para>
-        ///
-        ///  <para>
-        ///    If you do not set this property, the default compression level is used,
-        ///    which normally gives a good balance of compression efficiency and
-        ///    compression speed.  In some tests, using <c>BestCompression</c> can
-        ///    double the time it takes to compress, while delivering just a small
-        ///    increase in compression efficiency.  This behavior will vary with the
-        ///    type of data you compress.  If you are in doubt, just leave this setting
-        ///    alone, and accept the default.
-        ///  </para>
-        /// </remarks>
-        public Ionic.Zlib.CompressionLevel CompressionLevel
-        {
-            get;
-            set;
-        }
-
-
         /// <summary>
         ///   The name of the filesystem file, referred to by the ZipEntry.
         /// </summary>
@@ -1319,26 +1292,27 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        ///   You may wish to set <c>CompressionMethod</c> to CompressionMethod.None (0) when zipping
-        ///   previously compressed data like a jpg, png, or mp3 file.  This can save
-        ///   time and cpu cycles. For practical purposes, setting
-        ///   <c>CompressionMethod</c> to None is equivalent to setting <see
-        ///   cref="CompressionLevel"/> to <see
-        ///   cref="Ionic.Zlib.CompressionLevel.None">CompressionLevel.None</see>.
+        ///   You may wish to set <c>CompressionMethod</c> to <c>CompressionMethod.None</c> (0)
+        ///   when zipping already-compressed data like a jpg, png, or mp3 file.
+        ///   This can save time and cpu cycles.
         /// </para>
         ///
         /// <para>
-        ///   When updating a <c>ZipFile</c>, you may not modify the
-        ///   <c>CompressionMethod</c> on an entry that has been encrypted.  In other
-        ///   words, if you read an existing zip file  with one of the
-        ///   <c>ZipFile.Read()</c> methods, and then change the <c>CompressionMethod</c>
-        ///   on an entry that has <see cref="Encryption"/> not equal to <see
-        ///   cref="EncryptionAlgorithm.None">EncryptionAlgorithm.None</see>, you will receive
-        ///   an exception.  There is no way to modify the compression on an encrypted
-        ///   entry, without extracting it and re-adding it into the <c>ZipFile</c>.
+        ///   When setting this property on a <c>ZipEntry</c> that is read from an
+        ///   existing zip file, calling <c>ZipFile.Save()</c> will cause the new
+        ///   CompressionMethod to be used on the entry in the newly saved zip file.
         /// </para>
         ///
+        /// <para>
+        ///   Setting this property may have the side effect of modifying the
+        ///   <c>CompressionLevel</c> property. If you set the <c>CompressionMethod</c> to a
+        ///   value other than <c>None</c>, and <c>CompressionLevel</c> is previously
+        ///   set to <c>None</c>, then <c>CompressionLevel</c> will be set to
+        ///   <c>Default</c>.
+        /// </para>
         /// </remarks>
+        ///
+        /// <seealso cref="CompressionMethod"/>
         ///
         /// <example>
         ///   In this example, the first entry added to the zip archive uses the default
@@ -1375,19 +1349,82 @@ namespace Ionic.Zip
 
                 // If the source is a zip archive and there was encryption on the
                 // entry, changing the compression method is not supported.
-                if (this._Source == ZipEntrySource.ZipFile && _sourceIsEncrypted)
-                    throw new InvalidOperationException("Cannot change compression method on encrypted entries read from archives.");
+                //                 if (this._Source == ZipEntrySource.ZipFile && _sourceIsEncrypted)
+                //                     throw new InvalidOperationException("Cannot change compression method on encrypted entries read from archives.");
 
                 _CompressionMethod = (Int16)value;
 
                 if (_CompressionMethod == (Int16)Ionic.Zip.CompressionMethod.None)
-                    CompressionLevel = Ionic.Zlib.CompressionLevel.None;
-                else
-                    CompressionLevel = Ionic.Zlib.CompressionLevel.Default;
+                    _CompressionLevel = Ionic.Zlib.CompressionLevel.None;
+                else if (CompressionLevel == Ionic.Zlib.CompressionLevel.None)
+                    _CompressionLevel = Ionic.Zlib.CompressionLevel.Default;
 
+                _container.ZipFile.NotifyEntryChanged();
                 _restreamRequiredOnSave = true;
             }
         }
+
+
+        /// <summary>
+        ///   Sets the compression level to be used for the entry when saving the zip
+        ///   archive.
+        /// </summary>
+        ///
+        /// <remarks>
+        ///  <para>
+        ///    Varying the compression level used on entries can affect the
+        ///    size-vs-speed tradeoff when compression and decompressing data streams
+        ///    or files.
+        ///  </para>
+        ///
+        ///  <para>
+        ///    If you do not set this property, the default compression level is used,
+        ///    which normally gives a good balance of compression efficiency and
+        ///    compression speed.  In some tests, using <c>BestCompression</c> can
+        ///    double the time it takes to compress, while delivering just a small
+        ///    increase in compression efficiency.  This behavior will vary with the
+        ///    type of data you compress.  If you are in doubt, just leave this setting
+        ///    alone, and accept the default.
+        ///  </para>
+        ///
+        ///  <para>
+        ///    When setting this property on a <c>ZipEntry</c> that is read from an
+        ///    existing zip file, calling <c>ZipFile.Save()</c> will cause the new
+        ///    <c>CompressionLevel</c> to be used on the entry in the newly saved zip file.
+        ///  </para>
+        ///
+        ///  <para>
+        ///    Setting this property may have the side effect of modifying the
+        ///    <c>CompressionMethod</c> property. If you set the <c>CompressionLevel</c>
+        ///    to a value other than <c>None</c>, <c>CompressionMethod</c> will be set
+        ///    to <c>Deflate</c>, if it was previously <c>None</c>.
+        ///  </para>
+        /// </remarks>
+        ///
+        /// <seealso cref="CompressionMethod"/>
+        public Ionic.Zlib.CompressionLevel CompressionLevel
+        {
+            get
+            {
+                return _CompressionLevel;
+            }
+            set
+            {
+                //if (value == _CompressionLevel) return; // nothing to do
+                if (value == Ionic.Zlib.CompressionLevel.Default && _CompressionMethod == (short)CompressionMethod.Deflate) return; // nothing to do
+                _CompressionLevel = value;
+                if (value == Ionic.Zlib.CompressionLevel.None && _CompressionMethod == (short)CompressionMethod.None)
+                    return; // nothing more to do
+
+                _CompressionMethod = (short)((_CompressionLevel == Ionic.Zlib.CompressionLevel.None)
+                    ? Ionic.Zip.CompressionMethod.None
+                    : Ionic.Zip.CompressionMethod.Deflate);
+
+                if (_container.ZipFile != null) _container.ZipFile.NotifyEntryChanged();
+                _restreamRequiredOnSave = true;
+            }
+        }
+
 
 
         /// <summary>
@@ -1508,7 +1545,7 @@ namespace Ionic.Zip
         /// </remarks>
         public bool UsesEncryption
         {
-            get { return (Encryption != EncryptionAlgorithm.None); }
+            get { return (_Encryption_FromZipFile != EncryptionAlgorithm.None); }
         }
 
 
@@ -1570,23 +1607,32 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        ///   Some comments on updating archives: If you read a <c>ZipFile</c>, you
-        ///   cannot modify the Encryption on any encrypted entry, except by extracting
-        ///   the entry using the original password (if any), removing the original
-        ///   entry via <see cref="ZipFile.RemoveEntry(ZipEntry)"/>, and then adding a
-        ///   new entry with a new Password and Encryption.
+        ///   Some comments on updating archives: If you read a <c>ZipFile</c>, you can
+        ///   modify the Encryption on an encrypted entry: you can remove encryption
+        ///   from an entry that was encrypted; you can encrypt an entry that was not
+        ///   encrypted previously; or, you can change the encryption algorithm.  The
+        ///   changes in encryption are not made permanent until you call Save() on the
+        ///   <c>ZipFile</c>.  To effect changes in encryption, the entry content is
+        ///   streamed through several transformations, depending on the modification
+        ///   the application has requested. For example if the entry is not encrypted
+        ///   and the application sets <c>Encryption</c> to <c>PkzipWeak</c>, then at
+        ///   the time of <c>Save()</c>, the original entry is read and decompressed,
+        ///   then re-compressed and encrypted.  Conversely, if the original entry is
+        ///   encrypted with <c>PkzipWeak</c> encryption, and the application sets the
+        ///   <c>Encryption</c> property to <c>WinZipAes128</c>, then at the time of
+        ///   <c>Save()</c>, the original entry is decrypted via PKZIP encryption and
+        ///   decompressed, then re-compressed and re-encrypted with AES.  This all
+        ///   happens automatically within the library, but it can be time-consuming for
+        ///   large entries.
         /// </para>
         ///
         /// <para>
-        ///   For example, suppose you read a <c>ZipFile</c>, and there is an entry
-        ///   encrypted with PKZip 2.0 encryption.  Setting the <c>Encryption</c>
-        ///   property on that <c>ZipEntry</c> to <see
-        ///   cref="EncryptionAlgorithm.WinZipAes256"/> will cause an exception to be
-        ///   thrown.  Setting the <c>Encryption</c> on the <c>ZipFile</c> and then
-        ///   adding new entries will allow that encryption to be used on the newly
-        ///   added entries.  During the <c>Save()</c>, the existing entries are copied
-        ///   through to the new zip archive, in their original encrypted form
-        ///   (encrypted or not), while the newly-added entries are encrypted as usual.
+        ///   Additionally, when updating archives, it is not possible to change the
+        ///   password when changing the encryption algorithm.  To change both the
+        ///   algorithm and the password, you need to Save() the zipfile twice.  First
+        ///   set the <c>Encryption</c> to None, then call <c>Save()</c>.  Then set the
+        ///   <c>Encryption</c> to the new value (not "None"), then call <c>Save()</c>
+        ///   once again.
         /// </para>
         ///
         /// <para>
@@ -1648,8 +1694,7 @@ namespace Ionic.Zip
         /// </example>
         ///
         /// <exception cref="System.InvalidOperationException">
-        /// Thrown in the setter if EncryptionAlgorithm.Unsupported is specified, or
-        /// if setting the property on an entry read from a zip archive.
+        /// Thrown in the setter if EncryptionAlgorithm.Unsupported is specified.
         /// </exception>
         ///
         /// <seealso cref="Ionic.Zip.ZipEntry.Password">ZipEntry.Password</seealso>
@@ -1662,23 +1707,20 @@ namespace Ionic.Zip
             }
             set
             {
-                if (value == _Encryption) return;
+                if (value == _Encryption) return; // no change
 
                 if (value == EncryptionAlgorithm.Unsupported)
                     throw new InvalidOperationException("You may not set Encryption to that value.");
 
                 // If the source is a zip archive and there was encryption
-                // on the entry, this will not work.
-                if (this._Source == ZipEntrySource.ZipFile && _sourceIsEncrypted)
-                    throw new InvalidOperationException("You cannot change the encryption method on encrypted entries read from archives.");
+                // on the entry, this will not work. <XXX>
+                //if (this._Source == ZipEntrySource.ZipFile && _sourceIsEncrypted)
+                //    throw new InvalidOperationException("You cannot change the encryption method on encrypted entries read from archives.");
 
                 _Encryption = value;
                 _restreamRequiredOnSave = true;
-
-#if AESCRYPTO
-                if (value == EncryptionAlgorithm.WinZipAes256) this._KeyStrengthInBits = 256;
-                else if (value == EncryptionAlgorithm.WinZipAes128) this._KeyStrengthInBits = 128;
-#endif
+                if (_container.ZipFile!=null)
+                    _container.ZipFile.NotifyEntryChanged();
             }
         }
 
@@ -1855,6 +1897,15 @@ namespace Ionic.Zip
             }
         }
 
+
+
+        internal bool IsChanged
+        {
+            get
+            {
+                return _restreamRequiredOnSave | _metadataChanged;
+            }
+        }
 
 
         /// <summary>
@@ -2416,7 +2467,7 @@ namespace Ionic.Zip
 
             this.ArchiveStream.Seek(filenameLength + extraFieldLength, SeekOrigin.Current);
             this._LengthOfHeader = 30 + extraFieldLength + filenameLength +
-                LengthOfCryptoHeaderBytes;
+                GetLengthOfCryptoHeaderBytes(_Encryption_FromZipFile);
 
             // Console.WriteLine("  ROLH  0x{0:X8} ({0})", _RelativeOffsetOfLocalHeader);
             // Console.WriteLine("  LOH   0x{0:X8} ({0})", _LengthOfHeader);
@@ -2431,25 +2482,32 @@ namespace Ionic.Zip
 
 
 
-
-        internal int LengthOfCryptoHeaderBytes
+#if AESCRYPTO
+        private static int GetKeyStrengthInBits(EncryptionAlgorithm a)
         {
-            get
-            {
-                if ((_BitField & 0x01) != 0x01) return 0;
+            if (a == EncryptionAlgorithm.WinZipAes256) return 256;
+            else if (a == EncryptionAlgorithm.WinZipAes128) return 128;
+            return -1;
+        }
+#endif
+
+        internal static int GetLengthOfCryptoHeaderBytes(EncryptionAlgorithm a)
+        {
+            //if ((_BitField & 0x01) != 0x01) return 0;
+            if (a == EncryptionAlgorithm.None) return 0;
 
 #if AESCRYPTO
-                if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
-                    Encryption == EncryptionAlgorithm.WinZipAes256)
-                {
-                    int sizeOfSaltAndPv = ((_KeyStrengthInBits / 8 / 2) + 2);
-                    return sizeOfSaltAndPv;
-                }
-#endif
-                if (Encryption == EncryptionAlgorithm.PkzipWeak)
-                    return 12;
-                throw new ZipException("internal error");
+            if (a == EncryptionAlgorithm.WinZipAes128 ||
+                a == EncryptionAlgorithm.WinZipAes256)
+            {
+                int KeyStrengthInBits = GetKeyStrengthInBits(a);
+                int sizeOfSaltAndPv = ((KeyStrengthInBits / 8 / 2) + 2);
+                return sizeOfSaltAndPv;
             }
+#endif
+            if (a == EncryptionAlgorithm.PkzipWeak)
+                return 12;
+            throw new ZipException("internal error");
         }
 
 
@@ -2477,10 +2535,11 @@ namespace Ionic.Zip
 
 
 
-        internal ZipCrypto _zipCrypto;
+        private ZipCrypto _zipCrypto_forExtract;
+        private ZipCrypto _zipCrypto_forWrite;
 #if AESCRYPTO
-        internal WinZipAesCrypto _aesCrypto;
-        internal Int16 _KeyStrengthInBits;
+        private WinZipAesCrypto _aesCrypto_forExtract;
+        private WinZipAesCrypto _aesCrypto_forWrite;
         private Int16 _WinZipAesMethod;
 #endif
 
@@ -2495,6 +2554,8 @@ namespace Ionic.Zip
         internal Int16 _VersionNeeded;
         internal Int16 _BitField;
         internal Int16 _CompressionMethod;
+        private Int16 _CompressionMethod_FromZipFile;
+        private Ionic.Zlib.CompressionLevel _CompressionLevel;
         internal string _Comment;
         private bool _IsDirectory;
         private byte[] _CommentBytes;
@@ -2520,6 +2581,7 @@ namespace Ionic.Zip
         internal long __FileDataPosition = -1;
         private byte[] _EntryHeader;
         internal Int64 _RelativeOffsetOfLocalHeader;
+        private Int64 _future_ROLH;
         private Int64 _TotalEntrySize;
         internal int _LengthOfHeader;
         internal int _LengthOfTrailer;
@@ -2527,8 +2589,9 @@ namespace Ionic.Zip
         private UInt32 _UnsupportedAlgorithmId;
 
         internal string _Password;
-        internal ZipEntrySource _Source = ZipEntrySource.None;
-        internal EncryptionAlgorithm _Encryption = EncryptionAlgorithm.None;
+        internal ZipEntrySource _Source;
+        internal EncryptionAlgorithm _Encryption;
+        internal EncryptionAlgorithm _Encryption_FromZipFile;
         internal byte[] _WeakEncryptionHeader;
         internal Stream _archiveStream;
         private Stream _sourceStream;

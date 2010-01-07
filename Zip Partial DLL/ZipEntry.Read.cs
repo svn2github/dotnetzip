@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2009-December-31 20:11:48>
+// Time-stamp: <2010-January-06 14:45:12>
 //
 // ------------------------------------------------------------------
 //
@@ -96,7 +96,7 @@ namespace Ionic.Zip
             int i = 0;
             ze._VersionNeeded = (Int16)(block[i++] + block[i++] * 256);
             ze._BitField = (Int16)(block[i++] + block[i++] * 256);
-            ze._CompressionMethod = (Int16)(block[i++] + block[i++] * 256);
+            ze._CompressionMethod_FromZipFile = ze._CompressionMethod = (Int16)(block[i++] + block[i++] * 256);
             ze._TimeBlob = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
             // transform the time data into something usable (a DateTime)
             ze._LastModified = Ionic.Zip.SharedUtilities.PackedToDateTime(ze._TimeBlob);
@@ -104,7 +104,7 @@ namespace Ionic.Zip
 
             if ((ze._BitField & 0x01) == 0x01)
             {
-                ze._Encryption = EncryptionAlgorithm.PkzipWeak; // this *may* change after processing the Extra field
+                ze._Encryption_FromZipFile = ze._Encryption = EncryptionAlgorithm.PkzipWeak; // this *may* change after processing the Extra field
                 ze._sourceIsEncrypted = true;
             }
 
@@ -262,11 +262,12 @@ namespace Ionic.Zip
                 if (ze.Encryption == EncryptionAlgorithm.WinZipAes128 ||
                     ze.Encryption == EncryptionAlgorithm.WinZipAes256)
                 {
+                    int bits = ZipEntry.GetKeyStrengthInBits(ze._Encryption_FromZipFile);
                     // read in the WinZip AES metadata: salt + PV. 18 bytes for AES256. 10 bytes for AES128.
-                    ze._aesCrypto = WinZipAesCrypto.ReadFromStream(null, ze._KeyStrengthInBits, ze.ArchiveStream);
-                    bytesRead += ze._aesCrypto.SizeOfEncryptionMetadata - 10; // MAC (follows crypto bytes)
+                    ze._aesCrypto_forExtract = WinZipAesCrypto.ReadFromStream(null, bits, ze.ArchiveStream);
+                    bytesRead += ze._aesCrypto_forExtract.SizeOfEncryptionMetadata - 10; // MAC (follows crypto bytes)
                     // according to WinZip, the CompressedSize includes the AES Crypto framing data.
-                    ze._CompressedFileDataSize -= ze._aesCrypto.SizeOfEncryptionMetadata;
+                    ze._CompressedFileDataSize -= ze._aesCrypto_forExtract.SizeOfEncryptionMetadata;
                     ze._LengthOfTrailer += 10;  // MAC
                 }
                 else
@@ -356,7 +357,6 @@ namespace Ionic.Zip
             // Store the position in the stream for this entry
             // change for workitem 8098
             entry.__FileDataPosition = entry.ArchiveStream.Position;
-            //entry.__FileDataPosition = entry._zipfile.RelativeOffset;
 
             // seek past the data without reading it. We will read on Extract()
             s.Seek(entry._CompressedFileDataSize + entry._LengthOfTrailer, SeekOrigin.Current);
@@ -514,7 +514,7 @@ namespace Ionic.Zip
                 j += 2;
                 _UnsupportedAlgorithmId = (UInt16)(Buffer[j] + Buffer[j + 1] * 256);
                 j += 2;
-                _Encryption = EncryptionAlgorithm.Unsupported;
+                _Encryption_FromZipFile = _Encryption = EncryptionAlgorithm.Unsupported;
 
                 // DotNetZip doesn't support this algorithm, but we don't need to throw here.
                 // we might just be reading the archive, which is fine.  We'll need to
@@ -549,20 +549,21 @@ namespace Ionic.Zip
                 if (vendorId != 0x4541)
                     throw new BadReadException(String.Format("  Unexpected vendor ID (0x{0:X4}) for WinZip AES metadata at position 0x{1:X16}", vendorId, posn));
 
-                this._KeyStrengthInBits = -1;
-                if (Buffer[j] == 1) _KeyStrengthInBits = 128;
-                if (Buffer[j] == 3) _KeyStrengthInBits = 256;
+                int keystrength= -1;
+                if (Buffer[j] == 1) keystrength = 128;
+                if (Buffer[j] == 3) keystrength = 256;
 
-                if (this._KeyStrengthInBits < 0)
-                    throw new BadReadException(String.Format("Invalid key strength ({0})", this._KeyStrengthInBits));
+                if (keystrength < 0)
+                    throw new BadReadException(String.Format("Invalid key strength ({0})", keystrength));
 
-                this._Encryption = (this._KeyStrengthInBits == 128)
+                _Encryption_FromZipFile = this._Encryption = (keystrength == 128)
                     ? EncryptionAlgorithm.WinZipAes128
                     : EncryptionAlgorithm.WinZipAes256;
 
                 j++;
 
                 // set the actual compression method
+                this._CompressionMethod_FromZipFile=
                 this._CompressionMethod = BitConverter.ToInt16(Buffer, j);
                 j += 2; // for the next segment of the extra field
             }

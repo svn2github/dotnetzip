@@ -560,7 +560,7 @@ namespace  Ionic.Zip
             if (_LeftToRead == 0)
             {
                 int CrcResult = _crcStream.Crc;
-                _currentEntry.VerifyCrc(CrcResult);
+                _currentEntry.VerifyCrcAfterExtract(CrcResult);
                 _inputStream.Seek(_endOfEntry, SeekOrigin.Begin);
             }
 

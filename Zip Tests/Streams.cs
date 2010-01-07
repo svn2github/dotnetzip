@@ -1,25 +1,25 @@
 // Streams.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa 
+// Copyright (c) 2009 Dino Chiesa
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-November-19 15:07:20>
+// last saved (in emacs):
+// Time-stamp: <2010-January-07 01:51:58>
 //
 // ------------------------------------------------------------------
 //
-// This module defines tests for Streams interfaces into DotNetZip.  
+// This module defines tests for Streams interfaces into DotNetZip.
 // ZipOutputStream, ZipInputStream, etc
 //
 // ------------------------------------------------------------------
@@ -44,7 +44,7 @@ namespace Ionic.Zip.Tests.Streams
     {
         Ionic.CopyData.Transceiver _txrx;
 
-        
+
         public StreamsTests() : base() { }
 
 
@@ -66,16 +66,16 @@ namespace Ionic.Zip.Tests.Streams
 
         EncryptionAlgorithm[] crypto =
             {
-                EncryptionAlgorithm.None, 
+                EncryptionAlgorithm.None,
                 EncryptionAlgorithm.PkzipWeak,
                 EncryptionAlgorithm.WinZipAes128,
                 EncryptionAlgorithm.WinZipAes256,
             };
 
 #if NOT
-        EncryptionAlgorithm[] cryptoNoPkzip = 
+        EncryptionAlgorithm[] cryptoNoPkzip =
             {
-                EncryptionAlgorithm.None, 
+                EncryptionAlgorithm.None,
                 EncryptionAlgorithm.WinZipAes128,
                 EncryptionAlgorithm.WinZipAes256,
             };
@@ -92,7 +92,7 @@ namespace Ionic.Zip.Tests.Streams
         Zip64Option[] z64 =
             {
                 Zip64Option.Never,
-                Zip64Option.AsNecessary, 
+                Zip64Option.AsNecessary,
                 Zip64Option.Always,
             };
 
@@ -127,7 +127,7 @@ namespace Ionic.Zip.Tests.Streams
                 return _wzzip;
             }
         }
-        
+
 
 
         [TestMethod]
@@ -238,7 +238,7 @@ namespace Ionic.Zip.Tests.Streams
 
 
 
-        
+
         [TestMethod]
         public void AddEntry_JitProvided()
         {
@@ -292,7 +292,7 @@ namespace Ionic.Zip.Tests.Streams
             _TestDriver(test, label, seekable, zero, 0);
         }
 
-        
+
         private void _TestDriver(TestCompressionLevels test, string label, bool seekable, bool zero, int fileOutputOption)
         {
             int[] fileCounts = new int[] { 1, 2, _rnd.Next(14) + 13 };
@@ -396,7 +396,7 @@ namespace Ionic.Zip.Tests.Streams
         }
 
 
-        
+
         [TestMethod]
         public void AddEntry_WriteDelegate()
         {
@@ -440,13 +440,13 @@ namespace Ionic.Zip.Tests.Streams
                                               fileCount,
                                               crypto[i],
                                               "{0}");
-                                                  
+
                 _Internal_Create_ZipOutputStream(files, EncryptionAlgorithm.PkzipWeak, false, 99, format);
             }
         }
 
-        
-        
+
+
         [TestMethod, Timeout(1800000)]  // timeout is in milliseconds, (3600 * 1000) = 1 hour;
         public void ZipOutputStream_over_65534_Entries_PkZipEncryption_DefaultCompression_AsNecessary()
         {
@@ -473,30 +473,30 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
             _Internal_ZipOutputStream_Zip64_over_65534_Entries(Zip64Option.Never, EncryptionAlgorithm.PkzipWeak, Ionic.Zlib.CompressionLevel.Default);
         }
 
-        
+
         int fileCount;
         private void _Internal_ZipOutputStream_Zip64_over_65534_Entries(Zip64Option z64option, EncryptionAlgorithm encryption, Ionic.Zlib.CompressionLevel compression)
         {
-            // Emitting a zip file with > 65534 entries requires the use of ZIP64 in the central directory. 
+            // Emitting a zip file with > 65534 entries requires the use of ZIP64 in the central directory.
             fileCount = _rnd.Next(7616)+65534;
             string txrxLabel = String.Format("ZipOutputStream #({0}) E({1}) C({2})",
                                              fileCount,encryption.ToString(), compression.ToString());
             string zipFileToCreate = String.Format("ZipOutputStream.Zip64.over_65534_Entries.{0}.{1}.{2}.zip",
                                                    z64option.ToString(), encryption.ToString(), compression.ToString());
-            
+
             StartProgressMonitor(zipFileToCreate);
             StartProgressClient(zipFileToCreate, txrxLabel, "starting up...");
 
             _txrx.Send("pb 0 max 2"); // 2 stages: Write, Verify
             _txrx.Send("pb 0 value 0");
-            
+
             string password = Path.GetRandomFileName();
-                    
+
             string statusString = String.Format("status Encryption:{0} Compression:{1}...",
                                                 encryption.ToString(),
                                                 compression.ToString());
             _txrx.Send(statusString);
-            
+
             int dirCount= 0;
 
             using (FileStream fs = File.Open(zipFileToCreate, FileMode.Create, FileAccess.ReadWrite))
@@ -512,7 +512,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                     output.Encryption = encryption;
                     output.CompressionLevel = compression;
                     output.EnableZip64 = z64option;
-                    for (int k=0; k<fileCount;  k++) 
+                    for (int k=0; k<fileCount;  k++)
                     {
                         if (_rnd.Next(7)==0)
                         {
@@ -525,7 +525,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                         {
                             string entryName = String.Format("{0:D4}.txt", k);
                             output.PutNextEntry(entryName);
-                            
+
                             if (_rnd.Next(8)==0)
                             {
                                 string content = String.Format("This is the content for entry #{0}.", k);
@@ -537,11 +537,13 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                             _txrx.Send("pb 1 step");
 
                         if (k % 128 == 0)
-                            _txrx.Send(String.Format("{0} ({1}/{2})", statusString, k, fileCount));
+                            _txrx.Send(String.Format("{0} ({1}/{2}) {3:N0}%",
+                                                     statusString, k, fileCount,
+                                                     ((double)k)/(0.01 * fileCount)));
                     }
                 }
             }
-                
+
             _txrx.Send("pb 1 max 1");
             _txrx.Send("pb 1 value 1");
             _txrx.Send("pb 0 step");
@@ -549,16 +551,16 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
             System.Threading.Thread.Sleep(400);
             _txrx.Send(statusString + " Verifying...");
 
-            // exec WinZip. But the output is really large, so we pass emitOutput=false . 
+            // exec WinZip. But the output is really large, so we pass emitOutput=false .
             WinzipVerify(zipFileToCreate, password, false);
 
             Assert.AreEqual<int>(fileCount-dirCount, TestUtilities.CountEntries(zipFileToCreate),
                                  "{0}: The zip file created has the wrong number of entries.", zipFileToCreate);
             _txrx.Send("stop");
-        } 
-        
+        }
 
-    
+
+
 
         void StartProgressMonitor(string progressChannel)
         {
@@ -575,7 +577,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
         }
 
 
-        
+
         void StartProgressClient(string progressChannel, string title, string initialStatus)
         {
             _txrx = new Ionic.CopyData.Transceiver();
@@ -607,8 +609,8 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
         }
 
 
-        
-                
+
+
         [TestMethod]
         public void Create_ZipOutputStream_Directories()
         {
@@ -659,10 +661,10 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
             }
         }
 
-        
 
-        
-        
+
+
+
         [TestMethod]
         [ExpectedException(typeof(System.InvalidOperationException))]
         public void Create_ZipOutputStream_Directories_Write()
@@ -700,8 +702,8 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
             }
         }
 
-        
-                
+
+
         [TestMethod]
         public void Create_ZipOutputStream_EmptyEntries()
         {
@@ -808,7 +810,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
             bool zero = true;
             _TestDriver(new TestCompressionLevels(_Internal_Create_ZipOutputStream), "ZipOutputStream", seekable, zero);
         }
-        
+
         [TestMethod]
         public void Create_ZipOutputStream_ZeroLength_wi8933_file()
         {
@@ -818,7 +820,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
             _TestDriver(new TestCompressionLevels(_Internal_Create_ZipOutputStream), "ZipOutputStream", seekable, zero, fileOutputOption);
         }
 
-        
+
         private void _Internal_Create_ZipOutputStream(string[] files,
                                                       EncryptionAlgorithm crypto,
                                                       bool seekable,
@@ -828,7 +830,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
             _Internal_Create_ZipOutputStream(files, crypto, seekable, cycle, format, 0);
         }
 
-        
+
         private void _Internal_Create_ZipOutputStream(string[] files,
                                                       EncryptionAlgorithm crypto,
                                                       bool seekable,
@@ -912,21 +914,32 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
             //int _sizeRange     = 256 * 12;
             var sw             = new System.Diagnostics.Stopwatch();
             byte[] buffer      = new byte[0x8000];
-            int n              = 0; 
+            int n              = 0;
             TimeSpan[] ts      = new TimeSpan[2];
-            int nFiles         = _rnd.Next(6) + 6;
+            int nFiles         = _rnd.Next(8) + 8;
             //int nFiles         = 2;
             string[] filenames = new string[nFiles];
             string dirToZip    = Path.Combine(TopLevelDir, "dirToZip");
 
-            TestContext.WriteLine("Creating {0} fodder files...", nFiles);
 
+            string channel = String.Format("ZOS_Parallel{0:000}",_rnd.Next(1000));
+            string txrxLabel = "ZipOutputStream Parallel";
+            StartProgressMonitor(channel);
+            StartProgressClient(channel, txrxLabel, "starting up...");
+
+            TestContext.WriteLine("Creating {0} fodder files...", nFiles);
             Directory.CreateDirectory(dirToZip);
-            
+
+            _txrx.Send(String.Format("pb 0 max {0}", nFiles));
+            _txrx.Send("pb 0 value 0");
+
             sw.Start();
-            
-            for (int x=0; x < nFiles; x++) 
+
+            for (int x=0; x < nFiles; x++)
             {
+                string status = String.Format("status Creating file {0}/{1}", x+1, nFiles);
+                _txrx.Send(status);
+
                 filenames[x] = Path.Combine(dirToZip, String.Format("file{0:000}.txt", x));
                 using (var output = File.Create(filenames[x]))
                 {
@@ -938,14 +951,22 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                         }
                     }
                 }
+                _txrx.Send("pb 0 step");
             }
             sw.Stop();
             TestContext.WriteLine("file generation took {0}", sw.Elapsed);
-            
+
+            _txrx.Send(String.Format("pb 0 max {0}", crypto.Length));
+            _txrx.Send("pb 0 value 0");
+
             for (int i = 0; i < crypto.Length; i++)
             {
-                int c = (i + 2) % crypto.Length;
                 //int c = i;
+                int c = (i + 2) % crypto.Length;
+
+                _txrx.Send(String.Format("pb 1 max {0}", compLevels.Length));
+                _txrx.Send("pb 1 value 0");
+
                 for (int j = 0; j < compLevels.Length; j++)
                 {
                     string password = Path.GetRandomFileName();
@@ -958,21 +979,27 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                     int kCycles = (compLevels[j] == Ionic.Zlib.CompressionLevel.None)
                         ? 1
                         : 2;
-                            
+
                     for (int k = 0; k < kCycles; k++)
                     {
                         // Also, I use Stopwatch to time the compression, and compare.
                         // In light of that, I wanna do one warmup, and then one timed
                         // trial (for t==0..2).  But here again, if CompressionLevel==None, then I
-                        // don't want to do a timing comparison, so I don't need 2 trials. 
+                        // don't want to do a timing comparison, so I don't need 2 trials.
                         // Therefore, in that case, the "warmup" is the only trial I want to do.
-                        // So when k==1 and Compression==None, do no cycles at all. 
-                        // 
+                        // So when k==1 and Compression==None, do no cycles at all.
+                        //
                         int tCycles = (compLevels[j] == Ionic.Zlib.CompressionLevel.None)
                             ? ((k==0) ? 1 : 0)
                             : 2;
-                            
-                        for (int t=0; t < tCycles;  t++) 
+
+                        if (k==0)
+                        {
+                        _txrx.Send(String.Format("pb 2 max {0}", kCycles*tCycles));
+                        _txrx.Send("pb 2 value 0");
+                        }
+
+                        for (int t=0; t < tCycles;  t++)
                         {
                             TestContext.WriteLine(new String('-', 72));
                             string zipFileToCreate = String.Format("ZipOutputStream_Parallel.E-{0}.C-{1}.{2}.{3}timed.zip",
@@ -984,7 +1011,9 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
 
                             TestContext.WriteLine("Trial {0}.{1}.{2}.{3}", i,j,k,t);
                             TestContext.WriteLine("Create zip file {0}", zipFileToCreate);
-                        
+
+                            _txrx.Send("status " + zipFileToCreate);
+
                             sw.Reset();
                             sw.Start();
                             using (var output = new ZipOutputStream(zipFileToCreate))
@@ -993,12 +1022,15 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                                     output.ParallelDeflateThreshold = -1L;   // never
                                 else
                                     output.ParallelDeflateThreshold = 0L; // always
-                            
+
                                 output.Password = password;
                                 output.Encryption = crypto[c]; // maybe "None"
                                 output.CompressionLevel = compLevels[j];
 
-                                for (int x=0; x < nFiles; x++) 
+                                _txrx.Send(String.Format("pb 3 max {0}", nFiles));
+                                _txrx.Send("pb 3 value 0");
+
+                                for (int x=0; x < nFiles; x++)
                                 {
                                     output.PutNextEntry(Path.GetFileName(filenames[x]));
                                     using (var input = File.Open(filenames[x], FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Write))
@@ -1008,9 +1040,10 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                                             output.Write(buffer, 0, n);
                                         }
                                     }
+                                    _txrx.Send("pb 3 step");
                                 }
                             }
-                            
+
                             sw.Stop();
                             ts[k]= sw.Elapsed;
                             TestContext.WriteLine("compression took {0}", ts[k]);
@@ -1020,12 +1053,14 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
 
                             Assert.AreEqual<int>(nFiles, TestUtilities.CountEntries(zipFileToCreate),
                                                  "Trial ({0}.{1}.{2}.{3}): The zip file created has the wrong number of entries.", i, j, k, t);
-                            
+
+                            _txrx.Send("pb 2 step");
                         }
+
                     }
 
 #if NOT_DEBUGGING
-                    // parallel is not always faster! 
+                    // parallel is not always faster!
                     if (_sizeBase > 256 * 1024 &&
                         compLevels[j] != Ionic.Zlib.CompressionLevel.None &&
                         compLevels[j] != Ionic.Zlib.CompressionLevel.BestSpeed &&
@@ -1035,9 +1070,13 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                                       i, j, ts[0], ts[1],
                                       crypto[c],
                                       compLevels[j]);
-#endif                    
+#endif
+                    _txrx.Send("pb 1 step");
                 }
+                _txrx.Send("pb 0 step");
             }
+
+            _txrx.Send("stop");
         }
 
 
@@ -1061,7 +1100,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
         {
             _Internal_Streams_7z_Zip(2, "mixed");
         }
-        
+
         [TestMethod]
         public void Streams_Winzip_Zip_Mixed_Password()
         {
@@ -1082,7 +1121,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
             return nameOfFileToCreate;
         }
 
-        
+
         public void _Internal_Streams_7z_Zip(int flavor, string label)
         {
             int[] fileCounts = { 1, 2, _rnd.Next(8) + 6, _rnd.Next(18) + 16, _rnd.Next(48) + 56 } ;
@@ -1095,7 +1134,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                 int fileCount = fileCounts[m];
                 string zipFileToCreate = Path.Combine(TopLevelDir,
                                                       String.Format("Streams_7z_Zip.{0}.{1}.{2}.zip", flavor, label, m));
-            
+
                 string[] files = null;
                 if (flavor == 0)
                 {
@@ -1161,13 +1200,13 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                                 }
                             }
 
-                            // we don't set the timestamps or attributes on the file/directory.                        
+                            // we don't set the timestamps or attributes on the file/directory.
                         }
                     }
                 }
 
                 // winzip does not include the base path in the filename;
-                // 7zip does. 
+                // 7zip does.
                 string[] filesUnzipped = Directory.GetFiles(Path.Combine(extractDir, dirToZip));
 
                 // Verify the number of files extracted
@@ -1189,7 +1228,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                 int fileCount = fileCounts[m];
                 string zipFileToCreate = Path.Combine(TopLevelDir,
                                                       String.Format("Streams_Winzip_Zip.{0}.{1}.{2}.zip", fodderOption, label, m));
-            
+
                 string[] files = null;
                 if (fodderOption == 0)
                 {
@@ -1221,7 +1260,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                 string formatString = "-a -p {0} -yx {1} {2}\\*.*";
                 string wzzipOut = this.Exec(wzzip, String.Format(formatString, pwdOption, zipFileToCreate, dirToZip));
 
-                
+
                 // Verify the number of files in the zip
                 Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), files.Length,
                                      "Incorrect number of entries in the zip file.");
@@ -1231,7 +1270,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                 Directory.CreateDirectory(extractDir);
                 byte[] buffer= new byte[2048];
                 int n;
-                
+
                 using (var raw = File.Open(zipFileToCreate, FileMode.Open, FileAccess.Read ))
                 {
                     using (var input= new ZipInputStream(raw))
@@ -1261,7 +1300,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                                 }
                             }
 
-                            // we don't set the timestamps or attributes on the file/directory.                        
+                            // we don't set the timestamps or attributes on the file/directory.
                         }
                     }
                 }
@@ -1276,7 +1315,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
 
 
 
-        
+
         [TestMethod]
         public void Streams_ZipInput_Encryption_zero()
         {
@@ -1288,35 +1327,35 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
         {
             _Internal_Streams_ZipInput_Encryption(3);
         }
-        
+
         [TestMethod]
         public void Streams_ZipInput_Encryption_nonzero()
         {
             _Internal_Streams_ZipInput_Encryption(1);
         }
 
-        
+
         [TestMethod]
         public void Streams_ZipInput_Encryption_nonzero_subdir()
         {
             _Internal_Streams_ZipInput_Encryption(4);
         }
 
-        
+
         [TestMethod]
         public void Streams_ZipInput_Encryption_mixed()
         {
             _Internal_Streams_ZipInput_Encryption(2);
         }
 
-        
+
         [TestMethod]
         public void Streams_ZipInput_Encryption_mixed_subdir()
         {
             _Internal_Streams_ZipInput_Encryption(5);
         }
 
-        
+
 
 
 
@@ -1331,47 +1370,47 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
         {
             _Internal_Streams_ZipInput_Encryption(3,1);
         }
-        
+
         [TestMethod]
         public void Streams_ZipInput_Encryption_nonzero_file()
         {
             _Internal_Streams_ZipInput_Encryption(1,1);
         }
 
-        
+
         [TestMethod]
         public void Streams_ZipInput_Encryption_nonzero_subdir_file()
         {
             _Internal_Streams_ZipInput_Encryption(4,1);
         }
 
-        
+
         [TestMethod]
         public void Streams_ZipInput_Encryption_mixed_file()
         {
             _Internal_Streams_ZipInput_Encryption(2,1);
         }
 
-        
+
         [TestMethod]
         public void Streams_ZipInput_Encryption_mixed_subdir_file()
         {
             _Internal_Streams_ZipInput_Encryption(5,1);
         }
 
-        
 
-        
-        
+
+
+
         public void _Internal_Streams_ZipInput_Encryption(int fodderOption)
         {
             _Internal_Streams_ZipInput_Encryption(fodderOption, 0);
         }
-        
+
         public void _Internal_Streams_ZipInput_Encryption(int fodderOption, int fileReadOption)
         {
             int[] fileCounts = { 1, 2, _rnd.Next(8) + 6, _rnd.Next(18) + 16, _rnd.Next(48) + 56 } ;
-             
+
             for (int m=0; m < fileCounts.Length; m++)
             {
                 string password = Path.GetRandomFileName();
@@ -1379,7 +1418,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                 if (!Directory.Exists(dirToZip)) Directory.CreateDirectory(dirToZip);
 
                 int fileCount = fileCounts[m];
-            
+
                 string[] files = null;
                 if (fodderOption == 0)
                 {
@@ -1409,11 +1448,11 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                 for (int i = 0; i < crypto.Length; i++)
                 {
                     EncryptionAlgorithm c = crypto[i];
-                 
+
                     string zipFileToCreate = Path.Combine(TopLevelDir,
                                                           String.Format("Streams_ZipInput_AES.{0}.count.{1:D2}.{2}.zip",
                                                                         c.ToString(), fileCounts[m], fodderOption));
-                    // Create the zip archive 
+                    // Create the zip archive
                     using (var zip = new ZipFile())
                     {
                         zip.Password = password;
@@ -1425,11 +1464,11 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                         }
                         else
                             zip.AddDirectory(dirToZip);
-                        
+
                         zip.Save(zipFileToCreate);
                     }
 
-                
+
                     // Verify the number of files in the zip
                     Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), files.Length,
                                          "Incorrect number of entries in the zip file.");
@@ -1440,7 +1479,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
 
                     byte[] buffer= new byte[2048];
                     int n;
-                    
+
                     ZipInputStream input = null;
                     if (fileReadOption == 0)
                     {
@@ -1451,13 +1490,13 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                     {
                         input= new ZipInputStream(zipFileToCreate);
                     }
-                    
+
                     using (input)
                     {
                         // set password if necessary
                         if (crypto[i] != EncryptionAlgorithm.None)
                             input.Password = password;
-                        
+
                         ZipEntry e;
                         while (( e = input.GetNextEntry()) != null)
                         {
@@ -1472,7 +1511,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                             }
                             else
                             {
-                                // emit the file 
+                                // emit the file
                                 using (var output = File.Open(outputPath, FileMode.Create, FileAccess.ReadWrite ))
                                 {
                                     while ((n= input.Read(buffer,0,buffer.Length)) > 0)
@@ -1482,8 +1521,8 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                                 }
                             }
                         }
-                        
-                    } 
+
+                    }
 
                     string[] filesUnzipped = (fodderOption > 2)
                         ? Directory.GetFiles(Path.Combine(extractDir, "subdir" ))
@@ -1494,9 +1533,9 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                                          "Incorrect number of files extracted. ({0}!={1})", files.Length, filesUnzipped.Length);
                 }
             }
-        } 
-        
-        
-        
+        }
+
+
+
     }
 }

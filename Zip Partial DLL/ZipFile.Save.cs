@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2009-December-27 10:43:33>
+// Time-stamp: <2010-January-06 15:24:43>
 //
 // ------------------------------------------------------------------
 //
@@ -98,7 +98,13 @@ namespace Ionic.Zip
                     throw new BadStateException("You specified an EXE for a plain zip file.");
 
                 // check if modified, before saving.
-                if (!_contentsChanged) return;
+                if (!_contentsChanged)
+                {
+                    OnSaveCompleted();
+                    if (Verbose) StatusMessageTextWriter.WriteLine("No save is necessary....");
+                    return;
+                }
+
 
                 if (Verbose) StatusMessageTextWriter.WriteLine("saving....");
 
@@ -117,12 +123,13 @@ namespace Ionic.Zip
                         e.Write(WriteStream);
                         if (_saveOperationCanceled)
                             break;
-                        //e._container = new ZipContainer(this);  // not sure why I have this here.
+
                         n++;
                         OnSaveEntry(n, e, false);
                         if (_saveOperationCanceled)
                             break;
 
+                        // Some entries can be skipped during the save.
                         if (e.IncludedInMostRecentSave)
                             thisSaveUsedZip64 |= e.OutputUsedZip64.Value;
                     }
@@ -203,6 +210,7 @@ namespace Ionic.Zip
                     _fileAlreadyExists = true;
                 }
 
+                NotifyEntriesSaveComplete(c);
                 OnSaveCompleted();
                 _JustSaved = true;
             }
@@ -217,6 +225,14 @@ namespace Ionic.Zip
         }
 
 
+
+        private void NotifyEntriesSaveComplete(ICollection<ZipEntry> c)
+        {
+            foreach (ZipEntry e in  c)
+            {
+                e.NotifySaveComplete();
+            }
+        }
 
 
         private void RemoveTempFile()

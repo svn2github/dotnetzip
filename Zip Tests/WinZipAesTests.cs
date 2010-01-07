@@ -821,7 +821,7 @@ namespace Ionic.Zip.Tests.WinZipAes
         
 
         [TestMethod]
-        [ExpectedException(typeof(System.InvalidOperationException))]
+        //[ExpectedException(typeof(System.InvalidOperationException))]
         public void WinZipAes_Update_SwitchCompression()
         {
             Directory.SetCurrentDirectory(TopLevelDir);
@@ -871,15 +871,16 @@ namespace Ionic.Zip.Tests.WinZipAes
 
             TestContext.WriteLine("=======================================");
             TestContext.WriteLine("Updating the zip file");
+            
             // Update the zip file
             using (ZipFile zip = ZipFile.Read(zipFileToCreate))
             {
                 for (int j = 0; j < 5; j++)
                 {
-                    // This should fail
+                    zip[j].Password = password;
                     zip[j].CompressionMethod = 0;
                 }
-                zip.Save();
+                zip.Save(); // this should succeed
             }
 
         }

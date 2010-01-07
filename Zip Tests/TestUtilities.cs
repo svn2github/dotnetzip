@@ -1,21 +1,21 @@
 // TestUtilities.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.  
+// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-November-22 10:28:13>
+// last saved (in emacs):
+// Time-stamp: <2010-January-05 16:38:14>
 //
 // ------------------------------------------------------------------
 //
@@ -372,7 +372,7 @@ namespace Ionic.Zip.Tests.Utilities
                 candidate = Path.Combine(parentDir, Name);
             } while (File.Exists(candidate));
 
-            // this file/path does not exist.  It can now be created, as file or directory. 
+            // this file/path does not exist.  It can now be created, as file or directory.
             return candidate;
         }
 
@@ -401,7 +401,7 @@ namespace Ionic.Zip.Tests.Utilities
             byte[] hash = null;
             var _md5 = System.Security.Cryptography.MD5.Create();
 
-            using (FileStream fs = File.Open(filename, FileMode.Open))
+            using (FileStream fs = File.OpenRead(filename))
             {
                 hash = _md5.ComputeHash(fs);
             }
@@ -515,7 +515,7 @@ namespace Ionic.Zip.Tests.Utilities
         {
             return (char)(_rnd.Next(26) + 97);
         }
-        
+
         public static char GetOneRandomUppercaseAsciiChar()
         {
             return (char)(_rnd.Next(26) + 65);
@@ -618,12 +618,21 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal static string GetTestBinDir(string startingPoint)
         {
+            return GetTestDependentDir(startingPoint, "Zip Tests\\bin\\Debug");
+        }
+
+        internal static string GetTestSrcDir(string startingPoint)
+        {
+            return GetTestDependentDir(startingPoint, "Zip Tests");
+        }
+
+        private static string GetTestDependentDir(string startingPoint, string subdir)
+        {
             var location = startingPoint;
             for (int i = 0; i < 3; i++)
                 location = Path.GetDirectoryName(location);
 
-            var testDir = "Zip Tests\\bin\\Debug";
-            location = Path.Combine(location, testDir);
+            location = Path.Combine(location, subdir);
             return location;
         }
 

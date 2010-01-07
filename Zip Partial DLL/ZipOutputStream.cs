@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2009-December-31 17:16:34>
+// Time-stamp: <2010-January-06 14:14:40>
 //
 // ------------------------------------------------------------------
 //
@@ -1209,6 +1209,7 @@ namespace Ionic.Zip
             // zero.
 
             _currentEntry.WriteHeader(_outputStream, finishing ? 99 : 0);
+            _currentEntry.StoreRelativeOffset();
 
             if (!_currentEntry.IsDirectory)
             {
