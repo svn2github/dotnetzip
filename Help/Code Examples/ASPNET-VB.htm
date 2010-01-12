@@ -15,7 +15,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 <!-- @SortOrder 50 -->
 
 </head>
- 
+
 <body>
 <h1>DotNetZip - ASP.NET VB Example</h1>
 
@@ -31,9 +31,9 @@ Save, or Cancel of the generated zip file.</p>
 
 
 
-&lt;%@ Page 
-    Language="VB" 
-    Debug="true" 
+&lt;%@ Page
+    Language="VB"
+    Debug="true"
 %&gt;
 
 &lt;%@ Import Namespace="System.Text" %&gt;
@@ -43,11 +43,11 @@ Save, or Cancel of the generated zip file.</p>
 
 &lt;script language="VB" runat="server"&gt;
 
-' ZipExample.aspx 
-' 
+' ZipExample.aspx
+'
 ' This .aspx page demonstrates how to use the DotNetZip library from within ASP.NET.
-' 
-' To run it, 
+'
+' To run it,
 '  1. drop the Ionic.Zip.dll into the \bin directory of your asp.net app
 '  2. create a subdirectory called "fodder" in your web app directory.
 '  3. copy into that directory a variety of random files.
@@ -55,19 +55,19 @@ Save, or Cancel of the generated zip file.</p>
 '
 '
 ' notes:
-'  This requies the .NET Framework 3.5 - because it uses the ListView control that is 
-'  new for ASP.NET in the .NET Framework v3.5.  
+'  This requies the .NET Framework 3.5 - because it uses the ListView control that is
+'  new for ASP.NET in the .NET Framework v3.5.
 '
-'  To use this control, you must add the new web controls.  Also, you must use the v3.5 compiler. 
-'  Here's an example web.config that works with this aspx file: 
-' 
+'  To use this control, you must add the new web controls.  Also, you must use the v3.5 compiler.
+'  Here's an example web.config that works with this aspx file:
+'
 '    &lt;configuration&gt;
 '      &lt;system.web&gt;
 '        &lt;trust level="Medium" /&gt;
 '        &lt;compilation defaultLanguage="c#" /&gt;
 '        &lt;pages&gt;
 '          &lt;controls&gt;
-'            &lt;add tagPrefix="asp" namespace="System.Web.UI.WebControls" 
+'            &lt;add tagPrefix="asp" namespace="System.Web.UI.WebControls"
 '                 assembly="System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35" /&gt;
 '          &lt;/controls&gt;
 '        &lt;/pages&gt;
@@ -81,8 +81,8 @@ Save, or Cancel of the generated zip file.</p>
 '            &lt;providerOption name="CompilerVersion" value="v3.5" /&gt;
 '            &lt;providerOption name="WarnAsError" value="false" /&gt;
 '          &lt;/compiler&gt;
-'    
-'          &lt;compiler language="vb;vbs;visualbasic;vbscript" 
+'
+'          &lt;compiler language="vb;vbs;visualbasic;vbscript"
 '                    extension=".vb"
 '                    warningLevel="4"
 '                    type="Microsoft.VisualBasic.VBCodeProvider, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"&gt;
@@ -90,10 +90,10 @@ Save, or Cancel of the generated zip file.</p>
 '            &lt;providerOption name="OptionInfer" value="false" /&gt;
 '            &lt;providerOption name="WarnAsError" value="false" /&gt;
 '          &lt;/compiler&gt;
-'    
+'
 '      &lt;/system.codedom&gt;
 '    &lt;/configuration&gt;
-' 
+'
 '
 
 
@@ -103,22 +103,22 @@ Public Sub Page_Load (ByVal sender As Object, ByVal e As System.EventArgs)
     Try
         If Not ( Page.IsPostBack ) Then
             ' populate the dropdownlist
-            ' must have a directory called "fodder" in the web app 
+            ' must have a directory called "fodder" in the web app
             Dim homeDir as String = Server.MapPath(".")
             Dim sMappedPath as  String= Server.MapPath("fodder")
-        
+
             Dim fqFilenames As New List(Of String)(System.IO.Directory.GetFiles(sMappedPath))
 
             Dim filenames as List(Of String) = _
                 fqFilenames.ConvertAll (Function(s) s.Replace(sMappedPath &amp; "\", ""))
 
             ErrorMessage.InnerHtml = ""
-            
+
             FileListView.DataSource = filenames
             FileListView.DataBind()
         End If
 
-    Catch 
+    Catch
         ' Ignored
     End Try
 
@@ -154,7 +154,7 @@ Public Sub btnGo_Click (ByVal sender As System.Object, ByVal e As System.EventAr
         Response.BufferOutput= false
 
         Dim enc as Ionic.Zip.EncryptionAlgorithm = Ionic.Zip.EncryptionAlgorithm.None
-        If (chkUseAes.Checked) Then 
+        If (chkUseAes.Checked) Then
             enc = EncryptionAlgorithm.WinZipAes256
         End If
 
@@ -173,18 +173,18 @@ Public Sub btnGo_Click (ByVal sender As System.Object, ByVal e As System.EventAr
         Dim archiveName as String= String.Format("archive-{0}.zip", DateTime.Now.ToString("yyyy-MMM-dd-HHmmss"))
         Response.ContentType = "application/zip"
         Response.AddHeader("content-disposition", "filename=" + archiveName)
-        
+
         Using zip as new ZipFile()
             ' the Readme.txt file will not be password-protected.
-            zip.AddEntry("Readme.txt", "", ReadmeText, Encoding.Default)
+            zip.AddEntry("Readme.txt", ReadmeText, Encoding.Default)
             If Not String.IsNullOrEmpty(tbPassword.Text) Then
                 zip.Password = tbPassword.Text
                 zip.Encryption = enc
             End If
-                
+
             ' filesToInclude is a string[] or List&lt;String&gt;
             zip.AddFiles(filesToInclude, "files")
-            
+
             zip.Save(Response.OutputStream)
         End Using
         Response.Close
@@ -215,7 +215,7 @@ End Sub
       browser through Response.OutputStream.  This page is implemented
       in VB.NET.&lt;/p&gt;
 
-      &lt;span class="SampleTitle"&gt;&lt;b&gt;Check the boxes to select the files, set a password if you like, 
+      &lt;span class="SampleTitle"&gt;&lt;b&gt;Check the boxes to select the files, set a password if you like,
       then click the button to zip them up.&lt;/b&gt;&lt;/span&gt;
       &lt;br/&gt;
       &lt;br/&gt;
@@ -227,7 +227,7 @@ End Sub
       &lt;br/&gt;
       &lt;br/&gt;
       &lt;asp:Button id="btnGo" Text="Zip checked files" AutoPostBack OnClick="btnGo_Click" runat="server"/&gt;
-   
+
       &lt;br/&gt;
       &lt;br/&gt;
       &lt;span style="color:red" id="ErrorMessage" runat="server"/&gt;

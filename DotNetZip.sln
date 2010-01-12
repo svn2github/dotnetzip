@@ -54,9 +54,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConvertZipToSfx", "Tools\Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Win Forms App", "Tools\WinFormsApp\Win Forms App.csproj", "{6BCCF138-2EFB-464C-B872-E3079F0A4708}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZipTreeView", "Examples\C#\ZipTreeView\ZipTreeView.csproj", "{1BCEC4DE-A73D-49A6-869F-EDA4AB6B41EF}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "WinForms-TreeViewZip", "Examples\VB\WinForms-TreeViewZip\WinForms-TreeViewZip\WinForms-TreeViewZip.vbproj", "{2E78FB6A-EE17-4EE4-9D8D-BE9AE675C69D}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 21
+		SccNumberOfProjects = 23
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs04.codeplex.com/
 		SccLocalPath0 = .
@@ -129,6 +133,14 @@ Global
 		SccProjectTopLevelParentUniqueName20 = DotNetZip.sln
 		SccProjectName20 = Tools/WinFormsApp
 		SccLocalPath20 = Tools\\WinFormsApp
+		SccProjectUniqueName21 = Examples\\C#\\ZipTreeView\\ZipTreeView.csproj
+		SccProjectTopLevelParentUniqueName21 = DotNetZip.sln
+		SccProjectName21 = Examples/C#/ZipTreeView
+		SccLocalPath21 = Examples\\C#\\ZipTreeView
+		SccProjectUniqueName22 = Examples\\VB\\WinForms-TreeViewZip\\WinForms-TreeViewZip\\WinForms-TreeViewZip.vbproj
+		SccProjectTopLevelParentUniqueName22 = DotNetZip.sln
+		SccProjectName22 = Examples/VB/WinForms-TreeViewZip/WinForms-TreeViewZip
+		SccLocalPath22 = Examples\\VB\\WinForms-TreeViewZip\\WinForms-TreeViewZip
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = DotNetZip1.vsmdi
@@ -220,6 +232,14 @@ Global
 		{6BCCF138-2EFB-464C-B872-E3079F0A4708}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6BCCF138-2EFB-464C-B872-E3079F0A4708}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6BCCF138-2EFB-464C-B872-E3079F0A4708}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BCEC4DE-A73D-49A6-869F-EDA4AB6B41EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BCEC4DE-A73D-49A6-869F-EDA4AB6B41EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BCEC4DE-A73D-49A6-869F-EDA4AB6B41EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BCEC4DE-A73D-49A6-869F-EDA4AB6B41EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E78FB6A-EE17-4EE4-9D8D-BE9AE675C69D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E78FB6A-EE17-4EE4-9D8D-BE9AE675C69D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E78FB6A-EE17-4EE4-9D8D-BE9AE675C69D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E78FB6A-EE17-4EE4-9D8D-BE9AE675C69D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -230,6 +250,8 @@ Global
 		{E04C2A53-3981-44D4-94AF-6AC07D97CDE8} = {F7D17942-40ED-4243-BE57-591869948298}
 		{FB9FC8D7-7897-4802-9694-F379F25C00CB} = {F7D17942-40ED-4243-BE57-591869948298}
 		{F4024C01-1133-4A5A-B421-22EA8CA89EA5} = {F7D17942-40ED-4243-BE57-591869948298}
+		{1BCEC4DE-A73D-49A6-869F-EDA4AB6B41EF} = {F7D17942-40ED-4243-BE57-591869948298}
+		{2E78FB6A-EE17-4EE4-9D8D-BE9AE675C69D} = {F7D17942-40ED-4243-BE57-591869948298}
 		{A22C89E0-B5D4-4881-A61F-4B1FD82F2453} = {AAE1BA63-9776-4152-8AAD-801D775E188B}
 		{98008721-C4DD-4F34-B3AE-A3453E29BB65} = {AAE1BA63-9776-4152-8AAD-801D775E188B}
 		{276B8174-A24E-4257-9969-42D692F8CAC2} = {AAE1BA63-9776-4152-8AAD-801D775E188B}

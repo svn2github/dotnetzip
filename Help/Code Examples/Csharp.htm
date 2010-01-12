@@ -13,12 +13,12 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 </style>
 </head>
 
-<!-- @SortOrder 20 --> 
+<!-- @SortOrder 20 -->
 
 <body>
 <h1>DotNetZip - C# Examples</h1>
 
-<p>Here are a bunch of examples in C# that illustrate how to use the library.  
+<p>Here are a bunch of examples in C# that illustrate how to use the library.
 </p>
 
 <p>There are a few complete, working example applications shipped in the source code distribution. </p>
@@ -49,7 +49,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
     zip.Password= "123456!";
     zip.AddFile("ReadMe.txt");
     zip.AddFile("7440-N49th.png");
-    zip.AddFile("2005_Annual_Report.pdf");        
+    zip.AddFile("2005_Annual_Report.pdf");
     zip.Save("Backup.zip");
   }
 </pre>
@@ -67,7 +67,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
     zip.AddFile("7440-N49th.png");
     zip.Password= "!Secret1";
     zip.AddFile("2005_Annual_Report.pdf");
-    
+
     zip.Save("Backup.zip");
   }
 </pre>
@@ -124,7 +124,7 @@ widely supported by other zip utilities)</p>
   {
     zip.UseUnicode= true;  // utf-8
     zip.AddDirectory(@"MyDocuments\ProjectX");
-    zip.Comment = "This zip was created at " + System.DateTime.Now.ToString("G") ; 
+    zip.Comment = "This zip was created at " + System.DateTime.Now.ToString("G") ;
     zip.Save(ZipFileToCreate);
   }
 </pre>
@@ -133,9 +133,9 @@ widely supported by other zip utilities)</p>
 
 <hr>
 
-<p>Zip up an entire directory, recursively.  Use the "big5" encoding for 
+<p>Zip up an entire directory, recursively.  Use the "big5" encoding for
 those files in that directory tree that have
-chinese characters.  
+chinese characters.
 </p>
 
 <pre lang="cs" numberLines="true" outlining="true"
@@ -152,7 +152,7 @@ chinese characters.
 
 <hr>
 
-<p>Zip up an file, using the ZIP64 extensions if necessary to support large files. 
+<p>Zip up an file, using the ZIP64 extensions if necessary to support large files.
 </p>
 
 <pre lang="cs" numberLines="true" outlining="true"
@@ -185,7 +185,7 @@ in the zip archive.</p>
       ZipEntry e = zip.AddFile(f, "docs");
       e.LastModified = Timestamp;
     }
-    zip.Comment = "This zip was created at " + System.DateTime.Now.ToString("G") ; 
+    zip.Comment = "This zip was created at " + System.DateTime.Now.ToString("G") ;
     zip.Save(ZipFileToCreate);
   }
 </pre>
@@ -205,8 +205,8 @@ different directory hierarchy in the zip file.</p>
     zip.AddDirectory("MyMusic", "tunes");
     // The Readme.txt file in the filesystem will be stored in the zip archive as documents\Readme.txt
     zip.AddDirectory("Readme.txt", "documents");
- 
-    zip.Comment = "This zip was created at " + System.DateTime.Now.ToString("G") ; 
+
+    zip.Comment = "This zip was created at " + System.DateTime.Now.ToString("G") ;
     zip.Save(ZipFileToCreate);
   }
 </pre>
@@ -221,7 +221,7 @@ the stream.</p>
   title="Streams">
   using (ZipFile zip = new ZipFile())
   {
-    ZipEntry e= zip.AddEntry("Content-From-Stream.bin", "basedirectory", StreamToRead);
+    ZipEntry e= zip.AddEntry("Content-From-Stream.bin", StreamToRead);
     e.Comment = "The content for entry in the zip file was obtained from a stream";
     zip.AddFile("Readme.txt");
     zip.Save(ZipToCreate);
@@ -341,7 +341,7 @@ specified base directory:</p>
       if (header)
       {
         System.Console.WriteLine("Zipfile: {0}", zip.Name);
-        if ((zip.Comment != null) && (zip.Comment != "")) 
+        if ((zip.Comment != null) && (zip.Comment != ""))
           System.Console.WriteLine("Comment: {0}", zip.Comment);
         System.Console.WriteLine("\n{1,-22} {2,8}  {3,5}   {4,8}  {5,3} {0}",
                                  "Filename", "Modified", "Size", "Ratio", "Packed", "pw?");
@@ -355,7 +355,7 @@ specified base directory:</p>
                                e.CompressionRatio,
                                e.CompressedSize,
                                (e.UsesEncryption) ? "Y" : "N");
- 
+
     }
   }
 </pre>
@@ -391,14 +391,14 @@ public void btnGo_Click (Object sender, EventArgs e)
   string filename = System.IO.Path.GetFileName(ListOfFiles.SelectedItem.Text) + ".zip";
   Response.ContentType = "application/zip";
   Response.AddHeader("content-disposition", "filename=" + filename);
-  
+
   using (ZipFile zip = new ZipFile())
   {
     zip.AddFile(ListOfFiles.SelectedItem.Text, "files");
     zip.AddStringAsFile(ReadmeText, "Readme.txt", "");
     zip.Save(Response.OutputStream);
   }
- 
+
   Response.End();
 }
 </pre>
@@ -410,10 +410,10 @@ save. </p>
 
 <pre lang="cs" numberLines="true" outlining="true"
   title="Content from String">
-  string content = "......whatever....";  
+  string content = "......whatever....";
   using (ZipFile zip = new ZipFile())
   {
-    ZipEntry e = zip.AddEntry("README.txt", "", content);
+    ZipEntry e = zip.AddEntry("README.txt", content);
     e.Comment = "This entry in the zip archive was created from a string.";
     zip.Save("archive-2008july12.zip");
   }
@@ -438,7 +438,7 @@ remove another, and rename a third. Update the comment on the archive as well.</
     e = zip["Table1.jpg"];
     e.FileName = "Figure1.jpg";
 
-    zip.Comment = "This zip archive was updated " + System.DateTime.ToString("G"); 
+    zip.Comment = "This zip archive was updated " + System.DateTime.ToString("G");
     zip.Save();
   }
 </pre>

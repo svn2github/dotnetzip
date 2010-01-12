@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-January-04 14:38:31>
+// Time-stamp: <2010-January-11 18:14:17>
 //
 // ------------------------------------------------------------------
 //
@@ -27,12 +27,10 @@
 using System;
 using System.IO;
 
-
 namespace Ionic.Zip
 {
     public partial class ZipFile
     {
-
         private string ArchiveNameForEvent
         {
             get
@@ -40,7 +38,6 @@ namespace Ionic.Zip
                 return (_name != null) ? _name : "(stream)";
             }
         }
-
 
         #region Save
 
@@ -128,6 +125,35 @@ namespace Ionic.Zip
         /// </remarks>
         ///
         /// <example>
+        ///
+        ///    This example uses an anonymous method to handle the
+        ///    SaveProgress event, by updating a progress bar.
+        ///
+        /// <code lang="C#">
+        /// progressBar1.Value = 0;
+        /// progressBar1.Max = listbox1.Items.Count;
+        /// using (ZipFile zip = new ZipFile())
+        /// {
+        ///    // listbox1 contains a list of filenames
+        ///    zip.AddFiles(listbox1.Items);
+        ///
+        ///    // do the progress bar:
+        ///    zip.SaveProgress += (sender, e) => {
+        ///       if (e.EventType == ZipProgressEventType.Saving_BeforeWriteEntry) {
+        ///          progressBar1.PerformStep();
+        ///       }
+        ///    };
+        ///
+        ///    zip.Save(fs);
+        /// }
+        /// </code>
+        /// </example>
+        ///
+        /// <example>
+        ///   This example uses a named method as the
+        ///   <c>SaveProgress</c> event handler, to update the user, in a
+        ///   console-based application.
+        ///
         /// <code lang="C#">
         /// static bool justHadByteUpdate= false;
         /// public static void SaveProgress(object sender, SaveProgressEventArgs e)
@@ -210,11 +236,15 @@ namespace Ionic.Zip
         ///     End If
         /// End Sub
         /// </code>
+        /// </example>
         ///
-        /// <para>
-        /// This is an example of using the SaveProgress events in a WinForms app.
-        /// </para>
-        /// <code>
+        /// <example>
+        ///
+        /// This is a more complete example of using the SaveProgress
+        /// events in a Windows Forms application, with a
+        /// Thread object.
+        ///
+        /// <code lang="C#">
         /// delegate void SaveEntryProgress(SaveProgressEventArgs e);
         /// delegate void ButtonClick(object sender, EventArgs e);
         ///

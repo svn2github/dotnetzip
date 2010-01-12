@@ -13,12 +13,12 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 </style>
 </head>
 
-<!-- @SortOrder 30 --> 
+<!-- @SortOrder 30 -->
 
 <body>
 <h1>DotNetZip - VB.NET Examples</h1>
 
-<p>Here are a bunch of examples in VB.NET showing how to use the library.  
+<p>Here are a bunch of examples in VB.NET showing how to use the library.
 </p>
 
 <p>There are also a few complete, working example applications shipped in the source code distribution. </p>
@@ -28,7 +28,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 
 <pre lang="VB" numberLines="true" outlining="true"
   title="Create a Zip">
- Try 
+ Try
      Using zip As ZipFile = New ZipFile
          zip.AddFile("c:\photos\personal\7440-N49th.png", "")
          zip.AddFile("c:\Desktop\2005_Annual_Report.pdf", "")
@@ -46,7 +46,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 
 <pre lang="VB" numberLines="true" outlining="true"
   title="Extract entries from a Zip">
- Try 
+ Try
      Using zip As ZipFile = ZipFile.Read(ZipFileToExtract)
         Dim e As ZipEntry
         For Each e In zip
@@ -78,7 +78,7 @@ End Using
 
 <pre lang="VB" numberLines="true" outlining="true"
   title="Create a Zip, entries get passwords">
-Try 
+Try
   Using zip As New ZipFile
     'the first entry is not protected by a password
     zip.AddFile("c:\datafiles\ReadMe.txt", "")
@@ -98,7 +98,7 @@ End Try
 
 <pre lang="VB" numberLines="true" outlining="true"
   title="Create a Zip, using AES encryption for the entries">
-Try 
+Try
   Using zip As New ZipFile
     zip.Password = "The.Silvertones.Box.Set!"
     zip.Encryption = EncryptionAlgorithm.WinZipAes256
@@ -125,7 +125,7 @@ Using zip As new ZipFile(FilePath)
           e.ExtractWithPassword("Secret!")
         Else
           e.Extract
-        End If 
+        End If
     Next
 End Using
 </pre>
@@ -136,7 +136,7 @@ End Using
 
 <pre lang="VB" numberLines="true" outlining="true"
   title="Create a Zip that uses ZIP64 extensions">
- Try 
+ Try
      Using zip As ZipFile = New ZipFile
          zip.UseZip64WhenSaving = Zip64Option.AsNecessary
          zip.AddFile("c:\datafiles\RawData-2009-02-12.csv", "")
@@ -161,7 +161,7 @@ inserted into the file "Readme.txt". </p>
   title="Create 3">
 Dim Content As String = "This string will be the content of the Readme.txt file in the zip archive."
 Using zip1 As ZipFile = New ZipFile
-    zip1.AddEntry("Readme.txt", "", "This is the readme content...")
+    zip1.AddEntry("Readme.txt", "This is the readme content...")
     zip1.AddFile("MyDocuments\Resume.doc", "files")
     zip1.Comment = ("This zip file was created at " & DateTime.Now.ToString("G"))
     zip1.Save("Content.zip")
@@ -177,7 +177,7 @@ End Using
   title="Create 4">
 Dim Content As String = "This string will be the content of the Readme.txt file in the zip archive."
 Using zip1 As ZipFile = New ZipFile
-    zip1.AddEntry("Readme.txt", "", stream)
+    zip1.AddEntry("Readme.txt", stream)
     zip1.AddFile("MyDocuments\Resume.doc", "files")
     zip1.Comment = ("This zip file was created at " & DateTime.Now.ToString("G"))
     zip1.Save("Content.zip")
@@ -194,7 +194,7 @@ End Using
 Dim sw As New System.IO.StringWriter
 Using zip As ZipFile = ZipFile.Read("PackedDocuments.zip", sw)
     Dim Threshold As New DateTime(2007, 7, 4)
-    ' We cannot remove the entry from the list, within the context of 
+    ' We cannot remove the entry from the list, within the context of
     ' an enumeration of said list.
     ' So we add the doomed entry to a list to be removed later.
     ' pass 1: mark the entries for removal
@@ -205,7 +205,7 @@ Using zip As ZipFile = ZipFile.Read("PackedDocuments.zip", sw)
             MarkedEntries.Add(e)
         End If
     Next
-    ' pass 2: actually remove the entry. 
+    ' pass 2: actually remove the entry.
     Dim zombie As ZipEntry
     For Each zombie In MarkedEntries
         zip.RemoveEntry(zombie)
@@ -227,7 +227,7 @@ Dim itempaths As String() = _
                  "MyProposal.docx", _
                  "SupportingFiles", _
                  "images\Image1.jpg" }
-Try 
+Try
     Using zip As New ZipFile(ZipToCreate, Console.Out)
         Dim i As Integer
         For i = 1 To itempaths.Length - 1
@@ -270,7 +270,7 @@ Using zip1 As New ZipFile
     zip1.Comment = "This zip archive has been created."
     zip1.Save("Content.zip")
 End Using
- 
+
 Using zip2 As ZipFile = ZipFile.Read("Content.zip")
     zip2.UpdateFile("Updates\Readme.txt", "")
     zip2.Comment = "This zip archive has been updated: the Readme has been changed."
@@ -289,9 +289,9 @@ End Using
 Public Sub Run()
     Using s1 As Stream = ZipIntoMemory("c:\temp\dir1")
         Using s2 As Stream = ZipIntoMemory("c:\temp\dir2")
-            Using zip1 as New ZipFile 
-                zip1.AddEntry("test1.zip", "", s1)
-                zip1.AddEntry("test2.zip", "", s2)
+            Using zip1 as New ZipFile
+                zip1.AddEntry("test1.zip", s1)
+                zip1.AddEntry("test2.zip", s2)
                 ' save to a file.  Could also save to a stream here
                 zip1.Save("Tescher.zip")
             End Using
@@ -301,7 +301,7 @@ End Sub
 
 Public Function ZipIntoMemory(ByVal path As String) As Stream
     Dim ms As New MemoryStream
-    Using zip1 as New ZipFile 
+    Using zip1 as New ZipFile
         zip1.AddDirectory(path, "Result")
         zip1.Save(ms)
     End Using
