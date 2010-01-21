@@ -1,7 +1,7 @@
 // Streams.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa
+// Copyright (c) 2009-2010 Dino Chiesa
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-January-07 01:51:58>
+// Time-stamp: <2010-January-20 19:28:05>
 //
 // ------------------------------------------------------------------
 //
@@ -901,6 +901,164 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                 output = new ZipOutputStream(zipFileToCreate);
             }
             return output;
+        }
+
+
+
+        bool _pb2Set;
+        bool _pb1Set;
+        int _numSaving;
+        int _totalToSave;
+
+        private void streams_SaveProgress(object sender, SaveProgressEventArgs e)
+        {
+            string msg;
+            switch (e.EventType)
+            {
+                case ZipProgressEventType.Saving_Started:
+                    //_txrx.Send("status saving started...");
+                    _pb1Set = false;
+                    _numSaving= 1;
+                    break;
+
+                case ZipProgressEventType.Saving_BeforeWriteEntry:
+                    //_txrx.Send(String.Format("status Compressing {0}", e.CurrentEntry.FileName));
+                    if (!_pb1Set)
+                    {
+                        _txrx.Send(String.Format("pb 1 max {0}", e.EntriesTotal));
+                        _pb1Set = true;
+                    }
+                    _totalToSave = e.EntriesTotal;
+                    _pb2Set = false;
+                    break;
+
+                case ZipProgressEventType.Saving_EntryBytesRead:
+                    if (!_pb2Set)
+                    {
+                        _txrx.Send(String.Format("pb 2 max {0}", e.TotalBytesToTransfer));
+                        _pb2Set = true;
+                    }
+
+//                     _txrx.Send(String.Format("status Saving entry {0}/{1} :: {2} :: {3}/{4}mb {5:N0}%",
+//                                              _numSaving, _totalToSave,
+//                                              e.CurrentEntry.FileName,
+//                                              e.BytesTransferred/(1024*1024), e.TotalBytesToTransfer/(1024*1024),
+//                                              ((double)e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer)));
+                    msg = String.Format("pb 2 value {0}", e.BytesTransferred);
+                    _txrx.Send(msg);
+                    //System.Threading.Thread.Sleep(40);
+                    break;
+
+                case ZipProgressEventType.Saving_AfterWriteEntry:
+                    _txrx.Send("pb 1 step");
+                    _numSaving++;
+                    break;
+
+                case ZipProgressEventType.Saving_Completed:
+                    //_txrx.Send("status Save completed");
+                    _pb1Set = false;
+                    _pb2Set = false;
+                    _txrx.Send("pb 1 max 1");
+                    _txrx.Send("pb 1 value 1");
+                    break;
+            }
+        }
+
+
+        [TestMethod, Timeout(1800000)]  // timeout is in milliseconds, (1800 * 1000) = 1/2 hour;
+        public void ZipFile_Parallel_wi10030()
+        {
+            // Test memory growth over many many cycles.
+            // There was a leak in the ParallelDeflateOutputStream, where
+            // the PDOS was not being GC'd.  This test checks for that.
+            //
+            // If the error is present, this test will either timeout or
+            // throw an InsufficientMemoryException (or whatever).  The
+            // timeout occurs because GC begins to get verrrrry
+            // sloooooow.  IF the error is not present, this test will
+            // complete successfully, in about 20 minutes.
+            //
+
+            string zipFileToCreate = "ZipFile_Parallel_wi10030.zip";
+            int nCycles = 4096;
+            int nFiles = 3;
+            int sizeBase = 384 * 1024;
+            int sizeRange = 32 * 1024;
+            int count = 0;
+            int BufferSize = 1024;
+            byte[] buffer = new byte[BufferSize];
+            int n;
+
+            // fill a couple memory streams with random text
+            MemoryStream[] ms = new MemoryStream[nFiles];
+            for (int i=0; i < ms.Length;  i++)
+            {
+                ms[i] = new MemoryStream();
+                int sz = sizeBase + _rnd.Next(sizeRange);
+                using (Stream rtg = new Ionic.Zip.Tests.Utilities.RandomTextInputStream(sz))
+                {
+                    while ((n = rtg.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        ms[i].Write(buffer, 0, n);
+                    }
+                }
+            }
+            buffer= null;
+
+            OpenDelegate opener = (x) =>
+                {
+                    Stream s = ms[count%ms.Length];
+                    s.Seek(0L,SeekOrigin.Begin);
+                    count++;
+                    return s;
+                };
+
+            CloseDelegate closer = (e,s) =>
+                {
+                    //s.Close();
+                };
+
+            string channel = "ZipFile_Parallel_wi10030";
+            string txrxLabel = "PDOS Leak Test";
+            StartProgressMonitor(channel);
+            StartProgressClient(channel, txrxLabel, "starting up...");
+
+            TestContext.WriteLine("Testing for leaks....");
+
+            _txrx.Send(String.Format("pb 0 max {0}", nCycles));
+            _txrx.Send("pb 0 value 0");
+
+            for (int x=0; x < nCycles; x++)
+            {
+                if (x!=0 && x%16 == 0)
+                    TestContext.WriteLine("Cycle {0}...", x);
+
+                string status = String.Format("status Cycle {0}/{1}", x+1, nCycles);
+                _txrx.Send(status);
+
+                using (ZipFile zip = new ZipFile())
+                {
+                    zip.ParallelDeflateThreshold = 128 * 1024;
+                    zip.CompressionLevel = Ionic.Zlib.CompressionLevel.BestCompression;
+                    //zip.SaveProgress += streams_SaveProgress;
+                    for (int y=0; y < nFiles;  y++)
+                    {
+                        zip.AddEntry("Entry" + y + ".txt", opener, closer);
+                    }
+                    zip.Comment = "Produced at " + System.DateTime.UtcNow.ToString("G");
+                    zip.Save(zipFileToCreate);
+                }
+
+                _txrx.Send("pb 0 step");
+            }
+
+            for (int i=0; i < ms.Length;  i++)
+            {
+                ms[i].Close();
+                ms[i].Dispose();
+                ms[i]=null;
+            }
+            ms=null;
         }
 
 

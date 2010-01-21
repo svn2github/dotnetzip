@@ -1,6 +1,6 @@
 // ZipFile.cs
 //
-// Copyright (c) 2006, 2007, 2008, 2009 Dino Chiesa and Microsoft Corporation.
+// Copyright (c) 2006-2010 Dino Chiesa
 // All rights reserved.
 //
 // This module is part of DotNetZip, a zipfile class library.
@@ -1956,7 +1956,8 @@ namespace Ionic.Zip
         ///     DotNetZip will use multiple threads to compress any ZipEntry,
         ///     if the entry is larger than the given size.  Zero means "always
         ///     use parallel deflate", while -1 means "never use parallel
-        ///     deflate".
+        ///     deflate". The default value for this property is 512k. Aside
+        ///     from the special values of 0 and 1, the minimum value is 65536.
         ///   </para>
         ///
         ///   <para>
@@ -1997,17 +1998,13 @@ namespace Ionic.Zip
         ///     some tests to determine the best approach for your situation.
         ///   </para>
         ///
-        ///   <para>
-        ///     The default value for this property is 512k. The minimum value is 65536.
-        ///   </para>
-        ///
         /// </remarks>
         public long ParallelDeflateThreshold
         {
             set
             {
                 if ((value != 0) && (value != -1) && (value < 64 * 1024))
-                    throw new ArgumentException();
+                    throw new ArgumentException("ParallelDeflateThreshold should be -1, 0, or > 65536");
                 _ParallelDeflateThreshold = value;
             }
             get
@@ -3126,18 +3123,18 @@ namespace Ionic.Zip
 
         #region Destructors and Disposers
 
-        /// <summary>
-        /// This is the class Destructor, which gets called implicitly when the instance
-        /// is destroyed.  Because the <c>ZipFile</c> type implements IDisposable, this
-        /// method calls Dispose(false).
-        /// </summary>
-        ~ZipFile()
-        {
-            // call Dispose with false.  Since we're in the
-            // destructor call, the managed resources will be
-            // disposed of anyways.
-            Dispose(false);
-        }
+//         /// <summary>
+//         /// This is the class Destructor, which gets called implicitly when the instance
+//         /// is destroyed.  Because the <c>ZipFile</c> type implements IDisposable, this
+//         /// method calls Dispose(false).
+//         /// </summary>
+//         ~ZipFile()
+//         {
+//             // call Dispose with false.  Since we're in the
+//             // destructor call, the managed resources will be
+//             // disposed of anyways.
+//             Dispose(false);
+//         }
 
         /// <summary>
         ///   Closes the read and write streams associated
@@ -3232,6 +3229,15 @@ namespace Ionic.Zip
 #endif
                             _writestream = null;
                         }
+
+#if !NETCF
+                    // workitem 10030
+                    if (this.ParallelDeflater != null)
+                    {
+                        this.ParallelDeflater.Dispose();
+                        this.ParallelDeflater= null;
+                    }
+#endif
                 }
                 this._disposed = true;
             }

@@ -1,26 +1,26 @@
 // Selector.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa.  
+// Copyright (c) 2009-2010 Dino Chiesa.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-November-13 18:05:50>
+// last saved (in emacs):
+// Time-stamp: <2010-January-20 17:59:27>
 //
 // ------------------------------------------------------------------
 //
 // This module defines tests for the File and Entry Selection stuff in
-// DotNetZip. 
+// DotNetZip.
 //
 // ------------------------------------------------------------------
 
@@ -56,33 +56,33 @@ namespace Ionic.Zip.Tests
             txrx.Send("stop");
         }
 
- 
+
         [ClassCleanup()]
         public static void MyClassCleanup()
-        {            
+        {
             CleanDirectory(fodderDirectory, null);
         }
 
 
-        
+
         private static void CleanDirectory(string dirToClean, Ionic.CopyData.Transceiver txrx)
         {
             if (dirToClean == null) return;
-            
+
             if (!Directory.Exists(dirToClean)) return;
 
             var dirs = Directory.GetDirectories(dirToClean, "*.*", SearchOption.AllDirectories);
-            
+
             if (txrx!=null)
                 txrx.Send("pb 1 max " + dirs.Length.ToString());
-                
+
             foreach (var d in dirs)
             {
                 CleanDirectory(d, txrx);
                 if (txrx!=null)
                     txrx.Send("pb 1 step");
             }
-            
+
             // Some of the files are marked as ReadOnly/System, and
             // before deleting the dir we must strip those attrs.
             var files = Directory.GetFiles(dirToClean, "*.*", SearchOption.AllDirectories);
@@ -117,7 +117,7 @@ namespace Ionic.Zip.Tests
             bool success = false;
             do
             {
-                try 
+                try
                 {
                     Directory.Delete(dirToClean, true);
                     success = true;
@@ -131,7 +131,7 @@ namespace Ionic.Zip.Tests
         }
 
 
-        
+
         [TestCleanup]
         public void MyTestCleanupEx()
         {
@@ -167,7 +167,7 @@ namespace Ionic.Zip.Tests
         private static DateTime threeDaysAgo;
         private static DateTime yesterday;
         private static string fodderDirectory;
-        
+
         private Object LOCK = new Object();
         private int numFodderFiles, numFodderDirs;
 
@@ -182,13 +182,13 @@ namespace Ionic.Zip.Tests
                     var fodderDirs = Directory.GetDirectories(fodderDirectory, "*.*", SearchOption.AllDirectories);
                     numFodderDirs = fodderDirs.Length;
                 }
-                
+
                 if (numFodderFiles <= 0)
                     _InternalSetupFiles(_txrx);
-                
+
                 if (numFodderFiles <= 0)
                     throw new Exception();
-                
+
                 return fodderDirectory;
             }
         }
@@ -217,12 +217,12 @@ namespace Ionic.Zip.Tests
         }
 
 
-        
+
         private static void _InternalSetupFiles( Ionic.CopyData.Transceiver txrx )
         {
             var rnd = new System.Random();
             DeleteOldFodderDirectories(txrx);
-                
+
             int fileCount = rnd.Next(95) + 95;
             if (txrx != null)
             {
@@ -237,7 +237,7 @@ namespace Ionic.Zip.Tests
 
             int entriesAdded = 0;
 
-            // get the base directory for tests: 
+            // get the base directory for tests:
             Directory.SetCurrentDirectory(CurrentDir);
             Directory.CreateDirectory(fodderDirectory);
             Directory.SetCurrentDirectory(fodderDirectory);
@@ -254,18 +254,18 @@ namespace Ionic.Zip.Tests
                     "{0:D3}",
                     "PrettyLongFileName-{0:D3}",
                     "Extremely-Long-Filename-{0:D3}-with-a-repeated-segment-{0:D3}-{0:D3}-{0:D3}-{0:D3}",
-                    
+
                 };
 
             string[] dirs =
                 {
-                    "dir1", 
-                    "dir1\\dirA", 
+                    "dir1",
+                    "dir1\\dirA",
                     "dir1\\dirB",
                     "dir2"
                 };
 
-                
+
             foreach (string s in dirs)
                 Directory.CreateDirectory(s);
 
@@ -405,7 +405,7 @@ namespace Ionic.Zip.Tests
                     new Trial { Label = "attributes (ReadOnly)", C1 = "attributes = R", C2 = "attributes != R" },
                     new Trial { Label = "attributes (System)", C1 = "attributes = S", C2 = "attributes != S" },
                     new Trial { Label = "attributes (Archive)", C1 = "attributes = A", C2 = "attributes != A" },
-                    
+
                 };
 
 
@@ -416,7 +416,7 @@ namespace Ionic.Zip.Tests
             //String filename = null;
 
             SetupFiles();
-            var topLevelFiles = Directory.GetFiles(fodderDirectory, "*.*", SearchOption.TopDirectoryOnly);           
+            var topLevelFiles = Directory.GetFiles(fodderDirectory, "*.*", SearchOption.TopDirectoryOnly);
 
             for (int m = 0; m < trials.Length; m++)
             {
@@ -486,7 +486,7 @@ namespace Ionic.Zip.Tests
             }
         }
 
-        
+
 
 
         private static Ionic.CopyData.Transceiver SetupProgressMonitor(string label)
@@ -532,20 +532,20 @@ namespace Ionic.Zip.Tests
                     new Trial { Label = "atime", C1 = "atime < 2007-01-01", C2 = "atime > 2007-01-01" },
                     new Trial { Label = "ctime", C1 = "ctime < 2007-01-01", C2 = "ctime > 2007-01-01" },
                     new Trial { Label = "size", C1 = "size < 7500", C2 = "size >= 7500" },
-                    
+
                     new Trial { Label = "name & size",
                         C1 = "name = *.bin AND size > 7500",
                         C2 = "name != *.bin  OR  size <= 7500",
                         },
-                    
+
                     new Trial { Label = "name, size & attributes",
-                        C1 = "name = *.bin AND size > 8kb and attributes = H", 
+                        C1 = "name = *.bin AND size > 8kb and attributes = H",
                         C2 = "name != *.bin  OR  size <= 8kb or attributes != H",
                         },
 
-                    new Trial { Label = "name, size, time & attributes.", 
-                        C1 = "name = *.bin AND size > 7k and mtime < 2007-01-01 and attributes = H", 
-                        C2 = "name != *.bin  OR  size <= 7k or mtime > 2007-01-01 or attributes != H", 
+                    new Trial { Label = "name, size, time & attributes.",
+                        C1 = "name = *.bin AND size > 7k and mtime < 2007-01-01 and attributes = H",
+                        C2 = "name != *.bin  OR  size <= 7k or mtime > 2007-01-01 or attributes != H",
                         },
                 };
 
@@ -563,8 +563,8 @@ namespace Ionic.Zip.Tests
 
             _txrx.Send("test AddSelectedFiles");
             SetupFiles();
-            var topLevelFiles = Directory.GetFiles(fodderDirectory, "*.*", SearchOption.TopDirectoryOnly);           
-            
+            var topLevelFiles = Directory.GetFiles(fodderDirectory, "*.*", SearchOption.TopDirectoryOnly);
+
             string currentDir = Directory.GetCurrentDirectory();
             _txrx.Send(String.Format("pb 0 max {0}", 2 * (trials.Length + 1)));
 
@@ -685,7 +685,7 @@ namespace Ionic.Zip.Tests
             else throw new System.ArgumentException("which");
         }
 
-        
+
 
         [TestMethod]
         public void Selector_SelectEntries_ByTime()
@@ -700,7 +700,7 @@ namespace Ionic.Zip.Tests
             SetupFiles();
 
             _txrx.Send("status seleting files by time...");
-            
+
             TestContext.WriteLine("====================================================");
             TestContext.WriteLine("Creating zip...");
             using (ZipFile zip1 = new ZipFile())
@@ -751,7 +751,7 @@ namespace Ionic.Zip.Tests
                 var selected5 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected5.Count);
                 Assert.IsTrue(selected5.Count > 0, "E");
-                
+
                 crit = String.Format("ctime >= {0}", today.ToString("yyyy-MM-dd"));
                 _txrx.Send("status " + crit);
                 var selected6 = zip1.SelectEntries(crit);
@@ -766,7 +766,7 @@ namespace Ionic.Zip.Tests
                 selected5 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected5.Count);
                 Assert.IsTrue(selected5.Count > 0, "G");
-                
+
                 crit = String.Format("atime >= {0}",
                                      today.ToString("yyyy-MM-dd"));
                 _txrx.Send("status " + crit);
@@ -781,7 +781,7 @@ namespace Ionic.Zip.Tests
                 selected5 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected5.Count);
                 Assert.IsTrue(selected5.Count > 0, "I");
-                
+
                 crit = String.Format("atime != {0}",
                                      yesterday.ToString("yyyy-MM-dd"));
                 _txrx.Send("status " + crit);
@@ -843,7 +843,7 @@ namespace Ionic.Zip.Tests
 
             // workitem 9174: test ExtractSelectedEntries using a directoryPathInArchive
             List<String> dirs = new List<String>();
-            // first, get the list of directories used by all entries 
+            // first, get the list of directories used by all entries
             TestContext.WriteLine("Reading zip, ...");
             using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
             {
@@ -972,18 +972,18 @@ namespace Ionic.Zip.Tests
             using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
             {
                 string crit = "name = *.txt AND name = *.bin";
-                // none of the entries should match this: 
+                // none of the entries should match this:
                 var selected1 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected1.Count);
                 Assert.AreEqual<Int32>(0, selected1.Count);
 
-                // all of the entries should match this: 
+                // all of the entries should match this:
                 crit = "name = *.txt XOR name = *.bin";
                 var selected2 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected2.Count);
                 Assert.AreEqual<Int32>(entriesAdded, selected2.Count);
 
-                // try an compound criterion with XOR 
+                // try an compound criterion with XOR
                 crit = "name = *.bin XOR name = *2.*";
                 var selected3 = zip1.SelectEntries(crit);
                 Assert.IsTrue(selected3.Count > 0);
@@ -1070,8 +1070,8 @@ namespace Ionic.Zip.Tests
 
             TestContext.WriteLine("====================================================");
             TestContext.WriteLine("Reading zip, using name patterns that contain spaces...");
-            string[] selectionStrings = { "name = '* *.txt'", 
-                                          "name = '* *.bin'", 
+            string[] selectionStrings = { "name = '* *.txt'",
+                                          "name = '* *.bin'",
                                           "name = *.txt and name != '* *.txt'",
                                           "name = *.bin and name != '* *.bin'",
             };
@@ -1138,8 +1138,8 @@ namespace Ionic.Zip.Tests
 
             TestContext.WriteLine("====================================================");
             TestContext.WriteLine("Reading zip, using name patterns that contain spaces...");
-            string[] selectionStrings = { "name = '* *.txt'", 
-                                          "name = '* *.bin'", 
+            string[] selectionStrings = { "name = '* *.txt'",
+                                          "name = '* *.bin'",
                                           "name = *.txt and name != '* *.txt'",
                                           "name = *.bin and name != '* *.bin'",
             };
@@ -1208,8 +1208,8 @@ namespace Ionic.Zip.Tests
 
             TestContext.WriteLine("====================================================");
             TestContext.WriteLine("Reading zip, using name patterns that contain spaces...");
-            string[] selectionStrings = { "name = '* *.txt'", 
-                                          "name = '* *.bin'", 
+            string[] selectionStrings = { "name = '* *.txt'",
+                                          "name = '* *.bin'",
                                           "name = *.txt and name != '* *.txt'",
                                           "name = *.bin and name != '* *.bin'",
             };
@@ -1498,7 +1498,7 @@ namespace Ionic.Zip.Tests
             // this testmethod does not extract files, or verify checksums ...
 
             // just want to verify that selection of entries works in nested directories as
-            // well as 
+            // well as
             TestContext.WriteLine("====================================================");
             TestContext.WriteLine("Selecting entries by path...");
             using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
@@ -1517,25 +1517,6 @@ namespace Ionic.Zip.Tests
                     selected2 = zip1.SelectEntries("*.txt", dir + "\\YYY");
                     Assert.AreEqual<Int32>(selected1.Count, selected2.Count);
                 }
-            }
-        }
-
-
-
-        [TestMethod]
-        public void Selector_SelectFiles_GoodSyntax01()
-        {
-            string[] criteria = {
-                "name = *.txt  OR (size > 7800)",
-                "name = *.harvey  OR  (size > 7800  and attributes = H)",
-                "(name = *.harvey)  OR  (size > 7800  and attributes = H)",
-                "(name = *.xls)  and (name != *.xls)  OR  (size > 7800  and attributes = H)",
-                "(name = '*.xls')",
-            };
-
-            foreach (string s in criteria)
-            {
-                var ff = new Ionic.FileSelector(s);
             }
         }
 
@@ -1560,7 +1541,7 @@ namespace Ionic.Zip.Tests
             string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectFiles_DirName_wi8245_2.zip");
             Directory.SetCurrentDirectory(TopLevelDir);
             SetupFiles();
-            
+
             var fodderFiles = Directory.GetFiles(fodderDirectory, "*.*", SearchOption.AllDirectories);
 
             TestContext.WriteLine("===============================================");
@@ -1582,13 +1563,13 @@ namespace Ionic.Zip.Tests
         {
             // workitem 9176
             Directory.SetCurrentDirectory(TopLevelDir);
-            
+
             _txrx= SetupProgressMonitor("SelectFiles-DirName");
-                
+
             SetupFiles();
 
             var binFiles = Directory.GetFiles(fodderDirectory, "*.bin", SearchOption.AllDirectories);
-            
+
             int[] eCount = new int[2];
             _txrx.Send("pb 0 max 2");
             for (int i = 0; i < 2; i++)
@@ -1611,9 +1592,9 @@ namespace Ionic.Zip.Tests
 
                 Assert.AreEqual<Int32>(TestUtilities.CountEntries(zipFileToCreate), binFiles.Length,
                                        "The Zip file has the wrong number of entries.");
-                
+
                 _txrx.Send("pb 2 step");
-                
+
                 using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
                 {
                     foreach (var e in zip1)
@@ -1631,7 +1612,30 @@ namespace Ionic.Zip.Tests
             }
             _txrx.Send("stop");
         }
- 
+
+
+        [TestMethod]
+        public void Selector_SelectFiles_GoodSyntax01()
+        {
+            string[] criteria = {
+                "name = *.txt  OR (size > 7800)",
+                "name = *.harvey  OR  (size > 7800  and attributes = H)",
+                "(name = *.harvey)  OR  (size > 7800  and attributes = H)",
+                "(name = *.xls)  and (name != *.xls)  OR  (size > 7800  and attributes = H)",
+                "(name = '*.xls')",
+                "(name = Ionic.Zip.dll) or ((size > 1mb) and (name != *.zip))",
+                "(name = Ionic.Zip.dll) or ((size > 1mb) and (name != *.zip)) or (name = Joe.txt)",
+                "(name=Ionic.Zip.dll) or ((size>1mb) and (name!=*.zip)) or (name=Joe.txt)",
+                "(name=Ionic.Zip.dll)or((size>1mb)and(name!=*.zip))or(name=Joe.txt)",
+            };
+
+            foreach (string s in criteria)
+            {
+                TestContext.WriteLine("Selector: " + s);
+                var ff = new Ionic.FileSelector(s);
+            }
+        }
+
 
 
 
@@ -1639,132 +1643,132 @@ namespace Ionic.Zip.Tests
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadNoun()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("fame = *.txt");
+            new Ionic.FileSelector("fame = *.txt");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax01()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("size = ");
+            new Ionic.FileSelector("size = ");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax02()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt and");
+            new Ionic.FileSelector("name = *.txt and");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax03()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  URF ");
+            new Ionic.FileSelector("name = *.txt  URF ");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax04()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  OR (");
+            new Ionic.FileSelector("name = *.txt  OR (");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.FormatException))]
         public void Selector_SelectFiles_BadSyntax05()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  OR (size = G)");
+            new Ionic.FileSelector("name = *.txt  OR (size = G)");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax06()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  OR (size > )");
+            new Ionic.FileSelector("name = *.txt  OR (size > )");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax07()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  OR (size > 7800");
+            new Ionic.FileSelector("name = *.txt  OR (size > 7800");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax08()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt  OR )size > 7800");
+            new Ionic.FileSelector("name = *.txt  OR )size > 7800");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax09()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("name = *.txt and  name =");
+            new Ionic.FileSelector("name = *.txt and  name =");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax10()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("name == *.txt");
+            new Ionic.FileSelector("name == *.txt");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax10a()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("name >= *.txt");
+            new Ionic.FileSelector("name >= *.txt");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax11()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("name ~= *.txt");
+            new Ionic.FileSelector("name ~= *.txt");
         }
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax12()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("name @ = *.txt");
+            new Ionic.FileSelector("name @ = *.txt");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax13()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("name LIKE  *.txt");
+            new Ionic.FileSelector("name LIKE  *.txt");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax14()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("name AND  *.txt");
+            new Ionic.FileSelector("name AND  *.txt");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax15()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("name (AND  *.txt");
+            new Ionic.FileSelector("name (AND  *.txt");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax16()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("mtime 2007-01-01");
+            new Ionic.FileSelector("mtime 2007-01-01");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax17()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("size 1kb");
+            new Ionic.FileSelector("size 1kb");
         }
 
         [TestMethod]
@@ -1774,7 +1778,6 @@ namespace Ionic.Zip.Tests
             Ionic.FileSelector ff = new Ionic.FileSelector("");
             var list = ff.SelectFiles(".");
         }
-
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
@@ -1788,52 +1791,52 @@ namespace Ionic.Zip.Tests
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax20()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("attributes > HRTS");
+            new Ionic.FileSelector("attributes > HRTS");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax21()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("attributes HRTS");
+            new Ionic.FileSelector("attributes HRTS");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax22a()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("attributes = HHHA");
+            new Ionic.FileSelector("attributes = HHHA");
         }
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax22b()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("attributes = SHSA");
+            new Ionic.FileSelector("attributes = SHSA");
         }
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax22c()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("attributes = AHA");
+            new Ionic.FileSelector("attributes = AHA");
         }
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax22d()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("attributes = RRA");
+            new Ionic.FileSelector("attributes = RRA");
         }
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax22e()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("attributes = IRIA");
+            new Ionic.FileSelector("attributes = IRIA");
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void Selector_SelectFiles_BadSyntax23()
         {
-            Ionic.FileSelector ff = new Ionic.FileSelector("attributes = INVALID");
+            new Ionic.FileSelector("attributes = INVALID");
         }
 
     }
