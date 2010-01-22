@@ -1,19 +1,19 @@
 // UnZip.cs
-// 
+//
 // ----------------------------------------------------------------------
 // Copyright (c) 2006, 2007, 2008 Microsoft Corporation.  All rights reserved.
 //
-// This example is released under the Microsoft Public License . 
-// See the license.txt file accompanying this release for 
-// full details. 
+// This example is released under the Microsoft Public License .
+// See the license.txt file accompanying this release for
+// full details.
 //
 // ----------------------------------------------------------------------
 //
 // This command-line utility unzips a zipfile into the specified directory,
-// or lists the entries in a zipfile without unzipping. 
+// or lists the entries in a zipfile without unzipping.
 //
 // compile with:
-//     csc /target:exe /r:Ionic.Zip.dll /out:UnZip.exe UnZip.cs 
+//     csc /target:exe /r:Ionic.Zip.dll /out:UnZip.exe UnZip.cs
 //
 // created
 // Wed, 29 Mar 2006  14:36
@@ -49,7 +49,7 @@ namespace Ionic.Zip.Examples
                   "                         the cmd.exe, then the verbose messages will look odd, but the \n" +
                   "                         files will be extracted properly.\n" +
                   "       -d <directory>    unpack to the specified directory. If none provided, it will\n" +
-                  "                         unzip to the current directory.\n" + 
+                  "                         unzip to the current directory.\n" +
                   "       <entryname>       unzip only the specified filename.\n\n" +
                   "  unzip -l <zipfile>\n" +
                   "     lists the entries in the zip archive.\n" +
@@ -121,7 +121,7 @@ namespace Ionic.Zip.Examples
                         if (action != ActionDesired.Extract) Usage();
                         targdir = args[i];
                         break;
-                        
+
                     case "-f":
                         wantFlatten = true;
                         if (action != ActionDesired.Extract) Usage();
@@ -148,14 +148,14 @@ namespace Ionic.Zip.Examples
                         behaviorForExistingFile = ExtractExistingFileAction.OverwriteSilently;
                         if (action != ActionDesired.Extract) Usage();
                         break;
-                        
+
                     case "-r":
                         if (wantFlatten == true) Usage();
                         if (targdir != null) Usage();
                         if (action == ActionDesired.Test) Usage();
                         action = ActionDesired.Repair;
                         break;
-                        
+
                     case "-p":
                         i++;
                         if (args.Length <= i) Usage();
@@ -211,7 +211,12 @@ namespace Ionic.Zip.Examples
                 }
                 else
                 {
-                    using (ZipFile zip = (codePage != 0) ? ZipFile.Read(zipfile, System.Text.Encoding.GetEncoding(codePage)) : ZipFile.Read(zipfile))
+                    var options = new ReadOptions {
+                            Encoding = (codePage != 0)
+                                ? System.Text.Encoding.GetEncoding(codePage)
+                                : null
+                    };
+                    using (ZipFile zip =  ZipFile.Read(zipfile, options))
                     {
 
                         if (entriesToExtract.Count > 0)

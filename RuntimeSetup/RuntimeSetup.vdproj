@@ -268,7 +268,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Zlib, Version=1.9.0.29, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zlib, Version=1.9.1.3, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_026FA1A09193DE7F761C3B416A289327"
@@ -390,7 +390,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Zlib.CF, Version=1.9.0.28, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zlib.CF, Version=1.9.1.3, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_894283E6B4AAEB6C41932D002961BF8E"
@@ -441,7 +441,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Zip.Partial, Version=1.9.0.29, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zip.Partial, Version=1.9.1.3, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_D92520705F8EB940E3AB22A58CCE225B"
@@ -472,7 +472,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Zip.CF.Partial, Version=1.9.0.28, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.Zip.CF.Partial, Version=1.9.1.3, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_DBB73B3A63B60160B3E32499DBD8AC6B"
@@ -554,23 +554,23 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:DotNetZip Runtime v1.9"
-        "ProductCode" = "8:{76566CAA-8370-4144-B882-09D8EF84A40A}"
-        "PackageCode" = "8:{4DC01900-E277-4269-A222-92B4EBE207A0}"
+        "ProductName" = "8:DotNetZip Runtime v1.9.5"
+        "ProductCode" = "8:{562DBD5B-FB3D-4753-97B9-A7163BCFB3E2}"
+        "PackageCode" = "8:{EC5B78BC-6EB8-49F6-A657-0AF0FEF698AE}"
         "UpgradeCode" = "8:{FFE64B5A-5286-48BC-908A-C04137C29C94}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.9.0011"
+        "ProductVersion" = "8:1.9.5001"
         "Manufacturer" = "8:Dino Chiesa"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://dotnetzip.codeplex.com/Thread/List.aspx"
-        "Title" = "8:DotNetZip Runtime v1.9"
+        "Title" = "8:DotNetZip Runtime v1.9.5"
         "Subject" = "8:"
         "ARPCONTACT" = "8:Dino Chiesa"
         "Keywords" = "8:ZIP"
-        "ARPCOMMENTS" = "8:the DotNetZip Runtime v1.9"
+        "ARPCOMMENTS" = "8:the DotNetZip Runtime v1.9.5"
         "ARPURLINFOABOUT" = "8:http://dotnetzip.codeplex.com"
         "ARPPRODUCTICON" = "8:"
         "ARPIconIndex" = "3:0"

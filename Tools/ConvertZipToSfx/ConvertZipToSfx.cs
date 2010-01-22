@@ -1,9 +1,9 @@
 // ConvertZipToSfx.cs
 // ------------------------------------------------------------------
 //
-// This is a command-line tool that creates a self-extracting Zip archive, given a 
-// standard zip archive.  
-// It requires the .NET Framework 2.0 on the target machine in order to run. 
+// This is a command-line tool that creates a self-extracting Zip archive, given a
+// standard zip archive.
+// It requires the .NET Framework 2.0 on the target machine in order to run.
 //
 //
 // The Visual Studio Project is a little weird.  There are code files that ARE NOT compiled
@@ -19,8 +19,8 @@
 //   FolderBrowserDialogEx.cs
 //
 // At design time, if you want to modify the way the GUI looks, you have to mark those modules
-// to have a "compile" build action.  Then tweak em, test, etc.  Then again mark them as 
-// "Embedded resource". 
+// to have a "compile" build action.  Then tweak em, test, etc.  Then again mark them as
+// "Embedded resource".
 //
 //
 // Author: Dinoch
@@ -30,7 +30,7 @@
 //
 // Copyright (c) 2008 by Dino Chiesa
 // All rights reserved!
-// 
+//
 //
 // ------------------------------------------------------------------
 
@@ -62,11 +62,11 @@ namespace Ionic.Zip.Examples
                         }
                         ExtractDir = args[++i];
                         break;
-                        
+
                     case "-cmdline":
                         flavor = Ionic.Zip.SelfExtractorFlavor.ConsoleApplication;
                         break;
-                        
+
                 case "-comment":
                     if (i >= args.Length-1 || ZipComment != null)
                     {
@@ -75,7 +75,7 @@ namespace Ionic.Zip.Examples
                     }
                     ZipComment = args[++i];
                     break;
-                    
+
                 case "-exeonunpack":
                     if (i >= args.Length-1 || ExeOnUnpack != null)
                     {
@@ -113,7 +113,7 @@ namespace Ionic.Zip.Examples
 
         public void Run()
         {
-            if (_gaveUsage) return; 
+            if (_gaveUsage) return;
             if (ZipFileToConvert == null)
             {
                 Console.WriteLine("No zipfile specified.\n");
@@ -139,7 +139,8 @@ namespace Ionic.Zip.Examples
 
             Console.WriteLine("Converting file {0} to SFX {1}", ZipFileToConvert, TargetName);
 
-            using (ZipFile zip = ZipFile.Read(ZipFileToConvert, Console.Out))
+            var options = new ReadOptions { StatusMessageWriter = System.Console.Out };
+            using (ZipFile zip = ZipFile.Read(ZipFileToConvert, options))
             {
                 zip.Comment = ZipComment;
                 SelfExtractorSaveOptions sfxOptions = new SelfExtractorSaveOptions();

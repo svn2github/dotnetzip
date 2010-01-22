@@ -991,11 +991,14 @@ namespace Ionic.Zip.Forms
                 }
 
                 int n = 1;
-                System.Text.Encoding encoding = (comboEncoding.SelectedIndex > 0)
-                    ? System.Text.Encoding.GetEncoding(comboEncoding.SelectedItem.ToString())
-                    : System.Text.Encoding.GetEncoding("IBM437");
+                var readOptions = new ReadOptions
+                    {
+                        Encoding = (comboEncoding.SelectedIndex > 0)
+                            ? System.Text.Encoding.GetEncoding(comboEncoding.SelectedItem.ToString())
+                            : System.Text.Encoding.GetEncoding("IBM437")
+                    };
 
-                using (ZipFile zip = ZipFile.Read(zipFile, encoding))
+                using (ZipFile zip = ZipFile.Read(zipFile, readOptions))
                 {
                     foreach (ZipEntry entry in zip.EntriesSorted)
                     {

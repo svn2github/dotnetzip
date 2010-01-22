@@ -1,7 +1,7 @@
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>Getting Started</title>
-<style>
+<style type="text/css">
 p,body,a,tr,td
              { font-family: Verdana, Arial, Helvetica; font-size: 10pt }
 h1,h2,h3,h4,h5,h6
@@ -117,7 +117,7 @@ you want to do.  </p>
 
   <td>an .MSI version of the Utils download.  This installs a set of exe
       tools (command-line and GUI) that rely on the DotNetZip library,
-      to create and manage zip files.  There's also an
+      to create and manage zip files.  There&apos;s also an
       uninstaller. </td> </tr>
 
 </table>
@@ -134,7 +134,7 @@ you use?  </p>
 
 <p>The likely answer is: <em>Ionic.Zip.dll</em></p>
 
-<p>That's the mainstream library, the full library, and it includes all the
+<p>That&apos;s the mainstream library, the full library, and it includes all the
 capability of DotNetZip.  The other DLLs are reduced in various ways, to suite particular requirements.
 </p>
 
@@ -144,7 +144,7 @@ you only want the ZLIB capability.  In these cases, you may want to choose a
 different assembly.
 </p>
 
-<p>Here's a summary of the options.
+<p>Here&apos;s a summary of the options.</p>
 
 <table border='1'>
 <tr>
@@ -178,12 +178,15 @@ need only add a reference to Ionic.Zip.dll.  Ionic.Zip.dll includes all
 the capability in Ionic.Zlib.dll.  You always need to reference only a
 single Ionic DLL, regardless whether you use Zlib or Zip or both.  </p>
 
-<p>If you use COM, then you want to reference the main DLL,
-Ionic.Zip.dll.  The correct DLL will automatically be installed in the GAC, and
-registered for use with COM, if you install the DotNetZip Runtime
-library via the .MSI installer.  If you don't use the .MSI installer, you
+<p>
+If you use COM, then you want to reference the main DLL,
+Ionic.Zip.dll.  If you install the DotNetZip Runtime
+library via the .MSI installer, the correct DLL will automatically be
+installed in the GAC, and
+registered for use with COM.  If you don&apos;t use the .MSI installer, you
 will have to perform these steps yourself.  Consult the documentation on
 using DotNetZip with COM for more information.
+
 </p>
 
 
