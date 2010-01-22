@@ -1,21 +1,21 @@
 // Progress.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.  
+// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-July-26 23:53:40>
+// last saved (in emacs):
+// Time-stamp: <2010-January-21 11:14:35>
 //
 // ------------------------------------------------------------------
 //
@@ -89,7 +89,7 @@ namespace Ionic.Zip.Tests
             Directory.SetCurrentDirectory(TopLevelDir);
             string  zipFileToCreate = Path.Combine(TopLevelDir, "Progress_ReadFile.zip");
             string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
-            
+
             var files = TestUtilities.GenerateFilesFlat(dirToZip);
 
             using (ZipFile zip = new ZipFile())
@@ -97,18 +97,21 @@ namespace Ionic.Zip.Tests
                 zip.AddFiles(files);
                 zip.Save(zipFileToCreate);
             }
-            
+
             int count = TestUtilities.CountEntries(zipFileToCreate);
             Assert.IsTrue(count>0);
-            
-            var sw = new StringWriter();
-            using (ZipFile zip = ZipFile.Read(zipFileToCreate, sw, ReadProgress1))
+
+            var options = new ReadOptions {
+                    StatusMessageWriter = new StringWriter(),
+                    ReadProgress = ReadProgress1
+            };
+            using (ZipFile zip = ZipFile.Read(zipFileToCreate, options))
             {
                 // this should be fine
                 zip.RemoveEntry(zip[1]);
-                zip.Save();                
+                zip.Save();
             }
-            TestContext.WriteLine(sw.ToString());
+            TestContext.WriteLine(options.StatusMessageWriter.ToString());
             Assert.AreEqual<Int32>(count, TestUtilities.CountEntries(zipFileToCreate)+1);
         }
 
@@ -148,11 +151,11 @@ namespace Ionic.Zip.Tests
                 zip.Save();
             }
             TestContext.WriteLine(sw.ToString());
-            
+
             int count = TestUtilities.CountEntries(zipFileToCreate);
             Assert.AreEqual<Int32>(count, files.Length);
         }
-        
+
     }
 
 

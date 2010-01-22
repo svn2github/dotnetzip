@@ -1,21 +1,21 @@
 // UnicodeTests.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2008, 2009 Dino Chiesa and Microsoft Corporation.  
+// Copyright (c) 2008, 2009 Dino Chiesa and Microsoft Corporation.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-September-08 23:28:33>
+// last saved (in emacs):
+// Time-stamp: <2010-January-21 11:20:38>
 //
 // ------------------------------------------------------------------
 //
@@ -49,7 +49,7 @@ namespace Ionic.Zip.Tests.Unicode
         {
             int i;
             string OrigComment = "This is a Unicode comment. Chinese: 弹 出 应 用 程 序 Norwegian/Danish: æøåÆØÅ. Portugese: Configurações.";
-            string[] formats = {"弹出应用程序{0:D3}.bin", 
+            string[] formats = {"弹出应用程序{0:D3}.bin",
                                    "n.æøåÆØÅ{0:D3}.bin",
                                "Configurações-弹出-ÆØÅ-xx{0:D3}.bin"};
 
@@ -68,19 +68,17 @@ namespace Ionic.Zip.Tests.Unicode
                     TestUtilities.CreateAndFillFileBinary(FilesToZip[i], _rnd.Next(5000) + 2000);
                 }
 
-                //Directory.SetCurrentDirectory(Subdir);
-
                 // create a zipfile twice, once using Unicode, once without
                 for (int j = 0; j < 2; j++)
                 {
                     // select the name of the zip file
-                    string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Create_UnicodeEntries_{0}_{1}.zip", k, j));
-                    Assert.IsFalse(File.Exists(ZipFileToCreate), "The zip file '{0}' already exists.", ZipFileToCreate);
+                    string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Create_UnicodeEntries_{0}_{1}.zip", k, j));
+                    Assert.IsFalse(File.Exists(zipFileToCreate), "The zip file '{0}' already exists.", zipFileToCreate);
 
-                    TestContext.WriteLine("\n\nFormat {0}, trial {1}.  filename: {2}...", k, j, ZipFileToCreate);
+                    TestContext.WriteLine("\n\nFormat {0}, trial {1}.  filename: {2}...", k, j, zipFileToCreate);
                     string dirInArchive = String.Format("{0}-{1}", Path.GetFileName(Subdir), j);
 
-                    using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
+                    using (ZipFile zip1 = new ZipFile())
                     {
                         zip1.UseUnicodeAsNecessary = (j == 0);
                         for (i = 0; i < FilesToZip.Length; i++)
@@ -90,16 +88,21 @@ namespace Ionic.Zip.Tests.Unicode
                             e.Comment = String.Format("This entry encoded with {0}", (j == 0) ? "unicode" : "the default code page.");
                         }
                         zip1.Comment = OrigComment;
-                        zip1.Save();
+                        zip1.Save(zipFileToCreate);
                     }
 
                     // Verify the number of files in the zip
-                    Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), FilesToZip.Length,
+                    Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), FilesToZip.Length,
                             "Incorrect number of entries in the zip file.");
 
                     i = 0;
+
                     // verify the filenames are (or are not) unicode
-                    using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate, (j == 0) ? System.Text.Encoding.UTF8 : ZipFile.DefaultEncoding))
+
+                    var options = new ReadOptions {
+                            Encoding = (j == 0) ? System.Text.Encoding.UTF8 : ZipFile.DefaultEncoding
+                    };
+                    using (ZipFile zip2 = ZipFile.Read(zipFileToCreate, options))
                     {
                         foreach (ZipEntry e in zip2)
                         {
@@ -118,7 +121,7 @@ namespace Ionic.Zip.Tests.Unicode
 
                         // according to the spec,
                         // unicode is not supported on the zip archive comment!
-                        // But this library won't enforce that. 
+                        // But this library won't enforce that.
                         // We will leave it up to the application.
                         // Assert.AreNotEqual<String>(OrigComment, zip2.Comment);
 
@@ -136,7 +139,7 @@ namespace Ionic.Zip.Tests.Unicode
                                  "codeplexの更新RSSを見てふと書いた投稿だったけど日本語情報がないかは調{0:D3}.bin", // Japanese
                                 "n.æøåÆØÅ{0:D3}.bin",      // greek
                                 "Configurações-弹出-ÆØÅ-xx{0:D3}.bin",  // portugese + Chinese
-                                "Â¡¢£ ¥â° €Ãƒ †œ Ñ añoAbba{0:D3.bin}",   //?? 
+                                "Â¡¢£ ¥â° €Ãƒ †œ Ñ añoAbba{0:D3.bin}",   //??
                                 "А Б В Г Д Є Ж Ѕ З И І К Л М Н О П Р С Т Ф Х Ц Ч Ш Щ Ъ ЪІ Ь Ю ІА {0:D3}.b", // Russian
                                "Ελληνικό αλφάβητο {0:D3}.b",
                                 "א ב ג ד ה ו ז ח ט י " + "{0:D3}",  // I don't know what this is
@@ -235,34 +238,34 @@ namespace Ionic.Zip.Tests.Unicode
                 TestContext.WriteLine("\n---------------------Trial {0}....", k);
                 TestContext.WriteLine("\n---------------------codepage: {0}....", trials[k].codepage);
                 // create the subdirectory
-                string Subdir = Path.Combine(TopLevelDir, String.Format("trial{0}-files", k));
-                Directory.CreateDirectory(Subdir);
+                string subdir = Path.Combine(TopLevelDir, String.Format("trial{0}-files", k));
+                Directory.CreateDirectory(subdir);
 
                 // create a bunch of files
-                int NumFilesToCreate = _rnd.Next(3) + 3;
-                string[] FilesToZip = new string[NumFilesToCreate];
-                for (i = 0; i < NumFilesToCreate; i++)
+                int numFiles = _rnd.Next(3) + 3;
+                string[] filesToZip = new string[numFiles];
+                for (i = 0; i < numFiles; i++)
                 {
-                    FilesToZip[i] = Path.Combine(Subdir, String.Format(trials[k].filenameFormat, i));
-                    TestUtilities.CreateAndFillFileBinary(FilesToZip[i], _rnd.Next(5000) + 2000);
+                    filesToZip[i] = Path.Combine(subdir, String.Format(trials[k].filenameFormat, i));
+                    TestUtilities.CreateAndFillFileBinary(filesToZip[i], _rnd.Next(5000) + 2000);
                 }
 
-                Directory.SetCurrentDirectory(Subdir);
+                Directory.SetCurrentDirectory(subdir);
 
                 // select the name of the zip file
-                string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Create_WithSpecifiedCodepage_{0}_{1}.zip", k, trials[k].codepage));
-                Assert.IsFalse(File.Exists(ZipFileToCreate), "The zip file '{0}' already exists.", ZipFileToCreate);
+                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Create_WithSpecifiedCodepage_{0}_{1}.zip", k, trials[k].codepage));
+                Assert.IsFalse(File.Exists(zipFileToCreate), "The zip file '{0}' already exists.", zipFileToCreate);
 
                 TestContext.WriteLine("\n---------------------Creating zip....");
 
-                using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
+                using (ZipFile zip1 = new ZipFile(zipFileToCreate))
                 {
                     zip1.ProvisionalAlternateEncoding = System.Text.Encoding.GetEncoding(trials[k].codepage);
-                    for (i = 0; i < FilesToZip.Length; i++)
+                    for (i = 0; i < filesToZip.Length; i++)
                     {
-                        TestContext.WriteLine("adding entry {0}", FilesToZip[i]);
+                        TestContext.WriteLine("adding entry {0}", filesToZip[i]);
                         // use the local filename (not fully qualified)
-                        ZipEntry e = zip1.AddFile(Path.GetFileName(FilesToZip[i]));
+                        ZipEntry e = zip1.AddFile(Path.GetFileName(filesToZip[i]));
                         e.Comment = String.Format("This entry was encoded in the {0} codepage", trials[k].codepage);
                     }
                     zip1.Save();
@@ -275,7 +278,10 @@ namespace Ionic.Zip.Tests.Unicode
                 {
 
                     // verify the filenames are (or are not) unicode
-                    using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate, System.Text.Encoding.GetEncoding(trials[k].codepage)))
+                    var options = new ReadOptions {
+                            Encoding = System.Text.Encoding.GetEncoding(trials[k].codepage)
+                    };
+                    using (ZipFile zip2 = ZipFile.Read(zipFileToCreate, options))
                     {
                         foreach (ZipEntry e in zip2)
                         {
