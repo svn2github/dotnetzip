@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-01 21:47:50>
+// Time-stamp: <2010-February-05 09:34:10>
 //
 // ------------------------------------------------------------------
 //
@@ -305,7 +305,7 @@ namespace Ionic.Zip
         ///     options before extracting.
         ///   </description>
         /// </item>
-        //
+        ///
         /// </list>
         ///
         /// </remarks>
