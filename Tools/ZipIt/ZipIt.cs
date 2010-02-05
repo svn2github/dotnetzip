@@ -1,18 +1,18 @@
 // ZipIt.cs
-// 
+//
 // ----------------------------------------------------------------------
-// Copyright (c) 2006, 2007, 2008 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2006-2010 Dino Chiesa.  All rights reserved.
 //
 // This example is released under the Microsoft Permissive License of
-// October 2006.  See the license.txt file accompanying this release for 
-// full details. 
+// October 2006.  See the license.txt file accompanying this release for
+// full details.
 //
 // ----------------------------------------------------------------------
 //
 // This utility zips up a set of files and directories specified on the command line.
 //
 // compile with:
-//     csc /debug+ /target:exe /r:Ionic.Zip.dll /out:ZipIt.exe ZipIt.cs 
+//     csc /debug+ /target:exe /r:Ionic.Zip.dll /out:ZipIt.exe ZipIt.cs
 //
 // Fri, 23 Feb 2007  11:51
 //
@@ -99,34 +99,34 @@ namespace Ionic.Zip.Examples
                 return;
             }
             if (!wantProgressReports) return;
-            
+
             switch(e.EventType)
             {
                 case ZipProgressEventType.Saving_Started:
-                    Console.Error.WriteLine("Saving: {0}", e.ArchiveName);
+                    Console.WriteLine("Saving: {0}", e.ArchiveName);
                     break;
-                
+
                 case ZipProgressEventType.Saving_Completed:
-                    justHadByteUpdate= false; 
-                    Console.Error.WriteLine();
-                    Console.Error.WriteLine("Done: {0}", e.ArchiveName);
+                    justHadByteUpdate= false;
+                    Console.WriteLine();
+                    Console.WriteLine("Done: {0}", e.ArchiveName);
                     break;
 
                 case ZipProgressEventType.Saving_BeforeWriteEntry:
-                    if (justHadByteUpdate) 
-                        Console.Error.WriteLine();
-                    Console.Error.WriteLine("  Writing: {0} ({1}/{2})",  
+                    if (justHadByteUpdate)
+                        Console.WriteLine();
+                    Console.WriteLine("  Writing: {0} ({1}/{2})",
                                       e.CurrentEntry.FileName, e.EntriesSaved+1, e.EntriesTotal);
                     justHadByteUpdate= false;
                     break;
-                    
+
                 case ZipProgressEventType.Saving_AfterWriteEntry:
                     break;
-        
+
                 case ZipProgressEventType.Saving_EntryBytesRead:
                     if (justHadByteUpdate)
                         Console.SetCursorPosition(0, Console.CursorTop);
-                    Console.Error.Write("     {0}/{1} ({2:N0}%)", e.BytesTransferred, e.TotalBytesToTransfer,
+                    Console.Write("     {0}/{1} ({2:N0}%)", e.BytesTransferred, e.TotalBytesToTransfer,
                                   e.BytesTransferred / (0.01 * e.TotalBytesToTransfer ));
                     justHadByteUpdate= true;
                     break;
@@ -146,7 +146,7 @@ namespace Ionic.Zip.Examples
                 Console.Write("Retry, Skip, or Quit ? (R/S/Q) ");
                 response = Console.ReadLine();
                 Console.WriteLine();
-                
+
             } while (response != null &&
                      response[0]!='S' && response[0]!='s' &&
                      response[0]!='R' && response[0]!='r' &&
@@ -161,14 +161,14 @@ namespace Ionic.Zip.Examples
                 entry.ZipErrorAction = ZipErrorAction.Retry;
         }
 
-        
+
 
         static void CtrlC_Handler(object sender, ConsoleCancelEventArgs args)
         {
             isCanceled = true;
             Console.WriteLine("\nCtrl-C");
             //cleanupCompleted.WaitOne();
-            // prevent the process from exiting until cleanup is done: 
+            // prevent the process from exiting until cleanup is done:
             args.Cancel = true;
         }
 
@@ -180,19 +180,19 @@ namespace Ionic.Zip.Examples
 
             if (args[0]=="-")
             {
-                saveToStdout = true;                
+                saveToStdout = true;
             }
             else if (System.IO.File.Exists(args[0]))
             {
-                System.Console.Error.WriteLine("That zip file ({0}) already exists.", args[0]);
+                System.Console.WriteLine("That zip file ({0}) already exists.", args[0]);
             }
-            
+
 
             // Because the comments and filenames on zip entries may be UTF-8
             // System.Console.OutputEncoding = new System.Text.UTF8Encoding();
 
             Console.CancelKeyPress += CtrlC_Handler;
-            
+
             try
             {
                 Nullable<SelfExtractorFlavor> flavor = null;
@@ -205,9 +205,9 @@ namespace Ionic.Zip.Examples
                 bool recurseDirectories = false;
 
                 // read/update an existing zip, or create a new one.
-                using (ZipFile zip = new ZipFile(args[0])) 
+                using (ZipFile zip = new ZipFile(args[0]))
                 {
-                    zip.StatusMessageTextWriter = System.Console.Error;
+                    zip.StatusMessageTextWriter = System.Console.Out;
                     zip.SaveProgress += SaveProgress;
                     for (int i = 1; i < args.Length; i++)
                     {
@@ -256,22 +256,22 @@ namespace Ionic.Zip.Examples
                                 if (args.Length <= i) Usage();
                                 directoryOnDisk = args[i];
                                 break;
-                                
+
                             case "-j-":
                                 zip.AddDirectoryWillTraverseReparsePoints = false;
                                 break;
-                                
+
                             case "-j+":
                                 zip.AddDirectoryWillTraverseReparsePoints = true;
                                 break;
-                                    
+
                             case "-L":
                                 i++;
                                 if (args.Length <= i) Usage();
                                 zip.CompressionLevel = (Ionic.Zlib.CompressionLevel)
                                     System.Int32.Parse(args[i]);
                                 break;
-                                
+
                             case "-p":
                                 i++;
                                 if (args.Length <= i) Usage();
@@ -344,15 +344,15 @@ namespace Ionic.Zip.Examples
                                 _UseUniformTimestamp = 1;
                                 _fixedTimestamp = System.DateTime.UtcNow;
                                 break;
-                                
+
                             case "-UTnewest":
                                 _UseUniformTimestamp = 2;
                                 break;
-                                
+
                             case "-UToldest":
                                 _UseUniformTimestamp = 3;
                                 break;
-                                
+
                             case "-UT":
                                 i++;
                                 if (args.Length <= i) Usage();
@@ -378,7 +378,7 @@ namespace Ionic.Zip.Examples
                                 entryComment = args[i];  // for the next entry
                                 break;
 #endif
-                                
+
                             case "-zc":
                                 i++;
                                 if (args.Length <= i) Usage();
@@ -409,7 +409,7 @@ namespace Ionic.Zip.Examples
                                                                 wantRecurse);
                                 }
                                 #endif
-                                    
+
                                 break;
                         }
                     }
@@ -435,13 +435,13 @@ namespace Ionic.Zip.Examples
                                     _fixedTimestamp = entry.LastModified;
                             }
                         }
-                        
+
                         foreach(var entry in zip)
                         {
                             entry.LastModified = _fixedTimestamp;
                         }
                     }
-                    
+
                     if (!flavor.HasValue)
                     {
                         if (saveToStdout)
@@ -454,14 +454,14 @@ namespace Ionic.Zip.Examples
                         if (saveToStdout)
                             throw new Exception("Cannot save SFX to stdout, sorry! See http://dotnetzip.codeplex.com/WorkItem/View.aspx?WorkItemId=7246");
                         zip.SaveSelfExtractor(args[0], flavor.Value);
-                        
+
                     }
 
                 }
             }
             catch (System.Exception ex1)
             {
-                System.Console.Error.WriteLine("Exception: " + ex1);
+                System.Console.WriteLine("Exception: " + ex1);
             }
         }
     }
