@@ -1,27 +1,27 @@
 // ZipFile.saveSelfExtractor.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c)  2008, 2009 Dino Chiesa.  
+// Copyright (c)  2008, 2009 Dino Chiesa.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-October-28 05:01:09>
+// last saved (in emacs):
+// Time-stamp: <2010-February-01 21:47:50>
 //
 // ------------------------------------------------------------------
 //
 // This is a the source module that implements the stuff for saving to a
 // self-extracting Zip archive.
-// 
+//
 // ZipFile is set up as a "partial class" - defined in multiple .cs source modules.
 // This is one of the source modules for the ZipFile class.
 //
@@ -31,32 +31,30 @@
 // as well as the Zip library itself.  The latter is required so that self-extracting
 // can work on any machine, whether or not it has the DotNetZip library installed on
 // it.
-// 
+//
 // What we need to do is create the animal I just described, within a method on the
 // ZipFile class.  This source module provides that capability. The method is
 // SaveSelfExtractor().
 //
 // The way the method works: it uses the programmatic interface to the csc.exe
-// compiler, Microsoft.CSharp.CSharpCodeProvider, to compile "boilerplate" extraction
-// logic into a new assembly.  As part of that compile, we embed within that assembly the zip archive
-// itself, as well as the Zip library. 
+// compiler, Microsoft.CSharp.CSharpCodeProvider, to compile "boilerplate"
+// extraction logic into a new assembly.  As part of that compile, we embed within
+// that assembly the zip archive itself, as well as the Zip library.
 //
-// Therefore we need to first save to a temporary zip file, then produce the exe.  
+// Therefore we need to first save to a temporary zip file, then produce the exe.
 //
-// There are a few twists.  
+// There are a few twists.
 //
-// The Visual Studio Project structure is a little weird.  There are code files that ARE NOT compiled
-// during a normal build of the VS Solution.  They are marked as embedded resources.  These
-// are the various "boilerplate" modules that are used in the self-extractor. These modules are:
-//   WinFormsSelfExtractorStub.cs
-//   WinFormsSelfExtractorStub.Designer.cs
-//   CommandLineSelfExtractorStub.cs
-//   PasswordDialog.cs
-//   PasswordDialog.Designer.cs
+// The Visual Studio Project structure is a little weird.  There are code files
+// that ARE NOT compiled during a normal build of the VS Solution.  They are
+// marked as embedded resources.  These are the various "boilerplate" modules that
+// are used in the self-extractor. These modules are: WinFormsSelfExtractorStub.cs
+// WinFormsSelfExtractorStub.Designer.cs CommandLineSelfExtractorStub.cs
+// PasswordDialog.cs PasswordDialog.Designer.cs
 //
-// At design time, if you want to modify the way the GUI looks, you have to mark those modules
-// to have a "compile" build action.  Then tweak em, test, etc.  Then again mark them as 
-// "Embedded resource". 
+// At design time, if you want to modify the way the GUI looks, you have to
+// mark those modules to have a "compile" build action.  Then tweak em, test,
+// etc.  Then again mark them as "Embedded resource".
 //
 // ------------------------------------------------------------------
 
@@ -75,12 +73,14 @@ namespace Ionic.Zip
     public enum SelfExtractorFlavor
     {
         /// <summary>
-        /// A self-extracting zip archive that runs from the console or command line. 
+        /// A self-extracting zip archive that runs from the console or
+        /// command line.
         /// </summary>
         ConsoleApplication = 0,
 
         /// <summary>
-        /// A self-extracting zip archive that presents a graphical user interface when it is executed.. 
+        /// A self-extracting zip archive that presents a graphical user
+        /// interface when it is executed.
         /// </summary>
         WinFormsApplication,
     }
@@ -163,13 +163,14 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        ///   By combining this with the <c>RemoveUnpackedFilesAfterExecute</c> flag,
-        ///   you can create an SFX that extracts itself, runs a file that was
-        ///   extracted, then deletes all the files that were extracted. If you want it
-        ///   to run "invisibly" then set <c>Flavor</c> to
-        ///   <c>SelfExtractorFlavor.ConsoleApplication</c>, and set <c>Quiet</c> to
-        ///   true.  You may also want to specify the default extract location, with
-        ///   <c>DefaultExtractDirectory</c>.
+        ///   By combining this with the <c>RemoveUnpackedFilesAfterExecute</c>
+        ///   flag, you can create an SFX that extracts itself, runs a file that
+        ///   was extracted, then deletes all the files that were extracted. If
+        ///   you want it to run "invisibly" then set <c>Flavor</c> to
+        ///   <c>SelfExtractorFlavor.ConsoleApplication</c>, and set <c>Quiet</c>
+        ///   to true.  The user running such an EXE will see a console window
+        ///   appear, then disappear quickly.  You may also want to specify the
+        ///   default extract location, with <c>DefaultExtractDirectory</c>.
         /// </para>
         ///
         /// <para>
@@ -185,7 +186,7 @@ namespace Ionic.Zip
         {
             get;set;
         }
-        
+
         /// <summary>
         ///   The default extract directory the user will see when
         ///   running the self-extracting archive.
@@ -209,7 +210,7 @@ namespace Ionic.Zip
         ///   with <c>%NAME%</c>. The value of these variables will be
         ///   expanded at the time the SFX is run. Example:
         ///   <c>%USERPROFILE%\Documents\unpack</c> may expand at runtime to
-        ///   <c>c:\users\melvin\Documents\unpack</c>. 
+        ///   <c>c:\users\melvin\Documents\unpack</c>.
         /// </para>
         /// </remarks>
         public String DefaultExtractDirectory
@@ -233,9 +234,9 @@ namespace Ionic.Zip
         ///
         public string IconFile
         {
-            get;set;    
+            get;set;
         }
-        
+
         /// <summary>
         ///   Whether the ConsoleApplication SFX will be quiet during extraction.
         /// </summary>
@@ -251,19 +252,28 @@ namespace Ionic.Zip
         ///     <term>Flavor</term>
         ///     <description>Behavior</description>
         ///   </listheader>
-        /// 
-        ///   <item>
-        ///     <term><c>ConsoleApplication</c></term>
-        ///     <description>no messages will be emitted during successful operation. 
-        ///     </description>
-        ///   </item>
         ///
-        ///   <item>
-        ///     <term><c>WinFormsApplication</c></term>
-        ///     <description>the SFX extracts automatically when the application
+        /// <item>
+        ///   <term><c>ConsoleApplication</c></term>
+        ///   <description><para>no messages will be emitted during successful
+        ///     operation.</para> <para> Double-clicking the SFX in Windows
+        ///     Explorer or as an attachment in an email will cause a console
+        ///     window to appear briefly, before it disappears. If you run the
+        ///     ConsoleApplication SFX from the cmd.exe prompt, it runs as a
+        ///     normal console app; by default, because it is quiet, it displays
+        ///     no messages to the console.  If you pass the -v+ command line
+        ///     argument to the Console SFX when you run it, you will get verbose
+        ///     messages to the console. </para>
+        ///   </description>
+        /// </item>
+        ///
+        /// <item>
+        ///   <term><c>WinFormsApplication</c></term>
+        ///   <description>the SFX extracts automatically when the application
         ///        is launched, with no additional user input.
-        ///     </description>
-        ///   </item>
+        ///   </description>
+        /// </item>
+        ///
         /// </list>
         ///
         /// <para>
@@ -275,26 +285,33 @@ namespace Ionic.Zip
         ///     <term>Flavor</term>
         ///     <description>Behavior</description>
         ///   </listheader>
-        /// 
-        ///   <item>
-        ///     <term><c>ConsoleApplication</c></term>
-        ///     <description>the extractor will emit a
-        ///   message to the console for each entry extracted.
-        ///     </description>
-        ///   </item>
         ///
-        ///   <item>
-        ///     <term><c>WinFormsApplication</c></term>
-        ///     <description>the SFX presents a forms UI and allows the user to select
-        ///       options before extracting. 
-        ///     </description>
-        ///   </item>
+        /// <item>
+        ///   <term><c>ConsoleApplication</c></term>
+        ///   <description><para>the extractor will emit a
+        ///     message to the console for each entry extracted.</para>
+        ///     <para>
+        ///       When double-clicking to launch the SFX, the console window will
+        ///       remain, and the SFX will emit a message for each file as it
+        ///       extracts. The messages fly by quickly, they won't be easily
+        ///       readable, unless the extracted files are fairly large.
+        ///     </para>
+        ///   </description>
+        /// </item>
+        ///
+        /// <item>
+        ///   <term><c>WinFormsApplication</c></term>
+        ///   <description>the SFX presents a forms UI and allows the user to select
+        ///     options before extracting.
+        ///   </description>
+        /// </item>
+        //
         /// </list>
         ///
         /// </remarks>
         public bool Quiet
         {
-            get;set;    
+            get;set;
         }
 
 
@@ -309,10 +326,10 @@ namespace Ionic.Zip
         /// </remarks>
         public Ionic.Zip.ExtractExistingFileAction ExtractExistingFile
         {
-            get;set;    
+            get;set;
         }
-        
-        
+
+
         /// <summary>
         ///   Whether to remove the files that have been unpacked, after executing the
         ///   PostUnpackCommand.
@@ -320,10 +337,11 @@ namespace Ionic.Zip
         ///
         /// <remarks>
         /// <para>
-        ///   If true, and if there is a PostUnpackCommand, and if the command runs
-        ///   successfully, then the files that the SFX unpacked will be removed,
-        ///   afterwards.  If the command does not complete successfully (non-zero
-        ///   return code) then the files will not be removed.
+        ///   If true, and if there is a PostUnpackCommand, and if the command
+        ///   runs successfully, then the files that the SFX unpacked will be
+        ///   removed, afterwards.  If the command does not complete successfully
+        ///   (non-zero return code), that is interpreted as a failure, and the
+        ///   extracted files will not be removed.
         /// </para>
         ///
         /// <para>
@@ -341,7 +359,7 @@ namespace Ionic.Zip
             get;set;
         }
 
-        
+
         /// <summary>
         ///   The file version number to embed into the generated EXE. It will show up, for
         ///   example, during a mouseover in Windows Explorer.
@@ -369,7 +387,7 @@ namespace Ionic.Zip
         }
 
         /// <summary>
-        ///   The copyright notice, if any, to embed into the generated EXE. 
+        ///   The copyright notice, if any, to embed into the generated EXE.
         /// </summary>
         ///
         /// <remarks>
@@ -383,9 +401,9 @@ namespace Ionic.Zip
             get;set;
         }
 
-        
+
         /// <summary>
-        ///   The description to embed into the generated EXE. 
+        ///   The description to embed into the generated EXE.
         /// </summary>
         ///
         /// <remarks>
@@ -398,15 +416,15 @@ namespace Ionic.Zip
         {
             get;set;
         }
-        
+
         /// <summary>
-        ///   The product name to embed into the generated EXE. 
+        ///   The product name to embed into the generated EXE.
         /// </summary>
         ///
         /// <remarks>
-        ///   Use any arbitrary string. 
+        ///   Use any arbitrary string.
         ///   It will show up, for example, while viewing properties of the EXE file in
-        ///   Windows Explorer.  
+        ///   Windows Explorer.
         /// </remarks>
         ///
         public String ProductName
@@ -414,12 +432,11 @@ namespace Ionic.Zip
             get;set;
         }
 
-        
     }
 
 
 
-    
+
     partial class ZipFile
     {
         class ExtractorSettings
@@ -471,50 +488,56 @@ namespace Ionic.Zip
         /// <summary>
         /// Saves the ZipFile instance to a self-extracting zip archive.
         /// </summary>
-        /// 
+        ///
         /// <remarks>
-        /// 
+        ///
         /// <para>
-        /// The generated exe image will execute on any machine that has the .NET Framework 2.0
-        /// installed on it.  The generated exe image is also a valid ZIP file, readable with DotNetZip
-        /// or another Zip library or tool such as WinZip. 
+        /// The generated exe image will execute on any machine that has the .NET
+        /// Framework 2.0 installed on it.  The generated exe image is also a
+        /// valid ZIP file, readable with DotNetZip or another Zip library or tool
+        /// such as WinZip.
         /// </para>
-        /// 
+        ///
         /// <para>
-        /// There are two "flavors" of self-extracting archive.  The <c>WinFormsApplication</c>
-        /// version will pop up a GUI and allow the user to select a target directory into which
-        /// to extract. There's also a checkbox allowing the user to specify to overwrite
-        /// existing files, and another checkbox to allow the user to request that Explorer be
-        /// opened to see the extracted files after extraction.  The other flavor is
-        /// <c>ConsoleApplication</c>.  A self-extractor generated with that flavor setting will
-        /// run from the command line. It accepts command-line options to set the overwrite
-        /// behavior, and to specify the target extraction directory.
+        /// There are two "flavors" of self-extracting archive.  The
+        /// <c>WinFormsApplication</c> version will pop up a GUI and allow the
+        /// user to select a target directory into which to extract. There's also
+        /// a checkbox allowing the user to specify to overwrite existing files,
+        /// and another checkbox to allow the user to request that Explorer be
+        /// opened to see the extracted files after extraction.  The other flavor
+        /// is <c>ConsoleApplication</c>.  A self-extractor generated with that
+        /// flavor setting will run from the command line. It accepts command-line
+        /// options to set the overwrite behavior, and to specify the target
+        /// extraction directory.
         /// </para>
-        /// 
+        ///
         /// <para>
-        /// There are a few temporary files created during the saving to a self-extracting zip.
-        /// These files are created in the directory pointed to by <see
-        /// cref="ZipFile.TempFileFolder"/>, which defaults to <see
-        /// cref="System.IO.Path.GetTempPath"/>.  These temporary files are removed upon
-        /// successful completion of this method.
+        /// There are a few temporary files created during the saving to a
+        /// self-extracting zip.  These files are created in the directory pointed
+        /// to by <see cref="ZipFile.TempFileFolder"/>, which defaults to <see
+        /// cref="System.IO.Path.GetTempPath"/>.  These temporary files are
+        /// removed upon successful completion of this method.
         /// </para>
         ///
         /// <para>
         /// When a user runs the WinForms SFX, the user's personal directory (<see
-        /// cref="Environment.SpecialFolder.Personal"/>) will be used as the default extract
-        /// location.  The user who runs the SFX will have the opportunity to change the extract
-        /// directory before extracting. When the user runs the Command-Line SFX, the user must
-        /// explicitly specify the directory to which to extract.  The .NET Framework 2.0 is
-        /// required on the computer when the self-extracting archive is run.
+        /// cref="Environment.SpecialFolder.Personal">Environment.SpecialFolder.Personal</see>)
+        /// will be used as the default extract location.  If you want to set the
+        /// default extract location, you should use the other overload of
+        /// <c>SaveSelfExtractor()</c>/ The user who runs the SFX will have the
+        /// opportunity to change the extract directory before extracting. When
+        /// the user runs the Command-Line SFX, the user must explicitly specify
+        /// the directory to which to extract.  The .NET Framework 2.0 is required
+        /// on the computer when the self-extracting archive is run.
         /// </para>
         ///
         /// <para>
-        /// NB: This method is not available in the version of DotNetZip
-        /// build for the .NET Compact Framework, nor in the "Reduced" DotNetZip library.  
+        /// NB: This method is not available in the version of DotNetZip build for
+        /// the .NET Compact Framework, nor in the "Reduced" DotNetZip library.
         /// </para>
-        /// 
+        ///
         /// </remarks>
-        /// 
+        ///
         /// <example>
         /// <code>
         /// string DirectoryPath = "c:\\Documents\\Project7";
@@ -534,9 +557,13 @@ namespace Ionic.Zip
         /// End Using
         /// </code>
         /// </example>
-        /// 
-        /// <param name="exeToGenerate">a pathname, possibly fully qualified, to be created. Typically it will end in an .exe extension.</param>
-        /// <param name="flavor">Indicates whether a Winforms or Console self-extractor is desired.</param>
+        ///
+        /// <param name="exeToGenerate">
+        ///   a pathname, possibly fully qualified, to be created. Typically it
+        ///   will end in an .exe extension.</param>
+        /// <param name="flavor">
+        ///   Indicates whether a Winforms or Console self-extractor is
+        ///   desired. </param>
         public void SaveSelfExtractor(string exeToGenerate, SelfExtractorFlavor flavor)
         {
             SelfExtractorSaveOptions options = new SelfExtractorSaveOptions();
@@ -544,11 +571,11 @@ namespace Ionic.Zip
             SaveSelfExtractor(exeToGenerate, options);
         }
 
-        
+
 
         /// <summary>
-        ///   Saves the ZipFile instance to a self-extracting zip archive, using the specified 
-        ///   save options. 
+        ///   Saves the ZipFile instance to a self-extracting zip archive, using
+        ///   the specified save options.
         /// </summary>
         ///
         /// <remarks>
@@ -566,7 +593,7 @@ namespace Ionic.Zip
         ///   directory does not exist, the SFX will create the directory before
         ///   extracting the files.
         /// </para>
-        /// 
+        ///
         /// </remarks>
         ///
         /// <example>
@@ -600,16 +627,17 @@ namespace Ionic.Zip
         /// End Using
         /// </code>
         /// </example>
-        /// 
+        ///
         /// <param name="exeToGenerate">The name of the EXE to generate.</param>
-        /// <param name="options">provides the options for how to save the Self-extracting archive.</param>
+        /// <param name="options">provides the options for how to save the
+        /// Self-extracting archive.</param>
         public void SaveSelfExtractor(string exeToGenerate, SelfExtractorSaveOptions options)
         {
             // Save an SFX that is both an EXE and a ZIP.
 
-            // Check for the case where we are re-saving a zip archive 
-            // that was originally instantiated with a stream.  In that case, 
-            // the _name will be null. If so, we set _writestream to null, 
+            // Check for the case where we are re-saving a zip archive
+            // that was originally instantiated with a stream.  In that case,
+            // the _name will be null. If so, we set _writestream to null,
             // which insures that we'll cons up a new WriteStream (with a filesystem
             // file backing it) in the Save() method.
             if (_name == null)
@@ -629,7 +657,7 @@ namespace Ionic.Zip
         }
 
 
-        
+
 
         private void ExtractResourceToFile(Assembly a, string resourceName, string filename)
         {
@@ -677,8 +705,8 @@ namespace Ionic.Zip
 
                 // Perfect opportunity for a linq query, but I cannot use it.
                 // The DotNetZip library can compile into 2.0, but needs to run on .NET 2.0.
-                // Using LINQ would break that. Here's what it would look like: 
-                // 
+                // Using LINQ would break that. Here's what it would look like:
+                //
                 //      var settings = (from x in SettingsList
                 //                      where x.Flavor == flavor
                 //                      select x).First();
@@ -708,17 +736,17 @@ namespace Ionic.Zip
                 cp.GenerateInMemory = false;
                 cp.GenerateExecutable = true;
                 cp.IncludeDebugInformation = false;
-                cp.CompilerOptions = "";                 
+                cp.CompilerOptions = "";
 
                 Assembly a2 = Assembly.GetExecutingAssembly();
 
                 // Use this to concatenate all the source code resources into a single module
                 var sb = new System.Text.StringBuilder();
-                
+
                 // In case there are compiler errors later, we allocate a
                 // source file name now.
                 string sourceFile = GenerateTempPathname("cs");
-                
+
 
 
                 // // debugging: enumerate the resources in this assembly
@@ -740,9 +768,9 @@ namespace Ionic.Zip
                     //     Console.WriteLine(entry.FileName);
                     //   }
                     // Console.WriteLine();
-                
+
                     TempDir = GenerateTempPathname("tmp");
-                    
+
                     if (String.IsNullOrEmpty(options.IconFile))
                     {
                         // Use the embedded ico file. But we must unpack it to the
@@ -758,11 +786,11 @@ namespace Ionic.Zip
                         nameOfIconFile = Path.Combine(TempDir, "zippedFile.ico");
                         cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", nameOfIconFile);
                     }
-                    else 
+                    else
                         cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", options.IconFile);
-                
+
                     cp.OutputAssembly = StubExe;
-                
+
                     if (options.Flavor == SelfExtractorFlavor.WinFormsApplication)
                         cp.CompilerOptions += " /target:winexe";
 
@@ -793,7 +821,7 @@ namespace Ionic.Zip
                         .Append("\n//         at ")
                         .Append(System.DateTime.Now.ToString("yyyy MMMM dd  HH:mm:ss"))
                         .Append("\n//\n// --------------------------------------------\n\n\n");
-                        
+
                     // assembly attributes
                     if (!String.IsNullOrEmpty(options.Description))
                         sb.Append("[assembly: System.Reflection.AssemblyTitle(\""
@@ -811,12 +839,12 @@ namespace Ionic.Zip
                     if (!String.IsNullOrEmpty(options.Copyright))
                         copyright += "Contents: " + options.Copyright.Replace("\"", "");
 
-                    
+
                     if (!String.IsNullOrEmpty(options.ProductName))
                         sb.Append("[assembly: System.Reflection.AssemblyProduct(\"")
                             .Append(options.ProductName.Replace("\"", ""))
                             .Append("\")]\n");
-                    else 
+                    else
                         sb.Append("[assembly: System.Reflection.AssemblyProduct(\"DotNetZip\")]\n");
 
 
@@ -834,7 +862,7 @@ namespace Ionic.Zip
                     {
                         // remove double-quotes and replace slash with double-slash.
                         // This, because the value is going to be embedded into a
-                        // cs file as a quoted string, and it needs to be escaped. 
+                        // cs file as a quoted string, and it needs to be escaped.
                         extractLoc = extractLoc.Replace("\"", "").Replace("\\", "\\\\");
                     }
 
@@ -860,14 +888,14 @@ namespace Ionic.Zip
                                     string line = sr.ReadLine();
                                     if (extractLoc != null)
                                         line = line.Replace("@@EXTRACTLOCATION", extractLoc);
-                            
+
                                     line = line.Replace("@@REMOVE_AFTER_EXECUTE", options.RemoveUnpackedFilesAfterExecute.ToString());
                                     line = line.Replace("@@QUIET", options.Quiet.ToString());
                                     line = line.Replace("@@EXTRACT_EXISTING_FILE", ((int)options.ExtractExistingFile).ToString());
-                            
+
                                     if (postExCmdLine != null)
                                         line = line.Replace("@@POST_UNPACK_CMD_LINE", postExCmdLine);
-                            
+
                                     sb.Append(line).Append("\n");
                                 }
                             }
@@ -887,10 +915,10 @@ namespace Ionic.Zip
                 }
                 Console.WriteLine("source: {0}", sourceModule);
                 #endif
-                    
+
                 System.CodeDom.Compiler.CompilerResults cr = csharp.CompileAssemblyFromSource(cp, LiteralSource);
 
-                
+
                 if (cr == null)
                     throw new SfxGenerationException("Cannot compile the extraction logic!");
 
@@ -904,7 +932,7 @@ namespace Ionic.Zip
                     {
                         // first, the source we compiled
                         tw.Write(LiteralSource);
-                        
+
                         // now, append the compile errors
                         tw.Write("\n\n\n// ------------------------------------------------------------------\n");
                         tw.Write("// Errors during compilation: \n//\n");
@@ -928,7 +956,7 @@ namespace Ionic.Zip
 
                 // Now, copy the resulting EXE image to the _writestream.
                 // Because this stub exe is being saved first, the effect will be to
-                // concatenate the exe and the zip data together. 
+                // concatenate the exe and the zip data together.
                 using (System.IO.Stream input = System.IO.File.OpenRead(StubExe))
                 {
                     byte[] buffer = new byte[4000];
@@ -950,7 +978,7 @@ namespace Ionic.Zip
                     if (Directory.Exists(TempDir))
                     {
                         try { Directory.Delete(TempDir, true); }
-                        catch (Exception exc1) 
+                        catch (Exception exc1)
                         {
                             Console.WriteLine("Exception: {0}", exc1.ToString());
                         }
@@ -985,10 +1013,10 @@ namespace Ionic.Zip
                 candidate = System.IO.Path.Combine(parentDir, Name);
             } while (System.IO.File.Exists(candidate) || System.IO.Directory.Exists(candidate));
 
-            // this file/path does not exist.  It can now be created, as file or directory. 
+            // this file/path does not exist.  It can now be created, as file or directory.
             return candidate;
         }
-        
+
     }
 #endif
 }
