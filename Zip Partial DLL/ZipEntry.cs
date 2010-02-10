@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-January-21 02:53:43>
+// Time-stamp: <2010-February-10 08:26:52>
 //
 // ------------------------------------------------------------------
 //
@@ -2403,7 +2403,7 @@ namespace Ionic.Zip
         /// <returns>a string representation of the instance.</returns>
         public override String ToString()
         {
-            return String.Format("ZipEntry/{0}", FileName);
+            return String.Format("ZipEntry::{0}", FileName);
         }
 
 

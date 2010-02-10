@@ -2086,9 +2086,8 @@ namespace Ionic.Zip
         /// <returns>a string representation of the instance.</returns>
         public override String ToString()
         {
-            return String.Format ("ZipFile/{0}", Name);
+            return String.Format ("ZipFile::{0}", Name);
         }
-
 
 
         /// <summary>

@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-09 14:58:32>
+// Time-stamp: <2010-February-10 09:50:43>
 //
 // ------------------------------------------------------------------
 //
@@ -313,8 +313,7 @@ namespace Ionic.Zip
         public ZipOutputStream(String fileName)
         {
             Stream stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-            _Init(stream, false);
-            _name = fileName;
+            _Init(stream, false, fileName);
         }
 
 
@@ -338,10 +337,10 @@ namespace Ionic.Zip
         /// </param>
         public ZipOutputStream(Stream stream, bool leaveOpen)
         {
-            _Init(stream, leaveOpen);
+            _Init(stream, leaveOpen, null);
         }
 
-        private void _Init(Stream stream, bool leaveOpen)
+        private void _Init(Stream stream, bool leaveOpen, string name)
         {
             // workitem 9307
             _outputStream = stream.CanRead ? stream : new CountingStream(stream);
@@ -351,10 +350,23 @@ namespace Ionic.Zip
             _zip64 = Zip64Option.Never;
             _leaveUnderlyingStreamOpen = leaveOpen;
             Strategy = Ionic.Zlib.CompressionStrategy.Default;
-            _name = "unknown";
+            _name = name ?? "(stream)";
 #if !NETCF
             ParallelDeflateThreshold = -1L;
 #endif
+        }
+
+
+        /// <summary>Provides a string representation of the instance.</summary>
+        /// <remarks>
+        ///   <para>
+        ///     This can be useful for debugging purposes.
+        ///   </para>
+        /// </remarks>
+        /// <returns>a string representation of the instance.</returns>
+        public override String ToString()
+        {
+            return String.Format ("ZipOutputStream::{0}(leaveOpen({1})))", _name, _leaveUnderlyingStreamOpen);
         }
 
 
