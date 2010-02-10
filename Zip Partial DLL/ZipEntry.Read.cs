@@ -1,7 +1,7 @@
 // ZipEntry.Read.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c)  2009 Dino Chiesa
+// Copyright (c) 2009-2010 Dino Chiesa
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,13 +15,12 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-January-06 14:45:12>
+// Time-stamp: <2010-February-09 17:00:22>
 //
 // ------------------------------------------------------------------
 //
 // This module defines logic for Reading the ZipEntry from a
 // zip file.
-//
 //
 // ------------------------------------------------------------------
 
@@ -445,7 +444,7 @@ namespace Ionic.Zip
                 additionalBytesRead = s.Read(Buffer, 0, Buffer.Length);
                 long posn = s.Position - additionalBytesRead;
                 int j = 0;
-                while (j < Buffer.Length)
+                while (j+3 < Buffer.Length)
                 {
                     int start = j;
 
@@ -464,13 +463,20 @@ namespace Ionic.Zip
                             j = ProcessExtraFieldUnixTimes(Buffer, j, DataSize, posn);
                             break;
 
-
                         case 0x5855:  // Info-zip Extra field (outdated)
                             // This is outdated, so the field is supported on
                             // read only.
                             j = ProcessExtraFieldInfoZipTimes(Buffer, j, DataSize, posn);
                             break;
 
+                        case 0x7855:  // Unix uid/gid
+                            // ignored. DotNetZip does not handle this field.
+                            break;
+
+                        case 0x7875:  // ??
+                            // ignored.  I could not find documentation on this field,
+                            // though it appears in some zip files.
+                            break;
 
                         case 0x0001: // ZIP64
                             j = ProcessExtraFieldZip64(Buffer, j, DataSize, posn);
@@ -659,7 +665,7 @@ namespace Ionic.Zip
 
                 int remainingData = DataSize;
 
-                if (DataSize == 13 || _readExtraDepth > 1)
+                if (DataSize == 13 || _readExtraDepth > 0)
                 {
                     byte flag = Buffer[j++];
                     remainingData--;

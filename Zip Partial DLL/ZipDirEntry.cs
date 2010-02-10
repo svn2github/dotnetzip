@@ -3,7 +3,7 @@
 // ZipDirEntry.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2006-2009 Dino Chiesa and Microsoft Corporation.
+// Copyright (c) 2006-2010 Dino Chiesa and Microsoft Corporation.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -17,7 +17,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-January-06 14:44:15>
+// Time-stamp: <2010-February-09 15:20:43>
 //
 // ------------------------------------------------------------------
 //
@@ -143,6 +143,7 @@ namespace Ionic.Zip
 
             int i = 0;
             ZipEntry zde = new ZipEntry();
+            zde.ProvisionalAlternateEncoding = expectedEncoding;
             zde._Source = ZipEntrySource.ZipFile;
             zde._container = new ZipContainer(zf);
 
