@@ -1,21 +1,21 @@
 // WinZipAesTests.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.  
+// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-October-04 00:58:10>
+// last saved (in emacs):
+// Time-stamp: <2010-February-10 11:40:28>
 //
 // ------------------------------------------------------------------
 //
@@ -59,6 +59,12 @@ namespace Ionic.Zip.Tests.WinZipAes
 
         private void _Internal_CreateZip_WinZipAes(string name, int size1, int size2)
         {
+            if (!WinZipIsPresent)
+            {
+                TestContext.WriteLine("skipping test [_Internal_CreateZip_WinZipAes] : winzip is not present");
+                return;
+            }
+
             string filename = null;
             int entries = _rnd.Next(11) + 8;
             var checksums = new Dictionary<string, string>();
@@ -83,10 +89,10 @@ namespace Ionic.Zip.Tests.WinZipAes
             }
 
 
-            EncryptionAlgorithm[] EncOptions = {
-                EncryptionAlgorithm.None, 
+            Ionic.Zip.EncryptionAlgorithm[] EncOptions = {
+                EncryptionAlgorithm.None,
                 EncryptionAlgorithm.WinZipAes256,
-                EncryptionAlgorithm.WinZipAes128, 
+                EncryptionAlgorithm.WinZipAes128,
                 EncryptionAlgorithm.PkzipWeak
             };
 
@@ -113,9 +119,9 @@ namespace Ionic.Zip.Tests.WinZipAes
                     _DotNetZip_CreateZip(filesToZip, EncOptions[k], password, comment, zipFileToCreate, (m==1));
 
                     if (EncOptions[k] == EncryptionAlgorithm.None)
-                        WinzipVerify(zipFileToCreate);
+                        BasicVerifyZip(zipFileToCreate);
                     else
-                        WinzipVerify(zipFileToCreate, password);
+                        BasicVerifyZip(zipFileToCreate, password);
 
 
                     TestContext.WriteLine("---------------Reading {0}...", zipFileToCreate);
@@ -147,7 +153,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                                                  bool nonSeekable)
         {
             // Want to test the library when saving to non-seekable output streams.  Like
-            // stdout or ASPNET's Response.OutputStream.  This simulates it. 
+            // stdout or ASPNET's Response.OutputStream.  This simulates it.
             if (nonSeekable)
             {
                 using (var outStream = new Ionic.Zip.Tests.NonSeekableOutputStream(File.Create(zipFileToCreate)))
@@ -165,7 +171,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                 }
             }
             else
-            {                
+            {
                 using (ZipFile zip1 = new ZipFile())
                 {
                     zip1.Encryption = encryption;
@@ -254,6 +260,12 @@ namespace Ionic.Zip.Tests.WinZipAes
         [TestMethod]
         public void WinZipAes_CreateZip_DirectoriesOnly()
         {
+            if (!WinZipIsPresent)
+            {
+                TestContext.WriteLine("skipping test [WinZipAes_CreateZip_DirectoriesOnly] : winzip is not present");
+                return;
+            }
+
             string zipFileToCreate = Path.Combine(TopLevelDir, "WinZipAes_CreateZip_DirectoriesOnly.zip");
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
@@ -284,7 +296,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                 zip1.Save(zipFileToCreate);
             }
 
-            WinzipVerify(zipFileToCreate, password);
+            BasicVerifyZip(zipFileToCreate, password);
 
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), entries,
                                  "The zip file created has the wrong number of entries.");
@@ -318,6 +330,12 @@ namespace Ionic.Zip.Tests.WinZipAes
 
         public void _Internal_CreateZip_ZeroLengthFiles(string password, EncryptionAlgorithm algorithm)
         {
+            if (!WinZipIsPresent)
+            {
+                TestContext.WriteLine("skipping test [_Internal_CreateZip_ZeroLengthFiles] : winzip is not present");
+                return;
+            }
+
             string zipFileToCreate = Path.Combine(TopLevelDir, "WinZipAes_CreateZip_ZeroLengthFiles.zip");
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
@@ -339,14 +357,13 @@ namespace Ionic.Zip.Tests.WinZipAes
                 zip.Save(zipFileToCreate);
             }
 
-            WinzipVerify(zipFileToCreate, password);
+            BasicVerifyZip(zipFileToCreate, password);
 
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Length,
                                  "The zip file created has the wrong number of entries.");
         }
 
 
-        string wzzip = null;
 
         private void WinzipCreate(string zipfile, string fileOrDir, string encryptionArg, string password)
         {
@@ -356,12 +373,6 @@ namespace Ionic.Zip.Tests.WinZipAes
 
         private void WinzipCreate(string zipfile, IEnumerable<string> files, string encryptionArg, string password)
         {
-            if (wzzip == null)
-            {
-                var progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                wzzip = Path.Combine(progfiles, "winzip\\wzzip.exe");
-                Assert.IsTrue(File.Exists(wzzip), "exe ({0}) does not exist", wzzip);
-            }
             string args = null;
             if (password == null)
             {
@@ -385,6 +396,12 @@ namespace Ionic.Zip.Tests.WinZipAes
         [TestMethod]
         public void WinZipAes_ReadEncryptedZips()
         {
+            if (!WinZipIsPresent)
+            {
+                TestContext.WriteLine("skipping test [WinZipAes_ReadEncryptedZips] : winzip is not present");
+                return;
+            }
+
             _Internal_ReadEncryptedZips(true);
         }
 
@@ -393,6 +410,12 @@ namespace Ionic.Zip.Tests.WinZipAes
         [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
         public void WinZipAes_ReadZip_Fail_BadPassword()
         {
+            if (!WinZipIsPresent)
+            {
+                TestContext.WriteLine("skipping test [WinZipAes_ReadZip_Fail_BadPassword] : winzip is not present");
+                throw new Ionic.Zip.BadPasswordException();
+            }
+
             _Internal_ReadEncryptedZips(false);
         }
 
@@ -404,7 +427,7 @@ namespace Ionic.Zip.Tests.WinZipAes
             {
                 Directory.SetCurrentDirectory(TopLevelDir);
 
-                // get a set of files to zip up 
+                // get a set of files to zip up
                 string subdir = Path.Combine(TopLevelDir, "files" + m);
                 string[] filesToZip;
                 Dictionary<string, byte[]> checksums;
@@ -419,8 +442,6 @@ namespace Ionic.Zip.Tests.WinZipAes
 
                 _Internal_ReadZip(zipFileToCreate, (correctPw) ? password : null, filesToZip.Length);
             }
-            //_Internal_ReadZip_WinZipAes("winzip-AES256-multifiles-pw-BarbieDoll.zip", "BarbieDoll", 10);
-            //_Internal_ReadZip_WinZipAes("winzip-aes128-pw-ThunderScalpXXX$.zip", "ThunderScalpXXX$", 34);
         }
 
 
@@ -440,16 +461,6 @@ namespace Ionic.Zip.Tests.WinZipAes
             _Internal_GenerateFiles_CreateZip("-ycAES256", password, 1);
         }
 
-
-        [TestMethod]
-        [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
-        public void WinZipAes_ReadZip_Fail_WrongMethod()
-        {
-            string password = TestUtilities.GenerateRandomPassword();
-            _Internal_GenerateFiles_CreateZip("-ycAES256", password, 3);
-            // _Internal_ReadZip("winzip-AES256-multifiles-pw-BarbieDoll.zip", "-null-", 99);
-        }
-
         [TestMethod]
         [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
         public void WinZipAes_ReadZip_Fail_WrongPassword()
@@ -458,11 +469,35 @@ namespace Ionic.Zip.Tests.WinZipAes
             _Internal_GenerateFiles_CreateZip("-ycAES256", password, 2);
         }
 
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
+        public void WinZipAes_ReadZip_Fail_WrongMethod()
+        {
+            string password = TestUtilities.GenerateRandomPassword();
+            _Internal_GenerateFiles_CreateZip("-ycAES256", password, 3);
+        }
+
 
         public void _Internal_GenerateFiles_CreateZip(string cryptoArg, string password, int pwFlavor)
         {
+            // This method generates files, then zips them up using WinZip, then tries
+            // to unzip using DotNetZip. It is parameterized to test both success and
+            // failure cases. If pwFlavor is zero, then it uses the correct password to
+            // unzip, and everything should work.  If pwFlavor is non-zero then it uses
+            // some incorrect password, either null or a bogus string, and generates a failure.
+
+            if (!WinZipIsPresent)
+            {
+                TestContext.WriteLine("skipping test [_Internal_GenerateFiles_CreateZip] : winzip is not present");
+
+                // either return or throw, depending on the expected results.
+                if (pwFlavor == 0)
+                    return;
+                throw new Ionic.Zip.BadPasswordException();
+            }
+
             Directory.SetCurrentDirectory(TopLevelDir);
-            // get a set of files to zip up 
+            // get a set of files to zip up
             string subdir = Path.Combine(TopLevelDir, "files");
 
             string[] filesToZip = TestUtilities.GenerateFilesFlat(subdir);
@@ -477,7 +512,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                 ? null
                 : (pwFlavor == 2)
                 ? "-wrongpassword-"
-                : "-null-";
+                : TestUtilities.GenerateRandomPassword();
 
             _Internal_ReadZip(zipFileToCreate, pwForReading, filesToZip.Length);
         }
@@ -487,19 +522,11 @@ namespace Ionic.Zip.Tests.WinZipAes
         int zipCount = 0;
         private void _Internal_ReadZip(string zipFileToRead, string password, int expectedFilesExtracted)
         {
-            //string SourceDir = CurrentDir;
-            //for (int i = 0; i < 3; i++)
-            //    SourceDir = Path.GetDirectoryName(SourceDir);
-
-            // This is an AES-encrypted zip produced by WinZip
-            //string ZipFileToRead = Path.Combine(SourceDir, 
-            //    String.Format("Zip Tests\\bin\\Debug\\zips\\{0}", zipfile));
-
             Directory.SetCurrentDirectory(TopLevelDir);
 
             Assert.IsTrue(File.Exists(zipFileToRead), "The zip file '{0}' does not exist.", zipFileToRead);
 
-            // extract all the files 
+            // extract all the files
             int actualFilesExtracted = 0;
             string extractDir = String.Format("Extract{0}", zipCount++);
 
@@ -527,6 +554,12 @@ namespace Ionic.Zip.Tests.WinZipAes
         [TestMethod]
         public void WinZipAes_CreateZip_NoCompression()
         {
+            if (!WinZipIsPresent)
+            {
+                TestContext.WriteLine("skipping test [WinZipAes_CreateZip_NoCompression] : winzip is not present");
+                return;
+            }
+
             Directory.SetCurrentDirectory(TopLevelDir);
             string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("WinZipAes_CreateZip_NoCompression.zip"));
             string password = TestUtilities.GenerateRandomPassword();
@@ -568,7 +601,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                 zip1.Save(zipFileToCreate);
             }
 
-            WinzipVerify(zipFileToCreate, password);
+            BasicVerifyZip(zipFileToCreate, password);
 
             // validate all the checksums
             using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
@@ -599,6 +632,12 @@ namespace Ionic.Zip.Tests.WinZipAes
         [TestMethod]
         public void WinZipAes_CreateZip_EmptyPassword()
         {
+            if (!WinZipIsPresent)
+            {
+                TestContext.WriteLine("skipping test [WinZipAes_CreateZip_EmptyPassword] : winzip is not present");
+                return;
+            }
+
             Directory.SetCurrentDirectory(TopLevelDir);
             string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("WinZipAes_CreateZip_EmptyPassword.zip"));
             string password = "";
@@ -639,7 +678,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                 zip1.Save(zipFileToCreate);
             }
 
-            WinzipVerify(zipFileToCreate);
+            BasicVerifyZip(zipFileToCreate);
 
             // validate all the checksums
             using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
@@ -667,6 +706,12 @@ namespace Ionic.Zip.Tests.WinZipAes
         [TestMethod]
         public void WinZipAes_RemoveEntryAndSave()
         {
+            if (!WinZipIsPresent)
+            {
+                TestContext.WriteLine("skipping test [WinZipAes_RemoveEntryAndSave] : winzip is not present");
+                return;
+            }
+
             // make a few text files
             string[] TextFiles = new string[5];
             for (int i = 0; i < TextFiles.Length; i++)
@@ -701,7 +746,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                 }
 
                 if (k == 1)
-                    WinzipVerify(zipFileToCreate, password);
+                    BasicVerifyZip(zipFileToCreate, password);
 
                 // remove a file and re-Save
                 using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
@@ -717,7 +762,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                                      String.Format("Trial {0}: The Zip file has the wrong number of entries.", k));
 
                 if (k == 1)
-                    WinzipVerify(zipFileToCreate, password);
+                    BasicVerifyZip(zipFileToCreate, password);
             }
         }
 
@@ -725,6 +770,12 @@ namespace Ionic.Zip.Tests.WinZipAes
         [TestMethod]
         public void WinZipAes_SmallBuffers_wi7967()
         {
+            if (!WinZipIsPresent)
+            {
+                TestContext.WriteLine("skipping test [WinZipAes_SmallBuffers_wi7967] : winzip is not present");
+                return;
+            }
+
             Directory.SetCurrentDirectory(TopLevelDir);
 
             string password = Path.GetRandomFileName() + Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
@@ -747,7 +798,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                     zip.Save(zipFileToCreate);
                 }
 
-                WinzipVerify(zipFileToCreate, password);
+                BasicVerifyZip(zipFileToCreate, password);
             }
         }
 
@@ -756,6 +807,12 @@ namespace Ionic.Zip.Tests.WinZipAes
         [TestMethod]
         public void WinZipAes_InMemory_wi8493()
         {
+            if (!WinZipIsPresent)
+            {
+                TestContext.WriteLine("skipping test [WinZipAes_InMemory_wi8493] : winzip is not present");
+                return;
+            }
+
             Directory.SetCurrentDirectory(TopLevelDir);
 
             string password = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
@@ -779,17 +836,23 @@ namespace Ionic.Zip.Tests.WinZipAes
 
                     if (m==1)
                         File.WriteAllBytes(zipFileToCreate,ms.ToArray());
-                
-                    WinzipVerify(zipFileToCreate, password);
+
+                    BasicVerifyZip(zipFileToCreate, password);
                 }
             }
         }
 
-        
+
 
         [TestMethod]
         public void WinZipAes_InMemory_wi8493a()
         {
+            if (!WinZipIsPresent)
+            {
+                TestContext.WriteLine("skipping test [WinZipAes_InMemory_wi8493a] : winzip is not present");
+                return;
+            }
+
             Directory.SetCurrentDirectory(TopLevelDir);
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "WinZipAes_InMemory_wi8493a.zip");
@@ -801,7 +864,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                 TextFiles[i] = Path.Combine(TopLevelDir, String.Format("TextFile{0}.txt", i));
                 TestUtilities.CreateAndFillFileText(TextFiles[i], _rnd.Next(14000) + 13000);
             }
-            
+
             using (MemoryStream ms = new MemoryStream())
             {
                 using (var zip = new ZipFile())
@@ -813,17 +876,23 @@ namespace Ionic.Zip.Tests.WinZipAes
                     zip.Save(ms);
                 }
                 File.WriteAllBytes(zipFileToCreate,ms.ToArray());
-                
-                WinzipVerify(zipFileToCreate, password);
+
+                BasicVerifyZip(zipFileToCreate, password);
             }
         }
-        
-        
+
+
 
         [TestMethod]
         //[ExpectedException(typeof(System.InvalidOperationException))]
         public void WinZipAes_Update_SwitchCompression()
         {
+            if (!WinZipIsPresent)
+            {
+                TestContext.WriteLine("skipping test [WinZipAes_Update_SwitchCompression] : winzip is not present");
+                return;
+            }
+
             Directory.SetCurrentDirectory(TopLevelDir);
             string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("WinZipAes_Update_SwitchCompression.zip"));
             string password = TestUtilities.GenerateRandomPassword();
@@ -867,11 +936,11 @@ namespace Ionic.Zip.Tests.WinZipAes
                 zip1.Save(zipFileToCreate);
             }
 
-            WinzipVerify(zipFileToCreate, password);
+            BasicVerifyZip(zipFileToCreate, password);
 
             TestContext.WriteLine("=======================================");
             TestContext.WriteLine("Updating the zip file");
-            
+
             // Update the zip file
             using (ZipFile zip = ZipFile.Read(zipFileToCreate))
             {

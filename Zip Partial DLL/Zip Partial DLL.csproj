@@ -67,20 +67,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\CommandLineSelfExtractorStub.cs" />
-    <None Include="Resources\PasswordDialog.cs" />
-    <None Include="Resources\PasswordDialog.designer.cs">
-      <DependentUpon>PasswordDialog.cs</DependentUpon>
-    </None>
-    <None Include="Resources\WinFormsSelfExtractorStub.cs" />
-    <None Include="Resources\WinFormsSelfExtractorStub.designer.cs">
-      <DependentUpon>WinFormsSelfExtractorStub.cs</DependentUpon>
-    </None>
-    <None Include="Resources\ZipContentsDialog.cs" />
-    <None Include="Resources\ZipContentsDialog.designer.cs">
-      <DependentUpon>ZipContentsDialog.cs</DependentUpon>
-    </None>
-    <None Include="Resources\FolderBrowserDialogEx.cs" />
     <Compile Include="ZipEntrySource.cs" />
     <Compile Include="ZipOutputStream.cs" />
     <Compile Include="ZipInputStream.cs" />
@@ -118,9 +104,39 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\CommandLineSelfExtractorStub.cs" />
+    <None Include="Resources\PasswordDialog.cs" />
+    <None Include="Resources\PasswordDialog.designer.cs">
+      <DependentUpon>PasswordDialog.cs</DependentUpon>
+    </None>
+    <None Include="Resources\WinFormsSelfExtractorStub.cs" />
+    <None Include="Resources\WinFormsSelfExtractorStub.designer.cs">
+      <DependentUpon>WinFormsSelfExtractorStub.cs</DependentUpon>
+    </None>
+    <None Include="Resources\ZipContentsDialog.cs" />
+    <None Include="Resources\ZipContentsDialog.designer.cs">
+      <DependentUpon>ZipContentsDialog.cs</DependentUpon>
+    </None>
+    <None Include="Resources\FolderBrowserDialogEx.cs" />
+    <None Include="Resources\zippedFile.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PackResources.vbs" />
     <None Include="..\Ionic.snk">
       <Link>Ionic.snk</Link>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\PasswordDialog.resx">
+      <DependentUpon>PasswordDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\WinFormsSelfExtractorStub.resx">
+      <DependentUpon>WinFormsSelfExtractorStub.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\ZipContentsDialog.resx">
+      <DependentUpon>ZipContentsDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\ZippedResources.zip" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
@@ -144,21 +160,6 @@
       <Project>{9816BA86-9250-4C00-A912-25F07F8677D1}</Project>
       <Name>Zlib</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\PasswordDialog.resx">
-      <DependentUpon>PasswordDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\WinFormsSelfExtractorStub.resx">
-      <DependentUpon>WinFormsSelfExtractorStub.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\ZipContentsDialog.resx">
-      <DependentUpon>ZipContentsDialog.cs</DependentUpon>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\zippedFile.ico" />
-    <EmbeddedResource Include="Resources\ZippedResources.zip" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

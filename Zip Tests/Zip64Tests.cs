@@ -367,7 +367,7 @@ namespace Ionic.Zip.Tests.Zip64
 
                 }
 
-                WinzipVerify(zipFileToCreate);
+                BasicVerifyZip(zipFileToCreate);
 
                 TestContext.WriteLine("---------------Reading {0}...", zipFileToCreate);
                 using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
@@ -969,36 +969,6 @@ namespace Ionic.Zip.Tests.Zip64
         }
 
 
-        private string _wzzip = null;
-        private string wzzip
-        {
-            get
-            {
-                if (_wzzip == null)
-                {
-                    string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                    _wzzip = Path.Combine(progfiles, "winzip\\wzzip.exe");
-                    Assert.IsTrue(File.Exists(_wzzip), "exe ({0}) does not exist", _wzzip);
-                }
-                return _wzzip;
-            }
-        }
-
-        private string _wzunzip = null;
-        private string wzunzip
-        {
-            get
-            {
-                if (_wzunzip == null)
-                {
-                    string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                    _wzunzip = Path.Combine(progfiles, "winzip\\wzunzip.exe");
-                    Assert.IsTrue(File.Exists(_wzunzip), "exe ({0}) does not exist", _wzunzip);
-                }
-                return _wzunzip;
-            }
-        }
-
 
         [Timeout((int)(60 * 60 * 1000 * 10)), TestMethod] // in milliseconds. 3600 000 0 = 10 hours
         public void Zip64_Winzip_Zip_Huge()
@@ -1364,7 +1334,7 @@ namespace Ionic.Zip.Tests.Zip64
             _txrx.Send(statusString + " Verifying...");
 
             // exec WinZip. But the output is really large, so we pass emitOutput=false .
-            WinzipVerify(zipFileToCreate, password, false);
+            BasicVerifyZip(zipFileToCreate, password, false);
 
             Assert.AreEqual<int>(fileCount-dirCount, TestUtilities.CountEntries(zipFileToCreate),
                                  "{0}: The zip file created has the wrong number of entries.", zipFileToCreate);

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-January-06 23:27:37>
+// Time-stamp: <2010-February-10 15:23:02>
 //
 // ------------------------------------------------------------------
 //
@@ -540,7 +540,7 @@ namespace Ionic.Zip.Tests.Basic
             string status = sw.ToString();
             TestContext.WriteLine("save output: " + status);
 
-            WinzipVerify(zipFileToCreate, password);
+            BasicVerifyZip(zipFileToCreate, password);
 
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), FilesToZip.Length,
                                  "The zip file created has the wrong number of entries.");
@@ -1127,6 +1127,9 @@ namespace Ionic.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_AddDirectory_Nested()
         {
+            // Each trial provides a directory name into which to add
+            // files, and a regex, used for verification after the zip
+            // is created, to match the names on any added entries.
             TestTrial[] trials = {
                 new TestTrial { arg=null, re="^dir(\\d){3}/(file(\\d+).ext)?$"},
                 new TestTrial { arg="", re="^dir(\\d){3}/(file(\\d+).ext)?$"},
@@ -1165,8 +1168,6 @@ namespace Ionic.Zip.Tests.Basic
                     }
                 }
 
-
-                //string dirToZip = Path.GetFileName(TopLevelDir);
                 var sw = new StringWriter();
                 using (ZipFile zip = new ZipFile())
                 {
@@ -1182,7 +1183,6 @@ namespace Ionic.Zip.Tests.Basic
                 Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), entries,
                                      String.Format("The zip file created in cycle {0} has the wrong number of entries.", k));
 
-                //TestContext.WriteLine("");
                 // verify that the entries in the zip are in the top level directory!!
                 using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
                 {
@@ -1200,7 +1200,6 @@ namespace Ionic.Zip.Tests.Basic
 
 
         [TestMethod]
-        // [ExpectedException(typeof(FileNotFoundException))]
         public void Basic_SaveToFileStream()
         {
             // from small numbers of files to larger numbers of files
@@ -1237,6 +1236,7 @@ namespace Ionic.Zip.Tests.Basic
                                      String.Format("In trial {0}, the Zip file {1} has the wrong number of entries.", k, zipFileToCreate));
             }
         }
+
 
 
         [TestMethod]

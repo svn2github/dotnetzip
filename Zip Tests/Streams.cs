@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-January-20 19:28:05>
+// Time-stamp: <2010-February-10 12:13:27>
 //
 // ------------------------------------------------------------------
 //
@@ -96,37 +96,6 @@ namespace Ionic.Zip.Tests.Streams
                 Zip64Option.Always,
             };
 
-
-        private string _sevenZip = null;
-        private string sevenZip
-        {
-            get
-            {
-                if (_sevenZip == null)
-                {
-                    string testBin = TestUtilities.GetTestBinDir(CurrentDir);
-                    _sevenZip = Path.Combine(testBin, "Resources\\7z.exe");
-                    Assert.IsTrue(File.Exists(_sevenZip), "exe ({0}) does not exist", _sevenZip);
-                }
-                return _sevenZip;
-            }
-        }
-
-
-        private string _wzzip = null;
-        private string wzzip
-        {
-            get
-            {
-                if (_wzzip == null)
-                {
-                    string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                    _wzzip = Path.Combine(progfiles, "winzip\\wzzip.exe");
-                    Assert.IsTrue(File.Exists(_wzzip), "exe ({0}) does not exist", _wzzip);
-                }
-                return _wzzip;
-            }
-        }
 
 
 
@@ -273,9 +242,9 @@ namespace Ionic.Zip.Tests.Streams
                     }
 
                     if (crypto[i] == EncryptionAlgorithm.None)
-                        WinzipVerify(zipFileToCreate);
+                        BasicVerifyZip(zipFileToCreate);
                     else
-                        WinzipVerify(zipFileToCreate, password);
+                        BasicVerifyZip(zipFileToCreate, password);
 
                     Assert.AreEqual<int>(files.Length, TestUtilities.CountEntries(zipFileToCreate),
                                          "Trial ({0},{1}): The zip file created has the wrong number of entries.", i, k);
@@ -388,7 +357,7 @@ namespace Ionic.Zip.Tests.Streams
                         zip.Save(zipFileToCreate);
                 }
 
-                WinzipVerify(zipFileToCreate, password);
+                BasicVerifyZip(zipFileToCreate, password);
 
                 Assert.AreEqual<int>(files.Length, TestUtilities.CountEntries(zipFileToCreate),
                                      "Trial ({0},{1}): The zip file created has the wrong number of entries.", cycle, k);
@@ -552,7 +521,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
             _txrx.Send(statusString + " Verifying...");
 
             // exec WinZip. But the output is really large, so we pass emitOutput=false .
-            WinzipVerify(zipFileToCreate, password, false);
+            BasicVerifyZip(zipFileToCreate, password, false);
 
             Assert.AreEqual<int>(fileCount-dirCount, TestUtilities.CountEntries(zipFileToCreate),
                                  "{0}: The zip file created has the wrong number of entries.", zipFileToCreate);
@@ -652,7 +621,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                             }
                         }
 
-                        WinzipVerify(zipFileToCreate, password);
+                        BasicVerifyZip(zipFileToCreate, password);
 
                         Assert.AreEqual<int>(4, TestUtilities.CountEntries(zipFileToCreate),
                                              "Trial ({0},{1}): The zip file created has the wrong number of entries.", i, j);
@@ -746,7 +715,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                             }
                         }
 
-                        WinzipVerify(zipFileToCreate, password);
+                        BasicVerifyZip(zipFileToCreate, password);
 
                         Assert.AreEqual<int>(5, TestUtilities.CountEntries(zipFileToCreate),
                                              "Trial ({0},{1}): The zip file created has the wrong number of entries.", i, j);
@@ -876,7 +845,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                     }
                 }
 
-                WinzipVerify(zipFileToCreate, password);
+                BasicVerifyZip(zipFileToCreate, password);
 
                 Assert.AreEqual<int>(files.Length, TestUtilities.CountEntries(zipFileToCreate),
                                      "Trial ({0},{1}): The zip file created has the wrong number of entries.", cycle, k);
@@ -1207,7 +1176,7 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                             TestContext.WriteLine("compression took {0}", ts[k]);
 
                             //if (t==0)
-                            WinzipVerify(zipFileToCreate, password);
+                            BasicVerifyZip(zipFileToCreate, password);
 
                             Assert.AreEqual<int>(nFiles, TestUtilities.CountEntries(zipFileToCreate),
                                                  "Trial ({0}.{1}.{2}.{3}): The zip file created has the wrong number of entries.", i, j, k, t);
@@ -1282,6 +1251,12 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
 
         public void _Internal_Streams_7z_Zip(int flavor, string label)
         {
+            if (!SevenZipIsPresent)
+            {
+                TestContext.WriteLine("skipping test [_Internal_Streams_7z_Zip] : SevenZip is not present");
+                return;
+            }
+
             int[] fileCounts = { 1, 2, _rnd.Next(8) + 6, _rnd.Next(18) + 16, _rnd.Next(48) + 56 } ;
 
             for (int m=0; m < fileCounts.Length; m++)
@@ -1376,6 +1351,12 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
 
         public void _Internal_Streams_WinZip_Zip(int fodderOption, string password, string label)
         {
+            if (!WinZipIsPresent)
+            {
+                TestContext.WriteLine("skipping test [_Internal_Streams_WinZip_Zip] : winzip is not present");
+                return;
+            }
+
             int[] fileCounts = { 1, 2, _rnd.Next(8) + 6, _rnd.Next(18) + 16, _rnd.Next(48) + 56 } ;
 
             for (int m=0; m < fileCounts.Length; m++)
@@ -1417,7 +1398,6 @@ public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
                 string pwdOption = String.IsNullOrEmpty(password) ? "" : "-s"+password;
                 string formatString = "-a -p {0} -yx {1} {2}\\*.*";
                 string wzzipOut = this.Exec(wzzip, String.Format(formatString, pwdOption, zipFileToCreate, dirToZip));
-
 
                 // Verify the number of files in the zip
                 Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), files.Length,

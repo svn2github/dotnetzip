@@ -104,7 +104,7 @@ namespace Ionic.Zip.Tests.Split
                 }
                 TestContext.WriteLine("{0}", sw.ToString());
 
-                WinzipVerify(zipFileToCreate);
+                BasicVerifyZip(zipFileToCreate);
 
                 // also verify checksums
                 VerifyChecksums(Path.Combine(extractDir, "files"), filesToZip, checksums);

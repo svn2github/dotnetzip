@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-January-21 11:20:38>
+// Time-stamp: <2010-February-10 15:16:40>
 //
 // ------------------------------------------------------------------
 //
@@ -299,9 +299,105 @@ namespace Ionic.Zip.Tests.Unicode
             }
 
             TestContext.WriteLine("\n---------------------Done.");
-
-
         }
+
+
+        [TestMethod]
+        public void CodePage_UpdateZip_AlternateEncoding_wi10180()
+        {
+            string zipFileToCreate = Path.Combine(TopLevelDir, "UpdateZip_AlternateEncoding_wi10180.zip");
+            System.Text.Encoding JIS = System.Text.Encoding.GetEncoding("shift_jis");
+
+            TestContext.WriteLine("The CP for JIS is: {0}", JIS.CodePage);
+
+            string[] filenames = {
+                "日本語.txt",
+                "日本語テスト.txt"
+            };
+
+            // pass 1 - create it
+            TestContext.WriteLine("Create zip...");
+            using (var zip = new ZipFile())
+            {
+                zip.ProvisionalAlternateEncoding = JIS;
+                zip.AddEntry(filenames[0], "This is the content for entry (" + filenames[0] + ")");
+                TestContext.WriteLine("adding file: {0}", filenames[0]);
+                zip.Save(zipFileToCreate);
+            }
+
+            // pass 2 - update it
+            TestContext.WriteLine("Update zip...");
+            ReadOptions options = new ReadOptions { Encoding = JIS };
+            using (var zip0 = ZipFile.Read(zipFileToCreate, options))
+            {
+                foreach (var e in zip0)
+                {
+                    TestContext.WriteLine("existing entry name: {0}  encoding: {1}",
+                                          e.FileName, e.ProvisionalAlternateEncoding.EncodingName
+                                          );
+                }
+                zip0.AddEntry(filenames[1], "This is more content..." + System.DateTime.UtcNow.ToString("G"));
+                TestContext.WriteLine("adding file: {0}", filenames[1]);
+                zip0.Save();
+            }
+
+
+            // pass 3 - verify the filenames
+            TestContext.WriteLine("Verify zip...");
+            using (var zip0 = ZipFile.Read(zipFileToCreate, options))
+            {
+                foreach (string f in filenames)
+                {
+                    Assert.AreEqual<string>(f, zip0[f].FileName, "The entry FileName was not expected");
+                }
+            }
+        }
+
+
+
+        [TestMethod]
+        public void Unicode_AddDirectoryByName_wi8984()
+        {
+            Directory.SetCurrentDirectory(TopLevelDir);
+            string format = "弹出应用程序{0:D3}.dir"; // Chinese characters
+
+            for (int n = 1; n <= 10; n++)
+            {
+                var dirsAdded = new System.Collections.Generic.List<String>();
+                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Test_AddDirectoryByName{0:N2}.zip", n));
+                using (ZipFile zip1 = new ZipFile(zipFileToCreate))
+                {
+                    zip1.UseUnicodeAsNecessary = true;
+                    for (int i = 0; i < n; i++)
+                    {
+                        // create an arbitrary directory name, add it to the zip archive
+                        string dirName = String.Format(format, i);
+                        zip1.AddDirectoryByName(dirName);
+                        dirsAdded.Add(dirName + "/");
+                    }
+                    zip1.Save();
+                }
+
+
+                string extractDir = String.Format("extract{0:D3}", n);
+                int dirCount = 0;
+                using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
+                {
+                    foreach (var e in zip2)
+                    {
+                        TestContext.WriteLine("dir: {0}", e.FileName);
+                        Assert.IsTrue(dirsAdded.Contains(e.FileName), "Cannot find the expected entry ({0})", e.FileName);
+                        Assert.IsTrue(e.IsDirectory);
+                        e.Extract(extractDir);
+                        dirCount++;
+                    }
+                }
+                Assert.AreEqual<int>(n, dirCount);
+            }
+        }
+
+
+
 
     }
 }

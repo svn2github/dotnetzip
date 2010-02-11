@@ -743,7 +743,6 @@ namespace Ionic.Zip
         internal bool Verbose
         {
             get { return (_StatusMessageTextWriter != null); }
-            //set { _Verbose = value; }
         }
 
 
