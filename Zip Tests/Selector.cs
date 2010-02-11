@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-January-20 17:59:27>
+// Time-stamp: <2010-February-10 23:49:00>
 //
 // ------------------------------------------------------------------
 //
@@ -673,6 +673,8 @@ namespace Ionic.Zip.Tests
             ctime,
         }
 
+
+
         private static void TouchFile(string strFile, WhichTime which, DateTime stamp)
         {
             System.IO.FileInfo fi = new System.IO.FileInfo(strFile);
@@ -690,7 +692,7 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void Selector_SelectEntries_ByTime()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectEntries.zip");
 
@@ -805,7 +807,7 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void Selector_ExtractSelectedEntries()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_ExtractSelectedEntries.zip");
 
@@ -891,7 +893,7 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void Selector_SelectEntries_ByName()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
+            // Directory.SetCurrentDirectory(TopLevelDir);
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectEntries.zip");
 
@@ -1005,10 +1007,11 @@ namespace Ionic.Zip.Tests
         }
 
 
+
         [TestMethod]
         public void Selector_SelectEntries_ByName_NamesWithSpaces()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectEntries_Spaces.zip");
 
@@ -1089,10 +1092,11 @@ namespace Ionic.Zip.Tests
 
         }
 
+
         [TestMethod]
         public void Selector_RemoveSelectedEntries_Spaces()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_RemoveSelectedEntries_Spaces.zip");
 
@@ -1162,7 +1166,7 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void Selector_RemoveSelectedEntries2()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_RemoveSelectedEntries2.zip");
 
@@ -1236,7 +1240,7 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void Selector_SelectEntries_subDirs()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectFiles_subDirs.zip");
 
@@ -1354,7 +1358,7 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void Selector_SelectEntries_Fullpath()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectFiles_Fullpath.zip");
 
@@ -1472,7 +1476,7 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void Selector_SelectEntries_NestedDirectories_wi8559()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectFiles_NestedDirectories.zip");
 
             TestContext.WriteLine("====================================================");
@@ -1527,19 +1531,20 @@ namespace Ionic.Zip.Tests
         public void Selector_SelectFiles_DirName_wi8245()
         {
             // workitem 8245
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             SetupFiles();
             var ff = new Ionic.FileSelector("*.*");
             var result = ff.SelectFiles(fodderDirectory);
             Assert.IsTrue(result.Count > 1);
         }
 
+
         [TestMethod]
         public void Selector_SelectFiles_DirName_wi8245_2()
         {
             // workitem 8245
             string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_SelectFiles_DirName_wi8245_2.zip");
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             SetupFiles();
 
             var fodderFiles = Directory.GetFiles(fodderDirectory, "*.*", SearchOption.AllDirectories);
@@ -1562,7 +1567,7 @@ namespace Ionic.Zip.Tests
         public void Selector_SelectFiles_DirName_wi9176()
         {
             // workitem 9176
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
 
             _txrx= SetupProgressMonitor("SelectFiles-DirName");
 
@@ -1636,6 +1641,41 @@ namespace Ionic.Zip.Tests
             }
         }
 
+
+        [TestMethod]
+        public void Selector_Twiddle_wi10153()
+        {
+            // workitem 10153:
+            //
+            // When calling AddSelectedFiles(String,String,String,bool), and when the
+            // actual filesystem path uses mixed case, but the specified directoryOnDisk
+            // argument is downcased, AND when the filename contains a ~ (weird, I
+            // know), verify that the path replacement works as advertised, and entries
+            // are rooted in the directoryInArchive specified path.
+
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_Twiddle.zip");
+            string dirToZip = "dirToZip";
+            Directory.CreateDirectory(dirToZip);
+            string filename = Path.Combine(dirToZip, String.Format("~{0}.txt", _rnd.Next(5)));
+            TestUtilities.CreateAndFillFileText(filename, _rnd.Next(1000) + 500);
+
+            using (ZipFile zip = new ZipFile())
+            {
+                zip.AddSelectedFiles("name != *.zip*", dirToZip.ToLower(), "", true);
+                //zip.AddSelectedFiles("name != *.zip*", dirToZip, "", true);
+                zip.Save(zipFileToCreate);
+            }
+
+            using (ZipFile zip = ZipFile.Read(zipFileToCreate))
+            {
+                foreach (var e in zip)
+                {
+                    Assert.IsFalse(e.FileName.Contains("/"), "The filename contains a path, but shouldn't");
+                }
+            }
+
+            //BasicVerifyZip(zipFileToCreate);
+        }
 
 
 

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-05 08:52:29>
+// Time-stamp: <2010-February-10 23:48:35>
 //
 // ------------------------------------------------------------------
 //
@@ -607,14 +607,8 @@ namespace Ionic.Zip
                                                bool recurseDirectories,
                                                bool wantUpdate)
         {
-
-        //List<string> filesToAdd = null;
             if (directoryOnDisk == null && (Directory.Exists(selectionCriteria)))
             {
-                //if (Verbose) StatusMessageTextWriter.WriteLine("adding selection '{0}' from dir '{1}'...",
-                //selectionCriteria, directoryOnDisk);
-                //Ionic.FileSelector ff = new Ionic.FileSelector("*.*");
-                //filesToAdd = ff.SelectFiles(selectionCriteria, recurseDirectories);
                 directoryOnDisk = selectionCriteria;
                 selectionCriteria = "*.*";
             }
@@ -622,6 +616,7 @@ namespace Ionic.Zip
             {
                 directoryOnDisk = ".";
             }
+
             // workitem 9176
             while (directoryOnDisk.EndsWith("\\")) directoryOnDisk = directoryOnDisk.Substring(0, directoryOnDisk.Length - 1);
             if (Verbose) StatusMessageTextWriter.WriteLine("adding selection '{0}' from dir '{1}'...",
@@ -634,11 +629,13 @@ namespace Ionic.Zip
 
             OnAddStarted();
 
+            string d2 = directoryOnDisk.ToLower();
             foreach (var f in filesToAdd)
             {
                 if (directoryPathInArchive != null)
                 {
-                    string dirInArchive = Path.GetDirectoryName(f).Replace(directoryOnDisk, directoryPathInArchive);
+                    // workitem 10153
+                    string dirInArchive = Path.GetDirectoryName(f).ToLower().Replace(d2, directoryPathInArchive);
                     if (wantUpdate)
                         this.UpdateFile(f, dirInArchive);
                     else
