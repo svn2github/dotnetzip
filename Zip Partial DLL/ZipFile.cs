@@ -3320,7 +3320,9 @@ namespace Ionic.Zip
                 {
                     if (_name != null)
                     {
-                        _readstream = File.OpenRead(_name);
+                        _readstream = File.Open(_name, FileMode.Open, FileAccess.Read,
+                                                FileShare.Read | FileShare.Write );
+                        //_readstream = File.OpenRead(_name);
                         _ReadStreamIsOurs = true;
                     }
                 }
