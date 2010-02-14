@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-10 23:48:35>
+// Time-stamp: <2010-February-12 18:03:50>
 //
 // ------------------------------------------------------------------
 //
@@ -61,40 +61,57 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        ///   Supported nouns include "name" for the filename; "atime", "mtime", and
-        ///   "ctime" for last access time, last modfied time, and created time of the
-        ///   file, respectively; "attributes" for the file attributes; and "size" for
-        ///   the file length (uncompressed).  The "attributes" and "name" nouns both
-        ///   support = and != as operators.  The "size", "atime", "mtime", and "ctime"
-        ///   nouns support = and !=, and &gt;, &gt;=, &lt;, &lt;= as well. The times
-        ///   are taken to be expressed in "local time".
+        ///   Supported nouns include "name" (or "filename") for the filename; "atime",
+        ///   "mtime", and "ctime" for last access time, last modfied time, and created
+        ///   time of the file, respectively; "attributes" (or "attrs") for the file
+        ///   attributes; "size" (or "length") for the file length (uncompressed), and
+        ///   "type" for the type of object, either a file or a directory.  The
+        ///   "attributes", "name" and "type" nouns both support = and != as operators.
+        ///   The "size", "atime", "mtime", and "ctime" nouns support = and !=, and
+        ///   &gt;, &gt;=, &lt;, &lt;= as well. The times are taken to be expressed in
+        ///   local time.
         /// </para>
         ///
         /// <para>
-        ///   Specify values for the file attributes as a string with one or more of the
-        ///   characters H,R,S,A in any order, implying Hidden, ReadOnly, System, and
-        ///   Archive, respectively.  To specify a time, use YYYY-MM-DD-HH:mm:ss as the
-        ///   format.  If you omit the HH:mm:ss portion, it is assumed to be 00:00:00
-        ///   (midnight). The value for a size criterion is expressed in integer
-        ///   quantities of bytes, kilobytes (use k or kb after the number), megabytes
-        ///   (m or mb), or gigabytes (g or gb).  The value for a name is a pattern to
-        ///   match against the filename, potentially including wildcards.  The pattern
-        ///   follows CMD.exe glob rules: * implies one or more of any character (not
-        ///   including dot), while ? implies one character (not including dot).  If the
-        ///   name pattern contains any slashes, it is matched to the entire filename,
-        ///   including the path; otherwise, it is matched against only the filename
-        ///   without the path.  This means a pattern of "*\*.*" matches all files one
-        ///   directory level deep, while a pattern of "*.*" matches all files in all
-        ///   directories.
+        /// Specify values for the file attributes as a string with one or more of the
+        /// characters H,R,S,A,I,L in any order, implying file attributes of Hidden,
+        /// ReadOnly, System, Archive, NotContextIndexed, and ReparsePoint (symbolic
+        /// link) respectively.
         /// </para>
         ///
         /// <para>
-        ///   To specify a name pattern that includes spaces, use single quotes around
-        ///   the pattern.  A pattern of "'* *.*'" will match all files that have spaces
-        ///   in the filename.  The full criteria string for that would be "name = '*
-        ///   *.*'" .
+        /// To specify a time, use YYYY-MM-DD-HH:mm:ss or YYYY/MM/DD-HH:mm:ss as the
+        /// format.  If you omit the HH:mm:ss portion, it is assumed to be 00:00:00
+        /// (midnight).
         /// </para>
         ///
+        /// <para>
+        /// The value for a size criterion is expressed in integer quantities of bytes,
+        /// kilobytes (use k or kb after the number), megabytes (m or mb), or gigabytes
+        /// (g or gb).
+        /// </para>
+        ///
+        /// <para>
+        /// The value for a name is a pattern to match against the filename, potentially
+        /// including wildcards.  The pattern follows CMD.exe glob rules: * implies one
+        /// or more of any character, while ?  implies one character.  If the name
+        /// pattern contains any slashes, it is matched to the entire filename,
+        /// including the path; otherwise, it is matched against only the filename
+        /// without the path.  This means a pattern of "*\*.*" matches all files one
+        /// directory level deep, while a pattern of "*.*" matches all files in all
+        /// directories.
+        /// </para>
+        ///
+        /// <para>
+        /// To specify a name pattern that includes spaces, use single quotes around the
+        /// pattern.  A pattern of "'* *.*'" will match all files that have spaces in
+        /// the filename.  The full criteria string for that would be "name = '* *.*'" .
+        /// </para>
+        ///
+        /// <para>
+        /// The value for a type criterion is either F (implying a file) or D (implying
+        /// a directory).
+        /// </para>
         ///
         /// <para>
         /// Some examples:
@@ -146,6 +163,11 @@ namespace Ionic.Zip
         ///     <term>size > 2gb</term>
         ///     <description>all files whose uncompressed size is greater than 2gb.
         ///     </description>
+        ///   </item>
+        ///
+        ///   <item>
+        ///     <term>type = D</term>
+        ///     <description>all directories in the filesystem. </description>
         ///   </item>
         ///
         /// </list>
@@ -1209,6 +1231,20 @@ namespace Ionic
         }
     }
 
+
+    internal partial class TypeCriterion : SelectionCriterion
+    {
+        internal override bool Evaluate(Ionic.Zip.ZipEntry entry)
+        {
+            bool result = (ObjectType == 'D')
+                ? entry.IsDirectory
+                : !entry.IsDirectory;
+
+            if (Operator != ComparisonOperator.EqualTo)
+                result = !result;
+            return result;
+        }
+    }
 
     internal partial class AttributesCriterion : SelectionCriterion
     {

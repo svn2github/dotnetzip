@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-10 23:49:00>
+// Time-stamp: <2010-February-12 17:55:33>
 //
 // ------------------------------------------------------------------
 //
@@ -1623,6 +1623,10 @@ namespace Ionic.Zip.Tests
         public void Selector_SelectFiles_GoodSyntax01()
         {
             string[] criteria = {
+                "type = D",
+                "type = F",
+                "attrs = HRS",
+                "attrs = L",
                 "name = *.txt  OR (size > 7800)",
                 "name = *.harvey  OR  (size > 7800  and attributes = H)",
                 "(name = *.harvey)  OR  (size > 7800  and attributes = H)",
@@ -1661,8 +1665,8 @@ namespace Ionic.Zip.Tests
 
             using (ZipFile zip = new ZipFile())
             {
+                // must use ToLower to force case mismatch
                 zip.AddSelectedFiles("name != *.zip*", dirToZip.ToLower(), "", true);
-                //zip.AddSelectedFiles("name != *.zip*", dirToZip, "", true);
                 zip.Save(zipFileToCreate);
             }
 
@@ -1877,6 +1881,20 @@ namespace Ionic.Zip.Tests
         public void Selector_SelectFiles_BadSyntax23()
         {
             new Ionic.FileSelector("attributes = INVALID");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(System.ArgumentException))]
+        public void Selector_SelectFiles_BadSyntax24a()
+        {
+            new Ionic.FileSelector("type = I");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(System.ArgumentException))]
+        public void Selector_SelectFiles_BadSyntax24b()
+        {
+            new Ionic.FileSelector("type > D");
         }
 
     }
