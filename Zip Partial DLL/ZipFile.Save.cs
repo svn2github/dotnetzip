@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-24 22:42:07>
+// Time-stamp: <2010-February-26 14:00:30>
 //
 // ------------------------------------------------------------------
 //
@@ -186,7 +186,7 @@ namespace Ionic.Zip
                         foreach (var e in c) e._archiveStream = null;
                     }
 
-                    if (_fileAlreadyExists)
+                    if (File.Exists(_name))
                     {
                         // We do not just call File.Replace() here because
                         // there is a possibility that the TEMP volume is different

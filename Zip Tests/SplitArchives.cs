@@ -209,7 +209,7 @@ namespace Ionic.Zip.Tests.Split
                         break;
 
                         case ZipProgressEventType.Saving_BeforeWriteEntry:
-                        _txrx.Send(String.Format("test Large Segmented ZIP");
+                        _txrx.Send("test Large Segmented ZIP");
                         _txrx.Send(String.Format("status saving {0}", e1.CurrentEntry.FileName));
                         pb1set= false;
                         totalToSave = e1.EntriesTotal;
