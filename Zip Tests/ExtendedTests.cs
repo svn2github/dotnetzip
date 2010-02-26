@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-10 15:19:29>
+// Time-stamp: <2010-February-24 22:55:52>
 //
 // ------------------------------------------------------------------
 //
@@ -938,7 +938,7 @@ namespace Ionic.Zip.Tests.Extended
                     }
                     _txrx.Send(String.Format("status Extracting {0} :: [{2}/{3}] ({1:N0}%)",
                                              e.CurrentEntry.FileName,
-                                             ((double)e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer),
+                                             ((double)e.BytesTransferred/(1024*1024)) / (0.01 * e.TotalBytesToTransfer/(1024*1024)),
                                              e.BytesTransferred, e.TotalBytesToTransfer));
                     string msg = String.Format("pb 2 value {0}", e.BytesTransferred);
                     _txrx.Send(msg);

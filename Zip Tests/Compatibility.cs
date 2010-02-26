@@ -419,8 +419,9 @@ namespace Ionic.Zip.Tests
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_ShellApplication_SelectedFiles_Unzip.zip");
 
-            Directory.SetCurrentDirectory(TopLevelDir);
-
+            //Directory.SetCurrentDirectory(TopLevelDir);
+            TestContext.WriteLine("ZipFile version:  {0}", ZipFile.LibraryVersion); 
+            
             // create and fill the directories
             string extractDir = "extract";
             string dirToZip = "files";
@@ -462,7 +463,7 @@ namespace Ionic.Zip.Tests
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.StatusMessageTextWriter = sw;
-                zip1.StatusMessageTextWriter = Console.Out;
+                //zip1.StatusMessageTextWriter = Console.Out;
                 zip1.AddSelectedFiles("*.*", dirToZip, "", true);
                 zip1.Save(zipFileToCreate);
             }

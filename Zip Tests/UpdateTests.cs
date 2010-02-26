@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-10 15:12:01>
+// Time-stamp: <2010-February-24 20:54:30>
 //
 // ------------------------------------------------------------------
 //
@@ -1999,6 +1999,52 @@ namespace Ionic.Zip.Tests.Update
                 z.Comment = "UpdateTests::UpdateZip_AddFile_ExistingFile_Error(): This archive has been updated.";
                 z.Save();
             }
+        }
+
+
+        [TestMethod]
+        public void Update_MultipleSaves_wi10319()
+        {
+            // select the name of the zip file
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Update_MultipleSaves_wi10319.zip");
+            using (ZipFile _zipFile = new ZipFile(zipFileToCreate))
+            {
+                using (MemoryStream data = new MemoryStream())
+                {
+                    using (StreamWriter writer = new StreamWriter(data))
+                    {
+                        writer.Write("Dit is een test string.");
+                        writer.Flush();
+
+                        _zipFile.AddEntry("test.txt", data);
+                        _zipFile.Save();
+                        _zipFile.AddEntry("test2.txt", data);
+                        _zipFile.Save();
+                        _zipFile.AddEntry("test3.txt", data);
+                        _zipFile.Save();
+                    }
+                }
+            }
+
+            using (ZipFile _zipFile = new ZipFile(zipFileToCreate))
+            {
+                using (MemoryStream data = new MemoryStream())
+                {
+                    using (StreamWriter writer = new StreamWriter(data))
+                    {
+                        writer.Write("Dit is een andere test string.");
+                        writer.Flush();
+
+                        _zipFile.UpdateEntry("test.txt", data);
+                        _zipFile.Save();
+                        _zipFile.UpdateEntry("test2.txt", data);
+                        _zipFile.Save();
+                        _zipFile.UpdateEntry("test3.txt", data);
+                        _zipFile.Save();
+                    }
+                }
+            }
+
         }
 
     }

@@ -32,6 +32,7 @@ using System.Net;
 using System.IO;
 using Ionic.Zip;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading;
 
 namespace Ionic.Zip.Tests.Utilities
 {
@@ -388,19 +389,22 @@ namespace Ionic.Zip.Tests.Utilities
 
         new public void  Dispose()
         {
-            _isDisposed= true;
-            _needData.Set();
-            _producerDone.WaitOne();
-            Dispose(true);
+             Dispose(true);
         }
 
-
+        private void StopProducer()
+        {
+            _isDisposed = true;
+            _needData.Set();
+            _producerDone.WaitOne();        
+        }
 
         /// <summary>The Dispose method</summary>
         protected override void Dispose(bool disposeManagedResources)
         {
             if (disposeManagedResources)
             {
+                StopProducer();
                 // dispose managed resources
                 _producerDone.Close();
                 _haveData.Close();

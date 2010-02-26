@@ -17,7 +17,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-15 10:54:22>
+// Time-stamp: <2010-February-25 17:42:25>
 //
 // ------------------------------------------------------------------
 //
@@ -209,7 +209,8 @@ namespace Ionic.Zip.Tests.Split
                         break;
 
                         case ZipProgressEventType.Saving_BeforeWriteEntry:
-                        _txrx.Send(String.Format("pb status saving {0}", e1.CurrentEntry.FileName));
+                        _txrx.Send(String.Format("test Large Segmented ZIP");
+                        _txrx.Send(String.Format("status saving {0}", e1.CurrentEntry.FileName));
                         pb1set= false;
                         totalToSave = e1.EntriesTotal;
                         numSaving++;
@@ -274,7 +275,7 @@ namespace Ionic.Zip.Tests.Split
 
             _txrx.Send("status Verifying that zip (this will take a while)...");
 
-            WinzipVerify(zipFileToCreate);
+            BasicVerifyZip(zipFileToCreate);
         }
 
 
