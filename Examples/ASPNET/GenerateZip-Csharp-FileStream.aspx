@@ -142,6 +142,11 @@ public void btnGo_Click (Object sender, EventArgs e)
         Response.ContentType = "application/zip";
         Response.AddHeader("content-disposition", "inline; filename=\"" + archiveName + "\"");
 
+        // In some cases, saving a zip directly to Response.OutputStream can
+        // present problems for the unzipper, especially on Macintosh.
+        // To workaround that, you can save to a file, then copy the file,
+        // via a FileStream, to the Response.OutputStream.
+        string tempfile = "c:\\temp\\" + archiveName;
         using (ZipFile zip = new ZipFile())
         {
             // the Readme.txt file will not be password-protected.
@@ -156,9 +161,17 @@ public void btnGo_Click (Object sender, EventArgs e)
             // filesToInclude is a string[] or List<String>
             zip.AddFiles(filesToInclude, "files");
 
-            zip.Save(Response.OutputStream);
+            zip.Save(tempfile);
+        }
+        using (var fs = System.IO.File.OpenRead(tempfile))
+        {
+            var b = new byte[1024];
+            int n;
+            while ((n = fs.Read(b,0,b.Length)) > 0)
+                Response.OutputStream.Write(b,0,n);
         }
         Response.Close();
+        System.IO.File.Delete(tempfile);
     }
 }
 
@@ -180,7 +193,13 @@ public void btnGo_Click (Object sender, EventArgs e)
       <p>This page uses the .NET Zip library (see <a
       href="http:///DotNetZip.codeplex.com">http://DotNetZip.codeplex.com</a>)
       to dynamically create a zip archive, and then download it to the
-      browser through Response.OutputStream.  This page is implemented in C#.</p>
+      browser through Response.OutputStream, via a FileStream.  This page is implemented in C#.</p>
+
+      <p>In some cases, saving a zip directly to Response.OutputStream can
+        present problems for the unzipper, especially on Macintosh.
+        To workaround that, you can save to a file, then copy the contents of the file, via a FileStream, to
+        the Response.OutputStream.
+      </p>
 
       <span class="SampleTitle"><b>Check the boxes to select the files, set a password if you like,
       then click the button to zip them up.</b></span>

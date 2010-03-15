@@ -142,21 +142,34 @@ public void btnGo_Click (Object sender, EventArgs e)
         Response.ContentType = "application/zip";
         Response.AddHeader("content-disposition", "inline; filename=\"" + archiveName + "\"");
 
-        using (ZipFile zip = new ZipFile())
+        // In some cases, saving a zip directly to Response.OutputStream can
+        // present problems for the unzipper, especially on Macintosh.
+        // To workaround that, you can save to a MemoryStream, then copy to
+        // the Response.OutputStream.
+        using (var ms = new System.IO.MemoryStream())
         {
-            // the Readme.txt file will not be password-protected.
-            zip.AddEntry("Readme.txt", ReadmeText, Encoding.Default);
-            if (!String.IsNullOrEmpty(tbPassword.Text))
+            using (ZipFile zip = new ZipFile())
             {
-                zip.Password = tbPassword.Text;
-                if (chkUseAes.Checked)
-                    zip.Encryption = EncryptionAlgorithm.WinZipAes256;
+                // the Readme.txt file will not be password-protected.
+                zip.AddEntry("Readme.txt", ReadmeText, Encoding.Default);
+                if (!String.IsNullOrEmpty(tbPassword.Text))
+                {
+                    zip.Password = tbPassword.Text;
+                    if (chkUseAes.Checked)
+                        zip.Encryption = EncryptionAlgorithm.WinZipAes256;
+                }
+
+                // filesToInclude is a string[] or List<String>
+                zip.AddFiles(filesToInclude, "files");
+
+                zip.Save(ms);
             }
-
-            // filesToInclude is a string[] or List<String>
-            zip.AddFiles(filesToInclude, "files");
-
-            zip.Save(Response.OutputStream);
+            // copy the memory stream to the Response.OutputStream
+            ms.Position = 0;
+            var b = new byte[1024];
+            int n;
+            while ((n = ms.Read(b,0,b.Length)) > 0)
+                Response.OutputStream.Write(b,0,n);
         }
         Response.Close();
     }
@@ -180,7 +193,7 @@ public void btnGo_Click (Object sender, EventArgs e)
       <p>This page uses the .NET Zip library (see <a
       href="http:///DotNetZip.codeplex.com">http://DotNetZip.codeplex.com</a>)
       to dynamically create a zip archive, and then download it to the
-      browser through Response.OutputStream.  This page is implemented in C#.</p>
+      browser through Response.OutputStream, via a MemoryStream.  This page is implemented in C#.</p>
 
       <span class="SampleTitle"><b>Check the boxes to select the files, set a password if you like,
       then click the button to zip them up.</b></span>

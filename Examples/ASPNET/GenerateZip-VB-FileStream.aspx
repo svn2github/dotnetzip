@@ -140,9 +140,14 @@ Public Sub btnGo_Click (ByVal sender As System.Object, ByVal e As System.EventAr
         Response.ContentType = "application/zip"
         Response.AddHeader("Content-Disposition", "inline; filename=" & chr(34) & archiveName & chr(34))
 
+        ' In some cases, saving a zip directly to Response.OutputStream can
+        ' present problems for the unzipper, especially on Macintosh.
+        ' To workaround that, you can save to a file, then copy the file,
+        ' via a FileStream, to the Response.OutputStream.
+        Dim tempfile As String = "c:\temp\" & archiveName
         Using zip as new ZipFile()
             ' the Readme.txt file will not be password-protected.
-            zip.AddEntry("Readme.txt", "", ReadmeText, Encoding.Default)
+            zip.AddEntry("Readme.txt", ReadmeText, Encoding.Default)
             If Not String.IsNullOrEmpty(tbPassword.Text) Then
                 zip.Password = tbPassword.Text
                 zip.Encryption = enc
@@ -151,9 +156,24 @@ Public Sub btnGo_Click (ByVal sender As System.Object, ByVal e As System.EventAr
             ' filesToInclude is a string[] or List<String>
             zip.AddFiles(filesToInclude, "files")
 
-            zip.Save(Response.OutputStream)
+            ' save the zip to a filesystem file
+            zip.Save(tempfile)
+        End Using
+
+        ' open and read the file, and copy it to Response.OutputStream
+        Using fs as System.IO.FileStream = System.IO.File.OpenRead("c:\temp\" & archiveName)
+            dim b(1024) as Byte
+            dim n as New Int32
+            n=-1
+            While (n <> 0)
+                n = fs.Read(b,0,b.Length)
+                If (n <> 0)
+                    Response.OutputStream.Write(b,0,n)
+                End If
+            End While
         End Using
         Response.Close
+        System.IO.File.Delete(tempfile)
 
     End If
 
@@ -178,8 +198,14 @@ End Sub
       <p>This page uses the .NET Zip library (see <a
       href="http://DotNetZip.codeplex.com">http://DotNetZip.codeplex.com/</a>)
       to dynamically create a zip archive, and then download it to the
-      browser through Response.OutputStream.  This page is implemented
+      browser through Response.OutputStream, via a FileStream.  This page is implemented
       in VB.NET.</p>
+
+      <p>In some cases, saving a zip directly to Response.OutputStream can
+        present problems for the unzipper, especially on Macintosh.
+        To workaround that, you can save to a file, then copy the contents of
+        the file, via a FileStream, to the Response.OutputStream.
+      </p>
 
       <span class="SampleTitle"><b>Check the boxes to select the files, set a password if you like,
       then click the button to zip them up.</b></span>
