@@ -1,7 +1,7 @@
 // UpdateTests.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.
+// Copyright (c) 2009-2010 Dino Chiesa .
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-24 20:54:30>
+// Time-stamp: <2010-March-29 20:53:25>
 //
 // ------------------------------------------------------------------
 //
@@ -2046,6 +2046,61 @@ namespace Ionic.Zip.Tests.Update
             }
 
         }
+
+
+        [TestMethod]
+        public void Update_MultipleSavesWithRename_wi10544()
+        {
+            // select the name of the zip file
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Update_MultipleSaves_wi10319.zip");
+            string entryName = "Entry1.txt";
+
+            TestContext.WriteLine("Creating zip file... ");
+            using (var zip = new ZipFile())
+            {
+                string firstline = "This is the first line in the Entry.\n";
+                byte[] a = System.Text.Encoding.ASCII.GetBytes(firstline.ToCharArray());
+
+                zip.AddEntry(entryName, a);
+                zip.Save(zipFileToCreate);
+            }
+
+
+            string tempZipFile = "AppendToEntry.zip.tmp";
+
+            for (int i=0; i < 68;  i++)
+            {
+                TestContext.WriteLine("Updating zip file {0}... ", i);
+                using (var zip1 = ZipFile.Read(zipFileToCreate))
+                {
+                    using (var zip = new ZipFile())
+                    {
+                        System.Console.WriteLine("Updating zip file... ");
+                        zip.AddEntry(entryName, (name, stream) =>
+                            {
+                                var src = zip1[name].OpenReader();
+                                int n;
+                                byte[] b = new byte[2048];
+                                while((n= src.Read(b,0,b.Length)) > 0)
+                                    stream.Write(b,0,n);
+
+                                string update = String.Format("Updating zip file {0} at {1}\n", i, DateTime.Now.ToString("G"));
+                                byte[] a = System.Text.Encoding.ASCII.GetBytes(update.ToCharArray());
+                                stream.Write(a,0,a.Length);
+                            });
+
+                        TestContext.WriteLine("Saving... ");
+                        zip.Save(tempZipFile);
+                    }
+                }
+
+                File.Delete(zipFileToCreate);
+                File.Move(tempZipFile, zipFileToCreate);
+
+            }
+
+        }
+
 
     }
 }
