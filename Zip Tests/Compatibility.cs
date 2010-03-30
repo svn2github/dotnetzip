@@ -1,7 +1,7 @@
 // Compatibility.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.
+// Copyright (c) 2009-2010 Dino Chiesa .
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-10 12:10:40>
+// Time-stamp: <2010-March-29 21:12:51>
 //
 // ------------------------------------------------------------------
 //
@@ -150,11 +150,13 @@ namespace Ionic.Zip.Tests
 
         private void VerifyFileTimes(string extractDir,
                                             System.Collections.Generic.IEnumerable<String> filesToCheck,
-                                            bool useLowThreshold)
+                                     bool checkNtfsTimes,
+
+                                     bool applyShellAllowance)
         {
-            TimeSpan threshold = (useLowThreshold)
-                ? new TimeSpan(10000)
-                : new TimeSpan(0, 0, 2);
+            TimeSpan threshold = (checkNtfsTimes)
+                ? new TimeSpan(10000)     // 0.01 s?  for NTFS
+                : new TimeSpan(0, 0, 2);  // 2 seconds for DOS times
 
             TestContext.WriteLine("Using threshold: ({0})", threshold.ToString());
 
@@ -171,20 +173,39 @@ namespace Ionic.Zip.Tests
                                       Path.GetFileName(fqPath),
                                       t1.ToString("G"),
                                       t2.ToString("G"));
-                //TestContext.WriteLine("{0} lastwrite({1})", extractedFile, t2.ToString("G"));
-                TimeSpan delta = t1 - t2;
-                if (useLowThreshold)
+
+                TimeSpan delta = (t1 > t2) ? t1 - t2 : t2 - t1;
+                if (checkNtfsTimes)
                 {
-                    Assert.AreEqual<DateTime>(t1, t2, "LastWriteTime ({0})", delta.ToString());
+                    Assert.AreEqual<DateTime>(t1, t2, "LastWriteTime delta actual({0}) expected({1})", delta.ToString(), threshold.ToString());
                     t1 = File.GetCreationTimeUtc(fqPath);
                     t2 = File.GetCreationTimeUtc(extractedFile);
-                    delta = t1 - t2;
-                    //Assert.AreEqual<DateTime>(t1, t2, "CreationTime ({0})", delta.ToString());
-                    Assert.IsTrue(delta <= threshold, "LastWriteTime ({0})", delta.ToString());
+                    delta = (t1 > t2) ? t1 - t2 : t2 - t1;
+                    Assert.IsTrue(delta <= threshold, "CreationTime delta actual({0}) expected({1})", delta.ToString(), threshold.ToString());
                 }
                 else
-                    Assert.IsTrue(delta <= threshold, "LastWriteTime ({0})", delta.ToString());
+                {
+                    if (applyShellAllowance)
+                    {
+                        if (delta > threshold)
+                        {
+                            // In some cases - specifically when the file lastmod time
+                            // is on the other side of a DST event - extracting with the
+                            // shell gets a time on the extracted file that is 1 hour
+                            // off the expected value. This doesn't happen when WinZip
+                            // or DotNetZip is used for extraction - only when using the
+                            // shell extension.  In those cases we can allow for the
+                            // extra hour.
+                            TestContext.WriteLine("Adjusting delta for shell allowance...");
+                            delta -= new TimeSpan(1, 0, 0);  // 1 hour
+                        }
+                    }
 
+                    Assert.IsTrue(delta <= threshold,
+                                  "LastWriteTime delta actual({0}) expected({1})",
+                                  delta.ToString(),
+                                  threshold.ToString());
+                }
             }
         }
 
@@ -192,13 +213,13 @@ namespace Ionic.Zip.Tests
         private void VerifyNtfsTimes(string extractDir,
             System.Collections.Generic.IEnumerable<String> filesToCheck)
         {
-            VerifyFileTimes(extractDir, filesToCheck, true);
+            VerifyFileTimes(extractDir, filesToCheck, true, false);
         }
 
         private void VerifyDosTimes(string extractDir,
             System.Collections.Generic.IEnumerable<String> filesToCheck)
         {
-            VerifyFileTimes(extractDir, filesToCheck, false);
+            VerifyFileTimes(extractDir, filesToCheck, false, false);
         }
 
 
@@ -209,7 +230,7 @@ namespace Ionic.Zip.Tests
             string notaZipFile = GetScript("VbsUnzip-ShellApp.vbs");
 
             // try to read a bogus zip archive
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.Initialize(notaZipFile);
@@ -239,7 +260,7 @@ namespace Ionic.Zip.Tests
                 string extractDir = Path.Combine(TopLevelDir, String.Format("extract.{0}", i));
 
                 // Create the zip archive
-                Directory.SetCurrentDirectory(TopLevelDir);
+                //Directory.SetCurrentDirectory(TopLevelDir);
                 using (ZipFile zip1 = new ZipFile())
                 {
                     zip1.CompressionLevel = (Ionic.Zlib.CompressionLevel)compLevel;
@@ -287,7 +308,7 @@ namespace Ionic.Zip.Tests
                 string extractDir = Path.Combine(TopLevelDir, String.Format("extract.{0}", i));
 
                 // Create the zip archive
-                Directory.SetCurrentDirectory(TopLevelDir);
+                //Directory.SetCurrentDirectory(TopLevelDir);
 
                 // Want to test the library when saving to non-seekable output streams.  Like
                 // stdout or ASPNET's Response.OutputStream.  This simulates it.
@@ -317,7 +338,8 @@ namespace Ionic.Zip.Tests
                 VerifyChecksums(Path.Combine(extractDir, "files"), filesToZip, checksums);
 
                 // verify the file times
-                VerifyDosTimes(Path.Combine(extractDir, "files"), filesToZip);
+                VerifyFileTimes(Path.Combine(extractDir, "files"), filesToZip, false, true);
+                //VerifyDosTimes(Path.Combine(extractDir, "files"), filesToZip);
                 i++;
             }
         }
@@ -345,7 +367,7 @@ namespace Ionic.Zip.Tests
                 string extractDir = Path.Combine(TopLevelDir, String.Format("extract.{0}",i));
 
                 // Create the zip archive
-                Directory.SetCurrentDirectory(TopLevelDir);
+                //Directory.SetCurrentDirectory(TopLevelDir);
                 using (ZipFile zip1 = new ZipFile())
                 {
                     zip1.CompressionLevel = (Ionic.Zlib.CompressionLevel) compLevel;
@@ -379,16 +401,16 @@ namespace Ionic.Zip.Tests
         public void Compat_ShellApplication_Unzip_2()
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_ShellApplication_Unzip-2.zip");
+            //Directory.SetCurrentDirectory(TopLevelDir);
 
             // create and fill the directories
             string extractDir = Path.Combine(TopLevelDir, "extract");
-            string subdir = Path.Combine(TopLevelDir, "files");
+            //string subdir = Path.Combine(TopLevelDir, "files");
 
             var checksums = new Dictionary<string, byte[]>();
             var filesToZip = GetSelectionOfTempFiles(_rnd.Next(13) + 8, checksums);
 
             // Create the zip archive
-            Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.AddFiles(filesToZip, "files");
@@ -419,9 +441,8 @@ namespace Ionic.Zip.Tests
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_ShellApplication_SelectedFiles_Unzip.zip");
 
-            //Directory.SetCurrentDirectory(TopLevelDir);
-            TestContext.WriteLine("ZipFile version:  {0}", ZipFile.LibraryVersion); 
-            
+            TestContext.WriteLine("ZipFile version:  {0}", ZipFile.LibraryVersion);
+
             // create and fill the directories
             string extractDir = "extract";
             string dirToZip = "files";
@@ -503,6 +524,8 @@ namespace Ionic.Zip.Tests
         public void Compat_ShellApplication_Zip()
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_ShellApplication_Zip.zip");
+            //Directory.SetCurrentDirectory(TopLevelDir);
+
             string subdir = Path.Combine(TopLevelDir, "files");
             string extractDir = "extract";
 
@@ -511,8 +534,6 @@ namespace Ionic.Zip.Tests
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
 
             // Create the zip archive via script
-            Directory.SetCurrentDirectory(TopLevelDir);
-
             string script = GetScript("VbsCreateZip-ShellApp.vbs");
 
             this.Exec(cscriptExe,
@@ -539,7 +560,6 @@ namespace Ionic.Zip.Tests
         public void Compat_ShellApplication_Zip_2()
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_ShellApplication_Zip.zip");
-
             string subdir = Path.Combine(TopLevelDir, "files");
             string extractDir = "extract";
 
@@ -660,7 +680,7 @@ namespace Ionic.Zip.Tests
             Dictionary<string, byte[]> checksums;
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
 
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
 
             String[] a = Array.ConvertAll(filesToZip, x => Path.GetFileName(x));
             Microsoft.VisualStudio.Zip.ZipFileCompressor zfc = new Microsoft.VisualStudio.Zip.ZipFileCompressor(zipFileToCreate, "files", a, true);
@@ -696,7 +716,7 @@ namespace Ionic.Zip.Tests
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
 
             // Create the zip archive
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 for (int i = 0; i < filesToZip.Length; i++)
@@ -743,7 +763,7 @@ namespace Ionic.Zip.Tests
                                  "Incorrect number of entries in the zip file.");
 
             // unzip
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
             {
                 zip1.ExtractAll(extractDir);
@@ -772,7 +792,7 @@ namespace Ionic.Zip.Tests
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
 
             // Create the zip archive
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 for (int i = 0; i < filesToZip.Length; i++)
@@ -810,7 +830,7 @@ namespace Ionic.Zip.Tests
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
 
             // Create the zip archive
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 for (int i = 0; i < filesToZip.Length; i++)
@@ -844,7 +864,7 @@ namespace Ionic.Zip.Tests
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
 
             // Create the zip archive
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 for (int i = 0; i < filesToZip.Length; i++)
@@ -869,7 +889,7 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void Compat_COM_CheckError()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
 
             // run the COM script to check the (not) ZIP archive
             string script = GetScript("TestCheckZip.js");
@@ -892,7 +912,7 @@ namespace Ionic.Zip.Tests
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_7z_Zip_COM_Unzip.zip");
 
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
 
 
             // create and fill the directories
@@ -947,7 +967,7 @@ namespace Ionic.Zip.Tests
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
 
             // Create the zip archive via 7z.exe
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
 
             this.Exec(sevenZip, String.Format("a {0} {1}", zipFileToCreate, subdir));
 
@@ -956,7 +976,7 @@ namespace Ionic.Zip.Tests
                                  "Incorrect number of entries in the zip file.");
 
             // unzip
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
             {
                 zip1.ExtractAll(extractDir);
@@ -989,7 +1009,7 @@ namespace Ionic.Zip.Tests
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
 
             // Create the zip archive with DotNetZip
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 for (int i = 0; i < filesToZip.Length; i++)
@@ -1031,7 +1051,7 @@ namespace Ionic.Zip.Tests
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
 
             // Create the zip archive with DotNetZip
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.Password = password;
@@ -1112,7 +1132,7 @@ namespace Ionic.Zip.Tests
                 TestContext.WriteLine("Password = {0}", password);
 
                 // Create the zip archive with DotNetZip
-                Directory.SetCurrentDirectory(TopLevelDir);
+                //Directory.SetCurrentDirectory(TopLevelDir);
                 // Want to test the library when saving to non-seekable output streams.  Like
                 // stdout or ASPNET's Response.OutputStream.  This simulates it.
                 using (var rawOut = System.IO.File.Create(zipFileToCreate))
@@ -1141,7 +1161,7 @@ namespace Ionic.Zip.Tests
                                                   zipFileToCreate));
 
                 // check the files in the extract dir
-                Directory.SetCurrentDirectory(TopLevelDir);
+                //Directory.SetCurrentDirectory(TopLevelDir);
 
                 VerifyChecksums(Path.Combine(extractDir, "files"), filesToZip, checksums);
                 i++;
@@ -1169,7 +1189,7 @@ namespace Ionic.Zip.Tests
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
 
             // Create the zip archive with DotNetZip
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 for (int i = 0; i < filesToZip.Length; i++)
@@ -1216,7 +1236,7 @@ namespace Ionic.Zip.Tests
             string extractDir = "extract";
 
             // unzip with DotNetZip
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = ZipFile.Read(zipfile))
             {
                 zip1.Password = password;
@@ -1335,7 +1355,7 @@ namespace Ionic.Zip.Tests
             {
                 string extractDir = "extract";
                 // unzip with DotNetZip
-                Directory.SetCurrentDirectory(TopLevelDir);
+                //Directory.SetCurrentDirectory(TopLevelDir);
                 using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
                 {
                     zip1.ExtractAll(extractDir);
@@ -1372,7 +1392,7 @@ namespace Ionic.Zip.Tests
             var filesToZip = GetSelectionOfTempFiles(_rnd.Next(13) + 8, checksums);
 
             // Create the zip archive
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.AddFiles(filesToZip, "files");
@@ -1415,7 +1435,7 @@ namespace Ionic.Zip.Tests
             using (StreamWriter sw = File.CreateText(filename)) { }
 
             // Create the zip archive
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.AddFile(filename, "");
@@ -1446,7 +1466,7 @@ namespace Ionic.Zip.Tests
                 return;
             }
 
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             string zipFileToCreate = Path.Combine(TopLevelDir, "Compat_Winzip_Unzip_Password.zip");
             string extractDir = "extract";
             string subdir = "fodder";
@@ -1496,7 +1516,7 @@ namespace Ionic.Zip.Tests
             }
 
             // create a bunch of files
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             string subdir = "fodder";
             string[] filesToZip;
             Dictionary<string, byte[]> checksums;
@@ -1510,7 +1530,8 @@ namespace Ionic.Zip.Tests
                 string extractDir = "extract" + i.ToString();
                 string password = Path.GetRandomFileName();
 
-                Directory.SetCurrentDirectory(TopLevelDir);
+                //Directory.SetCurrentDirectory(TopLevelDir);
+
                 // Want to test the library when saving to non-seekable output streams.  Like
                 // stdout or ASPNET's Response.OutputStream.  This simulates it.
                 using (var rawOut = System.IO.File.Create(zipFileToCreate))
@@ -1576,7 +1597,7 @@ namespace Ionic.Zip.Tests
             var filesToZip = GetSelectionOfTempFiles(_rnd.Next(13) + 8, checksums);
 
             // Create the zip archive
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.AddFiles(filesToZip, "files");
@@ -1641,7 +1662,7 @@ namespace Ionic.Zip.Tests
 
 
             // Now, Create the zip archive with DotNetZip
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.AddFiles(filesToZip, dirInZip);
@@ -1810,6 +1831,12 @@ namespace Ionic.Zip.Tests
         }
 
         [TestMethod]
+        public void Extract_ZipWithDuplicateNames_wi10330()
+        {
+            Extract_ZipFile("BadZIP ID 305491847.zip");
+        }
+
+        [TestMethod]
         public void Extract_Xlsx()
         {
             _Extract_ZipFile("Book1.xlsx");
@@ -1840,7 +1867,7 @@ namespace Ionic.Zip.Tests
             for (int i = 0; i < 3; i++)
                 SourceDir = Path.GetDirectoryName(SourceDir);
 
-            Directory.SetCurrentDirectory(TopLevelDir);
+            //Directory.SetCurrentDirectory(TopLevelDir);
 
             TestContext.WriteLine("Current Dir: {0}", CurrentDir);
 
