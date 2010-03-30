@@ -1,21 +1,21 @@
 // ErrorTests.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.  
+// Copyright (c) 2009-2010 Dino Chiesa .
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-September-13 17:44:51>
+// last saved (in emacs):
+// Time-stamp: <2010-March-29 21:05:15>
 //
 // ------------------------------------------------------------------
 //
@@ -48,9 +48,8 @@ namespace Ionic.Zip.Tests.Error
         [ExpectedException(typeof(FileNotFoundException))]
         public void Error_AddFile_NonExistentFile()
         {
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Error_AddFile_NonExistentFile.zip");
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-            using (Ionic.Zip.ZipFile zip = new Ionic.Zip.ZipFile(ZipFileToCreate))
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Error_AddFile_NonExistentFile.zip");
+            using (Ionic.Zip.ZipFile zip = new Ionic.Zip.ZipFile(zipFileToCreate))
             {
                 zip.AddFile("ThisFileDoesNotExist.txt");
                 zip.Comment = "This is a Comment On the Archive";
@@ -78,9 +77,8 @@ namespace Ionic.Zip.Tests.Error
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void CreateZip_AddDirectory_BlankName()
         {
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_AddDirectory_BlankName.zip");
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            string zipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_AddDirectory_BlankName.zip");
+            using (ZipFile zip = new ZipFile(zipFileToCreate))
             {
                 zip.AddDirectoryByName("");
                 zip.Save();
@@ -91,11 +89,11 @@ namespace Ionic.Zip.Tests.Error
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void CreateZip_AddEntry_String_BlankName()
         {
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_AddEntry_String_BlankName.zip");
+            string zipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_AddEntry_String_BlankName.zip");
             using (ZipFile zip = new ZipFile())
             {
                 zip.AddEntry("", "This is the content.");
-                zip.Save(ZipFileToCreate);
+                zip.Save(zipFileToCreate);
             }
         }
 
@@ -107,7 +105,7 @@ namespace Ionic.Zip.Tests.Error
                 case ZipProgressEventType.Extracting_ExtractEntryWouldOverwrite:
                     // randomly choose whether to overwrite or not
                     e.CurrentEntry.ExtractExistingFile = (_rnd.Next(2) == 0)
-                        ? ExtractExistingFileAction.DoNotOverwrite 
+                        ? ExtractExistingFileAction.DoNotOverwrite
                         : ExtractExistingFileAction.OverwriteSilently;
                     break;
             }
@@ -117,8 +115,7 @@ namespace Ionic.Zip.Tests.Error
 
         private void _Internal_ExtractExisting(int flavor)
         {
-            string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Error-Extract-ExistingFileWithoutOverwrite-{0}.zip", flavor));
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Error-Extract-ExistingFileWithoutOverwrite-{0}.zip", flavor));
 
             string testBin = TestUtilities.GetTestBinDir(CurrentDir);
             string resourceDir = Path.Combine(testBin, "Resources");
@@ -126,14 +123,14 @@ namespace Ionic.Zip.Tests.Error
             Directory.SetCurrentDirectory(TopLevelDir);
             var filenames = Directory.GetFiles(resourceDir);
 
-            using (ZipFile zip = new ZipFile(ZipFileToCreate))
+            using (ZipFile zip = new ZipFile(zipFileToCreate))
             {
                 zip.AddFiles(filenames, "");
                 zip.Comment = "This is a Comment On the Archive";
                 zip.Save();
             }
 
-            Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), filenames.Length,
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filenames.Length,
                                  "The zip file created has the wrong number of entries.");
 
             // Extract twice: the first time should succeed.
@@ -141,7 +138,7 @@ namespace Ionic.Zip.Tests.Error
             // Unless flavor==3, in which case we overwrite silently.
             for (int k = 0; k < 2; k++)
             {
-                using (ZipFile zip = ZipFile.Read(ZipFileToCreate))
+                using (ZipFile zip = ZipFile.Read(zipFileToCreate))
                 {
                     if (flavor > 10)
                         zip.ExtractProgress += OverwriteDecider;
@@ -150,15 +147,15 @@ namespace Ionic.Zip.Tests.Error
                         ZipEntry e = zip[Path.GetFileName(filenames[j])];
                         if (flavor == 4)
                             e.Extract("unpack");
-                        else 
+                        else
                             e.Extract("unpack", (ExtractExistingFileAction) flavor);
                     }
                 }
             }
         }
-        
 
-    
+
+
         [TestMethod]
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Error_Extract_ExistingFileWithoutOverwrite_Throw()
@@ -195,14 +192,14 @@ namespace Ionic.Zip.Tests.Error
         {
             _Internal_ExtractExisting((int)ExtractExistingFileAction.InvokeExtractProgressEvent);
         }
-        
+
         [TestMethod]
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Error_Extract_ExistingFileWithoutOverwrite_InvokeProgress_2()
         {
             _Internal_ExtractExisting(10+(int)ExtractExistingFileAction.InvokeExtractProgressEvent);
         }
-        
+
 
 
         [TestMethod]
@@ -220,14 +217,14 @@ namespace Ionic.Zip.Tests.Error
         [ExpectedException(typeof(Ionic.Zip.BadReadException))]
         public void Error_Read_InvalidZip()
         {
-            string SourceDir = CurrentDir;
+            string sourceDir = CurrentDir;
             for (int i = 0; i < 3; i++)
-                SourceDir = Path.GetDirectoryName(SourceDir);
+                sourceDir = Path.GetDirectoryName(sourceDir);
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
             string filename =
-                Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe");
+                Path.Combine(sourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe");
 
             // try reading the invalid zipfile - this should fail
             using (ZipFile zip = ZipFile.Read(filename))
@@ -241,21 +238,21 @@ namespace Ionic.Zip.Tests.Error
         }
 
 
-        
+
 
 
         [TestMethod]
         [ExpectedException(typeof(ZipException))]
         public void Error_Save_InvalidLocation()
         {
-            string SourceDir = CurrentDir;
+            string sourceDir = CurrentDir;
             for (int i = 0; i < 3; i++)
-                SourceDir = Path.GetDirectoryName(SourceDir);
+                sourceDir = Path.GetDirectoryName(sourceDir);
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
             string filename =
-                Path.Combine(SourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe");
+                Path.Combine(sourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe");
 
             string badLocation = "c:\\Windows\\";
             Assert.IsTrue(Directory.Exists(badLocation));
@@ -268,7 +265,7 @@ namespace Ionic.Zip.Tests.Error
             }
         }
 
-        
+
         [TestMethod]
         public void Error_Save_NonExistentFile()
         {
@@ -276,8 +273,7 @@ namespace Ionic.Zip.Tests.Error
             string repeatedLine;
             string filename;
 
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Error_Save_NonExistentFile.zip");
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Error_Save_NonExistentFile.zip");
 
             // create the subdirectory
             string Subdir = Path.Combine(TopLevelDir, "DirToZip");
@@ -311,7 +307,7 @@ namespace Ionic.Zip.Tests.Error
 
             try
             {
-                using (ZipFile zip = new ZipFile(ZipFileToCreate))
+                using (ZipFile zip = new ZipFile(zipFileToCreate))
                 {
                     zip.TempFileFolder = TempFileFolder;
                     zip.CompressionLevel = Ionic.Zlib.CompressionLevel.None;
@@ -336,7 +332,7 @@ namespace Ionic.Zip.Tests.Error
                     }
                     TestContext.WriteLine("\n");
                     zip.Save();
-                    TestContext.WriteLine("Zip Completed '{0}'", ZipFileToCreate);
+                    TestContext.WriteLine("Zip Completed '{0}'", zipFileToCreate);
                 }
             }
             catch (Exception ex)
@@ -361,16 +357,15 @@ namespace Ionic.Zip.Tests.Error
             Directory.SetCurrentDirectory(TopLevelDir);
 
             string filename = Path.Combine(resourceDir, "TestStrings.txt");
-            Assert.IsTrue(File.Exists(filename));
+            Assert.IsTrue(File.Exists(filename), String.Format("The file '{0}' doesnot exist.", filename));
 
             // add an entry to the zipfile, then try saving, never having specified a filename. This should fail.
             using (ZipFile zip = new ZipFile())
             {
                 zip.AddFile(filename, "");
-                // this should fail
-                zip.Save(); // don't know where to save!
+                zip.Save(); // FAIL: don't know where to save!
             }
-            
+
             // should never reach this
             Assert.IsTrue(false);
         }
@@ -391,8 +386,7 @@ namespace Ionic.Zip.Tests.Error
             {
                 zip.AddDirectory(resourceDir, "");
                 Assert.IsTrue(zip.Entries.Count > 0);
-                // this should fail
-                zip[0].Extract();
+                zip[0].Extract();  // FAIL: has not been saved
             }
 
             // should never reach this
@@ -414,8 +408,8 @@ namespace Ionic.Zip.Tests.Error
             {
                 zip.AddDirectory(resourceDir, "");
                 Assert.IsTrue(zip.Entries.Count > 0);
-                // this should fail
-                using (var s = zip[0].OpenReader())
+
+                using (var s = zip[0].OpenReader()) // FAIL: has not been saved
                 {
                     byte[] buffer= new byte[1024];
                     int n;
@@ -432,23 +426,23 @@ namespace Ionic.Zip.Tests.Error
         [ExpectedException(typeof(System.IO.IOException))]
         public void Error_AddDirectory_SpecifyingFile()
         {
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "AddDirectory_SpecifyingFile.zip");
+            string zipFileToCreate = Path.Combine(TopLevelDir, "AddDirectory_SpecifyingFile.zip");
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
-            string SourceDir = CurrentDir;
+            string sourceDir = CurrentDir;
             for (int i = 0; i < 3; i++)
-                SourceDir = Path.GetDirectoryName(SourceDir);
+                sourceDir = Path.GetDirectoryName(sourceDir);
 
-            string filename = Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe");
+            string filename = Path.Combine(sourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe");
             File.Copy(filename, "ThisIsAFile");
 
             string baddirname = Path.Combine(TopLevelDir, "ThisIsAFile");
 
             using (ZipFile zip = new ZipFile())
             {
-                zip.AddDirectory(baddirname); // fail
-                zip.Save(ZipFileToCreate);
+                zip.AddDirectory(baddirname); // FAIL
+                zip.Save(zipFileToCreate);
             }
         }
 
@@ -457,7 +451,7 @@ namespace Ionic.Zip.Tests.Error
         [ExpectedException(typeof(FileNotFoundException))]
         public void Error_AddFile_SpecifyingDirectory()
         {
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "AddFile_SpecifyingDirectory.zip");
+            string zipFileToCreate = Path.Combine(TopLevelDir, "AddFile_SpecifyingDirectory.zip");
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
@@ -468,7 +462,7 @@ namespace Ionic.Zip.Tests.Error
             using (ZipFile zip = new ZipFile())
             {
                 zip.AddFile(badfilename); // should fail
-                zip.Save(ZipFileToCreate);
+                zip.Save(zipFileToCreate);
             }
         }
 
@@ -499,28 +493,24 @@ namespace Ionic.Zip.Tests.Error
         [ExpectedException(typeof(ZipException))] // not sure which exception - could be one of several.
         public void Error_ReadCorruptedZipFile_Passwords()
         {
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Read_CorruptedZipFile_Passwords.zip");
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Read_CorruptedZipFile_Passwords.zip");
 
-            string SourceDir = CurrentDir;
+            string sourceDir = CurrentDir;
             for (int i = 0; i < 3; i++)
-                SourceDir = Path.GetDirectoryName(SourceDir);
+                sourceDir = Path.GetDirectoryName(sourceDir);
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
             // the list of filenames to add to the zip
             string[] filenames =
             {
-                Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
+                Path.Combine(sourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
+                Path.Combine(sourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
+                Path.Combine(sourceDir, "Tools\\WinFormsApp\\Icon2.res"),
             };
 
             // passwords to use for those entries
-            string[] passwords = 
-            {
-                    "12345678",
-                    "0987654321",
-            };
+            string[] passwords = { "12345678", "0987654321", };
 
             // create the zipfile, adding the files
             int j = 0;
@@ -528,18 +518,18 @@ namespace Ionic.Zip.Tests.Error
             {
                 for (j = 0; j < filenames.Length; j++)
                 {
-                    zip.Password = passwords[j];
+                    zip.Password = passwords[j % passwords.Length];
                     zip.AddFile(filenames[j], "");
                 }
-                zip.Save(ZipFileToCreate);
+                zip.Save(zipFileToCreate);
             }
 
-            IntroduceCorruption(ZipFileToCreate);
+            IntroduceCorruption(zipFileToCreate);
 
             try
             {
                 // read the corrupted zip - this should fail in some way
-                using (ZipFile zip = ZipFile.Read(ZipFileToCreate))
+                using (ZipFile zip = ZipFile.Read(zipFileToCreate))
                 {
                     for (j = 0; j < filenames.Length; j++)
                     {
@@ -547,7 +537,8 @@ namespace Ionic.Zip.Tests.Error
 
                         System.Console.WriteLine("name: {0}  compressed: {1} has password?: {2}",
                             e.FileName, e.CompressedSize, e.UsesEncryption);
-                        e.ExtractWithPassword("unpack", passwords[j]);
+                        Assert.IsTrue(e.UsesEncryption, "The entry does not use encryption");
+                        e.ExtractWithPassword("unpack", passwords[j % passwords.Length]);
                     }
                 }
             }
@@ -558,29 +549,28 @@ namespace Ionic.Zip.Tests.Error
         }
 
 
-        
+
         [TestMethod]
         [ExpectedException(typeof(ZipException))] // not sure which exception - could be one of several.
         public void Error_ReadCorruptedZipFile()
         {
             int i;
 
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Read_CorruptedZipFile.zip");
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Read_CorruptedZipFile.zip");
 
-            string SourceDir = CurrentDir;
+            string sourceDir = CurrentDir;
             for (i = 0; i < 3; i++)
-                SourceDir = Path.GetDirectoryName(SourceDir);
+                sourceDir = Path.GetDirectoryName(sourceDir);
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
             // the list of filenames to add to the zip
             string[] filenames =
             {
-                Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "Tools\\Unzip\\bin\\Debug\\Unzip.exe"),
-                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
-
+                Path.Combine(sourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
+                Path.Combine(sourceDir, "Tools\\Unzip\\bin\\Debug\\Unzip.exe"),
+                Path.Combine(sourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
+                Path.Combine(sourceDir, "Tools\\WinFormsApp\\Icon2.res"),
             };
 
             // create the zipfile, adding the files
@@ -588,16 +578,16 @@ namespace Ionic.Zip.Tests.Error
             {
                 for (i = 0; i < filenames.Length; i++)
                     zip.AddFile(filenames[i], "");
-                zip.Save(ZipFileToCreate);
+                zip.Save(zipFileToCreate);
             }
 
             // now corrupt the zip archive
-            IntroduceCorruption(ZipFileToCreate);
+            IntroduceCorruption(zipFileToCreate);
 
             try
             {
                 // read the corrupted zip - this should fail in some way
-                using (ZipFile zip = new ZipFile(ZipFileToCreate))
+                using (ZipFile zip = new ZipFile(zipFileToCreate))
                 {
                     foreach (var e in zip)
                     {
@@ -629,7 +619,7 @@ namespace Ionic.Zip.Tests.Error
             string EntryToAdd = Path.Combine(TopLevelDir, "NonExistentFile.txt");
             File.Move(NewFile, EntryToAdd);
 
-            try 
+            try
             {
                 using (ZipFile zip = ZipFile.Read(ZipFileToRead))
                 {
@@ -644,7 +634,7 @@ namespace Ionic.Zip.Tests.Error
 
         }
 
-        
+
 
         [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
@@ -652,40 +642,54 @@ namespace Ionic.Zip.Tests.Error
         {
             int i;
             // select the name of the zip file
-            string ZipFileToCreate = Path.Combine(TopLevelDir, "Error_AddFile_Twice.zip");
-            Assert.IsFalse(File.Exists(ZipFileToCreate), "The temporary zip file '{0}' already exists.", ZipFileToCreate);
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Error_AddFile_Twice.zip");
 
             // create the subdirectory
-            string Subdir = Path.Combine(TopLevelDir, "files");
-            Directory.CreateDirectory(Subdir);
+            string subdir = Path.Combine(TopLevelDir, "files");
+            Directory.CreateDirectory(subdir);
 
             // create a bunch of files
-            int NumFilesToCreate = _rnd.Next(23) + 14;
-            string[] FilesToZip = new string[NumFilesToCreate];
-            for (i = 0; i < NumFilesToCreate; i++)
-                FilesToZip[i] =
-                    TestUtilities.CreateUniqueFile("bin", Subdir, _rnd.Next(10000) + 5000);
+            int numFilesToCreate = _rnd.Next(23) + 14;
+            for (i = 0; i < numFilesToCreate; i++)
+                TestUtilities.CreateUniqueFile("bin", subdir, _rnd.Next(10000) + 5000);
 
             // Create the zip archive
             Directory.SetCurrentDirectory(TopLevelDir);
-            using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
+            using (ZipFile zip1 = new ZipFile(zipFileToCreate))
             {
                 zip1.StatusMessageTextWriter = System.Console.Out;
-                String[] files = Directory.GetFiles(Subdir);
-                for (i = 0; i < files.Length; i++)
-                    zip1.AddFile(files[i], "files");
+                string[] files = Directory.GetFiles(subdir);
+                zip1.AddFiles(files, "files");
                 zip1.Save();
             }
 
 
             // this should fail - adding the same file twice
-            using (ZipFile zip2 = new ZipFile(ZipFileToCreate))
+            using (ZipFile zip2 = new ZipFile(zipFileToCreate))
             {
                 zip2.StatusMessageTextWriter = System.Console.Out;
-                String[] files = Directory.GetFiles(Subdir);
+                string[] files = Directory.GetFiles(subdir);
                 for (i = 0; i < files.Length; i++)
                     zip2.AddFile(files[i], "files");
                 zip2.Save();
+            }
+        }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(System.IO.IOException))]
+        public void Error_FileNotAvailableFails()
+        {
+            // verify the correct exception is being thrown
+            string zipFileToCreate = Path.Combine(TopLevelDir, "Error_FileNotAvailableFails.zip");
+
+            // create a zip file with no entries
+            using (var zipfile = new ZipFile(zipFileToCreate)) { zipfile.Save(); }
+
+            // open and lock
+            using (new FileStream(zipFileToCreate, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+            {
+                using (new ZipFile(zipFileToCreate)) { }
             }
         }
 
