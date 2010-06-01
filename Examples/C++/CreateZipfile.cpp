@@ -1,3 +1,14 @@
+// CreateZipFile.cpp
+//
+// Example: creating a zip file from C++.
+//
+// This code is part of DotNetZip.
+//
+//
+// Last saved: <2010-June-01 10:32:15>
+//
+
+
 using namespace System;
 using namespace Ionic::Zip;
 
