@@ -677,7 +677,7 @@ namespace Ionic.Zip.Tests.Error
 
 
         [TestMethod]
-        [ExpectedException(typeof(System.IO.IOException))]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Error_FileNotAvailableFails()
         {
             // verify the correct exception is being thrown
