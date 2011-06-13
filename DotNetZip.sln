@@ -1,6 +1,15 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E1C14695-E75F-4317-919A-5341EA1F9C01}"
+	ProjectSection(SolutionItems) = preProject
+		DotNetZip1.vsmdi = DotNetZip1.vsmdi
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{F7D17942-40ED-4243-BE57-591869948298}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{AAE1BA63-9776-4152-8AAD-801D775E188B}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip Partial DLL", "Zip Partial DLL\Zip Partial DLL.csproj", "{D3B0AD67-44D8-4B3D-BED9-CE1FD6DE2C5A}"
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Zip Utilities MSI", "Setup\Setup.vdproj", "{F87C0504-13EA-49A5-8C7B-4E635F107758}"
@@ -8,11 +17,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zlib", "Zlib\Zlib.csproj", "{9816BA86-9250-4C00-A912-25F07F8677D1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zlib Tests", "Zlib Tests\Zlib Tests.csproj", "{047A98B2-BC96-41B4-ADD8-2167FB1B6502}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E1C14695-E75F-4317-919A-5341EA1F9C01}"
-	ProjectSection(SolutionItems) = preProject
-		DotNetZip1.vsmdi = DotNetZip1.vsmdi
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip Tests", "Zip Tests\Zip Tests.csproj", "{549466CE-5CA6-4904-BA44-58141544BE70}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -32,8 +36,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip Reduced", "Zip Reduced\
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "RuntimeSetup MSI", "RuntimeSetup\RuntimeSetup.vdproj", "{48F1D606-29B3-4114-8BC4-246E7242EA68}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{F7D17942-40ED-4243-BE57-591869948298}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CF-Unzipper", "Examples\CompactFramework\CF-Unzipper\CF-Unzipper.csproj", "{D2E7C1EA-6FF1-4E26-96FC-24F6FB68B61B}"
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "QuickUnzip", "Examples\VB\Quick-Unzip\QuickUnzip.vbproj", "{95D9690B-3B37-4800-A511-6FB21436638B}"
@@ -43,8 +45,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreateZip", "Examples\C#\CreateZip\CreateZip.csproj", "{FB9FC8D7-7897-4802-9694-F379F25C00CB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadZip", "Examples\C#\ReadZip\ReadZip.csproj", "{F4024C01-1133-4A5A-B421-22EA8CA89EA5}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{AAE1BA63-9776-4152-8AAD-801D775E188B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnZip", "Tools\UnZip\UnZip.csproj", "{A22C89E0-B5D4-4881-A61F-4B1FD82F2453}"
 EndProject
@@ -58,13 +58,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZipTreeView", "Examples\C#\
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "WinForms-TreeViewZip", "Examples\VB\WinForms-TreeViewZip\WinForms-TreeViewZip\WinForms-TreeViewZip.vbproj", "{2E78FB6A-EE17-4EE4-9D8D-BE9AE675C69D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zlib Silverlight 3 DLL", "Zlib Silverlight 3 DLL\Zlib Silverlight 3 DLL.csproj", "{8E580B45-AECD-46BF-9D63-CD8BECE24D29}"
+Project("{00000000-0000-0000-0000-000000000000}") = "Zlib Silverlight 3 DLL", "Zlib Silverlight 3 DLL\Zlib Silverlight 3 DLL.csproj", "{8E580B45-AECD-46BF-9D63-CD8BECE24D29}"
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 24
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/TFS04
+		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs04
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = Tools\\ConvertZipToSfx\\ConvertZipToSfx.csproj
 		SccProjectTopLevelParentUniqueName1 = DotNetZip.sln
