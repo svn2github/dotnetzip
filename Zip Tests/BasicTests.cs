@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-10 15:23:02>
+// Time-stamp: <2011-June-13 13:27:23>
 //
 // ------------------------------------------------------------------
 //
@@ -1518,6 +1518,30 @@ namespace Ionic.Zip.Tests.Basic
                 }
             }
         }
+
+
+        [TestMethod]
+        public void Retrieve_ViaIndexer2_wi11056()
+        {
+            string fileName = "wi11056.dwf";
+            string entryName = @"com.autodesk.dwf.ePlot_5VFMLy3OdEetAPFe7uWXYg\descriptor.xml";
+            string SourceDir = CurrentDir;
+            for (int i = 0; i < 3; i++)
+                SourceDir = Path.GetDirectoryName(SourceDir);
+
+            TestContext.WriteLine("Current Dir: {0}", CurrentDir);
+
+            string filename = Path.Combine(SourceDir, "Zip Tests\\bin\\Debug\\zips\\" + fileName);
+
+            TestContext.WriteLine("Reading zip file: '{0}'", filename);
+            using (ZipFile zip = ZipFile.Read(filename))
+            {
+                var e = zip[entryName];
+                Assert.IsFalse(e == null,
+                               "Retrieval by stringindex failed.");
+            }
+        }
+
 
 
         [TestMethod]
