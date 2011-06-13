@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-13 14:15:36>
+// Time-stamp: <2011-June-13 15:37:49>
 //
 // ------------------------------------------------------------------
 //
@@ -1138,7 +1138,7 @@ namespace Ionic.Zip
         /// <para>
         ///   Most Encoding classes support a constructor that accepts a boolean,
         ///   indicating whether to emit a BOM or not. For example see <see
-        ///   cref="System.Text.Encoding.UTF8Encoding(boolean)"/>.
+        ///   cref="System.Text.UTF8Encoding(bool)"/>.
         /// </para>
         ///
         /// </remarks>
