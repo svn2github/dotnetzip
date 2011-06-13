@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-26 13:46:32>
+// Time-stamp: <2011-June-13 14:21:36>
 //
 // ------------------------------------------------------------------
 //
@@ -89,23 +89,29 @@ namespace Ionic.Zip
         }
 
         /// <summary>
-        /// Extracts the entry to the specified stream.
+        ///   Extracts the entry to the specified stream.
         /// </summary>
         ///
         /// <remarks>
-        ///
         /// <para>
-        /// The caller can specify any write-able stream, for example <see
-        /// cref="System.Console.OpenStandardOutput()"/>, a <see
-        /// cref="System.IO.FileStream"/>, a <see cref="System.IO.MemoryStream"/>, or
-        /// ASP.NET's <c>Response.OutputStream</c>.
-        /// The content will be decrypted and decompressed as necessary. If the entry is
-        /// encrypted and no password is provided, this method will throw.
+        ///   The caller can specify any write-able stream, for example
+        ///   <see cref="System.Console.OpenStandardOutput()"/>, a <see
+        ///   cref="System.IO.FileStream"/>, a <see
+        ///   cref="System.IO.MemoryStream"/>, or ASP.NET's
+        ///   <c>Response.OutputStream</c>.  The content will be
+        ///   decrypted and decompressed as necessary. If the entry is
+        ///   encrypted and no password is provided, this method will
+        ///   throw.
         /// </para>
-        ///
+        /// <para>
+        ///   The position on the stream is not reset by this method before it extracts.
+        ///   You may want to call stream.Seek() before calling ZipEntry.Extract().
+        /// </para>
         /// </remarks>
         ///
-        /// <param name="stream">the stream to which the entry should be extracted.  </param>
+        /// <param name="stream">
+        ///   the stream to which the entry should be extracted.
+        /// </param>
         ///
         public void Extract(Stream stream)
         {
@@ -364,12 +370,29 @@ namespace Ionic.Zip
         /// </summary>
         ///
         /// <remarks>
-        /// See the remarks on the <see cref="LastModified"/> property, for some details
-        /// about how the last modified time of the created file is set.
+        /// <para>
+        ///   The caller can specify any write-able stream, for example
+        ///   <see cref="System.Console.OpenStandardOutput()"/>, a <see
+        ///   cref="System.IO.FileStream"/>, a <see
+        ///   cref="System.IO.MemoryStream"/>, or ASP.NET's
+        ///   <c>Response.OutputStream</c>.  The content will be
+        ///   decrypted and decompressed as necessary. If the entry is
+        ///   encrypted and no password is provided, this method will
+        ///   throw.
+        /// </para>
+        /// <para>
+        ///   The position on the stream is not reset by this method before it extracts.
+        ///   You may want to call stream.Seek() before calling ZipEntry.Extract().
+        /// </para>
         /// </remarks>
         ///
-        /// <param name="stream">the stream to which the entry should be extracted.  </param>
-        /// <param name="password">The password to use for decrypting the entry.</param>
+        ///
+        /// <param name="stream">
+        ///   the stream to which the entry should be extracted.
+        /// </param>
+        /// <param name="password">
+        ///   The password to use for decrypting the entry.
+        /// </param>
         public void ExtractWithPassword(Stream stream, string password)
         {
             InternalExtract(null, stream, password);
