@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-24 23:33:00>
+// Time-stamp: <2011-June-13 14:15:36>
 //
 // ------------------------------------------------------------------
 //
@@ -1130,19 +1130,15 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        ///   The content for the entry, a string value, is encoded using the given text
-        ///   encoding. No Byte-order-mark (BOM) is emitted into the file.
+        ///   The content for the entry, a string value, is encoded using the given
+        ///   text encoding. A BOM (byte-order-mark) is emitted into the file, if the
+        ///   Encoding parameter is set for that.
         /// </para>
         ///
         /// <para>
-        ///   If you wish to create within a zip file a file entry with Unicode-encoded
-        ///   content that includes a byte-order-mark, you can convert your string to a
-        ///   byte array using the appropriate <see
-        ///   cref="System.Text.Encoding.GetBytes(String)">System.Text.Encoding.GetBytes()</see>
-        ///   method, then prepend to that byte array the output of <see
-        ///   cref="System.Text.Encoding.GetPreamble()">System.Text.Encoding.GetPreamble()</see>,
-        ///   and use the <see cref="AddEntry(string,byte[])"/> method, to add the
-        ///   entry.
+        ///   Most Encoding classes support a constructor that accepts a boolean,
+        ///   indicating whether to emit a BOM or not. For example see <see
+        ///   cref="System.Text.Encoding.UTF8Encoding(boolean)"/>.
         /// </para>
         ///
         /// </remarks>
@@ -1165,16 +1161,19 @@ namespace Ionic.Zip
         ///
         public ZipEntry AddEntry(string entryName, string content, System.Text.Encoding encoding)
         {
-            var ms = new MemoryStream();
-            var sw = new StreamWriter(ms, encoding);
+            using (var ms = new MemoryStream())
+            {
+                // cannot use a using clause here; StreamWriter takes
+                // ownership of the stream and Disposes it before we are ready.
+                var sw = new StreamWriter(ms, encoding);
+                sw.Write(content);
+                sw.Flush();
 
-            sw.Write(content);
-            sw.Flush();
+                // reset to allow reading later
+                ms.Seek(0, SeekOrigin.Begin);
 
-            // reset to allow reading later
-            ms.Seek(0, SeekOrigin.Begin);
-
-            return AddEntry(entryName, ms);
+                return AddEntry(entryName, ms);
+            }
         }
 
 
