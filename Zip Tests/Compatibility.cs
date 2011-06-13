@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-March-29 21:12:51>
+// Time-stamp: <2011-June-13 12:54:21>
 //
 // ------------------------------------------------------------------
 //
@@ -1833,7 +1833,7 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void Extract_ZipWithDuplicateNames_wi10330()
         {
-            Extract_ZipFile("BadZIP ID 305491847.zip");
+            _Extract_ZipFile("wi10330-badzip.zip");
         }
 
         [TestMethod]

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-10 11:33:43>
+// Time-stamp: <2011-June-13 13:00:06>
 //
 // ------------------------------------------------------------------
 //
@@ -35,6 +35,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Ionic.Zip.Tests.Utilities
 {
+    [TestClass]
     public class IonicTestClass
     {
         protected System.Random _rnd;
