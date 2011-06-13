@@ -8,7 +8,7 @@
 // CPUs for the DEFLATE computation.
 //
 // last saved:
-// Time-stamp: <2010-January-20 19:24:58>
+// Time-stamp: <2011-June-13 10:20:41>
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2009-2010 by Dino Chiesa
@@ -384,7 +384,8 @@ namespace Ionic.Zlib
             set
             {
                 if (value < 1024)
-                    throw new ArgumentException();
+                    throw new ArgumentOutOfRangeException("BufferSize",
+                                                          "BufferSize must be greater than 1024 bytes");
                 _bufferSize = value;
             }
         }
@@ -457,7 +458,7 @@ namespace Ionic.Zlib
             // Fill a work buffer; when full, flip state to 'Filled'
 
             if (_isClosed)
-                throw new NotSupportedException();
+                throw new InvalidOperationException();
 
             // dispense any exceptions that occurred on the BG threads
             if (_pendingException != null)
@@ -586,7 +587,7 @@ namespace Ionic.Zlib
         private void _Flush(bool lastInput)
         {
             if (_isClosed)
-                throw new NotSupportedException();
+                throw new InvalidOperationException();
 
             // pass any partial buffer out to the compressor workers:
             WorkItem workitem = _pool[_nextToFill % _pc];
@@ -1115,44 +1116,51 @@ namespace Ionic.Zlib
         }
 
         /// <summary>
-        /// Reading this property always throws a NotImplementedException.
+        /// Reading this property always throws a NotSupportedException.
         /// </summary>
         public override long Length
         {
-            get { throw new NotImplementedException(); }
+            get { throw new NotSupportedException(); }
         }
 
         /// <summary>
-        /// Reading or Writing this property always throws a NotImplementedException.
+        /// Returns the current position of the base output stream.
         /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     Because the output gets written by a background thread,
+        ///     the value may change asynchronously.  Setting this
+        ///     property always throws a NotSupportedException.
+        ///   </para>
+        /// </remarks>
         public override long Position
         {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
+            get { return baseStream.Position; }
+            set { throw new NotSupportedException(); }
         }
 
         /// <summary>
-        /// This method always throws a NotImplementedException.
+        /// This method always throws a NotSupportedException.
         /// </summary>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         /// <summary>
-        /// This method always throws a NotImplementedException.
+        /// This method always throws a NotSupportedException.
         /// </summary>
         public override long Seek(long offset, System.IO.SeekOrigin origin)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         /// <summary>
-        /// This method always throws a NotImplementedException.
+        /// This method always throws a NotSupportedException.
         /// </summary>
         public override void SetLength(long value)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
     }
