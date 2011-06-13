@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -127,33 +127,18 @@
     <value>17, 17</value>
   </metadata>
   <data name="tbSelectionToZip.ToolTip" xml:space="preserve">
-    <value>Selection criteria.  some examples: 
+    <value>Selection criteria.  some examples:
 name = *.xml  -- all xml files
 name != *.doc   -- any file not .doc
 atime &gt; 2009-07-02  -- also ctime and mtime
 attributes = A -- possible attributes: (HRSA)
-also logical conjunctions: 
+also logical conjunctions:
 (name = *.xml and size&gt; 1000)
 (name != *.doc  OR attrributes = A)
 </value>
   </data>
   <data name="richTextBox1.Text" xml:space="preserve">
-    <value>This is DotNetZip, a free zip tool.  It reads or creates zip files.  The tool is built on the DotNetZip library.  
-
-This zip tool and the library that it uses are part of the DotNetZip project, an open-source effort to build a zip library and tools for .NET.  In addition to the library and the tool, the DotNetZip project delivers various command-line tools for creating and unpacking zip files.  
-
-The DotNetZip library enables any .NET application to read and write ZIP files, simply and easily.  This graphical tool is just one example of the things you can build with the library. 
-
-The DotNetZip library supports many advanced ZIP features like ZIP64, WinZip-compatible AES encryption, Unicode or arbitrary code pages, self-extracting archives, archive and entry comments, split archives, and more.  DotNetZip has a simple and clean programming interface, which takes advantage of nice .NET features like eventing and generic collections.  There is a full helpfile with plenty of code examples to get you started. 
-
-DotNetZip is really nice to use with .NET apps, but it can also be used from Powershell scripts, as well as any COM-compliant language or environment. For example, you can write VBScript code that uses DotNetZip, to script the creation of AES-encrypted ZIP files.
-
-DotNetZip is CLS-compliant, FxCop-approved, fair-trade, color-blind, family-friendly, low-fat, and totally free of cost.  You're welcome very much.  The library can be used from any .NET programming language.  It runs on the Compact Framework as well as the regular .NET Framework.  DotNetZip requires .NET 2.0 at a minimum.  
-
-The library and this tool are produced in an open source project hosted at CodePlex:  http://www.codeplex.com/DotNetZip.  
-
-DotNetZip is donationware.  This tool and the library that supports it are free to use, but if you like the tool or library and find it them useful, you are encouraged to donate.  Proceeds benefit a local charity.  (which is NOT me).  To learn more: http://cheeso.members.winisp.net/DotNetZipDonate.aspx
-</value>
+    <value>Placeholder only. </value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

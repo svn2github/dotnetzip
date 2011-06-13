@@ -1469,6 +1469,81 @@ namespace Ionic.Zip.Forms
         }
 
 
+        private void LoadAboutInfo()
+        {
+            var a = System.Reflection.Assembly.GetEntryAssembly();
+            string[] resourceNames = a.GetManifestResourceNames();
+            if (resourceNames != null && resourceNames.Length > 0)
+            {
+                String name =  "Ionic.Zip.Forms.About.rtf";
+                var s = a.GetManifestResourceStream(name);
+                var bytes = ReadAllBytes(s);
+                this.richTextBox1.Rtf = System.Text.Encoding.ASCII.GetString(bytes);
+                s.Close();
+            }
+        }
+
+
+
+        /// <summary>
+        ///   Reads the contents of the stream into a byte array.
+        /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     Like File.ReadAllBytes(), but for a stream.
+        ///   </para>
+        /// </remarks>
+        /// <param name="stream">The stream to read.</param>
+        /// <returns>A byte array containing the contents of the stream.</returns>
+        /// <exception cref="NotSupportedException">The stream does not support reading.</exception>
+        /// <exception cref="ObjectDisposedException">Methods were called after the stream was closed.</exception>
+        /// <exception cref="System.IO.IOException">An I/O error occurs.</exception>
+        private byte[] ReadAllBytes(System.IO.Stream source)
+        {
+            long originalPosition = source.Position;
+            source.Position = 0;
+
+            try
+            {
+                byte[] readBuffer = new byte[4096];
+
+                int totalBytesRead = 0;
+                int bytesRead;
+
+                while ((bytesRead = source.Read(readBuffer, totalBytesRead, readBuffer.Length - totalBytesRead)) > 0)
+                {
+                    totalBytesRead += bytesRead;
+
+                    if (totalBytesRead == readBuffer.Length)
+                    {
+                        int nextByte = source.ReadByte();
+                        if (nextByte != -1)
+                        {
+                            byte[] temp = new byte[readBuffer.Length * 2];
+                            Buffer.BlockCopy(readBuffer, 0, temp, 0, readBuffer.Length);
+                            Buffer.SetByte(temp, totalBytesRead, (byte)nextByte);
+                            readBuffer = temp;
+                            totalBytesRead++;
+                        }
+                    }
+                }
+
+                byte[] buffer = readBuffer;
+                if (readBuffer.Length != totalBytesRead)
+                {
+                    buffer = new byte[totalBytesRead];
+                    Buffer.BlockCopy(readBuffer, 0, buffer, 0, totalBytesRead);
+                }
+                return buffer;
+            }
+            finally
+            {
+                source.Position = originalPosition;
+            }
+        }
+
+
+
         private void ZipForm_Load(object sender, EventArgs e)
         {
             if (_initialFileToLoad != null)
@@ -1479,6 +1554,7 @@ namespace Ionic.Zip.Forms
                 this.tbZipToOpen.Text = _initialFileToLoad;
                 btnOpen_Click(null, null);
             }
+            LoadAboutInfo();
         }
 
         private void tbDirectoryToZip_Leave(object sender, EventArgs e)
