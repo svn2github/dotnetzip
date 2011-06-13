@@ -2155,7 +2155,7 @@ namespace Ionic.Zip
                         }
                     }
                 }
-                x.Dispose(); // close the readstream 
+                x.Dispose(); // close the readstream
                 _JustSaved = false;
             }
         }
@@ -2263,7 +2263,7 @@ namespace Ionic.Zip
             }
             catch (Exception e1)
             {
-                throw new ZipException(String.Format("{0} is not a valid zip file", fileName), e1);
+                throw new ZipException(String.Format("Could not read {0} as a zip file", fileName), e1);
             }
         }
 
@@ -2782,11 +2782,13 @@ namespace Ionic.Zip
                 var key = SharedUtilities.NormalizePathForUseInZipFile(fileName);
                 if (_entries.ContainsKey(key))
                     return _entries[key];
-                else return null;
-
+                // workitem 11056
+                key = key.Replace("/","\\");
+                if (_entries.ContainsKey(key))
+                   return _entries[key];
+                return null;
 
 #if MESSY
-
                 foreach (ZipEntry e in _entries.Values)
                 {
                     if (this.CaseSensitiveRetrieval)

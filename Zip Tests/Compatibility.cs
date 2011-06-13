@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-13 12:54:21>
+// Time-stamp: <2011-June-13 17:14:38>
 //
 // ------------------------------------------------------------------
 //
@@ -899,6 +899,57 @@ namespace Ionic.Zip.Tests
 
             Assert.IsTrue(testOut.StartsWith("That zip is not OK"));
         }
+
+        [TestMethod]
+        public void Compat_COM_CheckPassword()
+        {
+            // create and fill the directories
+            string subdir = Path.Combine(TopLevelDir, "files");
+            string[] filesToZip;
+            Dictionary<string, byte[]> checksums;
+            CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
+
+            // first case - all entries have same password - should pass the check.
+            // second case - last entry uses a different password - should fail the check.
+            for (int k=0; k < 2; k++)
+            {
+                string password = TestUtilities.GenerateRandomAsciiString(11).Replace(" ","_");
+
+                string zipFileToCreate= String.Format("Compat_COM_CheckPass-{0}.zip", k);
+                zipFileToCreate = Path.Combine(TopLevelDir, zipFileToCreate);
+                // Create the zip archive
+                using (ZipFile zip1 = new ZipFile())
+                {
+                    //zip1.Password = password;
+                    for (int i = 0; i < filesToZip.Length; i++)
+                    {
+                        var e = zip1.AddFile(filesToZip[i], "files");
+                        e.Password = (k == 1 && i == filesToZip.Length-1)
+                            ? "7"
+                            : password;
+                    }
+                    zip1.Save(zipFileToCreate);
+                }
+
+                TestContext.WriteLine("Checking the count...");
+                // Verify the number of files in the zip
+                Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate),
+                                     filesToZip.Length,
+                                     "Incorrect number of entries in the zip file.");
+
+                TestContext.WriteLine("Checking the password (case {0})...", k);
+                string script = GetScript("TestCheckZipPassword.js");
+                string testOut = this.Exec(cscriptExe,
+                                           String.Format("\"{0}\" {1} {2}",
+                                                         script, zipFileToCreate, password));
+
+                if (k==0)
+                    Assert.IsTrue(testOut.StartsWith("That zip is OK"));
+                else
+                    Assert.IsFalse(testOut.StartsWith("That zip is OK"));
+            }
+        }
+
 
 
         [TestMethod]

@@ -1,25 +1,24 @@
 // PasswordTests.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2008, 2009 Dino Chiesa and Microsoft Corporation.  
+// Copyright (c) 2008-2011 Dino Chiesa .
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-September-13 17:49:11>
+// Last Saved: <2011-June-13 16:57:46>
 //
 // ------------------------------------------------------------------
 //
-// This module provides tests for password features. 
+// This module provides tests for password features.
 //
 // ------------------------------------------------------------------
 
@@ -123,6 +122,77 @@ namespace Ionic.Zip.Tests.Password
 
 
         [TestMethod]
+        public void Password_CheckZipPassword_wi13664()
+        {
+            string[] passwords = { null,
+                                   "Password!",
+                                   TestUtilities.GenerateRandomPassword(),
+                                   "_" };
+
+            string dirToZip = Path.Combine(TopLevelDir, "zipthis");
+            int subdirCount;
+            int entries = TestUtilities.GenerateFilesOneLevelDeep
+                (TestContext, "wi13664", dirToZip, null, out subdirCount);
+            string[] filesToZip = Directory.GetFiles("zipthis", "*.*", SearchOption.AllDirectories);
+
+            Assert.AreEqual<int>(filesToZip.Length, entries,
+                                 "Incorrect number of entries in the directory.");
+
+            for (int j = 0; j < passwords.Length; j++)
+            {
+                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Password_CheckZipPassword_wi13664-{0}.zip", j));
+
+                // Create the zip archive
+                using (ZipFile zip1 = new ZipFile())
+                {
+                    zip1.Password = passwords[j];
+                    zip1.AddFiles(filesToZip, true, "");
+                    zip1.Save(zipFileToCreate);
+                }
+
+                var r = ZipFile.CheckZipPassword(zipFileToCreate, passwords[j]);
+                Assert.IsTrue(r, "Bad password in round {0}", j);
+            }
+        }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.BadPasswordException))]
+        public void Password_CheckBadPassword_wi13668()
+        {
+            TestContext.WriteLine("Password_CheckBadPassword_wi13668()");
+            // In this case, the password is "correct" but the decrypted
+            // header does not match the CRC. Therefore the library
+            // should fail this password.  I don't know how the zip was
+            // constructed but I suspect a broken library.
+            string fileName = _GetNameForZipContentFile("wi13668-bad-pwd-472713.zip");
+            string password = "472713";
+            TestContext.WriteLine("Reading zip file: '{0}'", fileName);
+            using (ZipFile zip = ZipFile.Read(fileName))
+            {
+                foreach (ZipEntry e in zip)
+                {
+                    // will throw if wrong password
+                    e.ExtractWithPassword(Stream.Null, password);
+                }
+            }
+
+        }
+
+        private string _GetNameForZipContentFile(string shortFileName)
+        {
+            string SourceDir = CurrentDir;
+            for (int i = 0; i < 3; i++)
+                SourceDir = Path.GetDirectoryName(SourceDir);
+
+            TestContext.WriteLine("Current Dir: {0}", CurrentDir);
+
+            return  Path.Combine(SourceDir,
+                                 "Zip Tests\\bin\\Debug\\zips\\" + shortFileName);
+        }
+
+
+        [TestMethod]
         public void Password_MultipleEntriesDifferentPasswords()
         {
             string ZipFileToCreate = Path.Combine(TopLevelDir, "Password_MultipleEntriesDifferentPasswords.zip");
@@ -134,19 +204,19 @@ namespace Ionic.Zip.Tests.Password
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
-            string[] filenames = 
+            string[] filenames =
             {
                 Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
                 Path.Combine(SourceDir, "Zip Partial DLL\\bin\\Debug\\Ionic.Zip.Partial.xml"),
             };
 
-            string[] checksums = 
+            string[] checksums =
             {
                 TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filenames[0])),
                 TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filenames[1])),
             };
 
-            string[] passwords = 
+            string[] passwords =
             {
                     "12345678",
                     "0987654321",
@@ -192,13 +262,13 @@ namespace Ionic.Zip.Tests.Password
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
-            string[] filenames = 
+            string[] filenames =
             {
                 Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
                 Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
             };
 
-            string[] passwords = 
+            string[] passwords =
             {
                     "12345678",
                     "0987654321",
@@ -239,13 +309,13 @@ namespace Ionic.Zip.Tests.Password
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
-            string[] filenames = 
+            string[] filenames =
             {
                 Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
                 Path.Combine(SourceDir, "Zip Partial DLL\\bin\\Debug\\Ionic.Zip.Partial.xml"),
             };
 
-            string[] checksums = 
+            string[] checksums =
             {
                 TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filenames[0])),
                 TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(filenames[1])),

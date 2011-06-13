@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-January-05 13:15:32>
+// Time-stamp: <2011-June-13 16:02:10>
 //
 // ------------------------------------------------------------------
 //
@@ -241,6 +241,54 @@ namespace Ionic.Zip
                 zip.Initialize(zipFileName);
                 zip.Save(zipFileName);
             }
+        }
+
+
+
+        /// <summary>
+        ///   Verify the password on a zip file.
+        /// </summary>
+        ///
+        /// <remarks>
+        ///   <para>
+        ///     Keep in mind that passwords in zipfiles are applied to
+        ///     zip entries, not to the entire zip file. So testing a
+        ///     zipfile for a particular password doesn't work in the
+        ///     general case. On the other hand, it's often the case
+        ///     that a single password will be used on all entries in a
+        ///     zip file. This method works for that case.
+        ///   </para>
+        ///   <para>
+        ///     There is no way to check a password without doing the
+        ///     decryption. So this code decrypts and extracts the given
+        ///     zipfile into <see cref="System.IO.Stream.Null"/>
+        ///   </para>
+        /// </remarks>
+        ///
+        /// <param name="zipFileName">The filename to of the zip file to fix.</param>
+        ///
+        /// <param name="password">The password to check.</param>
+        ///
+        public static bool CheckZipPassword(string zipFileName, string password)
+        {
+            // workitem 13664
+            bool success = false;
+            try
+            {
+                using (ZipFile zip1 = ZipFile.Read(zipFileName))
+                {
+                    foreach (var e in zip1)
+                    {
+                        if (!e.IsDirectory && e.UsesEncryption)
+                        {
+                            e.ExtractWithPassword(System.IO.Stream.Null, password);
+                        }
+                    }
+                }
+                success = true;
+            }
+            catch(Ionic.Zip.BadPasswordException) { }
+            return success;
         }
 
 

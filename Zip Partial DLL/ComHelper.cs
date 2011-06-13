@@ -8,21 +8,21 @@
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-September-11 11:03:32>
+// last saved (in emacs):
+// Time-stamp: <2011-June-13 17:04:06>
 //
 // ------------------------------------------------------------------
 //
 // This module defines a COM Helper class.
 //
 // Created: Tue, 08 Sep 2009  22:03
-// 
+//
 
 using Interop=System.Runtime.InteropServices;
 
@@ -35,7 +35,7 @@ namespace Ionic.Zip
     /// </summary>
     [System.Runtime.InteropServices.GuidAttribute("ebc25cf6-9120-4283-b972-0e5520d0000F")]
     [System.Runtime.InteropServices.ComVisible(true)]
-#if !NETCF    
+#if !NETCF
     [System.Runtime.InteropServices.ClassInterface(System.Runtime.InteropServices.ClassInterfaceType.AutoDispatch)]
 #endif
 
@@ -65,7 +65,7 @@ namespace Ionic.Zip
             return ZipFile.IsZipFile(filename, true);
         }
 
-#if !NETCF    
+#if !NETCF
         /// <summary>
         ///  A wrapper for <see cref="ZipFile.CheckZip(string)">ZipFile.CheckZip(string)</see>
         /// </summary>
@@ -78,6 +78,20 @@ namespace Ionic.Zip
         }
 
         /// <summary>
+        ///  A wrapper for <see cref="ZipFile.CheckZipPassword(string)"/>.
+        /// </summary>
+        ///
+        /// <param name="filename">The filename to of the zip file to check.</param>
+        ///
+        /// <param name="password">The password to check.</param>
+        ///
+        /// <returns>true if the named zip file checks OK. Otherwise, false. </returns>
+        public bool CheckZipPassword(string filename, string password)
+        {
+            return ZipFile.CheckZipPassword(filename, password);
+        }
+
+        /// <summary>
         ///  A wrapper for <see cref="ZipFile.FixZipDirectory(string)">ZipFile.FixZipDirectory(string)</see>
         /// </summary>
         /// <param name="filename">The filename to of the zip file to fix.</param>
@@ -86,7 +100,7 @@ namespace Ionic.Zip
             ZipFile.FixZipDirectory(filename);
         }
 #endif
-        
+
         /// <summary>
         ///  A wrapper for <see cref="ZipFile.LibraryVersion">ZipFile.LibraryVersion</see>
         /// </summary>
@@ -97,6 +111,6 @@ namespace Ionic.Zip
         {
             return ZipFile.LibraryVersion.ToString();
         }
-        
+
     }
 }
