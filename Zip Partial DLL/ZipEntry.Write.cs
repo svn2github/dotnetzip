@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-June-13 23:54:35>
+// Last Saved: <2011-June-14 10:24:15>
 //
 // ------------------------------------------------------------------
 //
@@ -1031,18 +1031,18 @@ namespace Ionic.Zip
                     if (this._Source == ZipEntrySource.Stream)
                     {
                         PrepSourceStream();
-                        input = _sourceStream;
+                        input = this._sourceStream;
                     }
                     else if (this._Source == ZipEntrySource.JitStream)
                     {
                         // allow the application to open the stream
-                        if (this._sourceStream == null) _sourceStream = this._OpenDelegate(this.FileName);
+                        if (this._sourceStream == null)
+                            _sourceStream = this._OpenDelegate(this.FileName);
                         PrepSourceStream();
                         input = this._sourceStream;
                     }
                     else if (this._Source == ZipEntrySource.ZipOutputStream)
                     {
-                        //throw new InvalidOperationException("you cannot use PKZIP encryption with a ZipOutputStream.");
                     }
                     else
                     {
@@ -1197,7 +1197,7 @@ namespace Ionic.Zip
                 // So we copy fdp to __FileDataPosition after this entry has been (maybe) restreamed.
                 fdp = s.Position;
             }
-            catch { }
+            catch (System.IO.IOException) { }
 
             try
             {
@@ -1674,7 +1674,7 @@ namespace Ionic.Zip
                                        out Stream deflater,
                                        out Ionic.Zlib.CrcCalculatorStream output)
         {
-            TraceWriteLine("PrepOutputStream: e({0}) comp({1}) crypto({2}) zf({3})", FileName, CompressionLevel, Encryption, (_container).Name);
+            TraceWriteLine("PrepOutputStream: e({0}) comp({1}) crypto({2}) zf({3})", FileName, CompressionLevel, Encryption, _container.Name);
 
             // Wrap a counting stream around the raw output stream:
             // This is the last thing that happens before the bits go to the
@@ -1802,6 +1802,9 @@ namespace Ionic.Zip
 
         internal void Write(Stream s)
         {
+            var cs1 = s as CountingStream;
+            var zss1 = s as ZipSegmentedStream;
+
             bool done = false;
             do
             {
@@ -1847,9 +1850,8 @@ namespace Ionic.Zip
                         _entryRequiresZip64 = new Nullable<bool>(_RelativeOffsetOfLocalHeader >= 0xFFFFFFFF);
                         _OutputUsesZip64 = new Nullable<bool>(_container.Zip64 == Zip64Option.Always || _entryRequiresZip64.Value);
                         // handle case for split archives
-                        var zss = s as ZipSegmentedStream;
-                        if (zss != null)
-                            _diskNumber = zss.CurrentSegment;
+                        if (zss1 != null)
+                            _diskNumber = zss1.CurrentSegment;
 
                         return;
                     }
@@ -1879,12 +1881,11 @@ namespace Ionic.Zip
                             // data for this entry.
 
                             // handle case for split archives
-                            var zss = s as ZipSegmentedStream;
-                            if (zss != null)
+                            if (zss1 != null)
                             {
                                 // Console.WriteLine("***_diskNumber/first: {0}", _diskNumber);
                                 // Console.WriteLine("***_diskNumber/current: {0}", zss.CurrentSegment);
-                                zss.TruncateBackward(_diskNumber, _RelativeOffsetOfLocalHeader);
+                                zss1.TruncateBackward(_diskNumber, _RelativeOffsetOfLocalHeader);
                             }
                             else
                                 // workitem 8098: ok (output).
@@ -1898,8 +1899,7 @@ namespace Ionic.Zip
                             s.SetLength(s.Position);
 
                             // Adjust the count on the CountingStream as necessary.
-                            var s1 = s as CountingStream;
-                            if (s1 != null) s1.Adjust(_TotalEntrySize);
+                            if (cs1 != null) cs1.Adjust(_TotalEntrySize);
                         }
                     }
                     while (readAgain);
@@ -1924,8 +1924,7 @@ namespace Ionic.Zip
                             s.Seek(_future_ROLH, SeekOrigin.Begin);
                             long p2 = s.Position;
                             s.SetLength(s.Position);  // to prevent garbage if this is the last entry
-                            var s1 = s as CountingStream;
-                            if (s1 != null) s1.Adjust(p1 - p2);
+                            if (cs1 != null) cs1.Adjust(p1 - p2);
                             if (ZipErrorAction == ZipErrorAction.Skip)
                             {
                                 WriteStatus("Skipping file {0} (exception: {1})", LocalFileName, exc1.ToString());

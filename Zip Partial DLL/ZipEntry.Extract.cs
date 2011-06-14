@@ -539,7 +539,7 @@ namespace Ionic.Zip
 
             // workitem 7958
             if (this._Source != ZipEntrySource.ZipFile)
-                throw new BadStateException("You must call ZipFile.Save before calling OpenReader.");
+                throw new BadStateException("You must call ZipFile.Save before calling OpenReader");
 
             // LeftToRead is a count of bytes remaining to be read (out)
             // from the stream AFTER decompression and decryption.
@@ -632,12 +632,12 @@ namespace Ionic.Zip
         {
             // workitem 7958
             if (_container == null)
-                throw new BadStateException("This ZipEntry is an orphan.");
+                throw new BadStateException("This entry is an orphan");
 
             _container.ZipFile.Reset();
 
             if (this._Source != ZipEntrySource.ZipFile)
-                throw new BadStateException("You must call ZipFile.Save before calling any Extract method.");
+                throw new BadStateException("You must call ZipFile.Save before calling any Extract method");
 
             OnBeforeExtract(baseDir);
             _ioOperationCanceled = false;

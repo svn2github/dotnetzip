@@ -658,11 +658,11 @@ namespace  Ionic.Zip
         ///
         /// </remarks>
         ///
-        protected override void Dispose(bool notCalledFromFinalizer)
+        protected override void Dispose(bool disposing)
         {
             if (_closed) return;
 
-            if (notCalledFromFinalizer)
+            if (disposing) // not called from finalizer
             {
                 // When ZipInputStream is used within a using clause, and an exception is thrown,
                 // Close() is invoked.  But we don't want to try to write anything in that case.

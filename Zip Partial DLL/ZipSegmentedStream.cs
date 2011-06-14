@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-14 00:05:34>
+// Time-stamp: <2011-June-14 11:14:00>
 //
 // ------------------------------------------------------------------
 //
@@ -102,6 +102,10 @@ namespace Ionic.Zip
 
         private void _SetUpdateStream()
         {
+            // workitem 12448
+            if (_innerStream != null)
+                _innerStream.Close();
+
             _innerStream = new FileStream(CurrentName, FileMode.Open);
         }
 
@@ -168,11 +172,12 @@ namespace Ionic.Zip
         }
 
 
-        public void ResetWriter()
-        {
-            CurrentSegment = 0;
-            _SetWriteStream(0);
-        }
+
+        // public void ResetWriter()
+        // {
+        //     CurrentSegment = 0;
+        //     _SetWriteStream(0);
+        // }
 
 
         private void _SetReadStream()
@@ -436,6 +441,8 @@ namespace Ionic.Zip
         void IDisposable.Dispose()
         {
             Close();
+            if (_innerStream != null)
+                _innerStream.Dispose();
         }
 
         public override void Close()

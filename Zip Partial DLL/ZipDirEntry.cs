@@ -80,7 +80,7 @@ namespace Ionic.Zip
                     .Append(string.Format("  Bit Field: 0x{0:X4}\n", this._BitField))
                     .Append(string.Format("  Encrypted?: {0}\n", this._sourceIsEncrypted))
                     .Append(string.Format("  Timeblob: 0x{0:X8} ({1})\n", this._TimeBlob,
-                                          Ionic.Zip.SharedUtilities.PackedToDateTime(this._TimeBlob)) )
+                                          Ionic.Zip.SharedUtilities.PackedToDateTime(this._TimeBlob)))
                     .Append(string.Format("  CRC: 0x{0:X8}\n", this._Crc32))
                     .Append(string.Format("  Is Text?: {0}\n", this._IsText))
                     .Append(string.Format("  Is Directory?: {0}\n", this._IsDirectory))
@@ -105,7 +105,9 @@ namespace Ionic.Zip
             internal static string AppendCopyToFileName(string f)
             {
                 callCount++;
-                if (callCount > 25) throw new Exception("Runaway!!!");
+                if (callCount > 25)
+                    throw new OverflowException("overflow while creating filename");
+
                 int n = 1;
                 int r = f.LastIndexOf(".");
 
@@ -117,31 +119,31 @@ namespace Ionic.Zip
                     {
                         n = Int32.Parse(m.Groups[1].Value) + 1;
                         string copy = String.Format(" (copy {0})", n);
-                        f= f.Substring(0,m.Index) + copy;
+                        f = f.Substring(0, m.Index) + copy;
                     }
                     else
                     {
                         string copy = String.Format(" (copy {0})", n);
-                        f= f + copy;
+                        f = f + copy;
                     }
                 }
                 else
                 {
-                    System.Console.WriteLine("HasExtension");
-                    System.Text.RegularExpressions.Match m = re.Match(f.Substring(0,r));
+                    //System.Console.WriteLine("HasExtension");
+                    System.Text.RegularExpressions.Match m = re.Match(f.Substring(0, r));
                     if (m.Success)
                     {
-                        n= Int32.Parse(m.Groups[1].Value) + 1;
+                        n = Int32.Parse(m.Groups[1].Value) + 1;
                         string copy = String.Format(" (copy {0})", n);
-                        f= f.Substring(0,m.Index) + copy  + f.Substring(r);
+                        f = f.Substring(0, m.Index) + copy + f.Substring(r);
                     }
                     else
                     {
                         string copy = String.Format(" (copy {0})", n);
-                        f= f.Substring(0,r) + copy  + f.Substring(r);
+                        f = f.Substring(0, r) + copy + f.Substring(r);
                     }
 
-                    System.Console.WriteLine("returning f({0})",f);
+                    //System.Console.WriteLine("returning f({0})", f);
                 }
                 return f;
             }
@@ -182,7 +184,7 @@ namespace Ionic.Zip
                     signature != ZipConstants.ZipEntrySignature  // workitem 8299
                     )
                 {
-                    throw new BadReadException(String.Format("  ZipEntry::ReadDirEntry(): Bad signature (0x{0:X8}) at position 0x{1:X8}", signature, s.Position));
+                    throw new BadReadException(String.Format("  Bad signature (0x{0:X8}) at position 0x{1:X8}", signature, s.Position));
                 }
                 return null;
             }
@@ -247,7 +249,7 @@ namespace Ionic.Zip
             while (zf.ContainsEntry(zde._FileNameInArchive))
             {
                 zde._FileNameInArchive = CopyHelper.AppendCopyToFileName(zde._FileNameInArchive);
-                zde._metadataChanged= true;
+                zde._metadataChanged = true;
             }
 
             if (zde.AttributesIndicateDirectory)

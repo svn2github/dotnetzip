@@ -17,7 +17,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-25 17:42:25>
+// Time-stamp: <2011-June-14 00:39:05>
 //
 // ------------------------------------------------------------------
 //
@@ -89,12 +89,12 @@ namespace Ionic.Zip.Tests.Split
         }
 
 
-        [TestMethod]
+        [TestMethod, Timeout(360000)]  // 360000 - 6 minutes]
         public void Create_SegmentedArchive()
         {
             string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
 
-            int numFiles = _rnd.Next(9) + 8;
+            int numFiles = _rnd.Next(10) + 8;
 
             string[] filesToZip;
             Dictionary<string, byte[]> checksums;
@@ -103,7 +103,9 @@ namespace Ionic.Zip.Tests.Split
             //var filesToZip = TestUtilities.GenerateFilesFlat(dirToZip);
             int n = _rnd.Next(filesToZip.Length);
 
-            int[] segmentSizes = { 0, 64*1024, 128*1024, 512*1024, 1024*1024, 2*1024*1024, 8*1024*1024 };
+            int[] segmentSizes = { 0, 64*1024, 128*1024, 512*1024, 1024*1024,
+                                   2*1024*1024, 8*1024*1024, 16*1024*1024,
+                                   1024*1024*1024 };
 
             for (int m=0; m < segmentSizes.Length; m++)
             {

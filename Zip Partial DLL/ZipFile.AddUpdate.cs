@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-13 23:57:21>
+// Time-stamp: <2011-June-14 10:37:17>
 //
 // ------------------------------------------------------------------
 //
@@ -425,6 +425,9 @@ namespace Ionic.Zip
         /// <seealso cref="Ionic.Zip.ZipFile.RemoveSelectedEntries(String)" />
         public void RemoveEntries(System.Collections.Generic.ICollection<ZipEntry> entriesToRemove)
         {
+            if (entriesToRemove == null)
+                throw new ArgumentNullException("entriesToRemove");
+
             foreach (ZipEntry e in entriesToRemove)
             {
                 this.RemoveEntry(e);
@@ -446,6 +449,9 @@ namespace Ionic.Zip
         /// <seealso cref="Ionic.Zip.ZipFile.RemoveSelectedEntries(String)" />
         public void RemoveEntries(System.Collections.Generic.ICollection<String> entriesToRemove)
         {
+            if (entriesToRemove == null)
+                throw new ArgumentNullException("entriesToRemove");
+
             foreach (String e in entriesToRemove)
             {
                 this.RemoveEntry(e);
@@ -652,6 +658,9 @@ namespace Ionic.Zip
                              bool preserveDirHierarchy,
                              String directoryPathInArchive)
         {
+            if (fileNames == null)
+                throw new ArgumentNullException("fileNames");
+
             OnAddStarted();
             if (preserveDirHierarchy)
             {
@@ -718,6 +727,9 @@ namespace Ionic.Zip
         /// <seealso cref="Ionic.Zip.ZipFile.AddSelectedFiles(String, String)" />
         public void UpdateFiles(System.Collections.Generic.IEnumerable<String> fileNames, String directoryPathInArchive)
         {
+            if (fileNames == null)
+                throw new ArgumentNullException("fileNames");
+
             OnAddStarted();
             foreach (var f in fileNames)
                 this.UpdateFile(f, directoryPathInArchive);
@@ -1161,6 +1173,8 @@ namespace Ionic.Zip
         ///
         public ZipEntry AddEntry(string entryName, string content, System.Text.Encoding encoding)
         {
+            // cannot employ a using clause here.  We need the stream to 
+            // persist after exit from this method.
             var ms = new MemoryStream();
 
             // cannot use a using clause here; StreamWriter takes
@@ -1579,6 +1593,9 @@ namespace Ionic.Zip
         ///
         public ZipEntry UpdateEntry(string entryName, string content, System.Text.Encoding encoding)
         {
+            if (String.IsNullOrEmpty(entryName))
+                throw new ArgumentNullException("entryName");
+
             string directoryPathInArchive = null;
             if (entryName.IndexOf('\\') != -1)
             {
@@ -1635,6 +1652,9 @@ namespace Ionic.Zip
         /// <returns>The <c>ZipEntry</c> added.</returns>
         public ZipEntry UpdateEntry(string entryName, Stream stream)
         {
+            if (String.IsNullOrEmpty(entryName))
+                throw new ArgumentNullException("entryName");
+
             string directoryPathInArchive = null;
             if (entryName.IndexOf('\\') != -1)
             {
@@ -1695,6 +1715,9 @@ namespace Ionic.Zip
         ///
         public ZipEntry UpdateEntry(string entryName, byte[] byteContent)
         {
+            if (String.IsNullOrEmpty(entryName))
+                throw new ArgumentNullException("entryName");
+
             string directoryPathInArchive = null;
             if (entryName.IndexOf('\\') != -1)
             {

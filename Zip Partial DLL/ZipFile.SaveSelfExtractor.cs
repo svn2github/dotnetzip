@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-05 09:34:10>
+// Time-stamp: <2011-June-14 10:33:44>
 //
 // ------------------------------------------------------------------
 //
@@ -95,7 +95,8 @@ namespace Ionic.Zip
         /// </summary>
         public SelfExtractorFlavor Flavor
         {
-            get;set;
+            get;
+            set;
         }
 
         /// <summary>
@@ -184,7 +185,8 @@ namespace Ionic.Zip
         /// </remarks>
         public String PostExtractCommandLine
         {
-            get;set;
+            get;
+            set;
         }
 
         /// <summary>
@@ -215,7 +217,8 @@ namespace Ionic.Zip
         /// </remarks>
         public String DefaultExtractDirectory
         {
-            get;set;
+            get;
+            set;
         }
 
         /// <summary>
@@ -234,7 +237,8 @@ namespace Ionic.Zip
         ///
         public string IconFile
         {
-            get;set;
+            get;
+            set;
         }
 
         /// <summary>
@@ -311,7 +315,8 @@ namespace Ionic.Zip
         /// </remarks>
         public bool Quiet
         {
-            get;set;
+            get;
+            set;
         }
 
 
@@ -326,7 +331,8 @@ namespace Ionic.Zip
         /// </remarks>
         public Ionic.Zip.ExtractExistingFileAction ExtractExistingFile
         {
-            get;set;
+            get;
+            set;
         }
 
 
@@ -356,7 +362,8 @@ namespace Ionic.Zip
         /// </remarks>
         public bool RemoveUnpackedFilesAfterExecute
         {
-            get;set;
+            get;
+            set;
         }
 
 
@@ -367,7 +374,8 @@ namespace Ionic.Zip
         ///
         public Version FileVersion
         {
-            get;set;
+            get;
+            set;
         }
 
         /// <summary>
@@ -383,7 +391,8 @@ namespace Ionic.Zip
         ///
         public String ProductVersion
         {
-            get;set;
+            get;
+            set;
         }
 
         /// <summary>
@@ -398,7 +407,8 @@ namespace Ionic.Zip
         ///
         public String Copyright
         {
-            get;set;
+            get;
+            set;
         }
 
 
@@ -414,7 +424,8 @@ namespace Ionic.Zip
         ///
         public String Description
         {
-            get;set;
+            get;
+            set;
         }
 
         /// <summary>
@@ -429,7 +440,8 @@ namespace Ionic.Zip
         ///
         public String ProductName
         {
-            get;set;
+            get;
+            set;
         }
 
     }
@@ -659,7 +671,7 @@ namespace Ionic.Zip
 
 
 
-        private void ExtractResourceToFile(Assembly a, string resourceName, string filename)
+        private static void ExtractResourceToFile(Assembly a, string resourceName, string filename)
         {
             int n = 0;
             byte[] bytes = new byte[1024];
@@ -682,9 +694,9 @@ namespace Ionic.Zip
 
         private void _SaveSfxStub(string exeToGenerate, SelfExtractorSaveOptions options)
         {
-            string nameOfIconFile= null;
-            string StubExe = null;
-            string TempDir = null;
+            string nameOfIconFile = null;
+            string stubExe = null;
+            string tempDir = null;
             try
             {
                 if (File.Exists(exeToGenerate))
@@ -696,276 +708,277 @@ namespace Ionic.Zip
                     if (Verbose) StatusMessageTextWriter.WriteLine("Warning: The generated self-extracting file will not have an .exe extension.");
                 }
 
-                StubExe = GenerateTempPathname("exe");
+                stubExe = GenerateTempPathname("exe");
 
                 // get the Ionic.Zip assembly
                 Assembly a1 = typeof(ZipFile).Assembly;
 
-                Microsoft.CSharp.CSharpCodeProvider csharp = new Microsoft.CSharp.CSharpCodeProvider();
-
-                // Perfect opportunity for a linq query, but I cannot use it.
-                // The DotNetZip library can compile into 2.0, but needs to run on .NET 2.0.
-                // Using LINQ would break that. Here's what it would look like:
-                //
-                //      var settings = (from x in SettingsList
-                //                      where x.Flavor == flavor
-                //                      select x).First();
-
-                ExtractorSettings settings = null;
-                foreach (var x in SettingsList)
+                using (var csharp = new Microsoft.CSharp.CSharpCodeProvider())
                 {
-                    if (x.Flavor == options.Flavor)
+
+                    // Perfect opportunity for a linq query, but I cannot use it.
+                    // The DotNetZip library can compile into 2.0, but needs to run on .NET 2.0.
+                    // Using LINQ would break that. Here's what it would look like:
+                    //
+                    //      var settings = (from x in SettingsList
+                    //                      where x.Flavor == flavor
+                    //                      select x).First();
+
+                    ExtractorSettings settings = null;
+                    foreach (var x in SettingsList)
                     {
-                        settings = x;
-                        break;
+                        if (x.Flavor == options.Flavor)
+                        {
+                            settings = x;
+                            break;
+                        }
                     }
-                }
 
-                if (settings == null)
-                    throw new BadStateException(String.Format("While saving a Self-Extracting Zip, Cannot find that flavor ({0})?", options.Flavor));
+                    if (settings == null)
+                        throw new BadStateException(String.Format("While saving a Self-Extracting Zip, Cannot find that flavor ({0})?", options.Flavor));
 
-                // This is the list of referenced assemblies.  Ionic.Zip is needed here.
-                // Also if it is the winforms (gui) extractor, we need other referenced assemblies,
-                // like System.Windows.Forms.dll, etc.
-                System.CodeDom.Compiler.CompilerParameters cp = new System.CodeDom.Compiler.CompilerParameters();
-                cp.ReferencedAssemblies.Add(a1.Location);
-                if (settings.ReferencedAssemblies != null)
-                    foreach (string ra in settings.ReferencedAssemblies)
-                        cp.ReferencedAssemblies.Add(ra);
+                    // This is the list of referenced assemblies.  Ionic.Zip is needed here.
+                    // Also if it is the winforms (gui) extractor, we need other referenced assemblies,
+                    // like System.Windows.Forms.dll, etc.
+                    System.CodeDom.Compiler.CompilerParameters cp = new System.CodeDom.Compiler.CompilerParameters();
+                    cp.ReferencedAssemblies.Add(a1.Location);
+                    if (settings.ReferencedAssemblies != null)
+                        foreach (string ra in settings.ReferencedAssemblies)
+                            cp.ReferencedAssemblies.Add(ra);
 
-                cp.GenerateInMemory = false;
-                cp.GenerateExecutable = true;
-                cp.IncludeDebugInformation = false;
-                cp.CompilerOptions = "";
+                    cp.GenerateInMemory = false;
+                    cp.GenerateExecutable = true;
+                    cp.IncludeDebugInformation = false;
+                    cp.CompilerOptions = "";
 
-                Assembly a2 = Assembly.GetExecutingAssembly();
+                    Assembly a2 = Assembly.GetExecutingAssembly();
 
-                // Use this to concatenate all the source code resources into a single module
-                var sb = new System.Text.StringBuilder();
+                    // Use this to concatenate all the source code resources into a single module
+                    var sb = new System.Text.StringBuilder();
 
-                // In case there are compiler errors later, we allocate a
-                // source file name now.
-                string sourceFile = GenerateTempPathname("cs");
-
+                    // In case there are compiler errors later, we allocate a
+                    // source file name now.
+                    string sourceFile = GenerateTempPathname("cs");
 
 
-                // // debugging: enumerate the resources in this assembly
-                // Console.WriteLine("Resources in this assembly:");
-                // foreach (string rsrc in a2.GetManifestResourceNames())
-                //   {
-                //     Console.WriteLine(rsrc);
-                //   }
-                // Console.WriteLine();
 
-
-                // all the source code is embedded in the DLL as a zip file.
-                using (ZipFile zip = ZipFile.Read(a2.GetManifestResourceStream("Ionic.Zip.Resources.ZippedResources.zip")))
-                {
-                    // // debugging: enumerate the files in the embedded zip
-                    // Console.WriteLine("Entries in the embbedded zip:");
-                    // foreach (ZipEntry entry in zip)
+                    // // debugging: enumerate the resources in this assembly
+                    // Console.WriteLine("Resources in this assembly:");
+                    // foreach (string rsrc in a2.GetManifestResourceNames())
                     //   {
-                    //     Console.WriteLine(entry.FileName);
+                    //     Console.WriteLine(rsrc);
                     //   }
                     // Console.WriteLine();
 
-                    TempDir = GenerateTempPathname("tmp");
 
-                    if (String.IsNullOrEmpty(options.IconFile))
+                    // all the source code is embedded in the DLL as a zip file.
+                    using (ZipFile zip = ZipFile.Read(a2.GetManifestResourceStream("Ionic.Zip.Resources.ZippedResources.zip")))
                     {
-                        // Use the embedded ico file. But we must unpack it to the
-                        // filesystem, in order to specify it on the cmdline of csc.exe.  We
-                        // will remove this file later.
-                        System.IO.Directory.CreateDirectory(TempDir);
-                        ZipEntry e = zip["zippedFile.ico"];
-                        // Must not extract a readonly file - it will be impossible to
-                        // delete later.
-                        if ((e.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
-                            e.Attributes ^= FileAttributes.ReadOnly;
-                        e.Extract(TempDir);
-                        nameOfIconFile = Path.Combine(TempDir, "zippedFile.ico");
-                        cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", nameOfIconFile);
-                    }
-                    else
-                        cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", options.IconFile);
+                        // // debugging: enumerate the files in the embedded zip
+                        // Console.WriteLine("Entries in the embbedded zip:");
+                        // foreach (ZipEntry entry in zip)
+                        //   {
+                        //     Console.WriteLine(entry.FileName);
+                        //   }
+                        // Console.WriteLine();
 
-                    cp.OutputAssembly = StubExe;
+                        tempDir = GenerateTempPathname("tmp");
 
-                    if (options.Flavor == SelfExtractorFlavor.WinFormsApplication)
-                        cp.CompilerOptions += " /target:winexe";
-
-                    if (cp.CompilerOptions == "")
-                        cp.CompilerOptions = null;
-
-                    if ((settings.CopyThroughResources != null) && (settings.CopyThroughResources.Count != 0))
-                    {
-                        if (!Directory.Exists(TempDir)) System.IO.Directory.CreateDirectory(TempDir);
-                        foreach (string re in settings.CopyThroughResources)
+                        if (String.IsNullOrEmpty(options.IconFile))
                         {
-                            string filename = Path.Combine(TempDir, re);
-
-                            ExtractResourceToFile(a2, re, filename);
-                            // add the file into the target assembly as an embedded resource
-                            cp.EmbeddedResources.Add(filename);
+                            // Use the embedded ico file. But we must unpack it to the
+                            // filesystem, in order to specify it on the cmdline of csc.exe.  We
+                            // will remove this file later.
+                            System.IO.Directory.CreateDirectory(tempDir);
+                            ZipEntry e = zip["zippedFile.ico"];
+                            // Must not extract a readonly file - it will be impossible to
+                            // delete later.
+                            if ((e.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                                e.Attributes ^= FileAttributes.ReadOnly;
+                            e.Extract(tempDir);
+                            nameOfIconFile = Path.Combine(tempDir, "zippedFile.ico");
+                            cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", nameOfIconFile);
                         }
-                    }
+                        else
+                            cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", options.IconFile);
 
-                    // add the Ionic.Utils.Zip DLL as an embedded resource
-                    cp.EmbeddedResources.Add(a1.Location);
+                        cp.OutputAssembly = stubExe;
 
-                    // file header
-                    sb.Append("// " + Path.GetFileName(sourceFile) + "\n")
-                        .Append("// --------------------------------------------\n//\n")
-                        .Append("// This SFX source file was generated by DotNetZip ")
-                        .Append(ZipFile.LibraryVersion.ToString())
-                        .Append("\n//         at ")
-                        .Append(System.DateTime.Now.ToString("yyyy MMMM dd  HH:mm:ss"))
-                        .Append("\n//\n// --------------------------------------------\n\n\n");
+                        if (options.Flavor == SelfExtractorFlavor.WinFormsApplication)
+                            cp.CompilerOptions += " /target:winexe";
 
-                    // assembly attributes
-                    if (!String.IsNullOrEmpty(options.Description))
-                        sb.Append("[assembly: System.Reflection.AssemblyTitle(\""
-                                  + options.Description.Replace("\"", "")
-                                  + "\")]\n");
-                    else
-                        sb.Append("[assembly: System.Reflection.AssemblyTitle(\"DotNetZip SFX Archive\")]\n");
+                        if (String.IsNullOrEmpty(cp.CompilerOptions))
+                            cp.CompilerOptions = null;
 
-                    if (!String.IsNullOrEmpty(options.ProductVersion))
-                        sb.Append("[assembly: System.Reflection.AssemblyInformationalVersion(\""
-                                  + options.ProductVersion.Replace("\"", "")
-                                  + "\")]\n");
-
-                    string copyright = "Extractor: Copyright © Dino Chiesa 2008, 2009";
-                    if (!String.IsNullOrEmpty(options.Copyright))
-                        copyright += "Contents: " + options.Copyright.Replace("\"", "");
-
-
-                    if (!String.IsNullOrEmpty(options.ProductName))
-                        sb.Append("[assembly: System.Reflection.AssemblyProduct(\"")
-                            .Append(options.ProductName.Replace("\"", ""))
-                            .Append("\")]\n");
-                    else
-                        sb.Append("[assembly: System.Reflection.AssemblyProduct(\"DotNetZip\")]\n");
-
-
-                    sb.Append("[assembly: System.Reflection.AssemblyCopyright(\"" + copyright + "\")]\n")
-                        .Append(String.Format("[assembly: System.Reflection.AssemblyVersion(\"{0}\")]\n", ZipFile.LibraryVersion.ToString()));
-                    if (options.FileVersion != null)
-                        sb.Append(String.Format("[assembly: System.Reflection.AssemblyFileVersion(\"{0}\")]\n",
-                                                options.FileVersion.ToString()));
-
-                    sb.Append("\n\n\n");
-
-                    // Set the default extract location if it is available
-                    string extractLoc = options.DefaultExtractDirectory;
-                    if (extractLoc != null)
-                    {
-                        // remove double-quotes and replace slash with double-slash.
-                        // This, because the value is going to be embedded into a
-                        // cs file as a quoted string, and it needs to be escaped.
-                        extractLoc = extractLoc.Replace("\"", "").Replace("\\", "\\\\");
-                    }
-
-                    string postExCmdLine = options.PostExtractCommandLine;
-                    if (postExCmdLine  != null)
-                    {
-                        postExCmdLine = postExCmdLine.Replace("\\","\\\\");
-                        postExCmdLine = postExCmdLine.Replace("\"","\\\"");
-                    }
-
-
-                    foreach (string rc in settings.ResourcesToCompile)
-                    {
-                        // Console.WriteLine("  trying to read entry: ({0})", rc);
-                        using (Stream s = zip[rc].OpenReader())
+                        if ((settings.CopyThroughResources != null) && (settings.CopyThroughResources.Count != 0))
                         {
-                            if (s == null)
-                                throw new ZipException(String.Format("missing resource '{0}'", rc));
-                            using (StreamReader sr = new StreamReader(s))
+                            if (!Directory.Exists(tempDir)) System.IO.Directory.CreateDirectory(tempDir);
+                            foreach (string re in settings.CopyThroughResources)
                             {
-                                while (sr.Peek() >= 0)
-                                {
-                                    string line = sr.ReadLine();
-                                    if (extractLoc != null)
-                                        line = line.Replace("@@EXTRACTLOCATION", extractLoc);
+                                string filename = Path.Combine(tempDir, re);
 
-                                    line = line.Replace("@@REMOVE_AFTER_EXECUTE", options.RemoveUnpackedFilesAfterExecute.ToString());
-                                    line = line.Replace("@@QUIET", options.Quiet.ToString());
-                                    line = line.Replace("@@EXTRACT_EXISTING_FILE", ((int)options.ExtractExistingFile).ToString());
-
-                                    if (postExCmdLine != null)
-                                        line = line.Replace("@@POST_UNPACK_CMD_LINE", postExCmdLine);
-
-                                    sb.Append(line).Append("\n");
-                                }
+                                ExtractResourceToFile(a2, re, filename);
+                                // add the file into the target assembly as an embedded resource
+                                cp.EmbeddedResources.Add(filename);
                             }
-                            sb.Append("\n\n");
                         }
-                    }
-                }
 
-                string LiteralSource = sb.ToString();
+                        // add the Ionic.Utils.Zip DLL as an embedded resource
+                        cp.EmbeddedResources.Add(a1.Location);
 
-                #if DEBUGSFX
-                // for debugging only
-                string sourceModule = GenerateTempPathname("cs");
-                using (StreamWriter sw = File.CreateText(sourceModule))
-                {
-                    sw.Write(LiteralSource);
-                }
-                Console.WriteLine("source: {0}", sourceModule);
-                #endif
+                        // file header
+                        sb.Append("// " + Path.GetFileName(sourceFile) + "\n")
+                            .Append("// --------------------------------------------\n//\n")
+                            .Append("// This SFX source file was generated by DotNetZip ")
+                            .Append(ZipFile.LibraryVersion.ToString())
+                            .Append("\n//         at ")
+                            .Append(System.DateTime.Now.ToString("yyyy MMMM dd  HH:mm:ss"))
+                            .Append("\n//\n// --------------------------------------------\n\n\n");
 
-                System.CodeDom.Compiler.CompilerResults cr = csharp.CompileAssemblyFromSource(cp, LiteralSource);
+                        // assembly attributes
+                        if (!String.IsNullOrEmpty(options.Description))
+                            sb.Append("[assembly: System.Reflection.AssemblyTitle(\""
+                                      + options.Description.Replace("\"", "")
+                                      + "\")]\n");
+                        else
+                            sb.Append("[assembly: System.Reflection.AssemblyTitle(\"DotNetZip SFX Archive\")]\n");
+
+                        if (!String.IsNullOrEmpty(options.ProductVersion))
+                            sb.Append("[assembly: System.Reflection.AssemblyInformationalVersion(\""
+                                      + options.ProductVersion.Replace("\"", "")
+                                      + "\")]\n");
+
+                        string copyright = "Extractor: Copyright © Dino Chiesa 2008, 2009";
+                        if (!String.IsNullOrEmpty(options.Copyright))
+                            copyright += "Contents: " + options.Copyright.Replace("\"", "");
 
 
-                if (cr == null)
-                    throw new SfxGenerationException("Cannot compile the extraction logic!");
+                        if (!String.IsNullOrEmpty(options.ProductName))
+                            sb.Append("[assembly: System.Reflection.AssemblyProduct(\"")
+                                .Append(options.ProductName.Replace("\"", ""))
+                                .Append("\")]\n");
+                        else
+                            sb.Append("[assembly: System.Reflection.AssemblyProduct(\"DotNetZip\")]\n");
 
-                if (Verbose)
-                    foreach (string output in cr.Output)
-                        StatusMessageTextWriter.WriteLine(output);
 
-                if (cr.Errors.Count != 0)
-                {
-                    using (TextWriter tw = new StreamWriter(sourceFile))
-                    {
-                        // first, the source we compiled
-                        tw.Write(LiteralSource);
+                        sb.Append("[assembly: System.Reflection.AssemblyCopyright(\"" + copyright + "\")]\n")
+                            .Append(String.Format("[assembly: System.Reflection.AssemblyVersion(\"{0}\")]\n", ZipFile.LibraryVersion.ToString()));
+                        if (options.FileVersion != null)
+                            sb.Append(String.Format("[assembly: System.Reflection.AssemblyFileVersion(\"{0}\")]\n",
+                                                    options.FileVersion.ToString()));
 
-                        // now, append the compile errors
-                        tw.Write("\n\n\n// ------------------------------------------------------------------\n");
-                        tw.Write("// Errors during compilation: \n//\n");
-                        string p = Path.GetFileName(sourceFile);
+                        sb.Append("\n\n\n");
 
-                        foreach( System.CodeDom.Compiler.CompilerError error in cr.Errors)
+                        // Set the default extract location if it is available
+                        string extractLoc = options.DefaultExtractDirectory;
+                        if (extractLoc != null)
                         {
-                            tw.Write(String.Format("//   {0}({1},{2}): {3} {4}: {5}\n//\n",
-                                                   p,                                   // 0
-                                                   error.Line,                          // 1
-                                                   error.Column,                        // 2
-                                                   error.IsWarning?"Warning":"error",   // 3
-                                                   error.ErrorNumber,                   // 4
-                                                   error.ErrorText ));                  // 5
+                            // remove double-quotes and replace slash with double-slash.
+                            // This, because the value is going to be embedded into a
+                            // cs file as a quoted string, and it needs to be escaped.
+                            extractLoc = extractLoc.Replace("\"", "").Replace("\\", "\\\\");
+                        }
+
+                        string postExCmdLine = options.PostExtractCommandLine;
+                        if (postExCmdLine != null)
+                        {
+                            postExCmdLine = postExCmdLine.Replace("\\", "\\\\");
+                            postExCmdLine = postExCmdLine.Replace("\"", "\\\"");
+                        }
+
+
+                        foreach (string rc in settings.ResourcesToCompile)
+                        {
+                            using (Stream s = zip[rc].OpenReader())
+                            {
+                                if (s == null)
+                                    throw new ZipException(String.Format("missing resource '{0}'", rc));
+                                using (StreamReader sr = new StreamReader(s))
+                                {
+                                    while (sr.Peek() >= 0)
+                                    {
+                                        string line = sr.ReadLine();
+                                        if (extractLoc != null)
+                                            line = line.Replace("@@EXTRACTLOCATION", extractLoc);
+
+                                        line = line.Replace("@@REMOVE_AFTER_EXECUTE", options.RemoveUnpackedFilesAfterExecute.ToString());
+                                        line = line.Replace("@@QUIET", options.Quiet.ToString());
+                                        line = line.Replace("@@EXTRACT_EXISTING_FILE", ((int)options.ExtractExistingFile).ToString());
+
+                                        if (postExCmdLine != null)
+                                            line = line.Replace("@@POST_UNPACK_CMD_LINE", postExCmdLine);
+
+                                        sb.Append(line).Append("\n");
+                                    }
+                                }
+                                sb.Append("\n\n");
+                            }
                         }
                     }
-                    throw new SfxGenerationException(String.Format("Errors compiling the extraction logic!  {0}", sourceFile));
-                }
 
-                OnSaveEvent(ZipProgressEventType.Saving_AfterCompileSelfExtractor);
+                    string LiteralSource = sb.ToString();
 
-                // Now, copy the resulting EXE image to the _writestream.
-                // Because this stub exe is being saved first, the effect will be to
-                // concatenate the exe and the zip data together.
-                using (System.IO.Stream input = System.IO.File.OpenRead(StubExe))
-                {
-                    byte[] buffer = new byte[4000];
-                    int n = 1;
-                    while (n != 0)
+#if DEBUGSFX
+                    // for debugging only
+                    string sourceModule = GenerateTempPathname("cs");
+                    using (StreamWriter sw = File.CreateText(sourceModule))
                     {
-                        n = input.Read(buffer, 0, buffer.Length);
-                        if (n != 0)
-                            WriteStream.Write(buffer, 0, n);
+                        sw.Write(LiteralSource);
+                    }
+                    Console.WriteLine("source: {0}", sourceModule);
+#endif
+
+                    System.CodeDom.Compiler.CompilerResults cr = csharp.CompileAssemblyFromSource(cp, LiteralSource);
+
+
+                    if (cr == null)
+                        throw new SfxGenerationException("Cannot compile the extraction logic!");
+
+                    if (Verbose)
+                        foreach (string output in cr.Output)
+                            StatusMessageTextWriter.WriteLine(output);
+
+                    if (cr.Errors.Count != 0)
+                    {
+                        using (TextWriter tw = new StreamWriter(sourceFile))
+                        {
+                            // first, the source we compiled
+                            tw.Write(LiteralSource);
+
+                            // now, append the compile errors
+                            tw.Write("\n\n\n// ------------------------------------------------------------------\n");
+                            tw.Write("// Errors during compilation: \n//\n");
+                            string p = Path.GetFileName(sourceFile);
+
+                            foreach (System.CodeDom.Compiler.CompilerError error in cr.Errors)
+                            {
+                                tw.Write(String.Format("//   {0}({1},{2}): {3} {4}: {5}\n//\n",
+                                                       p,                                   // 0
+                                                       error.Line,                          // 1
+                                                       error.Column,                        // 2
+                                                       error.IsWarning ? "Warning" : "error",   // 3
+                                                       error.ErrorNumber,                   // 4
+                                                       error.ErrorText));                  // 5
+                            }
+                        }
+                        throw new SfxGenerationException(String.Format("Errors compiling the extraction logic!  {0}", sourceFile));
+                    }
+
+                    OnSaveEvent(ZipProgressEventType.Saving_AfterCompileSelfExtractor);
+
+                    // Now, copy the resulting EXE image to the _writestream.
+                    // Because this stub exe is being saved first, the effect will be to
+                    // concatenate the exe and the zip data together.
+                    using (System.IO.Stream input = System.IO.File.OpenRead(stubExe))
+                    {
+                        byte[] buffer = new byte[4000];
+                        int n = 1;
+                        while (n != 0)
+                        {
+                            n = input.Read(buffer, 0, buffer.Length);
+                            if (n != 0)
+                                WriteStream.Write(buffer, 0, n);
+                        }
                     }
                 }
 
@@ -975,22 +988,24 @@ namespace Ionic.Zip
             {
                 try
                 {
-                    if (Directory.Exists(TempDir))
+                    if (Directory.Exists(tempDir))
                     {
-                        try { Directory.Delete(TempDir, true); }
-                        catch (Exception exc1)
+                        try { Directory.Delete(tempDir, true); }
+                        catch (System.IO.IOException exc1)
                         {
-                            Console.WriteLine("Exception: {0}", exc1.ToString());
+                            StatusMessageTextWriter.WriteLine("Warning: Exception: {0}", exc1.ToString());
                         }
                     }
-                    if (File.Exists(StubExe))
+                    if (File.Exists(stubExe))
                     {
-                        try { File.Delete(StubExe); }
-                        catch { }
+                        try { File.Delete(stubExe); }
+                        catch (System.IO.IOException exc1)
+                        {
+                            StatusMessageTextWriter.WriteLine("Warning: Exception: {0}", exc1.ToString());
+                        }
                     }
                 }
-                catch { }
-
+                catch (System.IO.IOException) { }
             }
 
             return;

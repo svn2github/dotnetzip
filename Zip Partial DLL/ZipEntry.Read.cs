@@ -89,7 +89,7 @@ namespace Ionic.Zip
                 Ionic.Zip.SharedUtilities.Workaround_Ladybug318918(ze.ArchiveStream);
                 if (ZipEntry.IsNotValidZipDirEntrySig(signature) && (signature != ZipConstants.EndOfCentralDirectorySignature))
                 {
-                    throw new BadReadException(String.Format("  ZipEntry::ReadHeader(): Bad signature (0x{0:X8}) at position  0x{1:X8}", signature, ze.ArchiveStream.Position));
+                    throw new BadReadException(String.Format("  Bad signature (0x{0:X8}) at position  0x{1:X8}", signature, ze.ArchiveStream.Position));
                 }
                 return false;
             }
@@ -572,7 +572,7 @@ namespace Ionic.Zip
                 //this._aesCrypto = new WinZipAesCrypto(this);
                 // see spec at http://www.winzip.com/aes_info.htm
                 if (DataSize != 7)
-                    throw new BadReadException(String.Format("  Inconsistent WinZip AES datasize (0x{0:X4}) at position 0x{1:X16}", DataSize, posn));
+                    throw new BadReadException(String.Format("  Inconsistent size (0x{0:X4}) in WinZip AES field at position 0x{1:X16}", DataSize, posn));
 
                 this._WinZipAesMethod = BitConverter.ToInt16(Buffer, j);
                 j += 2;
@@ -622,14 +622,14 @@ namespace Ionic.Zip
 
             // workitem 7941: check datasize before reading.
             if (DataSize > 28)
-                throw new BadReadException(String.Format("  Inconsistent datasize (0x{0:X4}) for ZIP64 extra field at position 0x{1:X16}",
+                throw new BadReadException(String.Format("  Inconsistent size (0x{0:X4}) for ZIP64 extra field at position 0x{1:X16}",
                                                          DataSize, posn));
             int remainingData = DataSize;
 
             if (this._UncompressedSize == 0xFFFFFFFF)
             {
                 if (remainingData < 8)
-                    throw new BadReadException(String.Format("  Missing data for ZIP64 extra field (Uncompressed Size) at position 0x{1:X16}",
+                    throw new BadReadException(String.Format("  Missing data for ZIP64 extra field (Uncompressed Size) at position 0x{0:X16}",
                                                              posn));
 
                 this._UncompressedSize = BitConverter.ToInt64(Buffer, j);
@@ -639,7 +639,7 @@ namespace Ionic.Zip
             if (this._CompressedSize == 0xFFFFFFFF)
             {
                 if (remainingData < 8)
-                    throw new BadReadException(String.Format("  Missing data for ZIP64 extra field (Compressed Size) at position 0x{1:X16}",
+                    throw new BadReadException(String.Format("  Missing data for ZIP64 extra field (Compressed Size) at position 0x{0:X16}",
                                                              posn));
 
                 this._CompressedSize = BitConverter.ToInt64(Buffer, j);
@@ -649,7 +649,7 @@ namespace Ionic.Zip
             if (this._RelativeOffsetOfLocalHeader == 0xFFFFFFFF)
             {
                 if (remainingData < 8)
-                    throw new BadReadException(String.Format("  Missing data for ZIP64 extra field (Relative Offset) at position 0x{1:X16}",
+                    throw new BadReadException(String.Format("  Missing data for ZIP64 extra field (Relative Offset) at position 0x{0:X16}",
                                                              posn));
 
                 this._RelativeOffsetOfLocalHeader = BitConverter.ToInt64(Buffer, j);
@@ -667,7 +667,7 @@ namespace Ionic.Zip
         private int ProcessExtraFieldInfoZipTimes(byte[] Buffer, int j, Int16 DataSize, long posn)
         {
             if (DataSize != 12 && DataSize != 8)
-                throw new BadReadException(String.Format("  Unexpected datasize (0x{0:X4}) for InfoZip v1 extra field at position 0x{1:X16}", DataSize, posn));
+                throw new BadReadException(String.Format("  Unexpected size (0x{0:X4}) for InfoZip v1 extra field at position 0x{1:X16}", DataSize, posn));
 
             Int32 timet = BitConverter.ToInt32(Buffer, j);
             this._Mtime = _unixEpoch.AddSeconds(timet);
@@ -691,7 +691,7 @@ namespace Ionic.Zip
             // storing seconds since Unix epoch.
             {
                 if (DataSize != 13 && DataSize != 9 && DataSize != 5)
-                    throw new BadReadException(String.Format("  Unexpected datasize (0x{0:X4}) for Extended Timestamp extra field at position 0x{1:X16}", DataSize, posn));
+                    throw new BadReadException(String.Format("  Unexpected size (0x{0:X4}) for Extended Timestamp extra field at position 0x{1:X16}", DataSize, posn));
 
                 int remainingData = DataSize;
 
@@ -755,7 +755,7 @@ namespace Ionic.Zip
             // ctime      8 bytes    win32 ticks since win32epoch
             {
                 if (DataSize != 32)
-                    throw new BadReadException(String.Format("  Unexpected datasize (0x{0:X4}) for NTFS times extra field at position 0x{1:X16}", DataSize, posn));
+                    throw new BadReadException(String.Format("  Unexpected size (0x{0:X4}) for NTFS times extra field at position 0x{1:X16}", DataSize, posn));
 
                 j += 4;  // reserved
                 Int16 timetag = (Int16)(Buffer[j] + Buffer[j + 1] * 256);

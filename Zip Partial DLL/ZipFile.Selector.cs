@@ -1322,6 +1322,9 @@ namespace Ionic
         /// <returns>a collection of ZipEntry objects that conform to the criteria.</returns>
         public ICollection<Ionic.Zip.ZipEntry> SelectEntries(Ionic.Zip.ZipFile zip)
         {
+            if (zip == null)
+                throw new ArgumentNullException("zip");
+
             var list = new List<Ionic.Zip.ZipEntry>();
 
             foreach (Ionic.Zip.ZipEntry e in zip)
@@ -1374,6 +1377,9 @@ namespace Ionic
         /// <returns>a collection of ZipEntry objects that conform to the criteria.</returns>
         public ICollection<Ionic.Zip.ZipEntry> SelectEntries(Ionic.Zip.ZipFile zip, string directoryPathInArchive)
         {
+            if (zip == null)
+                throw new ArgumentNullException("zip");
+
             var list = new List<Ionic.Zip.ZipEntry>();
             // workitem 8559
             string slashSwapped = (directoryPathInArchive==null) ? null : directoryPathInArchive.Replace("/","\\");

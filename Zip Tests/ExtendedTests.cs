@@ -1527,16 +1527,15 @@ namespace Ionic.Zip.Tests.Extended
 
                         BasicVerifyZip(zipFile, password);
                         TestContext.WriteLine("Checking zip...");
-                        System.Collections.ObjectModel.ReadOnlyCollection<String> msgs;
-
-                        bool result = ZipFile.CheckZip(zipFile, false, out msgs);
-                        TestContext.WriteLine("Messages: ({0})", msgs.Count);
-                        foreach (var m in msgs)
+                        using (var sw = new StringWriter())
                         {
-                            TestContext.WriteLine("{0}", m);
+                            bool result = ZipFile.CheckZip(zipFile, false, sw);
+                            Assert.IsTrue(result, "Zip ({0}) does not check OK", zipFile);
+                            var msgs = sw.ToString().Split('\n');
+                            foreach (var msg in msgs)
+                                TestContext.WriteLine("{0}", msg);
                         }
 
-                        Assert.IsTrue(result, "Zip ({0}) does not check OK", zipFile);
 
                     }
                 }
@@ -1595,17 +1594,15 @@ namespace Ionic.Zip.Tests.Extended
                     BasicVerifyZip(zipFile, password);
 
                     TestContext.WriteLine("Checking zip...");
-                    System.Collections.ObjectModel.ReadOnlyCollection<String> msgs;
 
-                    bool result = ZipFile.CheckZip(zipFile, false, out msgs);
-                    TestContext.WriteLine("Messages: ({0})", msgs.Count);
-                    foreach (var m in msgs)
+                    using (var sw = new StringWriter())
                     {
-                        TestContext.WriteLine("{0}", m);
+                        bool result = ZipFile.CheckZip(zipFile, false, sw);
+                        Assert.IsTrue(result, "Zip ({0}) does not check OK", zipFile);
+                        var msgs = sw.ToString().Split('\n');
+                        foreach (var msg in msgs)
+                            TestContext.WriteLine("{0}", msg);
                     }
-
-                    Assert.IsTrue(result, "Zip ({0}) does not check OK", zipFile);
-
                 }
             }
         }

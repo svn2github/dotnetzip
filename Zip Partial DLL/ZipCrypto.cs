@@ -352,7 +352,10 @@ namespace Ionic.Zip
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (_mode == CryptoMode.Encrypt)
-                throw new NotImplementedException();
+                throw new NotSupportedException("This stream does not encrypt via Read()");
+
+            if (buffer == null)
+                throw new ArgumentNullException("buffer");
 
             byte[] db = new byte[count];
             int n = _s.Read(db, 0, count);
@@ -367,7 +370,10 @@ namespace Ionic.Zip
         public override void Write(byte[] buffer, int offset, int count)
         {
             if (_mode == CryptoMode.Decrypt)
-                throw new NotImplementedException();
+                throw new NotImplementedException("This stream does not Decrypt via Write()");
+
+            if (buffer == null)
+                throw new ArgumentNullException("buffer");
 
             // workitem 7696
             if (count == 0) return; 

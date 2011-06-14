@@ -1,7 +1,7 @@
 // ZipFile.Check.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa.
+// Copyright (c) 2009-2011 Dino Chiesa.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-13 16:02:10>
+// Time-stamp: <2011-June-14 10:39:51>
 //
 // ------------------------------------------------------------------
 //
@@ -67,11 +67,10 @@ namespace Ionic.Zip
         /// <returns>true if the named zip file checks OK. Otherwise, false. </returns>
         ///
         /// <seealso cref="FixZipDirectory(string)"/>
-        /// <seealso cref="CheckZip(string,bool,out System.Collections.ObjectModel.ReadOnlyCollection&lt;String&gt;)"/>
+        /// <seealso cref="CheckZip(string,bool,System.IO.TextWriter)"/>
         public static bool CheckZip(string zipFileName)
         {
-            System.Collections.ObjectModel.ReadOnlyCollection<String> ignoredMessages;
-            return CheckZip(zipFileName, false, out ignoredMessages);
+            return CheckZip(zipFileName, false, null);
         }
 
 
@@ -107,8 +106,8 @@ namespace Ionic.Zip
         /// <param name="fixIfNecessary">If true, the method will fix the zip file if
         ///     necessary.</param>
         ///
-        /// <param name="messages">
-        /// a collection of messages generated while checking, indicating any problems that are found.
+        /// <param name="writer">
+        /// a TextWriter in which messages generated while checking will be written.
         /// </param>
         ///
         /// <returns>true if the named zip is OK; false if the file needs to be fixed.</returns>
@@ -116,11 +115,10 @@ namespace Ionic.Zip
         /// <seealso cref="CheckZip(string)"/>
         /// <seealso cref="FixZipDirectory(string)"/>
         public static bool CheckZip(string zipFileName, bool fixIfNecessary,
-                                    out System.Collections.ObjectModel.ReadOnlyCollection<String> messages)
+                                    TextWriter writer)
+
         {
-            List<String> notes = new List<String>();
-            ZipFile zip1 = null;
-            ZipFile zip2 = null;
+            ZipFile zip1 = null, zip2 = null;
             bool isOk = true;
             try
             {
@@ -139,37 +137,42 @@ namespace Ionic.Zip
                             if (e1._RelativeOffsetOfLocalHeader != e2._RelativeOffsetOfLocalHeader)
                             {
                                 isOk = false;
-                                notes.Add(String.Format("{0}: mismatch in RelativeOffsetOfLocalHeader  (0x{1:X16} != 0x{2:X16})",
+                                if (writer != null)
+                                writer.WriteLine("{0}: mismatch in RelativeOffsetOfLocalHeader  (0x{1:X16} != 0x{2:X16})",
                                                         e1.FileName, e1._RelativeOffsetOfLocalHeader,
-                                                        e2._RelativeOffsetOfLocalHeader));
+                                                        e2._RelativeOffsetOfLocalHeader);
                             }
                             if (e1._CompressedSize != e2._CompressedSize)
                             {
                                 isOk = false;
-                                notes.Add(String.Format("{0}: mismatch in CompressedSize  (0x{1:X16} != 0x{2:X16})",
+                                if (writer != null)
+                                writer.WriteLine("{0}: mismatch in CompressedSize  (0x{1:X16} != 0x{2:X16})",
                                                         e1.FileName, e1._CompressedSize,
-                                                        e2._CompressedSize));
+                                                        e2._CompressedSize);
                             }
                             if (e1._UncompressedSize != e2._UncompressedSize)
                             {
                                 isOk = false;
-                                notes.Add(String.Format("{0}: mismatch in UncompressedSize  (0x{1:X16} != 0x{2:X16})",
+                                if (writer != null)
+                                writer.WriteLine("{0}: mismatch in UncompressedSize  (0x{1:X16} != 0x{2:X16})",
                                                         e1.FileName, e1._UncompressedSize,
-                                                        e2._UncompressedSize));
+                                                        e2._UncompressedSize);
                             }
                             if (e1.CompressionMethod != e2.CompressionMethod)
                             {
                                 isOk = false;
-                                notes.Add(String.Format("{0}: mismatch in CompressionMethod  (0x{1:X4} != 0x{2:X4})",
+                                if (writer != null)
+                                writer.WriteLine("{0}: mismatch in CompressionMethod  (0x{1:X4} != 0x{2:X4})",
                                                         e1.FileName, e1.CompressionMethod,
-                                                        e2.CompressionMethod));
+                                                        e2.CompressionMethod);
                             }
                             if (e1.Crc != e2.Crc)
                             {
                                 isOk = false;
-                                notes.Add(String.Format("{0}: mismatch in Crc32  (0x{1:X4} != 0x{2:X4})",
+                                if (writer != null)
+                                writer.WriteLine("{0}: mismatch in Crc32  (0x{1:X4} != 0x{2:X4})",
                                                         e1.FileName, e1.Crc,
-                                                        e2.Crc));
+                                                        e2.Crc);
                             }
 
                             // found a match, so stop the inside loop
@@ -193,7 +196,6 @@ namespace Ionic.Zip
                 if (zip1 != null) zip1.Dispose();
                 if (zip2 != null) zip2.Dispose();
             }
-            messages = notes.AsReadOnly(); // may or may not be empty
             return isOk;
         }
 
@@ -232,7 +234,7 @@ namespace Ionic.Zip
         /// <param name="zipFileName">The filename to of the zip file to fix.</param>
         ///
         /// <seealso cref="CheckZip(string)"/>
-        /// <seealso cref="CheckZip(string,bool,out System.Collections.ObjectModel.ReadOnlyCollection&lt;String&gt;)"/>
+        /// <seealso cref="CheckZip(string,bool,System.IO.TextWriter)"/>
         public static void FixZipDirectory(string zipFileName)
         {
             using (var zip = new ZipFile())

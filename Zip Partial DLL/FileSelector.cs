@@ -99,7 +99,7 @@ namespace Ionic
         internal abstract bool Evaluate(string filename);
 
         [System.Diagnostics.Conditional("SelectorTrace")]
-        protected void CriterionTrace(string format, params object[] args)
+        protected static void CriterionTrace(string format, params object[] args)
         {
             //System.Console.WriteLine("  " + format, args);
         }

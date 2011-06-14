@@ -8,7 +8,7 @@
 // CPUs for the DEFLATE computation.
 //
 // last saved:
-// Time-stamp: <2011-June-13 10:20:41>
+// Time-stamp: <2011-June-13 11:16:07>
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2009-2010 by Dino Chiesa
@@ -1124,7 +1124,7 @@ namespace Ionic.Zlib
         }
 
         /// <summary>
-        /// Returns the current position of the base output stream.
+        /// Returns the current position of the output stream.
         /// </summary>
         /// <remarks>
         ///   <para>
@@ -1135,7 +1135,7 @@ namespace Ionic.Zlib
         /// </remarks>
         public override long Position
         {
-            get { return baseStream.Position; }
+            get { return _outStream.Position; }
             set { throw new NotSupportedException(); }
         }
 

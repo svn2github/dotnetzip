@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-13 22:14:44>
+// Time-stamp: <2011-June-14 11:08:25>
 //
 // ------------------------------------------------------------------
 //
@@ -1004,7 +1004,7 @@ namespace Ionic.Zip
             set
             {
                 if ((value != 0) && (value != -1) && (value < 64 * 1024))
-                    throw new ArgumentException();
+                    throw new ArgumentException("value must be greater than 64k, or 0, or -1");
                 _ParallelDeflateThreshold = value;
             }
             get
@@ -1183,6 +1183,9 @@ namespace Ionic.Zip
         ///
         public ZipEntry PutNextEntry(String entryName)
         {
+            if (String.IsNullOrEmpty(entryName))
+                throw new ArgumentNullException("entryName");
+
             if (_disposed)
             {
                 _exceptionPending = true;
@@ -1293,12 +1296,12 @@ namespace Ionic.Zip
         ///
         /// </remarks>
         ///
-        /// <param name="notCalledFromFinalizer">set this to true, always.</param>
-        protected override void Dispose(bool notCalledFromFinalizer)
+        /// <param name="disposing">set this to true, always.</param>
+        protected override void Dispose(bool disposing)
         {
             if (_disposed) return;
 
-            if (notCalledFromFinalizer)
+            if (disposing) // not called from finalizer
             {
                 // When ZipOutputStream is used within a using clause, and an exception is
                 // thrown within the scope of the using, Close()/Dispose() is invoked implicitly

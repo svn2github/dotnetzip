@@ -195,7 +195,7 @@ namespace Ionic.Zip
         internal static int ReadSignature(System.IO.Stream s)
         {
             int x = 0;
-            try { x = _ReadFourBytes(s, "nul"); }
+            try { x = _ReadFourBytes(s, "n/a"); }
             catch (BadReadException) { }
             return x;
         }
@@ -208,14 +208,14 @@ namespace Ionic.Zip
             int x = 0;
             try
             {
-                x = _ReadFourBytes(s, "nul");
+                x = _ReadFourBytes(s, "n/a");
                 if (x == ZipConstants.ZipEntryDataDescriptorSignature)
                 {
                     // advance past data descriptor - 12 bytes if not zip64
                     s.Seek(12, SeekOrigin.Current);
                     // workitem 10178
                     Workaround_Ladybug318918(s);
-                    x = _ReadFourBytes(s, "nul");
+                    x = _ReadFourBytes(s, "n/a");
                     if (x != ZipConstants.ZipEntrySignature)
                     {
                         // Maybe zip64 was in use for the prior entry.
@@ -223,14 +223,14 @@ namespace Ionic.Zip
                         s.Seek(8, SeekOrigin.Current);
                         // workitem 10178
                         Workaround_Ladybug318918(s);
-                        x = _ReadFourBytes(s, "nul");
+                        x = _ReadFourBytes(s, "n/a");
                         if (x != ZipConstants.ZipEntrySignature)
                         {
                             // seek back to the first spot
                             s.Seek(-24, SeekOrigin.Current);
                             // workitem 10178
                             Workaround_Ladybug318918(s);
-                            x = _ReadFourBytes(s, "nul");
+                            x = _ReadFourBytes(s, "n/a");
                         }
                     }
                 }
@@ -377,6 +377,7 @@ namespace Ionic.Zip
             return adjusted;
         }
 
+#if NECESSARY
         // If I read a time from a file with GetLastWriteTime() (etc), I need
         // to adjust it for display in the .NET environment.
         internal static DateTime AdjustTime_Forward(DateTime time)
@@ -391,7 +392,7 @@ namespace Ionic.Zip
 
             return adjusted;
         }
-
+#endif
 
 
         internal static DateTime PackedToDateTime(Int32 packedDateTime)

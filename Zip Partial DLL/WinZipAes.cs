@@ -10,14 +10,14 @@
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs): 
-// Time-stamp: <2009-November-04 02:01:08>
+// last saved (in emacs):
+// Time-stamp: <2011-June-14 11:07:52>
 //
 // ------------------------------------------------------------------
 //
@@ -25,7 +25,7 @@
 // according to the specifications for the format available on WinZip's website.
 //
 // Created: January 2009
-// 
+//
 // ------------------------------------------------------------------
 
 using System;
@@ -36,8 +36,8 @@ using System.Security.Cryptography;
 #if AESCRYPTO
 namespace Ionic.Zip
 {
-    /// <summary> 
-    /// This is a helper class supporting WinZip AES encryption.  
+    /// <summary>
+    /// This is a helper class supporting WinZip AES encryption.
     /// This class is intended for use only by the DotNetZip library.
     /// </summary>
     /// <remarks>
@@ -58,7 +58,7 @@ namespace Ionic.Zip
         private Int16 PasswordVerificationStored;
         private Int16 PasswordVerificationGenerated;
         private int Rfc2898KeygenIterations = 1000;
-        private string _Password;   
+        private string _Password;
         private bool _cryptoGenerated ;
 
         private WinZipAesCrypto(string password, int KeyStrengthInBits)
@@ -89,16 +89,16 @@ namespace Ionic.Zip
         {
             // from http://www.winzip.com/aes_info.htm
             //
-            // Size(bytes)   Content 
+            // Size(bytes)   Content
             // -----------------------------------
-            // Variable      Salt value 
-            // 2             Password verification value 
-            // Variable      Encrypted file data 
-            // 10            Authentication code 
+            // Variable      Salt value
+            // 2             Password verification value
+            // Variable      Encrypted file data
+            // 10            Authentication code
             //
             // ZipEntry.CompressedSize represents the size of all of those elements.
 
-            // salt size varies with key length:  
+            // salt size varies with key length:
             //    128 bit key => 8 bytes salt
             //    192 bits => 12 bytes salt
             //    256 bits => 16 bytes salt
@@ -172,6 +172,10 @@ namespace Ionic.Zip
                         throw new Ionic.Zip.BadPasswordException();
                 }
             }
+            private get
+            {
+                return _Password;
+            }
         }
 
 
@@ -217,7 +221,7 @@ namespace Ionic.Zip
             bool invalid = false;
 
             // read integrityCheckVector.
-            // caller must ensure that the file pointer is in the right spot! 
+            // caller must ensure that the file pointer is in the right spot!
             _StoredMac = new byte[10];  // aka "authentication code"
             s.Read(_StoredMac, 0, _StoredMac.Length);
 
@@ -246,7 +250,7 @@ namespace Ionic.Zip
     {
         private static void _Format(System.Text.StringBuilder sb1,
                                     byte[] b,
-                                    int offset, 
+                                    int offset,
                                     int length)
         {
 
@@ -277,12 +281,12 @@ namespace Ionic.Zip
             }
         }
 
-        
-        
+
+
         internal static string FormatByteArray(byte[] b, int limit)
         {
             System.Text.StringBuilder sb1 = new System.Text.StringBuilder();
-            
+
             if ((limit * 2 > b.Length) || limit == 0)
             {
                 _Format(sb1, b, 0, b.Length);
@@ -316,8 +320,8 @@ namespace Ionic.Zip
 
 
     /// <summary>
-    /// A stream that encrypts as it writes, or decrypts as it reads.  The Crypto is AES in 
-    /// CTR (counter) mode, which is 
+    /// A stream that encrypts as it writes, or decrypts as it reads.  The Crypto is AES in
+    /// CTR (counter) mode, which is
     /// compatible with the AES encryption employed by WinZip 12.0.
     /// </summary>
     internal class WinZipAesCipherStream : Stream
@@ -331,10 +335,10 @@ namespace Ionic.Zip
 
         internal HMACSHA1 _mac;
 
-        // Use RijndaelManaged from .NET 2.0. 
+        // Use RijndaelManaged from .NET 2.0.
         // AesManaged came in .NET 3.5, but we want to limit
         // dependency to .NET 2.0.  AES is just a restricted form
-        // of Rijndael (fixed block size of 128, some crypto modes not supported). 
+        // of Rijndael (fixed block size of 128, some crypto modes not supported).
 
         internal RijndaelManaged _aesCipher;
         internal ICryptoTransform _xform;
@@ -355,7 +359,7 @@ namespace Ionic.Zip
 
         // This field is used to provide a hard-stop to the size of
         // data that can be read from the stream.  In Read(), if the buffer or
-        // read request goes beyond the stop, we truncate it. 
+        // read request goes beyond the stop, we truncate it.
 
         private long _length;
         private long _totalBytesXferred;
@@ -374,7 +378,7 @@ namespace Ionic.Zip
         internal WinZipAesCipherStream(System.IO.Stream s, WinZipAesCrypto cryptoParams, long length, CryptoMode mode)
             : this(s, cryptoParams, mode)
         {
-            // don't read beyond this limit! 
+            // don't read beyond this limit!
             _length = length;
             //Console.WriteLine("max length of AES stream: {0}", _length);
         }
@@ -416,8 +420,8 @@ namespace Ionic.Zip
 
             byte[] iv = new byte[BLOCK_SIZE_IN_BYTES]; // all zeroes
 
-            // Create an ENCRYPTOR, regardless whether doing decryption or encryption. 
-            // It is reflexive. 
+            // Create an ENCRYPTOR, regardless whether doing decryption or encryption.
+            // It is reflexive.
             _xform = _aesCipher.CreateEncryptor(_params.KeyBytes, iv);
 
 
@@ -452,7 +456,7 @@ namespace Ionic.Zip
             System.Array.Copy(BitConverter.GetBytes(_nonce++), 0, counter, 0, 4);
 
             // We're doing the last bytes in this batch.
-            // 
+            //
             // For the AES encryption stream to work properly, We must transform
             // blocks of 16 bytes, via TransformBlock, until the very last one, for
             // which we call TransformFinalBlock.  But, we don't know how to
@@ -466,10 +470,10 @@ namespace Ionic.Zip
 
 
             // bytesToRead is always 16 or less.  If it is exactly what remains, then we need to
-            // either, if this is the final block, do the final transform, else buffer the data. 
+            // either, if this is the final block, do the final transform, else buffer the data.
             if (bytesToRead == (last - offset))
             {
-                if (_NextXformWillBeFinal) 
+                if (_NextXformWillBeFinal)
                 {
                     //Console.WriteLine("WinZipAesCipherStream::ProcessOneBlockWriting:   _NextXformWillBeFinal = true");
                     counterOut = _xform.TransformFinalBlock(counter,
@@ -498,17 +502,17 @@ namespace Ionic.Zip
                     return bytesToRead;
                 }
             }
-            
+
             if (!_finalBlock)
             {
                 // Next, do the AES transform.  According to the AES/CTR method used
-                // by WinZip, apply the transform to the counter, and then XOR 
+                // by WinZip, apply the transform to the counter, and then XOR
                 // the result with the ciphertext to get the plaintext.
                 _xform.TransformBlock(counter,
                                       0, // offset
                                       BLOCK_SIZE_IN_BYTES,
                                       counterOut,
-                                      0);  // offset 
+                                      0);  // offset
             }
 
             // XOR (in place)
@@ -569,13 +573,13 @@ namespace Ionic.Zip
                 _mac.TransformBlock(buffer, offset, bytesToRead, null, 0);
 
                 // Next, do the decryption.  According to the AES/CTR method used
-                // by WinZip, apply the transform to the counter, and then XOR 
+                // by WinZip, apply the transform to the counter, and then XOR
                 // the result with the ciphertext to get the plaintext.
                 _xform.TransformBlock(counter,
                                       0, // offset
                                       BLOCK_SIZE_IN_BYTES,
                                       counterOut,
-                                      0);  // offset 
+                                      0);  // offset
             }
 
             // XOR (in place)
@@ -594,11 +598,11 @@ namespace Ionic.Zip
         {
             int posn = offset;
             int last = count + offset;
-            
+
             ProcessOneBlock d = (_mode == CryptoMode.Encrypt)
                 ? new ProcessOneBlock(ProcessOneBlockWriting)
                 : new ProcessOneBlock(ProcessOneBlockReading);
-            
+
             while (posn < buffer.Length && posn < last )
             {
                 int n = d (buffer, posn, last);
@@ -622,10 +626,10 @@ namespace Ionic.Zip
             if (buffer.Length < offset + count)
                 throw new ArgumentException("The buffer is too small");
 
-            // When I wrap a WinZipAesStream in a DeflateStream, the 
-            // DeflateStream asks its captive to read 4k blocks, even if the 
-            // encrypted bytestream is smaller than that.  This is a way to 
-            // limit the number of bytes read. 
+            // When I wrap a WinZipAesStream in a DeflateStream, the
+            // DeflateStream asks its captive to read 4k blocks, even if the
+            // encrypted bytestream is smaller than that.  This is a way to
+            // limit the number of bytes read.
 
             int bytesToRead = count;
 
@@ -687,7 +691,7 @@ namespace Ionic.Zip
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            // This class cannot decrypt as it writes. 
+            // This class cannot decrypt as it writes.
             // If you want to decrypt, then READ through the stream.
             if (_mode == CryptoMode.Decrypt)
                 throw new NotSupportedException();
@@ -714,7 +718,7 @@ namespace Ionic.Zip
             {
                 // Actually write only when more than 16 bytes are available.
                 // If 16 or fewer, then just buffer the bytes
-                if (count + _pendingCount <= BLOCK_SIZE_IN_BYTES) 
+                if (count + _pendingCount <= BLOCK_SIZE_IN_BYTES)
                 {
                     Array.Copy(buffer, offset,
                            _PendingWriteBuffer, _pendingCount,
@@ -730,7 +734,7 @@ namespace Ionic.Zip
                 }
 
                 // We have more than one block of data to write, therefore it is safe
-                // to xform+write. 
+                // to xform+write.
                 int extra = BLOCK_SIZE_IN_BYTES - _pendingCount;
 
                 // NB: extra is possibly zero here. That happens when the pending buffer
@@ -745,7 +749,7 @@ namespace Ionic.Zip
                 offset += extra;
                 count -= extra;
 
-                // xform and write: 
+                // xform and write:
                 ProcessOneBlockWriting(_PendingWriteBuffer, 0, BLOCK_SIZE_IN_BYTES);
                 _s.Write(_PendingWriteBuffer, 0, BLOCK_SIZE_IN_BYTES);
                 _totalBytesXferred += BLOCK_SIZE_IN_BYTES;
@@ -781,7 +785,7 @@ namespace Ionic.Zip
             }
 
             _s.Close();
-            
+
 #if WANT_TRACE
             untransformed.Close();
             transformed.Close();
@@ -804,9 +808,9 @@ namespace Ionic.Zip
             }
         }
 
-        
+
         /// <summary>
-        /// Always returns false. 
+        /// Always returns false.
         /// </summary>
         public override bool CanSeek
         {
@@ -845,7 +849,7 @@ namespace Ionic.Zip
             get { throw new NotImplementedException(); }
             set { throw new NotImplementedException(); }
         }
-        
+
         /// <summary>
         /// This method throws a NotImplementedException.
         /// </summary>

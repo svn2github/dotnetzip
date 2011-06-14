@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-13 23:30:19>
+// Time-stamp: <2011-June-14 11:16:15>
 //
 // ------------------------------------------------------------------
 //
@@ -229,7 +229,7 @@ namespace Ionic.Zip
 
 
 
-        private void NotifyEntriesSaveComplete(ICollection<ZipEntry> c)
+        private static void NotifyEntriesSaveComplete(ICollection<ZipEntry> c)
         {
             foreach (ZipEntry e in  c)
             {
@@ -247,7 +247,7 @@ namespace Ionic.Zip
                     File.Delete(_temporaryFileName);
                 }
             }
-            catch (Exception ex1)
+            catch (IOException ex1)
             {
                 if (Verbose)
                     StatusMessageTextWriter.WriteLine("ZipFile::Save: could not delete temp file: {0}.", ex1.Message);
@@ -271,7 +271,7 @@ namespace Ionic.Zip
                         _writestream.Dispose();
 #endif
                     }
-                    catch { }
+                    catch (System.IO.IOException) { }
                 }
                 _writestream = null;
 
@@ -466,8 +466,10 @@ namespace Ionic.Zip
         /// </param>
         public void Save(Stream outputStream)
         {
+            if (outputStream == null)
+                throw new ArgumentNullException("outputStream");
             if (!outputStream.CanWrite)
-                throw new ArgumentException("The outputStream must be a writable stream.");
+                throw new ArgumentException("Must be a writable stream.", "outputStream");
 
             // if we had a filename to save to, we are now obliterating it.
             _name = null;
@@ -484,10 +486,8 @@ namespace Ionic.Zip
 
 
 
-
-    internal class ZipOutput
+    internal static class ZipOutput
     {
-
         public static bool WriteCentralDirectoryStructure(Stream s,
                                                           ICollection<ZipEntry> entries,
                                                           uint numSegments,
@@ -501,18 +501,22 @@ namespace Ionic.Zip
 
             // write to a memory stream in order to keep the
             // CDR contiguous
-            var ms = new MemoryStream();
-
-            foreach (ZipEntry e in entries)
+            Int64 aLength = 0;
+            using (var ms = new MemoryStream())
             {
-                if (e.IncludedInMostRecentSave)
+                foreach (ZipEntry e in entries)
                 {
-                    // this writes a ZipDirEntry corresponding to the ZipEntry
-                    e.WriteCentralDirectoryEntry(ms);
+                    if (e.IncludedInMostRecentSave)
+                    {
+                        // this writes a ZipDirEntry corresponding to the ZipEntry
+                        e.WriteCentralDirectoryEntry(ms);
+                    }
                 }
+                var a = ms.ToArray();
+                s.Write(a, 0, a.Length);
+                aLength = a.Length;
             }
-            var a = ms.ToArray();
-            s.Write(a, 0, a.Length);
+
 
             // We need to keep track of the start and
             // Finish of the Central Directory Structure.
@@ -532,7 +536,7 @@ namespace Ionic.Zip
 
             var output = s as CountingStream;
             long Finish = (output != null) ? output.ComputedPosition : s.Position;  // BytesWritten
-            long Start = Finish - a.Length;
+            long Start = Finish - aLength;
 
             // need to know which segment the EOCD record starts in
             UInt32 startSegment = (zss != null)
@@ -568,7 +572,7 @@ namespace Ionic.Zip
 
                 }
 
-                a = GenZip64EndOfCentralDirectory(Start, Finish, countOfEntries, numSegments);
+                var a = GenZip64EndOfCentralDirectory(Start, Finish, countOfEntries, numSegments);
                 a2 = GenCentralDirectoryFooter(Start, Finish, zip64, countOfEntries, comment, encoding);
                 if (startSegment != 0)
                 {

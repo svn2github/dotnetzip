@@ -41,7 +41,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using Interop=System.Runtime.InteropServices;
+using Interop = System.Runtime.InteropServices;
 
 
 namespace Ionic.Zip
@@ -134,62 +134,62 @@ namespace Ionic.Zip
 
         #region public properties
 
-            /// <summary>
-            /// Indicates whether to perform a full scan of the zip file when reading it.
-            /// </summary>
-            ///
-            /// <remarks>
-            ///
-            /// <para>
-            ///   You almost never want to use this property.
-            /// </para>
-            ///
-            /// <para>
-            ///   When reading a zip file, if this flag is <c>true</c> (<c>True</c> in
-            ///   VB), the entire zip archive will be scanned and searched for entries.
-            ///   For large archives, this can take a very, long time. The much more
-            ///   efficient default behavior is to read the zip directory, which is
-            ///   stored at the end of the zip file. But, in some cases the directory is
-            ///   corrupted and you need to perform a full scan of the zip file to
-            ///   determine the contents of the zip file. This property lets you do
-            ///   that, when necessary.
-            /// </para>
-            ///
-            /// <para>
-            ///   This flag is effective only when calling <see
-            ///   cref="Initialize(string)"/>. Normally you would read a ZipFile with the
-            ///   static <see cref="ZipFile.Read(String)">ZipFile.Read</see>
-            ///   method. But you can't set the <c>FullScan</c> property on the
-            ///   <c>ZipFile</c> instance when you use a static factory method like
-            ///   <c>ZipFile.Read</c>.
-            /// </para>
-            ///
-            /// </remarks>
-            ///
-            /// <example>
-            ///
-            ///   This example shows how to read a zip file using the full scan approach,
-            ///   and then save it, thereby producing a corrected zip file.
-            ///
-            /// <code lang="C#">
-            /// using (var zip = new ZipFile())
-            /// {
-            ///     zip.FullScan = true;
-            ///     zip.Initialize(zipFileName);
-            ///     zip.Save(newName);
-            /// }
-            /// </code>
-            ///
-            /// <code lang="VB">
-            /// Using zip As New ZipFile
-            ///     zip.FullScan = True
-            ///     zip.Initialize(zipFileName)
-            ///     zip.Save(newName)
-            /// End Using
-            /// </code>
-            /// </example>
-            ///
-            public bool FullScan
+        /// <summary>
+        /// Indicates whether to perform a full scan of the zip file when reading it.
+        /// </summary>
+        ///
+        /// <remarks>
+        ///
+        /// <para>
+        ///   You almost never want to use this property.
+        /// </para>
+        ///
+        /// <para>
+        ///   When reading a zip file, if this flag is <c>true</c> (<c>True</c> in
+        ///   VB), the entire zip archive will be scanned and searched for entries.
+        ///   For large archives, this can take a very, long time. The much more
+        ///   efficient default behavior is to read the zip directory, which is
+        ///   stored at the end of the zip file. But, in some cases the directory is
+        ///   corrupted and you need to perform a full scan of the zip file to
+        ///   determine the contents of the zip file. This property lets you do
+        ///   that, when necessary.
+        /// </para>
+        ///
+        /// <para>
+        ///   This flag is effective only when calling <see
+        ///   cref="Initialize(string)"/>. Normally you would read a ZipFile with the
+        ///   static <see cref="ZipFile.Read(String)">ZipFile.Read</see>
+        ///   method. But you can't set the <c>FullScan</c> property on the
+        ///   <c>ZipFile</c> instance when you use a static factory method like
+        ///   <c>ZipFile.Read</c>.
+        /// </para>
+        ///
+        /// </remarks>
+        ///
+        /// <example>
+        ///
+        ///   This example shows how to read a zip file using the full scan approach,
+        ///   and then save it, thereby producing a corrected zip file.
+        ///
+        /// <code lang="C#">
+        /// using (var zip = new ZipFile())
+        /// {
+        ///     zip.FullScan = true;
+        ///     zip.Initialize(zipFileName);
+        ///     zip.Save(newName);
+        /// }
+        /// </code>
+        ///
+        /// <code lang="VB">
+        /// Using zip As New ZipFile
+        ///     zip.FullScan = True
+        ///     zip.Initialize(zipFileName)
+        ///     zip.Save(newName)
+        /// End Using
+        /// </code>
+        /// </example>
+        ///
+        public bool FullScan
         {
             get;
             set;
@@ -633,7 +633,7 @@ namespace Ionic.Zip
             }
             set
             {
-                _emitNtfsTimes= value;
+                _emitNtfsTimes = value;
             }
         }
 
@@ -724,7 +724,7 @@ namespace Ionic.Zip
             }
             set
             {
-                _emitUnixTimes= value;
+                _emitUnixTimes = value;
             }
         }
 
@@ -1272,7 +1272,14 @@ namespace Ionic.Zip
         /// known as IBM437.
         /// </summary>
         /// <seealso cref="Ionic.Zip.ZipFile.ProvisionalAlternateEncoding"/>
-        public readonly static System.Text.Encoding DefaultEncoding = System.Text.Encoding.GetEncoding("IBM437");
+        public static System.Text.Encoding DefaultEncoding
+        {
+            get
+            {
+                return _defaultEncoding;
+            }
+        }
+        private static System.Text.Encoding _defaultEncoding = System.Text.Encoding.GetEncoding("IBM437");
 
 
         /// <summary>
@@ -1569,6 +1576,10 @@ namespace Ionic.Zip
                     Encryption = EncryptionAlgorithm.PkzipWeak;
                 }
             }
+            private get
+            {
+                return _Password;
+            }
         }
 
 
@@ -1838,7 +1849,7 @@ namespace Ionic.Zip
             {
                 if (value == EncryptionAlgorithm.Unsupported)
                     throw new InvalidOperationException("You may not set Encryption to that value.");
-                _Encryption= value;
+                _Encryption = value;
             }
         }
 
@@ -2006,7 +2017,7 @@ namespace Ionic.Zip
         {
             get
             {
-                return unchecked((Int32)_numberOfSegmentsForMostRecentSave+1);
+                return unchecked((Int32)_numberOfSegmentsForMostRecentSave + 1);
             }
         }
 
@@ -2085,7 +2096,7 @@ namespace Ionic.Zip
         /// <returns>a string representation of the instance.</returns>
         public override String ToString()
         {
-            return String.Format ("ZipFile::{0}", Name);
+            return String.Format("ZipFile::{0}", Name);
         }
 
 
@@ -2121,7 +2132,7 @@ namespace Ionic.Zip
 
         internal Stream StreamForDiskNumber(uint diskNumber)
         {
-            if (diskNumber + 1 == this._diskNumberWithCd || (diskNumber == 0 && this._diskNumberWithCd==0))
+            if (diskNumber + 1 == this._diskNumberWithCd || (diskNumber == 0 && this._diskNumberWithCd == 0))
             {
                 //return (this.ReadStream as FileStream);
                 return this.ReadStream;
@@ -2138,24 +2149,25 @@ namespace Ionic.Zip
             if (_JustSaved)
             {
                 // read in the just-saved zip archive
-                ZipFile x = new ZipFile();
-                x._name = this._name;
-                x.ProvisionalAlternateEncoding = this.ProvisionalAlternateEncoding;
-                ReadIntoInstance(x);
-                // copy the contents of the entries.
-                // cannot just replace the entries - the app may be holding them
-                foreach (ZipEntry e1 in x)
+                using (ZipFile x = new ZipFile())
                 {
-                    foreach (ZipEntry e2 in this)
+                    x._name = this._name;
+                    x.ProvisionalAlternateEncoding = this.ProvisionalAlternateEncoding;
+                    ReadIntoInstance(x);
+                    // copy the contents of the entries.
+                    // cannot just replace the entries - the app may be holding them
+                    foreach (ZipEntry e1 in x)
                     {
-                        if (e1.FileName == e2.FileName)
+                        foreach (ZipEntry e2 in this)
                         {
-                            e2.CopyMetaData(e1);
-                            break;
+                            if (e1.FileName == e2.FileName)
+                            {
+                                e2.CopyMetaData(e1);
+                                break;
+                            }
                         }
                     }
                 }
-                x.Dispose(); // close the readstream
                 _JustSaved = false;
             }
         }
@@ -2602,8 +2614,8 @@ namespace Ionic.Zip
             // workitem 9868
             StringComparer sc = (CaseSensitiveRetrieval) ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
             _entries = (_entries == null)
-                ? new Dictionary<String,ZipEntry>(sc)
-                : new Dictionary<String,ZipEntry>(_entries, sc);
+                ? new Dictionary<String, ZipEntry>(sc)
+                : new Dictionary<String, ZipEntry>(_entries, sc);
         }
 
 
@@ -2638,7 +2650,7 @@ namespace Ionic.Zip
 
         #region Indexers and Collections
 
-            private List<ZipEntry> ZipEntriesAsList
+        private List<ZipEntry> ZipEntriesAsList
         {
             get
             {
@@ -2783,9 +2795,9 @@ namespace Ionic.Zip
                 if (_entries.ContainsKey(key))
                     return _entries[key];
                 // workitem 11056
-                key = key.Replace("/","\\");
+                key = key.Replace("/", "\\");
                 if (_entries.ContainsKey(key))
-                   return _entries[key];
+                    return _entries[key];
                 return null;
 
 #if MESSY
@@ -2977,14 +2989,14 @@ namespace Ionic.Zip
         {
             get
             {
-                var coll=  new System.Collections.Generic.List<ZipEntry>();
+                var coll = new System.Collections.Generic.List<ZipEntry>();
                 foreach (var e in this.Entries)
                 {
                     coll.Add(e);
                 }
                 StringComparison sc = (CaseSensitiveRetrieval) ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
-                coll.Sort( (x,y) => { return String.Compare(x.FileName,y.FileName, sc); });
+                coll.Sort((x, y) => { return String.Compare(x.FileName, y.FileName, sc); });
                 return coll.AsReadOnly();
             }
         }
@@ -3089,6 +3101,8 @@ namespace Ionic.Zip
         {
             //if (!_entries.Values.Contains(entry))
             //    throw new ArgumentException("The entry you specified does not exist in the zip archive.");
+            if (entry == null)
+                throw new ArgumentNullException("entry");
 
             _entries.Remove(SharedUtilities.NormalizePathForUseInZipFile(entry.FileName));
             _zipEntriesAsList = null;
@@ -3192,18 +3206,18 @@ namespace Ionic.Zip
 
         #region Destructors and Disposers
 
-//         /// <summary>
-//         /// This is the class Destructor, which gets called implicitly when the instance
-//         /// is destroyed.  Because the <c>ZipFile</c> type implements IDisposable, this
-//         /// method calls Dispose(false).
-//         /// </summary>
-//         ~ZipFile()
-//         {
-//             // call Dispose with false.  Since we're in the
-//             // destructor call, the managed resources will be
-//             // disposed of anyways.
-//             Dispose(false);
-//         }
+        //         /// <summary>
+        //         /// This is the class Destructor, which gets called implicitly when the instance
+        //         /// is destroyed.  Because the <c>ZipFile</c> type implements IDisposable, this
+        //         /// method calls Dispose(false).
+        //         /// </summary>
+        //         ~ZipFile()
+        //         {
+        //             // call Dispose with false.  Since we're in the
+        //             // destructor call, the managed resources will be
+        //             // disposed of anyways.
+        //             Dispose(false);
+        //         }
 
         /// <summary>
         ///   Closes the read and write streams associated
@@ -3304,7 +3318,7 @@ namespace Ionic.Zip
                     if (this.ParallelDeflater != null)
                     {
                         this.ParallelDeflater.Dispose();
-                        this.ParallelDeflater= null;
+                        this.ParallelDeflater = null;
                     }
 #endif
                 }
@@ -3325,7 +3339,7 @@ namespace Ionic.Zip
                     if (_name != null)
                     {
                         _readstream = File.Open(_name, FileMode.Open, FileAccess.Read,
-                                                FileShare.Read | FileShare.Write );
+                                                FileShare.Read | FileShare.Write);
                         //_readstream = File.OpenRead(_name);
                         _ReadStreamIsOurs = true;
                     }
@@ -3346,7 +3360,7 @@ namespace Ionic.Zip
 
                 if (_maxOutputSegmentSize != 0)
                 {
-                    _writestream =  ZipSegmentedStream.ForWriting(this._name, _maxOutputSegmentSize);
+                    _writestream = ZipSegmentedStream.ForWriting(this._name, _maxOutputSegmentSize);
                     return _writestream;
                 }
 
@@ -3377,7 +3391,7 @@ namespace Ionic.Zip
         private ZipErrorAction _zipErrorAction;
         private bool _disposed;
         //private System.Collections.Generic.List<ZipEntry> _entries;
-        private System.Collections.Generic.Dictionary<String,ZipEntry> _entries;
+        private System.Collections.Generic.Dictionary<String, ZipEntry> _entries;
         private List<ZipEntry> _zipEntriesAsList;
         private string _name;
         private string _Comment;
@@ -3401,7 +3415,7 @@ namespace Ionic.Zip
         internal bool _inExtractAll;
         private System.Text.Encoding _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437"); // default = IBM437
 
-        private int _BufferSize = IoBufferSizeDefault;
+        private int _BufferSize = BufferSizeDefault;
 
 #if !NETCF
         internal Ionic.Zlib.ParallelDeflateOutputStream ParallelDeflater;
@@ -3409,14 +3423,14 @@ namespace Ionic.Zip
 #endif
 
         internal Zip64Option _zip64 = Zip64Option.Default;
-        #pragma warning disable 649
+#pragma warning disable 649
         private bool _SavingSfx;
-        #pragma warning restore 649
+#pragma warning restore 649
 
-            /// <summary>
-            ///   Default size of the buffer used for IO.
-            /// </summary>
-            public static readonly int IoBufferSizeDefault = 32768;
+        /// <summary>
+        ///   Default size of the buffer used for IO.
+        /// </summary>
+        public static readonly int BufferSizeDefault = 32768;
 
         #endregion
     }
