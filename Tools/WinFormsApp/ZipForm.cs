@@ -319,14 +319,42 @@ namespace Ionic.Zip.Forms
                                                                                this.comboCompression.SelectedItem.ToString());
 
 
-            string arg = this.comboSplit.SelectedItem.ToString();
+            string arg = this.comboSplit.SelectedItem.ToString().ToUpper();
 
             try
             {
-                if (arg.EndsWith("K") || arg.EndsWith("k"))
-                    options.MaxSegmentSize = Int32.Parse(arg.Substring(0,arg.Length-1)) * 1024;
-                else if (arg.EndsWith("M") || arg.EndsWith("m"))
-                    options.MaxSegmentSize = Int32.Parse(arg.Substring(0,arg.Length-1)) * 1024 * 1024;
+                int multiplier = 1;
+                int suffixLength = 0;
+                if (arg.EndsWith("KB"))
+                {
+                    multiplier = 1024; suffixLength = 2;
+                }
+                else if (arg.EndsWith("K"))
+                {
+                    multiplier = 1024; suffixLength = 1;
+                }
+                else if (arg.EndsWith("MB"))
+                {
+                    multiplier = 1024*1024; suffixLength = 2;
+                }
+                else if (arg.EndsWith("M"))
+                {
+                    multiplier = 1024*1024; suffixLength = 1;
+                }
+                else if (arg.EndsWith("GB"))
+                {
+                    multiplier = 1024*1024*1024; suffixLength = 2;
+                }
+                else if (arg.EndsWith("G"))
+                {
+                    multiplier = 1024*1024*1024; suffixLength = 1;
+                }
+
+                if (suffixLength > 0)
+                {
+                    options.MaxSegmentSize =
+                        Int32.Parse(arg.Substring(0,arg.Length-suffixLength)) * multiplier;
+                }
                 else
                     options.MaxSegmentSize = Int32.Parse(arg);
             }
