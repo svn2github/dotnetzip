@@ -3,7 +3,7 @@
 // FileSelector.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2008-2010 Dino Chiesa.
+// Copyright (c) 2008-2011 Dino Chiesa.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -16,8 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs):
-// Time-stamp: <2010-February-24 22:58:10>
+// last saved: <2011-June-14 00:58:14>
 //
 // ------------------------------------------------------------------
 //
@@ -102,7 +101,7 @@ namespace Ionic
         [System.Diagnostics.Conditional("SelectorTrace")]
         protected void CriterionTrace(string format, params object[] args)
         {
-            System.Console.WriteLine("  " + format, args);
+            //System.Console.WriteLine("  " + format, args);
         }
     }
 
