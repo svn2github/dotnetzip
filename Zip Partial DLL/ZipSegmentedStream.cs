@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-14 18:44:15>
+// Time-stamp: <2011-June-14 00:05:34>
 //
 // ------------------------------------------------------------------
 //
@@ -362,6 +362,7 @@ namespace Ionic.Zip
                 {
                     _currentTempName = SharedUtilities.InternalGetTempFileName();
                     File.Move(CurrentName, _currentTempName);  // move the .z0x file back to a temp name
+                    break; // workitem 12403
                 }
                 catch(IOException)
                 {
