@@ -78,7 +78,7 @@ namespace Ionic.Zip
         }
 
         /// <summary>
-        ///  A wrapper for <see cref="ZipFile.CheckZipPassword(string)"/>.
+        ///  A COM-friendly wrapper for the static method <see cref="ZipFile.CheckZipPassword(string,string)"/>.
         /// </summary>
         ///
         /// <param name="filename">The filename to of the zip file to check.</param>
