@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-June-13 23:00:20>
+// Last Saved: <2011-June-13 23:54:35>
 //
 // ------------------------------------------------------------------
 //
@@ -698,13 +698,14 @@ namespace Ionic.Zip
 
             int j = 0;
             int i = 0;
-            byte[] bytes = new byte[512];  // large enough for looooong filenames (MAX_PATH == 260)
+
+            byte[] block = new byte[30];
 
             // signature
-            bytes[i++] = (byte)(ZipConstants.ZipEntrySignature & 0x000000FF);
-            bytes[i++] = (byte)((ZipConstants.ZipEntrySignature & 0x0000FF00) >> 8);
-            bytes[i++] = (byte)((ZipConstants.ZipEntrySignature & 0x00FF0000) >> 16);
-            bytes[i++] = (byte)((ZipConstants.ZipEntrySignature & 0xFF000000) >> 24);
+            block[i++] = (byte)(ZipConstants.ZipEntrySignature & 0x000000FF);
+            block[i++] = (byte)((ZipConstants.ZipEntrySignature & 0x0000FF00) >> 8);
+            block[i++] = (byte)((ZipConstants.ZipEntrySignature & 0x00FF0000) >> 16);
+            block[i++] = (byte)((ZipConstants.ZipEntrySignature & 0xFF000000) >> 24);
 
             // Design notes for ZIP64:
 
@@ -758,10 +759,11 @@ namespace Ionic.Zip
             Int16 VersionNeededToExtract = (Int16)(_presumeZip64 ? 45 : 20);
 
             // (i==4)
-            bytes[i++] = (byte)(VersionNeededToExtract & 0x00FF);
-            bytes[i++] = (byte)((VersionNeededToExtract & 0xFF00) >> 8);
+            block[i++] = (byte)(VersionNeededToExtract & 0x00FF);
+            block[i++] = (byte)((VersionNeededToExtract & 0xFF00) >> 8);
 
-            // get byte array including any encoding
+            // Get byte array. Side effect: sets ActualEncoding.
+            // Must determine encoding before setting the bitfield.
             // workitem 6513
             byte[] fileNameBytes = _GetEncodedFileNameBytes();
             Int16 filenameLength = (Int16)fileNameBytes.Length;
@@ -857,8 +859,8 @@ namespace Ionic.Zip
 #endif
 
             // (i==6)
-            bytes[i++] = (byte)(_BitField & 0x00FF);
-            bytes[i++] = (byte)((_BitField & 0xFF00) >> 8);
+            block[i++] = (byte)(_BitField & 0x00FF);
+            block[i++] = (byte)((_BitField & 0xFF00) >> 8);
 
             // Here, we want to set values for Compressed Size, Uncompressed Size, and CRC.  If
             // we have __FileDataPosition as not -1 (zero is a valid FDP), then that means we
@@ -881,8 +883,8 @@ namespace Ionic.Zip
             FigureCompressionMethodForWriting(cycle);
 
             // (i==8) compression method
-            bytes[i++] = (byte)(_CompressionMethod & 0x00FF);
-            bytes[i++] = (byte)((_CompressionMethod & 0xFF00) >> 8);
+            block[i++] = (byte)(_CompressionMethod & 0x00FF);
+            block[i++] = (byte)((_CompressionMethod & 0xFF00) >> 8);
 
             if (cycle == 99)
             {
@@ -894,65 +896,69 @@ namespace Ionic.Zip
             else if (Encryption == EncryptionAlgorithm.WinZipAes128 || Encryption == EncryptionAlgorithm.WinZipAes256)
             {
                 i -= 2;
-                bytes[i++] = 0x63;
-                bytes[i++] = 0;
+                block[i++] = 0x63;
+                block[i++] = 0;
             }
 #endif
-
 
             // LastMod
             _TimeBlob = Ionic.Zip.SharedUtilities.DateTimeToPacked(LastModified);
 
             // (i==10) time blob
-            bytes[i++] = (byte)(_TimeBlob & 0x000000FF);
-            bytes[i++] = (byte)((_TimeBlob & 0x0000FF00) >> 8);
-            bytes[i++] = (byte)((_TimeBlob & 0x00FF0000) >> 16);
-            bytes[i++] = (byte)((_TimeBlob & 0xFF000000) >> 24);
+            block[i++] = (byte)(_TimeBlob & 0x000000FF);
+            block[i++] = (byte)((_TimeBlob & 0x0000FF00) >> 8);
+            block[i++] = (byte)((_TimeBlob & 0x00FF0000) >> 16);
+            block[i++] = (byte)((_TimeBlob & 0xFF000000) >> 24);
 
             // (i==14) CRC - if source==filesystem, this is zero now, actual value will be calculated later.
             // if source==archive, this is a bonafide value.
-            bytes[i++] = (byte)(_Crc32 & 0x000000FF);
-            bytes[i++] = (byte)((_Crc32 & 0x0000FF00) >> 8);
-            bytes[i++] = (byte)((_Crc32 & 0x00FF0000) >> 16);
-            bytes[i++] = (byte)((_Crc32 & 0xFF000000) >> 24);
+            block[i++] = (byte)(_Crc32 & 0x000000FF);
+            block[i++] = (byte)((_Crc32 & 0x0000FF00) >> 8);
+            block[i++] = (byte)((_Crc32 & 0x00FF0000) >> 16);
+            block[i++] = (byte)((_Crc32 & 0xFF000000) >> 24);
 
             if (_presumeZip64)
             {
                 // (i==18) CompressedSize (Int32) and UncompressedSize - all 0xFF for now
                 for (j = 0; j < 8; j++)
-                    bytes[i++] = 0xFF;
+                    block[i++] = 0xFF;
             }
             else
             {
                 // (i==18) CompressedSize (Int32) - this value may or may not be bonafide.
                 // if source == filesystem, then it is zero, and we'll learn it after we compress.
                 // if source == archive, then it is bonafide data.
-                bytes[i++] = (byte)(_CompressedSize & 0x000000FF);
-                bytes[i++] = (byte)((_CompressedSize & 0x0000FF00) >> 8);
-                bytes[i++] = (byte)((_CompressedSize & 0x00FF0000) >> 16);
-                bytes[i++] = (byte)((_CompressedSize & 0xFF000000) >> 24);
+                block[i++] = (byte)(_CompressedSize & 0x000000FF);
+                block[i++] = (byte)((_CompressedSize & 0x0000FF00) >> 8);
+                block[i++] = (byte)((_CompressedSize & 0x00FF0000) >> 16);
+                block[i++] = (byte)((_CompressedSize & 0xFF000000) >> 24);
 
                 // (i==22) UncompressedSize (Int32) - this value may or may not be bonafide.
-                bytes[i++] = (byte)(_UncompressedSize & 0x000000FF);
-                bytes[i++] = (byte)((_UncompressedSize & 0x0000FF00) >> 8);
-                bytes[i++] = (byte)((_UncompressedSize & 0x00FF0000) >> 16);
-                bytes[i++] = (byte)((_UncompressedSize & 0xFF000000) >> 24);
+                block[i++] = (byte)(_UncompressedSize & 0x000000FF);
+                block[i++] = (byte)((_UncompressedSize & 0x0000FF00) >> 8);
+                block[i++] = (byte)((_UncompressedSize & 0x00FF0000) >> 16);
+                block[i++] = (byte)((_UncompressedSize & 0xFF000000) >> 24);
             }
 
             // (i==26) filename length (Int16)
-            bytes[i++] = (byte)(filenameLength & 0x00FF);
-            bytes[i++] = (byte)((filenameLength & 0xFF00) >> 8);
+            block[i++] = (byte)(filenameLength & 0x00FF);
+            block[i++] = (byte)((filenameLength & 0xFF00) >> 8);
 
             _Extra = ConstructExtraField(false);
 
             // (i==28) extra field length (short)
             Int16 extraFieldLength = (Int16)((_Extra == null) ? 0 : _Extra.Length);
-            bytes[i++] = (byte)(extraFieldLength & 0x00FF);
-            bytes[i++] = (byte)((extraFieldLength & 0xFF00) >> 8);
+            block[i++] = (byte)(extraFieldLength & 0x00FF);
+            block[i++] = (byte)((extraFieldLength & 0xFF00) >> 8);
+
+            // workitem 13542
+            byte[] bytes = new byte[i + filenameLength + extraFieldLength];
+
+            // get the fixed portion
+            for (j = 0; j < i; j++) bytes[j] = block[j];
 
             // The filename written to the archive.
-            // The buffer is already encoded; we just copy across the bytes.
-            for (j = 0; (j < fileNameBytes.Length) && (i + j < bytes.Length); j++)
+            for (j = 0; j < fileNameBytes.Length; j++)
                 bytes[i + j] = fileNameBytes[j];
 
             i += j;
@@ -993,13 +999,11 @@ namespace Ionic.Zip
             if (zss != null)
                 zss.ContiguousWrite = false;
 
-            // preserve this header data, we'll use it again later.
+            // Preserve this header data, we'll use it again later.
             // ..when seeking backward, to write again, after we have the Crc, compressed
             //   and uncompressed sizes.
             // ..and when writing the central directory structure.
-            _EntryHeader = new byte[i];
-            for (j = 0; j < i; j++)
-                _EntryHeader[j] = bytes[j];
+            _EntryHeader = bytes;
         }
 
 
