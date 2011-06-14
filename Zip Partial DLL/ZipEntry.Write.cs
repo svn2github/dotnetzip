@@ -3,7 +3,7 @@
 // ZipEntry.Write.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009-2010 Dino Chiesa
+// Copyright (c) 2009-2011 Dino Chiesa
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -16,14 +16,12 @@
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs):
-// Time-stamp: <2011-June-13 22:14:10>
+// Last Saved: <2011-June-13 23:00:20>
 //
 // ------------------------------------------------------------------
 //
 // This module defines logic for writing (saving) the ZipEntry into a
 // zip file.
-//
 //
 // ------------------------------------------------------------------
 
@@ -34,15 +32,12 @@ using RE = System.Text.RegularExpressions;
 
 namespace Ionic.Zip
 {
-
     public partial class ZipEntry
     {
-
         internal void WriteCentralDirectoryEntry(Stream s)
         {
             _ConsAndWriteCentralDirectoryEntry(s);
         }
-
 
         private void _ConsAndWriteCentralDirectoryEntry(Stream s)
         {
@@ -80,7 +75,10 @@ namespace Ionic.Zip
             // These are all present in the local file header, but they may be zero values there.
             // So we cannot just copy them.
 
-            Int16 versionNeededToExtract = (Int16)(_OutputUsesZip64.Value ? 45 : 20);
+            // workitem 11969: Version Needed To Extract in central directory must be
+            // the same as the local entry or MS .NET System.IO.Zip fails read.
+            Int16 vNeeded = (Int16)(VersionNeeded != 0 ? VersionNeeded : 20);
+            Int16 versionNeededToExtract = (Int16)(_OutputUsesZip64.Value ? 45 : vNeeded);
 
             bytes[i++] = (byte)(versionNeededToExtract & 0x00FF);
             bytes[i++] = (byte)((versionNeededToExtract & 0xFF00) >> 8);
