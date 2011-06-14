@@ -1,7 +1,7 @@
 // ZipFile.Read.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009-2010 Dino Chiesa.
+// Copyright (c) 2009-2011 Dino Chiesa.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-January-21 11:07:46>
+// Time-stamp: <2011-June-14 09:46:19>
 //
 // ------------------------------------------------------------------
 //
@@ -31,7 +31,6 @@ using System.Collections.Generic;
 
 namespace Ionic.Zip
 {
-
     /// <summary>
     ///   A class for collecting the various options that can be used when
     ///   Reading zip files for extraction or update.
@@ -930,8 +929,17 @@ namespace Ionic.Zip
                 block = new byte[commentLength];
                 zf.ReadStream.Read(block, 0, block.Length);
 
-                // workitem 6513 - only use UTF8 as necessary
-                // test reflexivity
+                // workitem 10392 - prefer ProvisionalAlternateEncoding,
+                // first.  The fix for workitem 6513 tried to use UTF8
+                // only as necessary, but that is impossible to test
+                // for, in this direction. There's no way to know what
+                // characters the already-encoded bytes refer
+                // to. Therefore, must do what the user tells us.
+
+                string s1 = zf._provisionalAlternateEncoding.GetString(block, 0, block.Length);
+                zf.Comment = s1;
+
+                #if COMPLICATED
                 string s1 = DefaultEncoding.GetString(block, 0, block.Length);
                 byte[] b2 = DefaultEncoding.GetBytes(s1);
                 if (BlocksAreEqual(block, b2))
@@ -948,6 +956,7 @@ namespace Ionic.Zip
                         : zf._provisionalAlternateEncoding;
                     zf.Comment = e.GetString(block, 0, block.Length);
                 }
+                #endif
             }
         }
 

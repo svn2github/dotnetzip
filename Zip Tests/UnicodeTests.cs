@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-June-13 22:17:52>
+// Last Saved: <2011-June-14 09:19:44>
 //
 // ------------------------------------------------------------------
 //
@@ -273,6 +273,38 @@ namespace Ionic.Zip.Tests.Unicode
                 TestContext.WriteLine("Trial {0} file checks ok", j);
             }
         }
+
+
+
+        [TestMethod]
+        public void UnicodeComment_wi10392()
+        {
+            const string zipFileToCreate = "UnicodeComment_wi10392.zip";
+            const string cyrillicComment = "Hello, Привет";
+
+            TestContext.WriteLine("{0}", zipFileToCreate);
+            TestContext.WriteLine("==== creating zip");
+            using (ZipFile zip1 = new ZipFile(zipFileToCreate, Encoding.UTF8))
+            {
+                zip1.Comment = cyrillicComment;
+                zip1.AddEntry("entry", "this is the content of the added entry");
+                zip1.Save();
+            }
+
+            string comment2 = null;
+            TestContext.WriteLine("==== checking zip");
+            var options = new ReadOptions {
+                Encoding = Encoding.UTF8
+            };
+            using (ZipFile zip2 = ZipFile.Read(zipFileToCreate, options))
+            {
+                comment2 = zip2.Comment;
+            }
+
+            Assert.AreEqual<String>(cyrillicComment, comment2,
+                                    "The comments are not equal.");
+        }
+
 
 
 
