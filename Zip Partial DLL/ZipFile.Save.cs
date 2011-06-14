@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-26 14:00:30>
+// Time-stamp: <2011-June-13 23:30:19>
 //
 // ------------------------------------------------------------------
 //
@@ -426,8 +426,43 @@ namespace Ionic.Zip
         /// </code>
         /// </example>
         ///
+        /// <example>
+        /// <para>
+        ///   This example shows a pitfall you should avoid. DO NOT read
+        ///   from a stream, then try to save to the same stream.  DO
+        ///   NOT DO THIS:
+        /// </para>
+        ///
+        /// <code lang="C#">
+        /// using (var fs = new FileSteeam(filename, FileMode.Open))
+        /// {
+        ///   using (var zip = Ionic.Zip.ZipFile.Read(inputStream))
+        ///   {
+        ///     zip.AddEntry("Name1.txt", "this is the content");
+        ///     zip.Save(inputStream);  // NO NO NO!!
+        ///   }
+        /// }
+        /// </code>
+        ///
+        /// <para>
+        ///   Better like this:
+        /// </para>
+        ///
+        /// <code lang="C#">
+        /// using (var zip = Ionic.Zip.ZipFile.Read(filename))
+        /// {
+        ///     zip.AddEntry("Name1.txt", "this is the content");
+        ///     zip.Save();  // YES!
+        /// }
+        /// </code>
+        ///
+        /// </example>
+        ///
         /// <param name="outputStream">
-        ///   The <c>System.IO.Stream</c> to write to. It must be writable.
+        ///   The <c>System.IO.Stream</c> to write to. It must be
+        ///   writable. If you created the ZipFile instanct by calling
+        ///   ZipFile.Read(), this stream must not be the same stream
+        ///   you passed to ZipFile.Read().
         /// </param>
         public void Save(Stream outputStream)
         {
