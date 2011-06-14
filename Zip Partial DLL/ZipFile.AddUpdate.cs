@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-13 15:37:49>
+// Time-stamp: <2011-June-13 23:57:21>
 //
 // ------------------------------------------------------------------
 //
@@ -1161,19 +1161,20 @@ namespace Ionic.Zip
         ///
         public ZipEntry AddEntry(string entryName, string content, System.Text.Encoding encoding)
         {
-            using (var ms = new MemoryStream())
-            {
-                // cannot use a using clause here; StreamWriter takes
-                // ownership of the stream and Disposes it before we are ready.
-                var sw = new StreamWriter(ms, encoding);
-                sw.Write(content);
-                sw.Flush();
+            var ms = new MemoryStream();
 
-                // reset to allow reading later
-                ms.Seek(0, SeekOrigin.Begin);
+            // cannot use a using clause here; StreamWriter takes
+            // ownership of the stream and Disposes it before we are ready.
+            var sw = new StreamWriter(ms, encoding);
+            sw.Write(content);
+            sw.Flush();
 
-                return AddEntry(entryName, ms);
-            }
+            // reset to allow reading later
+            ms.Seek(0, SeekOrigin.Begin);
+
+            return AddEntry(entryName, ms);
+
+            // must not dispose the MemoryStream - it will be used later.
         }
 
 
