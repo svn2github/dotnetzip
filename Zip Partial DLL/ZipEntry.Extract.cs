@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-13 14:21:36>
+// Time-stamp: <2011-June-13 22:32:01>
 //
 // ------------------------------------------------------------------
 //
@@ -441,6 +441,18 @@ namespace Ionic.Zip
         /// If you want to extract entry data into a stream that is already opened, like
         /// a <see cref="System.IO.FileStream"/>, consider the <see
         /// cref="Extract(Stream)"/> method.
+        /// </para>
+        ///
+        /// <para>
+        /// You may use only one stream created by OpenReader() at a time, and you
+        /// should not call other Extract methods before completing your reads on a
+        /// stream obtained from OpenReader().  This is because there is really only one
+        /// source stream for the compressed content.  A call to OpenReader() seeks in
+        /// the source stream, to the beginning of the compressed content.  A subsequent
+        /// call to OpenReader() on a different entry will seek to a different position
+        /// in the source stream, as will a call to Extract() or one of its overloads.
+        /// This will corrupt the state for the decompressing stream from the original
+        /// call to OpenReader().
         /// </para>
         ///
         /// </remarks>
