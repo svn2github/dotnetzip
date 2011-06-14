@@ -17,7 +17,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-24 22:34:42>
+// Time-stamp: <2011-June-13 22:14:10>
 //
 // ------------------------------------------------------------------
 //
@@ -536,7 +536,7 @@ namespace Ionic.Zip
             else
             {
                 // Cannot encode with ibm437 safely.
-                // Therefore, use the provisional encoding
+                // Therefore, use the provisional alternate encoding
                 result = _provisionalAlternateEncoding.GetBytes(s1);
                 if (_Comment != null && _Comment.Length != 0)
                 {
@@ -765,8 +765,8 @@ namespace Ionic.Zip
 
             // get byte array including any encoding
             // workitem 6513
-            byte[] FileNameBytes = _GetEncodedFileNameBytes();
-            Int16 filenameLength = (Int16)FileNameBytes.Length;
+            byte[] fileNameBytes = _GetEncodedFileNameBytes();
+            Int16 filenameLength = (Int16)fileNameBytes.Length;
 
             // general purpose bitfield
             // In the current implementation, this library uses only these bits
@@ -948,14 +948,14 @@ namespace Ionic.Zip
             _Extra = ConstructExtraField(false);
 
             // (i==28) extra field length (short)
-            Int16 ExtraFieldLength = (Int16)((_Extra == null) ? 0 : _Extra.Length);
-            bytes[i++] = (byte)(ExtraFieldLength & 0x00FF);
-            bytes[i++] = (byte)((ExtraFieldLength & 0xFF00) >> 8);
+            Int16 extraFieldLength = (Int16)((_Extra == null) ? 0 : _Extra.Length);
+            bytes[i++] = (byte)(extraFieldLength & 0x00FF);
+            bytes[i++] = (byte)((extraFieldLength & 0xFF00) >> 8);
 
             // The filename written to the archive.
             // The buffer is already encoded; we just copy across the bytes.
-            for (j = 0; (j < FileNameBytes.Length) && (i + j < bytes.Length); j++)
-                bytes[i + j] = FileNameBytes[j];
+            for (j = 0; (j < fileNameBytes.Length) && (i + j < bytes.Length); j++)
+                bytes[i + j] = fileNameBytes[j];
 
             i += j;
 

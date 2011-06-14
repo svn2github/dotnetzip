@@ -1,7 +1,7 @@
 // UnicodeTests.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2008, 2009 Dino Chiesa and Microsoft Corporation.
+// Copyright (c) 2008-2011 Dino Chiesa .
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -14,8 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs):
-// Time-stamp: <2010-February-10 15:16:40>
+// Last Saved: <2011-June-13 22:17:52>
 //
 // ------------------------------------------------------------------
 //
@@ -48,24 +47,29 @@ namespace Ionic.Zip.Tests.Unicode
         public void Create_UnicodeEntries()
         {
             int i;
-            string OrigComment = "This is a Unicode comment. Chinese: 弹 出 应 用 程 序 Norwegian/Danish: æøåÆØÅ. Portugese: Configurações.";
-            string[] formats = {"弹出应用程序{0:D3}.bin",
-                                   "n.æøåÆØÅ{0:D3}.bin",
-                               "Configurações-弹出-ÆØÅ-xx{0:D3}.bin"};
+            string origComment = "This is a Unicode comment. "+
+                                 "Chinese: 弹 出 应 用 程 序 "+
+                                 "Norwegian/Danish: æøåÆØÅ. "+
+                                 "Portugese: Configurações.";
+            string[] formats = {
+                "弹出应用程序{0:D3}.bin",
+                "n.æøåÆØÅ{0:D3}.bin",
+                "Configurações-弹出-ÆØÅ-xx{0:D3}.bin"
+            };
 
             for (int k = 0; k < formats.Length; k++)
             {
                 // create the subdirectory
-                string Subdir = Path.Combine(TopLevelDir, "files" + k);
-                Directory.CreateDirectory(Subdir);
+                string subdir = Path.Combine(TopLevelDir, "files" + k);
+                Directory.CreateDirectory(subdir);
 
                 // create a bunch of files
-                int NumFilesToCreate = _rnd.Next(8) + 4;
-                string[] FilesToZip = new string[NumFilesToCreate];
-                for (i = 0; i < NumFilesToCreate; i++)
+                int numFilesToCreate = _rnd.Next(18) + 14;
+                string[] filesToZip = new string[numFilesToCreate];
+                for (i = 0; i < numFilesToCreate; i++)
                 {
-                    FilesToZip[i] = Path.Combine(Subdir, String.Format(formats[k], i));
-                    TestUtilities.CreateAndFillFileBinary(FilesToZip[i], _rnd.Next(5000) + 2000);
+                    filesToZip[i] = Path.Combine(subdir, String.Format(formats[k], i));
+                    TestUtilities.CreateAndFillFileBinary(filesToZip[i], _rnd.Next(5000) + 2000);
                 }
 
                 // create a zipfile twice, once using Unicode, once without
@@ -76,23 +80,23 @@ namespace Ionic.Zip.Tests.Unicode
                     Assert.IsFalse(File.Exists(zipFileToCreate), "The zip file '{0}' already exists.", zipFileToCreate);
 
                     TestContext.WriteLine("\n\nFormat {0}, trial {1}.  filename: {2}...", k, j, zipFileToCreate);
-                    string dirInArchive = String.Format("{0}-{1}", Path.GetFileName(Subdir), j);
+                    string dirInArchive = String.Format("{0}-{1}", Path.GetFileName(subdir), j);
 
                     using (ZipFile zip1 = new ZipFile())
                     {
                         zip1.UseUnicodeAsNecessary = (j == 0);
-                        for (i = 0; i < FilesToZip.Length; i++)
+                        for (i = 0; i < filesToZip.Length; i++)
                         {
                             // use the local filename (not fully qualified)
-                            ZipEntry e = zip1.AddFile(FilesToZip[i], dirInArchive);
+                            ZipEntry e = zip1.AddFile(filesToZip[i], dirInArchive);
                             e.Comment = String.Format("This entry encoded with {0}", (j == 0) ? "unicode" : "the default code page.");
                         }
-                        zip1.Comment = OrigComment;
+                        zip1.Comment = origComment;
                         zip1.Save(zipFileToCreate);
                     }
 
                     // Verify the number of files in the zip
-                    Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), FilesToZip.Length,
+                    Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Length,
                             "Incorrect number of entries in the zip file.");
 
                     i = 0;
@@ -100,7 +104,7 @@ namespace Ionic.Zip.Tests.Unicode
                     // verify the filenames are (or are not) unicode
 
                     var options = new ReadOptions {
-                            Encoding = (j == 0) ? System.Text.Encoding.UTF8 : ZipFile.DefaultEncoding
+                        Encoding = (j == 0) ? System.Text.Encoding.UTF8 : ZipFile.DefaultEncoding
                     };
                     using (ZipFile zip2 = ZipFile.Read(zipFileToCreate, options))
                     {
@@ -123,86 +127,178 @@ namespace Ionic.Zip.Tests.Unicode
                         // unicode is not supported on the zip archive comment!
                         // But this library won't enforce that.
                         // We will leave it up to the application.
-                        // Assert.AreNotEqual<String>(OrigComment, zip2.Comment);
+                        // Assert.AreNotEqual<String>(origComment, zip2.Comment);
 
                     }
                 }
             }
         }
 
+        string[] miscNameFormats = {
+            "file{0:D3}.bin",         // keep this at index==0
+            "弹出应用程序{0:D3}.bin",   // Chinese
+            "codeplexの更新RSSを見てふと書いた投稿だったけど日本語情報がないかは調{0:D3}.bin", // Japanese
+            "n.æøåÆØÅ{0:D3}.bin",      // greek
+            "Configurações-弹出-ÆØÅ-xx{0:D3}.bin",  // portugese + Chinese
+            "Â¡¢£ ¥â° €Ãƒ †œ Ñ añoAbba{0:D3.bin}",   //??
+            "А Б В Г Д Є Ж Ѕ З И І К Л М Н О П Р С Т Ф Х Ц Ч Ш Щ Ъ ЪІ Ь Ю ІА {0:D3}.b", // Russian
+            "Ελληνικό αλφάβητο {0:D3}.b",
+            "א ב ג ד ה ו ז ח ט י " + "{0:D3}",  // I don't know what this is
+        };
+
+        private string _CreateUnicodeFiles(List<string> filesToZip)
+        {
+            // create the subdirectory
+            string subdir = Path.Combine(TopLevelDir, "files");
+            Directory.CreateDirectory(subdir);
+
+            // create a bunch of files
+            int numFilesToCreate = _rnd.Next(18) + 14;
+            for (int i = 0; i < numFilesToCreate; i++)
+            {
+                int k = i % miscNameFormats.Length;
+                var f = Path.Combine(subdir, String.Format(miscNameFormats[k], i));
+                filesToZip.Add(f);
+                TestUtilities.CreateAndFillFileBinary(f, _rnd.Next(5000) + 2000);
+            }
+
+            return subdir;
+        }
+
+
         [TestMethod]
         public void Create_UnicodeEntries_Mixed()
         {
-            int i;
-            string[] formats = { "file{0:D3}.bin",         // keep this at index==0
-                                 "弹出应用程序{0:D3}.bin",   // Chinese
-                                 "codeplexの更新RSSを見てふと書いた投稿だったけど日本語情報がないかは調{0:D3}.bin", // Japanese
-                                "n.æøåÆØÅ{0:D3}.bin",      // greek
-                                "Configurações-弹出-ÆØÅ-xx{0:D3}.bin",  // portugese + Chinese
-                                "Â¡¢£ ¥â° €Ãƒ †œ Ñ añoAbba{0:D3.bin}",   //??
-                                "А Б В Г Д Є Ж Ѕ З И І К Л М Н О П Р С Т Ф Х Ц Ч Ш Щ Ъ ЪІ Ь Ю ІА {0:D3}.b", // Russian
-                               "Ελληνικό αλφάβητο {0:D3}.b",
-                                "א ב ג ד ה ו ז ח ט י " + "{0:D3}",  // I don't know what this is
-                               };
+            var filesToZip = new List<String>();
+            string subdir = _CreateUnicodeFiles(filesToZip);
+            Directory.SetCurrentDirectory(subdir);
 
-            // create the subdirectory
-            string Subdir = Path.Combine(TopLevelDir, "files");
-            Directory.CreateDirectory(Subdir);
-
-            // create a bunch of files
-            int NumFilesToCreate = _rnd.Next(18) + 14;
-            string[] FilesToZip = new string[NumFilesToCreate];
-            for (i = 0; i < NumFilesToCreate; i++)
-            {
-                int k = i % formats.Length;
-                FilesToZip[i] = Path.Combine(Subdir, String.Format(formats[k], i));
-                TestUtilities.CreateAndFillFileBinary(FilesToZip[i], _rnd.Next(5000) + 2000);
-            }
-
-            Directory.SetCurrentDirectory(Subdir);
-
-            // create a zipfile twice
+            // using those files create a zipfile twice.  First cycle uses Unicode,
+            // 2nd cycle does not.
             for (int j = 0; j < 2; j++)
             {
                 // select the name of the zip file
-                string ZipFileToCreate = Path.Combine(TopLevelDir, String.Format("Create_UnicodeEntries_Mixed{0}.zip", j));
-                Assert.IsFalse(File.Exists(ZipFileToCreate), "The zip file '{0}' already exists.", ZipFileToCreate);
+                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("Create_UnicodeEntries_Mixed-{0}.zip", j));
+                Assert.IsFalse(File.Exists(zipFileToCreate), "The zip file '{0}' already exists.", zipFileToCreate);
 
-                using (ZipFile zip1 = new ZipFile(ZipFileToCreate))
+                using (ZipFile zip1 = new ZipFile(zipFileToCreate))
                 {
                     zip1.UseUnicodeAsNecessary = (j == 0);
-                    for (i = 0; i < FilesToZip.Length; i++)
+                    foreach (var fileToZip in filesToZip)
                     {
                         // use the local filename (not fully qualified)
-                        ZipEntry e = zip1.AddFile(Path.GetFileName(FilesToZip[i]));
+                        zip1.AddFile(Path.GetFileName(fileToZip));
                     }
                     zip1.Save();
                 }
 
                 // Verify the number of files in the zip
-                Assert.AreEqual<int>(TestUtilities.CountEntries(ZipFileToCreate), FilesToZip.Length,
+                Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Count,
                         "Incorrect number of entries in the zip file.");
 
-                i = 0;
-                // Verify that the filenames do, or do not, match the names that were added.
-                // They will match if unicode was used (j==0) or if the filename used was the
-                // first in the formats list (k==0).
-                using (ZipFile zip2 = ZipFile.Read(ZipFileToCreate))
+                _CheckUnicodeZip(zipFileToCreate,j);
+            }
+        }
+
+
+        [TestMethod]
+        public void Unicode_Create_ZOS_wi12634()
+        {
+            TestContext.WriteLine("==Unicode_Create_ZOS_wi12634()=");
+            var filesToZip = new List<String>();
+            string subdir = _CreateUnicodeFiles(filesToZip);
+            Directory.SetCurrentDirectory(subdir);
+
+            byte[] buffer = new byte[2048];
+            int n;
+
+            // using those files create a zipfile twice.  First cycle uses Unicode,
+            // 2nd cycle does not.
+            for (int j = 0; j < 2; j++)
+            {
+                // select the name of the zip file
+                var bpath = String.Format("Unicode_Create_ZOS_wi12634-{0}.zip", j);
+                string zipFileToCreate = Path.Combine(TopLevelDir, bpath);
+                TestContext.WriteLine("========");
+                TestContext.WriteLine("Trial {0}", j);
+
+                Assert.IsFalse(File.Exists(zipFileToCreate),
+                               "The zip file '{0}' already exists.",
+                               zipFileToCreate);
+                TestContext.WriteLine("file {0}", zipFileToCreate);
+
+                int excCount = 0;
+
+                // create using ZOS
+                using (var ofs = File.Open(zipFileToCreate, FileMode.Create, FileAccess.ReadWrite))
                 {
-                    foreach (ZipEntry e in zip2)
+                    using (var zos = new ZipOutputStream(ofs))
                     {
-                        int k = i % formats.Length;
-                        string fname = String.Format(formats[k], i);
-                        if (j == 0 || k == 0)
+                        if (j == 0)
+                            zos.ProvisionalAlternateEncoding = System.Text.Encoding.UTF8;
+
+                        try
                         {
-                            Assert.AreEqual<String>(fname, e.FileName, "cycle ({0},{1},{2})", i, j, k);
+                            foreach (var fileToZip in filesToZip)
+                            {
+                                var ename = Path.GetFileName(fileToZip);
+                                TestContext.WriteLine("adding entry '{0}'", ename);
+                                zos.PutNextEntry(ename);
+                                using (var ifs = File.Open(fileToZip, FileMode.Open))
+                                {
+                                    while ((n = ifs.Read(buffer, 0, buffer.Length)) > 0)
+                                    {
+                                        zos.Write(buffer, 0, n);
+                                    }
+                                }
+                            }
                         }
-                        else
+                        catch (System.Exception exc1)
                         {
-                            Assert.AreNotEqual<String>(fname, e.FileName, "cycle ({0},{1},{2})", i, j, k);
+                            TestContext.WriteLine("Exception #{0}", excCount);
+                            TestContext.WriteLine("{0}", exc1.ToString());
+                            excCount++;
                         }
-                        i++;
                     }
+                }
+
+                Assert.IsTrue(excCount==0,
+                              "Exceptions occurred during zip creation.");
+
+                // Verify the number of files in the zip
+                Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Count,
+                        "Incorrect number of entries in the zip file.");
+
+                _CheckUnicodeZip(zipFileToCreate,j);
+                TestContext.WriteLine("Trial {0} file checks ok", j);
+            }
+        }
+
+
+
+        private void _CheckUnicodeZip(string filename, int j)
+        {
+            int i = 0;
+
+            // Verify that the filenames do, or do not, match the
+            // names that were added.  They will match if unicode
+            // was used (j==0) or if the filename used was the first
+            // in the formats list (k==0).
+            using (ZipFile zip2 = ZipFile.Read(filename))
+            {
+                foreach (ZipEntry e in zip2)
+                {
+                    int k = i % miscNameFormats.Length;
+                    string fname = String.Format(miscNameFormats[k], i);
+                    if (j == 0 || k == 0)
+                    {
+                        Assert.AreEqual<String>(fname, e.FileName, "cycle ({0},{1},{2})", i, j, k);
+                    }
+                    else
+                    {
+                        Assert.AreNotEqual<String>(fname, e.FileName, "cycle ({0},{1},{2})", i, j, k);
+                    }
+                    i++;
                 }
             }
         }

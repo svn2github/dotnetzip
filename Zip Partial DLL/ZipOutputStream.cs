@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-10 09:50:43>
+// Time-stamp: <2011-June-13 22:14:44>
 //
 // ------------------------------------------------------------------
 //
@@ -1194,8 +1194,10 @@ namespace Ionic.Zip
             _currentEntry._container = new ZipContainer(this);
             _currentEntry._BitField |= 0x0008;  // workitem 8932
             _currentEntry.SetEntryTimes(DateTime.Now, DateTime.Now, DateTime.Now);
-            _currentEntry.CompressionLevel = CompressionLevel;
-            _currentEntry.Encryption = Encryption;
+            _currentEntry.CompressionLevel = this.CompressionLevel;
+            _currentEntry.Encryption = this.Encryption;
+            // workitem 12634
+            _currentEntry.ProvisionalAlternateEncoding = this.ProvisionalAlternateEncoding;
             _currentEntry.Password = _password;
 
             if (entryName.EndsWith("/"))  _currentEntry.MarkAsDirectory();
@@ -1422,7 +1424,9 @@ namespace Ionic.Zip
         internal Zip64Option _zip64;
         private Dictionary<String, ZipEntry> _entriesWritten;
         private int _entryCount;
-        private System.Text.Encoding _provisionalAlternateEncoding;
+        private System.Text.Encoding _provisionalAlternateEncoding
+            = System.Text.Encoding.GetEncoding("IBM437"); // default = IBM437
+
         private bool _leaveUnderlyingStreamOpen;
         private bool _disposed;
         private bool _exceptionPending;
