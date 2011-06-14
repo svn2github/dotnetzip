@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-13 13:27:23>
+// Time-stamp: <2011-June-13 23:19:24>
 //
 // ------------------------------------------------------------------
 //
@@ -119,6 +119,25 @@ namespace Ionic.Zip.Tests.Basic
         }
 
 
+        [TestMethod]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
+        public void FileNotAvailableFails_wi10387()
+        {
+            string zipFileToCreate = Path.Combine(TopLevelDir, "FileNotAvailableFails.zip");
+            using (var zip1 = new ZipFile(zipFileToCreate)) { zip1.Save(); }
+            try
+            {
+                using (new FileStream(zipFileToCreate, FileMode.Open,
+                                      FileAccess.ReadWrite,
+                                      FileShare.None))
+                {
+                    using (new ZipFile(zipFileToCreate)) { }
+                }
+            }
+            finally
+            {
+            }
+        }
 
 
         [TestMethod]
