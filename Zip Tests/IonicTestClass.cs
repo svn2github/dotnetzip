@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-13 13:00:06>
+// Time-stamp: <2011-June-15 10:02:04>
 //
 // ------------------------------------------------------------------
 //
@@ -243,21 +243,22 @@ namespace Ionic.Zip.Tests.Utilities
         }
 
 
-        internal void BasicVerifyZip(string zipfile)
+        internal string BasicVerifyZip(string zipfile)
         {
-            BasicVerifyZip(zipfile, null);
+            return BasicVerifyZip(zipfile, null);
         }
 
 
-        internal void BasicVerifyZip(string zipfile, string password)
+        internal string BasicVerifyZip(string zipfile, string password)
         {
-            BasicVerifyZip(zipfile, password, true);
+            return BasicVerifyZip(zipfile, password, true);
         }
 
-        internal void BasicVerifyZip(string zipfile, string password, bool emitOutput)
+        internal string BasicVerifyZip(string zipfile, string password, bool emitOutput)
         {
             // basic verification of the zip file - can it be extracted?
             // The extraction tool will verify checksums and passwords, as appropriate
+#if NOT
             if (WinZipIsPresent)
             {
                 TestContext.WriteLine("Verifying zip file {0} with WinZip", zipfile);
@@ -268,6 +269,7 @@ namespace Ionic.Zip.Tests.Utilities
                 string wzunzipOut = this.Exec(wzunzip, args, true, emitOutput);
             }
             else
+#endif
             {
                 TestContext.WriteLine("Verifying zip file {0} with DotNetZip", zipfile);
                 ReadOptions options = new ReadOptions();
@@ -287,6 +289,8 @@ namespace Ionic.Zip.Tests.Utilities
                 // emit output, as desired
                 if (emitOutput)
                     TestContext.WriteLine(options.StatusMessageWriter.ToString());
+
+                return extractDir;
             }
         }
 

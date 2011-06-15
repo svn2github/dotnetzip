@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-January-11 18:14:17>
+// Time-stamp: <2011-June-14 23:45:20>
 //
 // ------------------------------------------------------------------
 //
@@ -507,7 +507,7 @@ namespace Ionic.Zip
         {
             if (SaveProgress != null)
             {
-                lock (LOCK)
+                //lock (LOCK)
                 {
                     var e = SaveProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry,
                                   bytesXferred, totalBytesToXfer);
@@ -523,7 +523,7 @@ namespace Ionic.Zip
         {
             if (SaveProgress != null)
             {
-                lock (LOCK)
+                //lock (LOCK)
                 {
                     var e = new SaveProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, entry);
                     SaveProgress(this, e);

@@ -1,9 +1,7 @@
-#define REMOTE_FILESYSTEM
-
 // SplitArchives.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009-2010 Dino Chiesa.
+// Copyright (c) 2009-2011 Dino Chiesa.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -17,13 +15,18 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-14 00:39:05>
+// Time-stamp: <2011-June-15 10:18:00>
 //
 // ------------------------------------------------------------------
 //
 // This module defines tests for split (or 'spanned') archives.
 //
 // ------------------------------------------------------------------
+
+// define REMOTE_FILESYSTEM in order to use a remote filesystem for storage of
+// the ZIP64 large archive (which can beb huge). Leave it undefined to simply
+// use the local TEMP directory.
+//#define REMOTE_FILESYSTEM
 
 using System;
 using System.IO;
@@ -89,12 +92,13 @@ namespace Ionic.Zip.Tests.Split
         }
 
 
-        [TestMethod, Timeout(360000)]  // 360000 - 6 minutes]
+        [TestMethod, Timeout(360000)]  // 360000 - 6 minutes
         public void Create_SegmentedArchive()
         {
             string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
 
             int numFiles = _rnd.Next(10) + 8;
+            int overflows = 0;
 
             string[] filesToZip;
             Dictionary<string, byte[]> checksums;
@@ -118,45 +122,66 @@ namespace Ionic.Zip.Tests.Split
                                                       String.Format("Archive-{0}.zip",m));
                 int maxSegSize = segmentSizes[m];
 
+                TestContext.WriteLine("=======");
                 TestContext.WriteLine("Trial {0}", m);
                 if (maxSegSize > 0)
                     TestContext.WriteLine("Creating a segmented zip...segsize({0})", maxSegSize);
                 else
-                    TestContext.WriteLine("\nCreating a regular zip...");
+                    TestContext.WriteLine("Creating a regular zip...");
 
                 var sw = new StringWriter();
-                using (var zip = new ZipFile())
+                bool aok = false;
+                try
                 {
-                    zip.StatusMessageTextWriter = sw;
-                    zip.BufferSize = 0x8000;
-                    zip.CodecBufferSize = 0x8000;
-                    zip.AddDirectory(dirToZip, "files");
-                    zip.MaxOutputSegmentSize = maxSegSize;
-                    zip.Save(zipFileToCreate);
-                }
-                TestContext.WriteLine("{0}", sw.ToString());
-
-                TestContext.WriteLine("\nNow, extracting...");
-                sw = new StringWriter();
-                string extractDir = String.Format("ex{0}", m);
-                using (var zip = ZipFile.Read(zipFileToCreate))
-                {
-                    zip.StatusMessageTextWriter = sw;
-                    foreach (string s in zip.Info.Split('\r','\n'))
+                    using (var zip = new ZipFile())
                     {
-                        Console.WriteLine("{0}", s);
+                        zip.StatusMessageTextWriter = sw;
+                        zip.BufferSize = 0x8000;
+                        zip.CodecBufferSize = 0x8000;
+                        zip.AddDirectory(dirToZip, "files");
+                        zip.MaxOutputSegmentSize = maxSegSize;
+                        zip.Save(zipFileToCreate);
                     }
-
-                    foreach (var e in zip)
-                        e.Extract(extractDir);
+                    aok = true;
                 }
-                TestContext.WriteLine("{0}", sw.ToString());
+                catch (OverflowException)
+                {
+                    TestContext.WriteLine("Overflow - too many segments...");
+                    overflows++;
+                }
 
-                BasicVerifyZip(zipFileToCreate);
+                if (aok)
+                {
+                    TestContext.WriteLine("{0}", sw.ToString());
 
-                // also verify checksums
-                VerifyChecksums(Path.Combine(extractDir, "files"), filesToZip, checksums);
+                    // // If you want to see the diskNumber for each entry,
+                    // // uncomment the following:
+                    // TestContext.WriteLine("Checking info...");
+                    // sw = new StringWriter();
+                    // //string extractDir = String.Format("ex{0}", m);
+                    // using (var zip = ZipFile.Read(zipFileToCreate))
+                    // {
+                    //     zip.StatusMessageTextWriter = sw;
+                    //     foreach (string s in zip.Info.Split('\r','\n'))
+                    //     {
+                    //         Console.WriteLine("{0}", s);
+                    //     }
+                    //
+                    //     // unnecessary - BasicVerify does this
+                    //     //foreach (var e in zip)
+                    //     //e.Extract(extractDir);
+                    // }
+                    // TestContext.WriteLine("{0}", sw.ToString());
+
+                    TestContext.WriteLine("Extracting...");
+                    string extractDir = BasicVerifyZip(zipFileToCreate);
+
+                    // also verify checksums
+                    VerifyChecksums(Path.Combine(extractDir, "files"), filesToZip, checksums);
+                }
             }
+
+            Assert.IsTrue(overflows < 3, "Too many overflows. Check the test.");
         }
 
 
@@ -200,6 +225,7 @@ namespace Ionic.Zip.Tests.Split
             CloseDelegate closer = (name, s) =>
                 {
                     var rtg = (Ionic.Zip.Tests.Utilities.RandomTextInputStream) s;
+                    rtg.Close();
                 };
 
             System.EventHandler<Ionic.Zip.SaveProgressEventArgs> sp = (sender1, e1) =>
@@ -253,8 +279,8 @@ namespace Ionic.Zip.Tests.Split
             using (ZipFile zip = new ZipFile())
             {
                 zip.StatusMessageTextWriter = sw;
-                zip.BufferSize = 0x8000;
-                zip.CodecBufferSize = 0x8000;
+                zip.BufferSize = 256 * 1024;
+                zip.CodecBufferSize = 128 * 1024;
                 zip.MaxOutputSegmentSize = maxSegSize;
                 zip.SaveProgress += sp;
 
@@ -269,12 +295,13 @@ namespace Ionic.Zip.Tests.Split
                 numSegs = zip.NumberOfSegmentsForMostRecentSave;
             }
 
+#if REMOTE_FILESYSTEM
             if (((long)numSegs*maxSegSize) < (long)(1024*1024*1024L))
             {
                 _FilesToRemove.Remove(parentDir);
                 Assert.IsTrue(false, "There were not enough segments in that zip.  numsegs({0}) maxsize({1}).", numSegs, maxSegSize);
             }
-
+#endif
             _txrx.Send("status Verifying that zip (this will take a while)...");
 
             BasicVerifyZip(zipFileToCreate);

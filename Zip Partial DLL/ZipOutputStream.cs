@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-15 08:18:33>
+// Time-stamp: <2011-June-15 14:56:54>
 //
 // ------------------------------------------------------------------
 //
@@ -1012,6 +1012,99 @@ namespace Ionic.Zip
                 return _ParallelDeflateThreshold;
             }
         }
+
+
+        /// <summary>
+        ///   The maximum number of buffer pairs to use when performing
+        ///   parallel compression.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// <para>
+        ///   This property sets an upper limit on the number of memory
+        ///   buffer pairs to create when performing parallel
+        ///   compression.  The implementation of the parallel
+        ///   compression stream allocates multiple buffers to
+        ///   facilitate parallel compression.  As each buffer fills up,
+        ///   the stream uses <see
+        ///   cref="System.Threading.ThreadPool.QueueUserWorkItem(WaitCallback)">
+        ///   ThreadPool.QueueUserWorkItem()</see> to compress those
+        ///   buffers in a background threadpool thread. After a buffer
+        ///   is compressed, it is re-ordered and written to the output
+        ///   stream.
+        /// </para>
+        ///
+        /// <para>
+        ///   A higher number of buffer pairs enables a higher degree of
+        ///   parallelism, which tends to increase the speed of compression on
+        ///   multi-cpu computers.  On the other hand, a higher number of buffer
+        ///   pairs also implies a larger memory consumption, more active worker
+        ///   threads, and a higher cpu utilization for any compression. This
+        ///   property enables the application to limit its memory consumption and
+        ///   CPU utilization behavior depending on requirements.
+        /// </para>
+        ///
+        /// <para>
+        ///   For each compression "task" that occurs in parallel, there are 2
+        ///   buffers allocated: one for input and one for output.  This property
+        ///   sets a limit for the number of pairs.  The total amount of storage
+        ///   space allocated for buffering will then be (N*S*2), where N is the
+        ///   number of buffer pairs, S is the size of each buffer (<see
+        ///   cref="BufferSize"/>).  By default, DotNetZip allocates 4 buffer
+        ///   pairs per CPU core, so if your machine has 4 cores, and you retain
+        ///   the default buffer size of 128k, then the
+        ///   ParallelDeflateOutputStream will use 4 * 4 * 2 * 128kb of buffer
+        ///   memory in total, or 4mb, in blocks of 128kb.  If you then set this
+        ///   property to 8, then the number will be 8 * 2 * 128kb of buffer
+        ///   memory, or 2mb.
+        /// </para>
+        ///
+        /// <para>
+        ///   CPU utilization will also go up with additional buffers, because a
+        ///   larger number of buffer pairs allows a larger number of background
+        ///   threads to compress in parallel. If you find that parallel
+        ///   compression is consuming too much memory or CPU, you can adjust this
+        ///   value downward.
+        /// </para>
+        ///
+        /// <para>
+        ///   The default value is 16. Different values may deliver better or
+        ///   worse results, depending on your priorities and the dynamic
+        ///   performance characteristics of your storage and compute resources.
+        /// </para>
+        ///
+        /// <para>
+        ///   This property is not the number of buffer pairs to use; it is an
+        ///   upper limit. An illustration: Suppose you have an application that
+        ///   uses the default value of this property (which is 16), and it runs
+        ///   on a machine with 2 CPU cores. In that case, DotNetZip will allocate
+        ///   4 buffer pairs per CPU core, for a total of 8 pairs.  The upper
+        ///   limit specified by this property has no effect.
+        /// </para>
+        ///
+        /// <para>
+        ///   The application can set this value at any time, but it is
+        ///   effective only if set before calling
+        ///   <c>ZipOutputStream.Write()</c> for the first time.
+        /// </para>
+        /// </remarks>
+        ///
+        /// <seealso cref="ParallelDeflateThreshold"/>
+        ///
+        public int ParallelDeflateMaxBufferPairs
+        {
+            get
+            {
+                return _maxBufferPairs;
+            }
+            set
+            {
+                if (value < 4)
+                    throw new ArgumentException("ParallelDeflateMaxBufferPairs",
+                                                "Value must be 4 or greater.");
+                _maxBufferPairs = value;
+            }
+        }
 #endif
 
 
@@ -1449,6 +1542,7 @@ namespace Ionic.Zip
 #if !NETCF
         internal Ionic.Zlib.ParallelDeflateOutputStream ParallelDeflater;
         private long _ParallelDeflateThreshold;
+        private int _maxBufferPairs = 16;
 #endif
 
         // **Note regarding exceptions:

@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-June-15 08:48:53>
+// Last Saved: <2011-June-15 14:46:24>
 //
 // ------------------------------------------------------------------
 //
@@ -1746,7 +1746,7 @@ namespace Ionic.Zip
                     // ZipOutputStream. So it gets created once, per save, and then
                     // re-used many times.
                     //
-                    // This approach will break when we go to a "paral1lel save"
+                    // This approach will break when we go to a "parallel save"
                     // approach, where multiple entries within the zip file are being
                     // compressed and saved at the same time.  But for now it's ok.
                     //
@@ -1762,6 +1762,9 @@ namespace Ionic.Zip
                         // can set the codec buffer size only before the first call to Write().
                         if (_container.CodecBufferSize > 0)
                             _container.ParallelDeflater.BufferSize = _container.CodecBufferSize;
+                        if (_container.MaxParallelBufferPairs > 0)
+                            _container.ParallelDeflater.MaxBufferPairs =
+                                _container.MaxParallelBufferPairs;
                     }
                     // reset it with the new stream
                     Ionic.Zlib.ParallelDeflateOutputStream o1 = _container.ParallelDeflater;

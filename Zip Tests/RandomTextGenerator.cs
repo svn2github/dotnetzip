@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-15 10:55:49>
+// Time-stamp: <2011-June-15 07:52:38>
 //
 // ------------------------------------------------------------------
 //
@@ -299,81 +299,27 @@ namespace Ionic.Zip.Tests.Utilities
         RandomTextGenerator _rtg;
         Int64 _desiredLength;
         Int64 _bytesRead;
-        bool _isDisposed;
         System.Text.Encoding _encoding;
-        string[] _randomText;
-        byte[] _src;
-        int _nblocks, _p, _readyIndex, _slurps, _gnt;
-        static readonly int _maxChunkSize = 1024 * 32;
-        System.Threading.ManualResetEvent _producerDone;
-        System.Threading.AutoResetEvent _needData, _haveData;
+        byte[][] _randomText;
+        System.Random _rnd;
+        int _gnt;
+        byte[] src = null;
+        private static readonly int _chunkSize = 1024 * 128;
+        private static readonly int _chunks = 48;
 
         public RandomTextInputStream(Int64 length)
-        : this(length, System.Text.Encoding.GetEncoding("ascii"))
+            : this(length, System.Text.Encoding.GetEncoding("ascii"))
         {
         }
 
         public RandomTextInputStream(Int64 length, System.Text.Encoding encoding)
-        : base()
+            : base()
         {
             _desiredLength = length;
             _rtg = new RandomTextGenerator();
             _encoding = encoding;
-            _nblocks = 0;
-            _p = 0;
-            _isDisposed = false;
-            _randomText = new string[2];
-            _needData = new AutoResetEvent(false);
-            _haveData = new AutoResetEvent(false);
-            _producerDone = new ManualResetEvent(false);
-
-            ThreadPool.QueueUserWorkItem(new WaitCallback(_Producer));
-        }
-
-
-        /// <summary>
-        ///   Method for the background thread that generates random text strings
-        /// </summary>
-        /// <remarks>
-        ///   <para>
-        ///     The RandomTextInputStream is often used to generate
-        ///     large texts or strings.  There's an advantage to using a
-        ///     background thread to generating those texts while the
-        ///     foreground is reading from the text
-        ///   </para>
-        /// </remarks>
-        private void _Producer(object state)
-        {
-            int nowServing = 0;
-            try
-            {
-                do
-                {
-                    _randomText[nowServing]= _rtg.Generate(_maxChunkSize);
-                    _slurps++;
-                    _needData.WaitOne();
-                    if (_isDisposed) break;
-                    _readyIndex = nowServing;
-                    nowServing = 1-nowServing;
-                    _haveData.Set();
-                } while (true);
-            }
-            catch (System.Exception)
-            {
-            }
-
-            _producerDone.Set();
-        }
-
-        /// <summary>
-        ///   for diagnostic purposes only
-        /// </summary>
-        public int SlurpsCount
-        {
-            get
-            {
-                return _slurps;
-            }
+            _randomText = new byte[_chunks][];
+            _rnd = new System.Random();
         }
 
         /// <summary>
@@ -392,32 +338,18 @@ namespace Ionic.Zip.Tests.Utilities
              Dispose(true);
         }
 
-        private void StopProducer()
-        {
-            _isDisposed = true;
-            _needData.Set();
-            _producerDone.WaitOne();        
-        }
-
         /// <summary>The Dispose method</summary>
         protected override void Dispose(bool disposeManagedResources)
         {
-            if (disposeManagedResources)
-            {
-                StopProducer();
-                // dispose managed resources
-                _producerDone.Close();
-                _haveData.Close();
-                _needData.Close();
-            }
         }
 
-        private string GetNewText()
+        private byte[] GetNewText()
         {
             _gnt++;
-            _needData.Set();
-            _haveData.WaitOne();
-            return _randomText[_readyIndex];
+            int nowServing = _rnd.Next(_chunks);
+            if (_randomText[nowServing]==null)
+                _randomText[nowServing] = _encoding.GetBytes(_rtg.Generate(_chunkSize));
+            return _randomText[nowServing];
         }
 
         public Int64 BytesRead
@@ -427,43 +359,30 @@ namespace Ionic.Zip.Tests.Utilities
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            int remainingBytesToRead = count;
-            if (_desiredLength - _bytesRead < remainingBytesToRead)
-                remainingBytesToRead = unchecked((int)(_desiredLength - _bytesRead));
+            int bytesToReadThisTime = count;
+            if (_desiredLength - _bytesRead < bytesToReadThisTime)
+                bytesToReadThisTime = unchecked((int)(_desiredLength - _bytesRead));
 
-            int totalBytesToRead = remainingBytesToRead;
-
-            while (remainingBytesToRead > 0)
+            int bytesToRead = bytesToReadThisTime;
+            while (bytesToRead > 0)
             {
-                if (_nblocks % 32 == 0)
-                {
-                    // after 32 cycles through the buffer, get a new one.
-                    _src = _encoding.GetBytes(GetNewText());
-                    _p = 0;
-                }
+                src = GetNewText();
+                int bytesAvailable = src.Length;
+                int chunksize = (bytesToRead > bytesAvailable)
+                    ? bytesAvailable
+                    : bytesToRead;
 
-                int bytesAvailable = _src.Length - _p;
-                int chunksize = (remainingBytesToRead > bytesAvailable) ? bytesAvailable : remainingBytesToRead;
-
-                Array.Copy(_src, _p, buffer, offset, chunksize);
-                _p += chunksize;
-                remainingBytesToRead -= chunksize;
+                Buffer.BlockCopy(src, 0, buffer, offset, chunksize);
+                bytesToRead -= chunksize;
                 offset += chunksize;
-                if (_p >= _src.Length)
-                {
-                    // reset pointer to beginning of buffer
-                    _p = 0;
-                    _nblocks++;
-                }
             }
-            _bytesRead += totalBytesToRead;
-
-            return totalBytesToRead;
+            _bytesRead += bytesToReadThisTime;
+            return bytesToReadThisTime;
         }
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public override bool CanRead
@@ -490,20 +409,19 @@ namespace Ionic.Zip.Tests.Utilities
             get { return _desiredLength - _bytesRead; }
             set
             {
-                Console.WriteLine("setting position to {0}", value);
-                throw new NotImplementedException();
+                throw new NotSupportedException();
             }
         }
 
         public override long Seek(long offset, System.IO.SeekOrigin origin)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public override void SetLength(long value)
         {
             if (value < _bytesRead)
-                throw new NotImplementedException();
+                throw new NotSupportedException();
             _desiredLength = value;
         }
 

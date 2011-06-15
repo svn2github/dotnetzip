@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-14 11:16:15>
+// Time-stamp: <2011-June-15 10:30:04>
 //
 // ------------------------------------------------------------------
 //
@@ -36,40 +36,43 @@ namespace Ionic.Zip
     {
 
         /// <summary>
-        /// Saves the Zip archive to a file, specified by the Name property of the <c>ZipFile</c>.
+        ///   Saves the Zip archive to a file, specified by the Name property of the
+        ///   <c>ZipFile</c>.
         /// </summary>
         ///
         /// <remarks>
         /// <para>
-        /// The <c>ZipFile</c> instance is written to storage, typically a zip file in a
-        /// filesystem, only when the caller calls <c>Save</c>.  The Save operation writes
-        /// the zip content to a temporary file, and then renames the temporary file
-        /// to the desired name. If necessary, this method will delete a pre-existing file
-        /// before the rename.
-        /// </para>
-        ///
-        /// <para> The <see cref="ZipFile.Name"/> property is specified either
-        /// explicitly, or implicitly using one of the parameterized ZipFile
-        /// constructors.  For COM Automation clients, the <c>Name</c> property must be
-        /// set explicitly, because COM Automation clients cannot call parameterized
-        /// constructors.  </para>
-        ///
-        /// <para>
-        /// When using a filesystem file for the Zip output, it is possible to call
-        /// <c>Save</c> multiple times on the <c>ZipFile</c> instance. With each call the zip
-        /// content is re-written to the same output file.
+        ///   The <c>ZipFile</c> instance is written to storage, typically a zip file
+        ///   in a filesystem, only when the caller calls <c>Save</c>.  In the typical
+        ///   case, the Save operation writes the zip content to a temporary file, and
+        ///   then renames the temporary file to the desired name. If necessary, this
+        ///   method will delete a pre-existing file before the rename.
         /// </para>
         ///
         /// <para>
-        /// Data for entries that have been added to the <c>ZipFile</c> instance is written
-        /// to the output when the <c>Save</c> method is called. This means that the input
-        /// streams for those entries must be available at the time the application calls
-        /// <c>Save</c>.  If, for example, the application adds entries with <c>AddEntry</c>
-        /// using a dynamically-allocated <c>MemoryStream</c>, the memory stream must not
-        /// have been disposed before the call to <c>Save</c>. See the <see
-        /// cref="ZipEntry.InputStream"/> property for more discussion of the availability
-        /// requirements of the input stream for an entry, and an approach for providing
-        /// just-in-time stream lifecycle management.
+        ///   The <see cref="ZipFile.Name"/> property is specified either explicitly,
+        ///   or implicitly using one of the parameterized ZipFile constructors.  For
+        ///   COM Automation clients, the <c>Name</c> property must be set explicitly,
+        ///   because COM Automation clients cannot call parameterized constructors.
+        /// </para>
+        ///
+        /// <para>
+        ///   When using a filesystem file for the Zip output, it is possible to call
+        ///   <c>Save</c> multiple times on the <c>ZipFile</c> instance. With each
+        ///   call the zip content is re-written to the same output file.
+        /// </para>
+        ///
+        /// <para>
+        ///   Data for entries that have been added to the <c>ZipFile</c> instance is
+        ///   written to the output when the <c>Save</c> method is called. This means
+        ///   that the input streams for those entries must be available at the time
+        ///   the application calls <c>Save</c>.  If, for example, the application
+        ///   adds entries with <c>AddEntry</c> using a dynamically-allocated
+        ///   <c>MemoryStream</c>, the memory stream must not have been disposed
+        ///   before the call to <c>Save</c>. See the <see
+        ///   cref="ZipEntry.InputStream"/> property for more discussion of the
+        ///   availability requirements of the input stream for an entry, and an
+        ///   approach for providing just-in-time stream lifecycle management.
         /// </para>
         ///
         /// </remarks>
@@ -77,9 +80,16 @@ namespace Ionic.Zip
         /// <seealso cref="Ionic.Zip.ZipFile.AddEntry(String, System.IO.Stream)"/>
         ///
         /// <exception cref="Ionic.Zip.BadStateException">
-        /// Thrown if you haven't specified a location or stream for saving the zip,
-        /// either in the constructor or by setting the Name property, or if you try to
-        /// save a regular zip archive to a filename with a .exe extension.
+        ///   Thrown if you haven't specified a location or stream for saving the zip,
+        ///   either in the constructor or by setting the Name property, or if you try
+        ///   to save a regular zip archive to a filename with a .exe extension.
+        /// </exception>
+        ///
+        /// <exception cref="System.OverflowException">
+        ///   Thrown if <see cref="MaxOutputSegmentSize"/> is non-zero, and the number
+        ///   of segments that would be generated for the spanned zip file during the
+        ///   save operation exceeds 99.  If this happens, you need to increase the
+        ///   segment size.
         /// </exception>
         ///
         public void Save()

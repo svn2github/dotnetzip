@@ -1,7 +1,7 @@
 // ZipSegmentedStream.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009-2010 Dino Chiesa.
+// Copyright (c) 2009-2011 Dino Chiesa.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-14 11:14:00>
+// Time-stamp: <2011-June-15 13:24:03>
 //
 // ------------------------------------------------------------------
 //
@@ -26,29 +26,56 @@
 
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Ionic.Zip
 {
     internal class ZipSegmentedStream : System.IO.Stream, System.IDisposable
     {
-        private int rw;
+        enum RwMode
+        {
+            None = 0,
+            ReadOnly = 1,
+            Write = 2,
+            Update = 3
+        }
+
+        private RwMode rwMode;
+        private bool _exceptionPending; // **see note below
         private string _baseName;
         private string _baseDir;
+        private bool _isClosed;
         private string _currentName;
         private string _currentTempName;
         private uint _currentDiskNumber;
         private uint _maxDiskNumber;
         private int _maxSegmentSize;
         private System.IO.Stream _innerStream;
+        private List<String> _writtenSegments;
 
-        private ZipSegmentedStream() : base() { }
+        // **Note regarding exceptions:
+
+        // When ZipSegmentedStream is employed within a using clause,
+        // which is the typical scenario, and an exception is thrown
+        // within the scope of the using, Close()/Dispose() is invoked
+        // implicitly before processing the initial exception.  In that
+        // case, this class sets _exceptionPending to true, and then
+        // within the ClosE()/Dispose(), takes special action as
+        // appropriate. Need to be careful: any additional exceptions
+        // will mask the original one.
+
+        private ZipSegmentedStream() : base()
+        {
+            _writtenSegments = new List<String>();
+            _exceptionPending = false;
+        }
 
         public static ZipSegmentedStream ForReading(string name, uint initialDiskNumber, uint maxDiskNumber)
         {
             ZipSegmentedStream zss = new ZipSegmentedStream()
                 {
-                    rw = 1,  // 1 == readonly
+                    rwMode = RwMode.ReadOnly,
                     CurrentSegment = initialDiskNumber,
                     _maxDiskNumber = maxDiskNumber,
                     _baseName = name,
@@ -63,7 +90,7 @@ namespace Ionic.Zip
         {
             ZipSegmentedStream zss = new ZipSegmentedStream()
                 {
-                    rw = 2, // 2 == write
+                    rwMode = RwMode.Write,
                     CurrentSegment = 0,
                     _baseName = name,
                     _maxSegmentSize = maxSegmentSize,
@@ -83,10 +110,12 @@ namespace Ionic.Zip
             // ForUpdate is used only when updating the zip entry metadata for
             // a segmented zip file, when the starting segment is earlier
             // than the ending segment, for a particular entry.
+            if (diskNumber >= 99)
+                throw new ArgumentException("diskNumber");
 
             ZipSegmentedStream zss = new ZipSegmentedStream()
                 {
-                    rw = 3,  // 3 == update
+                    rwMode = RwMode.Update,
                     CurrentSegment = diskNumber,
                     _baseName = name,
                     _maxSegmentSize = Int32.MaxValue  // insure no rollover
@@ -115,6 +144,7 @@ namespace Ionic.Zip
             set;
         }
 
+
         public UInt32 CurrentSegment
         {
             get
@@ -128,6 +158,17 @@ namespace Ionic.Zip
             }
         }
 
+        /// <summary>
+        ///   Name of the filesystem file corresponding to the current segment.
+        /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     The name is not always the name currently being used in the
+        ///     filesystem.  When rwMode is RwMode.Write, the filesystem file has a
+        ///     temporary name until the stream is closed or until the next segment is
+        ///     started.
+        ///   </para>
+        /// </remarks>
         public String CurrentName
         {
             get
@@ -141,6 +182,12 @@ namespace Ionic.Zip
 
         private string _NameForSegment(uint diskNumber)
         {
+            if (diskNumber >= 99)
+            {
+                _exceptionPending = true;
+                throw new OverflowException();
+            }
+
             return String.Format("{0}.z{1:D2}",
                                  Path.Combine(Path.GetDirectoryName(_baseName),
                                               Path.GetFileNameWithoutExtension(_baseName)),
@@ -167,7 +214,7 @@ namespace Ionic.Zip
         {
             return String.Format("{0}[{1}][{2}], pos=0x{3:X})",
                                  "ZipSegmentedStream", CurrentName,
-                                 (rw == 1) ? "Read" : (rw == 2) ? "Write" : (rw == 3) ? "Update" : "???",
+                                 rwMode.ToString(),
                                  this.Position);
         }
 
@@ -212,7 +259,11 @@ namespace Ionic.Zip
         /// <returns>the number of bytes actually read</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            if (rw != 1) throw new ZipException("Stream Error: Cannot Read.");
+            if (rwMode != RwMode.ReadOnly)
+            {
+                _exceptionPending = true;
+                throw new InvalidOperationException("Stream Error: Cannot Read.");
+            }
 
             int r = _innerStream.Read(buffer, offset, count);
             int r1 = r;
@@ -221,7 +272,11 @@ namespace Ionic.Zip
             while (r1 != count)
             {
                 if (_innerStream.Position != _innerStream.Length)
+                {
+                    _exceptionPending = true;
                     throw new ZipException(String.Format("Read error in file {0}", CurrentName));
+
+                }
 
                 //Console.WriteLine("ZipSegmentedStream::Read[{0}] pos(0x{1:X}) len(0x{2:X}) r({3}) count({4})",
                 //CurrentName, _innerStream.Position,  _innerStream.Length, r, count);
@@ -251,6 +306,7 @@ namespace Ionic.Zip
                 if (File.Exists(CurrentName))
                     File.Delete(CurrentName);
                 File.Move(_currentTempName, CurrentName);
+                _writtenSegments.Add(CurrentName);
             }
 
             if (increment > 0)
@@ -275,7 +331,7 @@ namespace Ionic.Zip
         /// <param name="count">the number of bytes to write</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            if (rw == 2)
+            if (rwMode == RwMode.Write)
             {
                 if (ContiguousWrite)
                 {
@@ -309,13 +365,16 @@ namespace Ionic.Zip
                 _innerStream.Write(buffer, offset, count);
 
             }
-            else if (rw == 3)
+            else if (rwMode == RwMode.Update)
             {
                 // updating a segment.  There is no possibility for rollover
                 _innerStream.Write(buffer, offset, count);
             }
             else
-                throw new ZipException("Stream Error: Cannot Write.");
+            {
+                _exceptionPending = true;
+                throw new InvalidOperationException("Stream Error: Cannot Write.");
+            }
         }
 
 
@@ -323,9 +382,14 @@ namespace Ionic.Zip
         {
             // Console.WriteLine("***ZSS.Trunc to disk {0}", diskNumber);
             // Console.WriteLine("***ZSS.Trunc:  current disk {0}", CurrentSegment);
+            if (diskNumber >= 99)
+                throw new ArgumentException("diskNumber");
 
-            if (rw!=2)
+            if (rwMode != RwMode.Write)
+            {
+                _exceptionPending = true;
                 throw new ZipException("bad state.");
+            }
 
             // Seek back in the segmented stream to a (maybe) prior segment.
 
@@ -340,7 +404,7 @@ namespace Ionic.Zip
 
             // Seeking back to a prior segment.
             // The current segment and any intervening segments must be removed.
-            // First, remove the current segment.
+            // First, close the current segment, and then remove it.
             if (_innerStream != null)
             {
                 _innerStream.Close();
@@ -366,7 +430,8 @@ namespace Ionic.Zip
                 try
                 {
                     _currentTempName = SharedUtilities.InternalGetTempFileName();
-                    File.Move(CurrentName, _currentTempName);  // move the .z0x file back to a temp name
+                    // move the .z0x file back to a temp name
+                    File.Move(CurrentName, _currentTempName);
                     break; // workitem 12403
                 }
                 catch(IOException)
@@ -375,6 +440,8 @@ namespace Ionic.Zip
                 }
             }
 
+
+            // open it
             _innerStream = new FileStream(_currentTempName, FileMode.Open);
 
             var r =  _innerStream.Seek(offset, SeekOrigin.Begin);
@@ -389,7 +456,7 @@ namespace Ionic.Zip
 
         public override bool CanRead
         {
-            get { return (rw == 1 && _innerStream.CanRead); }
+            get { return (rwMode == RwMode.ReadOnly && _innerStream.CanRead); }
         }
 
 
@@ -401,7 +468,7 @@ namespace Ionic.Zip
 
         public override bool CanWrite
         {
-            get { return (rw == 2) && _innerStream.CanWrite; }
+            get { return (rwMode == RwMode.Write && _innerStream.CanWrite); }
         }
 
         public override void Flush()
@@ -433,38 +500,58 @@ namespace Ionic.Zip
 
         public override void SetLength(long value)
         {
-            if (rw != 2)
-                throw new NotImplementedException();
+            if (rwMode != RwMode.Write)
+            {
+                _exceptionPending = true;
+                throw new InvalidOperationException();
+            }
             _innerStream.SetLength(value);
         }
 
         void IDisposable.Dispose()
         {
             Close();
-            if (_innerStream != null)
-                _innerStream.Dispose();
+            //if (_innerStream != null)
+            _innerStream.Dispose();
+
+            if (_exceptionPending)
+            {
+                Console.WriteLine("ZSS: Dispose + with exception pending ");
+                foreach (var s in _writtenSegments)
+                {
+                    Console.WriteLine("{0}: {1}", s);
+                    File.Delete(s);
+                }
+            }
         }
 
         public override void Close()
         {
+            if (_isClosed) return;
+            _isClosed = true;
             if (_innerStream != null)
             {
                 _innerStream.Close();
-                _innerStream = null;
-                if (rw == 2)
+                //_innerStream = null;
+                if (rwMode == RwMode.Write)
                 {
-                    if (File.Exists(CurrentName))
-                        File.Delete(CurrentName);
-                    if (File.Exists(_currentTempName))
+                    if (_exceptionPending)
                     {
-                        File.Move(_currentTempName, CurrentName);
+                        // maybe try cleaning up all the temp files created
+                        // so far?
+                    }
+                    else
+                    {
+                        if (File.Exists(CurrentName))
+                            File.Delete(CurrentName);
+                        if (File.Exists(_currentTempName))
+                            File.Move(_currentTempName, CurrentName);
                     }
                 }
             }
 
             base.Close();
         }
-
     }
 
 }

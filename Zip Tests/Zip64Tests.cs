@@ -1,7 +1,7 @@
 // Zip64Tests.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009-2010 Dino Chiesa
+// Copyright (c) 2009-2011 Dino Chiesa
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-January-21 11:29:11>
+// Time-stamp: <2011-June-14 11:58:55>
 //
 // ------------------------------------------------------------------
 //
@@ -27,7 +27,7 @@
 // define REMOTE_FILESYSTEM in order to use a remote filesystem for storage of
 // the ZIP64 large archive (which can beb huge). Leave it undefined to simply
 // use the local TEMP directory.
-#define REMOTE_FILESYSTEM
+//#define REMOTE_FILESYSTEM
 
 
 using System;
