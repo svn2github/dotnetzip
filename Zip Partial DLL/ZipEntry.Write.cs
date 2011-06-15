@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-June-15 14:46:24>
+// Last Saved: <2011-June-15 15:17:18>
 //
 // ------------------------------------------------------------------
 //
@@ -1762,9 +1762,9 @@ namespace Ionic.Zip
                         // can set the codec buffer size only before the first call to Write().
                         if (_container.CodecBufferSize > 0)
                             _container.ParallelDeflater.BufferSize = _container.CodecBufferSize;
-                        if (_container.MaxParallelBufferPairs > 0)
+                        if (_container.ParallelDeflateMaxBufferPairs > 0)
                             _container.ParallelDeflater.MaxBufferPairs =
-                                _container.MaxParallelBufferPairs;
+                                _container.ParallelDeflateMaxBufferPairs;
                     }
                     // reset it with the new stream
                     Ionic.Zlib.ParallelDeflateOutputStream o1 = _container.ParallelDeflater;

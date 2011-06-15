@@ -2087,7 +2087,7 @@ namespace Ionic.Zip
             set
             {
                 if ((value != 0) && (value != -1) && (value < 64 * 1024))
-                    throw new ArgumentException("ParallelDeflateThreshold should be -1, 0, or > 65536");
+                    throw new ArgumentOutOfRangeException("ParallelDeflateThreshold should be -1, 0, or > 65536");
                 _ParallelDeflateThreshold = value;
             }
             get
@@ -2109,7 +2109,7 @@ namespace Ionic.Zip
         ///   compression stream allocates multiple buffers to
         ///   facilitate parallel compression.  As each buffer fills up,
         ///   the stream uses <see
-        ///   cref="System.Threading.ThreadPool.QueueUserWorkItem(WaitCallback)">
+        ///   cref="System.Threading.ThreadPool.QueueUserWorkItem(System.Threading.WaitCallback)">
         ///   ThreadPool.QueueUserWorkItem()</see> to compress those
         ///   buffers in a background threadpool thread. After a buffer
         ///   is compressed, it is re-ordered and written to the output
@@ -2181,7 +2181,7 @@ namespace Ionic.Zip
             set
             {
                 if (value < 4)
-                    throw new ArgumentException("ParallelDeflateMaxBufferPairs",
+                    throw new ArgumentOutOfRangeException("ParallelDeflateMaxBufferPairs",
                                                 "Value must be 4 or greater.");
                 _maxBufferPairs = value;
             }

@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-15 14:56:54>
+// Time-stamp: <2011-June-15 15:20:39>
 //
 // ------------------------------------------------------------------
 //
@@ -1004,7 +1004,7 @@ namespace Ionic.Zip
             set
             {
                 if ((value != 0) && (value != -1) && (value < 64 * 1024))
-                    throw new ArgumentException("value must be greater than 64k, or 0, or -1");
+                    throw new ArgumentOutOfRangeException("value must be greater than 64k, or 0, or -1");
                 _ParallelDeflateThreshold = value;
             }
             get
@@ -1050,7 +1050,7 @@ namespace Ionic.Zip
         ///   sets a limit for the number of pairs.  The total amount of storage
         ///   space allocated for buffering will then be (N*S*2), where N is the
         ///   number of buffer pairs, S is the size of each buffer (<see
-        ///   cref="BufferSize"/>).  By default, DotNetZip allocates 4 buffer
+        ///   cref="CodecBufferSize"/>).  By default, DotNetZip allocates 4 buffer
         ///   pairs per CPU core, so if your machine has 4 cores, and you retain
         ///   the default buffer size of 128k, then the
         ///   ParallelDeflateOutputStream will use 4 * 4 * 2 * 128kb of buffer
@@ -1100,7 +1100,7 @@ namespace Ionic.Zip
             set
             {
                 if (value < 4)
-                    throw new ArgumentException("ParallelDeflateMaxBufferPairs",
+                    throw new ArgumentOutOfRangeException("ParallelDeflateMaxBufferPairs",
                                                 "Value must be 4 or greater.");
                 _maxBufferPairs = value;
             }
@@ -1642,6 +1642,14 @@ namespace Ionic.Zip
             {
                 if (_zf != null) return _zf.ParallelDeflateThreshold;
                 return _zos.ParallelDeflateThreshold;
+            }
+        }
+        public int ParallelDeflateMaxBufferPairs
+        {
+            get
+            {
+                if (_zf != null) return _zf.ParallelDeflateMaxBufferPairs;
+                return _zos.ParallelDeflateMaxBufferPairs;
             }
         }
 #endif
