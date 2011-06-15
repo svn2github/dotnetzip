@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-June-15 08:17:44>
+// Last Saved: <2011-June-15 08:48:53>
 //
 // ------------------------------------------------------------------
 //
@@ -506,7 +506,15 @@ namespace Ionic.Zip
                 s1 = SlashFixed;
             }
 
-            // workitem 6513: when writing, use the alternative encoding only when ibm437 will not do.
+            // workitem 6513: when writing, use the alternative encoding
+            // only when _actualEncoding is not yet set (it can be set
+            // during Read), and when ibm437 will not do.
+
+            // workitem 12744
+            if (_actualEncoding != null)
+                return _actualEncoding.GetBytes(s1);
+
+
             byte[] result = ibm437.GetBytes(s1);
             // need to use this form of GetString() for .NET CF
             string s2 = ibm437.GetString(result, 0, result.Length);

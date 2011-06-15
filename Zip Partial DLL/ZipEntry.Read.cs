@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-11 17:30:55>
+// Time-stamp: <2011-June-15 09:02:15>
 //
 // ------------------------------------------------------------------
 //
@@ -136,10 +136,20 @@ namespace Ionic.Zip
             n = ze.ArchiveStream.Read(block, 0, block.Length);
             bytesRead += n;
 
-            // if the UTF8 bit is set for this entry, override the encoding the application requested.
-            ze._actualEncoding = ((ze._BitField & 0x0800) == 0x0800)
-                ? System.Text.Encoding.UTF8
-                : defaultEncoding;
+            // if the UTF8 bit is set for this entry, override the
+            // encoding the application requested.
+
+            if ((ze._BitField & 0x0800) == 0x0800)
+            {
+                ze._actualEncoding = System.Text.Encoding.UTF8;
+                // workitem 12744
+            }
+            else
+            {
+                ze._actualEncoding = defaultEncoding;
+            }
+
+
 
             // need to use this form of GetString() for .NET CF
             ze._FileNameInArchive = ze._actualEncoding.GetString(block, 0, block.Length);

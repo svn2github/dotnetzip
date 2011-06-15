@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-June-14 09:19:44>
+// Last Saved: <2011-June-15 08:32:30>
 //
 // ------------------------------------------------------------------
 //
@@ -303,6 +303,47 @@ namespace Ionic.Zip.Tests.Unicode
 
             Assert.AreEqual<String>(cyrillicComment, comment2,
                                     "The comments are not equal.");
+        }
+
+
+        [TestMethod]
+        public void UnicodeUpdate_wi12744()
+        {
+            const string zipFileToCreate = "UnicodeUpdate_wi12744.zip";
+            const string entryName = "Привет.txt";
+            TestContext.WriteLine("{0}", zipFileToCreate);
+            TestContext.WriteLine("==== creating zip");
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.UseUnicodeAsNecessary = true;
+                zip1.AddEntry(entryName, "this is the content of the added entry");
+                zip1.Save(zipFileToCreate);
+            }
+
+
+            TestContext.WriteLine("==== create a directory with 2 addl files in it");
+            string subdir = Path.Combine(TopLevelDir, "files");
+            Directory.CreateDirectory(subdir);
+            for (int i=0; i < 2; i++)
+            {
+                var filename = Path.Combine(subdir, "file" + i + ".txt");
+                TestUtilities.CreateAndFillFileText(filename, _rnd.Next(5000) + 2000);
+            }
+
+            TestContext.WriteLine("====  update the zip");
+            using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
+            {
+                zip2.AddDirectory(subdir);
+                zip2.Save();
+            }
+
+            TestContext.WriteLine("==== check the original file in the zip");
+            using (ZipFile zip3 = ZipFile.Read(zipFileToCreate))
+            {
+                var e = zip3[entryName];
+                Assert.IsTrue(e!=null, "Entry not found");
+                Assert.IsTrue(e.FileName == entryName, "name mismatch");
+            }
         }
 
 

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-March-06 11:56:38>
+// Time-stamp: <2011-June-15 09:04:12>
 //
 // ------------------------------------------------------------------
 //
@@ -301,6 +301,17 @@ namespace Ionic.Zip
                 else
                     zde._LengthOfTrailer += 16;
             }
+
+            // workitem 12744
+            if ((zde._BitField & 0x0800) == 0x0800)
+            {
+                zde._actualEncoding = System.Text.Encoding.UTF8;
+            }
+            else
+            {
+                zde._actualEncoding = expectedEncoding;
+            }
+
 
             if (zde._commentLength > 0)
             {
