@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-10 12:13:27>
+// Time-stamp: <2011-June-15 08:04:34>
 //
 // ------------------------------------------------------------------
 //
@@ -205,7 +205,56 @@ namespace Ionic.Zip.Tests.Streams
             }
         }
 
+        [TestMethod]
+        public void Create_ZOS_WithComment_wi10339()
+        {
+            string zipFileToCreate = "Create_ZOS_WithComment_wi10339.zip";
 
+            using (FileStream fs = File.Open(zipFileToCreate, FileMode.Create, FileAccess.ReadWrite))
+            {
+                using (var output = new ZipOutputStream(fs))
+                {
+                    output.CompressionLevel = Ionic.Zlib.CompressionLevel.None;
+                    output.Comment = "Cheeso is the man!";
+
+                    // If you explicitly set UseUnicodeAsNecessary to
+                    // false, the error no longer occurs.
+
+                    // output.UseUnicodeAsNecessary = false;
+
+                    string entryName = String.Format("entry{0:D4}.txt", _rnd.Next(10000));
+                    output.PutNextEntry(entryName);
+
+                    string content = "This is the content for the entry.";
+                    byte[] buffer = Encoding.ASCII.GetBytes(content);
+                    output.Write(buffer, 0, buffer.Length);
+                }
+
+            }
+        }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(System.ArgumentNullException))]
+        public void Create_ZOS_NullBuffer_wi12964()
+        {
+            using (var zip = new Ionic.Zip.ZipOutputStream(new MemoryStream()))
+            {
+                zip.PutNextEntry("EmptyFile.txt");
+                zip.Write(null, 0, 0);
+                //zip.Write(new byte[1], 0, 0);
+            }
+        }
+
+        [TestMethod]
+        public void Create_ZOS_ZeroByteEntry_wi12964()
+        {
+            using (var zip = new Ionic.Zip.ZipOutputStream(new MemoryStream()))
+            {
+                zip.PutNextEntry("EmptyFile.txt");
+                zip.Write(new byte[1], 0, 0);
+            }
+        }
 
 
         [TestMethod]
@@ -436,8 +485,8 @@ namespace Ionic.Zip.Tests.Streams
 
 
         [TestMethod, Timeout(30 * 60 * 1000)]  // timeout is in milliseconds, (30 * 60 * 1000) = 30 mins
-[ExpectedException(typeof(System.InvalidOperationException))]
-public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
+        [ExpectedException(typeof(System.InvalidOperationException))]
+        public void ZipOutputStream_Zip64_over_65534_Entries_FAIL()
         {
             _Internal_ZipOutputStream_Zip64_over_65534_Entries(Zip64Option.Never, EncryptionAlgorithm.PkzipWeak, Ionic.Zlib.CompressionLevel.Default);
         }

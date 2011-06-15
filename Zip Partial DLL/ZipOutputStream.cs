@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-14 11:08:25>
+// Time-stamp: <2011-June-15 08:18:33>
 //
 // ------------------------------------------------------------------
 //
@@ -1081,6 +1081,12 @@ namespace Ionic.Zip
                 throw new System.InvalidOperationException("The stream has been closed.");
             }
 
+            if (buffer==null)
+            {
+                _exceptionPending = true;
+                throw new System.ArgumentNullException("buffer");
+            }
+
             if (_currentEntry == null)
             {
                 _exceptionPending = true;
@@ -1096,7 +1102,8 @@ namespace Ionic.Zip
             if (_needToWriteEntryHeader)
                 _InitiateCurrentEntry(false);
 
-            _entryOutputStream.Write(buffer, offset, count);
+            if (count != 0)
+                _entryOutputStream.Write(buffer, offset, count);
         }
 
 
@@ -1271,7 +1278,10 @@ namespace Ionic.Zip
 
                 _currentEntry.FinishOutputStream(_outputStream, _outputCounter, _encryptor, _deflater, _entryOutputStream);
                 _currentEntry.PostProcessOutput(_outputStream);
-                _anyEntriesUsedZip64 |= _currentEntry.OutputUsedZip64.Value;
+                // workitem 12964
+                if (_currentEntry.OutputUsedZip64!=null)
+                    _anyEntriesUsedZip64 |= _currentEntry.OutputUsedZip64.Value;
+
                 // reset all the streams
                 _outputCounter = null; _encryptor = _deflater = null; _entryOutputStream = null;
             }
@@ -1303,12 +1313,7 @@ namespace Ionic.Zip
 
             if (disposing) // not called from finalizer
             {
-                // When ZipOutputStream is used within a using clause, and an exception is
-                // thrown within the scope of the using, Close()/Dispose() is invoked implicitly
-                // before processing the initial exception.  In that case, _exceptionPending
-                // is true, and we don't want to try to write anything.  It can cause
-                // additional exceptions that mask the original one.  Eventually the
-                // original exception will be propagated to the application.
+                // handle pending exceptions
                 if (!_exceptionPending)
                 {
                     _FinishCurrentEntry();
@@ -1432,7 +1437,7 @@ namespace Ionic.Zip
 
         private bool _leaveUnderlyingStreamOpen;
         private bool _disposed;
-        private bool _exceptionPending;
+        private bool _exceptionPending; // **see note below
         private bool _anyEntriesUsedZip64, _directoryNeededZip64;
         private CountingStream _outputCounter;
         private Stream _encryptor;
@@ -1445,6 +1450,20 @@ namespace Ionic.Zip
         internal Ionic.Zlib.ParallelDeflateOutputStream ParallelDeflater;
         private long _ParallelDeflateThreshold;
 #endif
+
+        // **Note regarding exceptions:
+
+        // When ZipOutputStream is employed within a using clause, which
+        // is the typical scenario, and an exception is thrown within
+        // the scope of the using, Close()/Dispose() is invoked
+        // implicitly before processing the initial exception.  In that
+        // case, _exceptionPending is true, and we don't want to try to
+        // write anything in the Close/Dispose logic.  Doing so can
+        // cause additional exceptions that mask the original one. So,
+        // the _exceptionPending flag is used to track that, and to
+        // allow the original exception to be propagated to the
+        // application without extra "noise."
+
     }
 
 
