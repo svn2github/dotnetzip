@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-15 10:18:00>
+// Time-stamp: <2011-June-16 09:28:07>
 //
 // ------------------------------------------------------------------
 //
@@ -97,30 +97,82 @@ namespace Ionic.Zip.Tests.Split
         {
             string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
 
+            string progressChannel = "segmentedzip";
+            StartProgressMonitor(progressChannel);
+            StartProgressClient(progressChannel, "Segmented Zips", "Creating files");
+
+            _txrx.Send("pb 0 max 2");
+
             int numFiles = _rnd.Next(10) + 8;
             int overflows = 0;
+            string msg;
+
+            _txrx.Send(String.Format("pb 1 max {0}", numFiles));
+
+            var update = new Action<int,int,Int64>( (x,y,z) => {
+                    switch (x)
+                    {
+                        case 0:
+                        _txrx.Send(String.Format("pb 2 max {0}", ((int)z)));
+                        break;
+                        case 1:
+                        msg = String.Format("pb 2 value {0}", ((int)z));
+                        _txrx.Send(msg);
+                        break;
+                        case 2:
+                        _txrx.Send("pb 1 step");
+                        _txrx.Send("pb 2 value 0");
+                        msg = String.Format("status created {0}/{1} files",
+                                            y+1,
+                                            ((int)z));
+                        _txrx.Send(msg);
+                        break;
+                    }
+                });
+
 
             string[] filesToZip;
             Dictionary<string, byte[]> checksums;
-            CreateLargeFilesWithChecksums(dirToZip, numFiles, out filesToZip, out checksums);
-
-            //var filesToZip = TestUtilities.GenerateFilesFlat(dirToZip);
-            int n = _rnd.Next(filesToZip.Length);
-
+            CreateLargeFilesWithChecksums(dirToZip, numFiles, update,
+                                          out filesToZip, out checksums);
+            _txrx.Send("pb 0 step");
             int[] segmentSizes = { 0, 64*1024, 128*1024, 512*1024, 1024*1024,
                                    2*1024*1024, 8*1024*1024, 16*1024*1024,
                                    1024*1024*1024 };
 
+            _txrx.Send("status zipping...");
+            _txrx.Send(String.Format("pb 1 max {0}", segmentSizes.Length));
+
+            System.EventHandler<Ionic.Zip.SaveProgressEventArgs> sp = (sender1, e1) =>
+                {
+                    switch (e1.EventType)
+                    {
+                        case ZipProgressEventType.Saving_Started:
+                        _txrx.Send(String.Format("pb 2 max {0}", filesToZip.Length));
+                        _txrx.Send("pb 2 value 0");
+                        break;
+
+                        case ZipProgressEventType.Saving_AfterWriteEntry:
+                        TestContext.WriteLine("Saved entry {0}, {1} bytes",
+                                              e1.CurrentEntry.FileName,
+                                              e1.CurrentEntry.UncompressedSize);
+                        _txrx.Send("pb 2 step");
+                        break;
+                    }
+                };
+
+
             for (int m=0; m < segmentSizes.Length; m++)
             {
-                //Directory.SetCurrentDirectory(TopLevelDir);
                 string trialDir = String.Format("trial{0}", m);
                 Directory.CreateDirectory(trialDir);
-                //Directory.SetCurrentDirectory(trialDir);
-
                 string zipFileToCreate = Path.Combine(trialDir,
                                                       String.Format("Archive-{0}.zip",m));
                 int maxSegSize = segmentSizes[m];
+
+                msg = String.Format("status seg {0}/{1} ({2}k)",
+                                    m+1, segmentSizes.Length, maxSegSize/1024);
+                _txrx.Send(msg);
 
                 TestContext.WriteLine("=======");
                 TestContext.WriteLine("Trial {0}", m);
@@ -140,6 +192,7 @@ namespace Ionic.Zip.Tests.Split
                         zip.CodecBufferSize = 0x8000;
                         zip.AddDirectory(dirToZip, "files");
                         zip.MaxOutputSegmentSize = maxSegSize;
+                        zip.SaveProgress += sp;
                         zip.Save(zipFileToCreate);
                     }
                     aok = true;
@@ -179,7 +232,10 @@ namespace Ionic.Zip.Tests.Split
                     // also verify checksums
                     VerifyChecksums(Path.Combine(extractDir, "files"), filesToZip, checksums);
                 }
+                _txrx.Send("pb 1 step");
             }
+
+            _txrx.Send("pb 0 step");
 
             Assert.IsTrue(overflows < 3, "Too many overflows. Check the test.");
         }
@@ -190,7 +246,7 @@ namespace Ionic.Zip.Tests.Split
         {
             // There was a claim that large archives (around or above
             // 1gb) did not work well with archive splitting.  This test
-            // attempts to verify that behavior.
+            // covers that case.
 
 #if REMOTE_FILESYSTEM
             string parentDir = Path.Combine("t:\\tdir", Path.GetFileNameWithoutExtension(TopLevelDir));
@@ -204,16 +260,15 @@ namespace Ionic.Zip.Tests.Split
             TestContext.WriteLine("Creating file {0}", zipFileToCreate);
 
 
-            //             int maxSegSize = 4*1024*1024;
-            //             int sizeBase =   10 * 1024 * 1024;
-            //             int sizeRandom = 1 * 1024 * 1024;
-            //             int numFiles = 3;
+            // int maxSegSize = 4*1024*1024;
+            // int sizeBase =   10 * 1024 * 1024;
+            // int sizeRandom = 1 * 1024 * 1024;
+            // int numFiles = 3;
 
             int maxSegSize = 120*1024*1024;
             int sizeBase =   420 * 1024 * 1024;
             int sizeRandom = 16 * 1024 * 1024;
-            int numFiles = _rnd.Next(4) + 12;
-
+            int numFiles = _rnd.Next(5) + 11;
             int numSaving= 0, totalToSave = 0, numSegs= 0;
             bool pb1set = false;
 

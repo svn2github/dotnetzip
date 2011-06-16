@@ -1,7 +1,7 @@
 // BasicTests.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.
+// Copyright (c) 2009-2011 Dino Chiesa
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-13 23:19:24>
+// Time-stamp: <2011-June-16 14:01:05>
 //
 // ------------------------------------------------------------------
 //
@@ -42,12 +42,12 @@ namespace Ionic.Zip.Tests.Basic
     public class BasicTests : IonicTestClass
     {
         EncryptionAlgorithm[] crypto =
-            {
-                EncryptionAlgorithm.None,
-                EncryptionAlgorithm.PkzipWeak,
-                EncryptionAlgorithm.WinZipAes128,
-                EncryptionAlgorithm.WinZipAes256,
-            };
+        {
+            EncryptionAlgorithm.None,
+            EncryptionAlgorithm.PkzipWeak,
+            EncryptionAlgorithm.WinZipAes128,
+            EncryptionAlgorithm.WinZipAes256,
+        };
 
 
         public BasicTests() : base() { }
@@ -66,30 +66,28 @@ namespace Ionic.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_AddItem_WithDirectory()
         {
-            int i;
-
             // select the name of the zip file
             string zipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_AddItem.zip");
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
             // create the subdirectory
-            string Subdir = Path.Combine(TopLevelDir, "files");
+            string subdir = Path.Combine(TopLevelDir, "files");
 
             // create a bunch of files
-            string[] FilesToZip = TestUtilities.GenerateFilesFlat(Subdir);
+            string[] filesToZip = TestUtilities.GenerateFilesFlat(subdir);
 
             // Create the zip archive
             Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 //zip.StatusMessageTextWriter = System.Console.Out;
-                for (i = 0; i < FilesToZip.Length; i++)
-                    zip1.AddItem(FilesToZip[i], "files");
+                for (int i = 0; i < filesToZip.Length; i++)
+                    zip1.AddItem(filesToZip[i], "files");
                 zip1.Save(zipFileToCreate);
             }
 
             // Verify the number of files in the zip
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), FilesToZip.Length,
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Length,
                                  "Incorrect number of entries in the zip file.");
         }
 
@@ -103,18 +101,18 @@ namespace Ionic.Zip.Tests.Basic
             Directory.SetCurrentDirectory(TopLevelDir);
 
             // create a bunch of files
-            string[] FilesToZip = TestUtilities.GenerateFilesFlat(".");
+            string[] filesToZip = TestUtilities.GenerateFilesFlat(".");
 
             // Create the zip archive
             using (ZipFile zip1 = new ZipFile())
             {
-                foreach (var f in FilesToZip)
+                foreach (var f in filesToZip)
                     zip1.AddItem(f);
                 zip1.Save(zipFileToCreate);
             }
 
             // Verify the number of files in the zip
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), FilesToZip.Length,
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Length,
                                  "Incorrect number of entries in the zip file.");
         }
 
@@ -149,23 +147,23 @@ namespace Ionic.Zip.Tests.Basic
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
             // create the subdirectory
-            string Subdir = Path.Combine(TopLevelDir, "files");
+            string subdir = Path.Combine(TopLevelDir, "files");
 
             // create a bunch of files
-            string[] FilesToZip = TestUtilities.GenerateFilesFlat(Subdir);
+            string[] filesToZip = TestUtilities.GenerateFilesFlat(subdir);
 
             // Create the zip archive
             Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 //zip.StatusMessageTextWriter = System.Console.Out;
-                for (i = 0; i < FilesToZip.Length; i++)
-                    zip1.AddFile(FilesToZip[i], "files");
+                for (i = 0; i < filesToZip.Length; i++)
+                    zip1.AddFile(filesToZip[i], "files");
                 zip1.Save(zipFileToCreate);
             }
 
             // Verify the number of files in the zip
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), FilesToZip.Length,
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Length,
                                  "Incorrect number of entries in the zip file.");
         }
 
@@ -175,10 +173,10 @@ namespace Ionic.Zip.Tests.Basic
         {
             int i, j;
             // create the subdirectory
-            string Subdir = Path.Combine(TopLevelDir, "files");
+            string subdir = Path.Combine(TopLevelDir, "files");
 
             // create a bunch of files
-            string[] FilesToZip = TestUtilities.GenerateFilesFlat(Subdir);
+            string[] filesToZip = TestUtilities.GenerateFilesFlat(subdir);
             for (int m = 0; m < 2; m++)
             {
                 string directoryName = "";
@@ -196,7 +194,7 @@ namespace Ionic.Zip.Tests.Basic
 
                     TestContext.WriteLine("using dirname: {0}", directoryName);
 
-                    int n = _rnd.Next(FilesToZip.Length / 2) + 2;
+                    int n = _rnd.Next(filesToZip.Length / 2) + 2;
                     TestContext.WriteLine("Zipping {0} files", n);
 
                     // Create the zip archive
@@ -207,10 +205,10 @@ namespace Ionic.Zip.Tests.Basic
                         {
                             do
                             {
-                                j = _rnd.Next(FilesToZip.Length);
-                            } while (zippedFiles.Contains(FilesToZip[j]));
-                            zip1.AddFile(FilesToZip[j], directoryName);
-                            zippedFiles.Add(FilesToZip[j]);
+                                j = _rnd.Next(filesToZip.Length);
+                            } while (zippedFiles.Contains(filesToZip[j]));
+                            zip1.AddFile(filesToZip[j], directoryName);
+                            zippedFiles.Add(filesToZip[j]);
                         }
                         zip1.Save(zipFileToCreate);
                     }
@@ -231,8 +229,8 @@ namespace Ionic.Zip.Tests.Basic
                     }
                 }
 
-                Directory.SetCurrentDirectory(Subdir);
-                FilesToZip = TestUtilities.GenerateFilesFlat(".");
+                Directory.SetCurrentDirectory(subdir);
+                filesToZip = TestUtilities.GenerateFilesFlat(".");
             }
 
             Directory.SetCurrentDirectory(TopLevelDir);
@@ -250,20 +248,20 @@ namespace Ionic.Zip.Tests.Basic
             Directory.SetCurrentDirectory(TopLevelDir);
 
             // create a bunch of files
-            string[] FilesToZip = TestUtilities.GenerateFilesFlat(".");
+            string[] filesToZip = TestUtilities.GenerateFilesFlat(".");
 
             // Create the zip archive
             using (ZipFile zip1 = new ZipFile())
             {
-                for (int i = 0; i < FilesToZip.Length; i++)
+                for (int i = 0; i < filesToZip.Length; i++)
                 {
-                    zip1.AddFile(FilesToZip[i]);
+                    zip1.AddFile(filesToZip[i]);
                 }
                 zip1.Save(zipFileToCreate);
             }
 
             // Verify the number of files in the zip
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), FilesToZip.Length,
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Length,
                                  "Incorrect number of entries in the zip file.");
         }
 
@@ -280,17 +278,17 @@ namespace Ionic.Zip.Tests.Basic
             Directory.SetCurrentDirectory(TopLevelDir);
 
             // create a bunch of files
-            string[] FilesToZip = TestUtilities.GenerateFilesFlat(".");
+            string[] filesToZip = TestUtilities.GenerateFilesFlat(".");
 
             // Create the zip archive
             using (ZipFile zip1 = new ZipFile())
             {
-                zip1.AddFiles(FilesToZip);
+                zip1.AddFiles(filesToZip);
                 zip1.Save(zipFileToCreate);
             }
 
             // Verify the number of files in the zip
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), FilesToZip.Length,
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Length,
                                  "Incorrect number of entries in the zip file.");
         }
 
@@ -310,20 +308,20 @@ namespace Ionic.Zip.Tests.Basic
             int subdirCount;
             int entries = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "PreserveDirHierarchy", dirToZip, null, out subdirCount);
 
-            string[] FilesToZip = Directory.GetFiles(".", "*.*", SearchOption.AllDirectories);
+            string[] filesToZip = Directory.GetFiles(".", "*.*", SearchOption.AllDirectories);
 
-            Assert.AreEqual<int>(FilesToZip.Length, entries,
+            Assert.AreEqual<int>(filesToZip.Length, entries,
                                  "Incorrect number of entries in the directory.");
 
             // Create the zip archive
             using (ZipFile zip1 = new ZipFile())
             {
-                zip1.AddFiles(FilesToZip, true, "");
+                zip1.AddFiles(filesToZip, true, "");
                 zip1.Save(zipFileToCreate);
             }
 
             // Verify the number of files in the zip
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), FilesToZip.Length,
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Length,
                                  "Incorrect number of entries in the zip file.");
         }
 
@@ -400,27 +398,27 @@ namespace Ionic.Zip.Tests.Basic
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
             // create the subdirectory
-            string Subdir = Path.Combine(TopLevelDir, "files");
+            string subdir = Path.Combine(TopLevelDir, "files");
 
             // create a bunch of files
-            string[] FilesToZip = TestUtilities.GenerateFilesFlat(Subdir);
+            string[] filesToZip = TestUtilities.GenerateFilesFlat(subdir);
 
             // Create the zip archive
             Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
-                for (int i = 0; i < FilesToZip.Length; i++)
+                for (int i = 0; i < filesToZip.Length; i++)
                 {
                     if (_rnd.Next(2) == 0)
-                        zip1.AddFile(FilesToZip[i], "files");
+                        zip1.AddFile(filesToZip[i], "files");
                     else
-                        zip1.AddItem(FilesToZip[i], "files");
+                        zip1.AddItem(filesToZip[i], "files");
                 }
                 zip1.Save(zipFileToCreate);
             }
 
             // Verify the number of files in the zip
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), FilesToZip.Length,
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Length,
                                  "Incorrect number of entries in the zip file.");
         }
 
@@ -480,33 +478,33 @@ namespace Ionic.Zip.Tests.Basic
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
             // create the subdirectory
-            string Subdir = Path.Combine(TopLevelDir, "files");
-            Directory.CreateDirectory(Subdir);
+            string subdir = Path.Combine(TopLevelDir, "files");
+            Directory.CreateDirectory(subdir);
 
             // create a bunch of files
             int NumFilesToCreate = _rnd.Next(23) + 14;
-            string[] FilesToZip = new string[NumFilesToCreate];
+            string[] filesToZip = new string[NumFilesToCreate];
             for (i = 0; i < NumFilesToCreate; i++)
-                FilesToZip[i] =
-                    TestUtilities.CreateUniqueFile("bin", Subdir, _rnd.Next(10000) + 5000);
+                filesToZip[i] =
+                    TestUtilities.CreateUniqueFile("bin", subdir, _rnd.Next(10000) + 5000);
 
             // Create the zip archive
             Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 //zip.StatusMessageTextWriter = System.Console.Out;
-                for (i = 0; i < FilesToZip.Length; i++)
+                for (i = 0; i < filesToZip.Length; i++)
                 {
                     if (_rnd.Next(2) == 0)
-                        zip1.AddFile(FilesToZip[i], "files");
+                        zip1.AddFile(filesToZip[i], "files");
                     else
-                        zip1.AddItem(FilesToZip[i], "files");
+                        zip1.AddItem(filesToZip[i], "files");
                 }
                 zip1.Save(zipFileToCreate);
             }
 
             // Verify the number of files in the zip
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), FilesToZip.Length,
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Length,
                                  "Incorrect number of entries in the zip file.");
         }
 
@@ -542,17 +540,17 @@ namespace Ionic.Zip.Tests.Basic
             string zipFileToCreate = Path.Combine(TopLevelDir, nameStub + ".zip");
 
             int i;
-            string[] FilesToZip = new string[fileCount];
+            string[] filesToZip = new string[fileCount];
             for (i = 0; i < fileCount; i++)
-                FilesToZip[i] = TestUtilities.CreateUniqueFile("zerolength", TopLevelDir);
+                filesToZip[i] = TestUtilities.CreateUniqueFile("zerolength", TopLevelDir);
 
             var sw = new StringWriter();
             using (ZipFile zip = new ZipFile())
             {
                 zip.StatusMessageTextWriter = sw;
                 zip.Password = password;
-                for (i = 0; i < FilesToZip.Length; i++)
-                    zip.AddFile(FilesToZip[i]);
+                for (i = 0; i < filesToZip.Length; i++)
+                    zip.AddFile(filesToZip[i]);
                 zip.Save(zipFileToCreate);
             }
 
@@ -561,7 +559,7 @@ namespace Ionic.Zip.Tests.Basic
 
             BasicVerifyZip(zipFileToCreate, password);
 
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), FilesToZip.Length,
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Length,
                                  "The zip file created has the wrong number of entries.");
         }
 
@@ -574,8 +572,8 @@ namespace Ionic.Zip.Tests.Basic
             string zipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_UpdateDirectory.zip");
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
-            string DirToZip = Path.Combine(TopLevelDir, "zipthis");
-            Directory.CreateDirectory(DirToZip);
+            string dirToZip = Path.Combine(TopLevelDir, "zipthis");
+            Directory.CreateDirectory(dirToZip);
 
             TestContext.WriteLine("\n------------\nCreating files ...");
 
@@ -587,22 +585,22 @@ namespace Ionic.Zip.Tests.Basic
 
             for (i = 0; i < subdirCount; i++)
             {
-                string SubdirShort = String.Format("dir{0:D4}", i);
-                string Subdir = Path.Combine(DirToZip, SubdirShort);
-                Directory.CreateDirectory(Subdir);
+                string subdirShort = String.Format("dir{0:D4}", i);
+                string subdir = Path.Combine(dirToZip, subdirShort);
+                Directory.CreateDirectory(subdir);
 
                 int filecount = _rnd.Next(11) + 17;
                 //int filecount = _rnd.Next(2) + 2;
-                FileCount[SubdirShort] = filecount;
+                FileCount[subdirShort] = filecount;
                 for (j = 0; j < filecount; j++)
                 {
                     string filename = String.Format("file{0:D4}.x", j);
-                    string fqFilename = Path.Combine(Subdir, filename);
+                    string fqFilename = Path.Combine(subdir, filename);
                     TestUtilities.CreateAndFillFile(fqFilename, _rnd.Next(1000) + 100);
 
                     var chk = TestUtilities.ComputeChecksum(fqFilename);
-                    var t1 = Path.GetFileName(DirToZip);
-                    var t2 = Path.Combine(t1, SubdirShort);
+                    var t1 = Path.GetFileName(dirToZip);
+                    var t2 = Path.Combine(t1, subdirShort);
                     var key = Path.Combine(t2, filename);
                     key = TestUtilities.TrimVolumeAndSwapSlashes(key);
                     TestContext.WriteLine("chk[{0}]= {1}", key, TestUtilities.CheckSumToString(chk));
@@ -618,7 +616,7 @@ namespace Ionic.Zip.Tests.Basic
             // add all the subdirectories into a new zip
             using (ZipFile zip1 = new ZipFile())
             {
-                zip1.AddDirectory(DirToZip, "zipthis");
+                zip1.AddDirectory(dirToZip, "zipthis");
                 zip1.Save(zipFileToCreate);
             }
 
@@ -635,15 +633,15 @@ namespace Ionic.Zip.Tests.Basic
                 foreach (ZipEntry e in zip2)
                 {
                     e.Extract("unpack");
-                    string PathToExtractedFile = Path.Combine("unpack", e.FileName);
+                    string pathToExtractedFile = Path.Combine("unpack", e.FileName);
 
                     // if it is a file....
                     if (checksums.ContainsKey(e.FileName))
                     {
                         // verify the checksum of the file is correct
                         string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
-                        string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
-                        Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", PathToExtractedFile);
+                        string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(pathToExtractedFile));
+                        Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", pathToExtractedFile);
                     }
                 }
             }
@@ -652,28 +650,28 @@ namespace Ionic.Zip.Tests.Basic
             TestContext.WriteLine("\n------------\nCreating some new files ...");
 
             // now, update some of the existing files
-            DirToZip = Path.Combine(TopLevelDir, "updates");
-            Directory.CreateDirectory(DirToZip);
+            dirToZip = Path.Combine(TopLevelDir, "updates");
+            Directory.CreateDirectory(dirToZip);
 
             for (i = 0; i < subdirCount; i++)
             {
-                string SubdirShort = String.Format("dir{0:D4}", i);
-                string Subdir = Path.Combine(DirToZip, SubdirShort);
-                Directory.CreateDirectory(Subdir);
+                string subdirShort = String.Format("dir{0:D4}", i);
+                string subdir = Path.Combine(dirToZip, subdirShort);
+                Directory.CreateDirectory(subdir);
 
-                int filecount = FileCount[SubdirShort];
+                int filecount = FileCount[subdirShort];
                 for (j = 0; j < filecount; j++)
                 {
                     if (_rnd.Next(2) == 1)
                     {
                         string filename = String.Format("file{0:D4}.x", j);
-                        TestUtilities.CreateAndFillFile(Path.Combine(Subdir, filename),
+                        TestUtilities.CreateAndFillFile(Path.Combine(subdir, filename),
                                                         _rnd.Next(1000) + 100);
-                        string fqFilename = Path.Combine(Subdir, filename);
+                        string fqFilename = Path.Combine(subdir, filename);
 
                         var chk = TestUtilities.ComputeChecksum(fqFilename);
-                        //var t1 = Path.GetFileName(DirToZip);
-                        var t2 = Path.Combine("zipthis", SubdirShort);
+                        //var t1 = Path.GetFileName(dirToZip);
+                        var t2 = Path.Combine("zipthis", subdirShort);
                         var key = Path.Combine(t2, filename);
                         key = TestUtilities.TrimVolumeAndSwapSlashes(key);
 
@@ -690,12 +688,12 @@ namespace Ionic.Zip.Tests.Basic
             // add some new content
             using (ZipFile zip3 = ZipFile.Read(zipFileToCreate))
             {
-                zip3.UpdateDirectory(DirToZip, "zipthis");
-                //String[] dirs = Directory.GetDirectories(DirToZip);
+                zip3.UpdateDirectory(dirToZip, "zipthis");
+                //String[] dirs = Directory.GetDirectories(dirToZip);
 
                 //foreach (String d in dirs)
                 //{
-                //    string dir = Path.Combine(Path.GetFileName(DirToZip), Path.GetFileName(d));
+                //    string dir = Path.Combine(Path.GetFileName(dirToZip), Path.GetFileName(d));
                 //    //string root = Path.Combine("zipthis", Path.GetFileName(d));
                 //    zip3.UpdateDirectory(dir, "zipthis");
                 //}
@@ -715,12 +713,12 @@ namespace Ionic.Zip.Tests.Basic
                     e.Extract("unpack2");
                     if (!e.IsDirectory)
                     {
-                        string PathToExtractedFile = Path.Combine("unpack2", e.FileName);
+                        string pathToExtractedFile = Path.Combine("unpack2", e.FileName);
 
                         // verify the checksum of the file is correct
                         string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
-                        string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
-                        Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", PathToExtractedFile);
+                        string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(pathToExtractedFile));
+                        Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", pathToExtractedFile);
                     }
                 }
             }
@@ -806,7 +804,7 @@ namespace Ionic.Zip.Tests.Basic
 
 
 
-        [Timeout(1500000), TestMethod]
+        [TestMethod, Timeout(40 * 60 * 1000)]
         public void CreateZip_AddDirectory_LargeNumberOfSmallFiles()
         {
             // start the visible progress monitor
@@ -861,15 +859,20 @@ namespace Ionic.Zip.Tests.Basic
                 string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("CreateZip_AddDirectory_LargeNumberOfSmallFiles-{0}.zip", m));
                 Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
-
-                string DirToZip = Path.Combine(TopLevelDir, "zipthis" + m);
-                Directory.CreateDirectory(DirToZip);
+                string dirToZip = Path.Combine(TopLevelDir, "zipthis" + m);
+                Directory.CreateDirectory(dirToZip);
 
                 TestContext.WriteLine("============================================");
                 TestContext.WriteLine("Creating files, cycle {0}...", m);
 
                 int subdirCount = 0;
-                int entries = TestUtilities.GenerateFilesOneLevelDeep(TestContext, "LargeNumberOfFiles", DirToZip, settings[m], progressUpdate, out subdirCount);
+                int entries =
+                    TestUtilities.GenerateFilesOneLevelDeep(TestContext,
+                                                            "LargeNumberOfFiles",
+                                                            dirToZip,
+                                                            settings[m],
+                                                            progressUpdate,
+                                                            out subdirCount);
                 _numEntriesToAdd = entries;  // _numEntriesToAdd is used in LNSF_AddProgress
                 _numEntriesAdded = 0;
 
@@ -883,7 +886,7 @@ namespace Ionic.Zip.Tests.Basic
                 using (ZipFile zip = new ZipFile())
                 {
                     zip.AddProgress += LNSF_AddProgress;
-                    zip.AddDirectory(Path.GetFileName(DirToZip));
+                    zip.AddDirectory(Path.GetFileName(dirToZip));
                     _txrx.Send("test Large # of Small Files"); // for good measure
                     zip.BufferSize = 4096;
                     zip.SortEntriesBeforeSaving = true;
@@ -899,7 +902,7 @@ namespace Ionic.Zip.Tests.Basic
 
                 _txrx.Send("status cleaning up...");
                 // clean up for this cycle
-                Directory.Delete(DirToZip, true);
+                Directory.Delete(dirToZip, true);
             }
             TestContext.WriteLine("============================================");
             TestContext.WriteLine("Test end - {0}", System.DateTime.Now.ToString("G"));
@@ -916,24 +919,27 @@ namespace Ionic.Zip.Tests.Basic
             string zipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_AddDirectory_OnlyZeroLengthFiles.zip");
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
-            string DirToZip = Path.Combine(TopLevelDir, "zipthis");
-            Directory.CreateDirectory(DirToZip);
+            string dirToZip = Path.Combine(TopLevelDir, "zipthis");
+            Directory.CreateDirectory(dirToZip);
 
             int entries = 0;
             int subdirCount = _rnd.Next(8) + 8;
             for (int i = 0; i < subdirCount; i++)
             {
-                string SubDir = Path.Combine(DirToZip, "dir" + i);
-                Directory.CreateDirectory(SubDir);
+                string subdir = Path.Combine(dirToZip, "dir" + i);
+                Directory.CreateDirectory(subdir);
 
-                // one empty file per subdir
-                string file = TestUtilities.CreateUniqueFile("bin", SubDir);
+                // two empty files per subdir
+                for (int j=0; j < 2; j++)
+                {
+                    TestUtilities.CreateUniqueFile("bin", subdir);
+                }
                 entries++;
             }
 
             using (ZipFile zip = new ZipFile())
             {
-                zip.AddDirectory(Path.GetFileName(DirToZip));
+                zip.AddDirectory(Path.GetFileName(dirToZip));
                 zip.Save(zipFileToCreate);
             }
 
@@ -949,17 +955,17 @@ namespace Ionic.Zip.Tests.Basic
             string zipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_AddDirectory_OneZeroLengthFile.zip");
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
-            string DirToZip = Path.Combine(TopLevelDir, "zipthis");
-            Directory.CreateDirectory(DirToZip);
+            string dirToZip = Path.Combine(TopLevelDir, "zipthis");
+            Directory.CreateDirectory(dirToZip);
 
             // one empty file
-            string file = TestUtilities.CreateUniqueFile("ZeroLengthFile.txt", DirToZip);
+            string file = TestUtilities.CreateUniqueFile("ZeroLengthFile.txt", dirToZip);
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
             using (ZipFile zip = new ZipFile())
             {
-                zip.AddDirectory(Path.GetFileName(DirToZip));
+                zip.AddDirectory(Path.GetFileName(dirToZip));
                 zip.Save(zipFileToCreate);
             }
 
@@ -974,14 +980,14 @@ namespace Ionic.Zip.Tests.Basic
             string zipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_AddDirectory_OnlyEmptyDirectories.zip");
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
-            string DirToZip = Path.Combine(TopLevelDir, "zipthis");
-            Directory.CreateDirectory(DirToZip);
+            string dirToZip = Path.Combine(TopLevelDir, "zipthis");
+            Directory.CreateDirectory(dirToZip);
 
             int entries = 0;
             int subdirCount = _rnd.Next(8) + 8;
             for (int i = 0; i < subdirCount; i++)
             {
-                string SubDir = Path.Combine(DirToZip, "EmptyDir" + i);
+                string SubDir = Path.Combine(dirToZip, "EmptyDir" + i);
                 Directory.CreateDirectory(SubDir);
             }
 
@@ -989,7 +995,7 @@ namespace Ionic.Zip.Tests.Basic
 
             using (ZipFile zip = new ZipFile())
             {
-                zip.AddDirectory(Path.GetFileName(DirToZip));
+                zip.AddDirectory(Path.GetFileName(dirToZip));
                 zip.Save(zipFileToCreate);
             }
 
@@ -1003,14 +1009,14 @@ namespace Ionic.Zip.Tests.Basic
             string zipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_AddDirectory_OneEmptyDirectory.zip");
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
-            string DirToZip = Path.Combine(TopLevelDir, "zipthis");
-            Directory.CreateDirectory(DirToZip);
+            string dirToZip = Path.Combine(TopLevelDir, "zipthis");
+            Directory.CreateDirectory(dirToZip);
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
             using (ZipFile zip = new ZipFile())
             {
-                zip.AddDirectory(Path.GetFileName(DirToZip));
+                zip.AddDirectory(Path.GetFileName(dirToZip));
                 zip.Save(zipFileToCreate);
             }
 
@@ -1025,14 +1031,14 @@ namespace Ionic.Zip.Tests.Basic
             string zipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_AddDirectory_CheckStatusTextWriter.zip");
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
-            string DirToZip = Path.Combine(TopLevelDir, "zipthis");
-            Directory.CreateDirectory(DirToZip);
+            string dirToZip = Path.Combine(TopLevelDir, "zipthis");
+            Directory.CreateDirectory(dirToZip);
 
             int entries = 0;
             int subdirCount = _rnd.Next(8) + 8;
             for (int i = 0; i < subdirCount; i++)
             {
-                string SubDir = Path.Combine(DirToZip, "Dir" + i);
+                string SubDir = Path.Combine(dirToZip, "Dir" + i);
                 Directory.CreateDirectory(SubDir);
                 // a few files per subdir
                 int fileCount = _rnd.Next(12) + 4;
@@ -1050,7 +1056,7 @@ namespace Ionic.Zip.Tests.Basic
             using (ZipFile zip = new ZipFile())
             {
                 zip.StatusMessageTextWriter = sw;
-                zip.AddDirectory(Path.GetFileName(DirToZip));
+                zip.AddDirectory(Path.GetFileName(dirToZip));
                 zip.Save(zipFileToCreate);
             }
 
@@ -1175,13 +1181,13 @@ namespace Ionic.Zip.Tests.Basic
                 int subdirCount = _rnd.Next(23) + 7;
                 for (i = 0; i < subdirCount; i++)
                 {
-                    string Subdir = Path.Combine(dirToZip, String.Format("dir{0:D3}", i));
-                    Directory.CreateDirectory(Subdir);
+                    string subdir = Path.Combine(dirToZip, String.Format("dir{0:D3}", i));
+                    Directory.CreateDirectory(subdir);
 
                     int fileCount = _rnd.Next(8);  // sometimes zero
                     for (j = 0; j < fileCount; j++)
                     {
-                        String file = Path.Combine(Subdir, String.Format("file{0:D3}.ext", j));
+                        String file = Path.Combine(subdir, String.Format("file{0:D3}.ext", j));
                         TestUtilities.CreateAndFillFile(file, _rnd.Next(10750) + 50);
                         entries++;
                     }
@@ -1404,14 +1410,14 @@ namespace Ionic.Zip.Tests.Basic
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
             // create the subdirectory
-            string Subdir = Path.Combine(TopLevelDir, "A");
-            Directory.CreateDirectory(Subdir);
+            string subdir = Path.Combine(TopLevelDir, "A");
+            Directory.CreateDirectory(subdir);
 
             // create the files
             int NumFilesToCreate = _rnd.Next(10) + 8;
             for (j = 0; j < NumFilesToCreate; j++)
             {
-                filename = Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
+                filename = Path.Combine(subdir, String.Format("file{0:D3}.txt", j));
                 repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                                              Path.GetFileName(filename));
                 TestUtilities.CreateAndFillFileText(filename, repeatedLine, _rnd.Next(34000) + 5000);
@@ -1461,12 +1467,12 @@ namespace Ionic.Zip.Tests.Basic
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
             // create the subdirectory
-            string Subdir = Path.Combine(TopLevelDir, "EmptyDirectory");
-            Directory.CreateDirectory(Subdir);
+            string subdir = Path.Combine(TopLevelDir, "EmptyDirectory");
+            Directory.CreateDirectory(subdir);
 
             using (ZipFile zip = new ZipFile())
             {
-                zip.AddDirectory(Subdir, "");
+                zip.AddDirectory(subdir, "");
                 zip.Save(zipFileToCreate);
             }
 
@@ -1492,14 +1498,14 @@ namespace Ionic.Zip.Tests.Basic
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
             // create the subdirectory
-            string Subdir = Path.Combine(TopLevelDir, "A");
-            Directory.CreateDirectory(Subdir);
+            string subdir = Path.Combine(TopLevelDir, "A");
+            Directory.CreateDirectory(subdir);
 
             // create the files
             int NumFilesToCreate = _rnd.Next(10) + 8;
             for (j = 0; j < NumFilesToCreate; j++)
             {
-                filename = Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
+                filename = Path.Combine(subdir, String.Format("file{0:D3}.txt", j));
                 repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                                              Path.GetFileName(filename));
                 TestUtilities.CreateAndFillFileText(filename, repeatedLine, _rnd.Next(34000) + 5000);
@@ -1530,7 +1536,7 @@ namespace Ionic.Zip.Tests.Basic
                     {
                         zip2[s].Extract(ms);
                         byte[] a = ms.ToArray();
-                        string f = Path.Combine(Subdir, s);
+                        string f = Path.Combine(subdir, s);
                         var fi = new FileInfo(f);
                         Assert.AreEqual<int>((int)(fi.Length), a.Length, "Unequal file lengths.");
                     }
@@ -1576,14 +1582,14 @@ namespace Ionic.Zip.Tests.Basic
             int j;
 
             // create the subdirectory
-            string Subdir = Path.Combine(TopLevelDir, "A");
-            Directory.CreateDirectory(Subdir);
+            string subdir = Path.Combine(TopLevelDir, "A");
+            Directory.CreateDirectory(subdir);
 
             // create the files
             int NumFilesToCreate = _rnd.Next(10) + 8;
             for (j = 0; j < NumFilesToCreate; j++)
             {
-                filename = Path.Combine(Subdir, String.Format("File{0:D3}.txt", j));
+                filename = Path.Combine(subdir, String.Format("File{0:D3}.txt", j));
                 repeatedLine = String.Format("This line is repeated over and over and over in file {0}",
                                              Path.GetFileName(filename));
                 TestUtilities.CreateAndFillFileText(filename, repeatedLine, _rnd.Next(23000) + 4000);
@@ -1623,7 +1629,7 @@ namespace Ionic.Zip.Tests.Basic
                                 {
                                     zip2[s2].Extract(ms);
                                     byte[] a = ms.ToArray();
-                                    string f = Path.Combine(Subdir, s2);
+                                    string f = Path.Combine(subdir, s2);
                                     var fi = new FileInfo(f);
                                     Assert.AreEqual<int>((int)(fi.Length), a.Length, "Unequal file lengths.");
                                 }
@@ -1648,15 +1654,15 @@ namespace Ionic.Zip.Tests.Basic
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
             string FileCommentFormat = "Comment Added By Test to file '{0}'";
-            string CommentOnArchive = "Comment added by FileComments() method.";
+            string commentOnArchive = "Comment added by FileComments() method.";
 
 
             int fileCount = _rnd.Next(3) + 3;
-            string[] FilesToZip = new string[fileCount];
+            string[] filesToZip = new string[fileCount];
             for (int i = 0; i < fileCount; i++)
             {
-                FilesToZip[i] = Path.Combine(TopLevelDir, String.Format("file{0:D3}.bin", i));
-                TestUtilities.CreateAndFillFile(FilesToZip[i], _rnd.Next(10000) + 5000);
+                filesToZip[i] = Path.Combine(TopLevelDir, String.Format("file{0:D3}.bin", i));
+                TestUtilities.CreateAndFillFile(filesToZip[i], _rnd.Next(10000) + 5000);
             }
 
             Directory.SetCurrentDirectory(TopLevelDir);
@@ -1664,20 +1670,20 @@ namespace Ionic.Zip.Tests.Basic
             using (ZipFile zip = new ZipFile())
             {
                 //zip.StatusMessageTextWriter = System.Console.Out;
-                for (int i = 0; i < FilesToZip.Length; i++)
+                for (int i = 0; i < filesToZip.Length; i++)
                 {
                     // use the local filename (not fully qualified)
-                    ZipEntry e = zip.AddFile(Path.GetFileName(FilesToZip[i]));
+                    ZipEntry e = zip.AddFile(Path.GetFileName(filesToZip[i]));
                     e.Comment = String.Format(FileCommentFormat, e.FileName);
                 }
-                zip.Comment = CommentOnArchive;
+                zip.Comment = commentOnArchive;
                 zip.Save(zipFileToCreate);
             }
 
             int entries = 0;
             using (ZipFile z2 = ZipFile.Read(zipFileToCreate))
             {
-                Assert.AreEqual<String>(CommentOnArchive, z2.Comment, "Unexpected comment on ZipFile.");
+                Assert.AreEqual<String>(commentOnArchive, z2.Comment, "Unexpected comment on ZipFile.");
                 foreach (ZipEntry e in z2)
                 {
                     string expectedComment = String.Format(FileCommentFormat, e.FileName);
@@ -1685,8 +1691,8 @@ namespace Ionic.Zip.Tests.Basic
                     entries++;
                 }
             }
-            Assert.AreEqual<int>(entries, FilesToZip.Length, "Unexpected file count. Expected {0}, got {1}.",
-                                 FilesToZip.Length, entries);
+            Assert.AreEqual<int>(entries, filesToZip.Length, "Unexpected file count. Expected {0}, got {1}.",
+                                 filesToZip.Length, entries);
         }
 
 
@@ -1695,11 +1701,11 @@ namespace Ionic.Zip.Tests.Basic
         {
             //int fileCount = _rnd.Next(13) + 23;
             int fileCount = _rnd.Next(3) + 2;
-            string[] FilesToZip = new string[fileCount];
+            string[] filesToZip = new string[fileCount];
             for (int i = 0; i < fileCount; i++)
             {
-                FilesToZip[i] = Path.Combine(TopLevelDir, String.Format("file{0:D3}.bin", i));
-                TestUtilities.CreateAndFillFileBinary(FilesToZip[i], _rnd.Next(10000) + 5000);
+                filesToZip[i] = Path.Combine(TopLevelDir, String.Format("file{0:D3}.bin", i));
+                TestUtilities.CreateAndFillFileBinary(filesToZip[i], _rnd.Next(10000) + 5000);
             }
             DateTime[] timestamp =
                 {
@@ -1732,10 +1738,10 @@ namespace Ionic.Zip.Tests.Basic
                         {
                             zip.EmitTimesInWindowsFormatWhenSaving = (k != 0);
 
-                            for (int i = 0; i < FilesToZip.Length; i++)
+                            for (int i = 0; i < filesToZip.Length; i++)
                             {
                                 // use the local filename (not fully qualified)
-                                ZipEntry e = zip.AddFile(Path.GetFileName(FilesToZip[i]));
+                                ZipEntry e = zip.AddFile(Path.GetFileName(filesToZip[i]));
                                 e.LastModified = t;
                             }
                             zip.Comment = "All files in this archive have the same LastModified value.";
@@ -1771,8 +1777,8 @@ namespace Ionic.Zip.Tests.Basic
                                                         "cycle {0}.{1}.{2}: Unexpected LastWriteTime on extracted filesystem file.", m, n, k);
                             }
                         }
-                        Assert.AreEqual<int>(entries, FilesToZip.Length, "Unexpected file count. Expected {0}, got {1}.",
-                                             FilesToZip.Length, entries);
+                        Assert.AreEqual<int>(entries, filesToZip.Length, "Unexpected file count. Expected {0}, got {1}.",
+                                             filesToZip.Length, entries);
                     }
                 }
             }
@@ -1788,8 +1794,8 @@ namespace Ionic.Zip.Tests.Basic
                 string zipFileToCreate = Path.Combine(TopLevelDir, "CreateAndExtract_VerifyAttributes.zip");
                 Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
-                string Subdir = Path.Combine(TopLevelDir, "A");
-                Directory.CreateDirectory(Subdir);
+                string subdir = Path.Combine(TopLevelDir, "A");
+                Directory.CreateDirectory(subdir);
 
                 //int fileCount = _rnd.Next(13) + 23;
                 FileAttributes[] attributeCombos = {
@@ -1816,24 +1822,24 @@ namespace Ionic.Zip.Tests.Basic
                     FileAttributes.Temporary | FileAttributes.Archive,
                 };
                 int fileCount = attributeCombos.Length;
-                string[] FilesToZip = new string[fileCount];
+                string[] filesToZip = new string[fileCount];
                 TestContext.WriteLine("============\nCreating.");
                 for (int i = 0; i < fileCount; i++)
                 {
-                    FilesToZip[i] = Path.Combine(Subdir, String.Format("file{0:D3}.bin", i));
-                    TestUtilities.CreateAndFillFileBinary(FilesToZip[i], _rnd.Next(10000) + 5000);
-                    TestContext.WriteLine("Creating {0}    [{1}]", FilesToZip[i], attributeCombos[i].ToString());
-                    File.SetAttributes(FilesToZip[i], attributeCombos[i]);
+                    filesToZip[i] = Path.Combine(subdir, String.Format("file{0:D3}.bin", i));
+                    TestUtilities.CreateAndFillFileBinary(filesToZip[i], _rnd.Next(10000) + 5000);
+                    TestContext.WriteLine("Creating {0}    [{1}]", filesToZip[i], attributeCombos[i].ToString());
+                    File.SetAttributes(filesToZip[i], attributeCombos[i]);
                 }
 
                 TestContext.WriteLine("============\nZipping.");
                 Directory.SetCurrentDirectory(TopLevelDir);
                 using (ZipFile zip = new ZipFile())
                 {
-                    for (int i = 0; i < FilesToZip.Length; i++)
+                    for (int i = 0; i < filesToZip.Length; i++)
                     {
                         // use the local filename (not fully qualified)
-                        ZipEntry e = zip.AddFile(FilesToZip[i], "");
+                        ZipEntry e = zip.AddFile(filesToZip[i], "");
                     }
                     zip.Save(zipFileToCreate);
                 }
@@ -1856,8 +1862,8 @@ namespace Ionic.Zip.Tests.Basic
                                                         "Unexpected attributes on the extracted filesystem file {0}.", e.FileName);
                     }
                 }
-                Assert.AreEqual<int>(entries, FilesToZip.Length, "Unexpected file count. Expected {0}, got {1}.",
-                                     FilesToZip.Length, entries);
+                Assert.AreEqual<int>(entries, filesToZip.Length, "Unexpected file count. Expected {0}, got {1}.",
+                                     filesToZip.Length, entries);
             }
             catch (Exception ex1)
             {
@@ -1941,18 +1947,19 @@ namespace Ionic.Zip.Tests.Basic
 
 
         [TestMethod]
+        [Timeout(1000 * 240)]  // timeout in ms.  240s = 4 mins
         public void CreateZip_VerifyFileLastModified()
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_VerifyFileLastModified.zip");
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
-            String[] potentialFilenames = Directory.GetFiles(System.Environment.GetEnvironmentVariable("TEMP"));
+            String[] candidateFileNames = Directory.GetFiles(System.Environment.GetEnvironmentVariable("TEMP"));
             var checksums = new Dictionary<string, byte[]>();
             var timestamps = new Dictionary<string, DateTime>();
             var actualFilenames = new List<string>();
             var excludedFilenames = new List<string>();
 
-            int maxFiles = _rnd.Next(potentialFilenames.Length / 2) + potentialFilenames.Length / 3;
+            int maxFiles = _rnd.Next(candidateFileNames.Length / 2) + candidateFileNames.Length / 3;
             maxFiles = Math.Min(maxFiles, 145);
             //maxFiles = Math.Min(maxFiles, 15);
             TestContext.WriteLine("\n-----------------------------\r\n{1}: Finding files in '{0}'...",
@@ -1964,7 +1971,7 @@ namespace Ionic.Zip.Tests.Basic
                 bool foundOne = false;
                 while (!foundOne)
                 {
-                    filename = potentialFilenames[_rnd.Next(potentialFilenames.Length)];
+                    filename = candidateFileNames[_rnd.Next(candidateFileNames.Length)];
                     if (excludedFilenames.Contains(filename)) continue;
                     var fi = new FileInfo(filename);
 
@@ -2020,8 +2027,8 @@ namespace Ionic.Zip.Tests.Basic
                 {
                     excludedFilenames.Add(filename);
                 }
-            } while ((actualFilenames.Count < maxFiles) && (actualFilenames.Count < potentialFilenames.Length) &&
-                     actualFilenames.Count + excludedFilenames.Count < potentialFilenames.Length);
+            } while ((actualFilenames.Count < maxFiles) && (actualFilenames.Count < candidateFileNames.Length) &&
+                     actualFilenames.Count + excludedFilenames.Count < candidateFileNames.Length);
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
@@ -2052,8 +2059,8 @@ namespace Ionic.Zip.Tests.Basic
                     entries++;
                     // verify that the LastMod time on the filesystem file is set correctly
                     e.Extract("unpack");
-                    string PathToExtractedFile = Path.Combine("unpack", e.FileName);
-                    DateTime actualFilesystemLastMod = AdjustTime_Win32ToDotNet(File.GetLastWriteTime(PathToExtractedFile));
+                    string pathToExtractedFile = Path.Combine("unpack", e.FileName);
+                    DateTime actualFilesystemLastMod = AdjustTime_Win32ToDotNet(File.GetLastWriteTime(pathToExtractedFile));
                     TimeSpan delta = timestamps[e.FileName] - actualFilesystemLastMod;
 
                     // get the delta as an absolute value:
@@ -2064,7 +2071,7 @@ namespace Ionic.Zip.Tests.Basic
                     // The time delta can be at most, 1 second.
                     Assert.IsTrue(delta < new TimeSpan(0, 0, 1),
                                   "Unexpected LastMod timestamp on extracted filesystem file ({0}) expected({1}) actual({2})  delta({3}).",
-                                  PathToExtractedFile,
+                                  pathToExtractedFile,
                                   timestamps[e.FileName].ToString("F"),
                                   actualFilesystemLastMod.ToString("F"),
                                   delta.ToString()
@@ -2072,8 +2079,8 @@ namespace Ionic.Zip.Tests.Basic
 
                     // verify the checksum of the file is correct
                     string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
-                    string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
-                    Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", PathToExtractedFile);
+                    string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(pathToExtractedFile));
+                    Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", pathToExtractedFile);
                 }
             }
             Assert.AreEqual<int>(entries, actualFilenames.Count, "Unexpected file count.");
@@ -2114,13 +2121,13 @@ namespace Ionic.Zip.Tests.Basic
             int subdirCount = _rnd.Next(4) + 4;
             for (i = 0; i < subdirCount; i++)
             {
-                string Subdir = Path.Combine(ZipThis, "DirectoryToZip.test." + i);
-                Directory.CreateDirectory(Subdir);
+                string subdir = Path.Combine(ZipThis, "DirectoryToZip.test." + i);
+                Directory.CreateDirectory(subdir);
 
                 int fileCount = _rnd.Next(3) + 3;
                 for (j = 0; j < fileCount; j++)
                 {
-                    String file = Path.Combine(Subdir, "file" + j);
+                    String file = Path.Combine(subdir, "file" + j);
                     TestUtilities.CreateAndFillFile(file, _rnd.Next(1000) + 1500);
                     entries++;
                 }
@@ -2147,20 +2154,20 @@ namespace Ionic.Zip.Tests.Basic
             string zipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_AddDirectory_OneCharOverrideName.zip");
             Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
 
-            String CommentOnArchive = "BasicTests::CreateZip_AddDirectory_OneCharOverrideName(): This archive override the name of a directory with a one-char name.";
+            String commentOnArchive = "BasicTests::CreateZip_AddDirectory_OneCharOverrideName(): This archive override the name of a directory with a one-char name.";
 
-            string Subdir = Path.Combine(TopLevelDir, "A");
-            Directory.CreateDirectory(Subdir);
+            string subdir = Path.Combine(TopLevelDir, "A");
+            Directory.CreateDirectory(subdir);
 
             int NumFilesToCreate = _rnd.Next(23) + 14;
             var checksums = new Dictionary<string, string>();
             for (int j = 0; j < NumFilesToCreate; j++)
             {
-                filename = Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
+                filename = Path.Combine(subdir, String.Format("file{0:D3}.txt", j));
                 TestUtilities.CreateAndFillFileText(filename, _rnd.Next(12000) + 5000);
                 var chk = TestUtilities.ComputeChecksum(filename);
 
-                var relativePath = Path.Combine(Path.GetFileName(Subdir), Path.GetFileName(filename));
+                var relativePath = Path.Combine(Path.GetFileName(subdir), Path.GetFileName(filename));
                 //var key = Path.Combine("A", filename);
                 var key = TestUtilities.TrimVolumeAndSwapSlashes(relativePath);
                 checksums.Add(key, TestUtilities.CheckSumToString(chk));
@@ -2172,8 +2179,8 @@ namespace Ionic.Zip.Tests.Basic
 
             using (ZipFile zip1 = new ZipFile())
             {
-                zip1.AddDirectory(Subdir, Path.GetFileName(Subdir));
-                zip1.Comment = CommentOnArchive;
+                zip1.AddDirectory(subdir, Path.GetFileName(subdir));
+                zip1.Comment = commentOnArchive;
                 zip1.Save(zipFileToCreate);
             }
 
@@ -2188,12 +2195,12 @@ namespace Ionic.Zip.Tests.Basic
                     e.Extract("unpack");
                     if (checksums.ContainsKey(e.FileName))
                     {
-                        string PathToExtractedFile = Path.Combine("unpack", e.FileName);
+                        string pathToExtractedFile = Path.Combine("unpack", e.FileName);
 
                         // verify the checksum of the file is correct
                         string expectedCheckString = checksums[e.FileName];
-                        string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(PathToExtractedFile));
-                        Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", PathToExtractedFile);
+                        string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(pathToExtractedFile));
+                        Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", pathToExtractedFile);
                     }
                 }
             }
@@ -2206,19 +2213,16 @@ namespace Ionic.Zip.Tests.Basic
         public void CreateZip_CompressionLevelZero_AllEntries()
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "CompressionLevelZero.zip");
-
-            String CommentOnArchive = "BasicTests::CompressionLevelZero(): This archive override the name of a directory with a one-char name.";
-
+            String commentOnArchive = "BasicTests::CompressionLevelZero(): This archive override the name of a directory with a one-char name.";
             int entriesAdded = 0;
             String filename = null;
-
-            string Subdir = Path.Combine(TopLevelDir, "A");
-            Directory.CreateDirectory(Subdir);
+            string subdir = Path.Combine(TopLevelDir, "A");
+            Directory.CreateDirectory(subdir);
 
             int fileCount = _rnd.Next(10) + 10;
             for (int j = 0; j < fileCount; j++)
             {
-                filename = Path.Combine(Subdir, String.Format("file{0:D3}.txt", j));
+                filename = Path.Combine(subdir, String.Format("file{0:D3}.txt", j));
                 TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
                 entriesAdded++;
             }
@@ -2227,8 +2231,8 @@ namespace Ionic.Zip.Tests.Basic
             using (ZipFile zip = new ZipFile())
             {
                 zip.CompressionLevel = Ionic.Zlib.CompressionLevel.None;
-                zip.AddDirectory(Subdir, Path.GetFileName(Subdir));
-                zip.Comment = CommentOnArchive;
+                zip.AddDirectory(subdir, Path.GetFileName(subdir));
+                zip.Comment = commentOnArchive;
                 zip.Save(zipFileToCreate);
             }
 
@@ -2252,14 +2256,12 @@ namespace Ionic.Zip.Tests.Basic
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "ForceNoCompression.zip");
             String filename = null;
-
-            string Subdir = Path.Combine(TopLevelDir, "A");
-            Directory.CreateDirectory(Subdir);
-
+            string subdir = Path.Combine(TopLevelDir, "A");
+            Directory.CreateDirectory(subdir);
             int fileCount = _rnd.Next(13) + 13;
             for (int j = 0; j < fileCount; j++)
             {
-                filename = Path.Combine(Subdir, String.Format("{0}-file{1:D3}.txt", (_rnd.Next(2) == 0) ? "C":"U", j));
+                filename = Path.Combine(subdir, String.Format("{0}-file{1:D3}.txt", (_rnd.Next(2) == 0) ? "C":"U", j));
                 TestUtilities.CreateAndFillFileText(filename, _rnd.Next(34000) + 5000);
             }
 
@@ -2324,6 +2326,7 @@ namespace Ionic.Zip.Tests.Basic
         [TestMethod]
         public void GetInfo()
         {
+            TestContext.WriteLine("GetInfo");
             string zipFileToCreate = Path.Combine(TopLevelDir, "GetInfo.zip");
             String filename = null;
             int n;
@@ -2331,6 +2334,7 @@ namespace Ionic.Zip.Tests.Basic
             Directory.CreateDirectory(subdir);
 
             int fileCount = _rnd.Next(27) + 23;
+            TestContext.WriteLine("Creating {0} files", fileCount);
             for (int j = 0; j < fileCount; j++)
             {
                 filename = Path.Combine(subdir, String.Format("file{0:D3}.txt", j));
@@ -2343,10 +2347,11 @@ namespace Ionic.Zip.Tests.Basic
                 }
             }
 
+            TestContext.WriteLine("Creating a zip file");
             using (ZipFile zip = new ZipFile())
             {
                 zip.Password = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
-                String[] filenames = Directory.GetFiles(subdir);
+                var filenames = Directory.GetFiles(subdir);
                 foreach (String f in filenames)
                 {
                     ZipEntry e = zip.AddFile(f, "");
@@ -2358,6 +2363,7 @@ namespace Ionic.Zip.Tests.Basic
                 zip.Save(zipFileToCreate);
             }
 
+            TestContext.WriteLine("Calling ZipFile::Info_get");
             using (ZipFile zip = ZipFile.Read(zipFileToCreate))
             {
                 string info = zip.Info;
@@ -2381,8 +2387,9 @@ namespace Ionic.Zip.Tests.Basic
             string cwd = Directory.GetCurrentDirectory();
             using (var zip = new ZipFile())
             {
+                zip.AddFile(filename, "");
                 Directory.SetCurrentDirectory("\\");
-                zip.AddFile("dinoch\\dev\\dotnet\\zip\\DotNetZip\\Zip Tests\\BasicTests.cs", "");
+                zip.AddFile("dev\\codeplex\\DotNetZip\\Zip Tests\\BasicTests.cs", "");
                 Directory.SetCurrentDirectory(cwd);
                 zip.Save(zipFileToCreate);
             }

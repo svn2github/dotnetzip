@@ -1,7 +1,7 @@
 // TestUtilities.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa and Microsoft Corporation.
+// Copyright (c) 2009-2011 Dino Chiesa.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-January-05 16:38:14>
+// Time-stamp: <2011-June-16 09:20:42>
 //
 // ------------------------------------------------------------------
 //
@@ -154,7 +154,9 @@ namespace Ionic.Zip.Tests.Utilities
         }
 
 
-        internal static void CreateAndFillFileText(string filename, Int64 size, System.Action<Int64> update)
+        internal static void CreateAndFillFileText(string filename,
+                                                   Int64 size,
+                                                   Action<Int64> update)
         {
             Int64 bytesRemaining = size;
 
@@ -208,13 +210,18 @@ namespace Ionic.Zip.Tests.Utilities
             }
         }
 
-        internal static void CreateAndFillFileText(string Filename, string Line, Int64 size)
+        internal static void CreateAndFillFileText(string Filename,
+                                                   string Line,
+                                                   Int64 size)
         {
             CreateAndFillFileText(Filename, Line, size, null);
         }
 
 
-        internal static void CreateAndFillFileText(string Filename, string Line, Int64 size, System.Action<Int64> update)
+        internal static void CreateAndFillFileText(string Filename,
+                                                   string Line,
+                                                   Int64 size,
+                                                   System.Action<Int64> update)
         {
             Int64 bytesRemaining = size;
             // fill the file by repeatedly writing out the same line
@@ -299,7 +306,9 @@ namespace Ionic.Zip.Tests.Utilities
             text = 0, binary = 1,
         }
 
-        internal static void CreateAndFillFile(string filename, Int64 size, FileFlavor flavor)
+        internal static void CreateAndFillFile(string filename,
+                                               Int64 size,
+                                               FileFlavor flavor)
         {
             if (size == 0)
                 File.Create(filename);
@@ -593,7 +602,19 @@ namespace Ionic.Zip.Tests.Utilities
             return GenerateFilesFlat(subdir, numFilesToCreate, size, size);
         }
 
-        internal static string[] GenerateFilesFlat(string subdir, int numFilesToCreate, int lowSize, int highSize)
+        internal static string[] GenerateFilesFlat(string subdir,
+                                                   int numFilesToCreate,
+                                                   int lowSize, int highSize)
+        {
+            return GenerateFilesFlat(subdir, numFilesToCreate, lowSize, highSize,
+                                     null);
+        }
+
+        internal static string[] GenerateFilesFlat(string subdir,
+                                                   int numFilesToCreate,
+                                                   int lowSize,
+                                                   int highSize,
+                                                   Action<Int32,Int32,Int64> update)
         {
             if (numFilesToCreate==0)
                 numFilesToCreate = _rnd.Next(23) + 14;
@@ -606,13 +627,28 @@ namespace Ionic.Zip.Tests.Utilities
             if (!Directory.Exists(subdir))
                 Directory.CreateDirectory(subdir);
 
-            string[] FilesToZip = new string[numFilesToCreate];
-            for (int i = 0; i < numFilesToCreate; i++)
+            int i = 0;
+            Action<Int64> byteUpdate = null;
+            if (update != null)
             {
-                FilesToZip[i] = Path.Combine(subdir, String.Format("testfile{0:D3}.txt", i));
-                TestUtilities.CreateAndFillFileText(FilesToZip[i], _rnd.Next(highSize - lowSize) + lowSize);
+                byteUpdate = new Action<Int64>( x => {
+                        update(1,i,x);
+                    });
             }
-            return FilesToZip;
+
+            string[] filesToZip = new string[numFilesToCreate];
+            for (i = 0; i < numFilesToCreate; i++)
+            {
+                filesToZip[i] = Path.Combine(subdir, String.Format("testfile{0:D3}.txt", i));
+                var sz = _rnd.Next(highSize - lowSize) + lowSize;
+                if (update != null)
+                    update(0, i, sz);
+                TestUtilities.CreateAndFillFileText(filesToZip[i],
+                                                    sz,
+                                                    byteUpdate);
+                if (update != null) update(2,i,numFilesToCreate);
+            }
+            return filesToZip;
         }
 
 

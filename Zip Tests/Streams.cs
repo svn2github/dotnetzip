@@ -1,7 +1,7 @@
 // Streams.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009-2010 Dino Chiesa
+// Copyright (c) 2009-2011 Dino Chiesa
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-15 08:04:34>
+// Time-stamp: <2011-June-15 23:04:21>
 //
 // ------------------------------------------------------------------
 //
@@ -44,9 +44,7 @@ namespace Ionic.Zip.Tests.Streams
     {
         Ionic.CopyData.Transceiver _txrx;
 
-
         public StreamsTests() : base() { }
-
 
         // Use TestCleanup to run code after each test has run
         [TestCleanup()]
@@ -65,36 +63,80 @@ namespace Ionic.Zip.Tests.Streams
 
 
         EncryptionAlgorithm[] crypto =
-            {
-                EncryptionAlgorithm.None,
-                EncryptionAlgorithm.PkzipWeak,
-                EncryptionAlgorithm.WinZipAes128,
-                EncryptionAlgorithm.WinZipAes256,
-            };
+        {
+            EncryptionAlgorithm.None,
+            EncryptionAlgorithm.PkzipWeak,
+            EncryptionAlgorithm.WinZipAes128,
+            EncryptionAlgorithm.WinZipAes256,
+        };
 
 #if NOT
         EncryptionAlgorithm[] cryptoNoPkzip =
-            {
-                EncryptionAlgorithm.None,
-                EncryptionAlgorithm.WinZipAes128,
-                EncryptionAlgorithm.WinZipAes256,
-            };
+        {
+            EncryptionAlgorithm.None,
+            EncryptionAlgorithm.WinZipAes128,
+            EncryptionAlgorithm.WinZipAes256,
+        };
 #endif
 
         Ionic.Zlib.CompressionLevel[] compLevels =
-            {
-                Ionic.Zlib.CompressionLevel.None,
-                Ionic.Zlib.CompressionLevel.BestSpeed,
-                Ionic.Zlib.CompressionLevel.Default,
-                Ionic.Zlib.CompressionLevel.BestCompression,
-            };
+        {
+            Ionic.Zlib.CompressionLevel.None,
+            Ionic.Zlib.CompressionLevel.BestSpeed,
+            Ionic.Zlib.CompressionLevel.Default,
+            Ionic.Zlib.CompressionLevel.BestCompression,
+        };
 
         Zip64Option[] z64 =
+        {
+            Zip64Option.Never,
+            Zip64Option.AsNecessary,
+            Zip64Option.Always,
+        };
+
+
+        [TestMethod]
+        public void Create_ZOS_Encrypt_wi12815()
+        {
+            string zipFileToCreate =
+                Path.Combine(TopLevelDir, "Create_ZOS_Encrypt_wi12815.zip");
+
+            var content = new byte[1789];
+            unchecked
             {
-                Zip64Option.Never,
-                Zip64Option.AsNecessary,
-                Zip64Option.Always,
-            };
+                byte b = 0;
+                for (var i = 0; i < content.Length; i++, b++)
+                {
+                    content[i] = b;
+                }
+            }
+
+            var checkBuffer = new Action<String>( stage => {
+                    byte b = 0;
+                    TestContext.WriteLine("Checking buffer ({0})", stage);
+                    for (var i = 0; i < content.Length; i++, b++)
+                    {
+                        Assert.IsTrue((content[i] == b),
+                                      "Buffer was modified.");
+                    }
+                });
+
+            checkBuffer("before");
+
+            using (var fileStream = File.OpenWrite(zipFileToCreate))
+            {
+                using(var zipStream = new ZipOutputStream(fileStream, true))
+                {
+                    zipStream.CompressionLevel = Ionic.Zlib.CompressionLevel.None;
+                    zipStream.Password = "mydummypassword";
+                    zipStream.Encryption = EncryptionAlgorithm.WinZipAes256;
+                    zipStream.PutNextEntry("myentry.myext");
+                    zipStream.Write(content, 0, content.Length);
+                }
+            }
+
+            checkBuffer("after");
+        }
 
 
 

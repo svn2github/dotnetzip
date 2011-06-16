@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-15 10:02:04>
+// Time-stamp: <2011-June-16 08:58:57>
 //
 // ------------------------------------------------------------------
 //
@@ -334,10 +334,19 @@ namespace Ionic.Zip.Tests.Utilities
             }
         }
 
-        protected static void CreateLargeFilesWithChecksums(string subdir, int numFiles, out string[] filesToZip, out Dictionary<string, byte[]> checksums)
+        protected static void CreateLargeFilesWithChecksums(string subdir,
+                                                            int numFiles,
+                                                            Action<int,int,Int64> update,
+                                                            out string[] filesToZip,
+                                                            out Dictionary<string,byte[]> checksums)
         {
             // create a bunch of files
-            filesToZip = TestUtilities.GenerateFilesFlat(subdir, numFiles, 256 * 1024, 3 * 1024 * 1024);
+            filesToZip = TestUtilities.GenerateFilesFlat(subdir,
+                                                         numFiles,
+                                                         256 * 1024,
+                                                         3 * 1024 * 1024,
+                                                         update);
+
             DateTime atMidnight = new DateTime(DateTime.Now.Year,
                                                DateTime.Now.Month,
                                                DateTime.Now.Day);
