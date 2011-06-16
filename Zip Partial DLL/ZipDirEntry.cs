@@ -1,7 +1,7 @@
 // ZipDirEntry.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2006-2010 Dino Chiesa and Microsoft Corporation.
+// Copyright (c) 2006-2011 Dino Chiesa .
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-15 09:04:12>
+// Time-stamp: <2011-June-16 10:44:34>
 //
 // ------------------------------------------------------------------
 //
@@ -28,6 +28,7 @@
 
 
 using System;
+using System.Collections.Generic;
 
 namespace Ionic.Zip
 {
@@ -152,16 +153,22 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// Reads one entry from the zip directory structure in the zip file.
+        ///   Reads one entry from the zip directory structure in the zip file.
         /// </summary>
+        ///
         /// <param name="zf">
-        /// The zipfile for which a directory entry will be read.  From this param, the
-        /// method gets the ReadStream and the expected text encoding
-        /// (ProvisionalAlternateEncoding) which is used if the entry is not marked
-        /// UTF-8.
+        ///   The zipfile for which a directory entry will be read.  From this param, the
+        ///   method gets the ReadStream and the expected text encoding
+        ///   (ProvisionalAlternateEncoding) which is used if the entry is not marked
+        ///   UTF-8.
         /// </param>
+        ///
+        /// <param name="previouslySeen">
+        ///   a list of previously seen entry names; used to prevent duplicates.
+        /// </param>
+        ///
         /// <returns>the entry read from the archive.</returns>
-        internal static ZipEntry ReadDirEntry(ZipFile zf)
+        internal static ZipEntry ReadDirEntry(ZipFile zf, List<String> previouslySeen)
         {
             System.IO.Stream s = zf.ReadStream;
             System.Text.Encoding expectedEncoding = zf.ProvisionalAlternateEncoding;
@@ -246,7 +253,7 @@ namespace Ionic.Zip
 
             // workitem 10330
             // insure unique entry names
-            while (zf.ContainsEntry(zde._FileNameInArchive))
+            while (previouslySeen.Contains(zde._FileNameInArchive))
             {
                 zde._FileNameInArchive = CopyHelper.AppendCopyToFileName(zde._FileNameInArchive);
                 zde._metadataChanged = true;

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-14 09:46:19>
+// Time-stamp: <2011-June-16 08:33:31>
 //
 // ------------------------------------------------------------------
 //
@@ -278,7 +278,7 @@ namespace Ionic.Zip
                                    ReadOptions options)
         {
             if (options == null)
-                throw new ArgumentNullException("options"); 
+                throw new ArgumentNullException("options");
             return Read(fileName,
                         options.StatusMessageWriter,
                         options.Encoding,
@@ -525,7 +525,7 @@ namespace Ionic.Zip
                                    EventHandler<ReadProgressEventArgs> readProgress)
         {
             if (zipStream == null)
-                throw new ArgumentException("The stream must be non-null", "zipStream");
+                throw new ArgumentNullException("zipStream");
 
             ZipFile zf = new ZipFile();
             zf._StatusMessageTextWriter = statusMessageWriter;
@@ -726,7 +726,8 @@ namespace Ionic.Zip
             // workitem 9214
             bool inputUsesZip64 = false;
             ZipEntry de;
-            while ((de = ZipEntry.ReadDirEntry(zf)) != null)
+            var previouslySeen = new List<String>();
+            while ((de = ZipEntry.ReadDirEntry(zf, previouslySeen)) != null)
             {
                 de.ResetDirEntry();
                 zf.OnReadEntry(true, null);
@@ -738,6 +739,7 @@ namespace Ionic.Zip
 
                 // workitem 9214
                 if (de._InputUsesZip64) inputUsesZip64 = true;
+                previouslySeen.Add(de.FileName); // to prevent dupes
             }
 
             // workitem 9214; auto-set the zip64 thing
@@ -795,7 +797,8 @@ namespace Ionic.Zip
             try
             {
                 ZipEntry de;
-                while ((de = ZipEntry.ReadDirEntry(zf)) != null)
+                var previouslySeen = new List<String>();
+                while ((de = ZipEntry.ReadDirEntry(zf, previouslySeen)) != null)
                 {
                     // Housekeeping: Since ZipFile exposes ZipEntry elements in the enumerator,
                     // we need to copy the comment that we grab from the ZipDirEntry
@@ -808,6 +811,7 @@ namespace Ionic.Zip
                         e1._Comment = de.Comment;
                         if (de.IsDirectory) e1.MarkAsDirectory();
                     }
+                    previouslySeen.Add(de.FileName); // to prevent dupes
                 }
 
                 // workitem 8299
@@ -1115,8 +1119,8 @@ namespace Ionic.Zip
                 }
                 result = true;
             }
-            catch (IOException) { } 
-            catch (ZipException) { } 
+            catch (IOException) { }
+            catch (ZipException) { }
             return result;
         }
 
