@@ -3,7 +3,7 @@
 // WinZipAes.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa.
+// Copyright (c) 2009-2011 Dino Chiesa.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -17,7 +17,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-14 11:07:52>
+// Time-stamp: <2011-June-16 10:27:14>
 //
 // ------------------------------------------------------------------
 //
@@ -37,14 +37,15 @@ using System.Security.Cryptography;
 namespace Ionic.Zip
 {
     /// <summary>
-    /// This is a helper class supporting WinZip AES encryption.
-    /// This class is intended for use only by the DotNetZip library.
+    ///   This is a helper class supporting WinZip AES encryption.
+    ///   This class is intended for use only by the DotNetZip library.
     /// </summary>
+    ///
     /// <remarks>
-    /// Most uses of the DotNetZip library will not involve direct calls into the
-    /// WinZipAesCrypto class.  Instead, the WinZipAesCrypto class is instantiated and
-    /// used by the ZipEntry() class when WinZip AES encryption or decryption on an
-    /// entry is employed.
+    ///   Most uses of the DotNetZip library will not involve direct calls into
+    ///   the WinZipAesCrypto class.  Instead, the WinZipAesCrypto class is
+    ///   instantiated and used by the ZipEntry() class when WinZip AES
+    ///   encryption or decryption on an entry is employed.
     /// </remarks>
     internal class WinZipAesCrypto
     {
@@ -66,11 +67,6 @@ namespace Ionic.Zip
             _Password = password;
             _KeyStrengthInBits = KeyStrengthInBits;
         }
-
-        //private WinZipAesCrypto()
-        //{
-        //}
-
 
         public static WinZipAesCrypto Generate(string password, int KeyStrengthInBits)
         {
@@ -320,9 +316,9 @@ namespace Ionic.Zip
 
 
     /// <summary>
-    /// A stream that encrypts as it writes, or decrypts as it reads.  The Crypto is AES in
-    /// CTR (counter) mode, which is
-    /// compatible with the AES encryption employed by WinZip 12.0.
+    ///   A stream that encrypts as it writes, or decrypts as it reads.  The
+    ///   Crypto is AES in CTR (counter) mode, which is compatible with the AES
+    ///   encryption employed by WinZip 12.0.
     /// </summary>
     internal class WinZipAesCipherStream : Stream
     {
@@ -408,7 +404,8 @@ namespace Ionic.Zip
 
             int keySizeInBits = _params.KeyBytes.Length * 8;
             if (keySizeInBits != 256 && keySizeInBits != 128 && keySizeInBits != 192)
-                throw new ArgumentException("keysize");
+                throw new ArgumentOutOfRangeException("keysize",
+                                                      "size of key must be 128, 192, or 256");
 
             _mac = new HMACSHA1(_params.MacIv);
 
@@ -620,8 +617,12 @@ namespace Ionic.Zip
             if (buffer == null)
                 throw new ArgumentNullException("buffer");
 
-            if (offset < 0 || count < 0)
-                throw new ArgumentException("Invalid parameters");
+            if (offset < 0)
+                throw new ArgumentOutOfRangeException("offset",
+                                                      "Must not be less than zero.");
+            if (count < 0)
+                throw new ArgumentOutOfRangeException("count",
+                                                      "Must not be less than zero.");
 
             if (buffer.Length < offset + count)
                 throw new ArgumentException("The buffer is too small");
@@ -699,9 +700,12 @@ namespace Ionic.Zip
             if (buffer == null)
                 throw new ArgumentNullException("buffer");
 
-            if (offset < 0 || count < 0)
-                throw new ArgumentException("Invalid parameters");
-
+            if (offset < 0)
+                throw new ArgumentOutOfRangeException("offset",
+                                                      "Must not be less than zero.");
+            if (count < 0)
+                throw new ArgumentOutOfRangeException("count",
+                                                      "Must not be less than zero.");
             if (buffer.Length < offset + count)
                 throw new ArgumentException("The offset and count are too large");
 
