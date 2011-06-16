@@ -3505,6 +3505,7 @@ namespace Ionic.Zip
         private object LOCK = new object();
         private bool _saveOperationCanceled;
         private bool _extractOperationCanceled;
+        private bool _addOperationCanceled;
         private EncryptionAlgorithm _Encryption;
         private bool _JustSaved;
         private long _locEndOfCDS = -1;

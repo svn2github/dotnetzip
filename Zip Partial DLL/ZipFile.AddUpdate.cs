@@ -1,7 +1,7 @@
 // ZipFile.AddUpdate.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa.
+// Copyright (c) 2009, 2011 Dino Chiesa.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-14 10:37:17>
+// Time-stamp: <2011-June-16 11:03:59>
 //
 // ------------------------------------------------------------------
 //
@@ -661,11 +661,13 @@ namespace Ionic.Zip
             if (fileNames == null)
                 throw new ArgumentNullException("fileNames");
 
+            _addOperationCanceled = false;
             OnAddStarted();
             if (preserveDirHierarchy)
             {
                 foreach (var f in fileNames)
                 {
+                    if (_addOperationCanceled) break;
                     if (directoryPathInArchive != null)
                     {
                         //string s = SharedUtilities.NormalizePath(Path.Combine(directoryPathInArchive, Path.GetDirectoryName(f)));
@@ -679,10 +681,13 @@ namespace Ionic.Zip
             else
             {
                 foreach (var f in fileNames)
+                {
+                    if (_addOperationCanceled) break;
                     this.AddFile(f, directoryPathInArchive);
-
+                }
             }
-            OnAddCompleted();
+            if (!_addOperationCanceled)
+                OnAddCompleted();
         }
 
 
@@ -1173,7 +1178,7 @@ namespace Ionic.Zip
         ///
         public ZipEntry AddEntry(string entryName, string content, System.Text.Encoding encoding)
         {
-            // cannot employ a using clause here.  We need the stream to 
+            // cannot employ a using clause here.  We need the stream to
             // persist after exit from this method.
             var ms = new MemoryStream();
 
@@ -1937,7 +1942,14 @@ namespace Ionic.Zip
                                                   directoryName);
 
             if (level == 0)
+            {
+                _addOperationCanceled = false;
                 OnAddStarted();
+            }
+
+            // workitem 13371
+            if (_addOperationCanceled)
+                return null;
 
             string dirForEntries = rootDirectoryPathInArchive;
             ZipEntry baseDir = null;
@@ -1972,32 +1984,42 @@ namespace Ionic.Zip
                 dirForEntries = baseDir.FileName;
             }
 
-            String[] filenames = Directory.GetFiles(directoryName);
-
-            if (recurse)
+            if (!_addOperationCanceled)
             {
-                // add the files:
-                foreach (String filename in filenames)
-                {
-                    if (action == AddOrUpdateAction.AddOnly)
-                        AddFile(filename, dirForEntries);
-                    else
-                        UpdateFile(filename, dirForEntries);
-                }
 
-                // add the subdirectories:
-                String[] dirnames = Directory.GetDirectories(directoryName);
-                foreach (String dir in dirnames)
+                String[] filenames = Directory.GetFiles(directoryName);
+
+                if (recurse)
                 {
-                    // workitem 8617: Optionally traverse reparse points
+                    // add the files:
+                    foreach (String filename in filenames)
+                    {
+                        if (_addOperationCanceled) break;
+                        if (action == AddOrUpdateAction.AddOnly)
+                            AddFile(filename, dirForEntries);
+                        else
+                            UpdateFile(filename, dirForEntries);
+                    }
+
+                    if (!_addOperationCanceled)
+                    {
+                        // add the subdirectories:
+                        String[] dirnames = Directory.GetDirectories(directoryName);
+                        foreach (String dir in dirnames)
+                        {
+                            // workitem 8617: Optionally traverse reparse points
 #if NETCF
-                    FileAttributes fileAttrs = (FileAttributes) NetCfFile.GetAttributes(dir);
+                            FileAttributes fileAttrs = (FileAttributes) NetCfFile.GetAttributes(dir);
 #else
-                    FileAttributes fileAttrs = System.IO.File.GetAttributes(dir);
+                            FileAttributes fileAttrs = System.IO.File.GetAttributes(dir);
 #endif
-                    if (this.AddDirectoryWillTraverseReparsePoints ||
-                        ((fileAttrs & FileAttributes.ReparsePoint) == 0))
-                        AddOrUpdateDirectoryImpl(dir, rootDirectoryPathInArchive, action, recurse, level + 1);
+                            if (this.AddDirectoryWillTraverseReparsePoints ||
+                                ((fileAttrs & FileAttributes.ReparsePoint) == 0))
+                                AddOrUpdateDirectoryImpl(dir, rootDirectoryPathInArchive, action, recurse, level + 1);
+
+                        }
+
+                    }
                 }
             }
 
