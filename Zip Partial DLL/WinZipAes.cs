@@ -17,7 +17,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 10:27:14>
+// Time-stamp: <2011-June-16 12:45:42>
 //
 // ------------------------------------------------------------------
 //
@@ -359,10 +359,9 @@ namespace Ionic.Zip
 
         private long _length;
         private long _totalBytesXferred;
-
-
-        private byte[] _PendingWriteBuffer;
+        private byte[] _PendingWriteBlock;
         private int _pendingCount;
+        private byte[] _iobuf;
 
         /// <summary>
         /// The constructor.
@@ -423,7 +422,10 @@ namespace Ionic.Zip
 
 
             if (_mode == CryptoMode.Encrypt)
-                _PendingWriteBuffer = new byte[BLOCK_SIZE_IN_BYTES];
+            {
+                _iobuf = new byte[2048];
+                _PendingWriteBlock = new byte[BLOCK_SIZE_IN_BYTES];
+            }
 
 
 #if WANT_TRACE
@@ -459,7 +461,7 @@ namespace Ionic.Zip
             // which we call TransformFinalBlock.  But, we don't know how to
             // recognize the "last" bytes.  The approach taken here: maintain a
             // buffer, so that one full or partial block of bytes is always
-            // available.  This is the _PendingWriteBuffer.  Then at time of
+            // available.  This is the _PendingWriteBlock.  Then at time of
             // Close(), we set the _NextXformWillBeFinal flag and flush that buffer.
             //
             // This works whether the caller writes in odd-sized batches, for example
@@ -479,7 +481,7 @@ namespace Ionic.Zip
                     _finalBlock = true;
                 }
 
-                else if (buffer==_PendingWriteBuffer && bytesToRead==BLOCK_SIZE_IN_BYTES)
+                else if (buffer==_PendingWriteBlock && bytesToRead==BLOCK_SIZE_IN_BYTES)
                 {
                     // this happens with a Flush(), I think.
                 }
@@ -489,7 +491,7 @@ namespace Ionic.Zip
                     // NOT the final block, therefore buffer it.
 
                     Array.Copy(buffer, offset,
-                               _PendingWriteBuffer, _pendingCount,
+                               _PendingWriteBlock, _pendingCount,
                                bytesToRead);
 
                     _pendingCount += bytesToRead;
@@ -692,8 +694,6 @@ namespace Ionic.Zip
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            // This class cannot decrypt as it writes.
-            // If you want to decrypt, then READ through the stream.
             if (_mode == CryptoMode.Decrypt)
                 throw new NotSupportedException();
 
@@ -724,12 +724,14 @@ namespace Ionic.Zip
                 // If 16 or fewer, then just buffer the bytes
                 if (count + _pendingCount <= BLOCK_SIZE_IN_BYTES)
                 {
-                    Array.Copy(buffer, offset,
-                           _PendingWriteBuffer, _pendingCount,
-                           count);
+                    Buffer.BlockCopy(buffer,
+                                     offset,
+                                     _PendingWriteBlock,
+                                     _pendingCount,
+                                     count);
                     _pendingCount += count;
 
-                    // At this point, _PendingWriteBuffer contains up to
+                    // At this point, _PendingWriteBlock contains up to
                     // BLOCK_SIZE_IN_BYTES bytes, and _pendingCount ranges from 0 to
                     // BLOCK_SIZE_IN_BYTES. We don't want to xform+write them yet,
                     // because this may have been the last block.  The last block gets
@@ -744,9 +746,11 @@ namespace Ionic.Zip
                 // NB: extra is possibly zero here. That happens when the pending buffer
                 // held 16 bytes (a complete block) before this call to Write.
 
-                Array.Copy(buffer, offset,
-                       _PendingWriteBuffer, _pendingCount,
-                       extra);
+                Buffer.BlockCopy(buffer,
+                                 offset,
+                                 _PendingWriteBlock,
+                                 _pendingCount,
+                                 extra);
 
                 // adjust counts:
                 _pendingCount = 0;
@@ -754,20 +758,32 @@ namespace Ionic.Zip
                 count -= extra;
 
                 // xform and write:
-                ProcessOneBlockWriting(_PendingWriteBuffer, 0, BLOCK_SIZE_IN_BYTES);
-                _s.Write(_PendingWriteBuffer, 0, BLOCK_SIZE_IN_BYTES);
+                ProcessOneBlockWriting(_PendingWriteBlock, 0, BLOCK_SIZE_IN_BYTES);
+                _s.Write(_PendingWriteBlock, 0, BLOCK_SIZE_IN_BYTES);
                 _totalBytesXferred += BLOCK_SIZE_IN_BYTES;
             }
 
-            TransformInPlace(buffer, offset, count);
+            // workitem 12815
+            // xform chunkwise ... Cannot transform in place using the original
+            // buffer because that is user-maintained.
+            int bytesRemaining = count;
+            do
+            {
+                int c = _iobuf.Length;
+                if (c > bytesRemaining) c = bytesRemaining;
+                Buffer.BlockCopy(buffer,
+                                 offset,
+                                 _iobuf,
+                                 0,
+                                 c);
 
-#if WANT_TRACE
-            transformed.Write(buffer, offset, count);
-#endif
+                TransformInPlace(_iobuf, 0, c);
+                _s.Write(_iobuf, offset, c);
+                bytesRemaining -= c;
+                offset += bytesRemaining;
+            } while(bytesRemaining > 0);
 
-            _s.Write(buffer, offset, count - _pendingCount);
             _totalBytesXferred += count - _pendingCount;
-
         }
 
 
@@ -783,8 +799,8 @@ namespace Ionic.Zip
             {
                 // xform and write whatever is left over
                 _NextXformWillBeFinal = true;
-                ProcessOneBlockWriting(_PendingWriteBuffer, 0, _pendingCount);
-                _s.Write(_PendingWriteBuffer, 0, _pendingCount);
+                ProcessOneBlockWriting(_PendingWriteBlock, 0, _pendingCount);
+                _s.Write(_PendingWriteBlock, 0, _pendingCount);
                 _totalBytesXferred += _pendingCount;
             }
 
