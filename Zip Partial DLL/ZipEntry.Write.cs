@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-June-15 15:17:18>
+// Last Saved: <2011-June-16 10:42:08>
 //
 // ------------------------------------------------------------------
 //
@@ -512,8 +512,11 @@ namespace Ionic.Zip
 
             // workitem 12744
             if (_actualEncoding != null)
+            {
+                if (!(_Comment == null || _Comment.Length == 0))
+                    _CommentBytes = _actualEncoding.GetBytes(_Comment);
                 return _actualEncoding.GetBytes(s1);
-
+            }
 
             byte[] result = ibm437.GetBytes(s1);
             // need to use this form of GetString() for .NET CF
