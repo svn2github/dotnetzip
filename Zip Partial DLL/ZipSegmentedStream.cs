@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-15 13:24:03>
+// Time-stamp: <2011-June-15 17:27:07>
 //
 // ------------------------------------------------------------------
 //
@@ -111,7 +111,7 @@ namespace Ionic.Zip
             // a segmented zip file, when the starting segment is earlier
             // than the ending segment, for a particular entry.
             if (diskNumber >= 99)
-                throw new ArgumentException("diskNumber");
+                throw new ArgumentOutOfRangeException("diskNumber");
 
             ZipSegmentedStream zss = new ZipSegmentedStream()
                 {
@@ -383,7 +383,7 @@ namespace Ionic.Zip
             // Console.WriteLine("***ZSS.Trunc to disk {0}", diskNumber);
             // Console.WriteLine("***ZSS.Trunc:  current disk {0}", CurrentSegment);
             if (diskNumber >= 99)
-                throw new ArgumentException("diskNumber");
+                throw new ArgumentOutOfRangeException("diskNumber");
 
             if (rwMode != RwMode.Write)
             {
