@@ -1,7 +1,7 @@
 // ZipFile.saveSelfExtractor.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c)  2008, 2009 Dino Chiesa.
+// Copyright (c)  2008-2011 Dino Chiesa.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-14 10:33:44>
+// Time-stamp: <2011-June-16 10:23:12>
 //
 // ------------------------------------------------------------------
 //
@@ -90,6 +90,13 @@ namespace Ionic.Zip
     /// </summary>
     public class SelfExtractorSaveOptions
     {
+        public SelfExtractorSaveOptions()
+        {
+            // workitem 12608
+            // defaults
+            SfxExeWindowTitle = "DotNetZip Self-extractor (http://DotNetZip.codeplex.com/)";
+        }
+
         /// <summary>
         ///   The type of SFX to create.
         /// </summary>
@@ -417,7 +424,7 @@ namespace Ionic.Zip
         /// </summary>
         ///
         /// <remarks>
-        ///   Use any arbitrary string.  It will show up, for example, during a
+        ///   Use any arbitrary string.  This text will be displayed during a
         ///   mouseover in Windows Explorer.  If you specify nothing, then the string
         ///   "DotNetZip SFX Archive" is embedded into the EXE as the description.
         /// </remarks>
@@ -433,8 +440,8 @@ namespace Ionic.Zip
         /// </summary>
         ///
         /// <remarks>
-        ///   Use any arbitrary string.
-        ///   It will show up, for example, while viewing properties of the EXE file in
+        ///   Use any arbitrary string. This text will be displayed
+        ///   while viewing properties of the EXE file in
         ///   Windows Explorer.
         /// </remarks>
         ///
@@ -444,6 +451,29 @@ namespace Ionic.Zip
             set;
         }
 
+        /// <summary>
+        ///   The title to display in the Window of a GUI SFX, while it extracts.
+        /// </summary>
+        ///
+        /// <remarks>
+        ///   <para>
+        ///     By default the title show in the GUI window of a self-extractor
+        ///     is "DotNetZip Self-extractor (http://DotNetZip.codeplex.com/)".
+        ///     You can change that by setting this property before saving the SFX.
+        ///   </para>
+        ///
+        ///   <para>
+        ///     This property has an effect only when producing a Self-extractor
+        ///     of flavor <c>SelfExtractorFlavor.WinFormsApplication</c>.
+        ///   </para>
+        /// </remarks>
+        ///
+        public String SfxExeWindowTitle
+        {
+            // workitem 12608
+            get;
+            set;
+        }
     }
 
 
@@ -848,7 +878,7 @@ namespace Ionic.Zip
                                       + options.ProductVersion.Replace("\"", "")
                                       + "\")]\n");
 
-                        string copyright = "Extractor: Copyright © Dino Chiesa 2008, 2009";
+                        string copyright = "Extractor: Copyright © Dino Chiesa 2008-2011";
                         if (!String.IsNullOrEmpty(options.Copyright))
                             copyright += "Contents: " + options.Copyright.Replace("\"", "");
 
@@ -903,6 +933,7 @@ namespace Ionic.Zip
 
                                         line = line.Replace("@@REMOVE_AFTER_EXECUTE", options.RemoveUnpackedFilesAfterExecute.ToString());
                                         line = line.Replace("@@QUIET", options.Quiet.ToString());
+                                        line = line.Replace("@@SFX_EXE_WINDOW_TITLE", options.SfxExeWindowTitle);
                                         line = line.Replace("@@EXTRACT_EXISTING_FILE", ((int)options.ExtractExistingFile).ToString());
 
                                         if (postExCmdLine != null)
