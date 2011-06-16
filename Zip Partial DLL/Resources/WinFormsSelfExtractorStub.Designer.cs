@@ -257,7 +257,7 @@
             this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(484, 336);
             this.Name = "WinFormsSelfExtractorStub";
-            this.Text = "@@SFX_EXE_WINDOW_TITLE";
+            this.Text = "This text will be replaced at runtime";
             this.Shown += new System.EventHandler(this.Form_Shown);
             this.ResumeLayout(false);
             this.PerformLayout();

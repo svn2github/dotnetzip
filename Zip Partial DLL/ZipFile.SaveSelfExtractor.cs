@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 10:23:12>
+// Time-stamp: <2011-June-16 13:25:58>
 //
 // ------------------------------------------------------------------
 //
@@ -90,13 +90,6 @@ namespace Ionic.Zip
     /// </summary>
     public class SelfExtractorSaveOptions
     {
-        public SelfExtractorSaveOptions()
-        {
-            // workitem 12608
-            // defaults
-            SfxExeWindowTitle = "DotNetZip Self-extractor (http://DotNetZip.codeplex.com/)";
-        }
-
         /// <summary>
         ///   The type of SFX to create.
         /// </summary>
@@ -639,19 +632,24 @@ namespace Ionic.Zip
         /// </remarks>
         ///
         /// <example>
-        ///   This example saves a self-extracting archive that will use c:\ExtractHere
-        ///   as the default extract location.
+        ///   This example saves a WinForms-based self-extracting archive EXE that
+        ///   will use c:\ExtractHere as the default extract location. The C# code
+        ///   shows syntax for .NET 3.0, which uses an object initializer for
+        ///   the SelfExtractorOptions object.
         /// <code>
         /// string DirectoryPath = "c:\\Documents\\Project7";
         /// using (ZipFile zip = new ZipFile())
         /// {
         ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath));
-        ///     zip.Comment = "This will be embedded into a self-extracting console-based exe";
-        ///     SelfExtractorOptions options = new SelfExtractorOptions();
-        ///     options.Flavor = SelfExtractorFlavor.ConsoleApplication;
-        ///     options.DefaultExtractDirectory = "%USERPROFILE%\\ExtractHere";
-        ///     options.PostExtractCommandLine = ExeToRunAfterExtract;
-        ///     options.RemoveUnpackedFilesAfterExecute = true;
+        ///     zip.Comment = "This will be embedded into a self-extracting WinForms-based exe";
+        ///     var options = new SelfExtractorOptions
+        ///     {
+        ///       Flavor = SelfExtractorFlavor.WinFormsApplication,
+        ///       DefaultExtractDirectory = "%USERPROFILE%\\ExtractHere",
+        ///       PostExtractCommandLine = ExeToRunAfterExtract,
+        ///       SfxExeWindowTitle = "My Custom Window Title",
+        ///       RemoveUnpackedFilesAfterExecute = true
+        ///     };
         ///     zip.SaveSelfExtractor("archive.exe", options);
         /// }
         /// </code>
@@ -661,9 +659,10 @@ namespace Ionic.Zip
         ///     zip.AddDirectory(DirectoryPath, System.IO.Path.GetFileName(DirectoryPath))
         ///     zip.Comment = "This will be embedded into a self-extracting console-based exe"
         ///     Dim options As New SelfExtractorOptions()
-        ///     options.Flavor = SelfExtractorFlavor.ConsoleApplication
+        ///     options.Flavor = SelfExtractorFlavor.WinFormsApplication
         ///     options.DefaultExtractDirectory = "%USERPROFILE%\\ExtractHere"
         ///     options.PostExtractCommandLine = ExeToRunAfterExtract
+        ///     options.SfxExeWindowTitle = "My Custom Window Title"
         ///     options.RemoveUnpackedFilesAfterExecute = True
         ///     zip.SaveSelfExtractor("archive.exe", options)
         /// End Using
@@ -671,7 +670,7 @@ namespace Ionic.Zip
         /// </example>
         ///
         /// <param name="exeToGenerate">The name of the EXE to generate.</param>
-        /// <param name="options">provides the options for how to save the
+        /// <param name="options">provides the options for creating the
         /// Self-extracting archive.</param>
         public void SaveSelfExtractor(string exeToGenerate, SelfExtractorSaveOptions options)
         {
@@ -933,7 +932,10 @@ namespace Ionic.Zip
 
                                         line = line.Replace("@@REMOVE_AFTER_EXECUTE", options.RemoveUnpackedFilesAfterExecute.ToString());
                                         line = line.Replace("@@QUIET", options.Quiet.ToString());
-                                        line = line.Replace("@@SFX_EXE_WINDOW_TITLE", options.SfxExeWindowTitle);
+                                        if (!String.IsNullOrEmpty(options.SfxExeWindowTitle))
+
+                                            line = line.Replace("@@SFX_EXE_WINDOW_TITLE", options.SfxExeWindowTitle);
+
                                         line = line.Replace("@@EXTRACT_EXISTING_FILE", ((int)options.ExtractExistingFile).ToString());
 
                                         if (postExCmdLine != null)

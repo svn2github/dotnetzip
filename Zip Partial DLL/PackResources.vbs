@@ -15,7 +15,7 @@
 ' ------------------------------------------------------------------
 '
 ' last saved (in emacs):
-' Time-stamp: <2010-February-10 17:43:13>
+' Time-stamp: <2011-June-16 13:18:32>
 '
 ' ------------------------------------------------------------------
 '
@@ -183,6 +183,8 @@ Sub CreateZip(pathToZipFile, dirToZip)
                 If fso.FileExists(fullPathToZipFile) Then
                     WScript.Echo "That zip file already exists - deleting it."
                     fso.DeleteFile fullPathToZipFile
+                    '' give it time to be really deleted
+                    Wscript.Sleep(2400)
                 End If
                 NewZip fullPathToZipFile
                 Set zip = sa.NameSpace(fullPathToZipFile)
