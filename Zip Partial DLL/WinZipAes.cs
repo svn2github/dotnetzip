@@ -17,7 +17,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 12:45:42>
+// Time-stamp: <2011-June-16 16:29:07>
 //
 // ------------------------------------------------------------------
 //
@@ -320,6 +320,32 @@ namespace Ionic.Zip
     ///   Crypto is AES in CTR (counter) mode, which is compatible with the AES
     ///   encryption employed by WinZip 12.0.
     /// </summary>
+    /// <remarks>
+    ///   <para>
+    ///     The AES/CTR encryption protocol used by WinZip works like this:
+    ///
+    ///       - start with a counter, initialized to zero.
+    ///
+    ///       - to encrypt, take the data by 16-byte blocks. For each block:
+    ///         - apply the transform to the counter
+    ///         - increement the counter
+    ///         - XOR the result of the transform with the plaintext to
+    ///           get the ciphertext.
+    ///         - compute the mac on the encrypted bytes
+    ///       - when finished with all blocks, store the computed MAC.
+    ///
+    ///       - to decrypt, take the data by 16-byte blocks. For each block:
+    ///         - compute the mac on the encrypted bytes,
+    ///         - apply the transform to the counter
+    ///         - increement the counter
+    ///         - XOR the result of the transform with the ciphertext to
+    ///           get the plaintext.
+    ///       - when finished with all blocks, compare the computed MAC against
+    ///         the stored MAC
+    ///
+    ///   </para>
+    /// </remarks>
+    //
     internal class WinZipAesCipherStream : Stream
     {
         private WinZipAesCrypto _params;
@@ -327,7 +353,6 @@ namespace Ionic.Zip
         private CryptoMode _mode;
         private int _nonce;
         private bool _finalBlock;
-        private bool _NextXformWillBeFinal;
 
         internal HMACSHA1 _mac;
 
@@ -420,7 +445,6 @@ namespace Ionic.Zip
             // It is reflexive.
             _xform = _aesCipher.CreateEncryptor(_params.KeyBytes, iv);
 
-
             if (_mode == CryptoMode.Encrypt)
             {
                 _iobuf = new byte[2048];
@@ -437,14 +461,65 @@ namespace Ionic.Zip
 #endif
         }
 
-
-
-
-
-        private int ProcessOneBlockWriting(byte[] buffer, int offset, int last)
+        private void XorInPlace(byte[] buffer, int offset, int count)
         {
+            for (int i = 0; i < count; i++)
+            {
+                buffer[offset + i] = (byte)(counterOut[i] ^ buffer[offset + i]);
+            }
+        }
+
+        private void WriteTransformOneBlock(byte[] buffer, int offset)
+        {
+            System.Array.Copy(BitConverter.GetBytes(_nonce++), 0, counter, 0, 4);
+            _xform.TransformBlock(counter,
+                                  0,
+                                  BLOCK_SIZE_IN_BYTES,
+                                  counterOut,
+                                  0);
+            XorInPlace(buffer, offset, BLOCK_SIZE_IN_BYTES);
+            _mac.TransformBlock(buffer, offset, BLOCK_SIZE_IN_BYTES, null, 0);
+        }
+
+
+        private void WriteTransformBlocks(byte[] buffer, int offset, int count)
+        {
+            int posn = offset;
+            int last = count + offset;
+
+            while (posn < buffer.Length && posn < last)
+            {
+                WriteTransformOneBlock (buffer, posn);
+                posn += BLOCK_SIZE_IN_BYTES;
+            }
+        }
+
+
+        private void WriteTransformFinalBlock()
+        {
+            if (_pendingCount == 0)
+                throw new InvalidOperationException("No bytes available.");
+
             if (_finalBlock)
                 throw new InvalidOperationException("The final block has already been transformed.");
+
+            System.Array.Copy(BitConverter.GetBytes(_nonce++), 0, counter, 0, 4);
+            counterOut = _xform.TransformFinalBlock(counter,
+                                                    0,
+                                                    BLOCK_SIZE_IN_BYTES);
+            XorInPlace(_PendingWriteBlock, 0, _pendingCount);
+            _mac.TransformFinalBlock(_PendingWriteBlock, 0, _pendingCount);
+            _finalBlock = true;
+        }
+
+
+
+
+
+        private int ReadTransformOneBlock(byte[] buffer, int offset, int last)
+        {
+            if (_finalBlock)
+                throw new NotSupportedException();
 
             int bytesRemaining = last - offset;
             int bytesToRead = (bytesRemaining > BLOCK_SIZE_IN_BYTES)
@@ -454,126 +529,20 @@ namespace Ionic.Zip
             // update the counter
             System.Array.Copy(BitConverter.GetBytes(_nonce++), 0, counter, 0, 4);
 
-            // We're doing the last bytes in this batch.
-            //
-            // For the AES encryption stream to work properly, We must transform
-            // blocks of 16 bytes, via TransformBlock, until the very last one, for
-            // which we call TransformFinalBlock.  But, we don't know how to
-            // recognize the "last" bytes.  The approach taken here: maintain a
-            // buffer, so that one full or partial block of bytes is always
-            // available.  This is the _PendingWriteBlock.  Then at time of
-            // Close(), we set the _NextXformWillBeFinal flag and flush that buffer.
-            //
-            // This works whether the caller writes in odd-sized batches, for example
-            // 5000 bytes, or in batches that are neat multiples of the blocksize (16).
-
-
-            // bytesToRead is always 16 or less.  If it is exactly what remains, then we need to
-            // either, if this is the final block, do the final transform, else buffer the data.
-            if (bytesToRead == (last - offset))
-            {
-                if (_NextXformWillBeFinal)
-                {
-                    //Console.WriteLine("WinZipAesCipherStream::ProcessOneBlockWriting:   _NextXformWillBeFinal = true");
-                    counterOut = _xform.TransformFinalBlock(counter,
-                                                            0,
-                                                            BLOCK_SIZE_IN_BYTES);
-                    _finalBlock = true;
-                }
-
-                else if (buffer==_PendingWriteBlock && bytesToRead==BLOCK_SIZE_IN_BYTES)
-                {
-                    // this happens with a Flush(), I think.
-                }
-
-                else
-                {
-                    // NOT the final block, therefore buffer it.
-
-                    Array.Copy(buffer, offset,
-                               _PendingWriteBlock, _pendingCount,
-                               bytesToRead);
-
-                    _pendingCount += bytesToRead;
-
-                    // remember to decrement the nonce.
-                    _nonce--;
-                    return bytesToRead;
-                }
-            }
-
-            if (!_finalBlock)
-            {
-                // Next, do the AES transform.  According to the AES/CTR method used
-                // by WinZip, apply the transform to the counter, and then XOR
-                // the result with the ciphertext to get the plaintext.
-                _xform.TransformBlock(counter,
-                                      0, // offset
-                                      BLOCK_SIZE_IN_BYTES,
-                                      counterOut,
-                                      0);  // offset
-            }
-
-            // XOR (in place)
-            for (int i = 0; i < bytesToRead; i++)
-            {
-                buffer[offset + i] = (byte)(counterOut[i] ^ buffer[offset + i]);
-            }
-
-            // when encrypting, do the MAC last
-            if (_finalBlock)
-                _mac.TransformFinalBlock(buffer, offset, bytesToRead);
-            else
-                _mac.TransformBlock(buffer, offset, bytesToRead, null, 0);
-
-            return bytesToRead;
-        }
-
-
-
-
-
-        private int ProcessOneBlockReading(byte[] buffer, int offset, int count)
-        {
-            if (_finalBlock)
-                throw new NotSupportedException();
-
-            int bytesRemaining = count - offset;
-            int bytesToRead = (bytesRemaining > BLOCK_SIZE_IN_BYTES)
-                ? BLOCK_SIZE_IN_BYTES
-                : bytesRemaining;
-
-            // When READING,
-            // Can we determine if this is the final block based on _length??
-            // and totalBytesRead ? YES.
-            if (_length > 0)
-            {
-                if ((_totalBytesXferred + count == _length) && (bytesToRead == bytesRemaining))
-                {
-                    _NextXformWillBeFinal = true;
-                }
-            }
-
-            // update the counter
-            System.Array.Copy(BitConverter.GetBytes(_nonce++), 0, counter, 0, 4);
-
-            if (_NextXformWillBeFinal && (bytesToRead == (count - offset)))
+            // Determine if this is the final block
+            if ((bytesToRead == bytesRemaining) &&
+                (_length > 0) &&
+                (_totalBytesXferred + last == _length))
             {
                 _mac.TransformFinalBlock(buffer, offset, bytesToRead);
                 counterOut = _xform.TransformFinalBlock(counter,
                                                         0,
                                                         BLOCK_SIZE_IN_BYTES);
-
                 _finalBlock = true;
             }
             else
             {
-                // first, do the MAC on the ciphertext
                 _mac.TransformBlock(buffer, offset, bytesToRead, null, 0);
-
-                // Next, do the decryption.  According to the AES/CTR method used
-                // by WinZip, apply the transform to the counter, and then XOR
-                // the result with the ciphertext to get the plaintext.
                 _xform.TransformBlock(counter,
                                       0, // offset
                                       BLOCK_SIZE_IN_BYTES,
@@ -581,30 +550,20 @@ namespace Ionic.Zip
                                       0);  // offset
             }
 
-            // XOR (in place)
-            for (int i = 0; i < bytesToRead; i++)
-            {
-                buffer[offset + i] = (byte)(counterOut[i] ^ buffer[offset + i]);
-            }
-
+            XorInPlace(buffer, offset, bytesToRead);
             return bytesToRead;
         }
 
 
-        private delegate int ProcessOneBlock(byte[] b, int p, int l);
 
-        private void TransformInPlace(byte[] buffer, int offset, int count)
+        private void ReadTransformBlocks(byte[] buffer, int offset, int count)
         {
             int posn = offset;
             int last = count + offset;
 
-            ProcessOneBlock d = (_mode == CryptoMode.Encrypt)
-                ? new ProcessOneBlock(ProcessOneBlockWriting)
-                : new ProcessOneBlock(ProcessOneBlockReading);
-
             while (posn < buffer.Length && posn < last )
             {
-                int n = d (buffer, posn, last);
+                int n = ReadTransformOneBlock (buffer, posn, last);
                 posn += n;
             }
         }
@@ -651,16 +610,13 @@ namespace Ionic.Zip
                 untransformed.Write(buffer, offset, bytesToRead);
 #endif
 
-            TransformInPlace(buffer, offset, bytesToRead);
+            ReadTransformBlocks(buffer, offset, bytesToRead);
 
 #if WANT_TRACE
                 transformed.Write(buffer, offset, bytesToRead);
 #endif
             _totalBytesXferred += n;
-
-            return n; // ?
-            //return bytesToRead;
-            //return count;
+            return n;
         }
 
 
@@ -694,6 +650,9 @@ namespace Ionic.Zip
 
         public override void Write(byte[] buffer, int offset, int count)
         {
+            if (_finalBlock)
+                throw new InvalidOperationException("The final block has already been transformed.");
+
             if (_mode == CryptoMode.Decrypt)
                 throw new NotSupportedException();
 
@@ -718,72 +677,146 @@ namespace Ionic.Zip
             untransformed.Write(buffer, offset, count);
 #endif
 
+            // For proper AES encryption, an AES encryptor application calls
+            // TransformBlock repeatedly for all 16-byte blocks except the
+            // last. For the last block, it then calls TransformFinalBlock().
+            //
+            // This class is a stream that encrypts via Write().  But, it's not
+            // possible to recognize which are the "last" bytes from within the call
+            // to Write(). The caller can call Write() several times in succession,
+            // with varying buffers. This class only "knows" that the last bytes
+            // have been written when the app calls Close().
+            //
+            // Therefore, this class buffers writes: After completion every Write(),
+            // a 16-byte "pending" block (_PendingWriteBlock) must hold between 1
+            // and 16 bytes, which will be used in TransformFinalBlock if the app
+            // calls Close() immediately thereafter. Also, every write must
+            // transform any pending bytes, before transforming the data passed in
+            // to the current call.
+            //
+            // In operation, after the first call to Write() and before the call to
+            // Close(), one full or partial block of bytes is always available,
+            // pending.  At time of Close(), this class calls
+            // WriteTransformFinalBlock() to flush the pending bytes.
+            //
+            // This approach works whether the caller writes in odd-sized batches,
+            // for example 5000 bytes, or in batches that are neat multiples of the
+            // blocksize (16).
+            //
+            // Logicaly, what we do is this:
+            //
+            //  1. if there are fewer than 16 bytes (pending + current), then
+            //     just copy them into th pending buffer and return.
+            //
+            //  2. there are more than 16 bytes to write. So, take the leading slice
+            //     of bytes from the current buffer, enough to fill the pending
+            //     buffer. Transform the pending block, and write it out.
+            //
+            //  3. Take the trailing slice of bytes (a full block or a partial block),
+            //     and copy it to the pending block for next time.
+            //
+            //  4. transform and write all the other blocks, the middle slice.
+            //
+
+            // There are 16 or fewer bytes, so just buffer the bytes.
+            if (count + _pendingCount <= BLOCK_SIZE_IN_BYTES)
+            {
+                Buffer.BlockCopy(buffer,
+                                 offset,
+                                 _PendingWriteBlock,
+                                 _pendingCount,
+                                 count);
+                _pendingCount += count;
+
+                // At this point, _PendingWriteBlock contains up to
+                // BLOCK_SIZE_IN_BYTES bytes, and _pendingCount ranges from 0 to
+                // BLOCK_SIZE_IN_BYTES. We don't want to xform+write them yet,
+                // because this may have been the last block.  The last block gets
+                // written at Close().
+                return;
+            }
+
+            // We know there are at least 17 bytes, counting those in the current
+            // buffer, along with the (possibly empty) pending block.
+
+            int bytesRemaining = count;
+            int curOffset = offset;
+
+            // workitem 12815
+            //
+            // xform chunkwise ... Cannot transform in place using the original
+            // buffer because that is user-maintained.
+
             if (_pendingCount != 0)
             {
-                // Actually write only when more than 16 bytes are available.
-                // If 16 or fewer, then just buffer the bytes
-                if (count + _pendingCount <= BLOCK_SIZE_IN_BYTES)
+                // We have more than one block of data to write, therefore it is safe
+                // to xform+write.
+                int fillCount = BLOCK_SIZE_IN_BYTES - _pendingCount;
+
+                // fillCount is possibly zero here. That happens when the pending
+                // buffer held 16 bytes (one complete block) before this call to
+                // Write.
+                if (fillCount > 0)
                 {
                     Buffer.BlockCopy(buffer,
                                      offset,
                                      _PendingWriteBlock,
                                      _pendingCount,
-                                     count);
-                    _pendingCount += count;
+                                     fillCount);
 
-                    // At this point, _PendingWriteBlock contains up to
-                    // BLOCK_SIZE_IN_BYTES bytes, and _pendingCount ranges from 0 to
-                    // BLOCK_SIZE_IN_BYTES. We don't want to xform+write them yet,
-                    // because this may have been the last block.  The last block gets
-                    // written at Close().
-                    return;
+                    // adjust counts:
+                    bytesRemaining -= fillCount;
+                    curOffset += fillCount;
                 }
 
-                // We have more than one block of data to write, therefore it is safe
-                // to xform+write.
-                int extra = BLOCK_SIZE_IN_BYTES - _pendingCount;
-
-                // NB: extra is possibly zero here. That happens when the pending buffer
-                // held 16 bytes (a complete block) before this call to Write.
-
-                Buffer.BlockCopy(buffer,
-                                 offset,
-                                 _PendingWriteBlock,
-                                 _pendingCount,
-                                 extra);
-
-                // adjust counts:
-                _pendingCount = 0;
-                offset += extra;
-                count -= extra;
-
                 // xform and write:
-                ProcessOneBlockWriting(_PendingWriteBlock, 0, BLOCK_SIZE_IN_BYTES);
+                WriteTransformOneBlock(_PendingWriteBlock, 0);
                 _s.Write(_PendingWriteBlock, 0, BLOCK_SIZE_IN_BYTES);
                 _totalBytesXferred += BLOCK_SIZE_IN_BYTES;
+                _pendingCount = 0;
             }
 
-            // workitem 12815
-            // xform chunkwise ... Cannot transform in place using the original
-            // buffer because that is user-maintained.
-            int bytesRemaining = count;
-            do
+            // At this point _PendingWriteBlock is empty, and bytesRemaining is
+            // always greater than 0.
+
+            // Now, xform N blocks, where N = floor((bytesRemaining-1)/16).  If
+            // writing 32 bytes, then xform 1 block, and stage the remaining 16.  If
+            // writing 10037 bytes, xform 627 blocks of 16 bytes, then stage the
+            // remaining 5 bytes.
+
+            int blocksToXform = (bytesRemaining-1)/BLOCK_SIZE_IN_BYTES;
+            _pendingCount = bytesRemaining - (blocksToXform * BLOCK_SIZE_IN_BYTES);
+
+            // _pendingCount is ALWAYS between 1 and 16.
+            // Put the last _pendingCount bytes into the pending block.
+            Buffer.BlockCopy(buffer,
+                             curOffset + bytesRemaining - _pendingCount,
+                             _PendingWriteBlock,
+                             0,
+                             _pendingCount);
+            bytesRemaining -= _pendingCount;
+            _totalBytesXferred += bytesRemaining; // will be true after the loop
+
+            // now, transform all the full blocks preceding that.
+            // bytesRemaining is always a multiple of 16 .
+            if (blocksToXform > 0)
             {
-                int c = _iobuf.Length;
-                if (c > bytesRemaining) c = bytesRemaining;
-                Buffer.BlockCopy(buffer,
-                                 offset,
-                                 _iobuf,
-                                 0,
-                                 c);
+                do
+                {
+                    int c = _iobuf.Length;
+                    if (c > bytesRemaining) c = bytesRemaining;
+                    Buffer.BlockCopy(buffer,
+                                     curOffset,
+                                     _iobuf,
+                                     0,
+                                     c);
 
-                TransformInPlace(_iobuf, 0, c);
-                _s.Write(_iobuf, offset, c);
-                bytesRemaining -= c;
-                offset += bytesRemaining;
-            } while(bytesRemaining > 0);
-
-            _totalBytesXferred += count - _pendingCount;
+                    WriteTransformBlocks(_iobuf, 0, c);
+                    _s.Write(_iobuf, 0, c);
+                    bytesRemaining -= c;
+                    curOffset += c;
+                } while(bytesRemaining > 0);
+            }
         }
 
 
@@ -795,15 +828,10 @@ namespace Ionic.Zip
         {
             TraceOutput("Close {0:X8}", this.GetHashCode());
 
-            if (_pendingCount != 0)
-            {
-                // xform and write whatever is left over
-                _NextXformWillBeFinal = true;
-                ProcessOneBlockWriting(_PendingWriteBlock, 0, _pendingCount);
-                _s.Write(_PendingWriteBlock, 0, _pendingCount);
-                _totalBytesXferred += _pendingCount;
-            }
-
+            WriteTransformFinalBlock();
+            _s.Write(_PendingWriteBlock, 0, _pendingCount);
+            _totalBytesXferred += _pendingCount;
+            _pendingCount = 0;
             _s.Close();
 
 #if WANT_TRACE
