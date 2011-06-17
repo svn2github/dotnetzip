@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-June-13 22:50:42>
+// Last Saved: <2011-June-16 22:22:42>
 //
 // ------------------------------------------------------------------
 //
@@ -119,13 +119,16 @@ namespace Ionic.Zip
         }
 #endif
 
+        private static System.Text.RegularExpressions.Regex doubleDotRegex1 =
+            new System.Text.RegularExpressions.Regex(@"^(.*/)?([^/\\.]+/\\.\\./)(.+)$");
+
         private static string SimplifyFwdSlashPath(string path)
         {
             if (path.StartsWith("./")) path = path.Substring(2);
             path = path.Replace("/./", "/");
+
             // Replace foo/anything/../bar with foo/bar
-            var re = new System.Text.RegularExpressions.Regex(@"^(.*/)?([^/\\.]+/\\.\\./)(.+)$");
-            path = re.Replace(path, "$1$3");
+            path = doubleDotRegex1.Replace(path, "$1$3");
             return path;
         }
 
@@ -503,19 +506,24 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// Create a pseudo-random filename, suitable for use as a temporary file, and open it.
+        ///   Create a pseudo-random filename, suitable for use as a temporary
+        ///   file, and open it.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// The System.IO.Path.GetRandomFileName() method is not available on the Compact
-        /// Framework, so this library provides its own substitute on NETCF.
+        ///   The System.IO.Path.GetRandomFileName() method is not available on
+        ///   the Compact Framework, so this library provides its own substitute
+        ///   on NETCF.
         /// </para>
         /// <para>
-        /// produces a filename of the form DotNetZip-xxxxxxxx.tmp, where xxxxxxxx is replaced
-        /// by randomly chosen characters, and creates that file.
+        ///   This method produces a filename of the form
+        ///   DotNetZip-xxxxxxxx.tmp, where xxxxxxxx is replaced by randomly
+        ///   chosen characters, and creates that file.
         /// </para>
         /// </remarks>
-        public static void CreateAndOpenUniqueTempFile(string dir, out Stream fs, out string filename)
+        public static void CreateAndOpenUniqueTempFile(string dir,
+                                                       out Stream fs,
+                                                       out string filename)
         {
             // workitem 9763
             // http://dotnet.org.za/markn/archive/2006/04/15/51594.aspx
