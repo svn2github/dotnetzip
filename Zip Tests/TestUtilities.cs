@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 09:20:42>
+// Time-stamp: <2011-June-16 19:02:55>
 //
 // ------------------------------------------------------------------
 //
@@ -38,7 +38,7 @@ namespace Ionic.Zip.Tests.Utilities
     class TestUtilities
     {
         static System.Random _rnd;
-
+        static string cdir;
         static TestUtilities()
         {
             _rnd = new System.Random();
@@ -49,6 +49,7 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal static void Initialize(out string TopLevelDir)
         {
+            cdir = Directory.GetCurrentDirectory();
             TopLevelDir = TestUtilities.GenerateUniquePathname("tmp");
             Directory.CreateDirectory(TopLevelDir);
             Directory.SetCurrentDirectory(Path.GetDirectoryName(TopLevelDir));
@@ -672,6 +673,30 @@ namespace Ionic.Zip.Tests.Utilities
             return location;
         }
 
+
+        internal static Ionic.CopyData.Transceiver
+            StartProgressMonitor(string progressChannel, string title, string initialStatus)
+        {
+            string testBin = TestUtilities.GetTestBinDir(cdir);
+            string progressMonitorTool = Path.Combine(testBin, "Resources\\UnitTestProgressMonitor.exe");
+            string requiredDll = Path.Combine(testBin, "Resources\\Ionic.CopyData.dll");
+            Assert.IsTrue(File.Exists(progressMonitorTool), "progress monitor tool does not exist ({0})",  progressMonitorTool);
+            Assert.IsTrue(File.Exists(requiredDll), "required DLL does not exist ({0})",  requiredDll);
+
+            // start the progress monitor
+            string ignored;
+            //this.Exec(progressMonitorTool, String.Format("-channel {0}", progressChannel), false);
+            TestUtilities.Exec_NoContext(progressMonitorTool, String.Format("-channel {0}", progressChannel), false, out ignored);
+
+            var txrx = new Ionic.CopyData.Transceiver();
+            System.Threading.Thread.Sleep(1000);
+            txrx.Channel = progressChannel;
+            System.Threading.Thread.Sleep(450);
+            txrx.Send("test " + title);
+            System.Threading.Thread.Sleep(120);
+            txrx.Send("status " + initialStatus);
+            return txrx;
+        }
 
         internal static int Exec_NoContext(string program, string args, out string output)
         {

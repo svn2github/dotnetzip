@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-12 17:55:33>
+// Time-stamp: <2011-June-16 18:47:22>
 //
 // ------------------------------------------------------------------
 //
@@ -44,15 +44,14 @@ namespace Ionic.Zip.Tests
     {
         public Selector() : base() { }
 
-        Ionic.CopyData.Transceiver _txrx;
-
-
         [ClassInitialize]
         public static void ClassInit(TestContext a)
         {
             CurrentDir = Directory.GetCurrentDirectory();
-            var txrx= SetupProgressMonitor("selector-Setup");
-            _InternalSetupFiles(txrx);
+            var txrx= TestUtilities.StartProgressMonitor("selector-setup",
+                                                      "Selector one-time setup",
+                                                      "setting up files...");
+            _InternalSetupFiles(null);
             txrx.Send("stop");
         }
 
@@ -62,7 +61,6 @@ namespace Ionic.Zip.Tests
         {
             CleanDirectory(fodderDirectory, null);
         }
-
 
 
         private static void CleanDirectory(string dirToClean, Ionic.CopyData.Transceiver txrx)
@@ -132,19 +130,6 @@ namespace Ionic.Zip.Tests
 
 
 
-        [TestCleanup]
-        public void MyTestCleanupEx()
-        {
-            if (_txrx != null)
-            {
-                try
-                {
-                    _txrx.Send("stop");
-                    _txrx = null;
-                }
-                catch { }
-            }
-        }
 
 
         [TestMethod]
@@ -184,7 +169,7 @@ namespace Ionic.Zip.Tests
                 }
 
                 if (numFodderFiles <= 0)
-                    _InternalSetupFiles(_txrx);
+                    _InternalSetupFiles(null);
 
                 if (numFodderFiles <= 0)
                     throw new Exception();
@@ -218,13 +203,13 @@ namespace Ionic.Zip.Tests
 
 
 
-        private static void _InternalSetupFiles( Ionic.CopyData.Transceiver txrx )
+        private static void _InternalSetupFiles(Ionic.CopyData.Transceiver txrx)
         {
             var rnd = new System.Random();
             DeleteOldFodderDirectories(txrx);
 
             int fileCount = rnd.Next(95) + 95;
-            if (txrx != null)
+            if (txrx!=null)
             {
                 txrx.Send("status creating files...");
                 txrx.Send(String.Format("pb 0 max {0}", fileCount));
@@ -489,30 +474,6 @@ namespace Ionic.Zip.Tests
 
 
 
-        private static Ionic.CopyData.Transceiver SetupProgressMonitor(string label)
-        {
-            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
-            string progressMonitorTool = Path.Combine(testBin, "Resources\\UnitTestProgressMonitor.exe");
-            string requiredDll = Path.Combine(testBin, "Resources\\Ionic.CopyData.dll");
-
-            Assert.IsTrue(File.Exists(progressMonitorTool), "progress monitor tool does not exist ({0})", progressMonitorTool);
-            Assert.IsTrue(File.Exists(requiredDll), "required DLL does not exist ({0})", requiredDll);
-
-            string progressChannel = label;
-            // start the progress monitor
-            string ignored;
-            TestUtilities.Exec_NoContext(progressMonitorTool, String.Format("-channel {0}", progressChannel), false,
-                                         out ignored);
-
-            System.Threading.Thread.Sleep(800);
-            Ionic.CopyData.Transceiver txrx = new Ionic.CopyData.Transceiver();
-
-            txrx.Channel = progressChannel;
-            txrx.Send("test " + label);
-            System.Threading.Thread.Sleep(120);
-            txrx.Send(String.Format("pb 0 max {0}", 3));
-            return txrx;
-        }
 
 
 
@@ -549,7 +510,7 @@ namespace Ionic.Zip.Tests
                         },
                 };
 
-            _txrx= SetupProgressMonitor("AddSelectedFiles");
+            _txrx = TestUtilities.StartProgressMonitor("AddSelectedFiles", "AddSelectedFiles", "starting up...");
 
             string[] zipFileToCreate = {
                 Path.Combine(TopLevelDir, "Selector_AddSelectedFiles-1.zip"),
@@ -561,7 +522,6 @@ namespace Ionic.Zip.Tests
 
             int count1, count2;
 
-            _txrx.Send("test AddSelectedFiles");
             SetupFiles();
             var topLevelFiles = Directory.GetFiles(fodderDirectory, "*.*", SearchOption.TopDirectoryOnly);
 
@@ -624,7 +584,6 @@ namespace Ionic.Zip.Tests
                 _txrx.Send("pb 0 step");
             }
 
-            _txrx.Send("stop");
         }
 
 
@@ -698,10 +657,10 @@ namespace Ionic.Zip.Tests
 
             Assert.IsFalse(File.Exists(zipFileToCreate), "The zip file '{0}' already exists.", zipFileToCreate);
 
-            _txrx= SetupProgressMonitor("SelectFiles-ByTime");
+            _txrx= TestUtilities.StartProgressMonitor("SelectFiles-ByTime",
+                                                      "Select Entries by time",
+                                                      "selecting files by time...");
             SetupFiles();
-
-            _txrx.Send("status seleting files by time...");
 
             TestContext.WriteLine("====================================================");
             TestContext.WriteLine("Creating zip...");
@@ -799,7 +758,6 @@ namespace Ionic.Zip.Tests
                 TestContext.WriteLine("Criteria({0})  count({1})", crit, selected5.Count);
                 Assert.AreEqual<Int32>(0, selected5.Count, "K");
             }
-            _txrx.Send("stop");
         }
 
 
@@ -1569,7 +1527,9 @@ namespace Ionic.Zip.Tests
             // workitem 9176
             //Directory.SetCurrentDirectory(TopLevelDir);
 
-            _txrx= SetupProgressMonitor("SelectFiles-DirName");
+            _txrx= TestUtilities.StartProgressMonitor("SelectFiles-DirName",
+                "Select Files by DirName",
+                "workitem 9176");
 
             SetupFiles();
 
@@ -1615,7 +1575,6 @@ namespace Ionic.Zip.Tests
 
                 _txrx.Send("pb 0 step");
             }
-            _txrx.Send("stop");
         }
 
 

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 08:58:57>
+// Time-stamp: <2011-June-17 17:32:31>
 //
 // ------------------------------------------------------------------
 //
@@ -45,8 +45,13 @@ namespace Ionic.Zip.Tests.Utilities
         private string _wzunzip = null;
         private string _wzzip = null;
         private string _sevenzip = null;
+        private string _infozipzip = null;
+        private string _infozipunzip = null;
         private bool? _WinZipIsPresent;
         private bool? _SevenZipIsPresent;
+        private bool? _InfoZipIsPresent;
+
+        protected Ionic.CopyData.Transceiver _txrx;
 
 
         public IonicTestClass()
@@ -111,6 +116,19 @@ namespace Ionic.Zip.Tests.Utilities
         [TestCleanup()]
         public void MyTestCleanup()
         {
+            // The CWD of the monitoring process is the CurrentDir,
+            // therefore this test must shut down the monitoring process
+            // FIRST, to allow the deletion of the directory.
+            if (_txrx!=null)
+            {
+                try
+                {
+                    _txrx.Send("stop");
+                    _txrx = null;
+                }
+                catch { }
+            }
+
             TestUtilities.Cleanup(CurrentDir, _FilesToRemove);
         }
 
@@ -169,6 +187,25 @@ namespace Ionic.Zip.Tests.Utilities
             }
         }
 
+        protected string infoZip
+        {
+            get
+            {
+                if (InfoZipIsPresent)
+                    return _infozipzip;
+                return null;
+            }
+        }
+
+        protected string infoZipUnzip
+        {
+            get
+            {
+                if (InfoZipIsPresent)
+                    return _infozipunzip;
+                return null;
+            }
+        }
 
 
         protected string wzzip
@@ -239,6 +276,27 @@ namespace Ionic.Zip.Tests.Utilities
                     _SevenZipIsPresent = new Nullable<bool>(File.Exists(_sevenzip));
                 }
                 return _SevenZipIsPresent.Value;
+            }
+        }
+
+
+        protected bool InfoZipIsPresent
+        {
+            get
+            {
+                if (_InfoZipIsPresent == null)
+                {
+                    string progfiles = null;
+                    if (_infozipzip == null)
+                    {
+                        progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+                        _infozipzip = Path.Combine(progfiles, "infozip.org\\zip.exe");
+                        _infozipunzip = Path.Combine(progfiles, "infozip.org\\unzip.exe");
+                    }
+                    _InfoZipIsPresent = new Nullable<bool>(File.Exists(_infozipzip) &&
+                                                           File.Exists(_infozipunzip));
+                }
+                return _InfoZipIsPresent.Value;
             }
         }
 

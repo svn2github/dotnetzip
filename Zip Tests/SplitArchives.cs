@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 09:28:07>
+// Time-stamp: <2011-June-17 11:16:19>
 //
 // ------------------------------------------------------------------
 //
@@ -45,62 +45,16 @@ namespace Ionic.Zip.Tests.Split
     [TestClass]
     public class Split : IonicTestClass
     {
-        Ionic.CopyData.Transceiver _txrx;
-
-        public Split() : base() { }
-
-        [TestCleanup()]
-        public void MyTestCleanupEx()
-        {
-            if (_txrx!=null)
-            {
-                try
-                {
-                    _txrx.Send("stop");
-                    _txrx = null;
-                }
-                catch { }
-            }
-        }
-
-
-        void StartProgressMonitor(string progressChannel)
-        {
-            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
-            string progressMonitorTool = Path.Combine(testBin, "Resources\\UnitTestProgressMonitor.exe");
-            string requiredDll = Path.Combine(testBin, "Resources\\Ionic.CopyData.dll");
-            Assert.IsTrue(File.Exists(progressMonitorTool), "progress monitor tool does not exist ({0})",  progressMonitorTool);
-            Assert.IsTrue(File.Exists(requiredDll), "required DLL does not exist ({0})",  requiredDll);
-
-            // start the progress monitor
-            string ignored;
-            //this.Exec(progressMonitorTool, String.Format("-channel {0}", progressChannel), false);
-            TestUtilities.Exec_NoContext(progressMonitorTool, String.Format("-channel {0}", progressChannel), false, out ignored);
-        }
-
-
-
-        void StartProgressClient(string progressChannel, string title, string initialStatus)
-        {
-            _txrx = new Ionic.CopyData.Transceiver();
-            System.Threading.Thread.Sleep(1000);
-            _txrx.Channel = progressChannel;
-            System.Threading.Thread.Sleep(450);
-            _txrx.Send("test " + title);
-            System.Threading.Thread.Sleep(120);
-            _txrx.Send("status " + initialStatus);
-        }
-
+        //public Split() : base() { }
 
         [TestMethod, Timeout(360000)]  // 360000 - 6 minutes
         public void Create_SegmentedArchive()
         {
             string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
 
-            string progressChannel = "segmentedzip";
-            StartProgressMonitor(progressChannel);
-            StartProgressClient(progressChannel, "Segmented Zips", "Creating files");
-
+            _txrx = TestUtilities.StartProgressMonitor("segmentedzip",
+                                                       "Segmented Zips",
+                                                       "Creating files");
             _txrx.Send("pb 0 max 2");
 
             int numFiles = _rnd.Next(10) + 8;
@@ -170,7 +124,7 @@ namespace Ionic.Zip.Tests.Split
                                                       String.Format("Archive-{0}.zip",m));
                 int maxSegSize = segmentSizes[m];
 
-                msg = String.Format("status seg {0}/{1} ({2}k)",
+                msg = String.Format("status trial {0}/{1}  (max seg size {2}k)",
                                     m+1, segmentSizes.Length, maxSegSize/1024);
                 _txrx.Send(msg);
 
@@ -241,7 +195,60 @@ namespace Ionic.Zip.Tests.Split
         }
 
 
-        [TestMethod, Timeout(7200000)]  // 3600000 - 1 hour
+
+        bool _pb1Set;
+        bool _pb2Set;
+        int _numExtracted;
+        int _numFilesToExtract;
+        int _nCycles;
+        void ExtractProgress(object sender, ExtractProgressEventArgs e)
+        {
+            switch (e.EventType)
+            {
+                case ZipProgressEventType.Extracting_BeforeExtractEntry:
+                    if (!_pb1Set)
+                    {
+                        _txrx.Send(String.Format("pb 1 max {0}", _numFilesToExtract));
+                        _pb1Set = true;
+                    }
+                    _pb2Set = false;
+                    _nCycles = 0;
+                    break;
+
+                case ZipProgressEventType.Extracting_EntryBytesWritten:
+                    if (!_pb2Set)
+                    {
+                        _txrx.Send(String.Format("pb 2 max {0}", e.TotalBytesToTransfer));
+                        _pb2Set = true;
+                    }
+                    // for performance, don't update the progress monitor every time.
+                    _nCycles++;
+                    if (_nCycles % 64 == 0)
+                    {
+                    _txrx.Send(String.Format("status Extracting entry {0}/{1} :: {2} :: {3}/{4}mb ::  {5:N0}%",
+                                             _numExtracted, _numFilesToExtract,
+                                             e.CurrentEntry.FileName,
+                                             e.BytesTransferred/(1024*1024),
+                                             e.TotalBytesToTransfer/(1024*1024),
+                                             ((double)e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer)
+                                             ));
+                    string msg = String.Format("pb 2 value {0}", e.BytesTransferred);
+                    _txrx.Send(msg);
+                    }
+                    break;
+
+                case ZipProgressEventType.Extracting_AfterExtractEntry:
+                    _numExtracted++;
+                    _txrx.Send("pb 1 step");
+                    break;
+            }
+        }
+
+
+
+        [TestMethod]
+        //[Timeout(2 * 60 * 60 * 1000)]  // 60 * 60 * 1000 = 1 hour
+        [Timeout(90 * 60 * 1000)]  // 90 minutes
         public void Create_LargeSegmentedArchive()
         {
             // There was a claim that large archives (around or above
@@ -259,28 +266,109 @@ namespace Ionic.Zip.Tests.Split
 #endif
             TestContext.WriteLine("Creating file {0}", zipFileToCreate);
 
+            // This file will "cache" the randomly generated text, so we
+            // don't have to generate more than once. You know, for
+            // speed.
+            string cacheFile = Path.Combine(TopLevelDir, "cacheFile.txt");
 
             // int maxSegSize = 4*1024*1024;
-            // int sizeBase =   10 * 1024 * 1024;
+            // int sizeBase =   20 * 1024 * 1024;
             // int sizeRandom = 1 * 1024 * 1024;
             // int numFiles = 3;
 
+            // int maxSegSize = 80*1024*1024;
+            // int sizeBase =   320 * 1024 * 1024;
+            // int sizeRandom = 20 * 1024 * 1024 ;
+            // int numFiles = 5;
+
             int maxSegSize = 120*1024*1024;
             int sizeBase =   420 * 1024 * 1024;
-            int sizeRandom = 16 * 1024 * 1024;
+            int sizeRandom = 20 * 1024 * 1024;
             int numFiles = _rnd.Next(5) + 11;
+
+            TestContext.WriteLine("The zip will contain {0} files", numFiles);
+
             int numSaving= 0, totalToSave = 0, numSegs= 0;
-            bool pb1set = false;
+            long sz = 0;
 
-            OpenDelegate opener = (name) =>
-                {
-                    return new Ionic.Zip.Tests.Utilities.RandomTextInputStream(sizeBase + _rnd.Next(sizeRandom));
-                };
 
-            CloseDelegate closer = (name, s) =>
+            // There are a bunch of Action<T>'s here.  This test method originally
+            // used ZipFile.AddEntry overload that accepts an opener/closer pair.
+            // It conjured content for the files out of a RandomTextGenerator
+            // stream.  This worked, but was very very slow. So I took a new
+            // approach to use a WriteDelegate, and still contrive the data, but
+            // cache it for entries after the first one. This makes things go much
+            // faster.
+            //
+            // But, when using the WriteDelegate, the SaveProgress events of
+            // flavor ZipProgressEventType.Saving_EntryBytesRead do not get
+            // called. Therefore the progress updates are done from within the
+            // WriteDelegate itself. The SaveProgress events for SavingStarted,
+            // BeforeWriteEntry, and AfterWriteEntry do get called.  As a result
+            // this method uses 2 delegates: one for writing and one for the
+            // SaveProgress events.
+
+            WriteDelegate writer = (name, stream) =>
                 {
-                    var rtg = (Ionic.Zip.Tests.Utilities.RandomTextInputStream) s;
-                    rtg.Close();
+                    Stream input = null;
+                    Stream cache = null;
+                    try
+                    {
+                        // use a cahce file as the content.  The entry
+                        // name will vary but we'll get the content for
+                        // each entry from the a single cache file.
+                        if (File.Exists(cacheFile))
+                        {
+                            input = File.Open(cacheFile,
+                                              FileMode.Open,
+                                              FileAccess.ReadWrite,
+                                              FileShare.ReadWrite);
+                            // Make the file slightly shorter with each
+                            // successive entry, - just to shake things
+                            // up a little.  Also seek forward a little.
+                            var fl = input.Length;
+                            input.SetLength(fl - _rnd.Next(sizeRandom/2) + 5201);
+                            input.Seek(_rnd.Next(sizeRandom/2), SeekOrigin.Begin);
+                        }
+                        else
+                        {
+                            sz = sizeBase + _rnd.Next(sizeRandom);
+                            input = new Ionic.Zip.Tests.Utilities.RandomTextInputStream((int)sz);
+                            cache = File.Create(cacheFile);
+                        }
+                        _txrx.Send(String.Format("pb 2 max {0}", sz));
+                        _txrx.Send("pb 2 value 0");
+                        var buffer = new byte[8192];
+                        int n;
+                        Int64 totalWritten = 0;
+                        int nCycles = 0;
+                        using (input)
+                        {
+                            while ((n= input.Read(buffer,0, buffer.Length))>0)
+                            {
+                                stream.Write(buffer,0,n);
+                                if (cache!=null)
+                                    cache.Write(buffer,0,n);
+                                totalWritten += n;
+                                // for performance, don't update the
+                                // progress monitor every time.
+                                nCycles++;
+                                if (nCycles % 312 == 0)
+                                {
+                                    _txrx.Send(String.Format("pb 2 value {0}", totalWritten));
+                                    _txrx.Send(String.Format("status Saving entry {0}/{1} {2} :: {3}/{4}mb {5:N0}%",
+                                                             numSaving, totalToSave,
+                                                             name,
+                                                             totalWritten/(1024*1024), sz/(1024*1024),
+                                                             ((double)totalWritten) / (0.01 * sz)));
+                                }
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        if (cache!=null) cache.Dispose();
+                    }
                 };
 
             System.EventHandler<Ionic.Zip.SaveProgressEventArgs> sp = (sender1, e1) =>
@@ -292,42 +380,41 @@ namespace Ionic.Zip.Tests.Split
                         break;
 
                         case ZipProgressEventType.Saving_BeforeWriteEntry:
-                        _txrx.Send("test Large Segmented ZIP");
+                        _txrx.Send("test Large Segmented Zip");
                         _txrx.Send(String.Format("status saving {0}", e1.CurrentEntry.FileName));
-                        pb1set= false;
                         totalToSave = e1.EntriesTotal;
                         numSaving++;
                         break;
 
-                        case ZipProgressEventType.Saving_EntryBytesRead:
-                        if (!pb1set)
-                        {
-                            _txrx.Send(String.Format("pb 1 max {0}", e1.TotalBytesToTransfer));
-                            pb1set = true;
-                        }
-                        _txrx.Send(String.Format("status Saving entry {0}/{1} {2} :: {3}/{4}mb {5:N0}%",
-                                                 numSaving, totalToSave,
-                                                 e1.CurrentEntry.FileName,
-                                                 e1.BytesTransferred/(1024*1024), e1.TotalBytesToTransfer/(1024*1024),
-                                                 ((double)e1.BytesTransferred) / (0.01 * e1.TotalBytesToTransfer)));
-                        string msg = String.Format("pb 1 value {0}", e1.BytesTransferred);
-                        _txrx.Send(msg);
-                        break;
+                        // case ZipProgressEventType.Saving_EntryBytesRead:
+                        // if (!_pb2Set)
+                        // {
+                        //     _txrx.Send(String.Format("pb 2 max {0}", e1.TotalBytesToTransfer));
+                        //     _pb2Set = true;
+                        // }
+                        // _txrx.Send(String.Format("status Saving entry {0}/{1} {2} :: {3}/{4}mb {5:N0}%",
+                        //                          numSaving, totalToSave,
+                        //                          e1.CurrentEntry.FileName,
+                        //                          e1.BytesTransferred/(1024*1024), e1.TotalBytesToTransfer/(1024*1024),
+                        //                          ((double)e1.BytesTransferred) / (0.01 * e1.TotalBytesToTransfer)));
+                        // string msg = String.Format("pb 2 value {0}", e1.BytesTransferred);
+                        // _txrx.Send(msg);
+                        // break;
 
                         case ZipProgressEventType.Saving_AfterWriteEntry:
                         TestContext.WriteLine("Saved entry {0}, {1} bytes", e1.CurrentEntry.FileName,
                                               e1.CurrentEntry.UncompressedSize);
-                        _txrx.Send("pb 0 step");
-                        pb1set = false;
+                        _txrx.Send("pb 1 step");
+                        _pb2Set = false;
                         break;
                     }
                 };
 
-            string progressChannel = "largesegmentedzip";
-            StartProgressMonitor(progressChannel);
-            StartProgressClient(progressChannel, "Large Segmented ZIP", "Creating files");
+            _txrx = TestUtilities.StartProgressMonitor("largesegmentedzip", "Large Segmented ZIP", "Creating files");
 
-            _txrx.Send(String.Format("pb 0 max {0}", numFiles));
+            _txrx.Send("bars 3");
+            _txrx.Send("pb 0 max 2");
+            _txrx.Send(String.Format("pb 1 max {0}", numFiles));
 
             // build a large zip file out of thin air
             var sw = new StringWriter();
@@ -343,7 +430,7 @@ namespace Ionic.Zip.Tests.Split
                 {
                     string filename = TestUtilities.GetOneRandomUppercaseAsciiChar() +
                         Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".txt";
-                    zip.AddEntry(filename, opener, closer);
+                    zip.AddEntry(filename, writer);
                 }
                 zip.Save(zipFileToCreate);
 
@@ -357,9 +444,35 @@ namespace Ionic.Zip.Tests.Split
                 Assert.IsTrue(false, "There were not enough segments in that zip.  numsegs({0}) maxsize({1}).", numSegs, maxSegSize);
             }
 #endif
-            _txrx.Send("status Verifying that zip (this will take a while)...");
+            _txrx.Send("status Verifying the zip ...");
 
-            BasicVerifyZip(zipFileToCreate);
+            _txrx.Send("pb 0 step");
+            _txrx.Send("pb 1 value 0");
+            _txrx.Send("pb 2 value 0");
+
+            ReadOptions options = new ReadOptions
+            {
+                StatusMessageWriter = new StringWriter()
+            };
+
+            string extractDir = "verify";
+            int c = 0;
+            while (Directory.Exists(extractDir + c)) c++;
+            extractDir += c;
+
+            using (ZipFile zip2 = ZipFile.Read(zipFileToCreate, options))
+            {
+                _numFilesToExtract = zip2.Entries.Count;
+                _numExtracted= 1;
+                _pb1Set= false;
+                zip2.ExtractProgress += ExtractProgress;
+                zip2.ExtractAll(extractDir);
+            }
+
+            string status = options.StatusMessageWriter.ToString();
+            TestContext.WriteLine("status:");
+            foreach (string line in status.Split('\n'))
+                TestContext.WriteLine(line);
         }
 
 

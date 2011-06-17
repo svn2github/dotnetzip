@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 14:01:05>
+// Time-stamp: <2011-June-17 17:49:26>
 //
 // ------------------------------------------------------------------
 //
@@ -51,16 +51,6 @@ namespace Ionic.Zip.Tests.Basic
 
 
         public BasicTests() : base() { }
-
-        [TestCleanup()]
-        public void MyTestCleanupEx()
-        {
-            if (_txrx != null)
-            {
-                _txrx.Send("stop");
-                _txrx = null;
-            }
-        }
 
 
         [TestMethod]
@@ -723,193 +713,6 @@ namespace Ionic.Zip.Tests.Basic
                 }
             }
         }
-
-        Ionic.CopyData.Transceiver _txrx;
-        bool _pb1Set;
-        int _numEntriesSaved = 0;
-        void LNSF_SaveProgress(object sender, SaveProgressEventArgs e)
-        {
-            switch (e.EventType)
-            {
-                case ZipProgressEventType.Saving_Started:
-                    _numEntriesSaved = 0;
-                    _txrx.Send("status saving started...");
-                    _pb1Set = false;
-                    break;
-
-                case ZipProgressEventType.Saving_BeforeWriteEntry:
-                    _numEntriesSaved++;
-                    if (_numEntriesSaved % 64 == 0)
-                        _txrx.Send(String.Format("status Compressing {0}", e.CurrentEntry.FileName));
-                    if (!_pb1Set)
-                    {
-                        _txrx.Send(String.Format("pb 1 max {0}", e.EntriesTotal));
-                        _pb1Set = true;
-                    }
-                    break;
-
-                case ZipProgressEventType.Saving_EntryBytesRead:
-                    Assert.IsTrue(e.BytesTransferred <= e.TotalBytesToTransfer);
-                    break;
-
-                case ZipProgressEventType.Saving_AfterWriteEntry:
-                    _txrx.Send("pb 1 step");
-                    break;
-
-                case ZipProgressEventType.Saving_Completed:
-                    _txrx.Send("status Save completed");
-                    _pb1Set = false;
-                    _txrx.Send("pb 1 max 1");
-                    _txrx.Send("pb 1 value 1");
-                    break;
-            }
-        }
-
-
-        int _numEntriesToAdd = 0;
-        int _numEntriesAdded = 0;
-        void LNSF_AddProgress(object sender, AddProgressEventArgs e)
-        {
-            switch (e.EventType)
-            {
-                case ZipProgressEventType.Adding_Started:
-                    _txrx.Send("status Adding files to the zip...");
-                    _pb1Set = false;
-                    break;
-
-                case ZipProgressEventType.Adding_AfterAddEntry:
-                    if (!_pb1Set)
-                    {
-                        _txrx.Send(String.Format("pb 1 max {0}", _numEntriesToAdd));
-                        _pb1Set = true;
-                    }
-                    if (!e.CurrentEntry.FileName.EndsWith("/"))
-                    {
-                        _numEntriesAdded++;
-                        if (_numEntriesAdded % 64 == 0)
-                            _txrx.Send(String.Format("status Adding file {0}/{1} :: {2}",
-                                                     _numEntriesAdded, _numEntriesToAdd, e.CurrentEntry.FileName));
-                        _txrx.Send("pb 1 step");
-                    }
-                    break;
-
-                case ZipProgressEventType.Adding_Completed:
-                    _txrx.Send("status Added all files");
-                    _pb1Set = false;
-                    _txrx.Send("pb 1 max 1");
-                    _txrx.Send("pb 1 value 1");
-                    break;
-            }
-        }
-
-
-
-        [TestMethod, Timeout(40 * 60 * 1000)]
-        public void CreateZip_AddDirectory_LargeNumberOfSmallFiles()
-        {
-            // start the visible progress monitor
-            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
-            string progressMonitorTool = Path.Combine(testBin, "Resources\\UnitTestProgressMonitor.exe");
-            string requiredDll = Path.Combine(testBin, "Resources\\Ionic.CopyData.dll");
-
-            Assert.IsTrue(File.Exists(progressMonitorTool), "progress monitor tool does not exist ({0})", progressMonitorTool);
-            Assert.IsTrue(File.Exists(requiredDll), "required DLL does not exist ({0})", requiredDll);
-
-            string progressChannel = "LargeNumberOfSmallFiles";
-            // start the progress monitor
-            this.Exec(progressMonitorTool, String.Format("-channel {0}", progressChannel), false);
-
-            System.Threading.Thread.Sleep(1000);
-            _txrx = new Ionic.CopyData.Transceiver();
-            _txrx.Channel = progressChannel;
-            _txrx.Send("test Large # of Small Files");
-            //_txrx.Send("bars 2");
-            System.Threading.Thread.Sleep(120);
-
-            int max1 = 0;
-            Action<Int16, Int32> progressUpdate = (x, y) =>
-                {
-                    if (x == 0)
-                    {
-                        _txrx.Send(String.Format("pb 1 max {0}", y));
-                        max1 = y;
-                    }
-                    else if (x == 2)
-                    {
-                        _txrx.Send(String.Format("pb 1 value {0}", y));
-                        _txrx.Send(String.Format("status creating files in directory {0} of {1}", y, max1));
-                    }
-                    else if (x == 4)
-                    {
-                        _txrx.Send(String.Format("status done creating {0} files", y));
-                    }
-                };
-
-
-            int[][] settings = {
-                new int[] {71, 21, 97, 27, 200, 200 },
-                new int[] {51, 171, 47, 197, 100, 100 },
-            };
-            _txrx.Send(String.Format("pb 0 max {0}", settings.Length * 2));
-
-            TestContext.WriteLine("============================================");
-            TestContext.WriteLine("Test beginning - {0}", System.DateTime.Now.ToString("G"));
-            for (int m = 0; m < settings.Length; m++)
-            {
-                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("CreateZip_AddDirectory_LargeNumberOfSmallFiles-{0}.zip", m));
-                Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
-
-                string dirToZip = Path.Combine(TopLevelDir, "zipthis" + m);
-                Directory.CreateDirectory(dirToZip);
-
-                TestContext.WriteLine("============================================");
-                TestContext.WriteLine("Creating files, cycle {0}...", m);
-
-                int subdirCount = 0;
-                int entries =
-                    TestUtilities.GenerateFilesOneLevelDeep(TestContext,
-                                                            "LargeNumberOfFiles",
-                                                            dirToZip,
-                                                            settings[m],
-                                                            progressUpdate,
-                                                            out subdirCount);
-                _numEntriesToAdd = entries;  // _numEntriesToAdd is used in LNSF_AddProgress
-                _numEntriesAdded = 0;
-
-                _txrx.Send("pb 0 step");
-
-                TestContext.WriteLine("============================================");
-                TestContext.WriteLine("Total of {0} files in {1} subdirs", entries, subdirCount);
-                TestContext.WriteLine("============================================");
-                TestContext.WriteLine("Creating zip - {0}", System.DateTime.Now.ToString("G"));
-                Directory.SetCurrentDirectory(TopLevelDir);
-                using (ZipFile zip = new ZipFile())
-                {
-                    zip.AddProgress += LNSF_AddProgress;
-                    zip.AddDirectory(Path.GetFileName(dirToZip));
-                    _txrx.Send("test Large # of Small Files"); // for good measure
-                    zip.BufferSize = 4096;
-                    zip.SortEntriesBeforeSaving = true;
-                    zip.SaveProgress += LNSF_SaveProgress;
-                    zip.Save(zipFileToCreate);
-                }
-
-                _txrx.Send("pb 0 step");
-
-                TestContext.WriteLine("Checking zip - {0}", System.DateTime.Now.ToString("G"));
-                Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), entries,
-                                     "The zip file created has the wrong number of entries.");
-
-                _txrx.Send("status cleaning up...");
-                // clean up for this cycle
-                Directory.Delete(dirToZip, true);
-            }
-            TestContext.WriteLine("============================================");
-            TestContext.WriteLine("Test end - {0}", System.DateTime.Now.ToString("G"));
-
-            _txrx.Send("stop");
-        }
-
 
 
 
@@ -2330,7 +2133,8 @@ namespace Ionic.Zip.Tests.Basic
             string zipFileToCreate = Path.Combine(TopLevelDir, "GetInfo.zip");
             String filename = null;
             int n;
-            string subdir = Path.Combine(TopLevelDir, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+            string subdir = Path.Combine(TopLevelDir,
+                                         TestUtilities.GenerateRandomAsciiString(9));
             Directory.CreateDirectory(subdir);
 
             int fileCount = _rnd.Next(27) + 23;
@@ -2350,7 +2154,7 @@ namespace Ionic.Zip.Tests.Basic
             TestContext.WriteLine("Creating a zip file");
             using (ZipFile zip = new ZipFile())
             {
-                zip.Password = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+                zip.Password = TestUtilities.GenerateRandomPassword(11);
                 var filenames = Directory.GetFiles(subdir);
                 foreach (String f in filenames)
                 {
@@ -2371,7 +2175,9 @@ namespace Ionic.Zip.Tests.Basic
                 foreach (var line in info.Split('\n'))
                     TestContext.WriteLine(line);
 
-                Assert.IsTrue(info.Length > 300, "Suspect info string (length({0}))", info.Length);
+                Assert.IsTrue(info.Length > 300,
+                              "Suspect info string (length({0}))",
+                              info.Length);
             }
         }
 
@@ -2561,14 +2367,11 @@ namespace Ionic.Zip.Tests.Basic
             // Check that the zip was modified as expected
             VerifyEntries(zipFile, variance, values, cryptos, 1, compFlavor, encryptionFlavor);
 
-
             // now extract the items and verify checksums
-            string extractDir = null;
+            string extractDir = "ex";
             int c=0;
-            do
-            {
-                extractDir = String.Format("ex{0}", c++);
-            }while(Directory.Exists(extractDir));
+            while (Directory.Exists(extractDir + c)) c++;
+            extractDir += c;
 
             // extract
             using (var zip = ZipFile.Read(zipFile))

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-14 11:58:55>
+// Time-stamp: <2011-June-16 20:22:10>
 //
 // ------------------------------------------------------------------
 //
@@ -69,20 +69,6 @@ namespace Ionic.Zip.Tests.Zip64
         }
 
 
-        // Use TestCleanup to run code after each test has run
-        [TestCleanup()]
-        public void MyTestCleanupEx()
-        {
-            if (_txrx!=null)
-            {
-                try
-                {
-                    _txrx.Send("stop");
-                    _txrx = null;
-                }
-                catch { }
-            }
-        }
 
         [ClassCleanup()]
         public static void MyClassCleanup()
@@ -180,9 +166,7 @@ namespace Ionic.Zip.Tests.Zip64
                     TestContext.WriteLine("Creating a new zip file: {0}", zipFileToCreate);
 
                     // create a huge ZIP64 archive with a true 64-bit offset.
-                    string progressChannel = "Zip64_Setup";
-                    StartProgressMonitor(progressChannel);
-                    StartProgressClient(progressChannel, "Test Setup", "Creating files");
+                    _txrx = TestUtilities.StartProgressMonitor("Zip64_Setup", "Test Setup", "Creating files");
 
                     _txrx.Send("bars 3");
                     _txrx.Send(String.Format("pb 0 max {0}", 3));
@@ -516,7 +500,6 @@ namespace Ionic.Zip.Tests.Zip64
         }
 
 
-        Ionic.CopyData.Transceiver _txrx;
         bool _pb2Set;
         bool _pb1Set;
 
@@ -679,9 +662,7 @@ namespace Ionic.Zip.Tests.Zip64
                 Assert.IsTrue(File.Exists(zipFileToUpdate), "The required ZIP file does not exist ({0})",  zipFileToUpdate);
 
                 // start the progress monitor
-                string progressChannel = "Zip64-Update";
-                StartProgressMonitor(progressChannel);
-                StartProgressClient(progressChannel,
+                _txrx = TestUtilities.StartProgressMonitor("Zip64-Update",
                                     "Zip64 Update",
                                     "Creating files");
 
@@ -724,11 +705,10 @@ namespace Ionic.Zip.Tests.Zip64
                         zip.Save();
                     }
 
-                string status = sw.ToString();
-                TestContext.WriteLine("status:");
-                foreach (string line in status.Split('\n'))
-                    TestContext.WriteLine(line);
-
+                    string status = sw.ToString();
+                    TestContext.WriteLine("status:");
+                    foreach (string line in status.Split('\n'))
+                        TestContext.WriteLine(line);
 
                     _txrx.Send("status Verifying the zip");
                     _txrx.Send("pb 0 step");
@@ -818,9 +798,7 @@ namespace Ionic.Zip.Tests.Zip64
 
                 int baseSize = _rnd.Next(0x1000ff) + 80000;
 
-                string progressChannel = "Zip64-WinZip-Unzip";
-                StartProgressMonitor(progressChannel);
-                StartProgressClient(progressChannel, "Zip64 WinZip unzip", "Creating files");
+                _txrx = TestUtilities.StartProgressMonitor("Zip64-WinZip-Unzip", "Zip64 WinZip unzip", "Creating files");
 
                 string extractDir = "extract";
                 Directory.SetCurrentDirectory(TopLevelDir);
@@ -977,9 +955,7 @@ namespace Ionic.Zip.Tests.Zip64
             {
                 int baseSize = _rnd.Next(80000) + 0x1000ff;
 
-                string progressChannel = "Zip64-WinZip-Zip-Huge";
-                StartProgressMonitor(progressChannel);
-                StartProgressClient(progressChannel, "Create Huge ZIP64 via WinZip", "Creating links");
+                _txrx = TestUtilities.StartProgressMonitor("Zip64-WinZip-Zip-Huge", "Create Huge ZIP64 via WinZip", "Creating links");
 
                 string extractDir = "extract";
                 Directory.SetCurrentDirectory(TopLevelDir);
@@ -1070,33 +1046,6 @@ namespace Ionic.Zip.Tests.Zip64
         }
 
 
-        void StartProgressMonitor(string progressChannel)
-        {
-            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
-            string progressMonitorTool = Path.Combine(testBin, "Resources\\UnitTestProgressMonitor.exe");
-            string requiredDll = Path.Combine(testBin, "Resources\\Ionic.CopyData.dll");
-            Assert.IsTrue(File.Exists(progressMonitorTool), "progress monitor tool does not exist ({0})",  progressMonitorTool);
-            Assert.IsTrue(File.Exists(requiredDll), "required DLL does not exist ({0})",  requiredDll);
-
-            // start the progress monitor
-            string ignored;
-            //this.Exec(progressMonitorTool, String.Format("-channel {0}", progressChannel), false);
-            TestUtilities.Exec_NoContext(progressMonitorTool, String.Format("-channel {0}", progressChannel), false, out ignored);
-        }
-
-
-
-        void StartProgressClient(string progressChannel, string title, string initialStatus)
-        {
-            _txrx = new Ionic.CopyData.Transceiver();
-            System.Threading.Thread.Sleep(1000);
-            _txrx.Channel = progressChannel;
-            System.Threading.Thread.Sleep(450);
-            _txrx.Send("test " + title);
-            System.Threading.Thread.Sleep(120);
-            _txrx.Send("status " + initialStatus);
-        }
-
         private void EmitStatus(String s)
         {
             TestContext.WriteLine("status:");
@@ -1114,9 +1063,7 @@ namespace Ionic.Zip.Tests.Zip64
                 desiredSize+= System.Int32.MaxValue/4;
                 desiredSize+= _rnd.Next(0x1000000);
 
-                string progressChannel = "Zip64-Over-4gb";
-                StartProgressMonitor(progressChannel);
-                StartProgressClient(progressChannel,
+                _txrx = TestUtilities.StartProgressMonitor("Zip64-Over-4gb",
                                     "Zip and Extract huge file",
                                     "starting up...");
 
@@ -1268,8 +1215,7 @@ namespace Ionic.Zip.Tests.Zip64
             string zipFileToCreate = String.Format("Zip64.ZipFile_Over_65534_Entries.{0}.{1}.{2}.zip",
                                                    z64option.ToString(), encryption.ToString(), compression.ToString());
 
-            StartProgressMonitor(zipFileToCreate);
-            StartProgressClient(zipFileToCreate,
+            _txrx = TestUtilities.StartProgressMonitor(zipFileToCreate,
                                 String.Format("ZipFile, {0} entries, E({1}), C({2})", fileCount,encryption.ToString(), compression.ToString()),
                                 "starting up...");
 
@@ -1393,9 +1339,7 @@ namespace Ionic.Zip.Tests.Zip64
                 Assert.IsTrue(File.Exists(zipFileToUpdate), "The required ZIP file does not exist ({0})",  zipFileToUpdate);
 
                 // start the progress monitor
-                string progressChannel = "Zip64-AutoSelect";
-                StartProgressMonitor(progressChannel);
-                StartProgressClient(progressChannel, "Zip64 Auto", "Creating files");
+                _txrx = TestUtilities.StartProgressMonitor("Zip64-AutoSelect", "Zip64 Auto", "Creating files");
 
                 // make sure the zip is larger than the 4.2gb size
                 FileInfo fi = new FileInfo(zipFileToUpdate);

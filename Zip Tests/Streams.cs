@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-15 23:04:21>
+// Time-stamp: <2011-June-16 18:57:11>
 //
 // ------------------------------------------------------------------
 //
@@ -42,25 +42,7 @@ namespace Ionic.Zip.Tests.Streams
     [TestClass]
     public class StreamsTests : IonicTestClass
     {
-        Ionic.CopyData.Transceiver _txrx;
-
         public StreamsTests() : base() { }
-
-        // Use TestCleanup to run code after each test has run
-        [TestCleanup()]
-        public void MyTestCleanupEx()
-        {
-            if (_txrx!=null)
-            {
-                try
-                {
-                    _txrx.Send("stop");
-                    _txrx = null;
-                }
-                catch { }
-            }
-        }
-
 
         EncryptionAlgorithm[] crypto =
         {
@@ -544,8 +526,7 @@ namespace Ionic.Zip.Tests.Streams
             string zipFileToCreate = String.Format("ZipOutputStream.Zip64.over_65534_Entries.{0}.{1}.{2}.zip",
                                                    z64option.ToString(), encryption.ToString(), compression.ToString());
 
-            StartProgressMonitor(zipFileToCreate);
-            StartProgressClient(zipFileToCreate, txrxLabel, "starting up...");
+            _txrx = TestUtilities.StartProgressMonitor(zipFileToCreate, txrxLabel, "starting up...");
 
             _txrx.Send("pb 0 max 2"); // 2 stages: Write, Verify
             _txrx.Send("pb 0 value 0");
@@ -620,34 +601,6 @@ namespace Ionic.Zip.Tests.Streams
         }
 
 
-
-
-        void StartProgressMonitor(string progressChannel)
-        {
-            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
-            string progressMonitorTool = Path.Combine(testBin, "Resources\\UnitTestProgressMonitor.exe");
-            string requiredDll = Path.Combine(testBin, "Resources\\Ionic.CopyData.dll");
-            Assert.IsTrue(File.Exists(progressMonitorTool), "progress monitor tool does not exist ({0})",  progressMonitorTool);
-            Assert.IsTrue(File.Exists(requiredDll), "required DLL does not exist ({0})",  requiredDll);
-
-            // start the progress monitor
-            string ignored;
-            //this.Exec(progressMonitorTool, String.Format("-channel {0}", progressChannel), false);
-            TestUtilities.Exec_NoContext(progressMonitorTool, String.Format("-channel {0}", progressChannel), false, out ignored);
-        }
-
-
-
-        void StartProgressClient(string progressChannel, string title, string initialStatus)
-        {
-            _txrx = new Ionic.CopyData.Transceiver();
-            System.Threading.Thread.Sleep(1000);
-            _txrx.Channel = progressChannel;
-            System.Threading.Thread.Sleep(450);
-            _txrx.Send("test " + title);
-            System.Threading.Thread.Sleep(120);
-            _txrx.Send("status " + initialStatus);
-        }
 
 
 
@@ -1078,10 +1031,8 @@ namespace Ionic.Zip.Tests.Streams
                     //s.Close();
                 };
 
-            string channel = "ZipFile_Parallel_wi10030";
             string txrxLabel = "PDOS Leak Test";
-            StartProgressMonitor(channel);
-            StartProgressClient(channel, txrxLabel, "starting up...");
+            _txrx = TestUtilities.StartProgressMonitor("ZipFile_Parallel_wi10030", txrxLabel, "starting up...");
 
             TestContext.WriteLine("Testing for leaks....");
 
@@ -1142,8 +1093,7 @@ namespace Ionic.Zip.Tests.Streams
 
             string channel = String.Format("ZOS_Parallel{0:000}",_rnd.Next(1000));
             string txrxLabel = "ZipOutputStream Parallel";
-            StartProgressMonitor(channel);
-            StartProgressClient(channel, txrxLabel, "starting up...");
+            _txrx = TestUtilities.StartProgressMonitor(channel, txrxLabel, "starting up...");
 
             TestContext.WriteLine("Creating {0} fodder files...", nFiles);
             Directory.CreateDirectory(dirToZip);
@@ -1597,6 +1547,7 @@ namespace Ionic.Zip.Tests.Streams
         [TestMethod]
         public void Streams_ZipInput_Encryption_zero_subdir_file()
         {
+
             _Internal_Streams_ZipInput_Encryption(3,1);
         }
 
