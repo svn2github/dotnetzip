@@ -48,7 +48,7 @@ namespace Ionic.Zip.Tests.Split
         //public Split() : base() { }
 
         [TestMethod, Timeout(360000)]  // 360000 - 6 minutes
-        public void Create_SegmentedArchive()
+        public void Spanned_Create()
         {
             string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
 
@@ -479,7 +479,7 @@ namespace Ionic.Zip.Tests.Split
 
         [TestMethod]
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
-        public void Create_Split_InvalidSegmentSize()
+        public void Spanned_InvalidSegmentSize()
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "Create_Split_InvalidSegmentSize.zip");
             Directory.SetCurrentDirectory(TopLevelDir);

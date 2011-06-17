@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-17 17:32:31>
+// Time-stamp: <2011-June-17 18:45:02>
 //
 // ------------------------------------------------------------------
 //
@@ -177,13 +177,7 @@ namespace Ionic.Zip.Tests.Utilities
         {
             get
             {
-                if (_sevenzip == null)
-                {
-                    string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                    _sevenzip = Path.Combine(progfiles, "7-zip\\7z.exe");
-                    Assert.IsTrue(File.Exists(_sevenzip), "exe ({0}) does not exist", _sevenzip);
-                }
-                return _sevenzip;
+                return SevenZipIsPresent ? _sevenzip : null;
             }
         }
 
@@ -191,9 +185,7 @@ namespace Ionic.Zip.Tests.Utilities
         {
             get
             {
-                if (InfoZipIsPresent)
-                    return _infozipzip;
-                return null;
+                return InfoZipIsPresent ? _infozipzip : null;
             }
         }
 
@@ -201,9 +193,7 @@ namespace Ionic.Zip.Tests.Utilities
         {
             get
             {
-                if (InfoZipIsPresent)
-                    return _infozipunzip;
-                return null;
+                return InfoZipIsPresent ? _infozipunzip : null;
             }
         }
 
@@ -212,13 +202,7 @@ namespace Ionic.Zip.Tests.Utilities
         {
             get
             {
-                if (_wzzip == null)
-                {
-                    string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                    _wzzip = Path.Combine(progfiles, "winzip\\wzzip.exe");
-                    Assert.IsTrue(File.Exists(_wzzip), "exe ({0}) does not exist", _wzzip);
-                }
-                return _wzzip;
+                return WinZipIsPresent ? _wzzip : null;
             }
         }
 
@@ -227,13 +211,7 @@ namespace Ionic.Zip.Tests.Utilities
         {
             get
             {
-                if (_wzunzip == null)
-                {
-                    string progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                    _wzunzip = Path.Combine(progfiles, "winzip\\wzunzip.exe");
-                    Assert.IsTrue(File.Exists(_wzunzip), "exe ({0}) does not exist", _wzunzip);
-                }
-                return _wzunzip;
+                return WinZipIsPresent ? _wzunzip : null;
             }
         }
 
@@ -244,15 +222,10 @@ namespace Ionic.Zip.Tests.Utilities
                 if (_WinZipIsPresent == null)
                 {
                     string progfiles = null;
-                    if (_wzunzip == null)
+                    if (_wzunzip == null || _wzzip == null)
                     {
-                        progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
+                        progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles(x86)");
                         _wzunzip = Path.Combine(progfiles, "winzip\\wzunzip.exe");
-                    }
-                    if (_wzzip == null)
-                    {
-                        if (progfiles == null)
-                            progfiles = System.Environment.GetEnvironmentVariable("ProgramFiles");
                         _wzzip = Path.Combine(progfiles, "winzip\\wzzip.exe");
                     }
                     _WinZipIsPresent = new Nullable<bool>(File.Exists(_wzunzip) && File.Exists(_wzzip));
