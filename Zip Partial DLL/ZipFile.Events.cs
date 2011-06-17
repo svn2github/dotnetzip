@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 11:15:15>
+// Time-stamp: <2011-June-16 18:00:33>
 //
 // ------------------------------------------------------------------
 //
@@ -520,68 +520,60 @@ namespace Ionic.Zip
 
         internal bool OnSaveBlock(ZipEntry entry, Int64 bytesXferred, Int64 totalBytesToXfer)
         {
-            if (SaveProgress != null)
+            EventHandler<SaveProgressEventArgs> sp = SaveProgress;
+            if (sp != null)
             {
-                //lock (LOCK)
-                {
-                    var e = SaveProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry,
-                                  bytesXferred, totalBytesToXfer);
-                    SaveProgress(this, e);
-                    if (e.Cancel)
-                        _saveOperationCanceled = true;
-                }
+                var e = SaveProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry,
+                                                         bytesXferred, totalBytesToXfer);
+                sp(this, e);
+                if (e.Cancel)
+                    _saveOperationCanceled = true;
             }
             return _saveOperationCanceled;
         }
 
         private void OnSaveEntry(int current, ZipEntry entry, bool before)
         {
-            if (SaveProgress != null)
+            EventHandler<SaveProgressEventArgs> sp = SaveProgress;
+            if (sp != null)
             {
-                //lock (LOCK)
-                {
-                    var e = new SaveProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, entry);
-                    SaveProgress(this, e);
-                    if (e.Cancel)
-                        _saveOperationCanceled = true;
-                }
+                var e = new SaveProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, entry);
+                sp(this, e);
+                if (e.Cancel)
+                    _saveOperationCanceled = true;
             }
         }
 
         private void OnSaveEvent(ZipProgressEventType eventFlavor)
         {
-            if (SaveProgress != null)
+            EventHandler<SaveProgressEventArgs> sp = SaveProgress;
+            if (sp != null)
             {
-                lock (LOCK)
-                {
-                    var e = new SaveProgressEventArgs(ArchiveNameForEvent, eventFlavor);
-                    SaveProgress(this, e);
-                    if (e.Cancel)
-                        _saveOperationCanceled = true;
-                }
+                var e = new SaveProgressEventArgs(ArchiveNameForEvent, eventFlavor);
+                sp(this, e);
+                if (e.Cancel)
+                    _saveOperationCanceled = true;
             }
         }
 
         private void OnSaveStarted()
         {
-            if (SaveProgress != null)
+            EventHandler<SaveProgressEventArgs> sp = SaveProgress;
+            if (sp != null)
             {
-                lock (LOCK)
-                {
-                    var e = SaveProgressEventArgs.Started(ArchiveNameForEvent);
-                    SaveProgress(this, e);
-                }
+                var e = SaveProgressEventArgs.Started(ArchiveNameForEvent);
+                sp(this, e);
+                if (e.Cancel)
+                    _saveOperationCanceled = true;
             }
         }
         private void OnSaveCompleted()
         {
-            if (SaveProgress != null)
+            EventHandler<SaveProgressEventArgs> sp = SaveProgress;
+            if (sp != null)
             {
-                lock (LOCK)
-                {
-                    var e = SaveProgressEventArgs.Completed(ArchiveNameForEvent);
-                    SaveProgress(this, e);
-                }
+                var e = SaveProgressEventArgs.Completed(ArchiveNameForEvent);
+                sp(this, e);
             }
         }
         #endregion
@@ -649,54 +641,46 @@ namespace Ionic.Zip
 
         private void OnReadStarted()
         {
-            if (ReadProgress != null)
+            EventHandler<ReadProgressEventArgs> rp = ReadProgress;
+            if (rp != null)
             {
-                lock (LOCK)
-                {
                     var e = ReadProgressEventArgs.Started(ArchiveNameForEvent);
-                    ReadProgress(this, e);
-                }
+                    rp(this, e);
             }
         }
 
         private void OnReadCompleted()
         {
-            if (ReadProgress != null)
+            EventHandler<ReadProgressEventArgs> rp = ReadProgress;
+            if (rp != null)
             {
-                lock (LOCK)
-                {
                     var e = ReadProgressEventArgs.Completed(ArchiveNameForEvent);
-                    ReadProgress(this, e);
-                }
+                    rp(this, e);
             }
         }
 
         internal void OnReadBytes(ZipEntry entry)
         {
-            if (ReadProgress != null)
+            EventHandler<ReadProgressEventArgs> rp = ReadProgress;
+            if (rp != null)
             {
-                lock (LOCK)
-                {
                     var e = ReadProgressEventArgs.ByteUpdate(ArchiveNameForEvent,
                                         entry,
                                         ReadStream.Position,
                                         LengthOfReadStream);
-                    ReadProgress(this, e);
-                }
+                    rp(this, e);
             }
         }
 
         internal void OnReadEntry(bool before, ZipEntry entry)
         {
-            if (ReadProgress != null)
+            EventHandler<ReadProgressEventArgs> rp = ReadProgress;
+            if (rp != null)
             {
-                lock (LOCK)
-                {
-                    ReadProgressEventArgs e = (before)
+                ReadProgressEventArgs e = (before)
                     ? ReadProgressEventArgs.Before(ArchiveNameForEvent, _entries.Count)
                     : ReadProgressEventArgs.After(ArchiveNameForEvent, entry, _entries.Count);
-                    ReadProgress(this, e);
-                }
+                rp(this, e);
             }
         }
 
@@ -873,15 +857,13 @@ namespace Ionic.Zip
 
         private void OnExtractEntry(int current, bool before, ZipEntry currentEntry, string path)
         {
-            if (ExtractProgress != null)
+            EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
+            if (ep != null)
             {
-                lock (LOCK)
-                {
-                    var e = new ExtractProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, currentEntry, path);
-                    ExtractProgress(this, e);
-                    if (e.Cancel)
-                        _extractOperationCanceled = true;
-                }
+                var e = new ExtractProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, currentEntry, path);
+                ep(this, e);
+                if (e.Cancel)
+                    _extractOperationCanceled = true;
             }
         }
 
@@ -889,16 +871,14 @@ namespace Ionic.Zip
         // Can be called from within ZipEntry._ExtractOne.
         internal bool OnExtractBlock(ZipEntry entry, Int64 bytesWritten, Int64 totalBytesToWrite)
         {
-            if (ExtractProgress != null)
+            EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
+            if (ep != null)
             {
-                lock (LOCK)
-                {
-                    var e = ExtractProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry,
-                                bytesWritten, totalBytesToWrite);
-                    ExtractProgress(this, e);
-                    if (e.Cancel)
-                        _extractOperationCanceled = true;
-                }
+                var e = ExtractProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry,
+                                                            bytesWritten, totalBytesToWrite);
+                ep(this, e);
+                if (e.Cancel)
+                    _extractOperationCanceled = true;
             }
             return _extractOperationCanceled;
         }
@@ -907,32 +887,28 @@ namespace Ionic.Zip
         // Can be called from within ZipEntry.InternalExtract.
         internal bool OnSingleEntryExtract(ZipEntry entry, string path, bool before)
         {
-            if (ExtractProgress != null)
+            EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
+            if (ep != null)
             {
-                lock (LOCK)
-                {
-                    var e = (before)
-            ? ExtractProgressEventArgs.BeforeExtractEntry(ArchiveNameForEvent, entry, path)
-            : ExtractProgressEventArgs.AfterExtractEntry(ArchiveNameForEvent, entry, path);
-                    ExtractProgress(this, e);
-                    if (e.Cancel)
-                        _extractOperationCanceled = true;
-                }
+                var e = (before)
+                    ? ExtractProgressEventArgs.BeforeExtractEntry(ArchiveNameForEvent, entry, path)
+                    : ExtractProgressEventArgs.AfterExtractEntry(ArchiveNameForEvent, entry, path);
+                ep(this, e);
+                if (e.Cancel)
+                    _extractOperationCanceled = true;
             }
             return _extractOperationCanceled;
         }
 
         internal bool OnExtractExisting(ZipEntry entry, string path)
         {
-            if (ExtractProgress != null)
+            EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
+            if (ep != null)
             {
-                lock (LOCK)
-                {
-                    var e = ExtractProgressEventArgs.ExtractExisting(ArchiveNameForEvent, entry, path);
-                    ExtractProgress(this, e);
-                    if (e.Cancel)
-                        _extractOperationCanceled = true;
-                }
+                var e = ExtractProgressEventArgs.ExtractExisting(ArchiveNameForEvent, entry, path);
+                ep(this, e);
+                if (e.Cancel)
+                    _extractOperationCanceled = true;
             }
             return _extractOperationCanceled;
         }
@@ -940,28 +916,24 @@ namespace Ionic.Zip
 
         private void OnExtractAllCompleted(string path)
         {
-            if (ExtractProgress != null)
+            EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
+            if (ep != null)
             {
-                lock (LOCK)
-                {
-                    var e = ExtractProgressEventArgs.ExtractAllCompleted(ArchiveNameForEvent,
-                         path );
-                    ExtractProgress(this, e);
-                }
+                var e = ExtractProgressEventArgs.ExtractAllCompleted(ArchiveNameForEvent,
+                                                                     path );
+                ep(this, e);
             }
         }
 
 
         private void OnExtractAllStarted(string path)
         {
-            if (ExtractProgress != null)
+            EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
+            if (ep != null)
             {
-                lock (LOCK)
-                {
-                    var e = ExtractProgressEventArgs.ExtractAllStarted(ArchiveNameForEvent,
-                         path );
-                    ExtractProgress(this, e);
-                }
+                var e = ExtractProgressEventArgs.ExtractAllStarted(ArchiveNameForEvent,
+                                                                   path );
+                ep(this, e);
             }
         }
 
@@ -1053,41 +1025,35 @@ namespace Ionic.Zip
 
         private void OnAddStarted()
         {
-            if (AddProgress != null)
+            EventHandler<AddProgressEventArgs> ap = AddProgress;
+            if (ap != null)
             {
-                lock (LOCK)
-                {
-                    var e = AddProgressEventArgs.Started(ArchiveNameForEvent);
-                    AddProgress(this, e);
-                    if (e.Cancel) // workitem 13371
-                        _addOperationCanceled = true;
-                }
+                var e = AddProgressEventArgs.Started(ArchiveNameForEvent);
+                ap(this, e);
+                if (e.Cancel) // workitem 13371
+                    _addOperationCanceled = true;
             }
         }
 
         private void OnAddCompleted()
         {
-            if (AddProgress != null)
+            EventHandler<AddProgressEventArgs> ap = AddProgress;
+            if (ap != null)
             {
-                lock (LOCK)
-                {
-                    var e = AddProgressEventArgs.Completed(ArchiveNameForEvent);
-                    AddProgress(this, e);
-                }
+                var e = AddProgressEventArgs.Completed(ArchiveNameForEvent);
+                ap(this, e);
             }
         }
 
         internal void AfterAddEntry(ZipEntry entry)
         {
-            if (AddProgress != null)
+            EventHandler<AddProgressEventArgs> ap = AddProgress;
+            if (ap != null)
             {
-                lock (LOCK)
-                {
-                    var e = AddProgressEventArgs.AfterEntry(ArchiveNameForEvent, entry, _entries.Count);
-                    AddProgress(this, e);
-                    if (e.Cancel) // workitem 13371
-                        _addOperationCanceled = true;
-                }
+                var e = AddProgressEventArgs.AfterEntry(ArchiveNameForEvent, entry, _entries.Count);
+                ap(this, e);
+                if (e.Cancel) // workitem 13371
+                    _addOperationCanceled = true;
             }
         }
 
