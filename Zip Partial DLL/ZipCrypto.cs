@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 10:31:01>
+// Time-stamp: <2011-June-16 19:56:17>
 //
 // ------------------------------------------------------------------
 //
@@ -102,9 +102,24 @@ namespace Ionic.Zip
                 // lastmodified time, rather than the high-order byte of the CRC, to
                 // verify the password.
                 //
-                // This is not documented in the PKWare Appnote.txt.
-                // This was discovered this by analysis of the Crypt.c source file in the InfoZip library
-                // http://www.info-zip.org/pub/infozip/
+                // This is not documented in the PKWare Appnote.txt.  It was
+                // discovered this by analysis of the Crypt.c source file in the
+                // InfoZip library http://www.info-zip.org/pub/infozip/
+                //
+                // The reason for this is that the CRC for a file cannot be known
+                // until the entire contents of the file have been streamed. This
+                // means a tool would have to read the file content TWICE in its
+                // entirety in order to perform PKZIP encryption - once to compute
+                // the CRC, and again to actually encrypt.
+                //
+                // This is so important for performance that using the timeblob as
+                // the verification should be the standard practice for DotNetZip
+                // when using PKZIP encryption. This implies that bit 3 must be
+                // set. The downside is that some tools still cannot cope with ZIP
+                // files that use bit 3.  Therefore, DotNetZip DOES NOT force bit 3
+                // when PKZIP encryption is in use, and instead, reads the stream
+                // twice.
+                //
 
                 if ((e._BitField & 0x0008) != 0x0008)
                 {
