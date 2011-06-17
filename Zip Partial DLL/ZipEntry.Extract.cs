@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 10:41:22>
+// Time-stamp: <2011-June-17 08:44:58>
 //
 // ------------------------------------------------------------------
 //
@@ -741,7 +741,7 @@ namespace Ionic.Zip
                 if (_ioOperationCanceled)
                     goto ExitTry;
 
-                Int32 ActualCrc32 = _ExtractOne(output);
+                Int32 ActualCrc32 = ExtractOne(output);
 
                 if (_ioOperationCanceled)
                     goto ExitTry;
@@ -939,64 +939,76 @@ namespace Ionic.Zip
 
         private Stream _inputDecryptorStream;
 
-        private Int32 _ExtractOne(Stream output)
+        private Int32 ExtractOne(Stream output)
         {
+            Int32 CrcResult = 0;
             Stream input = this.ArchiveStream;
 
-            // change for workitem 8098
-            input.Seek(this.FileDataPosition, SeekOrigin.Begin);
-            // workitem 10178
-            Ionic.Zip.SharedUtilities.Workaround_Ladybug318918(input);
-
-            // to validate the CRC.
-            Int32 CrcResult = 0;
-
-            byte[] bytes = new byte[BufferSize];
-
-            // The extraction process varies depending on how the entry was stored.
-            // It could have been encrypted, and it coould have been compressed, or both, or
-            // neither. So we need to check both the encryption flag and the compression flag,
-            // and take the proper action in all cases.
-
-            Int64 LeftToRead = (_CompressionMethod_FromZipFile == (short)CompressionMethod.Deflate)
-                ? this.UncompressedSize
-                : this._CompressedFileDataSize;
-
-            // Get a stream that either decrypts or not.
-            _inputDecryptorStream = GetExtractDecryptor(input);
-
-            Stream input3 = GetExtractDecompressor( _inputDecryptorStream );
-
-            Int64 bytesWritten = 0;
-            // As we read, we maybe decrypt, and then we maybe decompress. Then we write.
-            using (var s1 = new Ionic.Zlib.CrcCalculatorStream(input3))
+            try
             {
-                while (LeftToRead > 0)
+                // change for workitem 8098
+                input.Seek(this.FileDataPosition, SeekOrigin.Begin);
+                // workitem 10178
+                Ionic.Zip.SharedUtilities.Workaround_Ladybug318918(input);
+
+                byte[] bytes = new byte[BufferSize];
+
+                // The extraction process varies depending on how the entry was
+                // stored.  It could have been encrypted, and it coould have
+                // been compressed, or both, or neither. So we need to check
+                // both the encryption flag and the compression flag, and take
+                // the proper action in all cases.
+
+                Int64 LeftToRead = (_CompressionMethod_FromZipFile == (short)CompressionMethod.Deflate)
+                    ? this.UncompressedSize
+                    : this._CompressedFileDataSize;
+
+                // Get a stream that either decrypts or not.
+                _inputDecryptorStream = GetExtractDecryptor(input);
+
+                Stream input3 = GetExtractDecompressor( _inputDecryptorStream );
+
+                Int64 bytesWritten = 0;
+                // As we read, we maybe decrypt, and then we maybe decompress. Then we write.
+                using (var s1 = new Ionic.Zlib.CrcCalculatorStream(input3))
                 {
-                    //Console.WriteLine("ExtractOne: LeftToRead {0}", LeftToRead);
-
-                    // Casting LeftToRead down to an int is ok here in the else clause,
-                    // because that only happens when it is less than bytes.Length,
-                    // which is much less than MAX_INT.
-                    int len = (LeftToRead > bytes.Length) ? bytes.Length : (int)LeftToRead;
-                    int n = s1.Read(bytes, 0, len);
-
-                    // must check data read - essential for detecting corrupt zip files
-                    _CheckRead(n);
-
-                    output.Write(bytes, 0, n);
-                    LeftToRead -= n;
-                    bytesWritten += n;
-
-                    // fire the progress event, check for cancels
-                    OnExtractProgress(bytesWritten, UncompressedSize);
-                    if (_ioOperationCanceled)
+                    while (LeftToRead > 0)
                     {
-                        break;
-                    }
-                }
+                        //Console.WriteLine("ExtractOne: LeftToRead {0}", LeftToRead);
 
-                CrcResult = s1.Crc;
+                        // Casting LeftToRead down to an int is ok here in the else clause,
+                        // because that only happens when it is less than bytes.Length,
+                        // which is much less than MAX_INT.
+                        int len = (LeftToRead > bytes.Length) ? bytes.Length : (int)LeftToRead;
+                        int n = s1.Read(bytes, 0, len);
+
+                        // must check data read - essential for detecting corrupt zip files
+                        _CheckRead(n);
+
+                        output.Write(bytes, 0, n);
+                        LeftToRead -= n;
+                        bytesWritten += n;
+
+                        // fire the progress event, check for cancels
+                        OnExtractProgress(bytesWritten, UncompressedSize);
+                        if (_ioOperationCanceled)
+                        {
+                            break;
+                        }
+                    }
+
+                    CrcResult = s1.Crc;
+                }
+            }
+            finally
+            {
+                var zss = input as ZipSegmentedStream;
+                if (zss != null)
+                {
+                    // need to dispose it
+                    zss.Dispose();
+                    _archiveStream = null;
+                }
             }
 
             return CrcResult;

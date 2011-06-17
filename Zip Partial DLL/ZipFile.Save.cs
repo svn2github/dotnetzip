@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-15 10:30:04>
+// Time-stamp: <2011-June-17 07:55:58>
 //
 // ------------------------------------------------------------------
 //
@@ -178,14 +178,15 @@ namespace Ionic.Zip
                 {
                     // _temporaryFileName may remain null if we are writing to a stream.
                     // only close the stream if there is a file behind it.
+#if NETCF
                     WriteStream.Close();
-#if !NETCF
+#else
                     WriteStream.Dispose();
 #endif
                     if (_saveOperationCanceled)
                         return;
 
-                    if ((_fileAlreadyExists) && (this._readstream != null))
+                    if (_fileAlreadyExists && this._readstream != null)
                     {
                         // This means we opened and read a zip file.
                         // If we are now saving to the same file, we need to close the
@@ -217,7 +218,7 @@ namespace Ionic.Zip
                     }
 
                     OnSaveEvent(ZipProgressEventType.Saving_BeforeRenameTempArchive);
-                    File.Move((zss != null) ? zss.CurrentName : _temporaryFileName, _name);
+                    File.Move((zss != null) ? zss.CurrentTempName : _temporaryFileName, _name);
                     OnSaveEvent(ZipProgressEventType.Saving_AfterRenameTempArchive);
 
                     _fileAlreadyExists = true;

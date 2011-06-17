@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-June-16 10:42:08>
+// Last Saved: <2011-June-17 08:12:43>
 //
 // ------------------------------------------------------------------
 //
@@ -1594,12 +1594,12 @@ namespace Ionic.Zip
                 var zss = s as ZipSegmentedStream;
                 if (zss != null && _diskNumber != zss.CurrentSegment)
                 {
-                    // in this case the entry header is in a different file
-                    using (Stream firstSeg = ZipSegmentedStream.ForUpdate(this._container.ZipFile.Name, _diskNumber))
+                    // In this case the entry header is in a different file,
+                    // which has already been closed. Need to re-open it.
+                    using (Stream hseg = ZipSegmentedStream.ForUpdate(this._container.ZipFile.Name, _diskNumber))
                     {
-                        firstSeg.Seek(this._RelativeOffsetOfLocalHeader, SeekOrigin.Begin);
-                        // write the updated header to the output stream
-                        firstSeg.Write(_EntryHeader, 0, _EntryHeader.Length);
+                        hseg.Seek(this._RelativeOffsetOfLocalHeader, SeekOrigin.Begin);
+                        hseg.Write(_EntryHeader, 0, _EntryHeader.Length);
                     }
                 }
                 else
