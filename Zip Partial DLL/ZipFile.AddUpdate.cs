@@ -1,7 +1,7 @@
 // ZipFile.AddUpdate.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009, 2011 Dino Chiesa.
+// Copyright (c) 2009-2011 Dino Chiesa.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 11:03:59>
+// Time-stamp: <2011-June-17 11:38:52>
 //
 // ------------------------------------------------------------------
 //
@@ -55,8 +55,8 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        ///   The directory name used for the file within the archive is the same as the
-        ///   directory name (potentially a relative path) specified in the
+        ///   The directory name used for the file within the archive is the same
+        ///   as the directory name (potentially a relative path) specified in the
         ///   <paramref name="fileOrDirectoryName"/>.
         /// </para>
         ///
@@ -110,8 +110,8 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        ///   Encryption will be used on the file data if the <c>Password</c> has been set on
-        ///   the <c>ZipFile</c> object, prior to calling this method.
+        ///   Encryption will be used on the file data if the <c>Password</c> has
+        ///   been set on the <c>ZipFile</c> object, prior to calling this method.
         /// </para>
         ///
         /// <para>
@@ -440,9 +440,9 @@ namespace Ionic.Zip
         /// </summary>
         ///
         /// <param name="entriesToRemove">
-        ///   A collection of strings that refer to names of entries to be removed from
-        ///   the <c>ZipFile</c>.  For example, you can pass in an array or a List of Strings
-        ///   that provide the names of entries to be removed.
+        ///   A collection of strings that refer to names of entries to be removed
+        ///   from the <c>ZipFile</c>.  For example, you can pass in an array or a
+        ///   List of Strings that provide the names of entries to be removed.
         /// </param>
         ///
         /// <seealso cref="Ionic.Zip.ZipFile.SelectEntries(String)" />
@@ -954,8 +954,8 @@ namespace Ionic.Zip
         /// <seealso cref="Ionic.Zip.ZipFile.UpdateItem(string,string)"/>
         ///
         /// <param name="directoryName">
-        ///   The path to the directory to be added to the zip archive, or updated in the
-        ///   zip archive.
+        ///   The path to the directory to be added to the zip archive, or updated
+        ///   in the zip archive.
         /// </param>
         ///
         /// <param name="directoryPathInArchive">
@@ -1007,7 +1007,9 @@ namespace Ionic.Zip
         /// <seealso cref="Ionic.Zip.ZipFile.UpdateFile(string)"/>
         /// <seealso cref="Ionic.Zip.ZipFile.UpdateDirectory(string)"/>
         ///
-        /// <param name="itemName">the path to the file or directory to be added or updated.</param>
+        /// <param name="itemName">
+        ///  the path to the file or directory to be added or updated.
+        /// </param>
         public void UpdateItem(string itemName)
         {
             UpdateItem(itemName, null);
@@ -1049,7 +1051,9 @@ namespace Ionic.Zip
         /// <seealso cref="Ionic.Zip.ZipFile.UpdateFile(string, string)"/>
         /// <seealso cref="Ionic.Zip.ZipFile.UpdateDirectory(string, string)"/>
         ///
-        /// <param name="itemName">The path for the File or Directory to be added or updated.</param>
+        /// <param name="itemName">
+        ///   The path for the File or Directory to be added or updated.
+        /// </param>
         /// <param name="directoryPathInArchive">
         ///   Specifies a directory path to use to override any path in the
         ///   <c>itemName</c>.  This path may, or may not, correspond to a real
@@ -1198,8 +1202,8 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        ///   Create an entry in the <c>ZipFile</c> using the given <c>Stream</c> as input.
-        ///   The entry will have the given filename.
+        ///   Create an entry in the <c>ZipFile</c> using the given <c>Stream</c>
+        ///   as input.  The entry will have the given filename.
         /// </summary>
         ///
         /// <remarks>
@@ -1273,7 +1277,9 @@ namespace Ionic.Zip
         ///   The name, including any path, which is shown in the zip file for the added
         ///   entry.
         /// </param>
-        /// <param name="stream">The input stream from which to grab content for the file</param>
+        /// <param name="stream">
+        ///   The input stream from which to grab content for the file
+        /// </param>
         /// <returns>The <c>ZipEntry</c> added.</returns>
         public ZipEntry AddEntry(string entryName, Stream stream)
         {
@@ -1291,10 +1297,10 @@ namespace Ionic.Zip
         ///
         /// <remarks>
         /// <para>
-        ///   When the application needs to write the zip entry data, use this method to
-        ///   add the ZipEntry.  For example, in the case that the application wishes to
-        ///   write the XML representation of a DataSet into a ZipEntry, the application
-        ///   can use this method to do so.
+        ///   When the application needs to write the zip entry data, use this
+        ///   method to add the ZipEntry. For example, in the case that the
+        ///   application wishes to write the XML representation of a DataSet into
+        ///   a ZipEntry, the application can use this method to do so.
         /// </para>
         ///
         /// <para>
@@ -1307,13 +1313,68 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        ///   NB: With PKZip encryption, it's necessary to compute the CRC before
-        ///   compressing or encrypting the data.  Therefore, when using PKZip
-        ///   encryption with a WriteDelegate, the WriteDelegate will be called twice:
-        ///   once to compute the CRC, and the second time to (potentially) compress and
-        ///   encrypt. For each call of the delegate, your application must stream the
-        ///   same entry data in its entirety. If your application writes different data
-        ///   during the second call, it will result in a corrupt zip file.
+        ///   About progress events: When using the WriteDelegate, DotNetZip does
+        ///   not issue any SaveProgress events with <c>EventType</c> = <see
+        ///   cref="ZipProgressEventType.Saving_EntryBytesRead">
+        ///   Saving_EntryBytesRead</see>. (This is because it is the
+        ///   application's code that runs in WriteDelegate - there's no way for
+        ///   DotNetZip to know when to issue a EntryBytesRead event.)
+        ///   Applications that want to update a progress bar or similar status
+        ///   indicator should do so from within the WriteDelegate
+        ///   itself. DotNetZip will issue the other SaveProgress events,
+        ///   including <see cref="ZipProgressEventType.Saving_Started">
+        ///   Saving_Started</see>,
+        ///   <see cref="ZipProgressEventType.Saving_BeforeWriteEntry">
+        ///   Saving_BeforeWriteEntry</see>, and <see
+        ///   cref="ZipProgressEventType.Saving_AfterWriteEntry">
+        ///   Saving_AfterWriteEntry</see>.
+        /// </para>
+        ///
+        /// <para>
+        ///   Note: When you use PKZip encryption, it's normally necessary to
+        ///   compute the CRC of the content to be encrypted, before compressing or
+        ///   encrypting it. Therefore, when using PKZip encryption with a
+        ///   WriteDelegate, the WriteDelegate CAN BE called twice: once to compute
+        ///   the CRC, and the second time to potentially compress and
+        ///   encrypt. Surprising, but true. This is because PKWARE specified that
+        ///   the encryption initialization data depends on the CRC.
+        ///   If this happens, for each call of the delegate, your
+        ///   application must stream the same entry data in its entirety. If your
+        ///   application writes different data during the second call, it will
+        ///   result in a corrupt zip file.
+        /// </para>
+        ///
+        /// <para>
+        ///   The double-read behavior happens with all types of entries, not only
+        ///   those that use WriteDelegate. It happens if you add an entry from a
+        ///   filesystem file, or using a string, or a stream, or an opener/closer
+        ///   pair. But in those cases, DotNetZip takes care of reading twice; in
+        ///   the case of the WriteDelegate, the application code gets invoked
+        ///   twice. Be aware.
+        /// </para>
+        ///
+        /// <para>
+        ///   As you can imagine, this can cause performance problems for large
+        ///   streams, and it can lead to correctness problems when you use a
+        ///   <c>WriteDelegate</c>. This is a pretty big pitfall.  There are two
+        ///   ways to avoid it.  First, and most preferred: don't use PKZIP
+        ///   encryption.  If you use the WinZip AES encryption, this problem
+        ///   doesn't occur, because the encryption protocol doesn't require the CRC
+        ///   up front. Second: if you do choose to use PKZIP encryption, write out
+        ///   to a non-seekable stream (like standard output, or the
+        ///   Response.OutputStream in an ASP.NET application).  In this case,
+        ///   DotNetZip will use an alternative encryption protocol that does not
+        ///   rely on the CRC of the content.  This also implies setting bit 3 in
+        ///   the zip entry, which still presents problems for some zip tools.
+        /// </para>
+        ///
+        /// <para>
+        ///   In the future I may modify DotNetZip to *always* use bit 3 when PKZIP
+        ///   encryption is in use.  This seems like a win overall, but there will
+        ///   be some work involved.  If you feel strongly about it, visit the
+        ///   DotNetZip forums and vote up <see
+        ///   href="http://dotnetzip.codeplex.com/workitem/13686">the Workitem
+        ///   tracking this issue</see>.
         /// </para>
         ///
         /// </remarks>
@@ -1420,14 +1481,16 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        ///   Add an entry, for which the application will provide a stream, just-in-time.
+        ///   Add an entry, for which the application will provide a stream,
+        ///   just-in-time.
         /// </summary>
         ///
         /// <remarks>
         /// <para>
-        ///   In cases where the application wishes to open the stream that holds the content for
-        ///   the ZipEntry, on a just-in-time basis, the application can use this method and
-        ///   provide delegates to open and close the stream.
+        ///   In cases where the application wishes to open the stream that holds
+        ///   the content for the ZipEntry, on a just-in-time basis, the application
+        ///   can use this method and provide delegates to open and close the
+        ///   stream.
         /// </para>
         ///
         /// <para>
@@ -1443,9 +1506,10 @@ namespace Ionic.Zip
         ///
         /// <example>
         ///
-        ///   This example uses anonymous methods in C# to open and close
-        ///   the source stream for the content for a zip entry.  In a real application, the
-        ///   logic for the OpenDelegate would probably be more involved.
+        ///   This example uses anonymous methods in C# to open and close the
+        ///   source stream for the content for a zip entry.  In a real
+        ///   application, the logic for the OpenDelegate would probably be more
+        ///   involved.
         ///
         /// <code lang="C#">
         /// using(Ionic.Zip.ZipFile zip = new Ionic.Zip.ZipFile())
@@ -1500,8 +1564,12 @@ namespace Ionic.Zip
         /// </example>
         ///
         /// <param name="entryName">the name of the entry to add</param>
-        /// <param name="opener">the delegate that will be invoked to open the stream</param>
-        /// <param name="closer">the delegate that will be invoked to close the stream</param>
+        /// <param name="opener">
+        ///  the delegate that will be invoked to open the stream
+        /// </param>
+        /// <param name="closer">
+        ///  the delegate that will be invoked to close the stream
+        /// </param>
         /// <returns>the ZipEntry added</returns>
         ///
         public ZipEntry AddEntry(string entryName, OpenDelegate opener, CloseDelegate closer)
@@ -1537,17 +1605,17 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        ///   Updates the given entry in the <c>ZipFile</c>, using the given string as
-        ///   input.
+        ///   Updates the given entry in the <c>ZipFile</c>, using the given
+        ///   string as input.
         /// </summary>
         ///
         /// <remarks>
         ///
         /// <para>
-        ///   Calling this method is equivalent to removing the <c>ZipEntry</c> for the
-        ///   given file name and directory path, if it exists, and then calling <see
-        ///   cref="AddEntry(String,String)" />.  See the documentation for that
-        ///   method for further explanation.
+        ///   Calling this method is equivalent to removing the <c>ZipEntry</c>
+        ///   for the given file name and directory path, if it exists, and then
+        ///   calling <see cref="AddEntry(String,String)" />.  See the
+        ///   documentation for that method for further explanation.
         /// </para>
         ///
         /// </remarks>
@@ -1678,9 +1746,9 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// Add an entry into the zip archive using the given filename and directory
-        /// path within the archive, and the given content for the file. No file is
-        /// created in the filesystem.
+        ///   Add an entry into the zip archive using the given filename and
+        ///   directory path within the archive, and the given content for the
+        ///   file. No file is created in the filesystem.
         /// </summary>
         ///
         /// <param name="byteContent">The data to use for the entry.</param>
@@ -1699,15 +1767,15 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// Updates the given entry in the <c>ZipFile</c>, using the given byte array as
-        /// content for the entry.
+        ///   Updates the given entry in the <c>ZipFile</c>, using the given byte
+        ///   array as content for the entry.
         /// </summary>
         ///
         /// <remarks>
-        /// Calling this method is equivalent to removing the <c>ZipEntry</c> for the
-        /// given filename and directory path, if it exists, and then calling <see
-        /// cref="AddEntry(String,byte[])" />.
-        /// See the documentation for that method for further explanation.
+        ///   Calling this method is equivalent to removing the <c>ZipEntry</c>
+        ///   for the given filename and directory path, if it exists, and then
+        ///   calling <see cref="AddEntry(String,byte[])" />.  See the
+        ///   documentation for that method for further explanation.
         /// </remarks>
         ///
         /// <param name="entryName">
