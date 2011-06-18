@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 08:33:31>
+// Time-stamp: <2011-June-18 14:34:17>
 //
 // ------------------------------------------------------------------
 //
@@ -562,7 +562,7 @@ namespace Ionic.Zip
 
                 // Try reading the central directory, rather than scanning the file.
 
-                uint datum = VerifyBeginningOfZipFile(s);
+                uint datum = ReadFirstFourBytes(s);
 
                 if (datum == ZipConstants.EndOfCentralDirectorySignature)
                     return;
@@ -637,14 +637,15 @@ namespace Ionic.Zip
                     ReadIntoInstance_Orig(zf);
                 }
             }
-            catch //(Exception e1)
+            catch
             {
                 if (zf._ReadStreamIsOurs && zf._readstream != null)
                 {
                     try
                     {
+#if NETCF
                         zf._readstream.Close();
-#if !NETCF
+#else
                         zf._readstream.Dispose();
 #endif
                         zf._readstream = null;
@@ -652,7 +653,7 @@ namespace Ionic.Zip
                     finally { }
                 }
 
-                throw; // new Ionic.Utils.Zip.ZipException("Exception while reading", e1);
+                throw;
             }
 
             // the instance has been read in
@@ -694,21 +695,9 @@ namespace Ionic.Zip
         }
 
 
-        private static uint VerifyBeginningOfZipFile(Stream s)
+        private static uint ReadFirstFourBytes(Stream s)
         {
             uint datum = (uint)Ionic.Zip.SharedUtilities.ReadInt(s);
-            // workitem 8337
-//             if (datum != ZipConstants.PackedToRemovableMedia              // weird edge case #1
-//                 && datum != ZipConstants.ZipEntryDataDescriptorSignature  // weird edge case #2
-//                 && datum != ZipConstants.ZipDirEntrySignature             // weird edge case #3 - DynaZip
-//                 && datum != ZipConstants.ZipEntrySignature                // normal BOF marker
-//                 && datum != ZipConstants.EndOfCentralDirectorySignature   // for zip file with no entries
-//                 && (datum & 0x0000FFFF) != 0x00005A4D                     // PE/COFF BOF marker (for SFX)
-//                 )
-//             {
-//                 //Console.WriteLine("WTF, datum = 0x{0:X8}", datum);
-//                 throw new BadReadException(String.Format("  ZipFile::Read(): Bad signature (0x{0:X8}) at start of file at position 0x{1:X8}", datum, s.Position));
-//             }
             return datum;
         }
 
@@ -742,7 +731,7 @@ namespace Ionic.Zip
                 previouslySeen.Add(de.FileName); // to prevent dupes
             }
 
-            // workitem 9214; auto-set the zip64 thing
+            // workitem 9214; auto-set the zip64 flag
             if (inputUsesZip64) zf.UseZip64WhenSaving = Zip64Option.Always;
 
             // workitem 8299

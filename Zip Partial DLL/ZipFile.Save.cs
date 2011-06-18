@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-17 07:55:58>
+// Time-stamp: <2011-June-18 15:05:33>
 //
 // ------------------------------------------------------------------
 //
@@ -124,26 +124,26 @@ namespace Ionic.Zip
                     throw new ZipException("The number of entries is 65535 or greater. Consider setting the UseZip64WhenSaving property on the ZipFile instance.");
 
 
-                    // write an entry in the zip for each file
-                    int n = 0;
-                    // workitem 9831
-                    ICollection<ZipEntry> c = (SortEntriesBeforeSaving) ? EntriesSorted : Entries;
-                    foreach (ZipEntry e in c) // _entries.Values
-                    {
-                        OnSaveEntry(n, e, true);
-                        e.Write(WriteStream);
-                        if (_saveOperationCanceled)
-                            break;
+                // write an entry in the zip for each file
+                int n = 0;
+                // workitem 9831
+                ICollection<ZipEntry> c = (SortEntriesBeforeSaving) ? EntriesSorted : Entries;
+                foreach (ZipEntry e in c) // _entries.Values
+                {
+                    OnSaveEntry(n, e, true);
+                    e.Write(WriteStream);
+                    if (_saveOperationCanceled)
+                        break;
 
-                        n++;
-                        OnSaveEntry(n, e, false);
-                        if (_saveOperationCanceled)
-                            break;
+                    n++;
+                    OnSaveEntry(n, e, false);
+                    if (_saveOperationCanceled)
+                        break;
 
-                        // Some entries can be skipped during the save.
-                        if (e.IncludedInMostRecentSave)
-                            thisSaveUsedZip64 |= e.OutputUsedZip64.Value;
-                    }
+                    // Some entries can be skipped during the save.
+                    if (e.IncludedInMostRecentSave)
+                        thisSaveUsedZip64 |= e.OutputUsedZip64.Value;
+                }
 
 
 
