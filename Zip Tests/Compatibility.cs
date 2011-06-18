@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-17 19:12:27>
+// Time-stamp: <2011-June-18 16:22:12>
 //
 // ------------------------------------------------------------------
 //
@@ -576,11 +576,11 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void ShellApplication_Zip_2()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "ShellApplication_Zip.zip");
-            string subdir = Path.Combine(TopLevelDir, "files");
+            string zipFileToCreate = "ShellApplication_Zip.zip";
+            string subdir = "files";
             string extractDir = "extract";
 
-            TestContext.WriteLine("==================================================================");
+            TestContext.WriteLine("======================================================");
 
             Dictionary<string, byte[]> checksums = new Dictionary<string, byte[]>();
             var filesToZip = GetSelectionOfTempFiles(_rnd.Next(33) + 11, checksums);
@@ -610,7 +610,6 @@ namespace Ionic.Zip.Tests
                 checksums.Remove(Path.GetFileName(f));
             }
 
-
             TestContext.WriteLine("--------------------------------------------");
             TestContext.WriteLine("creating links...");
             foreach (var f in filesToZip)
@@ -621,7 +620,7 @@ namespace Ionic.Zip.Tests
                 TestUtilities.Exec_NoContext(fsutil, cmd, out ignored);
             }
 
-            TestContext.WriteLine("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            TestContext.WriteLine("++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             // Create the zip archive via script
             Directory.SetCurrentDirectory(TopLevelDir);
             string script = GetScript("VbsCreateZip-ShellApp.vbs");

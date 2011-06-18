@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 18:09:55>
+// Time-stamp: <2011-June-18 16:35:45>
 //
 // ------------------------------------------------------------------
 //
@@ -1292,19 +1292,17 @@ namespace Ionic.Zip.Tests.Extended
         [TestMethod]
         public void Extended_CheckZip1()
         {
-            string[] dirNames = { "", Path.GetRandomFileName() };
+            string[] dirNames = { "", Path.GetFileName(Path.GetRandomFileName()) };
 
             string textToEncode =
                 "Pay no attention to this: " +
                 "We've read in the regular entry header, the extra field, and any  " +
                 "encryption header.  The pointer in the file is now at the start of " +
                 "the filedata, which is potentially compressed and encrypted.  Just " +
-                " ahead in the file, there are _CompressedFileDataSize bytes of data, " +
+                "ahead in the file, there are _CompressedFileDataSize bytes of data, " +
                 "followed by potentially a non-zero length trailer, consisting of " +
                 "optionally, some encryption stuff (10 byte MAC for AES), " +
-                "and the bit-3 trailer (16 or 24 bytes). ";
-
-            Directory.SetCurrentDirectory(TopLevelDir);
+                "and then the bit-3 trailer (16 or 24 bytes). ";
 
             for (int i = 0; i < crypto.Length; i++)
             {
@@ -1312,19 +1310,27 @@ namespace Ionic.Zip.Tests.Extended
                 {
                     for (int k = 0; k < dirNames.Length; k++)
                     {
-                        string zipFile = Path.Combine(TopLevelDir, String.Format("Extended-CheckZip1-{0}.{1}.{2}.zip", i, j, k));
+                        string zipFile = String.Format("Extended-CheckZip1-{0}.{1}.{2}.zip", i, j, k);
                         string password = Path.GetRandomFileName();
 
                         TestContext.WriteLine("=================================");
                         TestContext.WriteLine("Creating {0}...", Path.GetFileName(zipFile));
-                        TestContext.WriteLine("Encryption:{0}  Zip64:{1} pw={2}",
-                                              crypto[i].ToString(), z64[j].ToString(), password);
+
                         using (var zip = new ZipFile())
                         {
                             zip.Comment = String.Format("Encryption={0}  Zip64={1}  pw={2}",
                                                         crypto[i].ToString(), z64[j].ToString(), password);
-                            zip.Encryption = crypto[i];
-                            zip.Password = password;
+                            if (crypto[i] != EncryptionAlgorithm.None)
+                            {
+                                TestContext.WriteLine("Encryption({0})  Zip64({1}) pw({2})",
+                                                      crypto[i].ToString(), z64[j].ToString(), password);
+                                zip.Encryption = crypto[i];
+                                zip.Password = password;
+                            }
+                            else
+                                TestContext.WriteLine("Encryption({0})  Zip64({1})",
+                                                      crypto[i].ToString(), z64[j].ToString());
+
                             zip.UseZip64WhenSaving = z64[j];
                             if (!String.IsNullOrEmpty(dirNames[k]))
                                 zip.AddDirectoryByName(dirNames[k]);
@@ -1355,41 +1361,68 @@ namespace Ionic.Zip.Tests.Extended
             string textToEncode =
                 "Pay no attention to this: " +
                 "We've read in the regular entry header, the extra field, and any " +
-                "encryption header.  The pointer in the file is now at the start of " +
+                "encryption header. The pointer in the file is now at the start of " +
                 "the filedata, which is potentially compressed and encrypted.  Just " +
                 "ahead in the file, there are _CompressedFileDataSize bytes of " +
                 "data, followed by potentially a non-zero length trailer, " +
                 "consisting of optionally, some encryption stuff (10 byte MAC for " +
-                "AES), and the bit-3 trailer (16 or 24 bytes). All the various " +
-                "combinations of possibilities are what make testing a zip library " +
-                "so challenging. " ;
+                "AES), and then the bit-3 trailer (16 or 24 bytes). " +
+                " " +
+                "The encryption can be either PKZIP 2.0 (weak) encryption, or " +
+                "WinZip-compatible AES encryption, which is considered to be " +
+                "strong and for that reason is preferred.  In the WinZip AES " +
+                "option, there are two different keystrengths supported: 128 bits " +
+                "and 256 bits. " +
+                " " +
+                "The extra field, which I mentioned previously, specifies " +
+                "additional metadata about the entry, which is strictly-speaking, " +
+                "optional. These data are things like high-resolution timestamps, " +
+                "data sizes that exceed 2^^32, and other encryption " +
+                "possibilities.  In each case the library that reads a zip file " +
+                "needs to be able to correctly deal with the various fields, " +
+                "validating the values within them. " +
+                " " +
+                "Now, cross all that with the variety of usage patterns - creating a " +
+                "zip, or reading, or extracting, or updating, or updating several " +
+                "times. And also, remember that the metadata may change during " +
+                "updates: an application can apply a password where none was used " +
+                "previously, or it may wish to remove an entry from the zip entirely. " +
+                " " +
+                "The huge variety of combinations of possibilities is what makes " +
+                "testing a zip library so challenging. " ;
 
             string testBin = TestUtilities.GetTestBinDir(CurrentDir);
             string fileToZip = Path.Combine(testBin, "Ionic.Zip.dll");
-
-            Directory.SetCurrentDirectory(TopLevelDir);
 
             for (int i = 0; i < crypto.Length; i++)
             {
                 for (int j = 0; j < z64.Length; j++)
                 {
-                    string zipFile = Path.Combine(TopLevelDir, String.Format("Extended-CheckZip2-{0}.{1}.zip", i, j));
+                    string zipFile = String.Format("Extended-CheckZip2-{0}.{1}.zip", i, j);
                     string password = Path.GetRandomFileName();
 
                     TestContext.WriteLine("=================================");
                     TestContext.WriteLine("Creating {0}...", Path.GetFileName(zipFile));
-                    TestContext.WriteLine("Encryption({0})  Zip64({1}) pw({2})",
-                                          crypto[i].ToString(), z64[j].ToString(), password);
 
                     string dir = Path.GetRandomFileName();
                     using (var zip = new ZipFile())
                     {
                         zip.Comment = String.Format("Encryption={0}  Zip64={1}  pw={2}",
                                                     crypto[i].ToString(), z64[j].ToString(), password);
+
                         zip.Encryption = crypto[i];
-                        zip.Password = password;
+                        if (crypto[i] != EncryptionAlgorithm.None)
+                        {
+                            TestContext.WriteLine("Encryption({0})  Zip64({1}) pw({2})",
+                                                  crypto[i].ToString(), z64[j].ToString(), password);
+                            zip.Password = password;
+                        }
+                        else
+                            TestContext.WriteLine("Encryption({0})  Zip64({1})",
+                                                  crypto[i].ToString(), z64[j].ToString());
+
                         zip.UseZip64WhenSaving = z64[j];
-                        int N = _rnd.Next(14) + 8;
+                        int N = _rnd.Next(11) + 5;
                         for (int k = 0; k < N; k++)
                             zip.AddDirectoryByName(Path.GetRandomFileName());
 
@@ -1398,7 +1431,7 @@ namespace Ionic.Zip.Tests.Extended
                         zip.Save(zipFile);
                     }
 
-                    BasicVerifyZip(zipFile, password);
+                    BasicVerifyZip(zipFile, password, false);
 
                     TestContext.WriteLine("Checking zip...");
 
@@ -1410,6 +1443,8 @@ namespace Ionic.Zip.Tests.Extended
                         foreach (var msg in msgs)
                             TestContext.WriteLine("{0}", msg);
                     }
+                    TestContext.WriteLine("OK");
+                    TestContext.WriteLine("");
                 }
             }
         }
