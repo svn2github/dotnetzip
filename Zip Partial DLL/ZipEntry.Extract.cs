@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-17 08:44:58>
+// Time-stamp: <2011-June-18 00:36:24>
 //
 // ------------------------------------------------------------------
 //
@@ -486,6 +486,12 @@ namespace Ionic.Zip
         ///   from the original call to OpenReader().
         /// </para>
         ///
+        /// <para>
+        ///    The <c>OpenReader()</c> method works only when the ZipEntry is
+        ///    obtained from an instance of <c>ZipFile</c>. This method will throw
+        ///    an exception if the ZipEntry is obtained from a <see
+        ///    cref="ZipInputStream"/>.
+        /// </para>
         /// </remarks>
         ///
         /// <example>
@@ -549,7 +555,7 @@ namespace Ionic.Zip
         /// <remarks>
         /// <para>
         ///   See the documentation on the <see cref="OpenReader()"/> method for
-        ///   full details.  This overload allows the application to specify a
+        ///   full details. This overload allows the application to specify a
         ///   password for the <c>ZipEntry</c> to be read.
         /// </para>
         /// </remarks>
@@ -565,6 +571,9 @@ namespace Ionic.Zip
 
         internal Ionic.Zlib.CrcCalculatorStream InternalOpenReader(string password)
         {
+            if (_container.ZipFile == null)
+                throw new InvalidOperationException("Use OpenReader() only with ZipFile.");
+
             ValidateCompression();
             ValidateEncryption();
             SetupCryptoForExtract(password);

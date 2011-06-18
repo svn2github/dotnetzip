@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-14 18:43:49>
+// Time-stamp: <2011-June-18 00:20:14>
 //
 // ------------------------------------------------------------------
 //
@@ -508,14 +508,14 @@ namespace  Ionic.Zip
                     _exceptionPending = true;
                     throw new System.InvalidOperationException("The stream has been closed.");
                 }
-                _password = value;
+                _Password = value;
             }
         }
 
 
         private void _SetupStream()
         {
-            _crcStream= _currentEntry.InternalOpenReader(_password);
+            _crcStream= _currentEntry.InternalOpenReader(_Password);
             _LeftToRead = _crcStream.Length;
             _needSetup = false;
         }
@@ -784,7 +784,7 @@ namespace  Ionic.Zip
         private ZipContainer _container;
         private Ionic.Zlib.CrcCalculatorStream _crcStream;
         private Int64 _LeftToRead;
-        private String _password;
+        internal String _Password;
         private Int64 _endOfEntry;
         private string _name;
 

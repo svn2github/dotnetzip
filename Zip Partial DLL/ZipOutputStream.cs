@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-15 15:20:39>
+// Time-stamp: <2011-June-18 00:22:35>
 //
 // ------------------------------------------------------------------
 //
@@ -1590,6 +1590,7 @@ namespace Ionic.Zip
             get
             {
                 if (_zf != null) return _zf.Name;
+                if (_zis != null) throw new NotSupportedException();
                 return _zos.Name;
             }
         }
@@ -1599,6 +1600,7 @@ namespace Ionic.Zip
             get
             {
                 if (_zf != null) return _zf._Password;
+                if (_zis != null) return _zis._Password;
                 return _zos._password;
             }
         }
@@ -1608,6 +1610,7 @@ namespace Ionic.Zip
             get
             {
                 if (_zf != null) return _zf._zip64;
+                if (_zis != null) throw new NotSupportedException();
                 return _zos._zip64;
             }
         }
@@ -1617,6 +1620,7 @@ namespace Ionic.Zip
             get
             {
                 if (_zf != null) return _zf.BufferSize;
+                if (_zis != null) throw new NotSupportedException();
                 return 0;
             }
         }
@@ -1627,12 +1631,13 @@ namespace Ionic.Zip
             get
             {
                 if (_zf != null) return _zf.ParallelDeflater;
+                if (_zis != null) return null;
                 return _zos.ParallelDeflater;
             }
             set
             {
                 if (_zf != null) _zf.ParallelDeflater = value;
-                else _zos.ParallelDeflater = value;
+                else if (_zos != null) _zos.ParallelDeflater = value;
             }
         }
 
@@ -1659,6 +1664,7 @@ namespace Ionic.Zip
             get
             {
                 if (_zf != null) return _zf.CodecBufferSize;
+                if (_zis != null) return _zis.CodecBufferSize;
                 return _zos.CodecBufferSize;
             }
         }

@@ -15,13 +15,13 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-15 22:21:30>
+// Time-stamp: <2011-June-18 00:32:30>
 //
 // ------------------------------------------------------------------
 //
-// This module defines some "error tests" - tests that the expected errors
-// or exceptions occur in DotNetZip under exceptional conditions.  These conditions include
-// corrupted zip files, bad input, and so on.
+// This module defines some "error tests" - tests that the expected
+// errors or exceptions occur in DotNetZip under exceptional conditions.
+// These conditions include corrupted zip files, bad input, and so on.
 //
 // ------------------------------------------------------------------
 
@@ -119,6 +119,8 @@ namespace Ionic.Zip.Tests.Error
 
             string testBin = TestUtilities.GetTestBinDir(CurrentDir);
             string resourceDir = Path.Combine(testBin, "Resources");
+
+            Assert.IsTrue(Directory.Exists(resourceDir));
 
             Directory.SetCurrentDirectory(TopLevelDir);
             var filenames = Directory.GetFiles(resourceDir);
@@ -221,12 +223,12 @@ namespace Ionic.Zip.Tests.Error
             for (int i = 0; i < 3; i++)
                 sourceDir = Path.GetDirectoryName(sourceDir);
 
-            Directory.SetCurrentDirectory(TopLevelDir);
-
             string filename =
                 Path.Combine(sourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe");
 
-            // try reading the invalid zipfile - this should fail
+            Assert.IsTrue(File.Exists(filename));
+
+            // try reading the invalid zipfile - this must fail.
             using (ZipFile zip = ZipFile.Read(filename))
             {
                 foreach (ZipEntry e in zip)
@@ -239,28 +241,86 @@ namespace Ionic.Zip.Tests.Error
 
 
 
+        [TestMethod]
+        [ExpectedException(typeof(ZipException))]
+        public void Error_NonZipFilename_wi11743()
+        {
+            // try reading an empty, extant file as a zip file
+            string zipFileToCreate = Path.GetTempFileName();
+            using (ZipFile zip = new ZipFile(zipFileToCreate))
+            {
+                zip.AddEntry("EntryName1.txt", "This is the content");
+                zip.Save();
+            }
+        }
 
 
         [TestMethod]
-        [ExpectedException(typeof(ZipException))]
-        public void Error_Save_InvalidLocation()
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void Error_UseOpenReaderWith_ZIS_wi10923()
         {
+            string zipFileToCreate = "UseOpenReaderWith_ZIS.zip";
             string sourceDir = CurrentDir;
             for (int i = 0; i < 3; i++)
                 sourceDir = Path.GetDirectoryName(sourceDir);
 
             Directory.SetCurrentDirectory(TopLevelDir);
 
-            string filename =
-                Path.Combine(sourceDir, "Examples\\Zipit\\bin\\Debug\\Zipit.exe");
+            // the list of filenames to add to the zip
+            string[] fileNames =
+            {
+                Path.Combine(sourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
+                Path.Combine(sourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
+                Path.Combine(sourceDir, "Tools\\WinFormsApp\\Icon2.res"),
+            };
 
+            using (ZipFile zip = new ZipFile())
+            {
+                for (int j = 0; j < fileNames.Length; j++)
+                    zip.AddFile(fileNames[j], "");
+                zip.Save(zipFileToCreate);
+            }
+
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate),
+                                 fileNames.Length,
+                                 "Wrong number of entries.");
+
+            // mixing OpenReader and ZipInputStream is a no-no!!
+            int n;
+            var buffer = new byte[2048];
+
+            // Use OpenReader with ZipInputStream.
+            // This must fail.
+            TestContext.WriteLine("Reading with ZipInputStream");
+            using (var zip = new ZipInputStream(zipFileToCreate))
+            {
+                ZipEntry entry;
+                while ((entry = zip.GetNextEntry()) != null)
+                {
+                    TestContext.WriteLine("  Entry: {0}", entry.FileName);
+                    using (Stream file = entry.OpenReader())
+                    {
+                        while((n= file.Read(buffer,0,buffer.Length)) > 0) ;
+                    }
+                    TestContext.WriteLine("  -- OpenReader() is done. ");
+                }
+            }
+        }
+
+
+
+        [TestMethod]
+        [ExpectedException(typeof(ZipException))]
+        public void Error_Save_InvalidLocation()
+        {
             string badLocation = "c:\\Windows\\";
             Assert.IsTrue(Directory.Exists(badLocation));
 
-            // add an entry to the zipfile, then try saving to a directory. this should fail
+            // Add an entry to the zipfile, then try saving to a directory.
+            // This must fail.
             using (ZipFile zip = new ZipFile())
             {
-                zip.AddFile(filename, "");
+                zip.AddEntry("This is a file.txt", "Content for the file goes here.");
                 zip.Save(badLocation);  // fail
             }
         }
