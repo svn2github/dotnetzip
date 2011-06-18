@@ -15,7 +15,7 @@
 ' ------------------------------------------------------------------
 '
 ' last saved (in emacs):
-' Time-stamp: <2011-June-18 08:45:04>
+' Time-stamp: <2011-June-18 08:55:56>
 '
 ' ------------------------------------------------------------------
 '
@@ -172,8 +172,9 @@ Sub CreateZip(pathToZipFile, dirToZip)
                     WScript.Echo builtpath
                     zip.CopyHere builtpath, 0
                     fcount = fcount + 1
-                    '' with no delay in-between, the zip fails with "file not found"
-                    '' or some other spurious error.
+                    '' Delay between each item. With no, the zip fails with
+                    '' "file not found" or "No Read Permission" or some other
+                    '' spurious error.
                     Wscript.Sleep(450)
                 End If
 
