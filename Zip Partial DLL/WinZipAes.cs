@@ -17,7 +17,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 16:29:07>
+// Time-stamp: <2011-June-17 23:20:31>
 //
 // ------------------------------------------------------------------
 //
@@ -828,10 +828,16 @@ namespace Ionic.Zip
         {
             TraceOutput("Close {0:X8}", this.GetHashCode());
 
-            WriteTransformFinalBlock();
-            _s.Write(_PendingWriteBlock, 0, _pendingCount);
-            _totalBytesXferred += _pendingCount;
-            _pendingCount = 0;
+            // In the degenerate case, no bytes have been written to the
+            // stream at all.  Need to check here, and NOT emit the
+            // final block if Write has not been called.
+            if (_pendingCount > 0)
+            {
+                WriteTransformFinalBlock();
+                _s.Write(_PendingWriteBlock, 0, _pendingCount);
+                _totalBytesXferred += _pendingCount;
+                _pendingCount = 0;
+            }
             _s.Close();
 
 #if WANT_TRACE
@@ -930,7 +936,6 @@ namespace Ionic.Zip
         }
 
         private object _outputLock = new Object();
-
     }
 
 

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2010-February-10 11:40:28>
+// Time-stamp: <2011-June-17 19:43:28>
 //
 // ------------------------------------------------------------------
 //
@@ -611,11 +611,8 @@ namespace Ionic.Zip.Tests.WinZipAes
                     if (!e.IsDirectory)
                     {
                         Assert.AreEqual<short>(0, (short)e.CompressionMethod);
-
                         e.ExtractWithPassword("unpack", password);
-
                         string PathToExtractedFile = Path.Combine("unpack", e.FileName);
-
                         Assert.IsTrue(checksums.ContainsKey(e.FileName));
 
                         // verify the checksum of the file is correct
@@ -633,11 +630,11 @@ namespace Ionic.Zip.Tests.WinZipAes
         public void WinZipAes_CreateZip_EmptyPassword()
         {
             if (!WinZipIsPresent)
-            {
-                TestContext.WriteLine("skipping test [WinZipAes_CreateZip_EmptyPassword] : winzip is not present");
-                return;
-            }
+                throw new Exception("skipping test [WinZipAes_CreateZip_EmptyPassword] : winzip is not present");
 
+            // Using a blank password, eh?
+            // Just what exactly is this *supposed* to do?
+            //
             Directory.SetCurrentDirectory(TopLevelDir);
             string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("WinZipAes_CreateZip_EmptyPassword.zip"));
             string password = "";
@@ -678,7 +675,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                 zip1.Save(zipFileToCreate);
             }
 
-            BasicVerifyZip(zipFileToCreate);
+            BasicVerifyZip(zipFileToCreate, password);
 
             // validate all the checksums
             using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
@@ -688,9 +685,7 @@ namespace Ionic.Zip.Tests.WinZipAes
                     if (!e.IsDirectory)
                     {
                         e.ExtractWithPassword("unpack", password);
-
                         string PathToExtractedFile = Path.Combine("unpack", e.FileName);
-
                         Assert.IsTrue(checksums.ContainsKey(e.FileName));
 
                         // verify the checksum of the file is correct
