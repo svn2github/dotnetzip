@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 00:52:39>
+// Time-stamp: <2011-June-18 19:42:44>
 //
 // ------------------------------------------------------------------
 //
@@ -26,6 +26,7 @@
 // ------------------------------------------------------------------
 
 using System;
+using System.Text;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -764,6 +765,40 @@ namespace Ionic.Zip.Tests.Error
             using (new FileStream(zipFileToCreate, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
             {
                 using (new ZipFile(zipFileToCreate)) { }
+            }
+        }
+
+
+
+        [TestMethod]
+        [ExpectedException(typeof(BadReadException))]
+        public void IncorrectZipContentTest1_wi10459()
+        {
+            byte[] content = Encoding.UTF8.GetBytes("wrong zipfile content");
+            using (var ms = new MemoryStream(content))
+            {
+                using (var zipFile = ZipFile.Read(ms));
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(BadReadException))]
+        public void IncorrectZipContentTest2_wi10459()
+        {
+            using (var ms = new MemoryStream())
+            {
+                using (var zipFile = ZipFile.Read(ms));
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(BadReadException))]
+        public void IncorrectZipContentTest3_wi10459()
+        {
+            byte[] content = new byte[8192];
+            using (var ms = new MemoryStream(content))
+            {
+                using (var zipFile = ZipFile.Read(ms));
             }
         }
 

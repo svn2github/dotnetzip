@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 14:34:17>
+// Time-stamp: <2011-June-18 19:46:59>
 //
 // ------------------------------------------------------------------
 //
@@ -637,7 +637,7 @@ namespace Ionic.Zip
                     ReadIntoInstance_Orig(zf);
                 }
             }
-            catch
+            catch (Exception ex1)
             {
                 if (zf._ReadStreamIsOurs && zf._readstream != null)
                 {
@@ -653,7 +653,7 @@ namespace Ionic.Zip
                     finally { }
                 }
 
-                throw;
+                throw new BadReadException("Cannot read", ex1);
             }
 
             // the instance has been read in
