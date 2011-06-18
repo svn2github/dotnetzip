@@ -15,7 +15,7 @@
 ' ------------------------------------------------------------------
 '
 ' last saved (in emacs):
-' Time-stamp: <2011-June-16 13:18:32>
+' Time-stamp: <2011-June-18 08:45:04>
 '
 ' ------------------------------------------------------------------
 '
@@ -96,7 +96,8 @@ Sub CreateZip(pathToZipFile, dirToZip)
         Exit Sub
     End If
 
-    WScript.Echo "Checking zip  (" & fullPathToZipFile & ") against (" & fullDirToZip & ")"
+    WScript.Echo "Checking zip " & fullPathToZipFile
+    WScript.Echo "  against directory " &  fullDirToZip
 
     dim sa
     set sa = CreateObject("Shell.Application")
@@ -165,12 +166,15 @@ Sub CreateZip(pathToZipFile, dirToZip)
 
                 Else
                     '' pass = 1
+                    If (fcount = 0) Then
+                        Wscript.Sleep(400)
+                    End If
                     WScript.Echo builtpath
                     zip.CopyHere builtpath, 0
                     fcount = fcount + 1
                     '' with no delay in-between, the zip fails with "file not found"
                     '' or some other spurious error.
-                    Wscript.Sleep(150)
+                    Wscript.Sleep(450)
                 End If
 
             End If
@@ -179,6 +183,7 @@ Sub CreateZip(pathToZipFile, dirToZip)
         If (pass = 0) Then
             If (needRepack <> 0) Then
                 '' reaching pass 1 means we delete and re-create the zip file
+                WScript.Echo "The zip needs to be re-packed. "
                 Set zip = Nothing
                 If fso.FileExists(fullPathToZipFile) Then
                     WScript.Echo "That zip file already exists - deleting it."
@@ -195,17 +200,25 @@ Sub CreateZip(pathToZipFile, dirToZip)
             End If
 
         Else
-            '' the zip process is asynchronous. wait for completion.
+            '' the zip process is asynchronous. wait for completion,
+            '' but don't wait forever.
             Dim sLoop
             sLoop = 0
+            WScript.Echo "Verifying the count..."
             Do Until fcount <= zip.Items.Count
                 Wscript.Sleep(400)
                 sLoop = sLoop + 1
-                If (sLoop = 6) Then
-                    WScript.Echo "/ items so far = " & zip.items.Count
-                    WScript.Echo "(looking for " & fcount & " items)"
-                    sLoop = 0
-                End IF
+                If ((sLoop Mod 6) = 0) Then
+                    WScript.Echo "  have " & zip.items.Count & " items so far, need " & fcount
+                ElseIf sLoop > 80 Then
+                    WScript.Echo "Giving up..."
+                    Set zip = Nothing
+                    Wscript.Sleep(1200)
+                    If fso.FileExists(fullPathToZipFile) Then
+                        fso.DeleteFile fullPathToZipFile
+                    End If
+                    Err.Raise 1460, "PackResources.vbs/CreateZip", "Timeout waiting for ZIP completion"
+                End If
             Loop
         End If
         pass = pass + 1
