@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-15 21:54:32>
+// Time-stamp: <2011-June-17 23:36:17>
 //
 // ------------------------------------------------------------------
 //
@@ -2036,7 +2036,6 @@ namespace Ionic.Zip.Tests.Update
                     }
                 }
             }
-
         }
 
 
@@ -2057,17 +2056,16 @@ namespace Ionic.Zip.Tests.Update
                 zip.Save(zipFileToCreate);
             }
 
-
-            string tempZipFile = "AppendToEntry.zip.tmp";
-
-            for (int i=0; i < 68;  i++)
+            int N = _rnd.Next(34) + 59;
+            for (int i=0; i < N; i++)
             {
-                TestContext.WriteLine("Updating zip file {0}... ", i);
+                string tempZipFile = "AppendToEntry.zip.tmp" + i;
+
+                TestContext.WriteLine("Update cycle {0}... ", i);
                 using (var zip1 = ZipFile.Read(zipFileToCreate))
                 {
                     using (var zip = new ZipFile())
                     {
-                        System.Console.WriteLine("Updating zip file... ");
                         zip.AddEntry(entryName, (name, stream) =>
                             {
                                 var src = zip1[name].OpenReader();
@@ -2081,14 +2079,13 @@ namespace Ionic.Zip.Tests.Update
                                 stream.Write(a,0,a.Length);
                             });
 
-                        TestContext.WriteLine("Saving... ");
                         zip.Save(tempZipFile);
                     }
                 }
 
                 File.Delete(zipFileToCreate);
+                System.Threading.Thread.Sleep(1400);
                 File.Move(tempZipFile, zipFileToCreate);
-
             }
 
         }

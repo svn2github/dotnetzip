@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 19:02:55>
+// Time-stamp: <2011-June-17 19:47:29>
 //
 // ------------------------------------------------------------------
 //
@@ -43,13 +43,17 @@ namespace Ionic.Zip.Tests.Utilities
         {
             _rnd = new System.Random();
             LoremIpsumWords = LoremIpsum.Split(" ".ToCharArray(), System.StringSplitOptions.RemoveEmptyEntries);
+            cdir = Directory.GetCurrentDirectory();
         }
+
+
 
         #region Test Init and Cleanup
 
         internal static void Initialize(out string TopLevelDir)
         {
-            cdir = Directory.GetCurrentDirectory();
+            if (cdir == null) cdir = Directory.GetCurrentDirectory();
+
             TopLevelDir = TestUtilities.GenerateUniquePathname("tmp");
             Directory.CreateDirectory(TopLevelDir);
             Directory.SetCurrentDirectory(Path.GetDirectoryName(TopLevelDir));

@@ -319,7 +319,7 @@ namespace Ionic.Zip.Tests.Utilities
                 }
                 // emit output, as desired
                 if (emitOutput)
-                    TestContext.WriteLine(options.StatusMessageWriter.ToString());
+                    TestContext.WriteLine("{0}",options.StatusMessageWriter.ToString());
 
                 return extractDir;
             }

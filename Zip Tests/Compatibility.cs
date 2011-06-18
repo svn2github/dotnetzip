@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-17 18:11:48>
+// Time-stamp: <2011-June-17 19:12:27>
 //
 // ------------------------------------------------------------------
 //
@@ -347,14 +347,15 @@ namespace Ionic.Zip.Tests
 
                 // run the unzip script
                 this.Exec(cscriptExe,
-                          String.Format("\"{0}\" {1} {2}", script, zipFileToCreate, extractDir));
+                          String.Format("\"{0}\" {1} {2}", script,
+                          Path.GetFileName(zipFileToCreate),
+                          Path.GetFileName(extractDir)));
 
                 // check the files in the extract dir
                 VerifyChecksums(Path.Combine(extractDir, "files"), filesToZip, checksums);
 
-                // verify the file times
-                VerifyFileTimes(Path.Combine(extractDir, "files"), filesToZip, false, true, 0);
-                //VerifyTimesDos(Path.Combine(extractDir, "files"), filesToZip);
+                VerifyFileTimes(Path.Combine(extractDir, "files"), filesToZip,
+                                false, false, 20000 * 1000);  // 2s threshold for DOS times
                 i++;
             }
         }
@@ -721,10 +722,12 @@ namespace Ionic.Zip.Tests
 
 
         [TestMethod]
+        [Timeout(60 * 1000)]  // timeout in ms.
         public void VStudio_UnZip()
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "VStudio_UnZip.zip");
-            string subdir = Path.Combine(TopLevelDir, "files");
+            string shortDir = "files";
+            string subdir = Path.Combine(TopLevelDir, shortDir);
             string extractDir = "extract";
 
             string[] filesToZip;
@@ -736,7 +739,7 @@ namespace Ionic.Zip.Tests
             using (ZipFile zip1 = new ZipFile())
             {
                 for (int i = 0; i < filesToZip.Length; i++)
-                    zip1.AddItem(filesToZip[i], "files");
+                    zip1.AddItem(filesToZip[i], shortDir);
                 zip1.Save(zipFileToCreate);
             }
 
@@ -749,7 +752,7 @@ namespace Ionic.Zip.Tests
             decompressor.UncompressToFolder(extractDir, false);
 
             // check the files in the extract dir
-            VerifyChecksums(Path.Combine(extractDir, "files"), filesToZip, checksums);
+            VerifyChecksums(Path.Combine(extractDir, shortDir), filesToZip, checksums);
 
             // visual Studio's ZIP library doesn't bother with times...
             //VerifyNtfsTimes(Path.Combine(extractDir, "files"), filesToZip);
@@ -761,7 +764,8 @@ namespace Ionic.Zip.Tests
         public void COM_Zip()
         {
             string zipFileToCreate = Path.Combine(TopLevelDir, "COM_Zip.zip");
-            string subdir = Path.Combine(TopLevelDir, "files");
+            string shortDir = "files";
+            string subdir = Path.Combine(TopLevelDir, shortDir);
             string extractDir = "extract";
 
             string[] filesToZip;
@@ -801,7 +805,8 @@ namespace Ionic.Zip.Tests
             // construct the directories
             //string ExtractDir = Path.Combine(TopLevelDir, "extract");
             string extractDir = "extract";
-            string subdir = Path.Combine(TopLevelDir, "files");
+            string shortDir = "files";
+            string subdir = Path.Combine(TopLevelDir, shortDir);
 
             string[] filesToZip;
             Dictionary<string, byte[]> checksums;
@@ -812,7 +817,7 @@ namespace Ionic.Zip.Tests
             using (ZipFile zip1 = new ZipFile())
             {
                 for (int i = 0; i < filesToZip.Length; i++)
-                    zip1.AddItem(filesToZip[i], "files");
+                    zip1.AddItem(filesToZip[i], shortDir);
                 zip1.Save(zipFileToCreate);
             }
 
@@ -826,11 +831,10 @@ namespace Ionic.Zip.Tests
             this.Exec(cscriptExe,
                       String.Format("\"{0}\" {1} {2}", script, zipFileToCreate, extractDir));
 
-
             // check the files in the extract dir
-            VerifyChecksums(Path.Combine(extractDir, "files"), filesToZip, checksums);
+            VerifyChecksums(Path.Combine(extractDir, shortDir), filesToZip, checksums);
 
-            VerifyTimesNtfs(Path.Combine(extractDir, "files"), filesToZip);
+            VerifyTimesNtfs(Path.Combine(extractDir, shortDir), filesToZip);
         }
 
 
@@ -1596,6 +1600,7 @@ namespace Ionic.Zip.Tests
                 using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
                 {
                     zip1.ExtractAll(extractDir);
+
                 }
 
                 // check the files in the extract dir

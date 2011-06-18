@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-17 17:49:26>
+// Time-stamp: <2011-June-18 00:12:55>
 //
 // ------------------------------------------------------------------
 //
@@ -736,18 +736,18 @@ namespace Ionic.Zip.Tests.Basic
                 for (int j=0; j < 2; j++)
                 {
                     TestUtilities.CreateUniqueFile("bin", subdir);
+                    entries++;
                 }
-                entries++;
             }
 
-            using (ZipFile zip = new ZipFile())
+            using (var zip = new ZipFile())
             {
                 zip.AddDirectory(Path.GetFileName(dirToZip));
                 zip.Save(zipFileToCreate);
             }
 
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), entries,
-                                 "The zip file created has the wrong number of entries.");
+                                 "The zip file has the wrong number of entries.");
         }
 
 
@@ -773,7 +773,7 @@ namespace Ionic.Zip.Tests.Basic
             }
 
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), 1,
-                                 "The zip file created has the wrong number of entries.");
+                                 "zip file has the wrong number of entries.");
         }
 
 
