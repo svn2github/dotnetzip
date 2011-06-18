@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-17 23:36:17>
+// Time-stamp: <2011-June-18 01:27:16>
 //
 // ------------------------------------------------------------------
 //
@@ -24,6 +24,7 @@
 // ------------------------------------------------------------------
 
 using System;
+using System.Linq;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
@@ -2037,6 +2038,47 @@ namespace Ionic.Zip.Tests.Update
                 }
             }
         }
+
+
+
+
+        [TestMethod]
+        public void Update_MultipleSaves_wi10694()
+        {
+            string zipFileToCreate = "Update_MultipleSaves_wi10694.zip";
+            var shortDir = "fodder";
+            string subdir = Path.Combine(TopLevelDir, shortDir);
+            string[] filesToZip = TestUtilities.GenerateFilesFlat(subdir);
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddFiles(filesToZip, "Download");
+                zip1.AddFiles(filesToZip, "other");
+                zip1.Save(zipFileToCreate);
+            }
+
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), 2*filesToZip.Length,
+                                 "Incorrect number of entries in the zip file.");
+
+            using (var zip2 = ZipFile.Read(zipFileToCreate))
+            {
+                var entries = zip2.Entries.Where(e => e.FileName.Contains("Download")).ToArray();
+                //PART1 - Add directory and save
+                zip2.AddDirectoryByName("XX");
+                zip2.Save();
+
+                //PART2 - Rename paths (not related to XX directory from above) and save
+                foreach (var zipEntry in entries)
+                {
+                    zipEntry.FileName = zipEntry.FileName.Replace("Download", "Download2");
+                }
+                zip2.Save();
+            }
+
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), 2*filesToZip.Length,
+                                 "Incorrect number of entries in the zip file.");
+        }
+
 
 
         [TestMethod]

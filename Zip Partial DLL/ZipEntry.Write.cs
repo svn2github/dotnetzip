@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-June-17 08:12:43>
+// Last Saved: <2011-June-18 08:49:41>
 //
 // ------------------------------------------------------------------
 //
@@ -1994,13 +1994,13 @@ namespace Ionic.Zip
             // these values are the same.  So we need to update them.  This takes
             // care of the boundary case where a single zipfile instance can be
             // saved multiple times, with distinct changes to the properties on
-            // the entries, in between each Save(). Obviously an edge case, but
-            // it's good to take care of it.
+            // the entries, in between each Save().
             _Encryption_FromZipFile = _Encryption;
             _CompressionMethod_FromZipFile = _CompressionMethod;
             _restreamRequiredOnSave = false;
             _metadataChanged = false;
-            _Source = ZipEntrySource.None;
+            //_Source = ZipEntrySource.None;
+            _Source = ZipEntrySource.ZipFile; // workitem 10694
         }
 
         private void _EmitOne(Stream outstream)
