@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 00:32:30>
+// Time-stamp: <2011-June-18 00:52:39>
 //
 // ------------------------------------------------------------------
 //
@@ -255,16 +255,11 @@ namespace Ionic.Zip.Tests.Error
         }
 
 
-        [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
-        public void Error_UseOpenReaderWith_ZIS_wi10923()
-        {
-            string zipFileToCreate = "UseOpenReaderWith_ZIS.zip";
+    private void CreateSmallZip(string zipFileToCreate)
+    {
             string sourceDir = CurrentDir;
             for (int i = 0; i < 3; i++)
                 sourceDir = Path.GetDirectoryName(sourceDir);
-
-            Directory.SetCurrentDirectory(TopLevelDir);
 
             // the list of filenames to add to the zip
             string[] fileNames =
@@ -284,6 +279,42 @@ namespace Ionic.Zip.Tests.Error
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate),
                                  fileNames.Length,
                                  "Wrong number of entries.");
+    }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void Error_UseZipEntryExtractWith_ZIS_wi10355()
+        {
+            string zipFileToCreate = "UseOpenReaderWith_ZIS.zip";
+            CreateSmallZip(zipFileToCreate);
+
+            // mixing ZipEntry.Extract and ZipInputStream is a no-no!!
+
+            string extractDir = "extract";
+
+            // Use ZipEntry.Extract with ZipInputStream.
+            // This must fail.
+            TestContext.WriteLine("Reading with ZipInputStream");
+            using (var zip = new ZipInputStream(zipFileToCreate))
+            {
+                ZipEntry entry;
+                while ((entry = zip.GetNextEntry()) != null)
+                {
+                    entry.Extract(extractDir, Ionic.Zip.ExtractExistingFileAction.OverwriteSilently);
+                }
+            }
+        }
+
+
+
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void Error_UseOpenReaderWith_ZIS_wi10923()
+        {
+            string zipFileToCreate = "UseOpenReaderWith_ZIS.zip";
+            CreateSmallZip(zipFileToCreate);
 
             // mixing OpenReader and ZipInputStream is a no-no!!
             int n;

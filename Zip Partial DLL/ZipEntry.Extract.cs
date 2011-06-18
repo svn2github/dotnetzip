@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 00:36:24>
+// Time-stamp: <2011-June-18 00:55:00>
 //
 // ------------------------------------------------------------------
 //
@@ -571,6 +571,7 @@ namespace Ionic.Zip
 
         internal Ionic.Zlib.CrcCalculatorStream InternalOpenReader(string password)
         {
+            // workitem 10923
             if (_container.ZipFile == null)
                 throw new InvalidOperationException("Use OpenReader() only with ZipFile.");
 
@@ -674,6 +675,10 @@ namespace Ionic.Zip
             // workitem 7958
             if (_container == null)
                 throw new BadStateException("This entry is an orphan");
+
+            // workitem 10355
+            if (_container.ZipFile == null)
+                throw new InvalidOperationException("Use Extract() only with ZipFile.");
 
             _container.ZipFile.Reset();
 
