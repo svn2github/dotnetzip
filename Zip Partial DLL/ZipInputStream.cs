@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 00:20:14>
+// Time-stamp: <2011-June-18 02:53:50>
 //
 // ------------------------------------------------------------------
 //
@@ -513,8 +513,10 @@ namespace  Ionic.Zip
         }
 
 
-        private void _SetupStream()
+        private void SetupStream()
         {
+            // Seek to the correct posn in the file, and open a
+            // stream that can be read.
             _crcStream= _currentEntry.InternalOpenReader(_Password);
             _LeftToRead = _crcStream.Length;
             _needSetup = false;
@@ -562,7 +564,7 @@ namespace  Ionic.Zip
             }
 
             if (_needSetup)
-                _SetupStream();
+                SetupStream();
 
             if (_LeftToRead == 0) return 0;
 
@@ -631,8 +633,19 @@ namespace  Ionic.Zip
                 // workitem 10178
                 Ionic.Zip.SharedUtilities.Workaround_Ladybug318918(_inputStream);
             }
+            // workitem 10923
+            else if (_firstEntry)
+            {
+                // we've already read one entry.
+                // Seek to the end of it.
+                _inputStream.Seek(_endOfEntry, SeekOrigin.Begin);
+                Ionic.Zip.SharedUtilities.Workaround_Ladybug318918(_inputStream);
+            }
 
             _currentEntry = ZipEntry.ReadEntry(_container, !_firstEntry);
+            // ReadEntry leaves the file position after all the entry
+            // data and the optional bit-3 data descriptpr.  This is
+            // where the next entry would normally start.
             _endOfEntry = _inputStream.Position;
             _firstEntry = true;
             _needSetup = true;

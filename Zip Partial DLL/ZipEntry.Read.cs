@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-15 09:02:15>
+// Time-stamp: <2011-June-18 02:49:44>
 //
 // ------------------------------------------------------------------
 //
@@ -349,18 +349,19 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// Reads one <c>ZipEntry</c> from the given stream.  If the entry is encrypted, we don't
-        /// decrypt at this point.  We also do not decompress.  Mostly we read metadata.
+        ///   Reads one <c>ZipEntry</c> from the given stream.  The content for
+        ///   the entry does not get decompressed or decrypted.  This method
+        ///   basically reads metadata, and seeks.
         /// </summary>
         /// <param name="zc">the ZipContainer this entry belongs to.</param>
-        /// <param name="first">true of this is the first entry being read from the stream.</param>
+        /// <param name="first">
+        ///   true of this is the first entry being read from the stream.
+        /// </param>
         /// <returns>the <c>ZipEntry</c> read from the stream.</returns>
         internal static ZipEntry ReadEntry(ZipContainer zc, bool first)
         {
             ZipFile zf = zc.ZipFile;
-
             Stream s = zc.ReadStream;
-
             System.Text.Encoding defaultEncoding = zc.ProvisionalAlternateEncoding;
             ZipEntry entry = new ZipEntry();
             entry._Source = ZipEntrySource.ZipFile;
