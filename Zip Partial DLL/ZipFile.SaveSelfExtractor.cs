@@ -1,7 +1,7 @@
 // ZipFile.saveSelfExtractor.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c)  2008-2011 Dino Chiesa.
+// Copyright (c) 2008-2011 Dino Chiesa.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 13:25:58>
+// Time-stamp: <2011-June-18 02:33:25>
 //
 // ------------------------------------------------------------------
 //
@@ -402,7 +402,7 @@ namespace Ionic.Zip
         /// <remarks>
         ///   It will show up, for example, while viewing properties of the file in
         ///   Windows Explorer.  You can use any arbitrary string, but typically you
-        ///   want something like "Copyright © Dino Chiesa 2008, 2009".
+        ///   want something like "Copyright © Dino Chiesa 2011".
         /// </remarks>
         ///
         public String Copyright
@@ -877,10 +877,11 @@ namespace Ionic.Zip
                                       + options.ProductVersion.Replace("\"", "")
                                       + "\")]\n");
 
-                        string copyright = "Extractor: Copyright © Dino Chiesa 2008-2011";
-                        if (!String.IsNullOrEmpty(options.Copyright))
-                            copyright += "Contents: " + options.Copyright.Replace("\"", "");
-
+                        // workitem
+                        string copyright =
+                            (String.IsNullOrEmpty(options.Copyright))
+                            ? "Extractor: Copyright © Dino Chiesa 2008-2011"
+                            : options.Copyright.Replace("\"", "");
 
                         if (!String.IsNullOrEmpty(options.ProductName))
                             sb.Append("[assembly: System.Reflection.AssemblyProduct(\"")
