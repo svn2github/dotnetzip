@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 02:33:25>
+// Time-stamp: <2011-June-18 17:37:17>
 //
 // ------------------------------------------------------------------
 //
@@ -338,16 +338,18 @@ namespace Ionic.Zip
 
         /// <summary>
         ///   Whether to remove the files that have been unpacked, after executing the
-        ///   PostUnpackCommand.
+        ///   PostExtractCommandLine.
         /// </summary>
         ///
         /// <remarks>
         /// <para>
-        ///   If true, and if there is a PostUnpackCommand, and if the command
-        ///   runs successfully, then the files that the SFX unpacked will be
-        ///   removed, afterwards.  If the command does not complete successfully
-        ///   (non-zero return code), that is interpreted as a failure, and the
-        ///   extracted files will not be removed.
+        ///   If true, and if there is a <see
+        ///   cref="SelfExtractorSaveOptions.PostExtractCommandLine">
+        ///   PostExtractCommandLine</see>, and if the command runs successfully,
+        ///   then the files that the SFX unpacked will be removed, afterwards.  If
+        ///   the command does not complete successfully (non-zero return code),
+        ///   that is interpreted as a failure, and the extracted files will not be
+        ///   removed.
         /// </para>
         ///
         /// <para>
