@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-17 18:45:02>
+// Time-stamp: <2011-June-19 12:27:04>
 //
 // ------------------------------------------------------------------
 //
@@ -287,6 +287,13 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal string BasicVerifyZip(string zipfile, string password, bool emitOutput)
         {
+            return BasicVerifyZip(zipfile, password, emitOutput, null);
+        }
+
+
+        internal string BasicVerifyZip(string zipfile, string password, bool emitOutput,
+                                       EventHandler<ExtractProgressEventArgs> extractProgress)
+        {
             // basic verification of the zip file - can it be extracted?
             // The extraction tool will verify checksums and passwords, as appropriate
 #if NOT
@@ -315,6 +322,8 @@ namespace Ionic.Zip.Tests.Utilities
                 using (ZipFile zip2 = ZipFile.Read(zipfile, options))
                 {
                     zip2.Password = password;
+                    if (extractProgress != null)
+                        zip2.ExtractProgress += extractProgress;
                     zip2.ExtractAll(extractDir);
                 }
                 // emit output, as desired
@@ -365,12 +374,14 @@ namespace Ionic.Zip.Tests.Utilities
             }
         }
 
-        protected static void CreateLargeFilesWithChecksums(string subdir,
-                                                            int numFiles,
-                                                            Action<int,int,Int64> update,
-                                                            out string[] filesToZip,
-                                                            out Dictionary<string,byte[]> checksums)
+        protected static void CreateLargeFilesWithChecksums
+            (string subdir,
+             int numFiles,
+             Action<int,int,Int64> update,
+             out string[] filesToZip,
+             out Dictionary<string,byte[]> checksums)
         {
+            var rnd = new System.Random();
             // create a bunch of files
             filesToZip = TestUtilities.GenerateFilesFlat(subdir,
                                                          numFiles,
@@ -378,22 +389,27 @@ namespace Ionic.Zip.Tests.Utilities
                                                          3 * 1024 * 1024,
                                                          update);
 
-            DateTime atMidnight = new DateTime(DateTime.Now.Year,
-                                               DateTime.Now.Month,
-                                               DateTime.Now.Day);
-            DateTime fortyFiveDaysAgo = atMidnight - new TimeSpan(45, 0, 0, 0);
+            var dates = new DateTime[rnd.Next(6) + 7];
+             // midnight
+            dates[0] = new DateTime(DateTime.Now.Year,
+                                    DateTime.Now.Month,
+                                    DateTime.Now.Day);
+
+            for (int i=1; i < dates.Length; i++)
+            {
+                dates[i] = DateTime.Now -
+                    new TimeSpan(rnd.Next(300),
+                                 rnd.Next(23),
+                                 rnd.Next(60),
+                                 rnd.Next(60));
+            }
 
             // get checksums for each one
             checksums = new Dictionary<string, byte[]>();
 
-            var rnd = new System.Random();
             foreach (var f in filesToZip)
             {
-                if (rnd.Next(3) == 0)
-                    File.SetLastWriteTime(f, fortyFiveDaysAgo);
-                else
-                    File.SetLastWriteTime(f, atMidnight);
-
+                File.SetLastWriteTime(f, dates[rnd.Next(dates.Length)]);
                 var key = Path.GetFileName(f);
                 var chk = TestUtilities.ComputeChecksum(f);
                 checksums.Add(key, chk);
@@ -425,9 +441,7 @@ namespace Ionic.Zip.Tests.Utilities
                 foreach (var file in filesToCheck)
                 {
                     if (!checksums.ContainsKey(file))
-                    {
                         TestContext.WriteLine("Missing: {0}", Path.GetFileName(file));
-                    }
                 }
             }
 
@@ -439,14 +453,12 @@ namespace Ionic.Zip.Tests.Utilities
                     var selection = from f in filesToCheck where Path.GetFileName(f).Equals(file) select f;
 
                     if (selection.Count() == 0)
-                    {
                         TestContext.WriteLine("Missing: {0}", Path.GetFileName(file));
-                    }
                 }
             }
 
 
-            Assert.AreEqual<Int32>(checksums.Count, count, "There's a mismatch between the checksums and the extracted files.");
+            Assert.AreEqual<Int32>(checksums.Count, count, "There's a mismatch between the checksums and the filesToCheck.");
         }
     }
 

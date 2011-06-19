@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-17 19:47:29>
+// Time-stamp: <2011-June-19 15:45:25>
 //
 // ------------------------------------------------------------------
 //
@@ -167,21 +167,37 @@ namespace Ionic.Zip.Tests.Utilities
 
             if (size > 128 * 1024)
             {
+                var rnd = new System.Random();
                 RandomTextGenerator rtg = new RandomTextGenerator();
-
+                int chunkSize = 48 * 1024;
+                int variationSize = 2 * 1024;
+                var newLinePair = Encoding.ASCII.GetBytes("\n\n");
+                int nCycles = 0;
                 // fill the file with text data, selecting large blocks at a time
-                using (StreamWriter sw = File.CreateText(filename))
+                var fodder = new byte[32][];
+                using (var fs = File.Create(filename))
                 {
                     do
                     {
-                        string generatedText = rtg.Generate(32 * 1024);
-                        sw.Write(generatedText);
-                        sw.Write("\n\n");
-                        bytesRemaining -= (generatedText.Length + 2);
+                        int n = rnd.Next(fodder.Length);
+                        if (fodder[n] == null)
+                        {
+                            string generatedText = rtg.Generate(chunkSize);
+                            fodder[n] = Encoding.ASCII.GetBytes(generatedText);
+                        }
 
-                        if (update != null)
-                            update(size - bytesRemaining);
-
+                        var bytes = fodder[n];
+                        int len = bytes.Length - rnd.Next(variationSize);
+                        fs.Write(bytes,0,len);
+                        bytesRemaining -= len;
+                        fs.Write(newLinePair, 0, newLinePair.Length);
+                        bytesRemaining -= newLinePair.Length;
+                        nCycles++;
+                        if ((nCycles % 1024) == 0)
+                        {
+                            if (update != null)
+                                update(size - bytesRemaining);
+                        }
                     } while (bytesRemaining > 0);
                 }
             }
@@ -280,7 +296,8 @@ namespace Ionic.Zip.Tests.Utilities
             int sz = 65536 * 8;
             if (size < sz) sz = (int)size;
             byte[] buffer = new byte[sz];
-            using (Stream fileStream = new FileStream(filename, FileMode.Create, FileAccess.Write))
+            int nCycles = 0;
+            using (var fileStream = File.Create(filename))
             {
                 while (bytesRemaining > 0)
                 {
@@ -288,8 +305,15 @@ namespace Ionic.Zip.Tests.Utilities
                     if (!zeroes) _rnd.NextBytes(buffer);
                     fileStream.Write(buffer, 0, sizeOfChunkToWrite);
                     bytesRemaining -= sizeOfChunkToWrite;
-                    if (update != null)
-                        update(size - bytesRemaining);
+                    nCycles++;
+                    if (size > 1024*1024)
+                    {
+                        if ((nCycles % 256) == 0)
+                        {
+                            if (update != null)
+                                update(size - bytesRemaining);
+                        }
+                    }
                 }
                 fileStream.Close();
             }
@@ -308,7 +332,7 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal enum FileFlavor
         {
-            text = 0, binary = 1,
+            Text = 0, Binary = 1,
         }
 
         internal static void CreateAndFillFile(string filename,
@@ -317,7 +341,7 @@ namespace Ionic.Zip.Tests.Utilities
         {
             if (size == 0)
                 File.Create(filename);
-            else if (flavor == FileFlavor.text)
+            else if (flavor == FileFlavor.Text)
                 CreateAndFillFileText(filename, size);
             else
                 CreateAndFillFileBinary(filename, size);
@@ -386,7 +410,8 @@ namespace Ionic.Zip.Tests.Utilities
                 candidate = Path.Combine(parentDir, Name);
             } while (File.Exists(candidate));
 
-            // this file/path does not exist.  It can now be created, as file or directory.
+            // this file/path does not exist.  It can now be created, as
+            // file or directory.
             return candidate;
         }
 
@@ -412,14 +437,11 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal static byte[] ComputeChecksum(string filename)
         {
-            byte[] hash = null;
             var _md5 = System.Security.Cryptography.MD5.Create();
-
             using (FileStream fs = File.OpenRead(filename))
             {
-                hash = _md5.ComputeHash(fs);
+                return _md5.ComputeHash(fs);
             }
-            return hash;
         }
 
         private static char GetOneRandomPasswordChar()

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 16:22:12>
+// Time-stamp: <2011-June-19 18:04:47>
 //
 // ------------------------------------------------------------------
 //
@@ -721,10 +721,10 @@ namespace Ionic.Zip.Tests
 
 
         [TestMethod]
-        [Timeout(60 * 1000)]  // timeout in ms.
+        [Timeout(3 * 60 * 1000)]  // timeout in ms.
         public void VStudio_UnZip()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "VStudio_UnZip.zip");
+            string zipFileToCreate = "VStudio_UnZip.zip";
             string shortDir = "files";
             string subdir = Path.Combine(TopLevelDir, shortDir);
             string extractDir = "extract";
@@ -1615,6 +1615,7 @@ namespace Ionic.Zip.Tests
 
 
         [TestMethod]
+        [Timeout(9 * 60 * 1000)]  // in ms, 60 * 1000 = 1min
         public void Winzip_Unzip_2()
         {
             if (!WinZipIsPresent)

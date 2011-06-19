@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-17 11:16:19>
+// Time-stamp: <2011-June-19 12:25:48>
 //
 // ------------------------------------------------------------------
 //
@@ -61,7 +61,7 @@ namespace Ionic.Zip.Tests.Split
             int overflows = 0;
             string msg;
 
-            _txrx.Send(String.Format("pb 1 max {0}", numFiles));
+            _txrx.Send("pb 1 max " + numFiles);
 
             var update = new Action<int,int,Int64>( (x,y,z) => {
                     switch (x)
@@ -84,6 +84,7 @@ namespace Ionic.Zip.Tests.Split
                     }
                 });
 
+            _txrx.Send("status creating " + numFiles + " files...");
 
             string[] filesToZip;
             Dictionary<string, byte[]> checksums;
@@ -371,7 +372,7 @@ namespace Ionic.Zip.Tests.Split
                     }
                 };
 
-            System.EventHandler<Ionic.Zip.SaveProgressEventArgs> sp = (sender1, e1) =>
+            EventHandler<SaveProgressEventArgs> sp = (sender1, e1) =>
                 {
                     switch (e1.EventType)
                     {
