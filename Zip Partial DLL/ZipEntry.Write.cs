@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-June-18 15:46:49>
+// Last Saved: <2011-June-19 18:10:55>
 //
 // ------------------------------------------------------------------
 //
@@ -1250,17 +1250,43 @@ namespace Ionic.Zip
 
             try
             {
-                // Use fileLength for progress updates, and to decide whether
-                // we can skip encryption and deflation altogether (in case of length==zero)
+                // Use fileLength for progress updates, and to decide whether we can
+                // skip encryption and deflation altogether (in case of length==zero)
                 long fileLength = SetInputAndFigureFileLength(ref input);
 
-                CountingStream entryCounter;  // counts bytes written for this entry
+                // Wrap a counting stream around the raw output stream:
+                // This is the last thing that happens before the bits go to the
+                // application-provided stream.
+                //
+                // Sometimes s is a CountingStream. Doesn't matter. Wrap it with a
+                // counter anyway. We need to count at both levels.
+
+                CountingStream entryCounter = new CountingStream(s);
+
                 Stream encryptor;
                 Stream deflater;
-                Ionic.Zlib.CrcCalculatorStream output;
-                PrepOutputStream(s, fileLength, out entryCounter, out encryptor, out deflater, out output);
 
-                // as we emit the file, the flow is:
+                if (fileLength != 0L)
+                {
+                    // Maybe wrap an encrypting stream around the counter: This will
+                    // happen BEFORE output counting, and AFTER deflation, if encryption
+                    // is used.
+                    encryptor = MaybeApplyEncryption(entryCounter);
+
+                    // Maybe wrap a DeflateStream around that.
+                    // This will happen BEFORE encryption (if any) as we write data out.
+                    deflater = MaybeApplyDeflation(encryptor, fileLength);
+                }
+                else
+                {
+                    encryptor = deflater = entryCounter;
+                }
+
+                // Wrap a CrcCalculatorStream around that.
+                // This will happen BEFORE deflation (if any) as we write data out.
+                var output = new Ionic.Zlib.CrcCalculatorStream(deflater, true);
+
+                // output.Write() causes this flow:
                 // calc-crc -> deflate -> encrypt -> count -> actually write
 
                 if (this._Source == ZipEntrySource.WriteDelegate)
@@ -1288,7 +1314,7 @@ namespace Ionic.Zip
             {
                 if (this._Source == ZipEntrySource.JitStream)
                 {
-                    // allow the application to open the stream
+                    // allow the application to close the stream
                     if (this._CloseDelegate != null)
                         this._CloseDelegate(this.FileName, input);
                 }
@@ -1726,6 +1752,17 @@ namespace Ionic.Zip
 
 
 
+        /// <summary>
+        ///   Prepare the given stream for output - wrap it in a CountingStream, and
+        ///   then in a CRC stream, and an encryptor and deflator as appropriate.
+        /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     Previously this was used in ZipEntry.Write(), but in an effort to
+        ///     introduce some efficiencies in that method I've refactored to put the
+        ///     code inline.  This method still gets called by ZipOutputStream.
+        ///   </para>
+        /// </remarks>
         internal void PrepOutputStream(Stream s,
                                        long streamLength,
                                        out CountingStream outputCounter,
@@ -1733,7 +1770,11 @@ namespace Ionic.Zip
                                        out Stream deflater,
                                        out Ionic.Zlib.CrcCalculatorStream output)
         {
-            TraceWriteLine("PrepOutputStream: e({0}) comp({1}) crypto({2}) zf({3})", FileName, CompressionLevel, Encryption, _container.Name);
+            TraceWriteLine("PrepOutputStream: e({0}) comp({1}) crypto({2}) zf({3})",
+                           FileName,
+                           CompressionLevel,
+                           Encryption,
+                           _container.Name);
 
             // Wrap a counting stream around the raw output stream:
             // This is the last thing that happens before the bits go to the
@@ -1741,7 +1782,8 @@ namespace Ionic.Zip
             outputCounter = new CountingStream(s);
 
             // Sometimes the incoming "raw" output stream is already a CountingStream.
-            // Doesn't matter. Wrap it with a counter anyway. We need to count at both levels.
+            // Doesn't matter. Wrap it with a counter anyway. We need to count at both
+            // levels.
 
             if (streamLength != 0L)
             {
@@ -1870,44 +1912,35 @@ namespace Ionic.Zip
             bool done = false;
             do
             {
-                // In some cases the source for the zip entry data is a zip file
-                // (the app is updating a zip file).  In some of those cases, some
-                // of the zip entries may be modified.  Changes to the FileName,
-                // CompressionMethod CompressionLevel, and so on.  Some of these
-                // changes require a "re-stream" - the old entry data must be
-                // maybe decrypted, maybe decompressed, then maybe re-compressed
-                // and maybe re-encrypted. This is true for changes in
-                // CompressionMethod or CompressionLevel. Some changes though,
-                // require an update only to metadata.  A change in the entry
-                // name, or a new comment are examples of the latter.  In some
-                // cases, the entry hasn't changed at all and can be simply copied
-                // as a block.
-
-                // This test checks if the source for the entry data is a zip file, and
-                // if a restream is necessary.  If NOT, then it just copies through
-                // one entry, potentially changing the metadata.
-
-                if (_Source == ZipEntrySource.ZipFile && !_restreamRequiredOnSave)
-                {
-                    CopyThroughOneEntry(s);
-                    return;
-                }
-
-                // Ok, the source for this entry is not a previously created zip file, or
-                // the settings whave changed in important ways and therefore we will need to
-                // process the bytestream (compute crc, maybe compress, maybe encrypt) in
-                // order to create the zip.
-                //
-                // We do this in potentially 2 passes: The first time we do it as requested, maybe
-                // with compression and maybe encryption.  If that causes the bytestream to inflate
-                // in size, and if compression was on, then we turn off compression and do it again.
-
                 try
                 {
+                    // In some cases the source for the zip entry data is a zip file
+                    // (the app is updating a zip file).  In some of those cases, some
+                    // of the zip entries may be modified.  Changes to the FileName,
+                    // CompressionMethod CompressionLevel, and so on.  Some of these
+                    // changes require a "re-stream" - the old entry data must be
+                    // maybe decrypted, maybe decompressed, then maybe re-compressed
+                    // and maybe re-encrypted. This is true for changes in
+                    // CompressionMethod or CompressionLevel. Some changes though,
+                    // require an update only to metadata.  A change in the entry
+                    // name, or a new comment are examples of the latter.  In some
+                    // cases, the entry hasn't changed at all and can be simply copied
+                    // as a block.
+
+                    // This test checks if the source for the entry data is a zip file, and
+                    // if a restream is necessary.  If NOT, then it just copies through
+                    // one entry, potentially changing the metadata.
+
+                    if (_Source == ZipEntrySource.ZipFile && !_restreamRequiredOnSave)
+                    {
+                        CopyThroughOneEntry(s);
+                        return;
+                    }
+
+                    // Is the entry a directory?  If so, the write is relatively simple.
                     if (IsDirectory)
                     {
                         WriteHeader(s, 1);
-                        // nothing more to write
                         StoreRelativeOffset();
                         _entryRequiresZip64 = new Nullable<bool>(_RelativeOffsetOfLocalHeader >= 0xFFFFFFFF);
                         _OutputUsesZip64 = new Nullable<bool>(_container.Zip64 == Zip64Option.Always || _entryRequiresZip64.Value);
@@ -1918,6 +1951,18 @@ namespace Ionic.Zip
                         return;
                     }
 
+                    // At this point, the source for this entry is not a directory, and
+                    // not a previously created zip file, or the source for the entry IS
+                    // a previously created zip but the settings whave changed in
+                    // important ways and therefore we will need to process the
+                    // bytestream (compute crc, maybe compress, maybe encrypt) in order
+                    // to write the content into the new zip.
+                    //
+                    // We do this in potentially 2 passes: The first time we do it as
+                    // requested, maybe with compression and maybe encryption.  If that
+                    // causes the bytestream to inflate in size, and if compression was
+                    // on, then we turn off compression and do it again.
+
 
                     bool readAgain = true;
                     int nCycles = 0;
@@ -1927,8 +1972,14 @@ namespace Ionic.Zip
 
                         WriteHeader(s, nCycles);
 
-                        // now, write the actual file data. (incl the encrypted header)
-                        _EmitOne(s);
+                        // write the encrypted header
+                        WriteSecurityMetadata(s);
+
+                        // write the (potentially compressed, potentially encrypted) file data
+                        _WriteEntryData(s);
+
+                        // track total entry size (including the trailing descriptor and MAC)
+                        _TotalEntrySize = _LengthOfHeader + _CompressedFileDataSize + _LengthOfTrailer;
 
                         // The file data has now been written to the stream, and
                         // the file pointer is positioned directly after file data.
@@ -2044,21 +2095,12 @@ namespace Ionic.Zip
             _Source = ZipEntrySource.ZipFile; // workitem 10694
         }
 
-        private void _EmitOne(Stream outstream)
-        {
-            WriteSecurityMetadata(outstream);
-
-            // write the (potentially compressed, potentially encrypted) file data
-            _WriteEntryData(outstream);
-
-            // track total entry size (including the trailing descriptor and MAC)
-            _TotalEntrySize = _LengthOfHeader + _CompressedFileDataSize + _LengthOfTrailer;
-        }
-
-
 
         internal void WriteSecurityMetadata(Stream outstream)
         {
+            if (Encryption == EncryptionAlgorithm.None)
+                return;
+
             string pwd = this._Password;
 
             // special handling for source == ZipFile.
