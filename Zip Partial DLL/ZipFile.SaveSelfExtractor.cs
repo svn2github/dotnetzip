@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 17:37:17>
+// Time-stamp: <2011-June-18 20:13:49>
 //
 // ------------------------------------------------------------------
 //
@@ -469,6 +469,16 @@ namespace Ionic.Zip
             get;
             set;
         }
+
+        /// <summary>
+        ///   Additional options for the csc.exe compiler, when producing the SFX
+        ///   EXE.
+        /// </summary>
+        /// <exclude/>
+        public string AdditionalCompilerSwitches
+        {
+            get; set;
+        }
     }
 
 
@@ -838,6 +848,9 @@ namespace Ionic.Zip
                         if (options.Flavor == SelfExtractorFlavor.WinFormsApplication)
                             cp.CompilerOptions += " /target:winexe";
 
+                        if (!String.IsNullOrEmpty(options.AdditionalCompilerSwitches))
+                            cp.CompilerOptions += " " + options.AdditionalCompilerSwitches;
+
                         if (String.IsNullOrEmpty(cp.CompilerOptions))
                             cp.CompilerOptions = null;
 
@@ -964,7 +977,7 @@ namespace Ionic.Zip
                     Console.WriteLine("source: {0}", sourceModule);
 #endif
 
-                    System.CodeDom.Compiler.CompilerResults cr = csharp.CompileAssemblyFromSource(cp, LiteralSource);
+                    var cr = csharp.CompileAssemblyFromSource(cp, LiteralSource);
 
 
                     if (cr == null)

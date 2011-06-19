@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 08:33:19>
+// Time-stamp: <2011-June-18 20:58:45>
 //
 // ------------------------------------------------------------------
 //
@@ -523,30 +523,27 @@ namespace Ionic.Zip
                           "{3}";
 
             string overwriteString =
-                          String.Format("      -o    - overwrite any existing files upon extraction{0}.\n" +
-                                        "      -n    - do not overwrite any existing files upon extraction{1}.\n",
+                          String.Format("      -o    overwrite any existing files upon extraction{0}.\n" +
+                                        "      -n    do not overwrite any existing files upon extraction{1}.\n",
                                         (Overwrite == 1) ? " (default)" : "",
                                         (Overwrite == 2) ? " (default)" : "");
 
-
             string removeString = PostUnpackCmdLineIsSet()
-                ? String.Format("      -r+   - remove files after the optional post-unpack exe completes{0}.\n" +
-                                "      -r-   - don't remove files after the optional post-unpack exe completes{1}.\n",
+                ? String.Format("      -r+   remove files after the optional post-unpack exe completes{0}.\n" +
+                                "      -r-   don't remove files after the optional post-unpack exe completes{1}.\n",
                                 RemoveFilesAfterExe ? " (default)" : "",
                                 RemoveFilesAfterExe ?  "" : " (default)")
                 : "";
 
-
-            string verbString = String.Format("      -v-   - turn OFF verbose messages{0}.\n"+
-                                              "      -v+   - turn ON verbose messages{1}.\n",
+            string verbString = String.Format("      -v-   turn OFF verbose messages{0}.\n"+
+                                              "      -v+   turn ON verbose messages{1}.\n",
                                               Verbose ?  "" : " (default)",
                                               Verbose ? " (default)" : "");
 
             string cmdString = PostUnpackCmdLineIsSet()
-                ? String.Format("      -x    - don't run the post-unpack exe.\n              [cmd is: {0}]\n",
+                ? String.Format("      -x    don't run the post-unpack exe.\n            [cmd is: {0}]\n",
                               PostUnpackCmdLine)
                 : "" ;
-
 
             Console.WriteLine(more, overwriteString, removeString, cmdString, verbString);
 
@@ -565,8 +562,15 @@ namespace Ionic.Zip
         [STAThread]
         public static int Main(string[] args)
         {
-            int left = Console.CursorLeft;
-            int top = Console.CursorTop;
+            int left = 0;
+            int top = 0;
+            try
+            {
+                left = Console.CursorLeft;
+                top = Console.CursorTop;
+            }
+            catch { } // suppress
+
             bool wantPause = (left==0 && top==0);
             int rc = 0;
             try
