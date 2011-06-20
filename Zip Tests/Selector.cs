@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 18:47:22>
+// Time-stamp: <2011-June-20 17:18:12>
 //
 // ------------------------------------------------------------------
 //
@@ -51,7 +51,7 @@ namespace Ionic.Zip.Tests
             var txrx= TestUtilities.StartProgressMonitor("selector-setup",
                                                       "Selector one-time setup",
                                                       "setting up files...");
-            _InternalSetupFiles(null);
+            _InternalSetupFiles(txrx);
             txrx.Send("stop");
         }
 
@@ -1854,6 +1854,47 @@ namespace Ionic.Zip.Tests
         public void Selector_SelectFiles_BadSyntax24b()
         {
             new Ionic.FileSelector("type > D");
+        }
+
+        [TestMethod]
+        public void Selector_Normalize()
+        {
+
+            string[][] sPairs = {
+                new string[] {
+                    "name = '.\\Selector (this is a Test)\\this.txt'",
+                    null},
+
+                new string[] {
+                    "(size > 100)AND(name='Name (with Parens).txt')",
+                    "(size > 100 AND name = 'Name (with Parens).txt')"},
+
+                new string[] {
+                    "(size > 100) AND ((name='Name (with Parens).txt')OR(name=*.jpg))",
+                    "(size > 100 AND (name = 'Name (with Parens).txt' OR name = *.jpg))"},
+
+                new string[] {
+                    "name='*.txt' and name!='* *.txt'",
+                    "(name = '*.txt' AND name != '* *.txt')"},
+
+                new string[] {
+                    "name = *.txt AND name != '* *.txt'",
+                    "(name = *.txt AND name != '* *.txt')"},
+            };
+
+
+            for (int i=0; i < sPairs.Length; i++)
+            {
+                var pair = sPairs[i];
+                var selector = pair[0];
+                var expectedResult = pair[1];
+                var fsel = new FileSelector(selector);
+                var stringVer = fsel.ToString().Replace("\u00006"," ");
+                Assert.AreEqual<string>("FileSelector("+ (expectedResult ?? selector)
+                                        +")",
+                                        stringVer,
+                                        "entry {0}", i);
+            }
         }
 
     }
