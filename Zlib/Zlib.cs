@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-June-13 15:48:55>
+// Last Saved: <2011-June-20 14:17:29>
 //
 // ------------------------------------------------------------------
 //
@@ -420,20 +420,37 @@ namespace Ionic.Zlib
     /// is a required part of the "ZLIB" standard.  Applications will almost never need to
     /// use this class directly.
     /// </remarks>
-    internal sealed class Adler
+    ///
+    /// <exclude/>
+    public sealed class Adler
     {
         // largest prime smaller than 65536
-        private static readonly int BASE = 65521;
+        private static readonly uint BASE = 65521;
         // NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1
         private static readonly int NMAX = 5552;
 
-        static internal uint Adler32(uint adler, byte[] buf, int index, int len)
+        /// <summary>
+        ///   Calculates the Adler32 checksum.
+        /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     This is used within ZLIB.  You probably don't need to use this directly.
+        ///   </para>
+        /// </remarks>
+        /// <example>
+        ///    To compute an Adler32 checksum on a byte array:
+        ///  <code>
+        ///    var adler = Adler.Adler32(0, null, 0, 0);
+        ///    adler = Adler.Adler32(adler, buffer, index, length);
+        ///  </code>
+        /// </example>
+        public static uint Adler32(uint adler, byte[] buf, int index, int len)
         {
             if (buf == null)
                 return 1;
 
-            int s1 = (int) (adler & 0xffff);
-            int s2 = (int) ((adler >> 16) & 0xffff);
+            uint s1 = (uint) (adler & 0xffff);
+            uint s2 = (uint) ((adler >> 16) & 0xffff);
 
             while (len > 0)
             {

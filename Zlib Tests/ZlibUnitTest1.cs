@@ -12,7 +12,7 @@ namespace Ionic.Zlib.Tests
     /// Summary description for UnitTest1
     /// </summary>
     [TestClass]
-    public class UnitTest1  
+    public class UnitTest1
     {
         private System.Random _rnd;
 
@@ -57,7 +57,7 @@ namespace Ionic.Zlib.Tests
         // [ClassCleanup()]
         // public static void MyClassCleanup() { }
         //
-        // Use TestInitialize to run code before running each test 
+        // Use TestInitialize to run code before running each test
         // [TestInitialize()]
         // public void MyTestInitialize() { }
         //
@@ -69,7 +69,7 @@ namespace Ionic.Zlib.Tests
         private string CurrentDir = null;
         private string TopLevelDir = null;
 
-        // Use TestInitialize to run code before running each test 
+        // Use TestInitialize to run code before running each test
         [TestInitialize()]
         public void MyTestInitialize()
         {
@@ -112,7 +112,7 @@ namespace Ionic.Zlib.Tests
         }
 
         /// <summary>
-        /// Converts a MemoryStream to a string. Makes some assumptions about the content of the stream. 
+        /// Converts a MemoryStream to a string. Makes some assumptions about the content of the stream.
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
@@ -140,7 +140,7 @@ namespace Ionic.Zlib.Tests
         [TestMethod]
         public void Zlib_BasicDeflateAndInflate()
         {
-            string TextToCompress = LoremIpsum; 
+            string TextToCompress = LoremIpsum;
 
             int rc;
             int bufferSize = 40000;
@@ -547,7 +547,7 @@ namespace Ionic.Zlib.Tests
         }
 
 
-        
+
         [TestMethod]
         public void Zlib_ZlibStream_CompressWhileWriting()
         {
@@ -582,7 +582,7 @@ namespace Ionic.Zlib.Tests
             // workitem 8557
             System.IO.MemoryStream msSinkCompressed;
             System.IO.MemoryStream msSinkDecompressed;
-            
+
             // first, compress:
             msSinkCompressed = new System.IO.MemoryStream();
             ZlibStream zIn= new ZlibStream(StringToMemoryStream(WhatWouldThingsHaveBeenLike),
@@ -857,7 +857,7 @@ namespace Ionic.Zlib.Tests
             }
         }
 
-        
+
         [TestMethod]
         public void Zlib_GZipStream_ByteByByte_CheckCrc()
         {
@@ -963,7 +963,7 @@ namespace Ionic.Zlib.Tests
                                 gz.Close(); // sets the final CRC
                                 Assert.AreEqual<Int32>(gz.Crc32, crc1);
                             }
-                            
+
                             if (decompressor != null)
                                 decompressor.Dispose();
                         }
@@ -979,7 +979,7 @@ namespace Ionic.Zlib.Tests
             _DecompressEmptyStream(typeof(GZipStream));
         }
 
-        
+
         [TestMethod]
         public void Zlib_ZlibStream_DecompressEmptyStream()
         {
@@ -996,7 +996,7 @@ namespace Ionic.Zlib.Tests
                 using (MemoryStream ms1 = new MemoryStream())
                 {
                     Object[] args = { ms1, CompressionMode.Decompress, false };
-                    using (Stream decompressor = (Stream) Activator.CreateInstance(t, args)) 
+                    using (Stream decompressor = (Stream) Activator.CreateInstance(t, args))
                     {
                         using (MemoryStream ms2 = new MemoryStream())
                         {
@@ -1012,7 +1012,7 @@ namespace Ionic.Zlib.Tests
                             // not throw.
                             if (m==1)
                                 n = decompressor.Read(working, 0, working.Length);
-                            
+
 
                             Assert.AreEqual<Int64>(ms2.Length, 0L);
                         }
@@ -1021,18 +1021,18 @@ namespace Ionic.Zlib.Tests
             }
         }
 
-        
+
         [TestMethod]
         public void Zlib_DeflateStream_InMemory()
         {
             String TextToCompress = UntilHeExtends;
-            
+
             CompressionLevel[] levels = {CompressionLevel.Level0,
                                          CompressionLevel.Level1,
                                          CompressionLevel.Default,
                                          CompressionLevel.Level7,
                                          CompressionLevel.BestCompression};
-            
+
             // compress with various Ionic levels, and System.IO.Compression (default level)
             for (int k= 0; k < levels.Length + 1; k++)
             {
@@ -1058,7 +1058,7 @@ namespace Ionic.Zlib.Tests
 
                 var a = ms.ToArray();
                 TestContext.WriteLine("Compressed stream is {0} bytes long", a.Length);
-            
+
                 // de-compress with both Ionic and System.IO.Compression
                 for (int j = 0; j < 2; j++)
                 {
@@ -1076,7 +1076,7 @@ namespace Ionic.Zlib.Tests
                     }
 
                     TestContext.WriteLine("using decompressor: {0}", decompressor.GetType().FullName);
-                        
+
                     var sr = new StreamReader(decompressor, Encoding.ASCII);
                     string DecompressedText = sr.ReadToEnd();
 
@@ -1088,7 +1088,7 @@ namespace Ionic.Zlib.Tests
         }
 
 
-        
+
         [TestMethod]
         public void Zlib_CloseTwice()
         {
@@ -1106,10 +1106,10 @@ namespace Ionic.Zlib.Tests
                     break;
                 case 1:
                     compressor = new GZipStream(ms1, CompressionMode.Compress, false);
-                    break;                        
+                    break;
                 case 2:
                     compressor = new ZlibStream(ms1, CompressionMode.Compress, false);
-                    break;                        
+                    break;
                 }
 
                 TestContext.WriteLine("Text to compress is {0} bytes: '{1}'",
@@ -1124,7 +1124,7 @@ namespace Ionic.Zlib.Tests
                 compressor.Close(); // explicitly closes compressor
                 var a = ms1.ToArray();
                 TestContext.WriteLine("Compressed stream is {0} bytes long", a.Length);
-            
+
                 var ms2 = new MemoryStream(a);
                 Stream decompressor = null;
 
@@ -1135,14 +1135,14 @@ namespace Ionic.Zlib.Tests
                     break;
                 case 1:
                     decompressor = new GZipStream(ms2, CompressionMode.Decompress, false);
-                    break;                        
+                    break;
                 case 2:
                     decompressor = new ZlibStream(ms2, CompressionMode.Decompress, false);
-                    break;                        
+                    break;
                 }
 
                 TestContext.WriteLine("using decompressor: {0}", decompressor.GetType().FullName);
-                        
+
                 var sr = new StreamReader(decompressor, Encoding.ASCII);
                 string DecompressedText = sr.ReadToEnd();
 
@@ -1150,7 +1150,7 @@ namespace Ionic.Zlib.Tests
                 sr.Close();
                 sr.Close();
                 decompressor.Close();
-                    
+
                 TestContext.WriteLine("Read {0} characters: '{1}'", DecompressedText.Length, DecompressedText);
                 TestContext.WriteLine("\n");
                 Assert.AreEqual<String>(TextToCompress, DecompressedText);
@@ -1180,25 +1180,25 @@ namespace Ionic.Zlib.Tests
                 compressor.Close(); // explicitly closes compressor
                 var a = ms1.ToArray();
                 TestContext.WriteLine("Compressed stream is {0} bytes long", a.Length);
-            
+
                 var ms2 = new MemoryStream(a);
                 Stream decompressor  = new DeflateStream(ms2, CompressionMode.Decompress, false);
 
                 TestContext.WriteLine("using decompressor: {0}", decompressor.GetType().FullName);
-                        
+
                 var sr = new StreamReader(decompressor, Encoding.ASCII);
                 string DecompressedText = sr.ReadToEnd();
                 sr.Close();
 
                 TestContext.WriteLine("decompressor.CanRead = {0}",decompressor.CanRead);
-                    
+
                 TestContext.WriteLine("Read {0} characters: '{1}'", DecompressedText.Length, DecompressedText);
                 TestContext.WriteLine("\n");
                 Assert.AreEqual<String>(TextToCompress, DecompressedText);
-            
+
         }
 
-        
+
         [TestMethod]
         [ExpectedException(typeof(System.ObjectDisposedException))]
         public void Zlib_DisposedException_GZipStream()
@@ -1221,18 +1221,18 @@ namespace Ionic.Zlib.Tests
             compressor.Close(); // explicitly closes compressor
             var a = ms1.ToArray();
             TestContext.WriteLine("Compressed stream is {0} bytes long", a.Length);
-            
+
             var ms2 = new MemoryStream(a);
             Stream decompressor  = new GZipStream(ms2, CompressionMode.Decompress, false);
 
             TestContext.WriteLine("using decompressor: {0}", decompressor.GetType().FullName);
-                        
+
             var sr = new StreamReader(decompressor, Encoding.ASCII);
             string DecompressedText = sr.ReadToEnd();
             sr.Close();
 
             TestContext.WriteLine("decompressor.CanRead = {0}",decompressor.CanRead);
-                    
+
             TestContext.WriteLine("Read {0} characters: '{1}'", DecompressedText.Length, DecompressedText);
             TestContext.WriteLine("\n");
             Assert.AreEqual<String>(TextToCompress, DecompressedText);
@@ -1261,26 +1261,26 @@ namespace Ionic.Zlib.Tests
             compressor.Close(); // explicitly closes compressor
             var a = ms1.ToArray();
             TestContext.WriteLine("Compressed stream is {0} bytes long", a.Length);
-            
+
             var ms2 = new MemoryStream(a);
             Stream decompressor  = new ZlibStream(ms2, CompressionMode.Decompress, false);
 
             TestContext.WriteLine("using decompressor: {0}", decompressor.GetType().FullName);
-                        
+
             var sr = new StreamReader(decompressor, Encoding.ASCII);
             string DecompressedText = sr.ReadToEnd();
             sr.Close();
 
             TestContext.WriteLine("decompressor.CanRead = {0}",decompressor.CanRead);
-                    
+
             TestContext.WriteLine("Read {0} characters: '{1}'", DecompressedText.Length, DecompressedText);
             TestContext.WriteLine("\n");
             Assert.AreEqual<String>(TextToCompress, DecompressedText);
         }
 
 
-        
- 
+
+
         [TestMethod]
         public void Zlib_Streams_VariousSizes()
         {
@@ -1458,10 +1458,10 @@ namespace Ionic.Zlib.Tests
                 }
                 compressedBytes = ms1.ToArray();
             }
-                
+
             TestContext.WriteLine("Compressed {0} bytes into {1} bytes",
                                   buffer.Length, compressedBytes.Length);
-                
+
             byte[] decompressed= null;
             using (MemoryStream ms2 = new MemoryStream())
             {
@@ -1499,7 +1499,7 @@ namespace Ionic.Zlib.Tests
 
 
 
-        
+
         private byte[] RandomizeBuffer(int length)
         {
             byte[] buffer = new byte[length];
@@ -1517,9 +1517,9 @@ namespace Ionic.Zlib.Tests
             }
             return buffer;
         }
-        
 
-        
+
+
         [TestMethod]
         public void Zlib_DeflateStream_wi8870()
         {
@@ -1530,32 +1530,32 @@ namespace Ionic.Zlib.Tests
             }
         }
 
-        
 
-        
+
+
         [TestMethod]
         public void Zlib_ParallelDeflateStream()
         {
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
             TestContext.WriteLine("{0}: Zlib_ParallelDeflateStream Start", sw.Elapsed);
-            
+
             int sz = 256*1024 + _rnd.Next(120000);
             string FileToCompress = System.IO.Path.Combine(TopLevelDir, String.Format("Zlib_ParallelDeflateStream.{0}.txt", sz));
 
             CreateAndFillFileText( FileToCompress, sz);
-            
+
             TestContext.WriteLine("{0}: Created file: {1}", sw.Elapsed, FileToCompress );
-            
+
             byte[] original = File.ReadAllBytes(FileToCompress);
 
             int crc1 = DoCrc(FileToCompress);
-            
+
             TestContext.WriteLine("{0}: Original CRC: {1:X8}", sw.Elapsed, crc1 );
 
             byte[] working = new byte[WORKING_BUFFER_SIZE];
             int n = -1;
-            long originalLength; 
+            long originalLength;
             MemoryStream ms1 = new MemoryStream();
             {
                 using (FileStream fs1 = File.OpenRead(FileToCompress))
@@ -1566,12 +1566,12 @@ namespace Ionic.Zlib.Tests
                         while ((n = fs1.Read(working, 0, working.Length)) != 0)
                         {
                             compressor.Write(working, 0, n);
-                        }                    
+                        }
                     }
                 }
                 ms1.Seek(0, SeekOrigin.Begin);
             }
-            
+
             TestContext.WriteLine("{0}: Compressed {1} bytes into {2} bytes", sw.Elapsed,
                                   originalLength, ms1.Length);
 
@@ -1585,7 +1585,7 @@ namespace Ionic.Zlib.Tests
                     while ((n = decompressor.Read(working, 0, working.Length)) != 0)
                     {
                         ms2.Write(working, 0, n);
-                    }                    
+                    }
                 }
                 TestContext.WriteLine("{0}: Decompressed", sw.Elapsed);
                 TestContext.WriteLine("{0}: Decompressed length: {1}", sw.Elapsed, ms2.Length);
@@ -1594,7 +1594,7 @@ namespace Ionic.Zlib.Tests
                 decompressedBytes = ms2.ToArray();
                 TestContext.WriteLine("{0}: Decompressed CRC: {1:X8}", sw.Elapsed, crc2 );
             }
-            
+
 
             TestContext.WriteLine("{0}: Checking...", sw.Elapsed );
 
@@ -1622,10 +1622,10 @@ namespace Ionic.Zlib.Tests
         }
 
 
-        
 
 
-        
+
+
         private int DoCrc(string filename)
         {
             byte[] working = new byte[WORKING_BUFFER_SIZE];
@@ -1696,35 +1696,65 @@ namespace Ionic.Zlib.Tests
             }
         }
 
+        [TestMethod]
+        public void TestAdler32()
+        {
+            // create a buffer full of 0xff's
+            var buffer = new byte[2048 * 4];
+            for (var i = 0; i < buffer.Length; i++)
+            {
+                buffer[i] = 255;
+            };
+
+            uint goal = 4104380882;
+            var testAdler = new Action<int>( chunk => {
+                    var index = 0;
+                    var adler = Adler.Adler32(0, null, 0, 0);
+                    while (index < buffer.Length)
+                    {
+                        var length = Math.Min(buffer.Length - index, chunk);
+                        adler = Adler.Adler32(adler, buffer, index, length);
+                        index = index + chunk;
+                    }
+                    Assert.AreEqual<uint>(adler, goal);
+                });
+
+            testAdler(3979);
+            testAdler(3980);
+            testAdler(3999);
+        }
+
+
+
         internal static string LetMeDoItNow = "I expect to pass through the world but once. Any good therefore that I can do, or any kindness I can show to any creature, let me do it now. Let me not defer it, for I shall not pass this way again. -- Anonymous, although some have attributed it to Stephen Grellet";
-        
+
         internal static string UntilHeExtends = "Until he extends the circle of his compassion to all living things, man will not himself find peace. - Albert Schweitzer, early 20th-century German Nobel Peace Prize-winning mission doctor and theologian.";
 
         internal static string WhatWouldThingsHaveBeenLike = "'What would things have been like [in Russia] if during periods of mass arrests people had not simply sat there, paling with terror at every bang on the downstairs door and at every step on the staircase, but understood they had nothing to lose and had boldly set up in the downstairs hall an ambush of half a dozen people?' -- Alexander Solzhenitsyn";
 
         internal static string GoPlacidly =
-            @"Go placidly amid the noise and haste, and remember what peace there may be in silence. 
+            @"Go placidly amid the noise and haste, and remember what peace there may be in silence.
 
-As far as possible, without surrender, be on good terms with all persons. Speak your truth quietly and clearly; and listen to others, even to the dull and the ignorant, they too have their story. Avoid loud and aggressive persons, they are vexations to the spirit. 
+As far as possible, without surrender, be on good terms with all persons. Speak your truth quietly and clearly; and listen to others, even to the dull and the ignorant, they too have their story. Avoid loud and aggressive persons, they are vexations to the spirit.
 
-If you compare yourself with others, you may become vain and bitter; for always there will be greater and lesser persons than yourself. Enjoy your achievements as well as your plans. Keep interested in your own career, however humble; it is a real possession in the changing fortunes of time. 
+If you compare yourself with others, you may become vain and bitter; for always there will be greater and lesser persons than yourself. Enjoy your achievements as well as your plans. Keep interested in your own career, however humble; it is a real possession in the changing fortunes of time.
 
-Exercise caution in your business affairs, for the world is full of trickery. But let this not blind you to what virtue there is; many persons strive for high ideals, and everywhere life is full of heroism. Be yourself. Especially, do not feign affection. Neither be cynical about love, for in the face of all aridity and disenchantment it is perennial as the grass. 
+Exercise caution in your business affairs, for the world is full of trickery. But let this not blind you to what virtue there is; many persons strive for high ideals, and everywhere life is full of heroism. Be yourself. Especially, do not feign affection. Neither be cynical about love, for in the face of all aridity and disenchantment it is perennial as the grass.
 
-Take kindly to the counsel of the years, gracefully surrendering the things of youth. Nurture strength of spirit to shield you in sudden misfortune. But do not distress yourself with imaginings. Many fears are born of fatigue and loneliness. 
+Take kindly to the counsel of the years, gracefully surrendering the things of youth. Nurture strength of spirit to shield you in sudden misfortune. But do not distress yourself with imaginings. Many fears are born of fatigue and loneliness.
 
-Beyond a wholesome discipline, be gentle with yourself. You are a child of the universe, no less than the trees and the stars; you have a right to be here. And whether or not it is clear to you, no doubt the universe is unfolding as it should. 
+Beyond a wholesome discipline, be gentle with yourself. You are a child of the universe, no less than the trees and the stars; you have a right to be here. And whether or not it is clear to you, no doubt the universe is unfolding as it should.
 
-Therefore be at peace with God, whatever you conceive Him to be, and whatever your labors and aspirations, in the noisy confusion of life, keep peace in your soul. 
+Therefore be at peace with God, whatever you conceive Him to be, and whatever your labors and aspirations, in the noisy confusion of life, keep peace in your soul.
 
-With all its sham, drudgery and broken dreams, it is still a beautiful world. 
+With all its sham, drudgery and broken dreams, it is still a beautiful world.
 
 Be cheerful. Strive to be happy.
 
 Max Ehrmann c.1920
 ";
 
-        
+
         internal static string IhaveaDream = @"Let us not wallow in the valley of despair, I say to you today, my friends.
 
 And so even though we face the difficulties of today and tomorrow, I still have a dream. It is a dream deeply rooted in the American dream.
@@ -1735,7 +1765,7 @@ I have a dream that one day on the red hills of Georgia, the sons of former slav
 
 I have a dream that one day even the state of Mississippi, a state sweltering with the heat of injustice, sweltering with the heat of oppression, will be transformed into an oasis of freedom and justice.
 
-I have a dream that my four little children will one day live in a nation where they will not be judged by the color of their skin but by the content of their character. 
+I have a dream that my four little children will one day live in a nation where they will not be judged by the color of their skin but by the content of their character.
 
 I have a dream today!
 
@@ -1812,7 +1842,7 @@ I have a dream that one day every valley shall be exalted, and every hill and mo
 
     }
 
-    
+
         public class MySlowMemoryStream : MemoryStream
         {
             // ctor
@@ -1820,17 +1850,17 @@ I have a dream that one day every valley shall be exalted, and every hill and mo
 
             public override int Read(byte[] buffer, int offset, int count)
             {
-                if (count < 0)                
+                if (count < 0)
                     throw new ArgumentOutOfRangeException();
-                
-                if (count == 0)                
+
+                if (count == 0)
                     return 0;
-                
+
                 // force stream to read just one byte at a time
                 int NextByte = base.ReadByte();
-                if (NextByte == -1)              
+                if (NextByte == -1)
                     return 0;
-                
+
                 buffer[offset] = (byte) NextByte;
                 return 1;
             }
