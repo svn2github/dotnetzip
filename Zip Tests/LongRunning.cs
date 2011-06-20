@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-19 15:48:44>
+// Time-stamp: <2011-June-19 21:51:30>
 //
 // ------------------------------------------------------------------
 //
@@ -129,7 +129,7 @@ namespace Ionic.Zip.Tests.LongRunning
 
 
 
-        [TestMethod, Timeout(40 * 60 * 1000)]
+        [TestMethod, Timeout(120 * 60 * 1000)]
         public void CreateZip_AddDirectory_LargeNumberOfSmallFiles()
         {
             // start the visible progress monitor
@@ -137,40 +137,37 @@ namespace Ionic.Zip.Tests.LongRunning
                                                        "Large # of Small Files",
                                                        "Creating files");
             int max1 = 0;
-            Action<Int16, Int32> progressUpdate = (x, y) =>
+            Action<Int16, Int32> progressUpdate = (x, y) => {
+                if (x == 0)
                 {
-                    if (x == 0)
-                    {
-                        _txrx.Send(String.Format("pb 1 max {0}", y));
-                        max1 = y;
-                    }
-                    else if (x == 2)
-                    {
-                        _txrx.Send(String.Format("pb 1 value {0}", y));
-                        _txrx.Send(String.Format("status creating files in directory {0} of {1}", y, max1));
-                    }
-                    else if (x == 4)
-                    {
-                        _txrx.Send(String.Format("status done creating {0} files", y));
-                    }
-                };
+                    _txrx.Send(String.Format("pb 1 max {0}", y));
+                    max1 = y;
+                }
+                else if (x == 2)
+                {
+                    _txrx.Send(String.Format("pb 1 value {0}", y));
+                    _txrx.Send(String.Format("status creating directory {0} of {1}",
+                                             y, max1));
+                }
+                else if (x == 4)
+                {
+                    _txrx.Send(String.Format("status done creating {0} files", y));
+                }
+            };
 
             int[][] settings = {
+                // sizes and numbers of files/directories to create
                 new int[] {71, 21, 97, 27, 200, 200 },
                 new int[] {51, 171, 47, 197, 100, 100 },
             };
             _txrx.Send(String.Format("pb 0 max {0}", settings.Length * 2));
-
             TestContext.WriteLine("============================================");
-            TestContext.WriteLine("Test beginning - {0}", System.DateTime.Now.ToString("G"));
+            TestContext.WriteLine("Test beginning - {0}", DateTime.Now.ToString("G"));
             for (int m = 0; m < settings.Length; m++)
             {
-                string zipFileToCreate = Path.Combine(TopLevelDir, String.Format("CreateZip_AddDirectory_LargeNumberOfSmallFiles-{0}.zip", m));
-                Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
-
-                string dirToZip = Path.Combine(TopLevelDir, "zipthis" + m);
+                string zipFileToCreate = String.Format("LrgNumOfSmallFiles-{0}.zip", m);
+                string dirToZip =  "zipthis" + m;
                 Directory.CreateDirectory(dirToZip);
-
                 TestContext.WriteLine("============================================");
                 TestContext.WriteLine("Creating files, cycle {0}...", m);
 
@@ -182,15 +179,14 @@ namespace Ionic.Zip.Tests.LongRunning
                                                             settings[m],
                                                             progressUpdate,
                                                             out subdirCount);
-                _numEntriesToAdd = entries;  // _numEntriesToAdd is used in LNSF_AddProgress
+                _numEntriesToAdd = entries;  // used in LNSF_AddProgress
                 _numEntriesAdded = 0;
 
                 _txrx.Send("pb 0 step");
-
                 TestContext.WriteLine("============================================");
-                TestContext.WriteLine("Total of {0} files in {1} subdirs", entries, subdirCount);
-                TestContext.WriteLine("============================================");
-                TestContext.WriteLine("Creating zip - {0}", System.DateTime.Now.ToString("G"));
+                TestContext.WriteLine("Total of {0} files in {1} subdirs",
+                                      entries, subdirCount);
+                TestContext.WriteLine("Creating zip - {0}", DateTime.Now.ToString("G"));
                 Directory.SetCurrentDirectory(TopLevelDir);
                 _pb1Set = false;
                 using (ZipFile zip = new ZipFile())
@@ -206,16 +202,15 @@ namespace Ionic.Zip.Tests.LongRunning
 
                 _txrx.Send("pb 0 step");
 
-                TestContext.WriteLine("Checking zip - {0}", System.DateTime.Now.ToString("G"));
-                Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), entries,
-                                     "The zip file created has the wrong number of entries.");
+                TestContext.WriteLine("Checking zip - {0}", DateTime.Now.ToString("G"));
+                Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), entries);
 
                 _txrx.Send("status cleaning up...");
                 // clean up for this cycle
                 Directory.Delete(dirToZip, true);
             }
             TestContext.WriteLine("============================================");
-            TestContext.WriteLine("Test end - {0}", System.DateTime.Now.ToString("G"));
+            TestContext.WriteLine("Test end - {0}", DateTime.Now.ToString("G"));
         }
 
 
