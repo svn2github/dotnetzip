@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-20 17:18:12>
+// Time-stamp: <2011-June-20 19:21:10>
 //
 // ------------------------------------------------------------------
 //
@@ -48,11 +48,11 @@ namespace Ionic.Zip.Tests
         public static void ClassInit(TestContext a)
         {
             CurrentDir = Directory.GetCurrentDirectory();
-            var txrx= TestUtilities.StartProgressMonitor("selector-setup",
-                                                      "Selector one-time setup",
-                                                      "setting up files...");
-            _InternalSetupFiles(txrx);
-            txrx.Send("stop");
+            // var txrx= TestUtilities.StartProgressMonitor("selector-setup",
+            //                                           "Selector one-time setup",
+            //                                           "setting up files...");
+            // _InternalSetupFiles(txrx);
+            // txrx.Send("stop");
         }
 
 
@@ -590,9 +590,7 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void Selector_AddSelectedFiles_2()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_AddSelectedFiles_2.zip");
-
-            Directory.SetCurrentDirectory(TopLevelDir);
+            string zipFileToCreate = "Selector_AddSelectedFiles_2.zip";
             string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
             var files = TestUtilities.GenerateFilesFlat(dirToZip);
             var txtFiles = Directory.GetFiles(dirToZip, "*.txt", SearchOption.AllDirectories);
@@ -620,8 +618,114 @@ namespace Ionic.Zip.Tests
 
             Assert.AreEqual<Int32>(txtFiles.Length, TestUtilities.CountEntries(zipFileToCreate));
 
+        }
+
+
+        [TestMethod]
+        public void Selector_AddSelectedFiles_Checkcase_file()
+        {
+            string zipFileToCreate = "AddSelectedFiles_Checkcase.zip";
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+
+            Directory.SetCurrentDirectory(dirToZip);
+            var f2 = Directory.GetFiles(".", "*.*");
+            Array.ForEach(f2, x => { File.Move(x,Path.GetFileName(x).ToUpper()); });
+            Directory.SetCurrentDirectory(TopLevelDir);
+
+            var txtFiles = Directory.GetFiles(dirToZip, "*.txt",
+                                              SearchOption.AllDirectories);
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("*.txt", dirToZip);
+                zip1.Save(zipFileToCreate);
+            }
+
+            int nEntries = 0;
+            // now, verify that we have not downcased the filenames
+            using (ZipFile zip2 = new ZipFile(zipFileToCreate))
+            {
+                foreach (var entry in zip2.Entries)
+                {
+                    Assert.IsFalse(entry.FileName.Equals(entry.FileName.ToLower()));
+                    nEntries++;
+                }
+            }
+            Assert.IsFalse(nEntries < 2, "not enough entries");
 
         }
+
+
+
+        [TestMethod]
+        public void Selector_AddSelectedFiles_Checkcase_directory()
+        {
+            string zipFileToCreate = "AddSelectedFiles_Checkcase.zip";
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()).ToUpper();
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+
+            var txtFiles = Directory.GetFiles(dirToZip, "*.txt",
+                                              SearchOption.AllDirectories);
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("*.txt", dirToZip);
+                zip1.Save(zipFileToCreate);
+            }
+
+            int nEntries = 0;
+            // now, verify that we have not downcased the filenames
+            using (ZipFile zip2 = new ZipFile(zipFileToCreate))
+            {
+                foreach (var entry in zip2.Entries)
+                {
+                    Assert.IsFalse(entry.FileName.Equals(entry.FileName.ToLower()));
+                    nEntries++;
+                }
+            }
+            Assert.IsFalse(nEntries == 0, "no entries");
+        }
+
+
+        [TestMethod]
+        public void Selector_AddSelectedFiles_Checkcase_directory_2()
+        {
+            string zipFileToCreate = "AddSelectedFiles_Checkcase.zip";
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()).ToUpper();
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+            int n = _rnd.Next(3)+2;
+            Directory.SetCurrentDirectory(dirToZip);
+            for (int i=0; i < n; i++)
+            {
+                string subdir = "Subdir" + i;
+                TestUtilities.GenerateFilesFlat(subdir);
+            }
+            Directory.SetCurrentDirectory(TopLevelDir);
+
+            TestContext.WriteLine("Create zip file");
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddSelectedFiles("name = *\\Subdir?\\*.txt", ".\\"+dirToZip, "files", true);
+                zip1.Save(zipFileToCreate);
+            }
+
+            TestContext.WriteLine("Verify case of entry FileNames");
+            int nEntries = 0;
+            // now, verify that we have not downcased entry.FileName
+            using (ZipFile zip2 = new ZipFile(zipFileToCreate))
+            {
+                foreach (var entry in zip2.Entries)
+                {
+                    TestContext.WriteLine("Check {0}", entry.FileName);
+                    Assert.AreNotEqual<String>(entry.FileName,entry.FileName.ToLower(),
+                                   entry.FileName);
+                    nEntries++;
+                }
+            }
+            Assert.IsFalse(nEntries == 0, "no entries");
+        }
+
 
 
 
