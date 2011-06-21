@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-20 19:21:10>
+// Time-stamp: <2011-June-21 15:44:00>
 //
 // ------------------------------------------------------------------
 //
@@ -692,21 +692,30 @@ namespace Ionic.Zip.Tests
         public void Selector_AddSelectedFiles_Checkcase_directory_2()
         {
             string zipFileToCreate = "AddSelectedFiles_Checkcase.zip";
-            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()).ToUpper();
-            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+            string shortDirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()).ToUpper();
+            string dirToZip = Path.Combine(TopLevelDir, shortDirToZip); // fully qualified
+            var files = TestUtilities.GenerateFilesFlat(shortDirToZip);
+            string keyword = "Ammon";
             int n = _rnd.Next(3)+2;
-            Directory.SetCurrentDirectory(dirToZip);
             for (int i=0; i < n; i++)
             {
-                string subdir = "Subdir" + i;
+                Directory.SetCurrentDirectory(dirToZip);
+                string subdir = keyword + i;
                 TestUtilities.GenerateFilesFlat(subdir);
+                Directory.SetCurrentDirectory(subdir);
+                var f2 = Directory.GetFiles(".", "*.*");
+                int k = 2;
+                Array.ForEach(f2, x => {
+                        File.Move(x, String.Format("{0}.{1:D5}.txt", keyword.ToUpper(), k++)); });
             }
+
             Directory.SetCurrentDirectory(TopLevelDir);
 
             TestContext.WriteLine("Create zip file");
             using (ZipFile zip1 = new ZipFile())
             {
-                zip1.AddSelectedFiles("name = *\\Subdir?\\*.txt", ".\\"+dirToZip, "files", true);
+                var criterion = "name = *\\" + keyword + "?\\*.txt";
+                zip1.AddSelectedFiles(criterion, ".\\" + shortDirToZip, "files", true);
                 zip1.Save(zipFileToCreate);
             }
 
@@ -718,15 +727,57 @@ namespace Ionic.Zip.Tests
                 foreach (var entry in zip2.Entries)
                 {
                     TestContext.WriteLine("Check {0}", entry.FileName);
-                    Assert.AreNotEqual<String>(entry.FileName,entry.FileName.ToLower(),
-                                   entry.FileName);
+                    Assert.AreNotEqual<String>(entry.FileName,
+                                               entry.FileName.ToLower(),
+                                               entry.FileName);
                     nEntries++;
                 }
             }
-            Assert.IsFalse(nEntries == 0, "no entries");
+            Assert.IsFalse(nEntries < 3, "not enough entries");
         }
 
 
+        [TestMethod]
+        public void Selector_CheckRemove_wi10499()
+        {
+            string zipFileToCreate = "CheckRemove.zip";
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+
+            TestContext.WriteLine("Create zip file");
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddDirectory(dirToZip, dirToZip);
+                zip1.Save(zipFileToCreate);
+            }
+
+            int nBefore= 0, nAfter = 0, nRemoved = 0;
+            using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
+            {
+                ICollection<ZipEntry> entries = zip2.SelectEntries("*.txt");
+                Assert.IsFalse(entries.Count < 3, "not enough entries");
+                nBefore = entries.Count;
+
+                foreach(ZipEntry entry in entries)
+                {
+                    TestContext.WriteLine("Removing {0}", entry.FileName);
+                    zip2.RemoveEntry(entry);
+                    nRemoved++;
+                }
+                var remainingEntries = zip2.SelectEntries("*.txt");
+                nAfter = remainingEntries.Count;
+                TestContext.WriteLine("Remaining:");
+                foreach(ZipEntry entry in remainingEntries)
+                {
+                    TestContext.WriteLine("  {0}",
+                                          entry.FileName);
+                }
+            }
+
+            Assert.IsTrue(nBefore>nAfter,"Removal appeared to have no effect.");
+            Assert.IsTrue(nBefore-nRemoved==nAfter,"Wrong number of entries {0}-{1}!={2}",
+                          nBefore, nRemoved, nAfter);
+        }
 
 
         private enum WhichTime

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-20 19:38:09>
+// Time-stamp: <2011-June-21 15:27:02>
 //
 // ------------------------------------------------------------------
 //
@@ -597,13 +597,13 @@ namespace Ionic.Zip
         ///
         /// <param name="directoryPathInArchive">
         ///   Specifies a directory path to use to in place of the
-        ///   <c>directoryOnDisk</c>.  This path may, or may not, correspond to a real
-        ///   directory in the current filesystem.  If the files within the zip are
-        ///   later extracted, this is the path used for the extracted file.  Passing
-        ///   null (nothing in VB) will use the path on the file name, if any; in other
-        ///   words it would use <c>directoryOnDisk</c>, plus any subdirectory.  Passing
-        ///   the empty string ("") will insert the item at the root path within the
-        ///   archive.
+        ///   <c>directoryOnDisk</c>. This path may, or may not, correspond to a
+        ///   real directory in the current filesystem. If the files within the zip
+        ///   are later extracted, this is the path used for the extracted file.
+        ///   Passing null (nothing in VB) will use the path on the file name, if
+        ///   any; in other words it would use <c>directoryOnDisk</c>, plus any
+        ///   subdirectory.  Passing the empty string ("") will insert the item at
+        ///   the root path within the archive.
         /// </param>
         ///
         /// <param name="recurseDirectories">
@@ -623,6 +623,12 @@ namespace Ionic.Zip
                                       true);
         }
 
+
+        private string EnsureendInSlash(string s)
+        {
+            if (s.EndsWith("\\")) return s;
+            return s + "\\";
+        }
 
         private void _AddOrUpdateSelectedFiles(String selectionCriteria,
                                                String directoryOnDisk,
@@ -659,9 +665,9 @@ namespace Ionic.Zip
                 string dirInArchive = (directoryPathInArchive == null)
                     ? null
                     // workitem 12260
-                    : ReplaceEx(Path.GetDirectoryName(item),
-                                directoryOnDisk,
-                                directoryPathInArchive);
+                    : ReplaceLeadingDirectory(Path.GetDirectoryName(item),
+                                              directoryOnDisk+"\\",
+                                              directoryPathInArchive+"\\");
 
                 if (File.Exists(item))
                 {
@@ -681,9 +687,22 @@ namespace Ionic.Zip
         }
 
 
-        //workitem 12260
+        // workitem 12260
+        private static string ReplaceLeadingDirectory(string original,
+                                                      string pattern,
+                                                      string replacement)
+        {
+            string upperString = original.ToUpper();
+            string upperPattern = pattern.ToUpper();
+            int p1 = upperString.IndexOf(upperPattern);
+            if (p1 != 0) return original;
+            return replacement + original.Substring(upperPattern.Length);
+        }
+
+#if NOT
         private static string ReplaceEx(string original,
-                                        string pattern, string replacement)
+                                                      string pattern,
+                                                      string replacement)
         {
             int count, position0, position1;
             count = position0 = position1 = 0;
@@ -706,7 +725,7 @@ namespace Ionic.Zip
                 chars[count++] = original[i];
             return new string(chars, 0, count);
         }
-
+#endif
 
         /// <summary>
         /// Retrieve entries from the zipfile by specified criteria.

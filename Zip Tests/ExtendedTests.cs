@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 16:35:45>
+// Time-stamp: <2011-June-21 14:19:58>
 //
 // ------------------------------------------------------------------
 //
@@ -1838,7 +1838,6 @@ namespace Ionic.Zip.Tests.Extended
         [TestMethod]
         public void CompressTiff_Level9_wi8647()
         {
-            Directory.SetCurrentDirectory(TopLevelDir);
             string testBin = TestUtilities.GetTestBinDir(CurrentDir);
 
             string tifFile = Path.Combine(testBin, "Resources\\wi8647.tif");
