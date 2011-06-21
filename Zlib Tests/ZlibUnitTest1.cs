@@ -134,7 +134,63 @@ namespace Ionic.Zlib.Tests
             }
             dest.Flush();
         }
+
+        private static string GetTestDependentDir(string startingPoint, string subdir)
+        {
+            var location = startingPoint;
+            for (int i = 0; i < 3; i++)
+                location = Path.GetDirectoryName(location);
+
+            location = Path.Combine(location, subdir);
+            return location;
+        }
+
+        private static string GetTestBinDir(string startingPoint)
+        {
+            return GetTestDependentDir(startingPoint, "Zlib Tests\\bin\\Debug");
+        }
+
+        private string GetContentFile(string fileName)
+        {
+            string testBin = GetTestBinDir(CurrentDir);
+            string path = Path.Combine(testBin, String.Format("Resources\\{0}", fileName));
+            Assert.IsTrue(File.Exists(path), "file ({0}) does not exist", path);
+            return path;
+        }
+
         #endregion
+
+
+        [TestMethod]
+        public void zlib_Compat_decompress_wi13446()
+        {
+            var zlibbedFile = GetContentFile("zlibbed.file");
+            var streamCopy = new Action<Stream,Stream,int>( (source,dest,bufferSize) => {
+                    var temp = new byte[bufferSize];
+                    while (true)
+                    {
+                        var read = source.Read(temp, 0, temp.Length);
+                        if (read <= 0) break;
+                        dest.Write(temp, 0, read);
+                    }
+                });
+
+            var unpack = new Action<int> ((bufferSize) => {
+                    using (var output = new MemoryStream())
+                    {
+                        using (var input = File.OpenRead(zlibbedFile))
+                        {
+                            using (var zinput = new ZlibStream(input, CompressionMode.Decompress))
+                            {
+                                streamCopy(zinput, output, bufferSize);
+                            }
+                        }
+                    }
+                });
+
+            unpack(1024);
+            unpack(16384);
+        }
 
 
         [TestMethod]
