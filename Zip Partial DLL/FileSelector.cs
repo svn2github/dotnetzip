@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// last saved: <2011-June-20 17:24:07>
+// last saved: <2011-June-21 16:43:06>
 //
 // ------------------------------------------------------------------
 //
@@ -926,6 +926,9 @@ namespace Ionic
 
                     // J. insert spaces between operators and the following values
                     new string[] { @"(>|<|!=|=)([^ =])", "$1 $2" },
+
+                    // K. replace fwd slash with backslash
+                    new string[] { @"/", "\\" },
                 };
 
 

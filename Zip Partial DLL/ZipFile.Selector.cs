@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-21 15:27:02>
+// Time-stamp: <2011-June-21 17:59:54>
 //
 // ------------------------------------------------------------------
 //
@@ -666,8 +666,8 @@ namespace Ionic.Zip
                     ? null
                     // workitem 12260
                     : ReplaceLeadingDirectory(Path.GetDirectoryName(item),
-                                              directoryOnDisk+"\\",
-                                              directoryPathInArchive+"\\");
+                                              directoryOnDisk,
+                                              directoryPathInArchive);
 
                 if (File.Exists(item))
                 {

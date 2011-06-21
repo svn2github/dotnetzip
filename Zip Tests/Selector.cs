@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-21 15:44:00>
+// Time-stamp: <2011-June-21 17:37:21>
 //
 // ------------------------------------------------------------------
 //
@@ -48,11 +48,11 @@ namespace Ionic.Zip.Tests
         public static void ClassInit(TestContext a)
         {
             CurrentDir = Directory.GetCurrentDirectory();
-            // var txrx= TestUtilities.StartProgressMonitor("selector-setup",
-            //                                           "Selector one-time setup",
-            //                                           "setting up files...");
-            // _InternalSetupFiles(txrx);
-            // txrx.Send("stop");
+            var txrx= TestUtilities.StartProgressMonitor("selector-setup",
+                                                      "Selector one-time setup",
+                                                      "setting up files...");
+            _InternalSetupFiles(txrx);
+            txrx.Send("stop");
         }
 
 
@@ -684,7 +684,7 @@ namespace Ionic.Zip.Tests
                     nEntries++;
                 }
             }
-            Assert.IsFalse(nEntries == 0, "no entries");
+            Assert.IsFalse(nEntries < 3, "not enough entries");
         }
 
 
@@ -734,6 +734,39 @@ namespace Ionic.Zip.Tests
                 }
             }
             Assert.IsFalse(nEntries < 3, "not enough entries");
+        }
+
+
+
+        [TestMethod]
+        public void Selector_SelectEntries_FwdSlash_wi13350()
+        {
+            string zipFileToCreate = "SelectEntries.zip";
+
+            string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+
+            TestContext.WriteLine("Create zip file");
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.AddDirectory(dirToZip, dirToZip);
+                zip1.Save(zipFileToCreate);
+            }
+
+            // Select Entries
+            using (ZipFile zip2 = ZipFile.Read(zipFileToCreate))
+            {
+                var selection1 = zip2.SelectEntries("name = " + dirToZip + "\\" + "*.txt");
+                //var selection1 = zip2.SelectEntries("name = *.txt");
+                Assert.IsTrue(selection1.Count > 2, "{0} is simply not enough entries!",
+                              selection1.Count);
+                var selection2 = zip2.SelectEntries(dirToZip + "/" + "*.txt");
+                Assert.AreEqual<int>(selection1.Count,
+                                     selection2.Count,
+                                     "{0} != {1}",
+                                     selection1.Count,
+                                     selection2.Count);
+            }
         }
 
 
@@ -1773,9 +1806,15 @@ namespace Ionic.Zip.Tests
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "Selector_Twiddle.zip");
             string dirToZip = "dirToZip";
-            Directory.CreateDirectory(dirToZip);
-            string filename = Path.Combine(dirToZip, String.Format("~{0}.txt", _rnd.Next(5)));
-            TestUtilities.CreateAndFillFileText(filename, _rnd.Next(1000) + 500);
+            var keyword = "Gamma";
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+            int k = 0;
+            Directory.SetCurrentDirectory(dirToZip);
+            Array.ForEach(files, x => {
+                    File.Move(Path.GetFileName(x),
+                              String.Format("~{0}.{1:D5}.txt", keyword, k++));
+                });
+            Directory.SetCurrentDirectory(TopLevelDir);
 
             using (ZipFile zip = new ZipFile())
             {
@@ -1784,15 +1823,23 @@ namespace Ionic.Zip.Tests
                 zip.Save(zipFileToCreate);
             }
 
+            int nEntries = 0;
             using (ZipFile zip = ZipFile.Read(zipFileToCreate))
             {
                 foreach (var e in zip)
+                    TestContext.WriteLine("entry {0}", e.FileName);
+
+                TestContext.WriteLine("");
+
+                foreach (var e in zip)
                 {
-                    Assert.IsFalse(e.FileName.Contains("/"), "The filename contains a path, but shouldn't");
+                    TestContext.WriteLine("check {0}", e.FileName);
+                    Assert.IsFalse(e.FileName.Contains("/"),
+                                   "The filename contains a path, but shouldn't");
+                    nEntries++;
                 }
             }
-
-            //BasicVerifyZip(zipFileToCreate);
+            Assert.IsTrue(nEntries>2, "Not enough entries");
         }
 
 
