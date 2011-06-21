@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-19 15:50:55>
+// Time-stamp: <2011-June-21 16:12:35>
 //
 // ------------------------------------------------------------------
 //
@@ -134,6 +134,42 @@ namespace Ionic.Zip.Tests.Basic
             }
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate),
                                  filesToZip.Length);
+        }
+
+        [TestMethod]
+        public void CreateZip_AddFile_CharCase_wi13481()
+        {
+            string zipFileToCreate = "AddFile.zip";
+            string subdir = "files";
+            string[] filesToZip = TestUtilities.GenerateFilesFlat(subdir);
+            Directory.SetCurrentDirectory(subdir);
+            Array.ForEach(filesToZip, x => { File.Move(Path.GetFileName(x),Path.GetFileName(x).ToUpper()); });
+            Directory.SetCurrentDirectory(TopLevelDir);
+            filesToZip= Directory.GetFiles(subdir);
+
+            using (ZipFile zip1 = new ZipFile())
+            {
+                for (int i = 0; i < filesToZip.Length; i++)
+                    zip1.AddFile(filesToZip[i], "files");
+                zip1.Save(zipFileToCreate);
+            }
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate),
+                                 filesToZip.Length);
+
+            int nEntries = 0;
+            // now, verify that we have not downcased the filenames
+            using (ZipFile zip2 = new ZipFile(zipFileToCreate))
+            {
+                foreach (var entry in zip2.Entries)
+                {
+                    var fname1 = Path.GetFileName(entry.FileName);
+                    var fnameLower = fname1.ToLower();
+                    Assert.IsFalse(fname1.Equals(fnameLower),
+                                   "{0} is all lowercase.", fname1);
+                    nEntries++;
+                }
+            }
+            Assert.IsFalse(nEntries < 2, "not enough entries");
         }
 
 
