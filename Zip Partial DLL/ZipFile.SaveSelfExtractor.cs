@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 20:13:49>
+// Time-stamp: <2011-June-21 19:34:30>
 //
 // ------------------------------------------------------------------
 //
@@ -1068,12 +1068,16 @@ namespace Ionic.Zip
             string candidate = null;
             String AppName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
             string parentDir = System.IO.Path.GetTempPath();
-            int index = 0;
+
+            string uuid;
             do
             {
-                index++;
+                // workitem 13475
+                uuid = System.Guid.NewGuid().ToString();
+
                 string Name = String.Format("{0}-{1}-{2}.{3}",
-                        AppName, System.DateTime.Now.ToString("yyyyMMMdd-HHmmss"), index, extension);
+                        AppName, System.DateTime.Now.ToString("yyyyMMMdd-HHmmss"),
+                                            uuid, extension);
                 candidate = System.IO.Path.Combine(parentDir, Name);
             } while (System.IO.File.Exists(candidate) || System.IO.Directory.Exists(candidate));
 
