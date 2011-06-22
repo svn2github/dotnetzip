@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 19:42:44>
+// Time-stamp: <2011-June-21 22:50:14>
 //
 // ------------------------------------------------------------------
 //
@@ -217,7 +217,7 @@ namespace Ionic.Zip.Tests.Error
 
 
         [TestMethod]
-        [ExpectedException(typeof(Ionic.Zip.BadReadException))]
+        [ExpectedException(typeof(ZipException))]
         public void Error_Read_InvalidZip()
         {
             string sourceDir = CurrentDir;
@@ -256,19 +256,19 @@ namespace Ionic.Zip.Tests.Error
         }
 
 
-    private void CreateSmallZip(string zipFileToCreate)
-    {
+        private void CreateSmallZip(string zipFileToCreate)
+        {
             string sourceDir = CurrentDir;
             for (int i = 0; i < 3; i++)
                 sourceDir = Path.GetDirectoryName(sourceDir);
 
             // the list of filenames to add to the zip
             string[] fileNames =
-            {
-                Path.Combine(sourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(sourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
-                Path.Combine(sourceDir, "Tools\\WinFormsApp\\Icon2.res"),
-            };
+                {
+                    Path.Combine(sourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
+                    Path.Combine(sourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
+                    Path.Combine(sourceDir, "Tools\\WinFormsApp\\Icon2.res"),
+                };
 
             using (ZipFile zip = new ZipFile())
             {
@@ -280,7 +280,21 @@ namespace Ionic.Zip.Tests.Error
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate),
                                  fileNames.Length,
                                  "Wrong number of entries.");
-    }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ZipException))]
+        public void MalformedZip()
+        {
+            string filePath = Path.GetTempFileName();
+            File.WriteAllText( filePath , "asdfasdf" );
+            string outputDirectory = Path.GetTempPath();
+            using ( ZipFile zipFile = ZipFile.Read( filePath ) )
+            {
+                zipFile.ExtractAll( outputDirectory  );
+            }
+        }
+
 
 
         [TestMethod]
@@ -771,7 +785,7 @@ namespace Ionic.Zip.Tests.Error
 
 
         [TestMethod]
-        [ExpectedException(typeof(BadReadException))]
+        [ExpectedException(typeof(ZipException))]
         public void IncorrectZipContentTest1_wi10459()
         {
             byte[] content = Encoding.UTF8.GetBytes("wrong zipfile content");
@@ -782,7 +796,7 @@ namespace Ionic.Zip.Tests.Error
         }
 
         [TestMethod]
-        [ExpectedException(typeof(BadReadException))]
+        [ExpectedException(typeof(ZipException))]
         public void IncorrectZipContentTest2_wi10459()
         {
             using (var ms = new MemoryStream())
@@ -792,7 +806,7 @@ namespace Ionic.Zip.Tests.Error
         }
 
         [TestMethod]
-        [ExpectedException(typeof(BadReadException))]
+        [ExpectedException(typeof(ZipException))]
         public void IncorrectZipContentTest3_wi10459()
         {
             byte[] content = new byte[8192];

@@ -653,7 +653,7 @@ namespace Ionic.Zip
                     finally { }
                 }
 
-                throw new BadReadException("Cannot read", ex1);
+                throw new ZipException("Cannot read that as a ZipFile", ex1);
             }
 
             // the instance has been read in
