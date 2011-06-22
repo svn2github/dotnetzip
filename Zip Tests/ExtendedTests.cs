@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-21 14:19:58>
+// Time-stamp: <2011-June-21 22:24:54>
 //
 // ------------------------------------------------------------------
 //
@@ -1939,9 +1939,32 @@ namespace Ionic.Zip.Tests.Extended
 
             Assert.AreEqual<int>(files.Length, TestUtilities.CountEntries(zipFileToCreate),
                                  "The zip file created has the wrong number of entries.");
-
         }
 
+        [TestMethod]
+        public void ContainsEntryTest()
+        {
+            string zipFileToCreate = "ContainsEntry.zip";
+            string dirToZip = "dirToZip";
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+
+            using (var zip = new ZipFile())
+            {
+                zip.AddFiles(files);
+                zip.Save(zipFileToCreate);
+            }
+
+            Assert.AreEqual<int>(files.Length, TestUtilities.CountEntries(zipFileToCreate));
+            using (var zip2 = ZipFile.Read(zipFileToCreate))
+            {
+                for (int i=0; i < 28; i++)
+                {
+                    int n = _rnd.Next(files.Length);
+                    TestContext.WriteLine("Checking {0}", files[n]);
+                    Assert.IsTrue(zip2.ContainsEntry(files[n]), "missing entry");
+                }
+            }
+        }
 
 
         [TestMethod]

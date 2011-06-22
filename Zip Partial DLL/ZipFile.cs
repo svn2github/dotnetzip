@@ -752,7 +752,8 @@ namespace Ionic.Zip
         /// </summary>
         public bool ContainsEntry(string name)
         {
-            return _entries.ContainsKey(name);
+            // workitem 12534
+            return _entries.ContainsKey(SharedUtilities.NormalizePathForUseInZipFile(name));
         }
 
 
