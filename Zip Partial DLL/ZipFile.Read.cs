@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 19:46:59>
+// Time-stamp: <2011-June-22 19:06:34>
 //
 // ------------------------------------------------------------------
 //
@@ -581,18 +581,19 @@ namespace Ionic.Zip
                 long maxSeekback = Math.Max(s.Length - 0x4000, 10);
                 do
                 {
+                    if (posn < 0) posn = 0;  // BOF
                     s.Seek(posn, SeekOrigin.Begin);
                     long bytesRead = SharedUtilities.FindSignature(s, (int)ZipConstants.EndOfCentralDirectorySignature);
                     if (bytesRead != -1)
                         success = true;
                     else
                     {
+                        if (posn==0) break; // started at the BOF and found nothing
                         nTries++;
                         // Weird: with NETCF, negative offsets from SeekOrigin.End DO
                         // NOT WORK. So rather than seek a negative offset, we seek
                         // from SeekOrigin.Begin using a smaller number.
-                        posn -= (32 * (nTries + 1) * nTries); // increasingly larger
-                        if (posn < 0) posn = 0;  // BOF
+                        posn -= (32 * (nTries + 1) * nTries);
                     }
                 }
                 while (!success && posn > maxSeekback);

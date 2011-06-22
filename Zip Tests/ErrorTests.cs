@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-21 22:50:14>
+// Time-stamp: <2011-June-22 00:07:46>
 //
 // ------------------------------------------------------------------
 //
@@ -213,6 +213,24 @@ namespace Ionic.Zip.Tests.Error
             _Internal_ExtractExisting(7);
         }
 
+
+        [TestMethod]
+        public void Error_EmptySplitZip()
+        {
+            string zipFileToCreate = "zftc.zip";
+            using (var zip = new ZipFile())
+            {
+                zip.MaxOutputSegmentSize = 1024*1024;
+                zip.Save(zipFileToCreate);
+            }
+
+            string extractDir = "extract";
+            using (var zip = ZipFile.Read(zipFileToCreate))
+            {
+                zip.ExtractAll(extractDir);
+                Assert.IsTrue(zip.Entries.Count == 0);
+            }
+        }
 
 
 
