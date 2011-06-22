@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 23:09:21>
+// Time-stamp: <2011-June-21 20:36:58>
 //
 // ------------------------------------------------------------------
 //
@@ -969,7 +969,45 @@ namespace Ionic.Zip.Tests.Streams
         }
 
 
-        [TestMethod, Timeout(1800000)]  // timeout is in milliseconds, (1800 * 1000) = 1/2 hour;
+        [TestMethod]
+        public void ZipFile_JitStream_CloserTwice_wi10489()
+        {
+
+            string zipFileToCreate = "CloserTwice.zip";
+            string dirToZip = "fodder";
+            var files = TestUtilities.GenerateFilesFlat(dirToZip, fileCount, 100, 72000);
+
+            OpenDelegate opener = (name) =>
+                {
+                    TestContext.WriteLine("Opening {0}", name);
+                    Stream s = File.OpenRead(Path.Combine(dirToZip,name));
+                    return s;
+                };
+
+            CloseDelegate closer = (e, s) =>
+                {
+                    TestContext.WriteLine("Closing {0}", e);
+                    s.Dispose();
+                };
+
+            TestContext.WriteLine("Creating zipfile {0}", zipFileToCreate);
+            using (var zip = new ZipFile())
+            {
+                foreach (var file in files)
+                {
+                    zip.AddEntry(Path.GetFileName(file),opener,closer);
+                }
+                zip.Save(zipFileToCreate);
+            }
+
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate),
+                                 files.Length);
+
+            BasicVerifyZip(zipFileToCreate);
+        }
+
+
+        [TestMethod, Timeout(30 * 60 * 1000)]  // in ms.  30*60*100 == 30min
         public void ZipFile_PDOS_LeakTest_wi10030()
         {
             // Test memory growth over many many cycles.
