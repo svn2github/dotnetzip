@@ -114,6 +114,9 @@
     <Content Include="Resources\VbsUnZip-DotNetZip.vbs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Resources\CreateZip.pl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\TestStrings.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

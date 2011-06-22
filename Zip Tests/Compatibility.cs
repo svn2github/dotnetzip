@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-19 18:04:47>
+// Time-stamp: <2011-June-22 08:12:51>
 //
 // ------------------------------------------------------------------
 //
@@ -26,6 +26,7 @@
 //  - WinZip,
 //  - 7zip
 //  - Infozip (unzip 6.0, zip 3.0)
+//  - Perl's IO::Compress
 //  - zipfldr.dll (via script)
 //  - the Visual Studio DLL
 //  - MS-Word
@@ -136,6 +137,34 @@ namespace Ionic.Zip.Tests
                 return _windir;
             }
         }
+
+
+
+        private string _perl = null;
+        private string perl
+        {
+            get
+            {
+                if (_perl == null)
+                {
+                    var sysPath = Environment.GetEnvironmentVariable("Path");
+                    var pathElts = sysPath.Split(';');
+                    foreach (var elt in pathElts)
+                    {
+                        var putative = Path.Combine(elt, "perl.exe");
+                        if (File.Exists(putative))
+                        {
+                            _perl = putative;
+                            break;
+                        }
+                    }
+                    Assert.IsTrue(File.Exists(_perl), "Cannot find perl.exe");
+                }
+                return _perl;
+            }
+        }
+
+
 
         private string _cscriptExe = null;
         private string cscriptExe
@@ -984,7 +1013,7 @@ namespace Ionic.Zip.Tests
         public void InfoZip_Unzip()
         {
             if (!InfoZipIsPresent)
-                throw new Exception("skipping test [InfoZip_Unzip] : InfoZip is not present");
+                throw new Exception("[InfoZip_Unzip] : InfoZip is not present");
 
             string shortDir = "filesToZip";
             string subdir = Path.Combine(TopLevelDir, shortDir);
@@ -1060,7 +1089,7 @@ namespace Ionic.Zip.Tests
         public void InfoZip_Zip()
         {
             if (!InfoZipIsPresent)
-                throw new Exception("skipping test [InfoZip_Zip] : InfoZip is not present");
+                throw new Exception("InfoZip is not present");
 
             // create and fill the directories
             string shortDir = "filesToZip";
@@ -1128,7 +1157,7 @@ namespace Ionic.Zip.Tests
         public void InfoZip_Zip_Password()
         {
             if (!InfoZipIsPresent)
-                throw new Exception("skipping test [InfoZip_Zip_Password] : InfoZip is not present");
+                throw new Exception("[InfoZip_Zip_Password] : InfoZip is not present");
 
             // create and fill the directories
             string extractDir = "extractDir";
@@ -1173,10 +1202,264 @@ namespace Ionic.Zip.Tests
 
 
         [TestMethod]
+        public void InfoZip_Zip_Split()
+        {
+            if (!InfoZipIsPresent)
+                throw new Exception("InfoZip is not present");
+
+            string dirToZip = "dirToZip";
+            int numFiles = _rnd.Next(17) + 12;
+            string[] filesToZip;
+            string msg;
+            Dictionary<string, byte[]> checksums;
+            int[] segmentSizes = { 256, 512, 1024, 4096, 8192 }; // in kb
+
+            _txrx = TestUtilities.StartProgressMonitor("InfoZip-compat",
+                                                       "InfoZip split archives",
+                                                       "Creating "+numFiles+" files");
+            _txrx.Send("pb 0 max 2");
+            _txrx.Send("pb 1 max " + numFiles);
+
+            var update = new Action<int,int,Int64>( (x,y,z) => {
+                    switch (x)
+                    {
+                        case 0:
+                        break;
+                        case 1:
+                        break;
+                        case 2:
+                        _txrx.Send("pb 1 step");
+                        msg = String.Format("status created {0}/{1} files",
+                                            y+1,
+                                            ((int)z));
+                        _txrx.Send(msg);
+                        break;
+                    }
+                });
+
+            CreateLargeFilesWithChecksums(dirToZip, numFiles, update,
+                                          out filesToZip, out checksums);
+
+            _txrx.Send("pb 0 step");
+            _txrx.Send("pb 1 max " + segmentSizes.Length);
+            _txrx.Send("pb 1 value 0");
+            for (int i=0; i < segmentSizes.Length; i++)
+            {
+                _txrx.Send("status zip with " + segmentSizes[i] + "k segments");
+                string trialDir = segmentSizes[i] + "k";
+                Directory.CreateDirectory(trialDir);
+                string zipFileToCreate = Path.Combine(trialDir, trialDir + ".zip");
+                // Create the zip archive via Infozip.exe
+                this.Exec(infoZip, String.Format("{0} -r -s {1}k -sv {2}",
+                                                 zipFileToCreate,
+                                                 segmentSizes[i],
+                                                 dirToZip));
+
+                string extractDir = segmentSizes[i] + "k.extract";
+                using (var zip = ZipFile.Read(zipFileToCreate))
+                {
+                    zip.ExtractAll(extractDir);
+                }
+
+                VerifyChecksums(Path.Combine(extractDir, dirToZip), filesToZip, checksums);
+
+                _txrx.Send("pb 1 step");
+            }
+        }
+
+
+
+
+#if NOT
+        // warning [256k/256k.zip]: zipfile claims to be last disk of a
+        // multi-part archive; attempting to process anyway, assuming
+        // all parts have been concatenated together in order.  Expect
+        // "errors" and warnings...true multi-part support doesn't exist
+        // yet (coming soon).
+
+        [TestMethod]
+        public void InfoZip_Unzip_Split()
+        {
+            if (!InfoZipIsPresent)
+                throw new Exception("InfoZip is not present");
+
+            string dirToZip = "dirToZip";
+            int numFiles = _rnd.Next(17) + 12;
+            string[] filesToZip;
+            string msg;
+            Dictionary<string, byte[]> checksums;
+            int[] segmentSizes = { 256, 512, 1024, 4096, 8192 }; // in kb
+
+            _txrx = TestUtilities.StartProgressMonitor("InfoZip-compat",
+                                                       "InfoZip split archives",
+                                                       "Creating "+numFiles+" files");
+            _txrx.Send("pb 0 max 2");
+            _txrx.Send("pb 1 max " + numFiles);
+
+            var update = new Action<int,int,Int64>( (x,y,z) => {
+                    switch (x)
+                    {
+                        case 0:
+                        break;
+                        case 1:
+                        break;
+                        case 2:
+                        _txrx.Send("pb 1 step");
+                        msg = String.Format("status created {0}/{1} files",
+                                            y+1,
+                                            ((int)z));
+                        _txrx.Send(msg);
+                        break;
+                    }
+                });
+
+            CreateLargeFilesWithChecksums(dirToZip, numFiles, update,
+                                          out filesToZip, out checksums);
+
+            _txrx.Send("pb 0 step");
+            _txrx.Send("pb 1 max " + segmentSizes.Length);
+            _txrx.Send("pb 1 value 0");
+            for (int i=0; i < segmentSizes.Length; i++)
+            {
+                //Directory.SetCurrentDirectory(TopLevelDir);
+                _txrx.Send("status zip with " + segmentSizes[i] + "k segments");
+                string trialDir = segmentSizes[i] + "k";
+                Directory.CreateDirectory(trialDir);
+                string zipFileToCreate = Path.Combine(trialDir, trialDir + ".zip");
+                // Create the zip archive via DotNetZip
+                using (var zip = new ZipFile())
+                {
+                    zip.AddFiles(filesToZip);
+                    zip.MaxOutputSegmentSize = segmentSizes[i]*1024;
+                    zip.Save(zipFileToCreate);
+                }
+
+                // extract using InfoZip
+                string extractDir = segmentSizes[i] + "k.extract";
+                //Directory.SetCurrentDirectory(TopLevelDir);
+                this.Exec(infoZipUnzip,
+                          String.Format("{0} -d {1}",
+                                        zipFileToCreate,
+                                        extractDir));
+
+                VerifyChecksums(Path.Combine(extractDir, dirToZip), filesToZip, checksums);
+
+                _txrx.Send("pb 1 step");
+            }
+        }
+#endif
+
+
+        [TestMethod]
+        public void InfoZip_Unzip_z64_wi11936()
+        {
+            if (!InfoZipIsPresent)
+                throw new Exception("InfoZip is not present");
+
+            string dirToZip = "dirToZip";
+            int numFiles = _rnd.Next(17) + 12;
+            string[] filesToZip;
+            string msg;
+            Dictionary<string, byte[]> checksums;
+
+            _txrx = TestUtilities.StartProgressMonitor("InfoZip-compat",
+                                                       "InfoZip split archives",
+                                                       "Creating "+numFiles+" files");
+            _txrx.Send("pb 0 max 3");
+            _txrx.Send("pb 1 max " + numFiles);
+
+            var update = new Action<int,int,Int64>( (x,y,z) => {
+                    switch (x)
+                    {
+                        case 0:
+                        break;
+                        case 1:
+                        break;
+                        case 2:
+                        _txrx.Send("pb 1 step");
+                        msg = String.Format("status created {0}/{1} files",
+                                            y+1,
+                                            ((int)z));
+                        _txrx.Send(msg);
+                        break;
+                    }
+                });
+
+            CreateLargeFilesWithChecksums(dirToZip, numFiles, update,
+                                          out filesToZip, out checksums);
+
+            _txrx.Send("pb 0 step");
+            _txrx.Send("pb 1 max 3");
+            _txrx.Send("pb 1 value 0");
+
+            string zipFileToCreate = "infozip-z64-unzip.zip";
+            // Create the zip archive via DotNetZip
+            using (var zip = new ZipFile())
+            {
+                zip.AddFiles(filesToZip);
+                zip.UseZip64WhenSaving = Zip64Option.Always;
+                zip.Save(zipFileToCreate);
+            }
+            _txrx.Send("pb 1 step");
+
+            // extract using InfoZip
+            string extractDir = "extract";
+            this.Exec(infoZipUnzip,
+                      String.Format("{0} -d {1}",
+                                    zipFileToCreate,
+                                    extractDir));
+            _txrx.Send("pb 1 step");
+
+            VerifyChecksums(Path.Combine(extractDir, dirToZip), filesToZip, checksums);
+            _txrx.Send("pb 1 step");
+        }
+
+
+
+
+        [TestMethod]
+        public void Perl_Zip()
+        {
+            if (perl == null)
+                throw new Exception("[Perl_Zip] : Perl is not present");
+
+            string zipFileToCreate = "newzip.zip";
+            string shortDir = "filesToZip";
+            string dirToZip = Path.Combine(TopLevelDir, shortDir);
+            string[] filesToZip;
+            Dictionary<string, byte[]> checksums;
+            CreateFilesAndChecksums(dirToZip, out filesToZip, out checksums);
+
+            // create a zip with perl:
+            TestContext.WriteLine("Creating a zip with perl...");
+            string createZipPl = GetScript("CreateZip.pl");
+            this.Exec(perl,
+                      String.Format("\"{0}\" {1} \"{2}\"",
+                                    createZipPl,
+                                    zipFileToCreate,
+                                    shortDir));
+
+            TestContext.WriteLine("");
+            TestContext.WriteLine("Extracting that zip with DotNetZip...");
+            string extractDir = "extract";
+            using (var zip = ZipFile.Read(zipFileToCreate))
+            {
+                zip.ExtractAll(extractDir);
+            }
+
+            TestContext.WriteLine("");
+            TestContext.WriteLine("Verifying checksums...");
+            VerifyChecksums(Path.Combine(extractDir, dirToZip), filesToZip, checksums);
+        }
+
+
+
+
+        [TestMethod]
         public void SevenZip_Zip_1()
         {
             if (!SevenZipIsPresent)
-                throw new Exception("skipping test [7z_Zip_1] : SevenZip is not present");
+                throw new Exception("[7z_Zip_1] : SevenZip is not present");
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "7z_Zip_1.zip");
             // create and fill the directories
@@ -1211,7 +1494,7 @@ namespace Ionic.Zip.Tests
         public void SevenZip_Zip_2()
         {
             if (!SevenZipIsPresent)
-                throw new Exception("skipping test [7z_Zip_2] : SevenZip is not present");
+                throw new Exception("[7z_Zip_2] : SevenZip is not present");
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "7z_Zip_2.zip");
 
@@ -1251,7 +1534,7 @@ namespace Ionic.Zip.Tests
         public void SevenZip_Unzip()
         {
             if (!SevenZipIsPresent)
-                throw new Exception("skipping test [7z_Unzip] : SevenZip is not present");
+                throw new Exception("[7z_Unzip] : SevenZip is not present");
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "7z_Unzip.zip");
 
@@ -1291,7 +1574,7 @@ namespace Ionic.Zip.Tests
         public void SevenZip_Unzip_Password()
         {
             if (!SevenZipIsPresent)
-                throw new Exception("skipping test [7z_Unzip_Password] : SevenZip is not present");
+                throw new Exception("[7z_Unzip_Password] : SevenZip is not present");
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "7z_Unzip_Password.zip");
             string password = Path.GetRandomFileName();
@@ -1332,7 +1615,7 @@ namespace Ionic.Zip.Tests
         public void SevenZip_Unzip_Password_NonSeekableOutput()
         {
             if (!SevenZipIsPresent)
-                throw new Exception("skipping test [7z_Unzip_Password_NonSeekableOutput] : SevenZip is not present");
+                throw new Exception("[7z_Unzip_Password_NonSeekableOutput] : SevenZip is not present");
 
             string subdir = Path.Combine(TopLevelDir, "files");
 
@@ -1421,7 +1704,7 @@ namespace Ionic.Zip.Tests
         public void SevenZip_Unzip_SFX()
         {
             if (!SevenZipIsPresent)
-                throw new Exception("skipping test [7z_Unzip_SFX] : SevenZip is not present");
+                throw new Exception("[7z_Unzip_SFX] : SevenZip is not present");
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "7z_Unzip_SFX.exe");
 
@@ -1471,7 +1754,7 @@ namespace Ionic.Zip.Tests
         public void Winzip_Zip_Password()
         {
             if (!WinZipIsPresent)
-                throw new Exception("skipping test [Winzip_Zip_Password] : winzip is not present");
+                throw new Exception("[Winzip_Zip_Password] : winzip is not present");
 
 
             string password = Path.GetRandomFileName().Replace(".", "@");
@@ -1511,7 +1794,7 @@ namespace Ionic.Zip.Tests
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Winzip_Zip_EZ()
         {
-            if (!WinZipIsPresent) throw new Exception("skipping test - no winzip");
+            if (!WinZipIsPresent) throw new Exception("no winzip");
             // Unsupported compression method
             Winzip_Zip_Variable("-ez");
         }
@@ -1520,7 +1803,7 @@ namespace Ionic.Zip.Tests
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Winzip_Zip_PPMd()
         {
-            if (!WinZipIsPresent) throw new Exception("skipping test - no winzip");
+            if (!WinZipIsPresent) throw new Exception("no winzip");
             // Unsupported compression method
             Winzip_Zip_Variable("-ep");
         }
@@ -1529,7 +1812,7 @@ namespace Ionic.Zip.Tests
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Winzip_Zip_Bzip2()
         {
-            if (!WinZipIsPresent) throw new Exception("skipping test - no winzip");
+            if (!WinZipIsPresent) throw new Exception("no winzip");
             // Unsupported compression method
             Winzip_Zip_Variable("-eb");
         }
@@ -1538,7 +1821,7 @@ namespace Ionic.Zip.Tests
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Winzip_Zip_Enhanced()
         {
-            if (!WinZipIsPresent) throw new Exception("skipping test - no winzip");
+            if (!WinZipIsPresent) throw new Exception("no winzip");
             // Unsupported compression method
             Winzip_Zip_Variable("-ee");
         }
@@ -1548,7 +1831,7 @@ namespace Ionic.Zip.Tests
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Winzip_Zip_LZMA()
         {
-            if (!WinZipIsPresent) throw new Exception("skipping test - no winzip");
+            if (!WinZipIsPresent) throw new Exception("no winzip");
             // Unsupported compression method
             Winzip_Zip_Variable("-el");
         }
@@ -1562,7 +1845,7 @@ namespace Ionic.Zip.Tests
         public string Winzip_Zip_Variable(string options, bool wantVerify)
         {
             if (!WinZipIsPresent)
-                throw new Exception(String.Format("skipping test [options({0})] : winzip is not present", options));
+                throw new Exception(String.Format("[options({0})] : winzip is not present", options));
 
             // options:
             // -sPassword
@@ -1619,7 +1902,7 @@ namespace Ionic.Zip.Tests
         public void Winzip_Unzip_2()
         {
             if (!WinZipIsPresent)
-                throw new Exception("skipping test [Winzip_Unzip_2] : winzip is not present");
+                throw new Exception("[Winzip_Unzip_2] : winzip is not present");
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "Winzip_Unzip_2.zip");
 
@@ -1662,7 +1945,7 @@ namespace Ionic.Zip.Tests
         public void Winzip_Unzip_ZeroLengthFile()
         {
             if (!WinZipIsPresent)
-                throw new Exception("skipping test [Winzip_Unzip_ZeroLengthFile] : winzip is not present");
+                throw new Exception("[Winzip_Unzip_ZeroLengthFile] : winzip is not present");
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "Winzip_Unzip_ZeroLengthFile.zip");
 
@@ -1697,7 +1980,7 @@ namespace Ionic.Zip.Tests
         public void Winzip_Unzip_Password()
         {
             if (!WinZipIsPresent)
-                throw new Exception("skipping test [Winzip_Unzip_Password] : winzip is not present");
+                throw new Exception("[Winzip_Unzip_Password] : winzip is not present");
 
             //Directory.SetCurrentDirectory(TopLevelDir);
             string zipFileToCreate = Path.Combine(TopLevelDir, "Winzip_Unzip_Password.zip");
@@ -1743,7 +2026,7 @@ namespace Ionic.Zip.Tests
         public void Winzip_Unzip_Password_NonSeekableOutput()
         {
             if (!WinZipIsPresent)
-                throw new Exception("skipping test [Winzip_Unzip_Password_NonSeekableOutput] : winzip is not present");
+                throw new Exception("[Winzip_Unzip_Password_NonSeekableOutput] : winzip is not present");
 
 
             // create a bunch of files
@@ -1816,7 +2099,7 @@ namespace Ionic.Zip.Tests
         public void Winzip_Unzip_SFX()
         {
             if (!WinZipIsPresent)
-                throw new Exception("skipping test [Winzip_Unzip_SFX] : winzip is not present");
+                throw new Exception("[Winzip_Unzip_SFX] : winzip is not present");
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "Winzip_Unzip_SFX.exe");
 
@@ -1863,7 +2146,7 @@ namespace Ionic.Zip.Tests
         public void Winzip_Unzip_Basic()
         {
             if (!WinZipIsPresent)
-                throw new Exception("skipping test [Winzip_Unzip_Basic] : winzip is not present");
+                throw new Exception("[Winzip_Unzip_Basic] : winzip is not present");
 
             string zipFileToCreate = Path.Combine(TopLevelDir, "Winzip_Unzip.zip");
 

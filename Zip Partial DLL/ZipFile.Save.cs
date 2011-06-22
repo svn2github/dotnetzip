@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 15:05:33>
+// Time-stamp: <2011-June-22 00:25:59>
 //
 // ------------------------------------------------------------------
 //
@@ -825,7 +825,7 @@ namespace Ionic.Zip
             // offset 72
             // total number of disks
             // (this will change later)
-            Array.Copy(BitConverter.GetBytes(numSegments-1), 0, bytes, i, 4);
+            Array.Copy(BitConverter.GetBytes(numSegments), 0, bytes, i, 4);
             i+=4;
 
             return bytes;
