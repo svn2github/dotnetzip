@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 01:27:16>
+// Time-stamp: <2011-June-21 20:53:55>
 //
 // ------------------------------------------------------------------
 //
@@ -2132,6 +2132,40 @@ namespace Ionic.Zip.Tests.Update
 
         }
 
+
+        [TestMethod]
+        public void Update_FromRoot_wi11988()
+        {
+            string zipFileToCreate = "FromRoot.zip";
+            string dirToZip = "Fodder";
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+            string windir = System.Environment.GetEnvironmentVariable("Windir");
+            string substExe = Path.Combine(Path.Combine(windir, "system32"), "subst.exe");
+            Assert.IsTrue(File.Exists(substExe), "subst.exe does not exist ({0})",
+                          substExe);
+
+            try
+            {
+                // create a subst drive
+                this.Exec(substExe, "G: " + dirToZip);
+
+                using (var zip = new ZipFile())
+                {
+                    zip.UpdateSelectedFiles("*.*", "G:\\", "", true);
+                    zip.Save(zipFileToCreate);
+                }
+
+                Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate),
+                                     files.Length);
+                Assert.IsTrue(files.Length > 3);
+                BasicVerifyZip(zipFileToCreate);
+            }
+            finally
+            {
+                // remove the virt drive
+                this.Exec(substExe, "/D G:");
+            }
+        }
 
     }
 }
