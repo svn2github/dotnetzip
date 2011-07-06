@@ -1,14 +1,14 @@
 // Form.State.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa
+// Copyright (c) 2009-2011 Dino Chiesa
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.txt for the license details.
 // More info on: http://dotnetzip.codeplex.com
 //
@@ -25,7 +25,7 @@ namespace Ionic.Zip.Forms
 {
     public partial class ZipForm
     {
-        /// This app uses the windows registry to store config data for itself. 
+        /// This app uses the windows registry to store config data for itself.
         ///     - creates a key for this DotNetZip Winforms app, if one does not exist
         ///     - stores and retrieves the most recent settings.
         ///     - this is done on a per user basis. (HKEY_CURRENT_USER)
@@ -62,9 +62,11 @@ namespace Ionic.Zip.Forms
 
                     s = (string)AppCuKey.GetValue(_rvn_Encoding);
                     if (s != null)
-                    {
                         SelectNamedEncoding(s);
-                    }
+
+                    s = (string)AppCuKey.GetValue(_rvn_EncodingUsage);
+                    if (s != null)
+                        SelectNamedEncodingUsage(s);
 
                     s = (string)AppCuKey.GetValue(_rvn_Compression);
                     if (s != null)
@@ -107,11 +109,11 @@ namespace Ionic.Zip.Forms
 
                     x = (Int32)AppCuKey.GetValue(_rvn_RecurseDirs, 1);
                     this.chkRecurse.Checked = (x != 0);
-                    
+
                     x = (Int32)AppCuKey.GetValue(_rvn_RemoveFiles, 1);
                     this.chkRemoveFiles.Checked = (x != 0);
 
-                
+
                     // get the MRU list of selection expressions
                     _selectionCompletions = new System.Windows.Forms.AutoCompleteStringCollection();
                     string history = (string)AppCuKey.GetValue(_rvn_SelectionCompletions, "");
@@ -166,6 +168,7 @@ namespace Ionic.Zip.Forms
                 AppCuKey.SetValue(_rvn_ZipTarget, this.tbZipToCreate.Text);
                 AppCuKey.SetValue(_rvn_ZipToOpen, this.tbZipToOpen.Text);
                 AppCuKey.SetValue(_rvn_Encoding, this.comboEncoding.SelectedItem.ToString());
+                AppCuKey.SetValue(_rvn_EncodingUsage, this.comboEncodingUsage.SelectedItem.ToString());
                 AppCuKey.SetValue(_rvn_Compression, this.comboCompression.SelectedItem.ToString());
                 if (this.tbPassword.Text == "")
                 {
@@ -204,7 +207,7 @@ namespace Ionic.Zip.Forms
                 string history = String.Join("¡", converted.ToArray());
                 AppCuKey.SetValue(_rvn_SelectionCompletions, history);
 
-            
+
                 // store the size of the form
                 int w = 0, h = 0, left = 0, top = 0;
                 if (this.Bounds.Width < this.MinimumSize.Width || this.Bounds.Height < this.MinimumSize.Height)
@@ -238,7 +241,7 @@ namespace Ionic.Zip.Forms
             System.Drawing.Rectangle workingArea = screen.WorkingArea;
             int width = Math.Min(bounds.Width, workingArea.Width);
             int height = Math.Min(bounds.Height, workingArea.Height);
-            // mmm....minimax            
+            // mmm....minimax
             int left = Math.Min(workingArea.Right - width, Math.Max(bounds.Left, workingArea.Left));
             int top = Math.Min(workingArea.Bottom - height, Math.Max(bounds.Top, workingArea.Top));
             return new System.Drawing.Rectangle(left, top, width, height);
@@ -281,6 +284,7 @@ namespace Ionic.Zip.Forms
         private static string _rvn_ZipTarget = "ZipTarget";
         private static string _rvn_ZipToOpen = "ZipToOpen";
         private static string _rvn_Encoding = "Encoding";
+        private static string _rvn_EncodingUsage = "EncodingUsage";
         private static string _rvn_Compression = "Compression";
         private static string _rvn_Encryption = "Encryption";
         private static string _rvn_ZipFlavor = "ZipFlavor";

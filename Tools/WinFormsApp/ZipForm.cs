@@ -1,7 +1,7 @@
 // ZipForm.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa
+// Copyright (c) 2009-2011 Dino Chiesa
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -151,7 +151,7 @@ namespace Ionic.Zip.Forms
             this.comboSplit.SelectedIndex = 0;
 
             this.comboSplit.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.comboSplit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDown;
+            //this.comboSplit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
         }
 
         private void InitEncryptionList()
@@ -210,7 +210,20 @@ namespace Ionic.Zip.Forms
 
             // select the first item:
             comboEncoding.SelectedIndex = 0;
+
+            // also set the encoding usage
+            List<String> _UsageNames = new List<string>(Enum.GetNames(typeof(Ionic.Zip.ZipOption)));
+            _UsageNames.Sort();
+            foreach (var name in _UsageNames)
+            {
+                if (!name.StartsWith("Default"))
+                    comboEncodingUsage.Items.Add(name);
+            }
+
+            // select the first item:
+            comboEncodingUsage.SelectedIndex = 0;
         }
+
 
         private void InitCompressionLevelList()
         {
@@ -243,7 +256,8 @@ namespace Ionic.Zip.Forms
             _Names.Sort();
             foreach (var name in _Names)
             {
-                comboZip64.Items.Add(name);
+                if (!name.StartsWith("Default"))
+                    comboZip64.Items.Add(name);
             }
 
             // select the first item:
@@ -301,6 +315,7 @@ namespace Ionic.Zip.Forms
                     Selection = this.tbSelectionToZip.Text,
                     TraverseJunctions = this.chkTraverseJunctions.Checked,
                     Encoding = "ibm437",
+                    //EncodingUsage = ZipOption.Always,
                     ZipFlavor = this.comboFlavor.SelectedIndex,
                     Password = this.tbPassword.Text,
                     WindowsTimes = this.chkWindowsTime.Checked,
@@ -312,12 +327,14 @@ namespace Ionic.Zip.Forms
             if (this.comboEncoding.SelectedIndex != 0)
                 options.Encoding = this.comboEncoding.SelectedItem.ToString();
 
-            options.Encryption = (EncryptionAlgorithm)Enum.Parse(typeof(EncryptionAlgorithm),
+            options.Encryption = (EncryptionAlgorithm) Enum.Parse(typeof(EncryptionAlgorithm),
                                                                  this.comboEncryption.SelectedItem.ToString());
 
-            options.CompressionLevel = (Ionic.Zlib.CompressionLevel)Enum.Parse(typeof(Ionic.Zlib.CompressionLevel),
+            options.CompressionLevel = (Ionic.Zlib.CompressionLevel) Enum.Parse(typeof(Ionic.Zlib.CompressionLevel),
                                                                                this.comboCompression.SelectedItem.ToString());
 
+            options.EncodingUsage = (Ionic.Zip.ZipOption) Enum.Parse(typeof(Ionic.Zip.ZipOption),
+                                                                     this.comboEncodingUsage.SelectedItem.ToString());
 
             string arg = this.comboSplit.SelectedItem.ToString().ToUpper();
 
@@ -380,7 +397,6 @@ namespace Ionic.Zip.Forms
                         };
                 }
                 );
-
 
             options.Comment = String.Format("Encoding:{0} || Compression:{1} || Encrypt:{2} || ZIP64:{3}\r\nCreated at {4} || {5}\r\n",
                                             options.Encoding,
@@ -572,7 +588,8 @@ namespace Ionic.Zip.Forms
             {
                 using (var zip1 = new ZipFile())
                 {
-                    zip1.ProvisionalAlternateEncoding = System.Text.Encoding.GetEncoding(options.Encoding);
+                    zip1.AlternateEncoding = System.Text.Encoding.GetEncoding(options.Encoding);
+                    zip1.AlternateEncodingUsage = options.EncodingUsage;
                     zip1.Comment = options.Comment;
                     zip1.MaxOutputSegmentSize = options.MaxSegmentSize;
                     zip1.Password = (options.Password != "") ? options.Password : null;
@@ -908,6 +925,11 @@ namespace Ionic.Zip.Forms
             }
         }
 
+        private void comboEncoding_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            this.comboEncodingUsage.Enabled = (this.comboEncoding.SelectedIndex != 0);
+        }
+
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             this.tbPassword.PasswordChar = (this.chkHidePassword.Checked) ? '*' : '\0';
@@ -939,7 +961,12 @@ namespace Ionic.Zip.Forms
 
         private void SelectNamedEncoding(string s)
         {
-            _SelectComboBoxItem(this.comboCompression, s);
+            _SelectComboBoxItem(this.comboEncoding, s);
+        }
+
+        private void SelectNamedEncodingUsage(string s)
+        {
+            _SelectComboBoxItem(this.comboEncodingUsage, s);
         }
 
         private void SelectNamedCompressionLevel(string s)
@@ -1992,6 +2019,7 @@ namespace Ionic.Zip.Forms
         public bool TraverseJunctions;
         public bool RemoveFilesAfterExe;
         public string Encoding;
+        public Ionic.Zip.ZipOption EncodingUsage;
         public string Comment;
         public string Password;
         public string ExeOnUnpack;

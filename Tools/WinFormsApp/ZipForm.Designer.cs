@@ -72,6 +72,8 @@
             this.tbZipToOpen = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label21 = new System.Windows.Forms.Label();
+            this.comboEncodingUsage = new System.Windows.Forms.ComboBox();
             this.label18 = new System.Windows.Forms.Label();
             this.chkRemoveFiles = new System.Windows.Forms.CheckBox();
             this.label17 = new System.Windows.Forms.Label();
@@ -96,15 +98,15 @@
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.btnClearItemsToZip = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.listView2 = new ListViewEx.ListViewEx();
+            this.chCheckbox = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.listView2 = new ListViewEx.ListViewEx();
-            this.chCheckbox = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -116,8 +118,8 @@
             // 
             // tbDirectoryToZip
             // 
-            this.tbDirectoryToZip.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbDirectoryToZip.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tbDirectoryToZip.Location = new System.Drawing.Point(104, 13);
             this.tbDirectoryToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbDirectoryToZip.Name = "tbDirectoryToZip";
@@ -128,8 +130,8 @@
             // tbZipToCreate
             // 
             this.tbZipToCreate.AcceptsReturn = true;
-            this.tbZipToCreate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbZipToCreate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tbZipToCreate.Location = new System.Drawing.Point(104, 11);
             this.tbZipToCreate.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbZipToCreate.Name = "tbZipToCreate";
@@ -152,7 +154,7 @@
             // btnZipUp
             // 
             this.btnZipUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnZipUp.Location = new System.Drawing.Point(512, 458);
+            this.btnZipUp.Location = new System.Drawing.Point(512, 460);
             this.btnZipUp.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnZipUp.Name = "btnZipUp";
             this.btnZipUp.Size = new System.Drawing.Size(66, 26);
@@ -178,8 +180,8 @@
             // 
             // progressBar1
             // 
-            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.progressBar1.Location = new System.Drawing.Point(6, 490);
             this.progressBar1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.progressBar1.Name = "progressBar1";
@@ -188,8 +190,8 @@
             // 
             // progressBar2
             // 
-            this.progressBar2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.progressBar2.Location = new System.Drawing.Point(6, 503);
             this.progressBar2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.progressBar2.Name = "progressBar2";
@@ -239,7 +241,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(6, 114);
+            this.label5.Location = new System.Drawing.Point(6, 137);
             this.label5.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(53, 13);
@@ -288,6 +290,7 @@
             // 
             // comboEncoding
             // 
+            this.comboEncoding.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboEncoding.FormattingEnabled = true;
             this.comboEncoding.Location = new System.Drawing.Point(104, 85);
             this.comboEncoding.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
@@ -295,23 +298,24 @@
             this.comboEncoding.Size = new System.Drawing.Size(128, 21);
             this.comboEncoding.TabIndex = 60;
             this.toolTip1.SetToolTip(this.comboEncoding, "use this encoding when saving the file");
+            this.comboEncoding.SelectedIndexChanged += new System.EventHandler(this.comboEncoding_SelectedIndexChanged);
             // 
             // tbComment
             // 
-            this.tbComment.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbComment.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tbComment.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbComment.ForeColor = System.Drawing.SystemColors.InactiveCaption;
-            this.tbComment.Location = new System.Drawing.Point(104, 110);
+            this.tbComment.Location = new System.Drawing.Point(104, 133);
             this.tbComment.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbComment.Name = "tbComment";
             this.tbComment.Size = new System.Drawing.Size(432, 20);
             this.tbComment.TabIndex = 100;
             this.tbComment.Text = "-zip file comment here-";
             this.toolTip1.SetToolTip(this.tbComment, "a comment to embed in the zip file");
-            this.tbComment.Leave += new System.EventHandler(this.tbComment_Leave);
             this.tbComment.Enter += new System.EventHandler(this.tbComment_Enter);
+            this.tbComment.Leave += new System.EventHandler(this.tbComment_Leave);
             // 
             // lblStatus
             // 
@@ -325,6 +329,7 @@
             // 
             // comboCompression
             // 
+            this.comboCompression.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboCompression.FormattingEnabled = true;
             this.comboCompression.Location = new System.Drawing.Point(104, 60);
             this.comboCompression.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
@@ -335,6 +340,7 @@
             // 
             // comboEncryption
             // 
+            this.comboEncryption.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboEncryption.FormattingEnabled = true;
             this.comboEncryption.Location = new System.Drawing.Point(310, 60);
             this.comboEncryption.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
@@ -373,9 +379,9 @@
             // listView1
             // 
             this.listView1.AllowDrop = true;
-            this.listView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.listView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.listView1.GridLines = true;
             this.listView1.Location = new System.Drawing.Point(6, 137);
             this.listView1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
@@ -384,8 +390,8 @@
             this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
-            this.listView1.DragDrop += new System.Windows.Forms.DragEventHandler(this.listView1_DragDrop);
             this.listView1.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listView1_ColumnClick);
+            this.listView1.DragDrop += new System.Windows.Forms.DragEventHandler(this.listView1_DragDrop);
             this.listView1.DragEnter += new System.Windows.Forms.DragEventHandler(this.listView_DragEnter);
             // 
             // btnOpenZip
@@ -414,8 +420,8 @@
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(592, 548);
             this.tabControl1.TabIndex = 96;
-            this.tabControl1.Selecting += new System.Windows.Forms.TabControlCancelEventHandler(this.tabControl1_Selecting);
             this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
+            this.tabControl1.Selecting += new System.Windows.Forms.TabControlCancelEventHandler(this.tabControl1_Selecting);
             // 
             // tabPage1
             // 
@@ -475,8 +481,8 @@
             // 
             // tbSelectionToExtract
             // 
-            this.tbSelectionToExtract.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbSelectionToExtract.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tbSelectionToExtract.Location = new System.Drawing.Point(60, 83);
             this.tbSelectionToExtract.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbSelectionToExtract.Name = "tbSelectionToExtract";
@@ -484,7 +490,7 @@
             this.tbSelectionToExtract.TabIndex = 24;
             this.tbSelectionToExtract.Text = "*.*";
             this.toolTip1.SetToolTip(this.tbSelectionToExtract, "Selection criteria.  eg, (name = *.* and size> 1000) etc.  Also use atime/mtime/c" +
-                    "time and attributes. (HRSA)");
+        "time and attributes. (HRSA)");
             // 
             // label13
             // 
@@ -523,8 +529,8 @@
             // 
             // tbExtractDir
             // 
-            this.tbExtractDir.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbExtractDir.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tbExtractDir.Location = new System.Drawing.Point(60, 57);
             this.tbExtractDir.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbExtractDir.Name = "tbExtractDir";
@@ -578,8 +584,8 @@
             // 
             // tbZipToOpen
             // 
-            this.tbZipToOpen.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbZipToOpen.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tbZipToOpen.Location = new System.Drawing.Point(60, 5);
             this.tbZipToOpen.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbZipToOpen.Name = "tbZipToOpen";
@@ -610,8 +616,10 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.label21);
+            this.groupBox2.Controls.Add(this.comboEncodingUsage);
             this.groupBox2.Controls.Add(this.label18);
             this.groupBox2.Controls.Add(this.chkRemoveFiles);
             this.groupBox2.Controls.Add(this.label17);
@@ -645,14 +653,35 @@
             this.groupBox2.Margin = new System.Windows.Forms.Padding(0);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.groupBox2.Size = new System.Drawing.Size(572, 208);
+            this.groupBox2.Size = new System.Drawing.Size(572, 230);
             this.groupBox2.TabIndex = 104;
             this.groupBox2.TabStop = false;
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(6, 112);
+            this.label21.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(86, 13);
+            this.label21.TabIndex = 127;
+            this.label21.Text = "encoding usage:";
+            // 
+            // comboEncodingUsage
+            // 
+            this.comboEncodingUsage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboEncodingUsage.FormattingEnabled = true;
+            this.comboEncodingUsage.Location = new System.Drawing.Point(104, 108);
+            this.comboEncodingUsage.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.comboEncodingUsage.Name = "comboEncodingUsage";
+            this.comboEncodingUsage.Size = new System.Drawing.Size(128, 21);
+            this.comboEncodingUsage.TabIndex = 128;
+            this.toolTip1.SetToolTip(this.comboEncodingUsage, "use this encoding when saving the file");
             // 
             // label18
             // 
             this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(6, 186);
+            this.label18.Location = new System.Drawing.Point(6, 209);
             this.label18.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(66, 13);
@@ -662,7 +691,7 @@
             // chkRemoveFiles
             // 
             this.chkRemoveFiles.AutoSize = true;
-            this.chkRemoveFiles.Location = new System.Drawing.Point(104, 185);
+            this.chkRemoveFiles.Location = new System.Drawing.Point(104, 208);
             this.chkRemoveFiles.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.chkRemoveFiles.Name = "chkRemoveFiles";
             this.chkRemoveFiles.Size = new System.Drawing.Size(15, 14);
@@ -682,6 +711,7 @@
             // 
             // comboSplit
             // 
+            this.comboSplit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboSplit.FormattingEnabled = true;
             this.comboSplit.Location = new System.Drawing.Point(477, 85);
             this.comboSplit.Name = "comboSplit";
@@ -719,7 +749,7 @@
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(6, 162);
+            this.label16.Location = new System.Drawing.Point(6, 185);
             this.label16.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(81, 13);
@@ -728,12 +758,12 @@
             // 
             // tbExeOnUnpack
             // 
-            this.tbExeOnUnpack.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbExeOnUnpack.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tbExeOnUnpack.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbExeOnUnpack.ForeColor = System.Drawing.SystemColors.InactiveCaption;
-            this.tbExeOnUnpack.Location = new System.Drawing.Point(104, 158);
+            this.tbExeOnUnpack.Location = new System.Drawing.Point(104, 181);
             this.tbExeOnUnpack.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbExeOnUnpack.Name = "tbExeOnUnpack";
             this.tbExeOnUnpack.Size = new System.Drawing.Size(432, 20);
@@ -741,13 +771,13 @@
             this.tbExeOnUnpack.Text = "-command line to execute here-";
             this.toolTip1.SetToolTip(this.tbExeOnUnpack, "command to run upon successful extract of SFX");
             this.tbExeOnUnpack.TextChanged += new System.EventHandler(this.tbExeOnUnpack_TextChanged);
-            this.tbExeOnUnpack.Leave += new System.EventHandler(this.tbExeOnUnpack_Leave);
             this.tbExeOnUnpack.Enter += new System.EventHandler(this.tbExeOnUnpack_Enter);
+            this.tbExeOnUnpack.Leave += new System.EventHandler(this.tbExeOnUnpack_Leave);
             // 
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(6, 138);
+            this.label15.Location = new System.Drawing.Point(6, 161);
             this.label15.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(91, 13);
@@ -756,12 +786,12 @@
             // 
             // tbDefaultExtractDirectory
             // 
-            this.tbDefaultExtractDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbDefaultExtractDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tbDefaultExtractDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbDefaultExtractDirectory.ForeColor = System.Drawing.SystemColors.InactiveCaption;
-            this.tbDefaultExtractDirectory.Location = new System.Drawing.Point(104, 134);
+            this.tbDefaultExtractDirectory.Location = new System.Drawing.Point(104, 157);
             this.tbDefaultExtractDirectory.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbDefaultExtractDirectory.Name = "tbDefaultExtractDirectory";
             this.tbDefaultExtractDirectory.Size = new System.Drawing.Size(432, 20);
@@ -769,11 +799,12 @@
             this.tbDefaultExtractDirectory.Tag = "b";
             this.tbDefaultExtractDirectory.Text = "-default extract directory-";
             this.toolTip1.SetToolTip(this.tbDefaultExtractDirectory, "optional default extraction directory for SFX");
-            this.tbDefaultExtractDirectory.Leave += new System.EventHandler(this.tbDefaultExtractDirectory_Leave);
             this.tbDefaultExtractDirectory.Enter += new System.EventHandler(this.tbDefaultExtractDirectory_Enter);
+            this.tbDefaultExtractDirectory.Leave += new System.EventHandler(this.tbDefaultExtractDirectory_Leave);
             // 
             // comboZip64
             // 
+            this.comboZip64.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboZip64.FormattingEnabled = true;
             this.comboZip64.Location = new System.Drawing.Point(310, 35);
             this.comboZip64.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
@@ -784,6 +815,7 @@
             // 
             // comboFlavor
             // 
+            this.comboFlavor.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboFlavor.FormattingEnabled = true;
             this.comboFlavor.Location = new System.Drawing.Point(104, 35);
             this.comboFlavor.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
@@ -807,8 +839,8 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.chkRecurse);
             this.groupBox1.Controls.Add(this.chkTraverseJunctions);
             this.groupBox1.Controls.Add(this.tbDirectoryToZip);
@@ -861,8 +893,8 @@
             // tbDirectoryInArchive
             // 
             this.tbDirectoryInArchive.AcceptsReturn = true;
-            this.tbDirectoryInArchive.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbDirectoryInArchive.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tbDirectoryInArchive.Location = new System.Drawing.Point(104, 38);
             this.tbDirectoryInArchive.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbDirectoryInArchive.Name = "tbDirectoryInArchive";
@@ -896,8 +928,8 @@
             // tbSelectionToZip
             // 
             this.tbSelectionToZip.AcceptsReturn = true;
-            this.tbSelectionToZip.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbSelectionToZip.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tbSelectionToZip.Location = new System.Drawing.Point(104, 63);
             this.tbSelectionToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.tbSelectionToZip.Name = "tbSelectionToZip";
@@ -919,7 +951,7 @@
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(12, 301);
+            this.checkBox1.Location = new System.Drawing.Point(12, 322);
             this.checkBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(15, 14);
@@ -932,7 +964,7 @@
             // btnClearItemsToZip
             // 
             this.btnClearItemsToZip.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClearItemsToZip.Location = new System.Drawing.Point(398, 458);
+            this.btnClearItemsToZip.Location = new System.Drawing.Point(398, 460);
             this.btnClearItemsToZip.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.btnClearItemsToZip.Name = "btnClearItemsToZip";
             this.btnClearItemsToZip.Size = new System.Drawing.Size(102, 26);
@@ -946,7 +978,7 @@
             // 
             this.textBox1.AcceptsReturn = true;
             this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.textBox1.Location = new System.Drawing.Point(362, 461);
+            this.textBox1.Location = new System.Drawing.Point(362, 463);
             this.textBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(100, 20);
@@ -955,50 +987,13 @@
             this.textBox1.Visible = false;
             this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
             // 
-            // tabPage3
-            // 
-            this.tabPage3.Controls.Add(this.richTextBox1);
-            this.tabPage3.Controls.Add(this.pictureBox1);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
-            this.tabPage3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.tabPage3.Size = new System.Drawing.Size(584, 522);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "About";
-            this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // richTextBox1
-            // 
-            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.richTextBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.richTextBox1.Location = new System.Drawing.Point(54, 20);
-            this.richTextBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(518, 497);
-            this.richTextBox1.TabIndex = 2;
-            this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
-            this.richTextBox1.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBox1_LinkClicked);
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = global::Ionic.Zip.Forms.Properties.Resources.zippedFile;
-            this.pictureBox1.Location = new System.Drawing.Point(6, 20);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(42, 52);
-            this.pictureBox1.TabIndex = 1;
-            this.pictureBox1.TabStop = false;
-            // 
             // listView2
             // 
             this.listView2.AllowColumnReorder = true;
             this.listView2.AllowDrop = true;
-            this.listView2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.listView2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.listView2.CheckBoxes = true;
             this.listView2.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.chCheckbox,
@@ -1008,18 +1003,18 @@
             this.listView2.DoubleClickActivation = false;
             this.listView2.FullRowSelect = true;
             this.listView2.GridLines = true;
-            this.listView2.Location = new System.Drawing.Point(6, 297);
+            this.listView2.Location = new System.Drawing.Point(6, 316);
             this.listView2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.listView2.MultiSelect = false;
             this.listView2.Name = "listView2";
-            this.listView2.Size = new System.Drawing.Size(572, 151);
+            this.listView2.Size = new System.Drawing.Size(572, 142);
             this.listView2.TabIndex = 98;
             this.listView2.UseCompatibleStateImageBehavior = false;
             this.listView2.View = System.Windows.Forms.View.Details;
+            this.listView2.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listView2_BeforeLabelEdit);
             this.listView2.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.listView2_ItemChecked);
             this.listView2.DragDrop += new System.Windows.Forms.DragEventHandler(this.listView2_DragDrop);
             this.listView2.DragEnter += new System.Windows.Forms.DragEventHandler(this.listView_DragEnter);
-            this.listView2.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listView2_BeforeLabelEdit);
             // 
             // chCheckbox
             // 
@@ -1038,6 +1033,43 @@
             // 
             this.columnHeader3.Text = "File name in Archive";
             // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.richTextBox1);
+            this.tabPage3.Controls.Add(this.pictureBox1);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.tabPage3.Size = new System.Drawing.Size(584, 522);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "About";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // richTextBox1
+            // 
+            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.richTextBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.richTextBox1.Location = new System.Drawing.Point(54, 20);
+            this.richTextBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.Size = new System.Drawing.Size(518, 497);
+            this.richTextBox1.TabIndex = 2;
+            this.richTextBox1.Text = "Placeholder only. ";
+            this.richTextBox1.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBox1_LinkClicked);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::Ionic.Zip.Forms.Properties.Resources.zippedFile;
+            this.pictureBox1.Location = new System.Drawing.Point(6, 20);
+            this.pictureBox1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(42, 52);
+            this.pictureBox1.TabIndex = 1;
+            this.pictureBox1.TabStop = false;
+            // 
             // ZipForm
             // 
             this.AllowDrop = true;
@@ -1051,8 +1083,8 @@
             this.Name = "ZipForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "DotNetZip Tool";
-            this.Load += new System.EventHandler(this.ZipForm_Load);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ZipForm_FormClosing);
+            this.Load += new System.EventHandler(this.ZipForm_Load);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
@@ -1147,6 +1179,8 @@
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.ComboBox comboExistingFileAction;
         private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.ComboBox comboEncodingUsage;
     }
 }
 
