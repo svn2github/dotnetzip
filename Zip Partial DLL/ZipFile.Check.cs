@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-14 10:39:51>
+// Time-stamp: <2011-July-08 22:13:17>
 //
 // ------------------------------------------------------------------
 //
@@ -314,10 +314,10 @@ namespace Ionic.Zip
             get
             {
                 var builder = new System.Text.StringBuilder();
-                builder.Append(string.Format("ZipFile: {0}\n", this.Name));
+                builder.Append(string.Format("          ZipFile: {0}\n", this.Name));
                 if (!string.IsNullOrEmpty(this._Comment))
                 {
-                    builder.Append(string.Format("  Comment: {0}\n", this._Comment));
+                    builder.Append(string.Format("          Comment: {0}\n", this._Comment));
                 }
                 if (this._versionMadeBy != 0)
                 {
@@ -325,12 +325,17 @@ namespace Ionic.Zip
                 }
                 if (this._versionNeededToExtract != 0)
                 {
-                    builder.Append(string.Format("  version needed to extract: 0x{0:X4}\n", this._versionNeededToExtract));
+                    builder.Append(string.Format("needed to extract: 0x{0:X4}\n", this._versionNeededToExtract));
                 }
 
-                builder.Append(string.Format("  uses ZIP64: {0}\n", this.InputUsesZip64));
+                builder.Append(string.Format("       uses ZIP64: {0}\n", this.InputUsesZip64));
 
-                builder.Append(string.Format("  disk number with CD: {0}\n", this._diskNumberWithCd));
+                builder.Append(string.Format("     disk with CD: {0}\n", this._diskNumberWithCd));
+                if (this._OffsetOfCentralDirectory == 0xFFFFFFFF)
+                    builder.Append(string.Format("      CD64 offset: 0x{0:X16}\n", this._OffsetOfCentralDirectory64));
+                else
+                    builder.Append(string.Format("        CD offset: 0x{0:X8}\n", this._OffsetOfCentralDirectory));
+                builder.Append("\n");
                 foreach (ZipEntry entry in this._entries.Values)
                 {
                     builder.Append(entry.Info);
