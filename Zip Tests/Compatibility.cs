@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-22 08:12:51>
+// Time-stamp: <2011-July-10 08:35:59>
 //
 // ------------------------------------------------------------------
 //
@@ -196,6 +196,8 @@ namespace Ionic.Zip.Tests
                                      bool checkNtfsTimes,
                                      int thresholdNanoseconds)
         {
+            TestContext.WriteLine("");
+            TestContext.WriteLine("Verify file times...");
             TimeSpan threshold = new TimeSpan(thresholdNanoseconds);
             TestContext.WriteLine("Using threshold: ({0})", threshold.ToString());
 
@@ -411,7 +413,6 @@ namespace Ionic.Zip.Tests
                 string extractDir = Path.Combine(TopLevelDir, String.Format("extract.{0}",i));
 
                 // Create the zip archive
-                //Directory.SetCurrentDirectory(TopLevelDir);
                 using (ZipFile zip1 = new ZipFile())
                 {
                     zip1.CompressionLevel = (Ionic.Zlib.CompressionLevel) compLevel;
@@ -1415,6 +1416,63 @@ namespace Ionic.Zip.Tests
         }
 
 
+        [TestMethod]
+        public void InfoZip_Unzip_ZeroLengthFile()
+        {
+            if (!InfoZipIsPresent)
+                throw new Exception("InfoZip is not present");
+
+            string password = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+
+            // pass 1 for one regular zero length file.
+            // pass 2 for zero-length file with WinZip encryption (which does not actually
+            // get applied)
+            // pass 3 for PKZip encryption (ditto)
+            for (int k=0; k < 3; k++)
+            {
+                string zipFileToCreate = "ZLF.zip";
+
+                // create an empty file
+                string filename = Path.GetRandomFileName();
+                using (StreamWriter sw = File.CreateText(filename)) { }
+
+                // Create the zip archive
+                using (ZipFile zip1 = new ZipFile())
+                {
+                    if(k==1)
+                    {
+                        zip1.Encryption = EncryptionAlgorithm.WinZipAes256;
+                        zip1.Password = password;
+                    }
+                    else if (k==2)
+                    {
+                        zip1.Password = password;
+                        zip1.Encryption = EncryptionAlgorithm.PkzipWeak;
+                    }
+                    zip1.AddFile(filename, "");
+                    zip1.Save(zipFileToCreate);
+                }
+
+                // Verify the number of files in the zip
+                Assert.AreEqual<int>(1, TestUtilities.CountEntries(zipFileToCreate),
+                                     "Incorrect number of entries in the zip file.");
+
+                string extractDir = "extract." + k;
+                Directory.CreateDirectory(extractDir);
+
+                // now, extract the zip. Possibly need a password.
+                // eg, unzip.exe -P <passwd> test.zip  -d  <extractdir>
+                string args = zipFileToCreate + " -d " + extractDir;
+                if (k!=0)
+                    args = "-P " + password + " " + args;
+                string infozipOut = this.Exec(infoZipUnzip, args);
+
+                TestContext.WriteLine("{0}", infozipOut);
+                Assert.IsFalse(infozipOut.Contains("signature not found"));
+            }
+        }
+
+
 
 
         [TestMethod]
@@ -1947,31 +2005,52 @@ namespace Ionic.Zip.Tests
             if (!WinZipIsPresent)
                 throw new Exception("[Winzip_Unzip_ZeroLengthFile] : winzip is not present");
 
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Winzip_Unzip_ZeroLengthFile.zip");
+            string password = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
 
-            // create an empty file
-            string filename = Path.Combine(TopLevelDir, Path.GetRandomFileName());
-            using (StreamWriter sw = File.CreateText(filename)) { }
-
-            // Create the zip archive
-            //Directory.SetCurrentDirectory(TopLevelDir);
-            using (ZipFile zip1 = new ZipFile())
+            // pass 1 for one regular zero length file.
+            // pass 2 for zero-length file with WinZip encryption (which does not actually
+            // get applied)
+            // pass 3 for PKZip encryption (ditto)
+            for (int k=0; k < 3; k++)
             {
-                zip1.AddFile(filename, "");
-                zip1.Save(zipFileToCreate);
+                string zipFileToCreate = "ZLF.zip";
+
+                // create an empty file
+                string filename = Path.GetRandomFileName();
+                using (StreamWriter sw = File.CreateText(filename)) { }
+
+                // Create the zip archive
+                using (ZipFile zip1 = new ZipFile())
+                {
+                    if(k==1)
+                    {
+                        zip1.Encryption = EncryptionAlgorithm.WinZipAes256;
+                        zip1.Password = password;
+                    }
+                    else if (k==2)
+                    {
+                        zip1.Password = password;
+                        zip1.Encryption = EncryptionAlgorithm.PkzipWeak;
+                    }
+                    zip1.AddFile(filename, "");
+                    zip1.Save(zipFileToCreate);
+                }
+
+                // Verify the number of files in the zip
+                Assert.AreEqual<int>(1, TestUtilities.CountEntries(zipFileToCreate),
+                                     "Incorrect number of entries in the zip file.");
+
+                // now, test the zip. Possibly need a password.
+                // eg, wzunzip.exe -t test.zip  <extractdir>
+                string args = "-t " + zipFileToCreate;
+                if (k!=0)
+                    args = "-s" + password + " " + args;
+                string wzunzipOut = this.Exec(wzunzip, args);
+
+                TestContext.WriteLine("{0}", wzunzipOut);
+                Assert.IsTrue(wzunzipOut.Contains("No errors"));
+                Assert.IsFalse(wzunzipOut.Contains("At least one error was detected"));
             }
-
-            // Verify the number of files in the zip
-            Assert.AreEqual<int>(1, TestUtilities.CountEntries(zipFileToCreate),
-                                 "Incorrect number of entries in the zip file.");
-
-            // now, test the zip
-            // eg, wzunzip.exe -t test.zip  <extractdir>
-            string wzunzipOut = this.Exec(wzunzip, String.Format("-t {0}", zipFileToCreate));
-
-            TestContext.WriteLine("{0}", wzunzipOut);
-            Assert.IsTrue(wzunzipOut.Contains("No errors"));
-            Assert.IsFalse(wzunzipOut.Contains("At least one error was detected"));
         }
 
 
@@ -2101,7 +2180,7 @@ namespace Ionic.Zip.Tests
             if (!WinZipIsPresent)
                 throw new Exception("[Winzip_Unzip_SFX] : winzip is not present");
 
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Winzip_Unzip_SFX.exe");
+            string zipFileToCreate = "Winzip_Unzip_SFX.exe";
 
             // create and fill the directories
             string extractDir = Path.Combine(TopLevelDir, "extract");
@@ -2111,25 +2190,26 @@ namespace Ionic.Zip.Tests
             var filesToZip = GetSelectionOfTempFiles(_rnd.Next(13) + 8, checksums);
 
             // Create the zip archive
-            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.AddFiles(filesToZip, "files");
-                zip1.SaveSelfExtractor(zipFileToCreate, SelfExtractorFlavor.ConsoleApplication);
+                zip1.SaveSelfExtractor(zipFileToCreate,
+                                       SelfExtractorFlavor.ConsoleApplication);
             }
 
             // Verify the number of files in the zip
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), filesToZip.Count,
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate),
+                                 filesToZip.Count,
                                  "Incorrect number of entries in the zip file.");
 
             // now, extract the zip
-            // eg, wzunzip.exe -d test.zip  <extractdir>
+            // eg, wzunzip.exe -d test.zip  [<extractdir>]
             Directory.CreateDirectory(extractDir);
             Directory.SetCurrentDirectory(extractDir);
 
             // -d = restore folder structure
             // -yx = restore extended timestamps to extracted files
-            this.Exec(wzunzip, String.Format("-d -yx {0}", zipFileToCreate));
+            this.Exec(wzunzip, "-d -yx " + Path.Combine("..", zipFileToCreate));
 
             // check the files in the extract dir
             VerifyChecksums(Path.Combine(extractDir, "files"), filesToZip, checksums);
@@ -2188,7 +2268,7 @@ namespace Ionic.Zip.Tests
 
             // examine and unpack the zip archive via WinZip
             // first, examine the zip entry metadata:
-            string wzzipOut = this.Exec(wzzip, String.Format("-vt {0}", zipFileToCreate));
+            string wzzipOut = this.Exec(wzzip, "-vt " + zipFileToCreate);
 
             string[] expectedAttrStrings = { "s-r-", "-hw-", "--w-" };
 

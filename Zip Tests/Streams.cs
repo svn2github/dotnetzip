@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-21 20:36:58>
+// Time-stamp: <2011-July-07 14:59:11>
 //
 // ------------------------------------------------------------------
 //
@@ -135,8 +135,8 @@ namespace Ionic.Zip.Tests.Streams
                 for (int k = 0; k < passwords.Length; k++)
                 {
                     string zipFileToCreate = String.Format("ReadZip_OpenReader-{0}-{1}.zip", j, k);
-                    int entriesAdded = 0;
-                    String filename = null;
+                    //int entriesAdded = 0;
+                    //String filename = null;
                     string dirToZip = String.Format("dirToZip.{0}.{1}", j, k);
                     var files = TestUtilities.GenerateFilesFlat(dirToZip);
 
@@ -1005,6 +1005,67 @@ namespace Ionic.Zip.Tests.Streams
 
             BasicVerifyZip(zipFileToCreate);
         }
+
+
+        [TestMethod]
+        public void JitStream_Update_wi13899()
+        {
+            // Two passes: first to call UpdateEntry() when no prior entry exists.
+            // Second to call UpdateEntry when a prior entry exists.
+            string dirToZip = "fodder";
+            var files = TestUtilities.GenerateFilesFlat(dirToZip, fileCount, 100, 72000);
+            OpenDelegate opener = (name) =>
+                {
+                    TestContext.WriteLine("Opening {0}", name);
+                    Stream s = File.OpenRead(Path.Combine(dirToZip,name));
+                    return s;
+                };
+
+            CloseDelegate closer = (e, s) =>
+                {
+                    TestContext.WriteLine("Closing {0}", e);
+                    s.Dispose();
+                };
+
+            for (int j=0; j < 2; j++)
+            {
+                string zipFileToCreate = String.Format("wi13899-{0}.zip", j);
+
+                TestContext.WriteLine("");
+                TestContext.WriteLine("Creating zipfile {0}", zipFileToCreate);
+                if (j!=0)
+                {
+                    using (var zip = new ZipFile(zipFileToCreate))
+                    {
+                        foreach (var file in files)
+                        {
+                            zip.AddEntry(Path.GetFileName(file), "This is the content for file " + file);
+                        }
+                        zip.Save();
+                    }
+
+                    Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate),
+                                         files.Length);
+
+                    BasicVerifyZip(zipFileToCreate);
+
+                    TestContext.WriteLine("Updating zipfile {0}", zipFileToCreate);
+                }
+
+                using (var zip = new ZipFile(zipFileToCreate))
+                {
+                    foreach (var file in files)
+                    {
+                        zip.UpdateEntry(Path.GetFileName(file), opener, closer);
+                    }
+                    zip.Save();
+                }
+
+                BasicVerifyZip(zipFileToCreate);
+                // verify checksum here?
+            }
+        }
+
 
 
         [TestMethod, Timeout(30 * 60 * 1000)]  // in ms.  30*60*100 == 30min

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-21 16:12:35>
+// Time-stamp: <2011-July-09 23:17:48>
 //
 // ------------------------------------------------------------------
 //
@@ -1711,10 +1711,11 @@ namespace Ionic.Zip.Tests.Basic
                     if (Path.GetFileName(filename)[0] == '~'
                         || actualFilenames.Contains(filename)
                         || fi.Length > 10000000
-                        // there are some weird files on my system that cause this test to fail!
+                        || Path.GetFileName(filename) == "dd_BITS.log"
+                        // There WERE some weird files on my system that cause this test to fail!
                         // the GetLastWrite() method returns the "wrong" time - does not agree with
                         // what is shown in Explorer or in a cmd.exe dir output.  So I exclude those
-                        // files here.
+                        // files here.  (This is no longer a problem?)
                         //|| filename.EndsWith(".cer")
                         //|| filename.EndsWith(".msrcincident")
                         //|| filename == "MSCERTS.ini"

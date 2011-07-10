@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-22 00:07:46>
+// Time-stamp: <2011-July-08 18:06:24>
 //
 // ------------------------------------------------------------------
 //
@@ -262,15 +262,17 @@ namespace Ionic.Zip.Tests.Error
 
         [TestMethod]
         [ExpectedException(typeof(ZipException))]
-        public void Error_NonZipFilename_wi11743()
+        public void Error_NonZipFile_wi11743()
         {
             // try reading an empty, extant file as a zip file
-            string zipFileToCreate = Path.GetTempFileName();
-            using (ZipFile zip = new ZipFile(zipFileToCreate))
+            string zipFileToRead = Path.GetTempFileName();
+            _FilesToRemove.Add(zipFileToRead);
+            using (ZipFile zip = new ZipFile(zipFileToRead))
             {
                 zip.AddEntry("EntryName1.txt", "This is the content");
                 zip.Save();
             }
+
         }
 
 
@@ -305,6 +307,7 @@ namespace Ionic.Zip.Tests.Error
         public void MalformedZip()
         {
             string filePath = Path.GetTempFileName();
+            _FilesToRemove.Add(filePath);
             File.WriteAllText( filePath , "asdfasdf" );
             string outputDirectory = Path.GetTempPath();
             using ( ZipFile zipFile = ZipFile.Read( filePath ) )
@@ -714,6 +717,49 @@ namespace Ionic.Zip.Tests.Error
         }
 
 
+        [TestMethod]
+        public void Error_LockedFile_wi13903()
+        {
+            TestContext.WriteLine("==Error_LockedFile_wi13903()");
+            string fname = Path.GetRandomFileName();
+            TestContext.WriteLine("create file {0}", fname);
+            TestUtilities.CreateAndFillFileText(fname, _rnd.Next(10000) + 5000);
+            string zipFileToCreate = "wi13903.zip";
+
+            var zipErrorHandler = new EventHandler<ZipErrorEventArgs>( (sender, e)  =>
+                {
+                    TestContext.WriteLine("Error reading entry {0}", e.CurrentEntry);
+                    TestContext.WriteLine("  (this was expected)");
+                    e.CurrentEntry.ZipErrorAction = ZipErrorAction.Skip;
+                });
+
+            // lock the file
+            TestContext.WriteLine("lock file {0}", fname);
+            using (var s = System.IO.File.Open(fname,
+                                               FileMode.Open,
+                                               FileAccess.Read,
+                                               FileShare.None))
+            {
+                using (var rawOut = File.Create(zipFileToCreate))
+                {
+                    using (var nonSeekableOut = new Ionic.Zip.Tests.NonSeekableOutputStream(rawOut))
+                    {
+                        TestContext.WriteLine("create zip file {0}", zipFileToCreate);
+                        using (var zip = new ZipFile())
+                        {
+                            zip.ZipError += zipErrorHandler;
+                            zip.AddFile(fname);
+                            // should trigger a read error,
+                            // which should be skipped. Result will be
+                            // a zero-entry zip file.
+                            zip.Save(nonSeekableOut);
+                        }
+                    }
+                }
+            }
+            TestContext.WriteLine("all done, A-OK");
+        }
+
 
         [TestMethod]
         [ExpectedException(typeof(ZipException))]
@@ -721,16 +767,18 @@ namespace Ionic.Zip.Tests.Error
         {
             string zipFileToRead = Path.Combine(TopLevelDir, "Read_BadFile.zip");
             string newFile = Path.GetTempFileName();
+            _FilesToRemove.Add(newFile);
             File.Move(newFile, zipFileToRead);
             newFile = Path.GetTempFileName();
-            string entryToAdd = Path.Combine(TopLevelDir, "NonExistentFile.txt");
-            File.Move(newFile, entryToAdd);
+            _FilesToRemove.Add(newFile);
+            string fileToAdd = Path.Combine(TopLevelDir, "EmptyFile.txt");
+            File.Move(newFile, fileToAdd);
 
             try
             {
                 using (ZipFile zip = ZipFile.Read(zipFileToRead))
                 {
-                    zip.AddFile(entryToAdd, "");
+                    zip.AddFile(fileToAdd, "");
                     zip.Save();
                 }
             }
@@ -809,7 +857,7 @@ namespace Ionic.Zip.Tests.Error
             byte[] content = Encoding.UTF8.GetBytes("wrong zipfile content");
             using (var ms = new MemoryStream(content))
             {
-                using (var zipFile = ZipFile.Read(ms));
+                using (var zipFile = ZipFile.Read(ms)) { }
             }
         }
 
@@ -819,7 +867,7 @@ namespace Ionic.Zip.Tests.Error
         {
             using (var ms = new MemoryStream())
             {
-                using (var zipFile = ZipFile.Read(ms));
+                using (var zipFile = ZipFile.Read(ms)) { }
             }
         }
 
@@ -830,7 +878,7 @@ namespace Ionic.Zip.Tests.Error
             byte[] content = new byte[8192];
             using (var ms = new MemoryStream(content))
             {
-                using (var zipFile = ZipFile.Read(ms));
+                using (var zipFile = ZipFile.Read(ms)) { }
             }
         }
 

@@ -617,8 +617,8 @@ namespace Ionic.Zip.Tests
             TestContext.WriteLine("==============================");
             TestContext.WriteLine("SFX_RunOnExit({0})", flavor.ToString());
 
-            int entriesAdded = 0;
-            String filename = null;
+            //int entriesAdded = 0;
+            //String filename = null;
             string postExtractExe = String.Format(cmdFormat, _rnd.Next(3000));
 
             // If WinForms and want forceNoninteractive, have the post-extract-exe return 0,

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-18 10:06:05>
+// Time-stamp: <2011-July-09 21:42:19>
 //
 // ------------------------------------------------------------------
 //
@@ -369,11 +369,14 @@ namespace Ionic.Zip.Tests.WinZipAes
                 args = String.Format("-a -whs -s\"{0}\"  {1}  {2}", password, encryptionArg, zipfile);
             }
 
-            // this better not be too long a list, otherwise the cmd line length limit will be exceeded.
+            // This had better not be too long a list, otherwise the cmd
+            // line length limit will be exceeded.  To avoid that, could
+            // use directory names, but.... for now let's just hope.
             foreach (var f in files)
                 args += " " + f;
 
             string wzzipOut = this.Exec(wzzip, args);
+            TestContext.WriteLine(wzzipOut);
         }
 
 

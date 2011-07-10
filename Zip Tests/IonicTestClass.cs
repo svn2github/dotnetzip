@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-19 12:27:04>
+// Time-stamp: <2011-July-09 21:54:38>
 //
 // ------------------------------------------------------------------
 //
@@ -161,7 +161,7 @@ namespace Ionic.Zip.Tests.Utilities
             int rc = TestUtilities.Exec_NoContext(program, args, waitForExit, out output);
 
             if (rc != 0)
-                throw new Exception(String.Format("Exception running app {0}: {1}", program, output));
+                throw new Exception(String.Format("Non-zero RC {0}: {1}", program, output));
 
             if (emitOutput)
                 this.TestContext.WriteLine("output: {0}", output);
@@ -272,7 +272,6 @@ namespace Ionic.Zip.Tests.Utilities
                 return _InfoZipIsPresent.Value;
             }
         }
-
 
         internal string BasicVerifyZip(string zipfile)
         {
@@ -422,6 +421,8 @@ namespace Ionic.Zip.Tests.Utilities
             System.Collections.Generic.IEnumerable<String> filesToCheck,
             Dictionary<string, byte[]> checksums)
         {
+            TestContext.WriteLine("");
+            TestContext.WriteLine("Verify checksums...");
             int count = 0;
             foreach (var fqPath in filesToCheck)
             {

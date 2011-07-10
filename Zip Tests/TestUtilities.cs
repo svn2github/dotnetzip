@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-19 15:45:25>
+// Time-stamp: <2011-July-10 14:26:41>
 //
 // ------------------------------------------------------------------
 //
@@ -203,7 +203,6 @@ namespace Ionic.Zip.Tests.Utilities
             }
             else
             {
-
                 // fill the file with text data, selecting one word at a time
                 using (StreamWriter sw = File.CreateText(filename))
                 {
@@ -429,7 +428,7 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal static string CheckSumToString(byte[] checksum)
         {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            var sb = new System.Text.StringBuilder();
             foreach (byte b in checksum)
                 sb.Append(b.ToString("x2").ToLower());
             return sb.ToString();
@@ -730,9 +729,6 @@ namespace Ionic.Zip.Tests.Utilities
         }
 
 
-
-
-
         internal static int Exec_NoContext(string program, string args, bool waitForExit, out string output)
         {
             System.Diagnostics.Process p = new System.Diagnostics.Process
@@ -768,6 +764,7 @@ namespace Ionic.Zip.Tests.Utilities
                 p.WaitForExit();
                 if (sb.Length > 0)
                     output += sb.ToString();
+                output = CleanWzzipOut(output); // just in case
                 return p.ExitCode;
             }
             else
@@ -778,6 +775,32 @@ namespace Ionic.Zip.Tests.Utilities
             return 0;
         }
 
+
+        /// <summary>
+        ///   The WinZip command-line tools emit dots and backspaces in the output.
+        ///   For a large zip file, the output can be 1mb or more, of which 99% is
+        ///   dots and backspaces. This method trims them from the output, making it
+        ///   suitable for printing into the TestContext output.
+        /// </summary>
+        protected static string CleanWzzipOut(string txt)
+        {
+            int previousLength = 0;
+            int cycles = 0;
+            do
+            {
+                // wzzip.exe can generate long sequences of dots, followed by long
+                // sequences of backspaces.  Don't want to replace two backspaces
+                // with the empty string, so replace a sequence of a non-backspace
+                // char followed by backspace with the empty string.  Do it in
+                // cycles to handle those long sequences.
+
+                cycles++;
+                previousLength = txt.Length;
+                txt = Regex.Replace(txt, "[^\u0008]\u0008", "");
+            } while (previousLength != txt.Length && cycles < 80);
+
+            return txt;
+        }
 
         #endregion
 
