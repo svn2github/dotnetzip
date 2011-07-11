@@ -8,7 +8,13 @@ goto START
 
  created: Thu, 19 Jun 2008  22:17
 
- Time-stamp: <2010-January-07 01:33:43>
+ This batch file is part of DotNetZip.
+ DotNetZip is Copyright 2008-2011 Dino Chiesa.
+
+ DotNetZip is licensed under the MS-PL.  See the accompanying
+ License.txt file.
+
+ Last Updated: <2011-July-11 18:24:22>
 
 -------------------------------------------------------
 
@@ -16,8 +22,13 @@ goto START
 :START
 
 setlocal
-
-set zipit=c:\dinoch\bin\zipit.exe
+set baseDir=%~dps0
+set SNEXE=c:\winsdk\bin\sn.exe
+set MSBUILD=c:\.net4.0\msbuild.exe
+set POWERSHELL=c:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+@REM set zipit=c:\users\dino\bin\zipit.exe
+set zipit=%baseDir%tools\Zipit\bin\Debug\zipit.exe
+set ExpectedSignedDlls=36
 set stamp=%DATE% %TIME%
 set stamp=%stamp:/=-%
 set stamp=%stamp: =-%
@@ -25,37 +36,42 @@ set stamp=%stamp::=%
 
 
 @REM get the version:
-for /f "delims==" %%I in ('type SolutionInfo.cs ^| c:\utils\grep AssemblyVersion ^| c:\utils\sed -e "s/^.*(.\(.*\).).*/\1 /"') do set longversion=%%I
+for /f "delims==" %%I in ('type SolutionInfo.cs ^| c:\bin\grep.exe AssemblyVersion ^| c:\bin\sed.exe -e "s/^.*(.\(.*\).).*/\1 /"') do set longversion=%%I
 
 set version=%longversion:~0,3%
 echo version is %version%
 
-c:\.net3.5\msbuild.exe DotNetZip.sln /p:Configuration=Debug
-c:\.net3.5\msbuild.exe DotNetZip.sln /p:Configuration=Release
+%MSBUILD% DotNetZip.sln /p:Configuration=Debug
+%MSBUILD% DotNetZip.sln /p:Configuration=Release
 
 call :CheckSign
-if ERRORLEVEL 1 (exit /b %ERRORLEVEL%)
+if ERRORLEVEL 1 (
+  echo exiting.
+  exit /b 1
+)
 
-echo making release dir ..\releases\v%version%-%stamp%
-mkdir ..\releases\v%version%-%stamp%
 
-call :MakeHelpFile
+ set releaseDir=releases\v%version%-%stamp%
+ echo making release dir %releaseDir%
+ mkdir %releaseDir%
 
-call :MakeIntegratedHelpMsi
+ ::REM call :MakeHelpFile
 
-call :MakeDevelopersRedist
+ ::REM call :MakeIntegratedHelpMsi
 
-call :MakeRuntimeRedist
+ call :MakeDevelopersRedist
 
-call :MakeZipUtils
+ call :MakeRuntimeRedist
 
-call :MakeUtilsMsi
+ call :MakeZipUtils
 
-call :MakeRuntimeMsi
+ ::REM call :MakeUtilsMsi
 
-c:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe .\clean.ps1
+ ::REM call :MakeRuntimeMsi
 
-call :MakeSrcZip
+ %POWERSHELL%  .\clean.ps1
+
+ call :MakeSrcZip
 
 
 goto :END
@@ -79,24 +95,40 @@ goto :END
     set ccount=0
     set okcount=0
     set notsigned=0
+
     for /R %%D in (*.dll) do (
-        call :BACKTICK pubkey c:\netsdk2.0\bin\sn.exe -q -T "%%D"
-        set /a ccount=!ccount!+1
-        If "!pubkey:~-44!"=="does not represent a strongly named assembly" (
-            set /a notsigned=!notsigned!+1
-            if %verbose% GTR 0 (echo !pubkey!)
-        ) else (
-            if %verbose% GTR 0 (echo %%D  !pubkey!)
-            If /i "!pubkey:~-16!"=="edbe51ad942a3f5c" (
-                set /a okcount=!okcount!+1
-            ) else (
-                set /a rcode=!rcode!+1
+      @REM don't check DLLs from some directories
+      set thisfile=%%D
+
+      echo !thisfile! | findstr TestResults >nul:
+      if ERRORLEVEL 1  (
+        echo !thisfile! | findstr Examples >nul:
+        if ERRORLEVEL 1 (
+          echo !thisfile! | findstr Tests >nul:
+          if ERRORLEVEL 1 (
+            echo !thisfile! | findstr \obj\ >nul:
+            if ERRORLEVEL 1 (
+              call :BACKTICK pubkey %SNEXE% -q -T "!thisfile!"
+              set /a ccount=!ccount!+1
+              If "!pubkey:~-44!"=="does not represent a strongly named assembly" (
+                  set /a notsigned=!notsigned!+1
+                  if %verbose% GTR 0 (echo !pubkey!)
+              ) else (
+                  if %verbose% GTR 0 (echo %%D  !pubkey!)
+                  If /i "!pubkey:~-16!"=="edbe51ad942a3f5c" (
+                      set /a okcount=!okcount!+1
+                  ) else (
+                      set /a rcode=!rcode!+1
+                  )
+              )
             )
+          )
         )
+      )
     )
 
     if %verbose% GTR 0 (
-      echo Checked !ccount! files
+      echo Checked !ccount! DLLs
       echo !notsigned! were not signed
       echo !okcount! were signed, with the correct key
       echo !rcode! were signed, with the wrong key
@@ -104,13 +136,14 @@ goto :END
 
     if !rcode! GTR 0 (
       echo.
-      echo Some of the assemblies are incorrectly signed.
-      exit /b !rcode!
+      echo Found !rcode! assemblies signed with an unexpected key.
+      exit /b 1
     )
-    if !okcount! LSS 67 (
+    if !okcount! NEQ %ExpectedSignedDlls% (
       echo.
-      echo There are not enough correctly signed assemblies.
-      exit /b !okcount!
+      echo There are !okcount! correctly signed assemblies.
+      echo That does not agree with the configured expected value of %ExpectedSignedDlls%.
+      exit /b 1
     )
 
   echo.
@@ -136,8 +169,8 @@ goto :EOF
 
   @REM "C:\Program Files\EWSoftware\Sandcastle Help File Builder\SandcastleBuilderConsole.exe" DotNetZip.shfb
 
-  c:\.net3.5\msbuild.exe  /p:Configuration=Release   Help\Dotnetzip.shfbproj
-  move Help\out\DotNetZipLib-v*.chm ..\releases\v%version%-%stamp%
+  %MSBUILD%  /p:Configuration=Release   Help\Dotnetzip.shfbproj
+  move Help\out\DotNetZipLib-v*.chm %releaseDir%
 
 goto :EOF
 --------------------------------------------
@@ -157,10 +190,11 @@ goto :EOF
   echo.
 
   set zipfile=DotNetZipLib-DevKit-v%version%.zip
-  for %%f in (..\releases\v%version%-%stamp%\%zipfile%) do set rzipfile=%%~ff
+  @REM  for %%f in (%releaseDir%\%zipfile%) do set rzipfile=%%~ff
+  set rzipfile=%releaseDir%\%zipfile%
   echo zipfile is %rzipfile%
 
-  %zipit% %rzipfile%  -s Contents.txt "This is the Developer's Kit package for DotNetZip v%version%.  This package was packed %stamp%.  In this zip you will find Debug and Release DLLs for the various versions of the Ionic.Zip class library and the Ionic.Zlib class library.  There is a separate top-level folder for each distinct version of the DLL, and within those top-level folders there are Debug and Release folders.  In the Debug folders you will find a DLL, a PDB, and an XML file for the given library, while the Release folder will have just a DLL.  The DLL is the actual library (either Debug or Release flavor), the PDB is the debug information, and the XML file is the intellisense doc for use within Visual Studio.  There is also a .chm file, which is a viewable help file.  In addition you will find the MSI file for the VS2008-integrated help.  If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip"  -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt
+  %zipit% %rzipfile%  -s Contents.txt "This is the Developer's Kit package for DotNetZip v%version%.  This package was packed %stamp%.  In this zip you will find Debug and Release DLLs for the various versions of the Ionic.Zip class library and the Ionic.Zlib class library.  There is a separate top-level folder for each distinct version of the DLL, and within those top-level folders there are Debug and Release folders.  In the Debug folders you will find a DLL, a PDB, and an XML file for the given library, while the Release folder will have just a DLL.  The DLL is the actual library (either Debug or Release flavor), the PDB is the debug information, and the XML file is the intellisense doc for use within Visual Studio.  There is also a .chm file, which is a viewable help file.  In addition you will find the MSI file for the VS2008-integrated help.  If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip"  -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt License.zlib.txt
 
   %zipit% %rzipfile%  -d DotNetZip-v%version%   -s Readme.txt "DotNetZip Library Developer's Kit package,  v%version% packed %stamp%.  This is the DotNetZip library.  It includes the classes in the Ionic.Zip namespace as well as the classes in the Ionic.Zlib namespace. Use this library if you want to manipulate ZIP files within .NET applications."
 
@@ -195,9 +229,9 @@ goto :EOF
 
   %zipit% %rzipfile%  -d Examples  -D "Examples"  -r+  "name != *.cache and name != *.*~ and name != *.suo and name != *.user and name != #*.*# and name != *.vspscc and name != Examples\*\*\bin\*.* and name != Examples\*\*\obj\*.* and name != Examples\*\bin\*.* and name != Examples\*\obj\*.*"
 
-  cd ..\releases\v%version%-%stamp%
+  cd %releaseDir%
   for %%V in ("*.chm") do   %zipit% %zipfile%  %%V
-  cd ..\..\DotNetZip
+  cd %baseDir%
 
 goto :EOF
 --------------------------------------------
@@ -216,10 +250,11 @@ goto :EOF
   echo.
 
   set zipfile=DotNetZipLib-Runtime-v%version%.zip
-  for %%f in (..\releases\v%version%-%stamp%\%zipfile%) do set rzipfile=%%~ff
+  set rzipfile=%releaseDir%\%zipfile%
 
   echo zipfile is %rzipfile%
-  %zipit% %rzipfile%    -s Contents.txt "This is the redistributable package for DotNetZip v%version%.  Packed %stamp%. In this zip you will find a separate folder for each separate version of the DLL. In each folder there is a RELEASE build DLL, suitable for redistribution with your app. If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip "   -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt
+
+  %zipit% %rzipfile%    -s Contents.txt "This is the redistributable package for DotNetZip v%version%.  Packed %stamp%. In this zip you will find a separate folder for each separate version of the DLL. In each folder there is a RELEASE build DLL, suitable for redistribution with your app. If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip "   -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt License.zlib.txt
 
   %zipit% %rzipfile%  -d DotNetZip-v%version% -D "Zip Full DLL\bin\Release" -s Readme.txt  "DotNetZip Redistributable Library v%version% packed %stamp%"  Ionic.Zip.dll
 
@@ -249,9 +284,13 @@ goto :EOF
   echo.
 
     set zipfile=DotNetZipUtils-v%version%.zip
-    for %%f in (..\releases\v%version%-%stamp%\%zipfile%) do set rzipfile=%%~ff
 
-    %zipit% %rzipfile%    -s Contents.txt "These are the DotNetZip utilities and tools, for DotNetZip v%version%.  Packed %stamp%."   -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   License.txt
+    @REM    for %%f in (%releaseDir%\%zipfile%) do set rzipfile=%%~ff
+
+    set rzipfile=%releaseDir%\%zipfile%
+    echo zipfile is %rzipfile%
+
+    %zipit% %rzipfile%    -s Contents.txt "These are the DotNetZip utilities and tools, for DotNetZip v%version%.  Packed %stamp%."   -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   License.txt License.zlib.txt
 
     %zipit% %rzipfile%  -zc "Zip utilities v%version% packed %stamp%" -D Tools\ZipIt\bin\Release  Zipit.exe Ionic.Zip.dll
     %zipit% %rzipfile%  -D Tools\Unzip\bin\Release            Unzip.exe
@@ -278,7 +317,7 @@ goto :EOF
   c:\vs2008\Common7\ide\devenv.exe DotNetZip.sln /build release /project "Zip Utilities MSI"
   echo waiting for Setup\release\DotNetZipUtils.msi
   c:\dinoch\dev\dotnet\AwaitFile Setup\Release\DotNetZipUtils.msi
-  move Setup\Release\DotNetZipUtils.msi ..\releases\v%version%-%stamp%\DotNetZipUtils-v%version%.msi
+  move Setup\Release\DotNetZipUtils.msi %releaseDir%\DotNetZipUtils-v%version%.msi
 
 goto :EOF
 --------------------------------------------
@@ -300,7 +339,7 @@ goto :EOF
   c:\vs2008\Common7\ide\devenv.exe Help-VS-Integrated\HelpIntegration.sln  /build Debug  /project HelpIntegration
   echo waiting for Help-VS-Integrated\HelpIntegration\Debug\DotNetZip-HelpIntegration.msi
   c:\dinoch\dev\dotnet\AwaitFile Help-VS-Integrated\HelpIntegration\Debug\DotNetZip-HelpIntegration.msi
-  @REM move  Help-VS-Integrated\HelpIntegration\Debug\DotNetZip-HelpIntegration.msi  ..\releases\v%version%-%stamp%\DotNetZip-HelpIntegration.msi
+  @REM move  Help-VS-Integrated\HelpIntegration\Debug\DotNetZip-HelpIntegration.msi  %releaseDir%\DotNetZip-HelpIntegration.msi
 
 goto :EOF
 --------------------------------------------
@@ -321,7 +360,7 @@ goto :EOF
   c:\vs2008\Common7\ide\devenv.exe DotNetZip.sln /build release /project "RuntimeSetup MSI"
   echo waiting for RuntimeSetup\release\DotNetZipLib-Runtime.msi
   c:\dinoch\dev\dotnet\AwaitFile RuntimeSetup\release\DotNetZipLib-Runtime.msi
-  move RuntimeSetup\release\DotNetZipLib-Runtime.msi ..\releases\v%version%-%stamp%\DotNetZipLib-Runtime-v%version%.msi
+  move RuntimeSetup\release\DotNetZipLib-Runtime.msi %releaseDir%\DotNetZipLib-Runtime-v%version%.msi
 
 goto :EOF
 --------------------------------------------
@@ -341,21 +380,20 @@ goto :EOF
     @REM set zipfile=DotNetZip-src-v%version%.zip
 
     cd..
-    @REM Delete any existing files
+    @REM Delete any existing src zips
     for %%f in (DotNetZip-src-v*.zip) do del %%f
 
-    c:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe  DotNetZip\ZipSrc.ps1
+    %POWERSHELL% DotNetZip\ZipSrc.ps1
 
     @REM edit in place to remove Ionic.pfx and Ionic.snk from the csproj files
 
+    @REM glob the filename:
     for %%f in (DotNetZip-src-v*.zip) do set actualFilename=%%f
 
     DotNetZip\EditCsproj.exe -z %actualFileName%
 
-    @REM move DotNetZip-src-v*.zip  releases\v%version%-%stamp%
-    move %actualFileName%  releases\v%version%-%stamp%
-
-    cd DotNetZip
+    cd %baseDir%
+    move ..\%actualFileName%  %releaseDir%
 
 goto :EOF
 --------------------------------------------
@@ -369,8 +407,8 @@ goto :EOF
     for /f "usebackq delims==" %%I in (`%CMDLINE%`) do set output=%%I
     endlocal & set %varspec%=%output%
     goto :EOF
-
 --------------------------------------------
+
 
 --------------------------------------------
 :GET_CMDLINE
@@ -395,8 +433,10 @@ goto :EOF
 
 
 :END
-@if exist c:\dinoch\dev\dotnet\pronounceword.exe (c:\dinoch\dev\dotnet\pronounceword.exe All Done > nul)
-echo release zips are in releases\v%version%-%stamp%
+@if exist c:\users\dino\dev\dotnet\pronounceword.exe (c:\users\dino\dev\dotnet\pronounceword.exe All Done > nul:)
+echo.
+echo release zips are in %releaseDir%
+echo.
 
 endlocal
 

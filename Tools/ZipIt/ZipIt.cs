@@ -1,7 +1,7 @@
 // ZipIt.cs
 //
 // ----------------------------------------------------------------------
-// Copyright (c) 2006-2010 Dino Chiesa.  All rights reserved.
+// Copyright (c) 2006-2011 Dino Chiesa.  All rights reserved.
 //
 // This example is released under the Microsoft Permissive License of
 // October 2006.  See the license.txt file accompanying this release for
@@ -45,9 +45,9 @@ namespace Ionic.Zip.Examples
             "  -64                  - use ZIP64 extensions, for large files or large numbers of files.\n" +
             "  -aes                 - use WinZip-compatible AES 256-bit encryption for entries\n" +
             "                         subsequently added to the archive. Requires a password.\n" +
-            "  -cp <codepage>       - use the specified numeric codepage for entries with comments \n" +
-            "                         or filenames that cannot be encoded with the default IBM437\n" +
-            "                         code page. (cannot be used with -utf8 option)\n" +
+            "  -cp <codepage>       - use the specified numeric codepage to encode entry filenames \n" +
+            "                         and comments, instead of the default IBM437 code page.\n" +
+            "                         (cannot be used with -utf8 option)\n" +
             "  -d <path>            - use the given directory path in the archive for\n" +
             "                         succeeding items added to the archive.\n" +
             "  -D <path>            - find files in the given directory on disk.\n" +
@@ -76,9 +76,9 @@ namespace Ionic.Zip.Examples
             "  -UTnewest            - use uniform date/time, newest entry, for all entries. \n" +
             "  -UToldest            - use uniform date/time, oldest entry, for all entries. \n" +
             "  -UT <datetime>       - use uniform date/time, specified, for all entries. \n" +
-            "  -utf8                - use UTF-8 encoding for entries with comments or\n" +
-            "                         filenames that cannot be encoded with the default IBM437\n" +
-            "                         code page. (cannot be used with -cp option)\n" +
+            "  -utf8                - use UTF-8 encoding for entry filenames and comments,\n" +
+            "                         instead of the the default IBM437 code page.\n" +
+            "                         (cannot be used with -cp option)\n" +
             "  -zc <comment>        - use the given comment for the archive.\n";
 
             Console.WriteLine(UsageMessage,
@@ -242,7 +242,10 @@ namespace Ionic.Zip.Examples
                                 if (args.Length <= i) Usage();
                                 System.Int32.TryParse(args[i], out codePage);
                                 if (codePage != 0)
-                                    zip.ProvisionalAlternateEncoding = System.Text.Encoding.GetEncoding(codePage);
+                                {
+                                    zip.AlternateEncoding = System.Text.Encoding.GetEncoding(codePage);
+                                    zip.AlternateEncodingUsage = ZipOption.Always;
+                                }
                                 break;
 
                             case "-d":
@@ -368,7 +371,8 @@ namespace Ionic.Zip.Examples
                                 break;
 
                             case "-utf8":
-                                zip.UseUnicodeAsNecessary = true;
+                                zip.AlternateEncoding = System.Text.Encoding.UTF8;
+                                zip.AlternateEncodingUsage = ZipOption.Always;
                                 break;
 
 #if NOT
