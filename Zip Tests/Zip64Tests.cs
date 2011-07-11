@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-10 17:23:00>
+// Time-stamp: <2011-July-10 20:31:24>
 //
 // ------------------------------------------------------------------
 //
@@ -769,10 +769,10 @@ namespace Ionic.Zip.Tests.Zip64
                     break;
 
                 case ZipProgressEventType.Extracting_AfterExtractEntry:
-                    _txrx.Send("test " +  _testTitle); // just in case it was missed
                     _numExtracted++;
                     if (_numFilesToExtract < 1024 || (_numExtracted % 128) == 0)
                     {
+                        _txrx.Send("test " +  _testTitle); // just in case it was missed
                         while (_numExtracted > _numFilesToExtract) _numExtracted--;
                         _txrx.Send("pb 1 value " + _numExtracted);
                         if (_numExtracted == _numFilesToExtract)
@@ -1448,13 +1448,13 @@ namespace Ionic.Zip.Tests.Zip64
                                                    enc,
                                                    compression.ToString());
 
-            string msg = String.Format("ZipFile #{0} 64({1}) E({2}), C({3})",
+            _testTitle = String.Format("ZipFile #{0} 64({1}) E({2}), C({3})",
                                        numTotalEntries,
                                        z64option.ToString(),
                                        enc,
                                        compression.ToString());
             _txrx = TestUtilities.StartProgressMonitor(zipFileToCreate,
-                                                       msg,
+                                                       _testTitle,
                                                        "starting up...");
 
             _txrx.Send("pb 0 max 4"); // 3 stages: AddEntry, Save, Verify
@@ -1541,7 +1541,7 @@ namespace Ionic.Zip.Tests.Zip64
                     if (m % 1024 == 0)
                     {
                         _txrx.Send("pb 1 value " + m);
-                        msg = String.Format("status adding entry {0}/{1}  ({2:N0}%)",
+                        string msg = String.Format("status adding entry {0}/{1}  ({2:N0}%)",
                                             m, numTotalEntries, (m/(0.01*numTotalEntries)));
                         _txrx.Send(msg);
                     }
@@ -1554,7 +1554,7 @@ namespace Ionic.Zip.Tests.Zip64
 
             _txrx.Send("pb 0 step");
             _txrx.Send("pb 1 value 0");
-            _txrx.Send("status Verifying...");
+            _txrx.Send("status Reading...");
 
             // verify the zip by unpacking.
             _numFilesToExtract = numTotalEntries;

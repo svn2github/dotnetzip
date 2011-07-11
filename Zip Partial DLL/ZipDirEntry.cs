@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-08 22:22:07>
+// Time-stamp: <2011-July-11 12:03:03>
 //
 // ------------------------------------------------------------------
 //
@@ -183,7 +183,8 @@ namespace Ionic.Zip
         /// </param>
         ///
         /// <returns>the entry read from the archive.</returns>
-        internal static ZipEntry ReadDirEntry(ZipFile zf, List<String> previouslySeen)
+        internal static ZipEntry ReadDirEntry(ZipFile zf,
+                                              Dictionary<String,Object> previouslySeen)
         {
             System.IO.Stream s = zf.ReadStream;
             System.Text.Encoding expectedEncoding = (zf.AlternateEncodingUsage == ZipOption.Always)
@@ -270,7 +271,7 @@ namespace Ionic.Zip
 
             // workitem 10330
             // insure unique entry names
-            while (previouslySeen.Contains(zde._FileNameInArchive))
+            while (previouslySeen.ContainsKey(zde._FileNameInArchive))
             {
                 zde._FileNameInArchive = CopyHelper.AppendCopyToFileName(zde._FileNameInArchive);
                 zde._metadataChanged = true;
