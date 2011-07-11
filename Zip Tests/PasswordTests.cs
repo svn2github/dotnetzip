@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-June-13 16:57:46>
+// Last Saved: <2011-July-11 14:13:06>
 //
 // ------------------------------------------------------------------
 //
@@ -153,6 +153,100 @@ namespace Ionic.Zip.Tests.Password
                 var r = ZipFile.CheckZipPassword(zipFileToCreate, passwords[j]);
                 Assert.IsTrue(r, "Bad password in round {0}", j);
             }
+        }
+
+
+        [TestMethod]
+        public void Password_UnsetEncryptionAfterSetPassword_wi13909_ZOS()
+        {
+            // Verify that unsetting the Encryption property after
+            // setting a Password results in no encryption being used.
+            // This method tests ZipOutputStream.
+            string unusedPassword = TestUtilities.GenerateRandomPassword();
+            int numTotalEntries = _rnd.Next(46)+653;
+            string zipFileToCreate = "UnsetEncryption.zip";
+
+            using (FileStream fs = File.Create(zipFileToCreate))
+            {
+                using (var zos = new ZipOutputStream(fs))
+                {
+                    zos.Password = unusedPassword;
+                    zos.Encryption = EncryptionAlgorithm.None;
+
+                    for (int i=0; i < numTotalEntries; i++)
+                    {
+                        if (_rnd.Next(7)==0)
+                        {
+                            string entryName = String.Format("{0:D5}/", i);
+                            zos.PutNextEntry(entryName);
+                        }
+                        else
+                        {
+                            string entryName = String.Format("{0:D5}.txt", i);
+                            zos.PutNextEntry(entryName);
+                            if (_rnd.Next(12)==0)
+                            {
+                                var block = TestUtilities.GenerateRandomAsciiString() + " ";
+                                string contentBuffer = String.Format("This is the content for entry {0}", i);
+                                int n = _rnd.Next(6) + 2;
+                                for (int j=0; j < n; j++)
+                                    contentBuffer += block;
+                                byte[] buffer = System.Text.Encoding.ASCII.GetBytes(contentBuffer);
+                                zos.Write(buffer, 0, buffer.Length);
+                            }
+                        }
+                    }
+                }
+            }
+
+            BasicVerifyZip(zipFileToCreate);
+        }
+
+
+
+        [TestMethod]
+        public void Password_UnsetEncryptionAfterSetPassword_wi13909_ZF()
+        {
+            // Verify that unsetting the Encryption property after
+            // setting a Password results in no encryption being used.
+            // This method tests ZipFile.
+            string unusedPassword = TestUtilities.GenerateRandomPassword();
+            int numTotalEntries = _rnd.Next(46)+653;
+            string zipFileToCreate = "UnsetEncryption.zip";
+
+            using (var zip = new ZipFile())
+            {
+                zip.Password = unusedPassword;
+                zip.Encryption = EncryptionAlgorithm.None;
+
+                for (int i=0; i < numTotalEntries; i++)
+                {
+                    if (_rnd.Next(7)==0)
+                    {
+                        string entryName = String.Format("{0:D5}", i);
+                        zip.AddDirectoryByName(entryName);
+                    }
+                    else
+                    {
+                        string entryName = String.Format("{0:D5}.txt", i);
+                        if (_rnd.Next(12)==0)
+                        {
+                            var block = TestUtilities.GenerateRandomAsciiString() + " ";
+                            string contentBuffer = String.Format("This is the content for entry {0}", i);
+                                int n = _rnd.Next(6) + 2;
+                                for (int j=0; j < n; j++)
+                                    contentBuffer += block;
+                            byte[] buffer = System.Text.Encoding.ASCII.GetBytes(contentBuffer);
+                            zip.AddEntry(entryName, contentBuffer);
+                        }
+                        else
+                            zip.AddEntry(entryName, Stream.Null);
+                    }
+                }
+                zip.Save(zipFileToCreate);
+            }
+
+            BasicVerifyZip(zipFileToCreate);
         }
 
 

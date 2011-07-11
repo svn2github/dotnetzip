@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-06 18:11:59>
+// Time-stamp: <2011-July-11 14:13:14>
 //
 // ------------------------------------------------------------------
 //
@@ -1373,11 +1373,11 @@ namespace Ionic.Zip
             _currentEntry._BitField |= 0x0008;  // workitem 8932
             _currentEntry.SetEntryTimes(DateTime.Now, DateTime.Now, DateTime.Now);
             _currentEntry.CompressionLevel = this.CompressionLevel;
+            _currentEntry.Password = _password; // workitem 13909
             _currentEntry.Encryption = this.Encryption;
             // workitem 12634
             _currentEntry.AlternateEncoding = this.AlternateEncoding;
             _currentEntry.AlternateEncodingUsage = this.AlternateEncodingUsage;
-            _currentEntry.Password = _password;
 
             if (entryName.EndsWith("/"))  _currentEntry.MarkAsDirectory();
 
