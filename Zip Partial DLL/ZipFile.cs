@@ -528,8 +528,8 @@ namespace Ionic.Zip
 
         /// <summary>
         ///   Specifies whether the Creation, Access, and Modified times for entries
-        ///   added to the zip file will be emitted in "Windows format" when the zip
-        ///   archive is saved.
+        ///   added to the zip file will be emitted in &#147;Windows format&#148;
+        ///   when the zip archive is saved.
         /// </summary>
         ///
         /// <remarks>
@@ -3702,18 +3702,20 @@ namespace Ionic.Zip
 
 
     /// <summary>
-    ///  An enum representing the values on a three-way toggle switch for
-    ///  various options in the library.
+    ///  An enum representing the values on a three-way toggle switch
+    ///  for various options in the library. This might be used to
+    ///  specify whether to employ a particular text encoding, or to use
+    ///  ZIP64 extensions, or some other option.
     /// </summary>
     public enum ZipOption
     {
         /// <summary>
-        /// The default behavior, which is "Never".
+        /// The default behavior. This is the same as "Never".
         /// (For COM clients, this is a 0 (zero).)
         /// </summary>
         Default = 0,
         /// <summary>
-        /// Do not use ZIP64 extensions when writing zip archives.
+        /// Never use the associated option.
         /// (For COM clients, this is a 0 (zero).)
         /// </summary>
         Never = 0,

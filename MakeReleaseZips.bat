@@ -14,7 +14,7 @@ goto START
  DotNetZip is licensed under the MS-PL.  See the accompanying
  License.txt file.
 
- Last Updated: <2011-July-11 18:24:22>
+ Last Updated: <2011-July-12 00:00:49>
 
 -------------------------------------------------------
 
@@ -50,12 +50,11 @@ if ERRORLEVEL 1 (
   exit /b 1
 )
 
-
  set releaseDir=releases\v%version%-%stamp%
  echo making release dir %releaseDir%
  mkdir %releaseDir%
 
- ::REM call :MakeHelpFile
+ call :MakeDocumentation
 
  ::REM call :MakeIntegratedHelpMsi
 
@@ -157,20 +156,28 @@ goto :EOF
 
 
 --------------------------------------------
-:MakeHelpFile
+:MakeDocumentation
 
-  @REM example output hedklp file name:  DotNetZipLib-v1.5.chm
+  @REM This batch subroutine invokes MSBUILD using the shfbproj files
+  @REM for Documentation.  Example output htmlhelp1 file name:
+  @REM DotNetZipLib-v1.9.chm
 
   echo.
   echo +++++++++++++++++++++++++++++++++++++++++++++++++++++++
   echo.
-  echo Invoking Sandcastle HFB to make the Compiled Help File
+  echo Building Documentation Files
   echo.
 
-  @REM "C:\Program Files\EWSoftware\Sandcastle Help File Builder\SandcastleBuilderConsole.exe" DotNetZip.shfb
+  %MSBUILD% /nologo /p:Configuration=Release   Help\HtmlHelp1.shfbproj
+  %MSBUILD% /nologo /p:Configuration=Release   Help\HelpViewer.shfbproj
 
-  %MSBUILD%  /p:Configuration=Release   Help\Dotnetzip.shfbproj
-  move Help\out\DotNetZipLib-v*.chm %releaseDir%
+  set zipfile=DotNetZip-Documentation-v%version%.zip
+  set rzipfile=%releaseDir%\%zipfile%
+  echo zipfile is %rzipfile%
+
+  %zipit% %rzipfile%  -s Readme.txt "This zip contains the documentation for DotNetZip in various help formats. This is for DotNetZip v%version%.  This package was packed %stamp%. "  -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"
+
+  %zipit% %rzipfile%  -d .  -D "Help\bin\HtmlHelp1"  *.chm  -d "Help Viewer 1.0"  -D Help\bin\HelpViewer -r+ "(name != *.chm) AND (name != *.log)"
 
 goto :EOF
 --------------------------------------------
@@ -194,7 +201,7 @@ goto :EOF
   set rzipfile=%releaseDir%\%zipfile%
   echo zipfile is %rzipfile%
 
-  %zipit% %rzipfile%  -s Contents.txt "This is the Developer's Kit package for DotNetZip v%version%.  This package was packed %stamp%.  In this zip you will find Debug and Release DLLs for the various versions of the Ionic.Zip class library and the Ionic.Zlib class library.  There is a separate top-level folder for each distinct version of the DLL, and within those top-level folders there are Debug and Release folders.  In the Debug folders you will find a DLL, a PDB, and an XML file for the given library, while the Release folder will have just a DLL.  The DLL is the actual library (either Debug or Release flavor), the PDB is the debug information, and the XML file is the intellisense doc for use within Visual Studio.  There is also a .chm file, which is a viewable help file.  In addition you will find the MSI file for the VS2008-integrated help.  If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip"  -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt License.zlib.txt
+  %zipit% %rzipfile%  -s Contents.txt "This is the Developer's Kit package for DotNetZip v%version%.  This package was packed %stamp%.  In this zip you will find Debug and Release DLLs for the various versions of the Ionic.Zip class library and the Ionic.Zlib class library.  There is a separate top-level folder for each distinct version of the DLL, and within those top-level folders there are Debug and Release folders.  In the Debug folders you will find a DLL, a PDB, and an XML file for the given library, while the Release folder will have just a DLL.  The DLL is the actual library (either Debug or Release flavor), the PDB is the debug information, and the XML file is the intellisense doc for use within Visual Studio.  There are also files containing the documentation. If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip"  -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt License.zlib.txt
 
   %zipit% %rzipfile%  -d DotNetZip-v%version%   -s Readme.txt "DotNetZip Library Developer's Kit package,  v%version% packed %stamp%.  This is the DotNetZip library.  It includes the classes in the Ionic.Zip namespace as well as the classes in the Ionic.Zlib namespace. Use this library if you want to manipulate ZIP files within .NET applications."
 
@@ -229,8 +236,8 @@ goto :EOF
 
   %zipit% %rzipfile%  -d Examples  -D "Examples"  -r+  "name != *.cache and name != *.*~ and name != *.suo and name != *.user and name != #*.*# and name != *.vspscc and name != Examples\*\*\bin\*.* and name != Examples\*\*\obj\*.* and name != Examples\*\bin\*.* and name != Examples\*\obj\*.*"
 
-  cd %releaseDir%
-  for %%V in ("*.chm") do   %zipit% %zipfile%  %%V
+  %zipit% %rzipfile%  -D %releaseDir%  "name = DotNetZip-Documentation-*.zip"
+
   cd %baseDir%
 
 goto :EOF

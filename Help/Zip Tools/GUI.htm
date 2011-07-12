@@ -26,9 +26,9 @@ for creating and extracting zip files.  </p>
 
 <p>If you use the MSI installer, you will have the chance to associate
 .zip files to this tool.  If you associate .zip files to this tool,
-double-clicking on a zip file will open the zip file in the tool.  If
-you don't associate .zip files to this tool, you can open the tool using
-the Start menu.  </p>
+double-clicking on a zip file from within Windows Explorer will open the
+zip file in the tool.  If you don't associate .zip files to this tool,
+you can open the tool using the Start menu.  </p>
 
 
 <img src="ZipTool1.png"/>
@@ -65,7 +65,7 @@ files to be added into the zip file. </li>
 To select additional files, you can then repeat steps 1-5 as many times as is necessary.
 <br/>
 <br/>
-When you've selected the files you want to include in the archive, 
+When you've selected the files you want to include in the archive,
 </li>
 
 <li>Specify the name of the zip file to create.</li>
@@ -97,14 +97,14 @@ obscure the password characters. This box is enabled only if encryption is in us
 
 <li>Click this button to remove any checked files from the list.</li>
 
-<li>Finally, click this button to actually create the zip archive.</li> 
+<li>Finally, click this button to actually create the zip archive.</li>
 
 </ol>
 
 
 <h2>Extracting files from a Zip Archive</h2>
 
-<p>Extract files from a zip archive by opening the DotNetZip-WinformsTool.exe, and selecting the <b>Read/Extract</b> tab in the UI. 
+<p>Extract files from a zip archive by opening the DotNetZip-WinformsTool.exe, and selecting the <b>Read/Extract</b> tab in the UI.
 </p>
 
 
@@ -134,8 +134,9 @@ entries in the zip will be displayed in the listbox below (label #7).
 
 <li>The list of entries in the zip file. </li>
 
-<li>Click this button to extract the specified entries in the zip file. 
+<li>Click this button to extract the specified entries in the zip file.
 </li>
+</ol>
 
 
 
@@ -218,13 +219,13 @@ have spaces in the filename.  The full criteria string for that would be
 </tr>
 
 <tr>
-  <td  colspan='2' class="code">ctime > 07/01/2009-07:53:00</td>
+  <td  colspan='2' class="code">ctime &gt; 07/01/2009-07:53:00</td>
 </tr>
 
 <tr>
   <td>&nbsp;</td>
 
-  <td>any file with a <em>created time</em> after 7:53am on 1 July 2009. 
+  <td>any file with a <em>created time</em> after 7:53am on 1 July 2009.
   </td>
 </tr>
 
@@ -238,7 +239,7 @@ have spaces in the filename.  The full criteria string for that would be
   <td>
 any file with a size over 320mb.  You can use <b>kb</b> or <b>gb</b>, too.  Or
 omit the characters for a size in bytes. And you can use &lt;, &gt;, or = as
-operations.  
+operations.
   </td>
 </tr>
 
@@ -252,7 +253,7 @@ operations.
   <td>
 any file that does not have the Hidden attribute set. Other attributes
 include S=system, R=Readonly, A=Archive.  Of course you can test that
-the attribute is ON as well, using = instead of !=.  
+the attribute is ON as well, using = instead of !=.
   </td>
 </tr>
 
@@ -264,7 +265,7 @@ the attribute is ON as well, using = instead of !=.
   <td>&nbsp;</td>
 
   <td>
-include the files that satisfy both conditions.  You can also use OR as a conjuction. Use parens to group complex expressions. 
+include the files that satisfy both conditions.  You can also use OR as a conjuction. Use parens to group complex expressions.
 
   </td>
 </tr>
@@ -277,7 +278,7 @@ include the files that satisfy both conditions.  You can also use OR as a conjuc
   <td>&nbsp;</td>
 
   <td>
-include the files that satisfy one or the other condition. 
+include the files that satisfy one or the other condition.
   </td>
 </tr>
 
@@ -313,7 +314,7 @@ any file modified on July 1st.  From midnight to midnight.
   <td>&nbsp;</td>
 
   <td>
-any .jpg file modified on July 1st. 
+any .jpg file modified on July 1st.
   </td>
 </tr>
 

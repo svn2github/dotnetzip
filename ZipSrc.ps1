@@ -10,7 +10,7 @@
 #  DotNetZip is licensed under the MS-PL.  See the accompanying
 #  License.txt file.
 #
-#  Last Updated: <2011-July-11 18:56:15>
+#  Last Updated: <2011-July-12 00:21:25>
 #
 # -------------------------------------------------------
 
@@ -35,6 +35,7 @@ function ZipUp-Files ( $directory )
     $o.Name -ne "_tfs"           -and
     $o.Name -ne "notused"        -and
     $o.Name -ne "AppNote.txt"    -and
+    $o.Name -ne "AppNote.iz.txt" -and
     $o.Name -ne "CodePlex-Readme.txt"     -and
     $o.Name -ne "ReadThis.txt"   -and
     $o.Name -ne "Ionic.snk"      -and

@@ -23,7 +23,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 
 <p>There are also a few complete, working example applications shipped in the source code distribution. </p>
 
-<hr>
+<hr/>
 <p>Add items to a zip file: </p>
 
 <pre lang="VB" numberLines="true" outlining="true"
@@ -41,7 +41,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 </pre>
 
 
-<hr>
+<hr/>
 <p>Extract items from a zip file: </p>
 
 <pre lang="VB" numberLines="true" outlining="true"
@@ -59,7 +59,7 @@ h4           { font-size: 14pt; font-weight:bold; color:#C71585; margin-bottom:2
 </pre>
 
 
-<hr>
+<hr/>
 <p>Extract all entries, and set the StatusMessageTextWriter so that verbose messages are generated:</p>
 
 <pre lang="VB" numberLines="true" outlining="true"
@@ -73,7 +73,7 @@ End Using
 
 
 
-<hr>
+<hr/>
 <p>Add a few files to a zip file, specifying different passwords for different items: </p>
 
 <pre lang="VB" numberLines="true" outlining="true"
@@ -93,7 +93,7 @@ Catch ex1 As System.Exception
 End Try
 </pre>
 
-<hr>
+<hr/>
 <p>Add a few files to a zip file, using WinZip-compatible AES encryption on the entries: </p>
 
 <pre lang="VB" numberLines="true" outlining="true"
@@ -113,7 +113,7 @@ End Try
 </pre>
 
 
-<hr>
+<hr/>
 <p>Extract entries using a password:</p>
 
 <pre lang="VB" numberLines="true" outlining="true"
@@ -131,7 +131,7 @@ End Using
 </pre>
 
 
-<hr>
+<hr/>
 <p>This example creates a zip using ZIP64 extensions. ZIP64 allows you to exceed 4gb in a zip, or 65535 entries in a zip. </p>
 
 <pre lang="VB" numberLines="true" outlining="true"
@@ -151,7 +151,7 @@ End Using
 
 
 
-<hr>
+<hr/>
 
 <p>Create a zip file, add a file, and also add an entry from a
 string.  When the zip is unzipped, the content from the string will be
@@ -168,7 +168,7 @@ Using zip1 As ZipFile = New ZipFile
 End Using
 </pre>
 
-<hr>
+<hr/>
 
 <p>Create a zip file, and add an entry taking content from a stream, like a MemoryStream or a FileStream.
 </p>
@@ -186,7 +186,7 @@ End Using
 
 
 
-<hr>
+<hr/>
 <p>Read in a zip file, remove a few entries, save the file:</p>
 
 <pre lang="VB" numberLines="true" outlining="true"
@@ -217,7 +217,7 @@ End Using
 
 
 
-<hr>
+<hr/>
 <p>Add a bunch of items, whether files or directories:</p>
 
 <pre lang="VB" numberLines="true" outlining="true"
@@ -242,7 +242,7 @@ End Try
 </pre>
 
 
-<hr>
+<hr/>
 <p>Create a self-extracting archive:</p>
 
 <pre lang="VB" numberLines="true" outlining="true"
@@ -257,7 +257,7 @@ End Using
 
 
 
-<hr>
+<hr/>
 <p>Update some entries in a Zip file:</p>
 
 <pre lang="VB" numberLines="true" outlining="true"
@@ -280,7 +280,8 @@ End Using
 
 
 
-<hr>
+<hr/>
+
 <p>Produce a zip file that contains embedded zip files. </p>
 
 <pre lang="VB" numberLines="true" outlining="true"
