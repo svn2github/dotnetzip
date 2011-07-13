@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-13 13:18:58>
+// Last Saved: <2011-July-13 14:24:42>
 //
 // ------------------------------------------------------------------
 //
@@ -1914,6 +1914,107 @@ namespace Ionic.Zip.Tests.Streams
         }
 
 
+        void CopyStream(Stream source, Stream dest)
+        {
+            int n;
+            var buf = new byte[2048];
+            while ((n= source.Read(buf, 0, buf.Length)) >  0)
+            {
+                dest.Write(buf,0,n);
+            }
+        }
+
+
+        [TestMethod]
+        public void ZIS_ZOS_VaryCompression()
+        {
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+            string resourceDir = Path.Combine(testBin, "Resources");
+            var filesToAdd = Directory.GetFiles(resourceDir);
+
+            Func<int, int, bool> chooseCompression = (ix, cycle) => {
+                var name = Path.GetFileName(filesToAdd[ix]);
+                switch (cycle)
+                {
+                    case 0:
+                        return !(name.EndsWith(".zip") ||
+                                 name.EndsWith(".docx") ||
+                                 name.EndsWith(".xslx"));
+                    case 1:
+                        return ((ix%2)==0);
+
+                    default:
+                        return (ix == filesToAdd.Length - 1);
+                }
+            };
+
+            // Three cycles - three different ways to vary compression
+            for (int k=0; k < 3; k++)
+            {
+                string zipFileToCreate = String.Format("VaryCompression-{0}.zip", k);
+
+                TestContext.WriteLine("");
+                TestContext.WriteLine("Creating zip, cycle {0}", k);
+                using (var fileStream = File.OpenWrite(zipFileToCreate))
+                {
+                    using (var zos = new ZipOutputStream(fileStream, true))
+                    {
+                        for (int i=0; i < filesToAdd.Length; i++)
+                        {
+                            var file = filesToAdd[i];
+                            var shortName = Path.GetFileName(file);
+                            bool compress = chooseCompression(i, k);
+
+                            if (compress)
+                                zos.CompressionLevel = Ionic.Zlib.CompressionLevel.Default;
+                            else
+                                zos.CompressionLevel = Ionic.Zlib.CompressionLevel.None;
+
+                            zos.PutNextEntry(shortName);
+                            using (var input = File.OpenRead(file))
+                            {
+                                CopyStream(input, zos);
+                            }
+                        }
+                    }
+                }
+
+                TestContext.WriteLine("");
+                TestContext.WriteLine("Extracting cycle {0}", k);
+                string extractDir = "extract-" + k;
+                Directory.CreateDirectory(extractDir);
+                using (var raw = File.OpenRead(zipFileToCreate))
+                {
+                    using (var input = new ZipInputStream(raw))
+                    {
+                        ZipEntry e;
+                        while ((e = input.GetNextEntry()) != null)
+                        {
+                            TestContext.WriteLine("entry: {0}", e.FileName);
+                            string outputPath = Path.Combine(extractDir, e.FileName);
+                            if (e.IsDirectory)
+                            {
+                                // create the directory
+                                Directory.CreateDirectory(outputPath);
+                            }
+                            else
+                            {
+                                // create the file
+                                using (var output = File.Create(outputPath))
+                                {
+                                    CopyStream(input,output);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                string[] filesUnzipped = Directory.GetFiles(extractDir);
+                Assert.AreEqual<int>(filesToAdd.Length, filesUnzipped.Length,
+                                     "Incorrect number of files extracted.");
+
+            }
+        }
 
     }
 }
