@@ -207,7 +207,7 @@ namespace Ionic.Zip
             if (diskNumber >= 99)
             {
                 _exceptionPending = true;
-                throw new OverflowException();
+                throw new OverflowException("The number of zip segments would exceed 99.");
             }
 
             return String.Format("{0}.z{1:D2}",
