@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-11 20:34:54>
+// Last Saved: <2011-July-12 12:24:01>
 //
 // ------------------------------------------------------------------
 //
@@ -544,7 +544,7 @@ namespace Ionic.Zip
             throw new IOException();
         }
 
-#if NETCF
+#if NETCF || SILVERLIGHT
         public static string InternalGetTempFileName()
         {
             return "DotNetZip-" + GenerateRandomStringImpl(8,0) + ".tmp";

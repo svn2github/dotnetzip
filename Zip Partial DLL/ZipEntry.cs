@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-04 22:29:39>
+// Time-stamp: <2011-July-12 13:42:55>
 //
 // ------------------------------------------------------------------
 //
@@ -2396,10 +2396,9 @@ namespace Ionic.Zip
 
 #else
                 // workitem 6878??
-                // Ionic.Zip.SharedUtilities.AdjustTime_Win32ToDotNet
-                entry._Mtime = File.GetLastWriteTimeUtc(filename);
-                entry._Ctime = File.GetCreationTimeUtc(filename);
-                entry._Atime = File.GetLastAccessTimeUtc(filename);
+                entry._Mtime = File.GetLastWriteTime(filename).ToUniversalTime();
+                entry._Ctime = File.GetCreationTime(filename).ToUniversalTime();
+                entry._Atime = File.GetLastAccessTime(filename).ToUniversalTime();
 
                 // workitem 7071
                 // can only get attributes on files that exist.

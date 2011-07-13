@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-19 12:25:48>
+// Time-stamp: <2011-July-13 15:28:39>
 //
 // ------------------------------------------------------------------
 //
@@ -248,8 +248,7 @@ namespace Ionic.Zip.Tests.Split
 
 
         [TestMethod]
-        //[Timeout(2 * 60 * 60 * 1000)]  // 60 * 60 * 1000 = 1 hour
-        [Timeout(90 * 60 * 1000)]  // 90 minutes
+        [Timeout(90 * 60*1000)]
         public void Create_LargeSegmentedArchive()
         {
             // There was a claim that large archives (around or above
@@ -482,9 +481,7 @@ namespace Ionic.Zip.Tests.Split
         [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Spanned_InvalidSegmentSize()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Create_Split_InvalidSegmentSize.zip");
-            Directory.SetCurrentDirectory(TopLevelDir);
-
+            string zipFileToCreate = "InvalidSegmentSize.zip";
             int segSize = 65536/3 + _rnd.Next(65536/2);
             using (var zip = new ZipFile())
             {
@@ -494,5 +491,80 @@ namespace Ionic.Zip.Tests.Split
         }
 
 
+
+
+
+        [TestMethod]
+        public void Spanned_Resave_wi13915()
+        {
+            TestContext.WriteLine("Creating fodder files... {0}",
+                                  DateTime.Now.ToString("G"));
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+            string resourceDir = Path.Combine(testBin, "Resources");
+            string contentDir = "fodder";
+            Directory.CreateDirectory(contentDir);
+            int numFilesToAdd = _rnd.Next(8) + 8;
+            int baseSize = 0x100000;
+            for (int i=0; i < numFilesToAdd; i++)
+            {
+                int fileSize = baseSize + _rnd.Next(baseSize/2);
+                string fileName = Path.Combine(contentDir, string.Format("Pippo{0}.txt", i));
+                TestUtilities.CreateAndFillFileText(fileName, fileSize);
+            }
+            var filesToAdd = new List<String>(Directory.GetFiles(contentDir));
+            int[] segSizes  = { 128 * 1024, 256 * 1024, 512 * 1024 };
+
+            // Two passes:
+            // pass 1: save as regular, then resave as segmented.
+            // pass 2: save as segmented, then resave as regular.
+            for (int m=0; m < 2; m++)
+            {
+                // for various segment sizes
+                for (int k=0; k < segSizes.Length; k++)
+                {
+                    string trialDir = String.Format("trial.{0}.{1}", k, m);
+                    Directory.CreateDirectory(trialDir);
+                    string zipFile1 = Path.Combine(trialDir, "Resave.zip");
+                    string zipFile2 = Path.Combine(trialDir, "Updated.zip");
+                    TestContext.WriteLine("");
+                    TestContext.WriteLine("Creating zip... T({0},{1})...{2}",
+                                          k, m, DateTime.Now.ToString("G"));
+                    using (var zip1 = new ZipFile())
+                    {
+                        zip1.AddFiles(filesToAdd, "");
+                        if (m==1)
+                            zip1.MaxOutputSegmentSize = segSizes[k];
+                        zip1.Save(zipFile1);
+                    }
+
+                    TestContext.WriteLine("");
+                    TestContext.WriteLine("Re-saving...");
+                    using (var zip2 = ZipFile.Read(zipFile1))
+                    {
+                        if (m==0)
+                            zip2.MaxOutputSegmentSize = segSizes[k];
+                        zip2.Save(zipFile2);
+                    }
+
+                    TestContext.WriteLine("");
+                    TestContext.WriteLine("Extracting...");
+                    string extractDir = Path.Combine(trialDir,"extract");
+                    Directory.CreateDirectory(extractDir);
+                    using (var zip3 = ZipFile.Read(zipFile2))
+                    {
+                        foreach (var e in zip3)
+                        {
+                            TestContext.WriteLine(" {0}", e.FileName);
+                            e.Extract(extractDir);
+                        }
+                    }
+
+                    string[] filesUnzipped = Directory.GetFiles(extractDir);
+                    Assert.AreEqual<int>(filesToAdd.Count, filesUnzipped.Length,
+                                         "Incorrect number of files extracted.");
+                }
+            }
+        }
     }
+
 }

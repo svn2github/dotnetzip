@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// last saved: <2011-June-21 16:43:06>
+// last saved: <2011-July-12 12:22:50>
 //
 // ------------------------------------------------------------------
 //
@@ -176,13 +176,13 @@ namespace Ionic
             switch (Which)
             {
                 case WhichTime.atime:
-                    x = System.IO.File.GetLastAccessTimeUtc(filename);
+                    x = System.IO.File.GetLastAccessTime(filename).ToUniversalTime();
                     break;
                 case WhichTime.mtime:
-                    x = System.IO.File.GetLastWriteTimeUtc(filename);
+                    x = System.IO.File.GetLastWriteTime(filename).ToUniversalTime();
                     break;
                 case WhichTime.ctime:
-                    x = System.IO.File.GetCreationTimeUtc(filename);
+                    x = System.IO.File.GetCreationTime(filename).ToUniversalTime();
                     break;
                 default:
                     throw new ArgumentException("Operator");
