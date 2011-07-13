@@ -14,13 +14,13 @@
 //
 // ------------------------------------------------------------------
 //
-// last saved (in emacs):
-// Time-stamp: <2011-July-11 14:02:36>
+// Last Saved: <2011-July-13 13:18:58>
 //
 // ------------------------------------------------------------------
 //
-// This module defines tests for Streams interfaces into DotNetZip.
-// ZipOutputStream, ZipInputStream, etc
+// This module defines tests for Streams interfaces into DotNetZip, that
+// DotNetZip can write to streams, read from streams, ZipOutputStream,
+// ZipInputStream, etc.
 //
 // ------------------------------------------------------------------
 
@@ -1848,6 +1848,69 @@ namespace Ionic.Zip.Tests.Streams
                                          "Incorrect number of files extracted. ({0}!={1})", files.Length, filesUnzipped.Length);
                 }
             }
+        }
+
+
+
+
+
+        [TestMethod]
+        public void ASPNET_GenerateZip()
+        {
+            string testBin = TestUtilities.GetTestBinDir(CurrentDir);
+            string resourceDir = Path.Combine(testBin, "Resources");
+            string aspnetHost = Path.Combine(resourceDir, "AspNetHost.exe");
+            Assert.IsTrue(File.Exists(aspnetHost), "file {0} does not exit.", aspnetHost);
+            string aspnetHostPdb = Path.Combine(resourceDir, "AspNetHost.pdb");
+
+            // page that generates a zip file.
+            string aspxPage = Path.Combine(resourceDir, "GenerateZip-cs.aspx");
+            Assert.IsTrue(File.Exists(aspxPage));
+
+            string ionicZipDll = Path.Combine(testBin, "Ionic.Zip.dll");
+            string loremFile = "LoremIpsum.txt";
+
+            Action<String> copyToBin = (x) =>
+                File.Copy(x, Path.Combine("bin",
+                                          Path.GetFileName(x)));
+            Directory.CreateDirectory("bin");
+            copyToBin(aspnetHost);
+            copyToBin(aspnetHostPdb);
+            copyToBin(ionicZipDll);
+            File.Copy(aspxPage, Path.GetFileName(aspxPage));
+            File.WriteAllText(loremFile, TestUtilities.LoremIpsum);
+
+            string zipFileToCreate = "ASPX-output.out";
+            string binAspNetHostExe = Path.Combine("bin",
+                                                   Path.GetFileName(aspnetHost));
+            string urlRequest = Path.GetFileName(aspxPage)  + "?file=LoremIpsum.txt";
+
+            int rc = this.ExecRedirectStdOut(binAspNetHostExe,
+                                             urlRequest,
+                                             zipFileToCreate);
+
+            Assert.AreEqual<int>(rc, 0, "Non-zero RC: ({0})", rc);
+
+            int nEntries = TestUtilities.CountEntries(zipFileToCreate);
+            Assert.AreEqual<int>(nEntries,
+                                 2, "wrong number of entries ({0})", nEntries);
+
+            string extractDir = "extract";
+            // read/extract the generated zip
+            using (var zip = ZipFile.Read(zipFileToCreate))
+            {
+                foreach (var e in zip)
+                {
+                    e.Extract(extractDir);
+                }
+            }
+
+            // compare checksums
+            var chk1 = TestUtilities.ComputeChecksum(loremFile);
+            var chk2 = TestUtilities.ComputeChecksum(Path.Combine(extractDir,loremFile));
+            string s1 = TestUtilities.CheckSumToString(chk1);
+            string s2 = TestUtilities.CheckSumToString(chk2);
+            Assert.AreEqual<String>(s1, s2, "Unexpected checksum on extracted file.");
         }
 
 

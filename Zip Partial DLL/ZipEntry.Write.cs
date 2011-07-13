@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-09 21:35:45>
+// Last Saved: <2011-July-12 21:53:01>
 //
 // ------------------------------------------------------------------
 //
@@ -897,7 +897,8 @@ namespace Ionic.Zip
             //                 _BitField |= 0x0020;
 
             // set the UTF8 bit if necessary
-            if (_actualEncoding.CodePage == System.Text.Encoding.UTF8.CodePage) _BitField |= 0x0800;
+            if (_actualEncoding.CodePage == System.Text.Encoding.UTF8.CodePage)
+                _BitField |= 0x0800;
 
             // The PKZIP spec says that if bit 3 is set (0x0008) in the General
             // Purpose BitField, then the CRC, Compressed size, and uncompressed
@@ -1317,7 +1318,7 @@ namespace Ionic.Zip
                 // (maybe) restreamed.
                 fdp = s.Position;
             }
-            catch (System.IO.IOException) { }
+            catch (Exception) { }
 
             try
             {
@@ -2499,12 +2500,12 @@ namespace Ionic.Zip
             lock (_outputLock)
             {
                 int tid = System.Threading.Thread.CurrentThread.GetHashCode();
-#if !NETCF
+#if ! (NETCF || SILVERLIGHT)
                 Console.ForegroundColor = (ConsoleColor)(tid % 8 + 8);
 #endif
                 Console.Write("{0:000} ZipEntry.Write ", tid);
                 Console.WriteLine(format, varParams);
-#if !NETCF
+#if ! (NETCF || SILVERLIGHT)
                 Console.ResetColor();
 #endif
             }

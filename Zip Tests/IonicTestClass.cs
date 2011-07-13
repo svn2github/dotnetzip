@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-09 21:54:38>
+// Time-stamp: <2011-July-13 12:32:12>
 //
 // ------------------------------------------------------------------
 //
@@ -148,11 +148,11 @@ namespace Ionic.Zip.Tests.Utilities
 
         internal string Exec(string program, string args, bool waitForExit, bool emitOutput)
         {
-            if (args == null)
-                throw new ArgumentException("args");
-
             if (program == null)
                 throw new ArgumentException("program");
+
+            if (args == null)
+                throw new ArgumentException("args");
 
             // Microsoft.VisualStudio.TestTools.UnitTesting
             this.TestContext.WriteLine("running command: {0} {1}", program, args);
@@ -169,6 +169,81 @@ namespace Ionic.Zip.Tests.Utilities
                 this.TestContext.WriteLine("A-OK. (output suppressed)");
 
             return output;
+        }
+
+
+        public class AsyncReadState
+        {
+            public System.IO.Stream s;
+            public byte[] buf= new byte[1024];
+        }
+
+
+        internal int ExecRedirectStdOut(string program, string args, string outFile)
+        {
+            if (program == null)
+                throw new ArgumentException("program");
+
+            if (args == null)
+                throw new ArgumentException("args");
+
+            this.TestContext.WriteLine("running command: {0} {1}", program, args);
+
+            Stream fs = File.Create(outFile);
+            try
+            {
+                System.Diagnostics.Process p = new System.Diagnostics.Process
+                {
+                    StartInfo =
+                    {
+                        FileName = program,
+                        CreateNoWindow = true,
+                        Arguments = args,
+                        WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                    }
+                };
+
+                p.Start();
+
+                var stdout = p.StandardOutput.BaseStream;
+                var rs = new AsyncReadState { s = stdout };
+                Action<System.IAsyncResult> readAsync1 = null;
+                var readAsync = new Action<System.IAsyncResult>( (ar) => {
+                        AsyncReadState state = (AsyncReadState) ar.AsyncState;
+                        int n = state.s.EndRead(ar);
+                        if (n > 0)
+                        {
+                            fs.Write(state.buf, 0, n);
+                            state.s.BeginRead(state.buf,
+                                              0,
+                                              state.buf.Length,
+                                              new System.AsyncCallback(readAsync1),
+                                              state);
+                        }
+                    });
+                readAsync1 = readAsync; // ??
+
+                // kickoff
+                stdout.BeginRead(rs.buf,
+                                 0,
+                                 rs.buf.Length,
+                                 new System.AsyncCallback(readAsync),
+                                 rs);
+
+                p.WaitForExit();
+
+                this.TestContext.WriteLine("Process exited, rc={0}", p.ExitCode);
+
+                return p.ExitCode;
+            }
+            finally
+            {
+                if (fs != null)
+                    fs.Dispose();
+            }
         }
 
 

@@ -57,7 +57,7 @@
 //            <providerOption name="OptionInfer" value="false" />
 //            <providerOption name="WarnAsError" value="false" />
 //          </compiler>
-//
+//        </compilers>
 //      </system.codedom>
 //    </configuration>
 //

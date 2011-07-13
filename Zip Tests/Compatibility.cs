@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-10 08:35:59>
+// Time-stamp: <2011-July-13 10:55:54>
 //
 // ------------------------------------------------------------------
 //
@@ -185,7 +185,8 @@ namespace Ionic.Zip.Tests
         {
             // check existence of script and script engine
             string testBin = TestUtilities.GetTestBinDir(CurrentDir);
-            string script = Path.Combine(testBin, String.Format("Resources\\{0}", scriptName));
+            string resourceDir = Path.Combine(testBin, "Resources");
+            string script = Path.Combine(resourceDir, scriptName);
             Assert.IsTrue(File.Exists(script), "script ({0}) does not exist", script);
             return script;
         }
