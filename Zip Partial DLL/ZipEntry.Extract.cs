@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-13 18:14:48>
+// Time-stamp: <2011-July-13 21:13:18>
 //
 // ------------------------------------------------------------------
 //
@@ -885,6 +885,10 @@ namespace Ionic.Zip
                         throw new BadCrcException("CRC error: the file being extracted appears to be corrupted. " +
                                                   String.Format("Expected 0x{0:X8}, Actual 0x{1:X8}", _Crc32, ActualCrc32));
                 }
+
+                // ignore MAC if the size of the file is zero
+                if (this.UncompressedSize == 0)
+                    return;
 
                 // calculate the MAC
                 if (Encryption == EncryptionAlgorithm.WinZipAes128 ||

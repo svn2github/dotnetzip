@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-09 21:42:19>
+// Time-stamp: <2011-July-13 21:25:38>
 //
 // ------------------------------------------------------------------
 //
@@ -845,6 +845,50 @@ namespace Ionic.Zip.Tests.WinZipAes
                 BasicVerifyZip(zipFileToCreate, password);
             }
         }
+
+
+        [TestMethod]
+        public void WZA_MacCheck_ZeroLengthEntry_wi13892()
+        {
+            if (!WinZipIsPresent)
+                throw new Exception("no winzip!");
+
+            // This zipfile has some zero-length entries. Previously
+            // DotNetZip was throwing a spurious MAC mismatch error on
+            // those zero-length entries.
+            string baseFileName = "wi13892.zip";
+            string extractDir = "extract";
+            string password = "C-XPSQ5-BRT5302-";
+
+            string sourceDir = CurrentDir;
+            for (int i = 0; i < 3; i++)
+                sourceDir = Path.GetDirectoryName(sourceDir);
+
+            string fqFileName = Path.Combine(Path.Combine(sourceDir,
+                                                          "Zip Tests\\bin\\Debug\\zips"),
+                                             baseFileName);
+
+            TestContext.WriteLine("Reading zip file: '{0}'", fqFileName);
+            using (ZipFile zip = ZipFile.Read(fqFileName))
+            {
+                zip.Password = password;
+                foreach (ZipEntry e in zip)
+                {
+                    TestContext.WriteLine("{1,-22} {2,9} {3,5:F0}%   {4,9}  {5,3} {6:X8} {0}",
+                                          e.FileName,
+                                          e.LastModified.ToString("yyyy-MM-dd HH:mm:ss"),
+                                          e.UncompressedSize,
+                                          e.CompressionRatio,
+                                          e.CompressedSize,
+                                          (e.UsesEncryption) ? "Y" : "N",
+                                          e.Crc);
+                    e.Extract(extractDir);
+                }
+            }
+        }
+
+
+
 
 
 

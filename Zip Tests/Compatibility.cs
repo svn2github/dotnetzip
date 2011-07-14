@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-13 10:55:54>
+// Time-stamp: <2011-July-13 21:23:37>
 //
 // ------------------------------------------------------------------
 //
@@ -2455,18 +2455,17 @@ namespace Ionic.Zip.Tests
 
         private void _Extract_ZipFile(string fileName)
         {
-            string SourceDir = CurrentDir;
-            for (int i = 0; i < 3; i++)
-                SourceDir = Path.GetDirectoryName(SourceDir);
-
-            //Directory.SetCurrentDirectory(TopLevelDir);
-
             TestContext.WriteLine("Current Dir: {0}", CurrentDir);
+            string sourceDir = CurrentDir;
+            for (int i = 0; i < 3; i++)
+                sourceDir = Path.GetDirectoryName(sourceDir);
 
-            string filename = Path.Combine(SourceDir, "Zip Tests\\bin\\Debug\\zips\\" + fileName);
+            string fqFileName = Path.Combine(Path.Combine(sourceDir,
+                                                             "Zip Tests\\bin\\Debug\\zips"),
+                                                fileName);
 
-            TestContext.WriteLine("Reading zip file: '{0}'", filename);
-            using (ZipFile zip = ZipFile.Read(filename))
+            TestContext.WriteLine("Reading zip file: '{0}'", fqFileName);
+            using (ZipFile zip = ZipFile.Read(fqFileName))
             {
                 string extractDir = "extract";
                 foreach (ZipEntry e in zip)
