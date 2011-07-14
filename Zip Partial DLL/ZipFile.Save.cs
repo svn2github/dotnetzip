@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-13 16:10:30>
+// Time-stamp: <2011-July-13 22:26:21>
 //
 // ------------------------------------------------------------------
 //
@@ -196,7 +196,13 @@ namespace Ionic.Zip
                         this._readstream.Close();
                         this._readstream = null;
                         // the archiveStream for each entry needs to be null
-                        foreach (var e in c) e._archiveStream = null;
+                        foreach (var e in c)
+                        {
+                            var zss1 = e._archiveStream as ZipSegmentedStream;
+                            if (zss1 != null)
+                                zss1.Dispose();
+                            e._archiveStream = null;
+                        }
                     }
 
                     if (File.Exists(_name))

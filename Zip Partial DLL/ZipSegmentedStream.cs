@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-06 11:06:59>
+// Time-stamp: <2011-July-13 22:25:45>
 //
 // ------------------------------------------------------------------
 //
@@ -125,6 +125,10 @@ namespace Ionic.Zip
         ///     simply return a FileStream.  That's why it's "sort of"
         ///     like a Factory method.
         ///   </para>
+        ///   <para>
+        ///     Caller must Close/Dispose the stream object returned by
+        ///     this method.
+        ///   </para>
         /// </remarks>
         public static Stream ForUpdate(string name, uint diskNumber)
         {
@@ -137,8 +141,8 @@ namespace Ionic.Zip
                                               Path.GetFileNameWithoutExtension(name)),
                                  diskNumber + 1);
 
-             // Console.WriteLine("ZSS: ForUpdate ({0})",
-             //                   Path.GetFileName(fname));
+            // Console.WriteLine("ZSS: ForUpdate ({0})",
+            //                   Path.GetFileName(fname));
 
             // This class assumes that the update will not expand the
             // size of the segment. Update is used only for an in-place
@@ -526,6 +530,7 @@ namespace Ionic.Zip
 
             // if (_isDisposed) return;
             // _isDisposed = true;
+            //Console.WriteLine("Dispose (mode={0})\n", rwMode.ToString());
 
             try
             {

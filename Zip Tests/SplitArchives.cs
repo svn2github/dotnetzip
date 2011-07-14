@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-13 18:13:35>
+// Time-stamp: <2011-July-13 22:12:47>
 //
 // ------------------------------------------------------------------
 //
@@ -47,7 +47,7 @@ namespace Ionic.Zip.Tests.Split
     {
         //public Split() : base() { }
 
-        [TestMethod, Timeout(360000)]  // 360000 - 6 minutes
+        [TestMethod, Timeout(6 * 60*1000)]
         public void Spanned_Create()
         {
             string dirToZip = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
@@ -495,6 +495,7 @@ namespace Ionic.Zip.Tests.Split
 
 
         [TestMethod]
+        [Timeout(5 * 60*1000)]
         public void Spanned_Resave_wi13915()
         {
             TestContext.WriteLine("Creating fodder files... {0}",
@@ -514,27 +515,30 @@ namespace Ionic.Zip.Tests.Split
                 TestUtilities.CreateAndFillFileText(fileName, fileSize);
             }
             var filesToAdd = new List<String>(Directory.GetFiles(contentDir));
-            int[] segSizes  = { 64*1024, 128 * 1024, 256 * 1024, 512 * 1024 };
+            int[] segSizes  = { 128 * 1024,
+                                256 * 1024,
+                                512 * 1024 };
 
-            // Two passes:
+            // Three passes:
             // pass 1: save as regular, then resave as segmented.
             // pass 2: save as segmented, then resave as regular.
-            for (int m=0; m < 2; m++)
+            // pass 3: save as segmented, then resave as another segmented archive.
+            for (int m=0; m < 3; m++)
             {
                 // for various segment sizes
                 for (int k=0; k < segSizes.Length; k++)
                 {
                     string trialDir = String.Format("trial.{0}.{1}", m, k);
                     Directory.CreateDirectory(trialDir);
-                    string zipFile1 = Path.Combine(trialDir, "InitialSave.zip");
-                    string zipFile2 = Path.Combine(trialDir, "Updated.zip");
+                    string zipFile1 = Path.Combine(trialDir, "InitialSave."+m+"."+k+".zip");
+                    string zipFile2 = Path.Combine(trialDir, "Updated."+m+"."+k+".zip");
                     TestContext.WriteLine("");
                     TestContext.WriteLine("Creating zip... T({0},{1})...{2}",
                                           m, k, DateTime.Now.ToString("G"));
                     using (var zip1 = new ZipFile())
                     {
                         zip1.AddFiles(filesToAdd, "");
-                        if (m==1)
+                        if (m!=0)
                             zip1.MaxOutputSegmentSize = segSizes[k];
                         zip1.Save(zipFile1);
                     }
@@ -545,6 +549,9 @@ namespace Ionic.Zip.Tests.Split
                     {
                         if (m==0)
                             zip2.MaxOutputSegmentSize = segSizes[k];
+                        else if (m==2)
+                            zip2.MaxOutputSegmentSize = (3 * segSizes[k])/2;
+
                         zip2.Save(zipFile2);
                     }
 
