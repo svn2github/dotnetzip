@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-06 17:56:05>
+// Time-stamp: <2011-July-13 16:10:30>
 //
 // ------------------------------------------------------------------
 //
@@ -378,6 +378,8 @@ namespace Ionic.Zip
             // file backing it) in the Save() method.
             if (_name == null)
                 _writestream = null;
+
+            else _readName = _name; // workitem 13915
 
             _name = fileName;
             if (Directory.Exists(_name))

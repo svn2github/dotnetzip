@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-12 21:53:01>
+// Last Saved: <2011-July-13 18:11:53>
 //
 // ------------------------------------------------------------------
 //
@@ -185,8 +185,22 @@ namespace Ionic.Zip
             bytes[i++] = (byte)((commentLength & 0xFF00) >> 8);
 
             // Disk number start
-            bytes[i++] = (byte)(_diskNumber & 0x00FF);
-            bytes[i++] = (byte)((_diskNumber & 0xFF00) >> 8);
+            bool segmented = (this._container.ZipFile != null) &&
+                (this._container.ZipFile.MaxOutputSegmentSize != 0);
+            if (segmented) // workitem 13915
+            {
+                // Emit nonzero disknumber only if saving segmented archive.
+                bytes[i++] = (byte)(_diskNumber & 0x00FF);
+                bytes[i++] = (byte)((_diskNumber & 0xFF00) >> 8);
+            }
+            else
+            {
+                // If reading a segmneted archive and saving to a regular archive,
+                // ZipEntry._diskNumber will be non-zero but it should be saved as
+                // zero.
+                bytes[i++] = 0;
+                bytes[i++] = 0;
+            }
 
             // internal file attrs
             // workitem 7801
@@ -2003,19 +2017,27 @@ namespace Ionic.Zip
             {
                 try
                 {
-                    // In some cases the source for the zip entry data is a zip file
-                    // (the app is updating a zip file).  In some of those cases, some
-                    // of the zip entries may be modified.  Changes to the FileName,
-                    // CompressionMethod CompressionLevel, and so on.  Some of these
-                    // changes require a "re-stream" - the old entry data must be
-                    // maybe decrypted, maybe decompressed, then maybe re-compressed
-                    // and maybe re-encrypted. This is true for changes in
-                    // CompressionMethod or CompressionLevel. Some changes though,
-                    // require an update only to metadata.  A change in the entry
-                    // name, or a new comment are examples of the latter.  In some
-                    // cases, the entry hasn't changed at all and can be simply copied
-                    // as a block.
-
+                    // When the app is updating a zip file, it may be possible to
+                    // just copy data for a ZipEntry from the source zipfile to the
+                    // destination, as a block, without decompressing and
+                    // recompressing, etc.  But, in some cases the app modifies the
+                    // properties on a ZipEntry prior to calling Save(). A change to
+                    // any of the metadata - the FileName, CompressioLeve and so on,
+                    // means DotNetZip cannot simply copy through the existing
+                    // ZipEntry data unchanged.
+                    //
+                    // There are two cases:
+                    //
+                    //  1. Changes to only metadata, which means the header and
+                    //     central directory must be changed.
+                    //
+                    //  2. Changes to the properties that affect the compressed
+                    //     stream, such as CompressionMethod, CompressionLevel, or
+                    //     EncryptionAlgorithm. In this case, DotNetZip must
+                    //     "re-stream" the data: the old entry data must be maybe
+                    //     decrypted, maybe decompressed, then maybe re-compressed
+                    //     and maybe re-encrypted.
+                    //
                     // This test checks if the source for the entry data is a zip file, and
                     // if a restream is necessary.  If NOT, then it just copies through
                     // one entry, potentially changing the metadata.
@@ -2301,7 +2323,7 @@ namespace Ionic.Zip
 
 
 
-        private void CopyThroughOneEntry(Stream outstream)
+        private void CopyThroughOneEntry(Stream outStream)
         {
             // Just read the entry from the existing input zipfile and write to the output.
             // But, if metadata has changed (like file times or attributes), or if the ZIP64
@@ -2310,15 +2332,17 @@ namespace Ionic.Zip
             if (this.LengthOfHeader == 0)
                 throw new BadStateException("Bad header length.");
 
-            // is it necessaty to re-constitute new metadata for this entry?
+            // is it necessary to re-constitute new metadata for this entry?
             bool needRecompute = _metadataChanged ||
+                (this.ArchiveStream is ZipSegmentedStream) ||
+                (outStream is ZipSegmentedStream) ||
                 (_InputUsesZip64 && _container.UseZip64WhenSaving == Zip64Option.Never) ||
                 (!_InputUsesZip64 && _container.UseZip64WhenSaving == Zip64Option.Always);
 
             if (needRecompute)
-                CopyThroughWithRecompute(outstream);
+                CopyThroughWithRecompute(outStream);
             else
-                CopyThroughWithNoChange(outstream);
+                CopyThroughWithNoChange(outStream);
 
             // zip64 housekeeping
             _entryRequiresZip64 = new Nullable<bool>

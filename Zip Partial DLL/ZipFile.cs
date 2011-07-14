@@ -2296,12 +2296,13 @@ namespace Ionic.Zip
 
         internal Stream StreamForDiskNumber(uint diskNumber)
         {
-            if (diskNumber + 1 == this._diskNumberWithCd || (diskNumber == 0 && this._diskNumberWithCd == 0))
+            if (diskNumber + 1 == this._diskNumberWithCd ||
+                (diskNumber == 0 && this._diskNumberWithCd == 0))
             {
                 //return (this.ReadStream as FileStream);
                 return this.ReadStream;
             }
-            return ZipSegmentedStream.ForReading(this._name, diskNumber, _diskNumberWithCd);
+            return ZipSegmentedStream.ForReading(this._readName, diskNumber, _diskNumberWithCd);
         }
 
 
@@ -3562,6 +3563,7 @@ namespace Ionic.Zip
         private System.Collections.Generic.Dictionary<String, ZipEntry> _entries;
         private List<ZipEntry> _zipEntriesAsList;
         private string _name;
+        private string _readName;
         private string _Comment;
         internal string _Password;
         private bool _emitNtfsTimes = true;

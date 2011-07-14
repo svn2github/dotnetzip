@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-15 07:52:38>
+// Time-stamp: <2011-July-13 16:37:19>
 //
 // ------------------------------------------------------------------
 //
@@ -47,11 +47,23 @@ namespace Ionic.Zip.Tests.Utilities
                 // Decl of Independence (~16k)
                 "http://www.gutenberg.org/files/16780/16780.txt",
 
+                // Decl of Independence, alternative source
+                "http://www.constitution.org/usdeclar.txt",
+
+                // Section 552a of the US code - on privacy for individuals
+                "http://www.opm.gov/feddata/usc552a.txt",
+
                 // The Naval War of 1812, by Theodore Roosevelt (968k)
                 "http://www.gutenberg.org/dirs/etext05/7trnv10.txt",
 
                 // On Prayer and the Contemplative Life, by Thomas Aquinas (440k)
                 "http://www.gutenberg.org/files/22295/22295.txt",
+
+                // IETF RFC 1951 - the DEFLATE format
+                "http://www.ietf.org/rfc/rfc1951.txt",
+
+                // pkware's appnote
+                "http://www.pkware.com/documents/casestudies/APPNOTE.TXT",
             };
 
         SimpleMarkovChain markov;
@@ -59,8 +71,22 @@ namespace Ionic.Zip.Tests.Utilities
         public RandomTextGenerator()
         {
             System.Random rnd = new System.Random();
-            string uri = uris[rnd.Next(uris.Length)];
-            string seedText = GetPageMarkup(uri);
+            string seedText = null;
+            int cycles = 0;
+            do {
+                try
+                {
+                    string uri= uris[rnd.Next(uris.Length)];
+                    seedText = GetPageMarkup(uri);
+                }
+                catch (System.Net.WebException)
+                {
+                    cycles++;
+                    if (cycles>8) throw;
+                    seedText = null;
+                }
+            } while (seedText == null);
+
             markov = new SimpleMarkovChain(seedText);
         }
 

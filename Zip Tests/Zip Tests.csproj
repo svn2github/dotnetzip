@@ -116,6 +116,9 @@
     <Content Include="Resources\VbsCreateZip-ShellApp.vbs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Resources\VbsUnZip-ShellApp.vbs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\VbsCreateZip-DotNetZip.vbs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

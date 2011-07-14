@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-13 15:28:39>
+// Time-stamp: <2011-July-13 18:13:35>
 //
 // ------------------------------------------------------------------
 //
@@ -504,7 +504,9 @@ namespace Ionic.Zip.Tests.Split
             string contentDir = "fodder";
             Directory.CreateDirectory(contentDir);
             int numFilesToAdd = _rnd.Next(8) + 8;
+            //int numFilesToAdd = 2;
             int baseSize = 0x100000;
+            //int baseSize = 256 * 1024;
             for (int i=0; i < numFilesToAdd; i++)
             {
                 int fileSize = baseSize + _rnd.Next(baseSize/2);
@@ -512,7 +514,7 @@ namespace Ionic.Zip.Tests.Split
                 TestUtilities.CreateAndFillFileText(fileName, fileSize);
             }
             var filesToAdd = new List<String>(Directory.GetFiles(contentDir));
-            int[] segSizes  = { 128 * 1024, 256 * 1024, 512 * 1024 };
+            int[] segSizes  = { 64*1024, 128 * 1024, 256 * 1024, 512 * 1024 };
 
             // Two passes:
             // pass 1: save as regular, then resave as segmented.
@@ -522,13 +524,13 @@ namespace Ionic.Zip.Tests.Split
                 // for various segment sizes
                 for (int k=0; k < segSizes.Length; k++)
                 {
-                    string trialDir = String.Format("trial.{0}.{1}", k, m);
+                    string trialDir = String.Format("trial.{0}.{1}", m, k);
                     Directory.CreateDirectory(trialDir);
-                    string zipFile1 = Path.Combine(trialDir, "Resave.zip");
+                    string zipFile1 = Path.Combine(trialDir, "InitialSave.zip");
                     string zipFile2 = Path.Combine(trialDir, "Updated.zip");
                     TestContext.WriteLine("");
                     TestContext.WriteLine("Creating zip... T({0},{1})...{2}",
-                                          k, m, DateTime.Now.ToString("G"));
+                                          m, k, DateTime.Now.ToString("G"));
                     using (var zip1 = new ZipFile())
                     {
                         zip1.AddFiles(filesToAdd, "");

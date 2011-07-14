@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-06 11:05:10>
+// Time-stamp: <2011-July-13 18:14:48>
 //
 // ------------------------------------------------------------------
 //
@@ -735,12 +735,14 @@ namespace Ionic.Zip
                     }
                     else
                     {
+                        // workitem 8264
                         if (_container.ZipFile != null)
-                            checkLaterForResetDirTimes = _container.ZipFile._inExtractAll;  // workitem 8264
+                            checkLaterForResetDirTimes = _container.ZipFile._inExtractAll;
                     }
 
 
-                    // Take care of the behavior when extraction would overwrite an existing file
+                    // Take care of the behavior when extraction would overwrite an
+                    // existing file
                     if (File.Exists(TargetFile))
                     {
                         fileExistsBeforeExtraction = true;
@@ -777,11 +779,12 @@ namespace Ionic.Zip
                     // workitem 8264
                     if (checkLaterForResetDirTimes)
                     {
-                        // This is sort of a hack.  What I do here is set the time on the parent
-                        // directory, every time a file is extracted into it.  If there is a
-                        // directory with 1000 files, then I set the time on the dir, 1000
-                        // times. This allows the directory to have times that reflect the
-                        // actual time on the entry in the zip archive.
+                        // This is sort of a hack.  What I do here is set the time on
+                        // the parent directory, every time a file is extracted into
+                        // it.  If there is a directory with 1000 files, then I set
+                        // the time on the dir, 1000 times. This allows the directory
+                        // to have times that reflect the actual time on the entry in
+                        // the zip archive.
 
                         // String.Contains is not available on .NET CF 2.0
                         if (this.FileName.IndexOf('/') != -1)
@@ -801,10 +804,13 @@ namespace Ionic.Zip
 
 #else
                     // workitem 7071
-                    // We can only apply attributes if they are relevant to the NTFS OS.
-                    // Must do this LAST because it may involve a ReadOnly bit, which would prevent
-                    // us from setting the time, etc.
-                    // workitem 7926 - version made by OS can be zero (FAT) or 10 (NTFS)
+                    //
+                    // We can only apply attributes if they are relevant to the NTFS
+                    // OS.  Must do this LAST because it may involve a ReadOnly bit,
+                    // which would prevent us from setting the time, etc.
+                    //
+                    // workitem 7926 - version made by OS can be zero (FAT) or 10
+                    // (NTFS)
                     if ((_VersionMadeBy & 0xFF00) == 0x0a00 || (_VersionMadeBy & 0xFF00) == 0x0000)
                         File.SetAttributes(TargetFile, (FileAttributes)_ExternalFileAttrs);
 #endif
@@ -817,11 +823,7 @@ namespace Ionic.Zip
             catch (Exception)
             {
                 _ioOperationCanceled = true;
-//                 if (ex1 as Ionic.Zip.ZipException == null)
-//                     // wrap the original exception and throw
-//                     throw new ZipException("Cannot extract", ex1);
-//                 else
-                    throw;
+                throw;
             }
             finally
             {
@@ -833,8 +835,10 @@ namespace Ionic.Zip
                         {
                             if (output != null) output.Close();
                             // An exception has occurred.
-                            // If the file exists, check to see if it existed before we tried extracting.
-                            // If it did not, or if we were overwriting the file, attempt to remove the target file.
+                            // If the file exists, check to see if it existed before
+                            // we tried extracting.  If it did not, or if we were
+                            // overwriting the file, attempt to remove the target
+                            // file.
                             if (File.Exists(TargetFile))
                             {
                                 if (!fileExistsBeforeExtraction || (ExtractExistingFile == ExtractExistingFileAction.OverwriteSilently))
