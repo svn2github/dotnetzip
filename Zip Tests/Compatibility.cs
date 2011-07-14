@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-13 21:23:37>
+// Time-stamp: <2011-July-14 09:47:01>
 //
 // ------------------------------------------------------------------
 //
@@ -1030,8 +1030,7 @@ namespace Ionic.Zip.Tests
                 foreach (var compLevel in compLevels)
                 {
                     string zipFileToCreate =
-                        Path.Combine(TopLevelDir,
-                                     String.Format("InfoZip_Unzip.{0}.{1}.zip", i,j));
+                                     String.Format("InfoZip_Unzip.{0}.{1}.zip", i,j);
 
                     string password = GeneratePassword(9);
                     // Create the zip archive
@@ -1053,8 +1052,7 @@ namespace Ionic.Zip.Tests
                                          "Incorrect number of entries in the zip file"+
                                          " (i,j)=({0},{1}).", i,j);
 
-                    string extractDir = Path.Combine(TopLevelDir,
-                                                     String.Format("extract.{0}.{1}", i,j));
+                    string extractDir = String.Format("extract.{0}.{1}", i,j);
 
                     if (j==0)
                     {
@@ -1963,17 +1961,15 @@ namespace Ionic.Zip.Tests
             if (!WinZipIsPresent)
                 throw new Exception("[Winzip_Unzip_2] : winzip is not present");
 
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Winzip_Unzip_2.zip");
+            string zipFileToCreate = "Winzip_Unzip_2.zip";
 
             // create and fill the directories
-            string extractDir = Path.Combine(TopLevelDir, "extract");
-            string subdir = Path.Combine(TopLevelDir, "files");
-
+            string extractDir = "extract";
+            string subdir = "files";
             Dictionary<string, byte[]> checksums = new Dictionary<string, byte[]>();
             var filesToZip = GetSelectionOfTempFiles(_rnd.Next(13) + 8, checksums);
 
             // Create the zip archive
-            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.AddFiles(filesToZip, "files");
@@ -1987,8 +1983,8 @@ namespace Ionic.Zip.Tests
             // now, extract the zip
             // eg, wzunzip.exe -d test.zip  <extractdir>
             Directory.CreateDirectory(extractDir);
-            Directory.SetCurrentDirectory(extractDir);
-            this.Exec(wzunzip, String.Format("-d -yx {0}", zipFileToCreate));
+            this.Exec(wzunzip, String.Format("-d -yx {0} \"{1}\"",
+                                             zipFileToCreate, extractDir));
 
             // check the files in the extract dir
             VerifyChecksums(Path.Combine(extractDir, "files"), filesToZip, checksums);
@@ -2063,7 +2059,7 @@ namespace Ionic.Zip.Tests
                 throw new Exception("[Winzip_Unzip_Password] : winzip is not present");
 
             //Directory.SetCurrentDirectory(TopLevelDir);
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Winzip_Unzip_Password.zip");
+            string zipFileToCreate = "Winzip_Unzip_Password.zip";
             string extractDir = "extract";
             string subdir = "fodder";
             // create a bunch of files
@@ -2084,17 +2080,19 @@ namespace Ionic.Zip.Tests
 
             // now, test the zip
             // eg, wzunzip.exe -t test.zip  <extractdir>
-            string wzunzipOut = this.Exec(wzunzip, String.Format("-t -s{0} {1}", password, zipFileToCreate));
+            string args = String.Format("-t -s{0} {1}", password, zipFileToCreate);
+            string wzunzipOut = this.Exec(wzunzip, args);
             TestContext.WriteLine("{0}", wzunzipOut);
 
             Assert.IsTrue(wzunzipOut.Contains("No errors"));
             Assert.IsFalse(wzunzipOut.Contains("At least one error was detected"));
 
             // extract the zip
-            Directory.CreateDirectory(extractDir);
             // eg, wzunzip.exe -d -yx -sPassword  test.zip  <extractdir>
-            wzunzipOut = this.Exec(wzunzip, String.Format("-d -yx -s{0} {1} {2}",
-                                                                password, zipFileToCreate, extractDir));
+            args = String.Format("-d -yx -s{0} {1} {2}",
+                                 password, zipFileToCreate, extractDir);
+            Directory.CreateDirectory(extractDir);
+            wzunzipOut = this.Exec(wzunzip, args);
 
             Assert.IsFalse(wzunzipOut.Contains("skipping"));
             Assert.IsFalse(wzunzipOut.Contains("incorrect"));
