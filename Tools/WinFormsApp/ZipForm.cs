@@ -39,8 +39,20 @@ namespace Ionic.Zip.Forms
             AdoptProgressBars();
             SetListView2();
             SetTextBoxes();
+
+            // first run only
+            if (numRuns == 0)
+                this.tabControl1.SelectedIndex = 2; // help/about tab
         }
 
+        // This constructor works to load zips from the command line.
+        // It also works to allow "open With..." from Windows Explorer.
+        public ZipForm(string[] args)
+            : this()
+        {
+            if (args != null && args.Length >= 1 && args[0] != null)
+                _initialFileToLoad = args[0];
+        }
 
         // in ZipForm.DragDrop.cs
         partial void SetDragDrop();
@@ -108,18 +120,6 @@ namespace Ionic.Zip.Forms
         }
 
 
-
-
-        // This constructor works to load zips from the command line.
-        // It also works to allow "open With..." from Windows Explorer.
-        public ZipForm(string[] args)
-            : this()
-        {
-            if (args != null && args.Length >= 1 && args[0] != null)
-            {
-                _initialFileToLoad = args[0];
-            }
-        }
 
         private void AdoptProgressBars()
         {

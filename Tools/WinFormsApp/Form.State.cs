@@ -26,14 +26,13 @@ namespace Ionic.Zip.Forms
     public partial class ZipForm
     {
         /// This app uses the windows registry to store config data for itself.
-        ///     - creates a key for this DotNetZip Winforms app, if one does not exist
+        ///     - creates a registry key for this DotNetZip Winforms app, if one does not exist
         ///     - stores and retrieves the most recent settings.
         ///     - this is done on a per user basis. (HKEY_CURRENT_USER)
         private void FillFormFromRegistry()
         {
             if (!stateLoaded)
             {
-
                 if (AppCuKey != null)
                 {
                     var s = (string)AppCuKey.GetValue(_rvn_DirectoryToZip);
@@ -113,6 +112,7 @@ namespace Ionic.Zip.Forms
                     x = (Int32)AppCuKey.GetValue(_rvn_RemoveFiles, 1);
                     this.chkRemoveFiles.Checked = (x != 0);
 
+                    numRuns = (Int32)AppCuKey.GetValue(_rvn_Runs, 0);
 
                     // get the MRU list of selection expressions
                     _selectionCompletions = new System.Windows.Forms.AutoCompleteStringCollection();
@@ -264,7 +264,7 @@ namespace Ionic.Zip.Forms
             set { _appCuKey = null; }
         }
 
-
+        private int numRuns;
 
         private Microsoft.Win32.RegistryKey _appCuKey;
         private static string _AppRegyPath = "Software\\Dino Chiesa\\DotNetZip Winforms Tool";
