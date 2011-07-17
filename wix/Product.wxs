@@ -13,8 +13,8 @@
 
   <?define prodManufacturer   = "Dino Chiesa" ?>
   <?define pkgDescription     = "DotNetZip Tools v1.9" ?>
-  <?define productId          = "2e15c013-a18d-4050-8249-09c79d1529a0" ?>
-  <?define productVersion     = "1.9.1.6" ?>
+  <?define productId          = "68edbfb6-75bf-4029-a4bb-bdd1442328ff" ?>
+  <?define productVersion     = "1.9.1.6003" ?>
   <?define sysfolder          = "[SystemFolder]" ?>
   <?define programFilesFolder = "ProgramFilesFolder" ?>
   <?define appDescription     = "DotNetZip's ZIP tool" ?>
@@ -26,7 +26,7 @@
   <?define guidFileAssoc      = "d4b2a5bf-33f7-44a1-a20f-44e301802b47" ?>
 
   <Product Id           ='$(var.productId)'
-           Name         ="DotNetZip Tools v1.9"
+           Name         ="DotNetZip Tools"
            Language     ='1033'
            UpgradeCode  ='BEF05388-A74D-4383-BD87-61940DF83E20'
            Version      ='$(var.productVersion)'
