@@ -150,15 +150,21 @@ The Cabinet name can be anything you want. Not really important.
               DiskId  ='1'
               KeyPath ='yes'
               Source  ='..\Tools\WinFormsApp\bin\$(var.Configuration)\DotNetZip-WinFormsTool.exe'/>
-        <File Id      ='UnZip.exe'
-              Name    ='UnZip.exe'
-              DiskId  ='1'
-              Source  ='..\Tools\UnZip\bin\$(var.Configuration)\UnZip.exe'/>
 
         <File Id      ='ZipIt.exe'
               Name    ='ZipIt.exe'
               DiskId  ='1'
               Source  ='..\Tools\ZipIt\bin\$(var.Configuration)\ZipIt.exe'/>
+
+        <File Id      ='UnZip.exe'
+              Name    ='UnZip.exe'
+              DiskId  ='1'
+              Source  ='..\Tools\UnZip\bin\$(var.Configuration)\UnZip.exe'/>
+
+        <File Id      ='ConvertZipToSfx.exe'
+              Name    ='ConvertZipToSfx.exe'
+              DiskId  ='1'
+              Source  ='..\Tools\ConvertZipToSfx\bin\$(var.Configuration)\ConvertZipToSfx.exe'/>
 
         <File Id      ='Ionic.Zip.dll'
               Name    ='Ionic.Zip.dll'
@@ -171,15 +177,20 @@ The Cabinet name can be anything you want. Not really important.
               DiskId  ='1'
               Source  ='..\Tools\WinFormsApp\bin\$(var.Configuration)\DotNetZip-WinFormsTool.pdb'/>
 
+        <File Id      ='ZipIt.pdb'
+              Name    ='ZipIt.pdb'
+              DiskId  ='1'
+              Source  ='..\Tools\ZipIt\bin\$(var.Configuration)\ZipIt.pdb'/>
+
         <File Id      ='UnZip.pdb'
               Name    ='UnZip.pdb'
               DiskId  ='1'
               Source  ='..\Tools\UnZip\bin\$(var.Configuration)\UnZip.pdb'/>
 
-        <File Id      ='ZipIt.pdb'
-              Name    ='ZipIt.pdb'
+        <File Id      ='ConvertZipToSfx.pdb'
+              Name    ='ConvertZipToSfx.pdb'
               DiskId  ='1'
-              Source  ='..\Tools\ZipIt\bin\$(var.Configuration)\ZipIt.pdb'/>
+              Source  ='..\Tools\ConvertZipToSfx\bin\$(var.Configuration)\ConvertZipToSfx.pdb'/>
 
         <File Id      ='Ionic.Zip.pdb'
               Name    ='Ionic.Zip.pdb'
