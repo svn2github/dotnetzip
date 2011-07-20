@@ -14,7 +14,7 @@ goto START
  DotNetZip is licensed under the MS-PL.  See the accompanying
  License.txt file.
 
- Last Updated: <2011-July-12 00:00:49>
+ Last Updated: <2011-July-16 20:32:38>
 
 -------------------------------------------------------
 
@@ -64,7 +64,7 @@ if ERRORLEVEL 1 (
 
  call :MakeZipUtils
 
- ::REM call :MakeUtilsMsi
+ call :MakeUtilsMsi
 
  ::REM call :MakeRuntimeMsi
 
@@ -304,7 +304,6 @@ goto :EOF
     %zipit% %rzipfile%  -D Tools\ConvertZipToSfx\bin\Release  ConvertZipToSfx.exe
     %zipit% %rzipfile%  -D Tools\WinFormsApp\bin\Release      DotNetZip-WinFormsTool.exe
 
-
 goto :EOF
 --------------------------------------------
 
@@ -321,10 +320,10 @@ goto :EOF
   echo Making the Utils MSI...
   echo.
 
-  c:\vs2008\Common7\ide\devenv.exe DotNetZip.sln /build release /project "Zip Utilities MSI"
-  echo waiting for Setup\release\DotNetZipUtils.msi
-  c:\dinoch\dev\dotnet\AwaitFile Setup\Release\DotNetZipUtils.msi
-  move Setup\Release\DotNetZipUtils.msi %releaseDir%\DotNetZipUtils-v%version%.msi
+  cd wix
+  %MSBUILD%  /p:Configuration=Release
+  cd ..
+  move wix\bin\Release\en-us\DotNetZipUtils.msi %releaseDir%\DotNetZipUtils-v%version%.msi
 
 goto :EOF
 --------------------------------------------
