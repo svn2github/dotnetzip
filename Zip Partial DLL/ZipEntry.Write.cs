@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-13 18:11:53>
+// Last Saved: <2011-July-23 20:25:19>
 //
 // ------------------------------------------------------------------
 //
@@ -82,6 +82,8 @@ namespace Ionic.Zip
             }
 
             Int16 versionNeededToExtract = (Int16)(_OutputUsesZip64.Value ? 45 : vNeeded);
+            if (this.CompressionMethod == Ionic.Zip.CompressionMethod.BZip2)
+                versionNeededToExtract = 46;
 
             bytes[i++] = (byte)(versionNeededToExtract & 0x00FF);
             bytes[i++] = (byte)((versionNeededToExtract & 0xFF00) >> 8);
@@ -694,7 +696,7 @@ namespace Ionic.Zip
 
 
 
-        private void FigureCompressionMethodForWriting(int cycle)
+        private void MaybeUnsetCompressionMethodForWriting(int cycle)
         {
             // if we've already tried with compression... turn it off this time
             if (cycle > 1)
@@ -711,7 +713,7 @@ namespace Ionic.Zip
 
             if (this._Source == ZipEntrySource.ZipFile)
             {
-                return;
+                return; // do nothing
             }
 
             // If __FileDataPosition is zero, then that means we will get the data
@@ -748,11 +750,12 @@ namespace Ionic.Zip
             if (SetCompression != null)
                 CompressionLevel = SetCompression(LocalFileName, _FileNameInArchive);
 
-            _CompressionMethod = (short)((CompressionLevel == Ionic.Zlib.CompressionLevel.None)
-                                          ? 0x00
-                                          : 0x08);
-            return;
+            // finally, set CompressionMethod to None if CompressionLevel is None
+            if (CompressionLevel == (short)Ionic.Zlib.CompressionLevel.None &&
+                CompressionMethod == Ionic.Zip.CompressionMethod.Deflate)
+                _CompressionMethod = 0x00;
 
+            return;
         }
 
 
@@ -875,8 +878,11 @@ namespace Ionic.Zip
             // for PK encryption, 4.5 for zip64.  We may reset this later, as
             // necessary or zip64.
 
-            _presumeZip64 = (_container.Zip64 == Zip64Option.Always || (_container.Zip64 == Zip64Option.AsNecessary && !s.CanSeek));
+            _presumeZip64 = (_container.Zip64 == Zip64Option.Always ||
+                             (_container.Zip64 == Zip64Option.AsNecessary && !s.CanSeek));
             Int16 VersionNeededToExtract = (Int16)(_presumeZip64 ? 45 : 20);
+            if (this.CompressionMethod == Ionic.Zip.CompressionMethod.BZip2)
+                VersionNeededToExtract = 46;
 
             // (i==4)
             block[i++] = (byte)(VersionNeededToExtract & 0x00FF);
@@ -1006,7 +1012,7 @@ namespace Ionic.Zip
             }
 
             // set compression method here
-            FigureCompressionMethodForWriting(cycle);
+            MaybeUnsetCompressionMethodForWriting(cycle);
 
             // (i==8) compression method
             block[i++] = (byte)(_CompressionMethod & 0x00FF);
@@ -1491,6 +1497,8 @@ namespace Ionic.Zip
             // by calling Close() on the deflate stream, we write the footer bytes, as necessary.
             if ((deflater as Ionic.Zlib.DeflateStream) != null)
                 deflater.Close();
+            else if ((deflater as Ionic.BZip2.BZip2OutputStream) != null)
+                deflater.Close();
 #if !NETCF
             else if ((deflater as Ionic.Zlib.ParallelDeflateOutputStream) != null)
                 deflater.Close();
@@ -1967,6 +1975,12 @@ namespace Ionic.Zip
                 if (_container.CodecBufferSize > 0)
                     o.BufferSize = _container.CodecBufferSize;
                 o.Strategy = _container.Strategy;
+                return o;
+            }
+
+            if (_CompressionMethod == 0x0c)
+            {
+                var o = new Ionic.BZip2.BZip2OutputStream(s, true);
                 return o;
             }
 

@@ -68,10 +68,11 @@ namespace Ionic.Zip
     /// </para>
     ///
     /// <para>
-    ///   Both the <c>ZipOutputStream</c> class and the <c>ZipFile</c> class can be used
-    ///   to create zip files. Both of them support many of the common zip features,
-    ///   including Unicode, different compression levels, and ZIP64. They provide
-    ///   very similar performance when creating zip files.
+    ///   Both the <c>ZipOutputStream</c> class and the <c>ZipFile</c> class can
+    ///   be used to create zip files. Both of them support many of the common zip
+    ///   features, including Unicode, different compression methods and levels,
+    ///   and ZIP64. They provide very similar performance when creating zip
+    ///   files.
     /// </para>
     ///
     /// <para>
@@ -378,11 +379,12 @@ namespace Ionic.Zip
         /// </summary>
         ///
         /// <remarks>
-        ///   Set the Strategy used by the ZLIB-compatible compressor, when compressing
-        ///   entries. Different compression strategies work better on different sorts
-        ///   of data. The strategy parameter can affect the compression ratio and the
-        ///   speed of compression but not the correctness of the compresssion.  For
-        ///   more information see <see
+        ///   Set the Strategy used by the ZLIB-compatible compressor, when
+        ///   compressing entries using the DEFLATE method. Different compression
+        ///   strategies work better on different sorts of data. The strategy
+        ///   parameter can affect the compression ratio and the speed of
+        ///   compression but not the correctness of the compresssion.  For more
+        ///   information see <see
         ///   cref="Ionic.Zlib.CompressionStrategy">Ionic.Zlib.CompressionStrategy</see>.
         /// </remarks>
         public Ionic.Zlib.CompressionStrategy Strategy
@@ -461,6 +463,28 @@ namespace Ionic.Zip
             get;
             set;
         }
+
+        /// <summary>
+        ///   The compression method for the zipfile.
+        /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     By default, the compression method is <c>CompressionMethod.Deflate.</c>
+        ///   </para>
+        /// </remarks>
+        /// <seealso cref="Ionic.Zip.CompressionMethod" />
+        public Ionic.Zip.CompressionMethod CompressionMethod
+        {
+            get
+            {
+                return _compressionMethod;
+            }
+            set
+            {
+                _compressionMethod = value;
+            }
+        }
+
 
 
         /// <summary>
@@ -3569,6 +3593,7 @@ namespace Ionic.Zip
         private bool _emitNtfsTimes = true;
         private bool _emitUnixTimes;
         private Ionic.Zlib.CompressionStrategy _Strategy = Ionic.Zlib.CompressionStrategy.Default;
+        private Ionic.Zip.CompressionMethod _compressionMethod = Ionic.Zip.CompressionMethod.Deflate;
         private bool _fileAlreadyExists;
         private string _temporaryFileName;
         private bool _contentsChanged;

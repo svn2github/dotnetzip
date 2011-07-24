@@ -111,7 +111,7 @@
     <CreateItem Include="$(TargetPath)">
       <Output ItemName="_BuiltProjectOutputGroupOutput" TaskParameter="Include"/>
     </CreateItem>
-    <CreateItem 
+    <CreateItem
       Include="@(_BuiltProjectOutputGroupOutput)"
       AdditionalMetadata="TargetPath=%(_BuiltProjectOutputGroupOutput.SubFolder)%(_BuiltProjectOutputGroupOutput.RecursiveDir)%(Filename)%(Extension)">
       <Output ItemName="BuiltProjectOutputGroupOutput" TaskParameter="Include"/>
@@ -137,7 +137,7 @@
         </BuiltProjectOutputGroupOutput>
     </ItemGroup>
 -->
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
@@ -149,9 +149,13 @@
       <Project>{D3B0AD67-44D8-4B3D-BED9-CE1FD6DE2C5A}</Project>
       <Name>Zip Partial DLL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Zlib\Zlib.csproj">
+    <ProjectReference Include="..\Zlib\Zlib DLL.csproj">
       <Project>{9816BA86-9250-4C00-A912-25F07F8677D1}</Project>
-      <Name>Zlib</Name>
+      <Name>Zlib DLL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BZip2\BZip2 DLL.csproj">
+      <Project>{e2ce0d56-7af8-4404-bd0c-bc562cbd74d4}</Project>
+      <Name>BZip2 DLL</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

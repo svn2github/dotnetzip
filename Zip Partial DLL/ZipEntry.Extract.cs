@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-13 21:13:18>
+// Time-stamp: <2011-July-23 19:27:53>
 //
 // ------------------------------------------------------------------
 //
@@ -986,7 +986,7 @@ namespace Ionic.Zip
                 // both the encryption flag and the compression flag, and take
                 // the proper action in all cases.
 
-                Int64 LeftToRead = (_CompressionMethod_FromZipFile == (short)CompressionMethod.Deflate)
+                Int64 LeftToRead = (_CompressionMethod_FromZipFile != (short)CompressionMethod.None)
                     ? this.UncompressedSize
                     : this._CompressedFileDataSize;
 
@@ -1049,11 +1049,18 @@ namespace Ionic.Zip
 
         internal Stream GetExtractDecompressor(Stream input2)
         {
-            // Using the above, now we get a stream that either decompresses or not.
-            Stream input3 = (_CompressionMethod_FromZipFile == (short)CompressionMethod.None)
-                ? input2
-                : new Ionic.Zlib.DeflateStream(input2, Ionic.Zlib.CompressionMode.Decompress, true);
-            return input3;
+            // get a stream that either decompresses or not.
+            switch (_CompressionMethod_FromZipFile)
+            {
+                case (short)CompressionMethod.None:
+                    return input2;
+                case (short)CompressionMethod.Deflate:
+                    return new Ionic.Zlib.DeflateStream(input2, Ionic.Zlib.CompressionMode.Decompress, true);
+                case (short)CompressionMethod.BZip2:
+                    return new Ionic.BZip2.BZip2InputStream(input2, true);
+            }
+
+            return null;
         }
 
 
@@ -1268,7 +1275,9 @@ namespace Ionic.Zip
 
         private void ValidateCompression()
         {
-            if ((_CompressionMethod_FromZipFile != (short)CompressionMethod.None) && (_CompressionMethod_FromZipFile != (short)CompressionMethod.Deflate))
+            if ((_CompressionMethod_FromZipFile != (short)CompressionMethod.None) &&
+                (_CompressionMethod_FromZipFile != (short)CompressionMethod.Deflate) &&
+                (_CompressionMethod_FromZipFile != (short)CompressionMethod.BZip2) )
                 throw new ZipException(String.Format("Entry {0} uses an unsupported compression method (0x{1:X2}, {2})",
                                                           FileName, _CompressionMethod_FromZipFile, UnsupportedCompressionMethod));
         }

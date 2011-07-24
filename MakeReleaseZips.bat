@@ -14,7 +14,7 @@ goto START
  DotNetZip is licensed under the MS-PL.  See the accompanying
  License.txt file.
 
- Last Updated: <2011-July-16 20:32:38>
+ Last Updated: <2011-July-23 20:39:35>
 
 -------------------------------------------------------
 
@@ -201,7 +201,7 @@ goto :EOF
   set rzipfile=%releaseDir%\%zipfile%
   echo zipfile is %rzipfile%
 
-  %zipit% %rzipfile%  -s Contents.txt "This is the Developer's Kit package for DotNetZip v%version%.  This package was packed %stamp%.  In this zip you will find Debug and Release DLLs for the various versions of the Ionic.Zip class library and the Ionic.Zlib class library.  There is a separate top-level folder for each distinct version of the DLL, and within those top-level folders there are Debug and Release folders.  In the Debug folders you will find a DLL, a PDB, and an XML file for the given library, while the Release folder will have just a DLL.  The DLL is the actual library (either Debug or Release flavor), the PDB is the debug information, and the XML file is the intellisense doc for use within Visual Studio.  There are also files containing the documentation. If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip"  -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt License.zlib.txt
+  %zipit% %rzipfile%  -s Contents.txt "This is the Developer's Kit package for DotNetZip v%version%.  This package was packed %stamp%.  In this zip you will find Debug and Release DLLs for the various versions of the assemblies: Ionic.Zip, Ionic.Zlib, and Ionic.BZip2.  There is a separate top-level folder for each distinct version of the DLL, and within those top-level folders there are Debug and Release folders.  In the Debug folders you will find a DLL, a PDB, and an XML file for the given library, while the Release folder will have just a DLL.  The DLL is the actual library (either Debug or Release flavor), the PDB is the debug information, and the XML file is the intellisense doc for use within Visual Studio.  There are also files containing the documentation. If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip"  -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt License.zlib.txt
 
   %zipit% %rzipfile%  -d DotNetZip-v%version%   -s Readme.txt "DotNetZip Library Developer's Kit package,  v%version% packed %stamp%.  This is the DotNetZip library.  It includes the classes in the Ionic.Zip namespace as well as the classes in the Ionic.Zlib namespace. Use this library if you want to manipulate ZIP files within .NET applications."
 
@@ -219,11 +219,13 @@ goto :EOF
   %zipit% %rzipfile%  -d DotNetZip-v%version%-CompactFramework\Debug    -D "Zip CF Full DLL\bin\Debug"   Ionic.Zip.CF.dll Ionic.Zip.CF.pdb Ionic.Zip.CF.XML
   %zipit% %rzipfile%  -d DotNetZip-v%version%-CompactFramework\Release  -D "Zip CF Full DLL\bin\Release" Ionic.Zip.CF.dll
 
-  %zipit% %rzipfile%  -d Zlib-v%version%  -s Readme.txt  "DotNetZlib v%version% packed %stamp%.  This is the Ionic.Zlib assembly; it includes only the classes in the Ionic.Zlib namespace. Use this library if you want to take advantage of ZLIB compression directly, or if you want to use the compressing stream classes like GZipStream, DeflateStream, or ZlibStream."
-
-
+  %zipit% %rzipfile%  -d Zlib-v%version%  -s Readme.txt  "Ionic.Zlib v%version% packed %stamp%.  This is the Ionic.Zlib assembly; it includes only the classes in the Ionic.Zlib namespace. Use this library if you want to take advantage of ZLIB compression directly, or if you want to use the compressing stream classes like GZipStream, DeflateStream, or ZlibStream."
   %zipit% %rzipfile%  -d Zlib-v%version%\Debug    -D "Zlib\bin\Debug"    Ionic.Zlib.dll Ionic.Zlib.pdb Ionic.Zlib.XML
   %zipit% %rzipfile%  -d Zlib-v%version%\Release  -D "Zlib\bin\Release"  Ionic.Zlib.dll
+
+  %zipit% %rzipfile%  -d BZip2-v%version%  -s Readme.txt  "Ionic.BZip2 v%version% packed %stamp%.  This is the Ionic.BZip2 assembly; it includes only the classes in the Ionic.BZip2 namespace. Use this library if you want to take advantage of BZip2 compression directly, via the compressing stream classes like BZip2OutputStream, or BZip2InputStream."
+  %zipit% %rzipfile%  -d BZip2-v%version%\Debug    -D "BZip2\bin\Debug"    Ionic.BZip2.dll Ionic.BZip2.pdb Ionic.BZip2.XML
+  %zipit% %rzipfile%  -d BZip2-v%version%\Release  -D "BZip2\bin\Release"  Ionic.BZip2.dll
 
   %zipit% %rzipfile%  -d Zlib-v%version%-CompactFramework  -s Readme.txt  "DotNetZlib CF v%version% packed %stamp%. This is the Ionic.Zlib library packaged for the .NET Compact Framework v2.0 or later.  Use this library if you want to take advantage of ZLIB compression directly from within Smart device applications, or if you want to use the compressing stream classes like GZipStream, DeflateStream, or ZlibStream."
 
@@ -261,14 +263,16 @@ goto :EOF
 
   echo zipfile is %rzipfile%
 
-  %zipit% %rzipfile%    -s Contents.txt "This is the redistributable package for DotNetZip v%version%.  Packed %stamp%. In this zip you will find a separate folder for each separate version of the DLL. In each folder there is a RELEASE build DLL, suitable for redistribution with your app. If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip "   -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt License.zlib.txt
+  %zipit% %rzipfile%    -s Contents.txt "This is the redistributable package for DotNetZip v%version%.  Packed %stamp%. In this zip you will find a separate folder for each separate version of the DLL. In each folder there is a RELEASE build DLL, suitable for redistribution with your app. If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip "   -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt License.zlib.txt License.bzip2.txt
 
   %zipit% %rzipfile%  -d DotNetZip-v%version% -D "Zip Full DLL\bin\Release" -s Readme.txt  "DotNetZip Redistributable Library v%version% packed %stamp%"  Ionic.Zip.dll
 
   %zipit% %rzipfile%  -d DotNetZip-Reduced-v%version% -D "Zip Reduced\bin\Release" -s Readme.txt  "DotNetZip Reduced Redistributable Library v%version% packed %stamp%"  Ionic.Zip.Reduced.dll
 
 
-  %zipit% %rzipfile%  -d zlib-v%version% -D "Zlib\bin\Release" -s Readme.txt  "DotNetZlib Redistributable Library v%version% packed %stamp%"  Ionic.Zlib.dll
+  %zipit% %rzipfile%  -d zlib-v%version% -D "Zlib\bin\Release" -s Readme.txt  "Ionic.Zlib Redistributable Library v%version% packed %stamp%"  Ionic.Zlib.dll
+
+  %zipit% %rzipfile%  -d bzip2-v%version% -D "BZip2\bin\Release" -s Readme.txt  "Ionic.BZip2 Redistributable Library v%version% packed %stamp%"  Ionic.BZip2.dll
 
   %zipit% %rzipfile%  -d DotNetZip-v%version%-CompactFramework -D "Zip CF Full DLL\bin\Release" -s Readme.txt "DotNetZip Library for .NET Compact Framework v%version% packed %stamp%"  Ionic.Zip.CF.dll
 

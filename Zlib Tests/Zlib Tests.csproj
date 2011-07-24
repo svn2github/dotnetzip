@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -73,9 +73,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Zlib\Zlib.csproj">
+    <ProjectReference Include="..\Zlib\Zlib DLL.csproj">
       <Project>{9816BA86-9250-4C00-A912-25F07F8677D1}</Project>
-      <Name>Zlib</Name>
+      <Name>Zlib DLL</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

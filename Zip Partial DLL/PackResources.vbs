@@ -15,7 +15,7 @@
 ' ------------------------------------------------------------------
 '
 ' last saved (in emacs):
-' Time-stamp: <2011-June-18 08:55:56>
+' Time-stamp: <2011-July-23 20:02:17>
 '
 ' ------------------------------------------------------------------
 '
@@ -184,7 +184,7 @@ Sub CreateZip(pathToZipFile, dirToZip)
         If (pass = 0) Then
             If (needRepack <> 0) Then
                 '' reaching pass 1 means we delete and re-create the zip file
-                WScript.Echo "The zip needs to be re-packed. "
+                WScript.Echo "The resources zip needs to be re-packed. "
                 Set zip = Nothing
                 If fso.FileExists(fullPathToZipFile) Then
                     WScript.Echo "That zip file already exists - deleting it."
@@ -195,7 +195,7 @@ Sub CreateZip(pathToZipFile, dirToZip)
                 NewZip fullPathToZipFile
                 Set zip = sa.NameSpace(fullPathToZipFile)
             Else
-                WScript.Echo "The zip does not need to be updated."
+                WScript.Echo "The resources zip does not need to be updated."
                 '' insure we skip the 2nd pass.
                 pass = pass + 1
             End If

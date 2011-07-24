@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -61,7 +61,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
@@ -191,6 +191,18 @@
     </Compile>
     <Compile Include="..\Zlib\ZlibStream.cs">
       <Link>ZlibStream.cs</Link>
+    </Compile>
+    <Compile Include="..\BZip2\BZip2InputStream.cs">
+      <Link>BZip2InputStream.cs</Link>
+    </Compile>
+    <Compile Include="..\BZip2\BZip2OutputStream.cs">
+      <Link>BZip2OutputStream.cs</Link>
+    </Compile>
+    <Compile Include="..\BZip2\Rand.cs">
+      <Link>Rand.cs</Link>
+    </Compile>
+    <Compile Include="..\BZip2\BCRC32.cs">
+      <Link>BCRC32.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\SolutionInfo.cs">

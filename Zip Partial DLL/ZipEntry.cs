@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-12 13:42:55>
+// Time-stamp: <2011-July-23 20:00:33>
 //
 // ------------------------------------------------------------------
 //
@@ -1359,8 +1359,9 @@ namespace Ionic.Zip
             {
                 if (value == (CompressionMethod)_CompressionMethod) return; // nothing to do.
 
-                if (value != CompressionMethod.None && value != CompressionMethod.Deflate)
-                    throw new InvalidOperationException("Unsupported compression method. Specify Deflate or None.");
+                if (value != CompressionMethod.None && value != CompressionMethod.Deflate
+                    && value != CompressionMethod.BZip2)
+                    throw new InvalidOperationException("Unsupported compression method.");
 
                 // If the source is a zip archive and there was encryption on the
                 // entry, changing the compression method is not supported.
@@ -1382,14 +1383,14 @@ namespace Ionic.Zip
 
         /// <summary>
         ///   Sets the compression level to be used for the entry when saving the zip
-        ///   archive.
+        ///   archive. This applies only for CompressionMethod = DEFLATE.
         /// </summary>
         ///
         /// <remarks>
         ///  <para>
-        ///    Varying the compression level used on entries can affect the
-        ///    size-vs-speed tradeoff when compression and decompressing data streams
-        ///    or files.
+        ///    When using the DEFLATE compression method, Varying the compression
+        ///    level used on entries can affect the size-vs-speed tradeoff when
+        ///    compression and decompressing data streams or files.
         ///  </para>
         ///
         ///  <para>
@@ -1414,6 +1415,11 @@ namespace Ionic.Zip
         ///    to a value other than <c>None</c>, <c>CompressionMethod</c> will be set
         ///    to <c>Deflate</c>, if it was previously <c>None</c>.
         ///  </para>
+        ///
+        ///  <para>
+        ///    Setting this property has no effect if the <c>CompressionMethod</c> is something
+        ///    other than <c>Deflate</c> or <c>None</c>.
+        ///  </para>
         /// </remarks>
         ///
         /// <seealso cref="CompressionMethod"/>
@@ -1425,15 +1431,22 @@ namespace Ionic.Zip
             }
             set
             {
-                //if (value == _CompressionLevel) return; // nothing to do
-                if (value == Ionic.Zlib.CompressionLevel.Default && _CompressionMethod == (short)CompressionMethod.Deflate) return; // nothing to do
+                if (_CompressionMethod != (short)CompressionMethod.Deflate &&
+                    _CompressionMethod != (short)CompressionMethod.None)
+                    return ; // no effect
+
+                if (value == Ionic.Zlib.CompressionLevel.Default &&
+                    _CompressionMethod == (short)CompressionMethod.Deflate) return; // nothing to do
                 _CompressionLevel = value;
-                if (value == Ionic.Zlib.CompressionLevel.None && _CompressionMethod == (short)CompressionMethod.None)
+
+                if (value == Ionic.Zlib.CompressionLevel.None &&
+                    _CompressionMethod == (short)CompressionMethod.None)
                     return; // nothing more to do
 
-                _CompressionMethod = (short)((_CompressionLevel == Ionic.Zlib.CompressionLevel.None)
-                    ? Ionic.Zip.CompressionMethod.None
-                    : Ionic.Zip.CompressionMethod.Deflate);
+                if (_CompressionLevel == Ionic.Zlib.CompressionLevel.None)
+                    _CompressionMethod = (short) Ionic.Zip.CompressionMethod.None;
+                else
+                    _CompressionMethod = (short) Ionic.Zip.CompressionMethod.Deflate;
 
                 if (_container.ZipFile != null) _container.ZipFile.NotifyEntryChanged();
                 _restreamRequiredOnSave = true;
@@ -2838,11 +2851,8 @@ namespace Ionic.Zip
     ///   <see
     ///   href="http://www.pkware.com/documents/casestudies/APPNOTE.TXT">PKWare's
     ///   ZIP Specification</see> describes a number of distinct
-    ///   cmopression methods that can be used within a zip file. The
-    ///   standard DEFLATE method is the only one supported by this
-    ///   library.  Imploding, Deflate64, LZMA, and others are not
-    ///   supported by this library, either for reading or writing zip
-    ///   archives.
+    ///   cmopression methods that can be used within a zip
+    ///   file. DotNetZip supports a subset of them.
     /// </remarks>
     public enum CompressionMethod
     {
@@ -2852,12 +2862,18 @@ namespace Ionic.Zip
         None = 0,
 
         /// <summary>
-        ///   DEFLATE cmopression, as described in <see
+        ///   DEFLATE compression, as described in <see
         ///   href="http://www.ietf.org/rfc/rfc1951.txt">IETF RFC
         ///   1951</see>.  This is the "normal" compression used in zip
         ///   files. For COM environments, the value is 8.
         /// </summary>
         Deflate = 8,
+
+        /// <summary>
+        ///   BZip2 compression, a compression algorithm developed by Julian Seward.
+        ///   For COM environments, the value is 12.
+        /// </summary>
+        BZip2 = 12,
     }
 
 

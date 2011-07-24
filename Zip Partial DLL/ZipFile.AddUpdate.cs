@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-06 21:29:58>
+// Time-stamp: <2011-July-23 19:40:45>
 //
 // ------------------------------------------------------------------
 //
@@ -1586,16 +1586,17 @@ namespace Ionic.Zip
         {
             // stamp all the props onto the entry
             ze._container = new ZipContainer(this);
-            ze.CompressionLevel = CompressionLevel;
-            ze.ExtractExistingFile = ExtractExistingFile;
+            ze.CompressionMethod = this.CompressionMethod;
+            ze.CompressionLevel = this.CompressionLevel;
+            ze.ExtractExistingFile = this.ExtractExistingFile;
             ze.ZipErrorAction = this.ZipErrorAction;
-            ze.SetCompression = SetCompression;
-            ze.AlternateEncoding = AlternateEncoding;
-            ze.AlternateEncodingUsage = AlternateEncodingUsage;
-            ze.Password = _Password;
-            ze.Encryption = Encryption;
-            ze.EmitTimesInWindowsFormatWhenSaving = _emitNtfsTimes;
-            ze.EmitTimesInUnixFormatWhenSaving = _emitUnixTimes;
+            ze.SetCompression = this.SetCompression;
+            ze.AlternateEncoding = this.AlternateEncoding;
+            ze.AlternateEncodingUsage = this.AlternateEncodingUsage;
+            ze.Password = this._Password;
+            ze.Encryption = this.Encryption;
+            ze.EmitTimesInWindowsFormatWhenSaving = this._emitNtfsTimes;
+            ze.EmitTimesInUnixFormatWhenSaving = this._emitUnixTimes;
             //string key = DictionaryKeyForEntry(ze);
             InternalAddEntry(ze.FileName,ze);
             AfterAddEntry(ze);

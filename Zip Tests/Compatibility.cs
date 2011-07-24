@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-14 09:47:01>
+// Time-stamp: <2011-July-23 20:10:16>
 //
 // ------------------------------------------------------------------
 //
@@ -23,7 +23,7 @@
 // idea is to verify that DotNetZip can read the zip files produced by
 // other tools, and that other tools can read the output produced
 // by DotNetZip. The tools and libraries tested are:
-//  - WinZip,
+//  - WinZip
 //  - 7zip
 //  - Infozip (unzip 6.0, zip 3.0)
 //  - Perl's IO::Compress
@@ -1866,11 +1866,9 @@ namespace Ionic.Zip.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void Winzip_Zip_Bzip2()
         {
             if (!WinZipIsPresent) throw new Exception("no winzip");
-            // Unsupported compression method
             Winzip_Zip_Variable("-eb");
         }
 
@@ -1924,7 +1922,7 @@ namespace Ionic.Zip.Tests
             Dictionary<string, byte[]> checksums;
             CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
 
-            // delay between file creation and unzip
+            // delay between file creation and zip creation
             System.Threading.Thread.Sleep(1200);
 
             // exec wzzip.exe to create the zip file
@@ -1933,13 +1931,11 @@ namespace Ionic.Zip.Tests
 
             if (wantVerify)
             {
-                string extractDir = "extract";
                 // unzip with DotNetZip
-                //Directory.SetCurrentDirectory(TopLevelDir);
+                string extractDir = "extract";
                 using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
                 {
                     zip1.ExtractAll(extractDir);
-
                 }
 
                 // check the files in the extract dir
@@ -1965,7 +1961,7 @@ namespace Ionic.Zip.Tests
 
             // create and fill the directories
             string extractDir = "extract";
-            string subdir = "files";
+            //string subdir = "files";
             Dictionary<string, byte[]> checksums = new Dictionary<string, byte[]>();
             var filesToZip = GetSelectionOfTempFiles(_rnd.Next(13) + 8, checksums);
 
@@ -2217,6 +2213,61 @@ namespace Ionic.Zip.Tests
             VerifyTimesDos(Path.Combine(extractDir, "files"), filesToZip);
         }
 
+        [TestMethod]
+        public void Winzip_Unzip_Bzip2()
+        {
+            if (!WinZipIsPresent) throw new Exception("no winzip");
+
+            string zipFileToCreate = "Winzip_Unzip.zip";
+
+            string dirInZip = "files";
+            string extractDir = "extract";
+            string subdir = Path.Combine(TopLevelDir, dirInZip);
+
+            string[] filesToZip;
+            Dictionary<string, byte[]> checksums;
+            CreateFilesAndChecksums(subdir, out filesToZip, out checksums);
+
+            var additionalFiles = GetSelectionOfTempFiles(checksums);
+
+            // Now, Create the zip archive with DotNetZip
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.CompressionMethod = CompressionMethod.BZip2;
+                zip1.AddFiles(filesToZip, dirInZip);
+                zip1.AddFiles(additionalFiles, dirInZip);
+                zip1.Save(zipFileToCreate);
+            }
+
+            // Verify the number of files in the zip
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate),
+                                 filesToZip.Length + additionalFiles.Count,
+                                 "Incorrect number of entries in the zip file.");
+
+            // examine and unpack the zip archive via WinZip
+            // first, examine the zip entry metadata:
+            string wzzipOut = this.Exec(wzzip, "-vt " + zipFileToCreate);
+
+            // TODO: verify that the output states that the compression method
+            // used for each entry was BZIP2...
+
+            // now, extract the zip
+            // eg, wzunzip.exe -d test.zip  <extractdir>
+            Directory.CreateDirectory(extractDir);
+            Directory.SetCurrentDirectory(extractDir);
+            this.Exec(wzunzip, String.Format("-d -yx \"{0}\"",
+                                             Path.Combine(TopLevelDir,zipFileToCreate)));
+
+            // check the files in the extract dir
+            Directory.SetCurrentDirectory(TopLevelDir);
+            String[] filesToCheck = new String[filesToZip.Length + additionalFiles.Count];
+            filesToZip.CopyTo(filesToCheck, 0);
+            additionalFiles.ToArray().CopyTo(filesToCheck, filesToZip.Length);
+
+            VerifyChecksums(Path.Combine("extract", dirInZip), filesToCheck, checksums);
+
+            VerifyFileTimes1(extractDir, additionalFiles);
+        }
 
 
 
@@ -2227,7 +2278,7 @@ namespace Ionic.Zip.Tests
             if (!WinZipIsPresent)
                 throw new Exception("[Winzip_Unzip_Basic] : winzip is not present");
 
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Winzip_Unzip.zip");
+            string zipFileToCreate = "Winzip_Unzip_Basic.zip";
 
             string dirInZip = "files";
             string extractDir = "extract";
@@ -2250,9 +2301,7 @@ namespace Ionic.Zip.Tests
             if (!File.Exists(filesToZip[i])) throw new Exception("Something is berry berry wrong.");
             File.SetAttributes(filesToZip[i], FileAttributes.Hidden);
 
-
             // Now, Create the zip archive with DotNetZip
-            //Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 zip1.AddFiles(filesToZip, dirInZip);
@@ -2285,7 +2334,6 @@ namespace Ionic.Zip.Tests
                 Assert.AreEqual(expectedAttrStrings[i], attrs, "Unexpected attributes on File {0}.", i);
             }
 
-
             // now, extract the zip
             // eg, wzunzip.exe -d test.zip  <extractdir>
             Directory.CreateDirectory(extractDir);
@@ -2300,6 +2348,12 @@ namespace Ionic.Zip.Tests
 
             VerifyChecksums(Path.Combine("extract", dirInZip), filesToCheck, checksums);
 
+            VerifyFileTimes1(extractDir, additionalFiles);
+        }
+
+
+        private void VerifyFileTimes1(string extractDir, List<string> additionalFiles)
+        {
             // verify the file times
             DateTime atMidnight = new DateTime(DateTime.Now.Year,
                                                DateTime.Now.Month,
@@ -2334,7 +2388,6 @@ namespace Ionic.Zip.Tests
                 }
             }
         }
-
 
         private List<string> GetSelectionOfTempFiles(Dictionary<string, byte[]> checksums)
         {
