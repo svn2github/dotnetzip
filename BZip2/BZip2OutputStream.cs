@@ -1,3 +1,30 @@
+// BZip2OutputStream.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2011 Dino Chiesa.
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License.
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// Last Saved: <2011-July-23 21:11:07>
+//
+// ------------------------------------------------------------------
+//
+// This module defines the BZip2OutputStream class, which is a compressing
+// stream that handles BZIP2. This code is derived from Apache commons source code.
+// The license below applies to the original Apache code.
+//
+// ------------------------------------------------------------------
+
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -165,13 +192,13 @@ namespace Ionic.BZip2
                     parent[n1] = parent[n2] = nNodes;
 
                     int weight_n1 = weight[n1];
-                     int weight_n2 = weight[n2];
+                    int weight_n2 = weight[n2];
                     weight[nNodes] = (int) (((uint)weight_n1 & 0xffffff00U)
                                             + ((uint)weight_n2 & 0xffffff00U))
                         | (1 + (((weight_n1 & 0x000000ff)
-                                        > (weight_n2 & 0x000000ff))
-                                       ? (weight_n1 & 0x000000ff)
-                                       : (weight_n2 & 0x000000ff)));
+                                 > (weight_n2 & 0x000000ff))
+                                ? (weight_n1 & 0x000000ff)
+                                : (weight_n2 & 0x000000ff)));
 
                     parent[nNodes] = -1;
                     nHeap++;
@@ -277,17 +304,36 @@ namespace Ionic.BZip2
                 : BZip2.MaxBlockSize;
         }
 
-        /**
-         * Constructs a new <tt>CBZip2OutputStream</tt> with a blocksize of 900k.
-         *
-         * @param out
-         *            the destination stream.
-         *
-         * @throws IOException
-         *             if an I/O error occurs in the specified stream.
-         * @throws NullPointerException
-         *             if <code>out == null</code>.
-         */
+        /// <summary>
+        ///   Constructs a new <c>BZip2OutputStream</c>, that sends its
+        ///   compressed output to the given output stream.
+        /// </summary>
+        ///
+        /// <example>
+        ///
+        ///   This example reads a file, then compresses it with bzip2 file,
+        ///   and writes the compressed data into a newly created file.
+        ///
+        ///   <code>
+        ///   var fname = "logfile.log";
+        ///   using (var fs = File.OpenRead(fname))
+        ///   {
+        ///       var outFname = fname + ".bz2";
+        ///       using (var output = File.Create(outFname))
+        ///       {
+        ///           using (var compressor = new Ionic.BZip2.BZip2OutputStream(output))
+        ///           {
+        ///               byte[] buffer = new byte[2048];
+        ///               int n;
+        ///               while ((n = fs.Read(buffer, 0, buffer.Length)) > 0)
+        ///               {
+        ///                   compressor.Write(buffer, 0, n);
+        ///               }
+        ///           }
+        ///       }
+        ///   }
+        ///   </code>
+        /// </example>
         public BZip2OutputStream(Stream output)
             : this(output, BZip2.MaxBlockSize, false)
         {
@@ -295,7 +341,7 @@ namespace Ionic.BZip2
 
 
         /// <summary>
-        ///   Constructs a new <c>CBZip2OutputStream</c> with specified blocksize.
+        ///   Constructs a new <c>BZip2OutputStream</c> with specified blocksize.
         /// </summary>
         ///   <param name = "output">the destination stream.</param>
         ///   <param name = "blockSize">the blockSize in units of 100000 bytes.</param>
@@ -1231,7 +1277,7 @@ namespace Ionic.BZip2
          * </p>
          */
         private bool mainSimpleSort(CompressionState dataShadow, int lo,
-                                       int hi, int d)
+                                    int hi, int d)
         {
             int bigN = hi - lo + 1;
             if (bigN < 2)
@@ -1540,11 +1586,11 @@ namespace Ionic.BZip2
         private void mainQSort3(CompressionState dataShadow, int loSt,
                                 int hiSt, int dSt)
         {
- int[] stack_ll = dataShadow.stack_ll;
- int[] stack_hh = dataShadow.stack_hh;
- int[] stack_dd = dataShadow.stack_dd;
- int[] fmap = dataShadow.fmap;
- byte[] block = dataShadow.block;
+            int[] stack_ll = dataShadow.stack_ll;
+            int[] stack_hh = dataShadow.stack_hh;
+            int[] stack_dd = dataShadow.stack_dd;
+            int[] fmap = dataShadow.fmap;
+            byte[] block = dataShadow.block;
 
             stack_ll[0] = loSt;
             stack_hh[0] = hiSt;
@@ -1552,9 +1598,9 @@ namespace Ionic.BZip2
 
             for (int sp = 1; --sp >= 0;)
             {
- int lo = stack_ll[sp];
- int hi = stack_hh[sp];
- int d = stack_dd[sp];
+                int lo = stack_ll[sp];
+                int hi = stack_hh[sp];
+                int d = stack_dd[sp];
 
                 if ((hi - lo < SMALL_THRESH) || (d > DEPTH_THRESH))
                 {
@@ -1564,9 +1610,9 @@ namespace Ionic.BZip2
                     }
                 }
                 else {
- int d1 = d + 1;
- int med = med3(block[fmap[lo] + d1],
-                                         block[fmap[hi] + d1], block[fmap[(lo + hi) >> 1] + d1]) & 0xff;
+                    int d1 = d + 1;
+                    int med = med3(block[fmap[lo] + d1],
+                                   block[fmap[hi] + d1], block[fmap[(lo + hi) >> 1] + d1]) & 0xff;
 
                     int unLo = lo;
                     int unHi = hi;
@@ -1581,7 +1627,7 @@ namespace Ionic.BZip2
                                 - med;
                             if (n == 0)
                             {
-                             int temp = fmap[unLo];
+                                int temp = fmap[unLo];
                                 fmap[unLo++] = fmap[ltLo];
                                 fmap[ltLo++] = temp;
                             }
@@ -1596,11 +1642,11 @@ namespace Ionic.BZip2
 
                         while (unLo <= unHi)
                         {
-                             int n = (block[fmap[unHi] + d1] & 0xff)
+                            int n = (block[fmap[unHi] + d1] & 0xff)
                                 - med;
                             if (n == 0)
                             {
-                             int temp = fmap[unHi];
+                                int temp = fmap[unHi];
                                 fmap[unHi--] = fmap[gtHi];
                                 fmap[gtHi--] = temp;
                             }
@@ -1615,7 +1661,7 @@ namespace Ionic.BZip2
 
                         if (unLo <= unHi)
                         {
-                             int temp = fmap[unLo];
+                            int temp = fmap[unLo];
                             fmap[unLo++] = fmap[unHi];
                             fmap[unHi--] = temp;
                         }
@@ -1663,17 +1709,17 @@ namespace Ionic.BZip2
 
         private void mainSort()
         {
- CompressionState dataShadow = this.data;
- int[] runningOrder = dataShadow.mainSort_runningOrder;
- int[] copy = dataShadow.mainSort_copy;
- bool[] bigDone = dataShadow.mainSort_bigDone;
- int[] ftab = dataShadow.ftab;
- byte[] block = dataShadow.block;
- int[] fmap = dataShadow.fmap;
- char[] quadrant = dataShadow.quadrant;
- int lastShadow = this.last;
- int workLimitShadow = this.workLimit;
- bool firstAttemptShadow = this.firstAttempt;
+            CompressionState dataShadow = this.data;
+            int[] runningOrder = dataShadow.mainSort_runningOrder;
+            int[] copy = dataShadow.mainSort_copy;
+            bool[] bigDone = dataShadow.mainSort_bigDone;
+            int[] ftab = dataShadow.ftab;
+            byte[] block = dataShadow.block;
+            int[] fmap = dataShadow.fmap;
+            char[] quadrant = dataShadow.quadrant;
+            int lastShadow = this.last;
+            int workLimitShadow = this.workLimit;
+            bool firstAttemptShadow = this.firstAttempt;
 
             // Set up the 2-byte frequency table
             for (int i = 65537; --i >= 0;)
@@ -1712,7 +1758,7 @@ namespace Ionic.BZip2
             c1 = block[1] & 0xff;
             for (int i = 0; i < lastShadow; i++)
             {
-                 int c2 = block[i + 2] & 0xff;
+                int c2 = block[i + 2] & 0xff;
                 fmap[--ftab[(c1 << 8) + c2]] = i;
                 c1 = c2;
             }
@@ -1734,9 +1780,9 @@ namespace Ionic.BZip2
                 h /= 3;
                 for (int i = h; i <= 255; i++)
                 {
-                     int vv = runningOrder[i];
-                     int a = ftab[(vv + 1) << 8] - ftab[vv << 8];
-                     int b = h - 1;
+                    int vv = runningOrder[i];
+                    int a = ftab[(vv + 1) << 8] - ftab[vv << 8];
+                    int b = h - 1;
                     int j = i;
                     for (int ro = runningOrder[j - h]; (ftab[(ro + 1) << 8] - ftab[ro << 8]) > a; ro = runningOrder[j
                                                                                                                     - h])
@@ -1760,7 +1806,7 @@ namespace Ionic.BZip2
                 /*
                  * Process big buckets, starting with the least full.
                  */
-                 int ss = runningOrder[i];
+                int ss = runningOrder[i];
 
                 // Step 1:
                 /*
@@ -1771,12 +1817,12 @@ namespace Ionic.BZip2
                  */
                 for (int j = 0; j <= 255; j++)
                 {
-                     int sb = (ss << 8) + j;
-                     int ftab_sb = ftab[sb];
+                    int sb = (ss << 8) + j;
+                    int ftab_sb = ftab[sb];
                     if ((ftab_sb & SETMASK) != SETMASK)
                     {
-                     int lo = ftab_sb & CLEARMASK;
-                     int hi = (ftab[sb + 1] & CLEARMASK) - 1;
+                        int lo = ftab_sb & CLEARMASK;
+                        int hi = (ftab[sb + 1] & CLEARMASK) - 1;
                         if (hi > lo)
                         {
                             mainQSort3(dataShadow, lo, hi, 2);
@@ -1801,7 +1847,7 @@ namespace Ionic.BZip2
 
                 for (int j = ftab[ss << 8] & CLEARMASK, hj = (ftab[(ss + 1) << 8] & CLEARMASK); j < hj; j++)
                 {
-                     int fmap_j = fmap[j];
+                    int fmap_j = fmap[j];
                     c1 = block[fmap_j] & 0xff;
                     if (!bigDone[c1])
                     {
@@ -1825,8 +1871,8 @@ namespace Ionic.BZip2
 
                 if (i < 255)
                 {
-                     int bbStart = ftab[ss << 8] & CLEARMASK;
-                     int bbSize = (ftab[(ss + 1) << 8] & CLEARMASK) - bbStart;
+                    int bbStart = ftab[ss << 8] & CLEARMASK;
+                    int bbSize = (ftab[(ss + 1) << 8] & CLEARMASK) - bbStart;
                     int shifts = 0;
 
                     while ((bbSize >> shifts) > 65534)
@@ -1836,8 +1882,8 @@ namespace Ionic.BZip2
 
                     for (int j = 0; j < bbSize; j++)
                     {
-                         int a2update = fmap[bbStart + j];
-                         char qVal = (char) (j >> shifts);
+                        int a2update = fmap[bbStart + j];
+                        char qVal = (char) (j >> shifts);
                         quadrant[a2update] = qVal;
                         if (a2update < BZip2.NUM_OVERSHOOT_BYTES)
                         {
@@ -1851,9 +1897,9 @@ namespace Ionic.BZip2
 
         private void randomiseBlock()
         {
-             bool[] inUse = this.data.inUse;
-             byte[] block = this.data.block;
-             int lastShadow = this.last;
+            bool[] inUse = this.data.inUse;
+            byte[] block = this.data.block;
+            int lastShadow = this.last;
 
             for (int i = 256; --i >= 0;)
                 inUse[i] = false;
@@ -1883,15 +1929,15 @@ namespace Ionic.BZip2
 
         private void generateMTFValues()
         {
-             int lastShadow = this.last;
-             CompressionState dataShadow = this.data;
-             bool[] inUse = dataShadow.inUse;
-             byte[] block = dataShadow.block;
-             int[] fmap = dataShadow.fmap;
-             char[] sfmap = dataShadow.sfmap;
-             int[] mtfFreq = dataShadow.mtfFreq;
-             byte[] unseqToSeq = dataShadow.unseqToSeq;
-             byte[] yy = dataShadow.generateMTFValues_yy;
+            int lastShadow = this.last;
+            CompressionState dataShadow = this.data;
+            bool[] inUse = dataShadow.inUse;
+            byte[] block = dataShadow.block;
+            int[] fmap = dataShadow.fmap;
+            char[] sfmap = dataShadow.sfmap;
+            int[] mtfFreq = dataShadow.mtfFreq;
+            byte[] unseqToSeq = dataShadow.unseqToSeq;
+            byte[] yy = dataShadow.generateMTFValues_yy;
 
             // make maps
             int nInUseShadow = 0;
@@ -1905,7 +1951,7 @@ namespace Ionic.BZip2
             }
             this.nInUse = nInUseShadow;
 
-             int eob = nInUseShadow + 1;
+            int eob = nInUseShadow + 1;
 
             for (int i = eob; i >= 0; i--)
             {
@@ -1922,7 +1968,7 @@ namespace Ionic.BZip2
 
             for (int i = 0; i <= lastShadow; i++)
             {
-                 byte ll_i = unseqToSeq[block[fmap[i]] & 0xff];
+                byte ll_i = unseqToSeq[block[fmap[i]] & 0xff];
                 byte tmp = yy[0];
                 int j = 0;
 
@@ -2164,13 +2210,9 @@ namespace Ionic.BZip2
                 this.fmap = new int[n];
                 this.sfmap = new char[2 * n];
                 this.quadrant = this.sfmap;
-
                 this.sendMTFValues_len = BZip2.InitRectangularArray<byte>(BZip2.NGroups,BZip2.MaxAlphaSize);
-
                 this.sendMTFValues_rfreq = BZip2.InitRectangularArray<int>(BZip2.NGroups,BZip2.MaxAlphaSize);
                 this.sendMTFValues_code = BZip2.InitRectangularArray<int>(BZip2.NGroups,BZip2.MaxAlphaSize);
-
-
             }
 
         }

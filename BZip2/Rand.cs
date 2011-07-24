@@ -1,3 +1,29 @@
+// Rand.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2011 Dino Chiesa.
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License.
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// Last Saved: <2011-July-23 21:13:49>
+//
+// ------------------------------------------------------------------
+//
+// This module defines a helper class for the BZip2 classes. This code
+// is derived from the original BZip2 source code.
+//
+// ------------------------------------------------------------------
+
+
 namespace Ionic.BZip2
 {
     /**

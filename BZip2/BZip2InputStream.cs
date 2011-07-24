@@ -1,3 +1,29 @@
+// BZip2InputStream.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2011 Dino Chiesa.
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License.
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// Last Saved: <2011-July-23 21:09:22>
+//
+// ------------------------------------------------------------------
+//
+// This module defines the BZip2InputStream class, which is a decompressing
+// stream that handles BZIP2. This code is derived from Apache commons source code.
+// The license below applies to the original Apache code.
+//
+// ------------------------------------------------------------------
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -90,21 +116,12 @@ namespace Ionic.BZip2
         private int su_rTPos;
         private int su_tPos;
         private char su_z;
-
-        /**
-         * All memory intensive stuff. This field is initialized by initBlock().
-         */
         private BZip2InputStream.DecompressionState data;
 
-        /**
-         * Constructs a new BZip2CompressorInputStream which decompresses bytes read from the
-         * specified stream.
-         *
-         * @throws IOException
-         *             if the stream content is malformed or an I/O error occurs.
-         * @throws NullPointerException
-         *             if <tt>in == null</tt>
-         */
+
+        /// <summary>
+        ///   Create a BZip2InputStream, wrapping it around the given input Stream.
+        /// </summary>
         public BZip2InputStream(Stream input)
             : this(input, false)
         {}
@@ -115,6 +132,32 @@ namespace Ionic.BZip2
         ///   specifying whether to leave the captive stream open when
         ///   the BZip2InputStream is closed.
         /// </summary>
+        ///
+        /// <example>
+        ///
+        ///   This example reads a bzip2-compressed file, decompresses it,
+        ///   and writes the decompressed data into a newly created file.
+        ///
+        ///   <code>
+        ///   var fname = "logfile.log.bz2";
+        ///   using (var fs = File.OpenRead(fname))
+        ///   {
+        ///       using (var decompressor = new Ionic.BZip2.BZip2InputStream(fs))
+        ///       {
+        ///           var outFname = fname + ".decompressed";
+        ///           using (var output = File.Create(outFname))
+        ///           {
+        ///               byte[] buffer = new byte[2048];
+        ///               int n;
+        ///               while ((n = decompressor.Read(buffer, 0, buffer.Length)) > 0)
+        ///               {
+        ///                   output.Write(buffer, 0, n);
+        ///               }
+        ///           }
+        ///       }
+        ///   }
+        ///   </code>
+        /// </example>
         public BZip2InputStream(Stream input, bool leaveOpen)
             : base()
         {

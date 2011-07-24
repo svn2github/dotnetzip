@@ -1,3 +1,31 @@
+// BCRC32.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2011 Dino Chiesa.
+// All rights reserved.
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License.
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+// Last Saved: <2011-July-23 21:12:37>
+//
+// ------------------------------------------------------------------
+//
+// This module defines the BCRC32 class, which is a CRC-32 class that
+// can do the BZip2 CRC32 algorithm, including bit reversal. The bit
+// reversal is what distinguishes this CRC-32 from the CRC-32 that is
+// used in PKZIP files, or GZIP files.
+//
+// ------------------------------------------------------------------
+
+
 using System;
 
 namespace Ionic.BZip2
@@ -383,7 +411,6 @@ namespace Ionic.BZip2
         {
             _register = 0xFFFFFFFFU;
         }
-
 
 
         // private member vars
