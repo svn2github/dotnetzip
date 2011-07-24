@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-23 21:11:07>
+// Last Saved: <2011-July-24 09:26:39>
 //
 // ------------------------------------------------------------------
 //
@@ -68,6 +68,51 @@ namespace Ionic.BZip2
         bool leaveOpen;
 
         /**
+         * Index of the last char in the block, so the block size == last + 1.
+         */
+        private int last;
+
+        /**
+         * Index in fmap[] of original string after sorting.
+         */
+        private int origPtr;
+
+        /**
+         * Always: in the range 0 .. 9. The current block size is 100000 * this
+         * number.
+         */
+        private int blockSize100k;
+
+        private bool blockRandomised;
+
+        private int bsBuff;
+        private int bsLive;
+        private readonly CRC32 crc = Ionic.BZip2.CRC32.Create();
+        private int nInUse;
+        private int nMTF;
+
+        /*
+         * Used when sorting. If too many long comparisons happen, we stop sorting,
+         * randomise the block slightly, and try again.
+         */
+        private int workDone;
+        private int workLimit;
+        private bool firstAttempt;
+
+        private int currentByte = -1;
+        private int runLength = 0;
+
+        private int blockCRC;
+        private int combinedCRC;
+        private int outBlockFillThreshold;
+
+        /**
+         * All memory intensive stuff.
+         */
+        private CompressionState cstate;
+        private Stream output;
+
+        /**
          * Knuth's increments seem to work better than Incerpi-Sedgewick here.
          * Possibly because the number of elems to sort is usually small, typically
          * &lt;= 20.
@@ -76,17 +121,565 @@ namespace Ionic.BZip2
                                                      9841, 29524, 88573, 265720, 797161,
                                                      2391484 };
 
+        /// <summary>
+        ///   Constructs a new <c>BZip2OutputStream</c>, that sends its
+        ///   compressed output to the given output stream.
+        /// </summary>
+        ///
+        /// <example>
+        ///
+        ///   This example reads a file, then compresses it with bzip2 file,
+        ///   and writes the compressed data into a newly created file.
+        ///
+        ///   <code>
+        ///   var fname = "logfile.log";
+        ///   using (var fs = File.OpenRead(fname))
+        ///   {
+        ///       var outFname = fname + ".bz2";
+        ///       using (var output = File.Create(outFname))
+        ///       {
+        ///           using (var compressor = new Ionic.BZip2.BZip2OutputStream(output))
+        ///           {
+        ///               byte[] buffer = new byte[2048];
+        ///               int n;
+        ///               while ((n = fs.Read(buffer, 0, buffer.Length)) > 0)
+        ///               {
+        ///                   compressor.Write(buffer, 0, n);
+        ///               }
+        ///           }
+        ///       }
+        ///   }
+        ///   </code>
+        /// </example>
+        public BZip2OutputStream(Stream output)
+            : this(output, BZip2.MaxBlockSize, false)
+        {
+        }
+
+
+        /// <summary>
+        ///   Constructs a new <c>BZip2OutputStream</c> with specified blocksize.
+        /// </summary>
+        ///   <param name = "output">the destination stream.</param>
+        ///   <param name = "blockSize">the blockSize in units of 100000 bytes.</param>
+        public BZip2OutputStream(Stream output, int blockSize)
+            : this(output, blockSize, false)
+        {
+        }
+
+
+        /// <summary>
+        ///   Constructs a new <c>CBZip2OutputStream</c>.
+        /// </summary>
+        ///   <param name = "output">the destination stream.</param>
+        /// <param name = "leaveOpen">
+        ///   whether to leave the captive stream open upon closing this stream.
+        /// </param>
+        public BZip2OutputStream(Stream output, bool leaveOpen)
+            : this(output, BZip2.MaxBlockSize, leaveOpen)
+        {
+        }
+
+
+        /// <summary>
+        ///   Constructs a new <c>CBZip2OutputStream</c> with specified blocksize.
+        /// </summary>
+        ///
+        /// <param name = "output">the destination stream.</param>
+        /// <param name = "blockSize">the blockSize in units of 100000 bytes.</param>
+        /// <param name = "leaveOpen">
+        ///   whether to leave the captive stream open upon closing this stream.
+        /// </param>
+        public BZip2OutputStream(Stream output, int blockSize, bool leaveOpen)
+        {
+            if (blockSize < BZip2.MinBlockSize)
+                throw new ArgumentException("blockSize(" + blockSize
+                                            + ") < 1");
+
+            if (blockSize > BZip2.MaxBlockSize)
+                throw new ArgumentException("blockSize(" + blockSize
+                                            + ") > 9");
+
+            this.blockSize100k = blockSize;
+            this.output = output;
+            this.leaveOpen = leaveOpen;
+            init();
+        }
+
+
+        /**
+         * Chooses a blocksize based on the given length of the data to compress.
+         *
+         */
+        public static int chooseBlockSize(long inputLength)
+        {
+            return (inputLength > 0)
+                ? (int) Math.Min((inputLength / 132000) + 1, BZip2.MaxBlockSize)
+                : BZip2.MaxBlockSize;
+        }
+
+
+        /// <summary>
+        ///   Write a single byte to the output stream.
+        /// </summary>
+        public override void WriteByte(byte b)
+        {
+            if (this.output == null)
+                throw new IOException("the stream is closed");
+
+            write0(b);
+        }
+
+
+        /* add_pair_to_block ( EState* s ) */
+        private void AddRunToOutputBlock()
+        {
+            int previousLast = this.last;
+
+            if (previousLast < this.outBlockFillThreshold)
+            {
+                byte b = (byte) this.currentByte;
+                byte[] block = this.cstate.block;
+                this.cstate.inUse[b] = true;
+                int runLengthShadow = this.runLength;
+                this.crc.UpdateCRC(b, runLengthShadow);
+
+                switch (runLengthShadow)
+                {
+                    case 1:
+                        block[previousLast + 2] = b;
+                        this.last = previousLast + 1;
+                        break;
+
+                    case 2:
+                        block[previousLast + 2] = b;
+                        block[previousLast + 3] = b;
+                        this.last = previousLast + 2;
+                        break;
+
+                    case 3:
+                        block[previousLast + 2] = b;
+                        block[previousLast + 3] = b;
+                        block[previousLast + 4] = b;
+                        this.last = previousLast + 3;
+                        break;
+
+                    default:
+                        runLengthShadow -= 4;
+                        this.cstate.inUse[runLengthShadow] = true;
+                        block[previousLast + 2] = b;
+                        block[previousLast + 3] = b;
+                        block[previousLast + 4] = b;
+                        block[previousLast + 5] = b;
+                        block[previousLast + 6] = (byte) runLengthShadow;
+                        this.last = previousLast + 5;
+                        break;
+                }
+
+                totalBytesWritten += this.last - previousLast;
+            }
+            else {
+                endBlock();
+                initBlock();
+                AddRunToOutputBlock();
+            }
+        }
+
+
+        void finish()
+        {
+            if (this.output != null)
+            {
+                try
+                {
+                    if (this.runLength > 0)
+                    {
+                        AddRunToOutputBlock();
+                    }
+                    this.currentByte = -1;
+                    endBlock();
+                    endCompression();
+                }
+                finally
+                {
+                    this.output = null;
+                    this.cstate = null;
+                }
+            }
+        }
+
+        /// <summary>
+        ///   Close the stream.
+        /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     This may or may not close the underlying stream.  Check the
+        ///     constructors that accept a bool value.
+        ///   </para>
+        /// </remarks>
+        public override void Close()
+        {
+            if (output != null)
+            {
+                Stream o = this.output;
+                finish();
+                if (!leaveOpen)
+                    o.Close();
+            }
+        }
+
+        /// <summary>
+        ///   Flush the stream.
+        /// </summary>
+        public override void Flush()
+        {
+            if (this.output != null)
+                this.output.Flush();
+        }
+
+        /**
+         * Writes magic bytes like BZ on the first position of the stream
+         * and bytes indiciating the file-format, which is
+         * huffmanised, followed by a digit indicating blockSize100k.
+         * @throws IOException if the magic bytes could not been written
+         */
+        private void init()
+        {
+            bsPutUByte('B');
+            bsPutUByte('Z');
+
+            this.cstate = new CompressionState(this.blockSize100k);
+
+            // huffmanised magic bytes
+            bsPutUByte('h');
+            bsPutUByte('0' + this.blockSize100k);
+
+            this.combinedCRC = 0;
+            initBlock();
+        }
+
+
+
+        private void initBlock()
+        {
+            // blockNo++;
+            this.crc.Reset();
+            this.last = -1;
+            // ch = 0;
+
+            bool[] inUse = this.cstate.inUse;
+            for (int i = 256; --i >= 0;)
+            {
+                inUse[i] = false;
+            }
+
+            // 20 is just a paranoia constant. The
+            this.outBlockFillThreshold = (this.blockSize100k * BZip2.BlockSizeMultiple) - 20;
+        }
+
+
+        private void endBlock()
+        {
+            this.blockCRC = this.crc.Crc32Result;
+            this.combinedCRC = (this.combinedCRC << 1) | (this.combinedCRC >> 31);
+            this.combinedCRC ^= this.blockCRC;
+
+            // empty block at end of file
+            if (this.last == -1)
+                return;
+
+            /* sort the block and establish posn of original string */
+            blockSort();
+
+            /*
+             * A 6-byte block header, the value chosen arbitrarily as 0x314159265359
+             * :-). A 32 bit value does not really give a strong enough guarantee
+             * that the value will not appear by chance in the compressed
+             * datastream. Worst-case probability of this event, for a 900k block,
+             * is about 2.0e-3 for 32 bits, 1.0e-5 for 40 bits and 4.0e-8 for 48
+             * bits. For a compressed file of size 100Gb -- about 100000 blocks --
+             * only a 48-bit marker will do. NB: normal compression/ decompression
+             * donot rely on these statistical properties. They are only important
+             * when trying to recover blocks from damaged files.
+             */
+            bsPutUByte(0x31);
+            bsPutUByte(0x41);
+            bsPutUByte(0x59);
+            bsPutUByte(0x26);
+            bsPutUByte(0x53);
+            bsPutUByte(0x59);
+
+            /* Now the block's CRC, so it is in a known place. */
+            bsPutInt(this.blockCRC);
+
+            /* Now a single bit indicating randomisation. */
+            if (this.blockRandomised)
+                bsW(1, 1);
+            else
+                bsW(1, 0);
+
+            /* Finally, block's contents proper. */
+            moveToFrontCodeAndSend();
+        }
+
+        private void endCompression()
+        {
+            // Now another magic 48-bit number, 0x177245385090, to indicate the end
+            // of the last block. (sqrt(pi), if you want to know)
+            bsPutUByte(0x17);
+            bsPutUByte(0x72);
+            bsPutUByte(0x45);
+            bsPutUByte(0x38);
+            bsPutUByte(0x50);
+            bsPutUByte(0x90);
+
+            bsPutInt(this.combinedCRC);
+            bsFinishedWithStream();
+        }
+
+
+        /// <summary>
+        ///   the blocksize parameter specified at construction time.
+        /// </summary>
+        public int BlockSize
+        {
+            get
+            {
+                return this.blockSize100k;
+            }
+        }
+
+
+        /// <summary>
+        ///   Write data to the stream.
+        /// </summary>
+        /// <remarks>
+        ///
+        /// <para>
+        ///   Use the <c>BZip2OutputStream</c> to compress data while writing:
+        ///   create a <c>BZip2OutputStream</c> with a writable output stream.
+        ///   Then call <c>Write()</c> on that <c>BZip2OutputStream</c>, providing
+        ///   uncompressed data as input.  The data sent to the output stream will
+        ///   be the compressed form of the input data.
+        /// </para>
+        ///
+        /// <para>
+        ///   A <c>BZip2OutputStream</c> can be used only for <c>Write()</c> not for <c>Read()</c>.
+        /// </para>
+        ///
+        /// </remarks>
+        ///
+        /// <param name="buffer">The buffer holding data to write to the stream.</param>
+        /// <param name="offset">the offset within that data array to find the first byte to write.</param>
+        /// <param name="count">the number of bytes to write.</param>
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            if (offset < 0)
+                throw new IndexOutOfRangeException(String.Format("offset ({0}) must be > 0", offset));
+            if (count < 0)
+                throw new IndexOutOfRangeException(String.Format("count ({0}) must be > 0", count));
+            if (offset + count > buffer.Length)
+                throw new IndexOutOfRangeException(String.Format("offset({0}) count({1}) bLength({2})",
+                                                                 offset, count, buffer.Length));
+            if (this.output == null)
+                throw new IOException("the stream is not open");
+
+            for (int hi = offset + count; offset < hi;)
+                write0(buffer[offset++]);
+        }
+
+
+        private void write0(byte b)
+        {
+            // handle run-length-encoding
+            if (this.currentByte != -1)
+            {
+                if (this.currentByte == b)
+                {
+                    if (++this.runLength > 254)
+                    {
+                        AddRunToOutputBlock();
+                        this.currentByte = -1;
+                        this.runLength = 0;
+                    }
+                    // else nothing to do
+                }
+                else
+                {
+                    AddRunToOutputBlock();
+                    this.runLength = 1;
+                    this.currentByte = b;
+                }
+            }
+            else
+            {
+                this.currentByte = b;
+                this.runLength++;
+            }
+        }
+
+
+        private static void hbAssignCodes(int[] code,  byte[] length,
+                                          int minLen, int maxLen,
+                                          int alphaSize)
+        {
+            int vec = 0;
+            for (int n = minLen; n <= maxLen; n++)
+            {
+                for (int i = 0; i < alphaSize; i++)
+                {
+                    if ((length[i] & 0xff) == n)
+                    {
+                        code[i] = vec;
+                        vec++;
+                    }
+                }
+                vec <<= 1;
+            }
+        }
+
+
+        private void bsFinishedWithStream()
+        {
+            while (this.bsLive > 0)
+            {
+                byte ch = (byte)(this.bsBuff >> 24 & 0xff);
+                this.output.WriteByte(ch); // write 8-bit
+                this.bsBuff <<= 8;
+                this.bsLive -= 8;
+            }
+        }
+
+        private void bsW(int n,  int v)
+        {
+            Stream outShadow = this.output;
+            int bsLiveShadow = this.bsLive;
+            int bsBuffShadow = this.bsBuff;
+
+            while (bsLiveShadow >= 8)
+            {
+                outShadow.WriteByte ((byte)(bsBuffShadow >> 24 & 0xff));
+                bsBuffShadow <<= 8;
+                bsLiveShadow -= 8;
+            }
+
+            this.bsBuff = bsBuffShadow | (v << (32 - bsLiveShadow - n));
+            this.bsLive = bsLiveShadow + n;
+        }
+
+        private void bsPutUByte(int c)
+        {
+            bsW(8, c);
+        }
+
+        private void bsPutInt(int u)
+        {
+            bsW(8, (u >> 24) & 0xff);
+            bsW(8, (u >> 16) & 0xff);
+            bsW(8, (u >> 8) & 0xff);
+            bsW(8, u & 0xff);
+        }
+
+        private void sendMTFValues()
+        {
+            byte[][] len = this.cstate.sendMTFValues_len;
+            int alphaSize = this.nInUse + 2;
+
+            for (int t = BZip2.NGroups; --t >= 0;)
+            {
+                byte[] len_t = len[t];
+                for (int v = alphaSize; --v >= 0;)
+                {
+                    len_t[v] = GREATER_ICOST;
+                }
+            }
+
+            /* Decide how many coding tables to use */
+            // assert (this.nMTF > 0) : this.nMTF;
+            int nGroups = (this.nMTF < 200) ? 2 : (this.nMTF < 600) ? 3
+                : (this.nMTF < 1200) ? 4 : (this.nMTF < 2400) ? 5 : 6;
+
+            /* Generate an initial set of coding tables */
+            sendMTFValues0(nGroups, alphaSize);
+
+            /*
+             * Iterate up to N_ITERS times to improve the tables.
+             */
+            int nSelectors = sendMTFValues1(nGroups, alphaSize);
+
+            /* Compute MTF values for the selectors. */
+            sendMTFValues2(nGroups, nSelectors);
+
+            /* Assign actual codes for the tables. */
+            sendMTFValues3(nGroups, alphaSize);
+
+            /* Transmit the mapping table. */
+            sendMTFValues4();
+
+            /* Now the selectors. */
+            sendMTFValues5(nGroups, nSelectors);
+
+            /* Now the coding tables. */
+            sendMTFValues6(nGroups, alphaSize);
+
+            /* And finally, the block data proper */
+            sendMTFValues7(nSelectors);
+        }
+
+        private void sendMTFValues0(int nGroups, int alphaSize)
+        {
+            byte[][] len = this.cstate.sendMTFValues_len;
+            int[] mtfFreq = this.cstate.mtfFreq;
+
+            int remF = this.nMTF;
+            int gs = 0;
+
+            for (int nPart = nGroups; nPart > 0; nPart--)
+            {
+                int tFreq = remF / nPart;
+                int ge = gs - 1;
+                int aFreq = 0;
+
+                for (int a = alphaSize - 1; (aFreq < tFreq) && (ge < a);)
+                {
+                    aFreq += mtfFreq[++ge];
+                }
+
+                if ((ge > gs) && (nPart != nGroups) && (nPart != 1)
+                    && (((nGroups - nPart) & 1) != 0))
+                {
+                    aFreq -= mtfFreq[ge--];
+                }
+
+                byte[] len_np = len[nPart - 1];
+                for (int v = alphaSize; --v >= 0;)
+                {
+                    if ((v >= gs) && (v <= ge))
+                    {
+                        len_np[v] = LESSER_ICOST;
+                    }
+                    else {
+                        len_np[v] = GREATER_ICOST;
+                    }
+                }
+
+                gs = ge + 1;
+                remF -= aFreq;
+            }
+        }
+
+
         private static void hbMakeCodeLengths(byte[] len,  int[] freq,
-                                              CompressionState dat, int alphaSize,
+                                              CompressionState state1, int alphaSize,
                                               int maxLen)
         {
             /*
              * Nodes and heap entries run from 1. Entry 0 for both the heap and
              * nodes is a sentinel.
              */
-            int[] heap = dat.heap;
-            int[] weight = dat.weight;
-            int[] parent = dat.parent;
+            int[] heap = state1.heap;
+            int[] weight = state1.weight;
+            int[] parent = state1.parent;
 
             for (int i = alphaSize; --i >= 0;)
             {
@@ -247,604 +840,10 @@ namespace Ionic.BZip2
             }
         }
 
-        /**
-         * Index of the last char in the block, so the block size == last + 1.
-         */
-        private int last;
-
-        /**
-         * Index in fmap[] of original string after sorting.
-         */
-        private int origPtr;
-
-        /**
-         * Always: in the range 0 .. 9. The current block size is 100000 * this
-         * number.
-         */
-        private int blockSize100k;
-
-        private bool blockRandomised;
-
-        private int bsBuff;
-        private int bsLive;
-        private readonly CRC32 crc = Ionic.BZip2.CRC32.Create();
-        private int nInUse;
-        private int nMTF;
-
-        /*
-         * Used when sorting. If too many long comparisons happen, we stop sorting,
-         * randomise the block slightly, and try again.
-         */
-        private int workDone;
-        private int workLimit;
-        private bool firstAttempt;
-
-        private int currentChar = -1;
-        private int runLength = 0;
-
-        private int blockCRC;
-        private int combinedCRC;
-        private int allowableBlockSize;
-
-        /**
-         * All memory intensive stuff.
-         */
-        private CompressionState data;
-
-        private Stream output;
-
-        /**
-         * Chooses a blocksize based on the given length of the data to compress.
-         *
-         */
-        public static int chooseBlockSize(long inputLength)
-        {
-            return (inputLength > 0)
-                ? (int) Math.Min((inputLength / 132000) + 1, BZip2.MaxBlockSize)
-                : BZip2.MaxBlockSize;
-        }
-
-        /// <summary>
-        ///   Constructs a new <c>BZip2OutputStream</c>, that sends its
-        ///   compressed output to the given output stream.
-        /// </summary>
-        ///
-        /// <example>
-        ///
-        ///   This example reads a file, then compresses it with bzip2 file,
-        ///   and writes the compressed data into a newly created file.
-        ///
-        ///   <code>
-        ///   var fname = "logfile.log";
-        ///   using (var fs = File.OpenRead(fname))
-        ///   {
-        ///       var outFname = fname + ".bz2";
-        ///       using (var output = File.Create(outFname))
-        ///       {
-        ///           using (var compressor = new Ionic.BZip2.BZip2OutputStream(output))
-        ///           {
-        ///               byte[] buffer = new byte[2048];
-        ///               int n;
-        ///               while ((n = fs.Read(buffer, 0, buffer.Length)) > 0)
-        ///               {
-        ///                   compressor.Write(buffer, 0, n);
-        ///               }
-        ///           }
-        ///       }
-        ///   }
-        ///   </code>
-        /// </example>
-        public BZip2OutputStream(Stream output)
-            : this(output, BZip2.MaxBlockSize, false)
-        {
-        }
-
-
-        /// <summary>
-        ///   Constructs a new <c>BZip2OutputStream</c> with specified blocksize.
-        /// </summary>
-        ///   <param name = "output">the destination stream.</param>
-        ///   <param name = "blockSize">the blockSize in units of 100000 bytes.</param>
-        public BZip2OutputStream(Stream output, int blockSize)
-            : this(output, blockSize, false)
-        {
-        }
-
-
-        /// <summary>
-        ///   Constructs a new <c>CBZip2OutputStream</c>.
-        /// </summary>
-        ///   <param name = "output">the destination stream.</param>
-        /// <param name = "leaveOpen">
-        ///   whether to leave the captive stream open upon closing this stream.
-        /// </param>
-        public BZip2OutputStream(Stream output, bool leaveOpen)
-            : this(output, BZip2.MaxBlockSize, leaveOpen)
-        {
-        }
-
-
-        /// <summary>
-        ///   Constructs a new <c>CBZip2OutputStream</c> with specified blocksize.
-        /// </summary>
-        ///
-        /// <param name = "output">the destination stream.</param>
-        /// <param name = "blockSize">the blockSize in units of 100000 bytes.</param>
-        /// <param name = "leaveOpen">
-        ///   whether to leave the captive stream open upon closing this stream.
-        /// </param>
-        public BZip2OutputStream(Stream output, int blockSize, bool leaveOpen)
-        {
-            if (blockSize < BZip2.MinBlockSize)
-            {
-                throw new ArgumentException("blockSize(" + blockSize
-                                            + ") < 1");
-            }
-            if (blockSize > BZip2.MaxBlockSize)
-            {
-                throw new ArgumentException("blockSize(" + blockSize
-                                            + ") > 9");
-            }
-
-            this.blockSize100k = blockSize;
-            this.output = output;
-            this.leaveOpen = leaveOpen;
-            init();
-        }
-
-
-        /** {@inheritDoc} */
-        public void Write(int b)
-        {
-            if (this.output != null)
-            {
-                write0(b);
-            }
-            else
-            {
-                throw new IOException("closed");
-            }
-        }
-
-
-        private void writeRun()
-        {
-            int previousLast = this.last;
-
-            if (previousLast < this.allowableBlockSize)
-            {
-                int currentCharShadow = this.currentChar;
-                CompressionState dataShadow = this.data;
-                byte[] block = this.data.block;
-                dataShadow.inUse[currentCharShadow] = true;
-                byte ch = (byte) currentCharShadow;
-
-                int runLengthShadow = this.runLength;
-                this.crc.UpdateCRC(currentCharShadow, runLengthShadow);
-
-                switch (runLengthShadow)
-                {
-                    case 1:
-                        block[previousLast + 2] = ch;
-                        this.last = previousLast + 1;
-                        break;
-
-                    case 2:
-                        block[previousLast + 2] = ch;
-                        block[previousLast + 3] = ch;
-                        this.last = previousLast + 2;
-                        break;
-
-                    case 3:
-                        block[previousLast + 2] = ch;
-                        block[previousLast + 3] = ch;
-                        block[previousLast + 4] = ch;
-                        this.last = previousLast + 3;
-                        break;
-
-                    default:
-                        runLengthShadow -= 4;
-                        dataShadow.inUse[runLengthShadow] = true;
-                        block[previousLast + 2] = ch;
-                        block[previousLast + 3] = ch;
-                        block[previousLast + 4] = ch;
-                        block[previousLast + 5] = ch;
-                        block[previousLast + 6] = (byte) runLengthShadow;
-                        this.last = previousLast + 5;
-                        break;
-                }
-
-                totalBytesWritten += this.last - previousLast;
-            }
-            else {
-                endBlock();
-                initBlock();
-                writeRun();
-            }
-        }
-
-
-        void finish()
-        {
-            if (this.output != null)
-            {
-                try
-                {
-                    if (this.runLength > 0)
-                    {
-                        writeRun();
-                    }
-                    this.currentChar = -1;
-                    endBlock();
-                    endCompression();
-                }
-                finally
-                {
-                    this.output = null;
-                    this.data = null;
-                }
-            }
-        }
-
-        /// <summary>
-        ///   Close the stream.
-        /// </summary>
-        /// <remarks>
-        ///   <para>
-        ///     This may or may not close the underlying stream.  Check the
-        ///     constructors that accept a bool value.
-        ///   </para>
-        /// </remarks>
-        public override void Close()
-        {
-            if (output != null)
-            {
-                Stream o = this.output;
-                finish();
-                if (!leaveOpen)
-                    o.Close();
-            }
-        }
-
-        /// <summary>
-        ///   Flush the stream.
-        /// </summary>
-        public override void Flush()
-        {
-            if (this.output != null)
-                this.output.Flush();
-        }
-
-        /**
-         * Writes magic bytes like BZ on the first position of the stream
-         * and bytes indiciating the file-format, which is
-         * huffmanised, followed by a digit indicating blockSize100k.
-         * @throws IOException if the magic bytes could not been written
-         */
-        private void init()
-        {
-            bsPutUByte('B');
-            bsPutUByte('Z');
-
-            this.data = new CompressionState(this.blockSize100k);
-
-            // huffmanised magic bytes
-            bsPutUByte('h');
-            bsPutUByte('0' + this.blockSize100k);
-
-            this.combinedCRC = 0;
-            initBlock();
-        }
-
-        private void initBlock()
-        {
-            // blockNo++;
-            this.crc.Reset();
-            this.last = -1;
-            // ch = 0;
-
-            bool[] inUse = this.data.inUse;
-            for (int i = 256; --i >= 0;)
-            {
-                inUse[i] = false;
-            }
-
-            /* 20 is just a paranoia constant */
-            this.allowableBlockSize = (this.blockSize100k * BZip2.BlockSizeMultiple) - 20;
-        }
-
-        private void endBlock()
-        {
-            this.blockCRC = this.crc.Crc32Result;
-            this.combinedCRC = (this.combinedCRC << 1) | (this.combinedCRC >> 31);
-            this.combinedCRC ^= this.blockCRC;
-
-            // empty block at end of file
-            if (this.last == -1)
-                return;
-
-            /* sort the block and establish posn of original string */
-            blockSort();
-
-            /*
-             * A 6-byte block header, the value chosen arbitrarily as 0x314159265359
-             * :-). A 32 bit value does not really give a strong enough guarantee
-             * that the value will not appear by chance in the compressed
-             * datastream. Worst-case probability of this event, for a 900k block,
-             * is about 2.0e-3 for 32 bits, 1.0e-5 for 40 bits and 4.0e-8 for 48
-             * bits. For a compressed file of size 100Gb -- about 100000 blocks --
-             * only a 48-bit marker will do. NB: normal compression/ decompression
-             * donot rely on these statistical properties. They are only important
-             * when trying to recover blocks from damaged files.
-             */
-            bsPutUByte(0x31);
-            bsPutUByte(0x41);
-            bsPutUByte(0x59);
-            bsPutUByte(0x26);
-            bsPutUByte(0x53);
-            bsPutUByte(0x59);
-
-            /* Now the block's CRC, so it is in a known place. */
-            bsPutInt(this.blockCRC);
-
-            /* Now a single bit indicating randomisation. */
-            if (this.blockRandomised)
-                bsW(1, 1);
-            else
-                bsW(1, 0);
-
-            /* Finally, block's contents proper. */
-            moveToFrontCodeAndSend();
-        }
-
-        private void endCompression()
-        {
-            // Now another magic 48-bit number, 0x177245385090, to indicate the end
-            // of the last block. (sqrt(pi), if you want to know)
-            bsPutUByte(0x17);
-            bsPutUByte(0x72);
-            bsPutUByte(0x45);
-            bsPutUByte(0x38);
-            bsPutUByte(0x50);
-            bsPutUByte(0x90);
-
-            bsPutInt(this.combinedCRC);
-            bsFinishedWithStream();
-        }
-
-
-        /// <summary>
-        ///   the blocksize parameter specified at construction time.
-        /// </summary>
-        public int BlockSize
-        {
-            get
-            {
-                return this.blockSize100k;
-            }
-        }
-
-
-        /// <summary>
-        ///   Write data to the stream.
-        /// </summary>
-        /// <remarks>
-        ///
-        /// <para>
-        ///   Use the <c>BZip2OutputStream</c> to compress data while writing:
-        ///   create a <c>BZip2OutputStream</c> with a writable output stream.
-        ///   Then call <c>Write()</c> on that <c>BZip2OutputStream</c>, providing
-        ///   uncompressed data as input.  The data sent to the output stream will
-        ///   be the compressed form of the input data.
-        /// </para>
-        ///
-        /// <para>
-        ///   A <c>BZip2OutputStream</c> can be used only for <c>Write()</c> not for <c>Read()</c>.
-        /// </para>
-        ///
-        /// </remarks>
-        ///
-        /// <param name="buffer">The buffer holding data to write to the stream.</param>
-        /// <param name="offset">the offset within that data array to find the first byte to write.</param>
-        /// <param name="count">the number of bytes to write.</param>
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            if (offset < 0)
-                throw new IndexOutOfRangeException(String.Format("offset ({0}) must be > 0", offset));
-
-            if (count < 0)
-                throw new IndexOutOfRangeException(String.Format("count ({0}) must be > 0", count));
-            if (offset + count > buffer.Length)
-                throw new IndexOutOfRangeException(String.Format("offset({0}) count({1}) bLength({2})",
-                                                                 offset, count, buffer.Length));
-            if (this.output == null)
-                throw new IOException("the stream is not open");
-
-            for (int hi = offset + count; offset < hi;)
-            {
-                write0(buffer[offset++]);
-            }
-        }
-
-
-        private void write0(int b)
-        {
-            if (this.currentChar != -1)
-            {
-                b &= 0xff;
-                if (this.currentChar == b)
-                {
-                    if (++this.runLength > 254)
-                    {
-                        writeRun();
-                        this.currentChar = -1;
-                        this.runLength = 0;
-                    }
-                    // else nothing to do
-                }
-                else {
-                    writeRun();
-                    this.runLength = 1;
-                    this.currentChar = b;
-                }
-            }
-            else {
-                this.currentChar = b & 0xff;
-                this.runLength++;
-            }
-        }
-
-        private static void hbAssignCodes(int[] code,  byte[] length,
-                                          int minLen, int maxLen,
-                                          int alphaSize)
-        {
-            int vec = 0;
-            for (int n = minLen; n <= maxLen; n++)
-            {
-                for (int i = 0; i < alphaSize; i++)
-                {
-                    if ((length[i] & 0xff) == n)
-                    {
-                        code[i] = vec;
-                        vec++;
-                    }
-                }
-                vec <<= 1;
-            }
-        }
-
-        private void bsFinishedWithStream()
-        {
-            while (this.bsLive > 0)
-            {
-                byte ch = (byte)(this.bsBuff >> 24 & 0xff);
-                this.output.WriteByte(ch); // write 8-bit
-                this.bsBuff <<= 8;
-                this.bsLive -= 8;
-            }
-        }
-
-        private void bsW(int n,  int v)
-        {
-            Stream outShadow = this.output;
-            int bsLiveShadow = this.bsLive;
-            int bsBuffShadow = this.bsBuff;
-
-            while (bsLiveShadow >= 8)
-            {
-                outShadow.WriteByte ((byte)(bsBuffShadow >> 24 & 0xff));
-                bsBuffShadow <<= 8;
-                bsLiveShadow -= 8;
-            }
-
-            this.bsBuff = bsBuffShadow | (v << (32 - bsLiveShadow - n));
-            this.bsLive = bsLiveShadow + n;
-        }
-
-        private void bsPutUByte(int c)
-        {
-            bsW(8, c);
-        }
-
-        private void bsPutInt(int u)
-        {
-            bsW(8, (u >> 24) & 0xff);
-            bsW(8, (u >> 16) & 0xff);
-            bsW(8, (u >> 8) & 0xff);
-            bsW(8, u & 0xff);
-        }
-
-        private void sendMTFValues()
-        {
-            byte[][] len = this.data.sendMTFValues_len;
-            int alphaSize = this.nInUse + 2;
-
-            for (int t = BZip2.NGroups; --t >= 0;)
-            {
-                byte[] len_t = len[t];
-                for (int v = alphaSize; --v >= 0;)
-                {
-                    len_t[v] = GREATER_ICOST;
-                }
-            }
-
-            /* Decide how many coding tables to use */
-            // assert (this.nMTF > 0) : this.nMTF;
-            int nGroups = (this.nMTF < 200) ? 2 : (this.nMTF < 600) ? 3
-                : (this.nMTF < 1200) ? 4 : (this.nMTF < 2400) ? 5 : 6;
-
-            /* Generate an initial set of coding tables */
-            sendMTFValues0(nGroups, alphaSize);
-
-            /*
-             * Iterate up to N_ITERS times to improve the tables.
-             */
-            int nSelectors = sendMTFValues1(nGroups, alphaSize);
-
-            /* Compute MTF values for the selectors. */
-            sendMTFValues2(nGroups, nSelectors);
-
-            /* Assign actual codes for the tables. */
-            sendMTFValues3(nGroups, alphaSize);
-
-            /* Transmit the mapping table. */
-            sendMTFValues4();
-
-            /* Now the selectors. */
-            sendMTFValues5(nGroups, nSelectors);
-
-            /* Now the coding tables. */
-            sendMTFValues6(nGroups, alphaSize);
-
-            /* And finally, the block data proper */
-            sendMTFValues7(nSelectors);
-        }
-
-        private void sendMTFValues0(int nGroups, int alphaSize)
-        {
-            byte[][] len = this.data.sendMTFValues_len;
-            int[] mtfFreq = this.data.mtfFreq;
-
-            int remF = this.nMTF;
-            int gs = 0;
-
-            for (int nPart = nGroups; nPart > 0; nPart--)
-            {
-                int tFreq = remF / nPart;
-                int ge = gs - 1;
-                int aFreq = 0;
-
-                for (int a = alphaSize - 1; (aFreq < tFreq) && (ge < a);)
-                {
-                    aFreq += mtfFreq[++ge];
-                }
-
-                if ((ge > gs) && (nPart != nGroups) && (nPart != 1)
-                    && (((nGroups - nPart) & 1) != 0))
-                {
-                    aFreq -= mtfFreq[ge--];
-                }
-
-                byte[] len_np = len[nPart - 1];
-                for (int v = alphaSize; --v >= 0;)
-                {
-                    if ((v >= gs) && (v <= ge))
-                    {
-                        len_np[v] = LESSER_ICOST;
-                    }
-                    else {
-                        len_np[v] = GREATER_ICOST;
-                    }
-                }
-
-                gs = ge + 1;
-                remF -= aFreq;
-            }
-        }
 
         private int sendMTFValues1(int nGroups, int alphaSize)
         {
-            CompressionState dataShadow = this.data;
+            CompressionState dataShadow = this.cstate;
             int[][] rfreq = dataShadow.sendMTFValues_rfreq;
             int[] fave = dataShadow.sendMTFValues_fave;
             short[] cost = dataShadow.sendMTFValues_cost;
@@ -963,7 +962,7 @@ namespace Ionic.BZip2
                  */
                 for (int t = 0; t < nGroups; t++)
                 {
-                    hbMakeCodeLengths(len[t], rfreq[t], this.data, alphaSize, 20);
+                    hbMakeCodeLengths(len[t], rfreq[t], this.cstate, alphaSize, 20);
                 }
             }
 
@@ -974,7 +973,7 @@ namespace Ionic.BZip2
         {
             // assert (nGroups < 8) : nGroups;
 
-            CompressionState dataShadow = this.data;
+            CompressionState dataShadow = this.cstate;
             byte[] pos = dataShadow.sendMTFValues2_pos;
 
             for (int i = nGroups; --i >= 0;)
@@ -1003,8 +1002,8 @@ namespace Ionic.BZip2
 
         private void sendMTFValues3(int nGroups, int alphaSize)
         {
-            int[][] code = this.data.sendMTFValues_code;
-            byte[][] len = this.data.sendMTFValues_len;
+            int[][] code = this.cstate.sendMTFValues_code;
+            byte[][] len = this.cstate.sendMTFValues_len;
 
             for (int t = 0; t < nGroups; t++)
             {
@@ -1033,8 +1032,8 @@ namespace Ionic.BZip2
 
         private void sendMTFValues4()
         {
-            bool[] inUse = this.data.inUse;
-            bool[] inUse16 = this.data.sentMTFValues4_inUse16;
+            bool[] inUse = this.cstate.inUse;
+            bool[] inUse16 = this.cstate.sentMTFValues4_inUse16;
 
             for (int i = 16; --i >= 0;)
             {
@@ -1092,7 +1091,7 @@ namespace Ionic.BZip2
             bsW(15, nSelectors);
 
             Stream outShadow = this.output;
-            byte[] selectorMtf = this.data.selectorMtf;
+            byte[] selectorMtf = this.cstate.selectorMtf;
 
             int bsLiveShadow = this.bsLive;
             int bsBuffShadow = this.bsBuff;
@@ -1132,7 +1131,7 @@ namespace Ionic.BZip2
         private void sendMTFValues6(int nGroups, int alphaSize)
 
         {
-            byte[][] len = this.data.sendMTFValues_len;
+            byte[][] len = this.cstate.sendMTFValues_len;
             Stream outShadow = this.output;
 
             int bsLiveShadow = this.bsLive;
@@ -1209,7 +1208,7 @@ namespace Ionic.BZip2
 
         private void sendMTFValues7(int nSelectors)
         {
-            CompressionState dataShadow = this.data;
+            CompressionState dataShadow = this.cstate;
             byte[][] len = dataShadow.sendMTFValues_len;
             int[][] code = dataShadow.sendMTFValues_code;
             Stream outShadow = this.output;
@@ -1270,10 +1269,7 @@ namespace Ionic.BZip2
          * This is the most hammered method of this class.
          *
          * <p>
-         * This is the version using unrolled loops. Normally I never use such ones
-         * in Java code. The unrolling has shown a noticable performance improvement
-         * on JRE 1.4.2 (Linux i586 / HotSpot Client). Of course it depends on the
-         * JIT compiler of the vm.
+         * This is the version using unrolled loops.
          * </p>
          */
         private bool mainSimpleSort(CompressionState dataShadow, int lo,
@@ -1566,7 +1562,7 @@ namespace Ionic.BZip2
                 mainSort();
             }
 
-            int[] fmap = this.data.fmap;
+            int[] fmap = this.cstate.fmap;
             this.origPtr = -1;
             for (int i = 0, lastShadow = this.last; i <= lastShadow; i++)
             {
@@ -1709,7 +1705,7 @@ namespace Ionic.BZip2
 
         private void mainSort()
         {
-            CompressionState dataShadow = this.data;
+            CompressionState dataShadow = this.cstate;
             int[] runningOrder = dataShadow.mainSort_runningOrder;
             int[] copy = dataShadow.mainSort_copy;
             bool[] bigDone = dataShadow.mainSort_bigDone;
@@ -1897,8 +1893,8 @@ namespace Ionic.BZip2
 
         private void randomiseBlock()
         {
-            bool[] inUse = this.data.inUse;
-            byte[] block = this.data.block;
+            bool[] inUse = this.cstate.inUse;
+            byte[] block = this.cstate.block;
             int lastShadow = this.last;
 
             for (int i = 256; --i >= 0;)
@@ -1930,7 +1926,7 @@ namespace Ionic.BZip2
         private void generateMTFValues()
         {
             int lastShadow = this.last;
-            CompressionState dataShadow = this.data;
+            CompressionState dataShadow = this.cstate;
             bool[] inUse = dataShadow.inUse;
             byte[] block = dataShadow.block;
             int[] fmap = dataShadow.fmap;
@@ -2067,11 +2063,9 @@ namespace Ionic.BZip2
         /// </remarks>
         public override bool CanRead
         {
-            get
-            {
-                return false;
-            }
+            get { return false; }
         }
+
         /// <summary>
         /// Indicates whether the stream supports Seek operations.
         /// </summary>
@@ -2082,6 +2076,7 @@ namespace Ionic.BZip2
         {
             get { return false; }
         }
+
         /// <summary>
         /// Indicates whether the stream can be written.
         /// </summary>
@@ -2096,6 +2091,7 @@ namespace Ionic.BZip2
                 return this.output.CanWrite;
             }
         }
+
         /// <summary>
         /// Reading this property always throws a <see cref="NotImplementedException"/>.
         /// </summary>
@@ -2103,6 +2099,7 @@ namespace Ionic.BZip2
         {
             get { throw new NotImplementedException(); }
         }
+
         /// <summary>
         /// The position of the stream pointer.
         /// </summary>
@@ -2131,6 +2128,7 @@ namespace Ionic.BZip2
         {
             throw new NotImplementedException();
         }
+
         /// <summary>
         /// Calling this method always throws a <see cref="NotImplementedException"/>.
         /// </summary>
@@ -2163,12 +2161,15 @@ namespace Ionic.BZip2
 
             public readonly byte[] generateMTFValues_yy = new byte[256]; // 256 byte
             public byte[][] sendMTFValues_len;
+
             // byte
             public int[][] sendMTFValues_rfreq;
+
             // byte
             public readonly int[] sendMTFValues_fave = new int[BZip2.NGroups]; // 24 byte
             public readonly short[] sendMTFValues_cost = new short[BZip2.NGroups]; // 12 byte
             public int[][] sendMTFValues_code;
+
             // byte
             public readonly byte[] sendMTFValues2_pos = new byte[BZip2.NGroups]; // 6 byte
             public readonly bool[] sentMTFValues4_inUse16 = new bool[16]; // 16 byte
@@ -2192,13 +2193,14 @@ namespace Ionic.BZip2
             public byte[] block; // 900021 byte
             public int[] fmap; // 3600000 byte
             public char[] sfmap; // 3600000 byte
+
             // ------------
             // 8433529 byte
             // ============
 
             /**
              * Array instance identical to sfmap, both are used only
-             * temporarily and indepently, so we do not need to allocate
+             * temporarily and independently, so we do not need to allocate
              * additional memory.
              */
             public char[] quadrant;

@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-23 21:12:37>
+// Last Saved: <2011-July-24 08:59:10>
 //
 // ------------------------------------------------------------------
 //
@@ -174,25 +174,35 @@ namespace Ionic.BZip2
         }
 
         /// <summary>
-        ///   Process a run of N 4-byte integers in the CRC.
+        ///   Process a run of N identical bytes in the CRC.
         /// </summary>
-        /// <param name = "inCh">the integer to include into the CRC .  </param>
-        /// <param name = "repeat">the number of times that integer should be repeated. </param>
-        public void UpdateCRC(int inCh, int repeat)
+        /// <remarks>
+        ///   <para>
+        ///     This CRC class is used by the bzip2 compressor. During its
+        ///     operation, the compressor does run-length-encoding on the
+        ///     uncompressed data stream. This method serves as an optimization
+        ///     for updating the CRC when a run of identical bytes is
+        ///     found. Rather than passing in a buffer of length n, containing all
+        ///     identical bytes b, this method accepts the byte value and the
+        ///     length of the (virtual) buffer - the length of the run.
+        ///   </para>
+        /// </remarks>
+        /// <param name = "b">the byte to include into the CRC.  </param>
+        /// <param name = "n">the number of times that byte should be repeated. </param>
+        public void UpdateCRC(byte b, int n)
         {
-            uint u = (uint) inCh;
-            while (repeat-- > 0)
+            while (n-- > 0)
             {
                 if (this.reverseBits)
                 {
-                    uint temp = (_register >> 24) ^ u;
+                    uint temp = (_register >> 24) ^ b;
                     _register = (_register << 8) ^ crc32Table[(temp >= 0)
                                                               ? temp
                                                               : (temp + 256)];
                 }
                 else
                 {
-                    UInt32 temp = (_register & 0x000000FF) ^ u;
+                    UInt32 temp = (_register & 0x000000FF) ^ b;
                     _register = (_register >> 8) ^ crc32Table[(temp >= 0)
                                                               ? temp
                                                               : (temp + 256)];

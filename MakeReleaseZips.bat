@@ -14,7 +14,7 @@ goto START
  DotNetZip is licensed under the MS-PL.  See the accompanying
  License.txt file.
 
- Last Updated: <2011-July-24 00:18:16>
+ Last Updated: <2011-July-24 00:33:02>
 
 -------------------------------------------------------
 
@@ -28,7 +28,7 @@ set MSBUILD=c:\.net4.0\msbuild.exe
 set POWERSHELL=c:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
 @REM set zipit=c:\users\dino\bin\zipit.exe
 set zipit=%baseDir%tools\Zipit\bin\Debug\zipit.exe
-set ExpectedSignedDlls=36
+set ExpectedSignedDlls=52
 set stamp=%DATE% %TIME%
 set stamp=%stamp:/=-%
 set stamp=%stamp: =-%
