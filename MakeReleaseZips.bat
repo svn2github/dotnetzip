@@ -14,7 +14,7 @@ goto START
  DotNetZip is licensed under the MS-PL.  See the accompanying
  License.txt file.
 
- Last Updated: <2011-July-23 20:39:35>
+ Last Updated: <2011-July-23 22:10:16>
 
 -------------------------------------------------------
 
@@ -44,7 +44,7 @@ echo version is %version%
 %MSBUILD% DotNetZip.sln /p:Configuration=Debug
 %MSBUILD% DotNetZip.sln /p:Configuration=Release
 
-call :CheckSign
+call :CheckSignatures
 if ERRORLEVEL 1 (
   echo exiting.
   exit /b 1
@@ -78,9 +78,9 @@ goto :END
 
 
 --------------------------------------------
-:CheckSign
+:CheckSignatures
 
-  @REM check the digital sig on the various DLLs
+  @REM check the digital signatures on the various DLLs
 
   SETLOCAL EnableExtensions EnableDelayedExpansion
   echo.
@@ -219,18 +219,30 @@ goto :EOF
   %zipit% %rzipfile%  -d DotNetZip-v%version%-CompactFramework\Debug    -D "Zip CF Full DLL\bin\Debug"   Ionic.Zip.CF.dll Ionic.Zip.CF.pdb Ionic.Zip.CF.XML
   %zipit% %rzipfile%  -d DotNetZip-v%version%-CompactFramework\Release  -D "Zip CF Full DLL\bin\Release" Ionic.Zip.CF.dll
 
+  @REM --------------------------------------------
+
   %zipit% %rzipfile%  -d Zlib-v%version%  -s Readme.txt  "Ionic.Zlib v%version% packed %stamp%.  This is the Ionic.Zlib assembly; it includes only the classes in the Ionic.Zlib namespace. Use this library if you want to take advantage of ZLIB compression directly, or if you want to use the compressing stream classes like GZipStream, DeflateStream, or ZlibStream."
   %zipit% %rzipfile%  -d Zlib-v%version%\Debug    -D "Zlib\bin\Debug"    Ionic.Zlib.dll Ionic.Zlib.pdb Ionic.Zlib.XML
   %zipit% %rzipfile%  -d Zlib-v%version%\Release  -D "Zlib\bin\Release"  Ionic.Zlib.dll
+
+  %zipit% %rzipfile%  -d Zlib-v%version%-CompactFramework  -s Readme.txt  "Ionic.Zlib CF v%version% packed %stamp%. This is the Ionic.Zlib library packaged for the .NET Compact Framework v2.0 or later.  Use this library if you want to take advantage of ZLIB compression directly from within Smart device applications, or if you want to use the compressing stream classes like GZipStream, DeflateStream, or ZlibStream."
+
+  %zipit% %rzipfile%  -d Zlib-v%version%-CompactFramework\Debug    -D "Zlib CF\bin\Debug"    Ionic.Zlib.CF.dll Ionic.Zlib.CF.pdb Ionic.Zlib.CF.XML
+  %zipit% %rzipfile%  -d Zlib-v%version%-CompactFramework\Release  -D "Zlib CF\bin\Release"  Ionic.Zlib.CF.dll
+
+  @REM --------------------------------------------
 
   %zipit% %rzipfile%  -d BZip2-v%version%  -s Readme.txt  "Ionic.BZip2 v%version% packed %stamp%.  This is the Ionic.BZip2 assembly; it includes only the classes in the Ionic.BZip2 namespace. Use this library if you want to take advantage of BZip2 compression directly, via the compressing stream classes like BZip2OutputStream, or BZip2InputStream."
   %zipit% %rzipfile%  -d BZip2-v%version%\Debug    -D "BZip2\bin\Debug"    Ionic.BZip2.dll Ionic.BZip2.pdb Ionic.BZip2.XML
   %zipit% %rzipfile%  -d BZip2-v%version%\Release  -D "BZip2\bin\Release"  Ionic.BZip2.dll
 
-  %zipit% %rzipfile%  -d Zlib-v%version%-CompactFramework  -s Readme.txt  "DotNetZlib CF v%version% packed %stamp%. This is the Ionic.Zlib library packaged for the .NET Compact Framework v2.0 or later.  Use this library if you want to take advantage of ZLIB compression directly from within Smart device applications, or if you want to use the compressing stream classes like GZipStream, DeflateStream, or ZlibStream."
 
-  %zipit% %rzipfile%  -d Zlib-v%version%-CompactFramework\Debug    -D "Zlib CF\bin\Debug"    Ionic.Zlib.CF.dll Ionic.Zlib.CF.pdb Ionic.Zlib.CF.XML
-  %zipit% %rzipfile%  -d Zlib-v%version%-CompactFramework\Release  -D "Zlib CF\bin\Release"  Ionic.Zlib.CF.dll
+  %zipit% %rzipfile%  -d BZip2-v%version%-CompactFramework  -s Readme.txt  "Ionic.BZip2 CF v%version% packed %stamp%. This is the Ionic.BZip2 library packaged for the .NET Compact Framework v2.0 or later.  Use this library if you want to compress or decompress using BZip2, via the stream classes  BZip2InputStream and BZip2OutputStream."
+
+  %zipit% %rzipfile%  -d BZip2-v%version%-CompactFramework\Debug    -D "BZip2 CF\bin\Debug"    Ionic.BZip2.CF.dll Ionic.BZip2.CF.pdb Ionic.BZip2.CF.XML
+  %zipit% %rzipfile%  -d BZip2-v%version%-CompactFramework\Release  -D "BZip2 CF\bin\Release"  Ionic.BZip2.CF.dll
+
+
 
   %zipit% %rzipfile%  -d Examples\WScript -D "Zip Tests\resources"  VbsCreateZip-DotNetZip.vbs  VbsUnZip-DotNetZip.vbs  TestCheckZip.js
 
@@ -276,7 +288,9 @@ goto :EOF
 
   %zipit% %rzipfile%  -d DotNetZip-v%version%-CompactFramework -D "Zip CF Full DLL\bin\Release" -s Readme.txt "DotNetZip Library for .NET Compact Framework v%version% packed %stamp%"  Ionic.Zip.CF.dll
 
-  %zipit% %rzipfile%   -d Zlib-v%version%-CompactFramework -D "Zlib CF\bin\Release"  -s Readme.txt  "DotNetZlib Library for .NET Compact Framework v%version% packed %stamp%"   Ionic.Zlib.CF.dll
+  %zipit% %rzipfile%   -d Zlib-v%version%-CompactFramework -D "Zlib CF\bin\Release"  -s Readme.txt  "Ionic.Zlib Library for .NET Compact Framework v%version% packed %stamp%"   Ionic.Zlib.CF.dll
+
+  %zipit% %rzipfile%   -d BZip2-v%version%-CompactFramework -D "BZip2 CF\bin\Release"  -s Readme.txt  "Ionic.BZip2 Library for .NET Compact Framework v%version% packed %stamp%"   Ionic.BZip2.CF.dll
 
 
 goto :EOF
