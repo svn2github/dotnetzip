@@ -137,6 +137,7 @@ namespace Ionic.Zip.Forms
             InitEncodingsList();
             InitFlavorList();
             InitZip64List();
+            InitCompMethodList();
             InitCompressionLevelList();
             InitEncryptionList();
             InitSplitBox();
@@ -233,12 +234,12 @@ namespace Ionic.Zip.Forms
             {
                 if (!name.StartsWith("Level"))
                 {
-                    comboCompression.Items.Add(name);
+                    comboCompLevel.Items.Add(name);
                 }
             }
 
             // select the 2nd item, "Default":
-            comboCompression.SelectedIndex = 2;
+            comboCompLevel.SelectedIndex = 2;
         }
 
         private void InitFlavorList()
@@ -262,6 +263,21 @@ namespace Ionic.Zip.Forms
 
             // select the first item:
             comboZip64.SelectedIndex = 0;
+        }
+
+
+        private void InitCompMethodList()
+        {
+            var _Names = new List<string>(Enum.GetNames(typeof(Ionic.Zip.CompressionMethod)));
+            _Names.Sort();
+            foreach (var name in _Names)
+            {
+                if (!name.StartsWith("Default"))
+                    comboCompMethod.Items.Add(name);
+            }
+
+            // select DEFLATE:
+            comboCompMethod.SelectedIndex = 1;
         }
 
 
@@ -331,7 +347,9 @@ namespace Ionic.Zip.Forms
                                                                  this.comboEncryption.SelectedItem.ToString());
 
             options.CompressionLevel = (Ionic.Zlib.CompressionLevel) Enum.Parse(typeof(Ionic.Zlib.CompressionLevel),
-                                                                               this.comboCompression.SelectedItem.ToString());
+                                                                               this.comboCompLevel.SelectedItem.ToString());
+            options.CompressionMethod = (Ionic.Zip.CompressionMethod) Enum.Parse(typeof(Ionic.Zip.CompressionMethod),
+                                                                               this.comboCompMethod.SelectedItem.ToString());
 
             options.EncodingUsage = (Ionic.Zip.ZipOption) Enum.Parse(typeof(Ionic.Zip.ZipOption),
                                                                      this.comboEncodingUsage.SelectedItem.ToString());
@@ -398,9 +416,13 @@ namespace Ionic.Zip.Forms
                 }
                 );
 
+            string compress = (options.CompressionMethod == Ionic.Zip.CompressionMethod.Deflate)
+                ? "Deflate level" + options.CompressionLevel.ToString()
+                : options.CompressionMethod.ToString();
+
             options.Comment = String.Format("Encoding:{0} || Compression:{1} || Encrypt:{2} || ZIP64:{3}\r\nCreated at {4} || {5}\r\n",
                                             options.Encoding,
-                                            options.CompressionLevel.ToString(),
+                                            compress,
                                             (this.tbPassword.Text == "") ? "None" : options.Encryption.ToString(),
                                             options.Zip64.ToString(),
                                             System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm:ss"),
@@ -588,6 +610,8 @@ namespace Ionic.Zip.Forms
             {
                 using (var zip1 = new ZipFile())
                 {
+                    zip1.CompressionMethod = options.CompressionMethod;
+                    zip1.CompressionLevel = options.CompressionLevel;
                     zip1.AlternateEncoding = System.Text.Encoding.GetEncoding(options.Encoding);
                     zip1.AlternateEncodingUsage = options.EncodingUsage;
                     zip1.Comment = options.Comment;
@@ -611,7 +635,6 @@ namespace Ionic.Zip.Forms
                     zip1.SaveProgress += this.zip1_SaveProgress;
 
                     zip1.UseZip64WhenSaving = options.Zip64;
-                    zip1.CompressionLevel = options.CompressionLevel;
 
                     if (options.ZipFlavor == 2 || options.ZipFlavor == 1)
                     {
@@ -925,6 +948,20 @@ namespace Ionic.Zip.Forms
             }
         }
 
+        private void comboCompMethod_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (this.comboCompMethod.SelectedIndex == 1)  // DEFLATE
+            {
+                this.label4.Enabled = true;
+                this.comboCompLevel.Enabled = true;
+            }
+            else
+            {
+                this.label4.Enabled = false;
+                this.comboCompLevel.Enabled = false;
+            }
+        }
+
         private void comboEncoding_SelectedIndexChanged(object sender, EventArgs e)
         {
             this.comboEncodingUsage.Enabled = (this.comboEncoding.SelectedIndex != 0);
@@ -971,7 +1008,12 @@ namespace Ionic.Zip.Forms
 
         private void SelectNamedCompressionLevel(string s)
         {
-            _SelectComboBoxItem(this.comboCompression, s);
+            _SelectComboBoxItem(this.comboCompLevel, s);
+        }
+
+        private void SelectNamedCompressionMethod(string s)
+        {
+            _SelectComboBoxItem(this.comboCompMethod, s);
         }
 
         private void SelectNamedEncryption(string s)
@@ -2028,6 +2070,7 @@ namespace Ionic.Zip.Forms
         public int ZipFlavor;
         public int MaxSegmentSize;
         public Ionic.Zlib.CompressionLevel CompressionLevel;
+        public Ionic.Zip.CompressionMethod CompressionMethod;
         public Ionic.Zip.EncryptionAlgorithm Encryption;
         public Zip64Option Zip64;
         public bool WindowsTimes;

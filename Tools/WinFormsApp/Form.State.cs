@@ -67,12 +67,19 @@ namespace Ionic.Zip.Forms
                     if (s != null)
                         SelectNamedEncodingUsage(s);
 
-                    s = (string)AppCuKey.GetValue(_rvn_Compression);
+                    s = (string)AppCuKey.GetValue(_rvn_CompLevel);
                     if (s != null)
                     {
                         SelectNamedCompressionLevel(s);
                     }
                     else SelectNamedCompressionLevel("Default");
+
+                    s = (string)AppCuKey.GetValue(_rvn_CompMethod);
+                    if (s != null)
+                    {
+                        SelectNamedCompressionMethod(s);
+                    }
+                    else SelectNamedCompressionMethod("Deflate");
 
                     s = (string)AppCuKey.GetValue(_rvn_Encryption);
                     if (s != null)
@@ -169,7 +176,8 @@ namespace Ionic.Zip.Forms
                 AppCuKey.SetValue(_rvn_ZipToOpen, this.tbZipToOpen.Text);
                 AppCuKey.SetValue(_rvn_Encoding, this.comboEncoding.SelectedItem.ToString());
                 AppCuKey.SetValue(_rvn_EncodingUsage, this.comboEncodingUsage.SelectedItem.ToString());
-                AppCuKey.SetValue(_rvn_Compression, this.comboCompression.SelectedItem.ToString());
+                AppCuKey.SetValue(_rvn_CompLevel, this.comboCompLevel.SelectedItem.ToString());
+                AppCuKey.SetValue(_rvn_CompMethod, this.comboCompMethod.SelectedItem.ToString());
                 if (this.tbPassword.Text == "")
                 {
                     if (!String.IsNullOrEmpty(_mostRecentEncryption))
@@ -285,7 +293,8 @@ namespace Ionic.Zip.Forms
         private static string _rvn_ZipToOpen = "ZipToOpen";
         private static string _rvn_Encoding = "Encoding";
         private static string _rvn_EncodingUsage = "EncodingUsage";
-        private static string _rvn_Compression = "Compression";
+        private static string _rvn_CompLevel = "CompressionLevel";
+        private static string _rvn_CompMethod = "CompressionMethod";
         private static string _rvn_Encryption = "Encryption";
         private static string _rvn_ZipFlavor = "ZipFlavor";
         private static string _rvn_Zip64Option = "Zip64Option";

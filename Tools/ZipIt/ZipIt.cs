@@ -22,7 +22,6 @@ using Ionic.Zip;
 
 namespace Ionic.Zip.Examples
 {
-
     public class ZipIt
     {
         private static void Usage()
@@ -32,59 +31,62 @@ namespace Ionic.Zip.Examples
             "            Depends on Ionic's DotNetZip library. This is version {0} of the utility.\n" +
             "usage:\n   ZipIt.exe <ZipFileToCreate> [arguments]\n" +
             "\narguments: \n" +
-            "  <directory> | <file> - a directory or file to add to the archive.\n" +
-            "  <selector>           - a file selection expression.  Examples: \n" +
-            "                           *.txt \n" +
-            "                           (name = *.txt) OR (name = *.xml) \n" +
-            "                           (attrs = H) OR (name != *.xml) \n" +
-            "                           (ctime < 2009/02/28-10:20:00) \n" +
-            "                           (size > 1g) AND (mtime < 2009-12-10) \n" +
-            "                           (ctime > 2009-04-29) AND (size < 10kb) \n" +
-            "                         Filenames can include full paths. You must surround a filename \n" +
-            "                         that includes spaces with single quotes.\n" +
-            "  -64                  - use ZIP64 extensions, for large files or large numbers of files.\n" +
-            "  -aes                 - use WinZip-compatible AES 256-bit encryption for entries\n" +
-            "                         subsequently added to the archive. Requires a password.\n" +
-            "  -cp <codepage>       - use the specified numeric codepage to encode entry filenames \n" +
-            "                         and comments, instead of the default IBM437 code page.\n" +
-            "                         (cannot be used with -utf8 option)\n" +
-            "  -d <path>            - use the given directory path in the archive for\n" +
-            "                         succeeding items added to the archive.\n" +
-            "  -D <path>            - find files in the given directory on disk.\n" +
-            "  -e<s,r,q,a>          - when there is an error reading a file to be zipped, either skip\n" +
-            "                         the file, retry, quit, or ask the user what to do.\n"+
-            "  -j-                  - do not traverse NTFS junctions\n" +
-            "  -j+                  - traverse NTFS junctions (default)\n" +
-            "  -L <level>           - compression level, 0..9 (Default is 6).\n" +
-            "  -p <password>        - apply the specified password for all succeeding files added.\n" +
-            "                         use \"\" to reset the password to nil.\n" +
-            "  -progress            - emit progress reports (good when creating large zips)\n" +
-            "  -r-                  - don't recurse directories (default).\n" +
-            "  -r+                  - recurse directories.\n" +
-            "  -s <entry> 'string'  - insert an entry of the given name into the \n" +
-            "                         archive, with the given string as its content.\n" +
-            "  -sfx [w|c]           - create a self-extracting archive, either a Windows or console app." +
-            "                         (cannot be used with -split)\n"+
-            "  -split <maxsize>     - produce a split zip, with the specified maximum size. You can\n" +
-            "                         optionally use kb or mb as a suffix to the size. \n" +
-            "                         (-split cannot be used with -sfx).\n" +
-            "  -Tw+                 - store Windows-format extended times (default).\n" +
-            "  -Tw-                 - don't store Windows-format extended times.\n" +
-            "  -Tu+                 - store Unix-format extended times (default).\n" +
-            "  -Tu-                 - don't store Unix-format extended times (default).\n" +
-            "  -UTnow               - use uniform date/time, NOW, for all entries. \n" +
-            "  -UTnewest            - use uniform date/time, newest entry, for all entries. \n" +
-            "  -UToldest            - use uniform date/time, oldest entry, for all entries. \n" +
-            "  -UT <datetime>       - use uniform date/time, specified, for all entries. \n" +
-            "  -utf8                - use UTF-8 encoding for entry filenames and comments,\n" +
-            "                         instead of the the default IBM437 code page.\n" +
-            "                         (cannot be used with -cp option)\n" +
-            "  -zc <comment>        - use the given comment for the archive.\n";
+            "  <directory> | <file>  - a directory or file to add to the archive.\n" +
+            "  <selector>            - a file selection expression.  Examples: \n" +
+            "                            *.txt \n" +
+            "                            (name = *.txt) OR (name = *.xml) \n" +
+            "                            (attrs = H) OR (name != *.xml) \n" +
+            "                            (ctime < 2009/02/28-10:20:00) \n" +
+            "                            (size > 1g) AND (mtime < 2009-12-10) \n" +
+            "                            (ctime > 2009-04-29) AND (size < 10kb) \n" +
+            "                          Filenames can include full paths. You must surround a filename \n" +
+            "                          that includes spaces with single quotes.\n" +
+            "  -64                   - use ZIP64 extensions, for large files or large numbers of files.\n" +
+            "  -aes                  - use WinZip-compatible AES 256-bit encryption for entries\n" +
+            "                          subsequently added to the archive. Requires a password.\n" +
+            "  -cp <codepage>        - use the specified numeric codepage to encode entry filenames \n" +
+            "                          and comments, instead of the default IBM437 code page.\n" +
+            "                          (cannot be used with -utf8 option)\n" +
+            "  -C bzip|deflate|none  - use BZip2, Deflate, or No compression, for entries subsequently\n"+
+            "                          added to the zip. The default is DEFLATE.\n"+
+            "  -d <path>             - use the given directory path in the archive for\n" +
+            "                          succeeding items added to the archive.\n" +
+            "  -D <path>             - find files in the given directory on disk.\n" +
+            "  -e[s|r|q|a]           - when there is an error reading a file to be zipped, either skip\n" +
+            "                          the file, retry, quit, or ask the user what to do.\n"+
+            "  -j-                   - do not traverse NTFS junctions\n" +
+            "  -j+                   - traverse NTFS junctions (default)\n" +
+            "  -L <level>            - compression level, 0..9 (Default is 6).\n" +
+            "                          This applies only if using DEFLATE compression, the default.\n" +
+            "  -p <password>         - apply the specified password for all succeeding files added.\n" +
+            "                          use \"\" to reset the password to nil.\n" +
+            "  -progress             - emit progress reports (good when creating large zips)\n" +
+            "  -r-                   - don't recurse directories (default).\n" +
+            "  -r+                   - recurse directories.\n" +
+            "  -s <entry> 'string'   - insert an entry of the given name into the \n" +
+            "                          archive, with the given string as its content.\n" +
+            "  -sfx [w|c]            - create a self-extracting archive, either a Windows or console app." +
+            "                          (cannot be used with -split)\n"+
+            "  -split <maxsize>      - produce a split zip, with the specified maximum size. You can\n" +
+            "                          optionally use kb or mb as a suffix to the size. \n" +
+            "                          (-split cannot be used with -sfx).\n" +
+            "  -Tw+                  - store Windows-format extended times (default).\n" +
+            "  -Tw-                  - don't store Windows-format extended times.\n" +
+            "  -Tu+                  - store Unix-format extended times (default).\n" +
+            "  -Tu-                  - don't store Unix-format extended times (default).\n" +
+            "  -UTnow                - use uniform date/time, NOW, for all entries. \n" +
+            "  -UTnewest             - use uniform date/time, newest entry, for all entries. \n" +
+            "  -UToldest             - use uniform date/time, oldest entry, for all entries. \n" +
+            "  -UT <datetime>        - use uniform date/time, specified, for all entries. \n" +
+            "  -utf8                 - use UTF-8 encoding for entry filenames and comments,\n" +
+            "                          instead of the the default IBM437 code page.\n" +
+            "                          (cannot be used with -cp option)\n" +
+            "  -zc <comment>         - use the given comment for the archive.\n";
 
             Console.WriteLine(UsageMessage,
-                      System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+                               System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
             Environment.Exit(1);
-        }
+         }
 
 
         static bool justHadByteUpdate= false;
@@ -235,6 +237,30 @@ namespace Ionic.Zip.Examples
 
                             case "-aes":
                                 zip.Encryption = EncryptionAlgorithm.WinZipAes256;
+                                break;
+
+                            case "-C":
+                                i++;
+                                if (args.Length <= i) Usage();
+                                switch(args[i].ToLower())
+                                {
+                                    case "b":
+                                    case "bzip":
+                                    case "bzip2":
+                                        zip.CompressionMethod = CompressionMethod.BZip2;
+                                        break;
+                                    case "d":
+                                    case "deflate":
+                                        zip.CompressionMethod = CompressionMethod.Deflate;
+                                        break;
+                                    case "n":
+                                    case "none":
+                                        zip.CompressionMethod = CompressionMethod.None;
+                                        break;
+                                    default:
+                                        Usage();
+                                        break;
+                                }
                                 break;
 
                             case "-cp":

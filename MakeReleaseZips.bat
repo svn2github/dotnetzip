@@ -14,7 +14,7 @@ goto START
  DotNetZip is licensed under the MS-PL.  See the accompanying
  License.txt file.
 
- Last Updated: <2011-July-23 22:10:16>
+ Last Updated: <2011-July-24 00:18:16>
 
 -------------------------------------------------------
 
@@ -315,12 +315,15 @@ goto :EOF
     set rzipfile=%releaseDir%\%zipfile%
     echo zipfile is %rzipfile%
 
-    %zipit% %rzipfile%    -s Contents.txt "These are the DotNetZip utilities and tools, for DotNetZip v%version%.  Packed %stamp%."   -s PleaseDonate.txt  "Don't forget: DotNetZip is donationware.  Please donate. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   License.txt License.zlib.txt
+    %zipit% %rzipfile%    -s Contents.txt "These are the DotNetZip utilities and tools, for DotNetZip v%version%.  Packed %stamp%."   -s I-Welcome-Donations.txt  "DotNetZip is donationware.  I welcome donations. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   License.txt License.zlib.txt License.bzip2.txt
 
-    %zipit% %rzipfile%  -zc "Zip utilities v%version% packed %stamp%" -D Tools\ZipIt\bin\Release  Zipit.exe Ionic.Zip.dll
-    %zipit% %rzipfile%  -D Tools\Unzip\bin\Release            Unzip.exe
-    %zipit% %rzipfile%  -D Tools\ConvertZipToSfx\bin\Release  ConvertZipToSfx.exe
-    %zipit% %rzipfile%  -D Tools\WinFormsApp\bin\Release      DotNetZip-WinFormsTool.exe
+    %zipit% %rzipfile%  -zc "Zip utilities v%version% packed %stamp%" \
+           -D Tools\ZipIt\bin\Release            Zipit.exe Ionic.Zip.dll \
+           -D Tools\Unzip\bin\Release            Unzip.exe \
+           -D Tools\ConvertZipToSfx\bin\Release  ConvertZipToSfx.exe \
+           -D Tools\WinFormsApp\bin\Release      DotNetZip-WinFormsTool.exe \
+           -D Tools\BZip2\bin\Release            BZip2.exe \
+           -D Tools\GZip\bin\Release             GZip.exe
 
 goto :EOF
 --------------------------------------------

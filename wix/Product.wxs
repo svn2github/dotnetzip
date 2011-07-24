@@ -161,6 +161,16 @@ The Cabinet name can be anything you want. Not really important.
               DiskId  ='1'
               Source  ='..\Tools\UnZip\bin\$(var.Configuration)\UnZip.exe'/>
 
+        <File Id      ='BZip2.exe'
+              Name    ='BZip2.exe'
+              DiskId  ='1'
+              Source  ='..\Tools\BZip2\bin\$(var.Configuration)\BZip2.exe'/>
+
+        <File Id      ='GZip.exe'
+              Name    ='GZip.exe'
+              DiskId  ='1'
+              Source  ='..\Tools\GZip\bin\$(var.Configuration)\GZip.exe'/>
+
         <File Id      ='ConvertZipToSfx.exe'
               Name    ='ConvertZipToSfx.exe'
               DiskId  ='1'
@@ -186,6 +196,16 @@ The Cabinet name can be anything you want. Not really important.
               Name    ='UnZip.pdb'
               DiskId  ='1'
               Source  ='..\Tools\UnZip\bin\$(var.Configuration)\UnZip.pdb'/>
+
+        <File Id      ='BZip2.pdb'
+              Name    ='BZip2.pdb'
+              DiskId  ='1'
+              Source  ='..\Tools\BZip2\bin\$(var.Configuration)\BZip2.pdb'/>
+
+        <File Id      ='GZip.pdb'
+              Name    ='GZip.pdb'
+              DiskId  ='1'
+              Source  ='..\Tools\GZip\bin\$(var.Configuration)\GZip.pdb'/>
 
         <File Id      ='ConvertZipToSfx.pdb'
               Name    ='ConvertZipToSfx.pdb'
