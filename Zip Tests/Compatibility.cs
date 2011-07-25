@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-23 20:10:16>
+// Time-stamp: <2011-July-25 09:55:27>
 //
 // ------------------------------------------------------------------
 //
@@ -2213,6 +2213,23 @@ namespace Ionic.Zip.Tests
             VerifyTimesDos(Path.Combine(extractDir, "files"), filesToZip);
         }
 
+        /// <summary>
+        ///   count occurrences of sample in string s.
+        /// </summary>
+        int CountOccurrences(string s, string sample)
+        {
+            int nFound = 0;
+            int n = 0;
+            do
+            {
+                n = s.IndexOf(sample,n);
+                if (n>0) nFound++;
+                n++;
+            } while (n>0);
+            return nFound;
+        }
+
+
         [TestMethod]
         public void Winzip_Unzip_Bzip2()
         {
@@ -2239,6 +2256,7 @@ namespace Ionic.Zip.Tests
                 zip1.Save(zipFileToCreate);
             }
 
+            TestContext.WriteLine("Verifying the number of files in the zip");
             // Verify the number of files in the zip
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate),
                                  filesToZip.Length + additionalFiles.Count,
@@ -2248,9 +2266,13 @@ namespace Ionic.Zip.Tests
             // first, examine the zip entry metadata:
             string wzzipOut = this.Exec(wzzip, "-vt " + zipFileToCreate);
 
-            // TODO: verify that the output states that the compression method
+            // verify that the output states that the compression method
             // used for each entry was BZIP2...
+            TestContext.WriteLine("Verifying that BZIP2 was the comp method used...");
+            Assert.AreEqual<int>(CountOccurrences(wzzipOut, "Compression Method: BZipped"),
+                                 filesToZip.Length);
 
+            TestContext.WriteLine("Extracting...");
             // now, extract the zip
             // eg, wzunzip.exe -d test.zip  <extractdir>
             Directory.CreateDirectory(extractDir);
@@ -2267,6 +2289,62 @@ namespace Ionic.Zip.Tests
             VerifyChecksums(Path.Combine("extract", dirInZip), filesToCheck, checksums);
 
             VerifyFileTimes1(extractDir, additionalFiles);
+        }
+
+
+        [TestMethod]
+        public void Winzip_Unzip_Bzip2_Large()
+        {
+            // BZip2 uses blocks of 900k (ish).  When compressing files
+            // that can be Run-length-encoded into a buffer smaller than
+            // 900k, only one block is needed. This test verifies that
+            // larger files, those that require multiple blocks to
+            // compress, are done correctly. (At one point there was a
+            // problem combining CRCs from multiple blocks. )
+            if (!WinZipIsPresent) throw new Exception("no winzip");
+
+            TestContext.WriteLine("Creating the fodder files...");
+            string zipFileToCreate = "BZ_Large.zip";
+            int n = _rnd.Next(5) + 5;
+            int baseSize = _rnd.Next(0x80000) + 0x3000ff;
+            int delta = 0x80000;
+            string dirInZip = "files";
+            string extractDir = "extract";
+            string subdir = Path.Combine(TopLevelDir, dirInZip);
+            var filesToZip = TestUtilities.GenerateFilesFlat(subdir, n, baseSize, baseSize+delta);
+
+            TestContext.WriteLine("Creating the zip...");
+            // Now, Create the zip archive with DotNetZip
+            using (ZipFile zip1 = new ZipFile())
+            {
+                zip1.CompressionMethod = CompressionMethod.BZip2;
+                zip1.AddFiles(filesToZip, dirInZip);
+                zip1.Save(zipFileToCreate);
+            }
+
+            // Verify the number of files in the zip
+            TestContext.WriteLine("Verifying the number of files in the zip...");
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate),
+                                 filesToZip.Length,
+                                 "Incorrect number of entries in the zip file.");
+
+            // examine and unpack the zip archive via WinZip
+            // first, examine the zip entry metadata:
+            string wzzipOut = this.Exec(wzzip, "-vt " + zipFileToCreate);
+
+            // verify that the output states that the compression method
+            // used for each entry was BZIP2...
+            TestContext.WriteLine("Verifying that BZIP2 was the comp method used...");
+            Assert.AreEqual<int>(CountOccurrences(wzzipOut, "Compression Method: BZipped"),
+                                 filesToZip.Length);
+
+            // now, extract the zip
+            // eg, wzunzip.exe -d test.zip  <extractdir>
+            TestContext.WriteLine("Extracting...");
+            Directory.CreateDirectory(extractDir);
+            Directory.SetCurrentDirectory(extractDir);
+            this.Exec(wzunzip, String.Format("-d -yx \"{0}\"",
+                                             Path.Combine("..",zipFileToCreate)));
         }
 
 

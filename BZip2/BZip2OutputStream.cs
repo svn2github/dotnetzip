@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-24 09:26:39>
+// Last Saved: <2011-July-25 10:06:00>
 //
 // ------------------------------------------------------------------
 //
@@ -85,7 +85,7 @@ namespace Ionic.BZip2
 
         private bool blockRandomised;
 
-        private int bsBuff;
+        private uint bsBuff;
         private int bsLive;
         private readonly CRC32 crc = Ionic.BZip2.CRC32.Create();
         private int nInUse;
@@ -102,8 +102,8 @@ namespace Ionic.BZip2
         private int currentByte = -1;
         private int runLength = 0;
 
-        private int blockCRC;
-        private int combinedCRC;
+        private uint blockCRC;
+        private uint combinedCRC;
         private int outBlockFillThreshold;
 
         /**
@@ -345,14 +345,14 @@ namespace Ionic.BZip2
          */
         private void init()
         {
-            bsPutUByte('B');
-            bsPutUByte('Z');
+            bsPutUByte((byte)'B');
+            bsPutUByte((byte)'Z');
 
             this.cstate = new CompressionState(this.blockSize100k);
 
             // huffmanised magic bytes
-            bsPutUByte('h');
-            bsPutUByte('0' + this.blockSize100k);
+            bsPutUByte((byte)'h');
+            bsPutUByte((byte)('0' + this.blockSize100k));
 
             this.combinedCRC = 0;
             initBlock();
@@ -380,7 +380,7 @@ namespace Ionic.BZip2
 
         private void endBlock()
         {
-            this.blockCRC = this.crc.Crc32Result;
+            this.blockCRC = (uint) this.crc.Crc32Result;
             this.combinedCRC = (this.combinedCRC << 1) | (this.combinedCRC >> 31);
             this.combinedCRC ^= this.blockCRC;
 
@@ -414,9 +414,9 @@ namespace Ionic.BZip2
 
             /* Now a single bit indicating randomisation. */
             if (this.blockRandomised)
-                bsW(1, 1);
+                bsW(1, 1U);
             else
-                bsW(1, 0);
+                bsW(1, 0U);
 
             /* Finally, block's contents proper. */
             moveToFrontCodeAndSend();
@@ -550,11 +550,11 @@ namespace Ionic.BZip2
             }
         }
 
-        private void bsW(int n,  int v)
+        private void bsW(int n, uint v)
         {
             Stream outShadow = this.output;
             int bsLiveShadow = this.bsLive;
-            int bsBuffShadow = this.bsBuff;
+            uint bsBuffShadow = this.bsBuff;
 
             while (bsLiveShadow >= 8)
             {
@@ -567,12 +567,12 @@ namespace Ionic.BZip2
             this.bsLive = bsLiveShadow + n;
         }
 
-        private void bsPutUByte(int c)
+        private void bsPutUByte(byte b)
         {
-            bsW(8, c);
+            bsW(8, b);
         }
 
-        private void bsPutInt(int u)
+        private void bsPutInt(uint u)
         {
             bsW(8, (u >> 24) & 0xff);
             bsW(8, (u >> 16) & 0xff);
@@ -1050,12 +1050,12 @@ namespace Ionic.BZip2
 
             for (int i = 0; i < 16; i++)
             {
-                bsW(1, inUse16[i] ? 1 : 0);
+                bsW(1, inUse16[i] ? 1U : 0U);
             }
 
             Stream outShadow = this.output;
             int bsLiveShadow = this.bsLive;
-            int bsBuffShadow = this.bsBuff;
+            uint bsBuffShadow = this.bsBuff;
 
             for (int i = 0; i < 16; i++)
             {
@@ -1074,7 +1074,7 @@ namespace Ionic.BZip2
                         }
                         if (inUse[i16 + j])
                         {
-                            bsBuffShadow |= 1 << (32 - bsLiveShadow - 1);
+                            bsBuffShadow |= 1U << (32 - bsLiveShadow - 1);
                         }
                         bsLiveShadow++;
                     }
@@ -1087,14 +1087,14 @@ namespace Ionic.BZip2
 
         private void sendMTFValues5(int nGroups, int nSelectors)
         {
-            bsW(3, nGroups);
-            bsW(15, nSelectors);
+            bsW(3, (uint)nGroups);
+            bsW(15, (uint)nSelectors);
 
             Stream outShadow = this.output;
             byte[] selectorMtf = this.cstate.selectorMtf;
 
             int bsLiveShadow = this.bsLive;
-            int bsBuffShadow = this.bsBuff;
+            uint bsBuffShadow = this.bsBuff;
 
             for (int i = 0; i < nSelectors; i++)
             {
@@ -1108,7 +1108,7 @@ namespace Ionic.BZip2
                         bsBuffShadow <<= 8;
                         bsLiveShadow -= 8;
                     }
-                    bsBuffShadow |= 1 << (32 - bsLiveShadow - 1);
+                    bsBuffShadow |= 1U << (32 - bsLiveShadow - 1);
                     bsLiveShadow++;
                 }
 
@@ -1135,12 +1135,12 @@ namespace Ionic.BZip2
             Stream outShadow = this.output;
 
             int bsLiveShadow = this.bsLive;
-            int bsBuffShadow = this.bsBuff;
+            uint bsBuffShadow = this.bsBuff;
 
             for (int t = 0; t < nGroups; t++)
             {
                 byte[] len_t = len[t];
-                int curr = len_t[0] & 0xff;
+                uint curr = (uint)(len_t[0] & 0xff);
 
                 // inlined: bsW(5, curr);
                 while (bsLiveShadow >= 8)
@@ -1167,7 +1167,7 @@ namespace Ionic.BZip2
                             bsBuffShadow <<= 8;
                             bsLiveShadow -= 8;
                         }
-                        bsBuffShadow |= 2 << (32 - bsLiveShadow - 2);
+                        bsBuffShadow |= 2U << (32 - bsLiveShadow - 2);
                         bsLiveShadow += 2;
 
                         curr++; /* 10 */
@@ -1183,7 +1183,7 @@ namespace Ionic.BZip2
                             bsBuffShadow <<= 8;
                             bsLiveShadow -= 8;
                         }
-                        bsBuffShadow |= 3 << (32 - bsLiveShadow - 2);
+                        bsBuffShadow |= 3U << (32 - bsLiveShadow - 2);
                         bsLiveShadow += 2;
 
                         curr--; /* 11 */
@@ -1219,7 +1219,7 @@ namespace Ionic.BZip2
             int selCtr = 0;
 
             int bsLiveShadow = this.bsLive;
-            int bsBuffShadow = this.bsBuff;
+            uint bsBuffShadow = this.bsBuff;
 
             for (int gs = 0; gs < nMTFShadow;)
             {
@@ -1244,7 +1244,7 @@ namespace Ionic.BZip2
                         bsLiveShadow -= 8;
                     }
                     int n = len_selCtr[sfmap_i] & 0xFF;
-                    bsBuffShadow |= code_selCtr[sfmap_i] << (32 - bsLiveShadow - n);
+                    bsBuffShadow |= (uint)code_selCtr[sfmap_i] << (32 - bsLiveShadow - n);
                     bsLiveShadow += n;
 
                     gs++;
@@ -1260,7 +1260,7 @@ namespace Ionic.BZip2
 
         private void moveToFrontCodeAndSend()
         {
-            bsW(24, this.origPtr);
+            bsW(24, (uint)this.origPtr);
             generateMTFValues();
             sendMTFValues();
         }
