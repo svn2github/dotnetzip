@@ -7,12 +7,20 @@
 // divide-and-conquer approach with multiple threads to exploit multiple
 // CPUs for the DEFLATE computation.
 //
-// last saved:
-// Time-stamp: <2011-July-11 21:51:32>
+// last saved: <2011-July-25 09:28:29>
+//
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2009-2011 by Dino Chiesa
 // All rights reserved!
+//
+// This code module is part of DotNetZip, a zipfile class library.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License.
+// See the file License.txt for the license details.
+// More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
 
@@ -54,28 +62,25 @@ namespace Ionic.Zlib
     }
 
     /// <summary>
-    ///   A class for compressing and decompressing streams using the
+    ///   A class for compressing streams using the
     ///   Deflate algorithm with multiple threads.
     /// </summary>
     ///
     /// <remarks>
     /// <para>
-    ///   This class is for compression only, and that can be only
-    ///   through writing.
-    /// </para>
-    ///
-    /// <para>
-    ///   For more information on the Deflate algorithm, see IETF RFC 1951, "DEFLATE
-    ///   Compressed Data Format Specification version 1.3."
+    ///   This class performs DEFLATE compression through writing.  For
+    ///   more information on the Deflate algorithm, see IETF RFC 1951,
+    ///   "DEFLATE Compressed Data Format Specification version 1.3."
     /// </para>
     ///
     /// <para>
     ///   This class is similar to <see cref="Ionic.Zlib.DeflateStream"/>, except
-    ///   that this implementation uses an approach that employs multiple worker
-    ///   threads to perform the DEFLATE.  On a multi-cpu or multi-core computer,
-    ///   the performance of this class can be significantly higher than the
-    ///   single-threaded DeflateStream, particularly for larger streams.  How
-    ///   large?  Anything over 10mb is a good candidate for parallel compression.
+    ///   that this class is for compression only, and this implementation uses an
+    ///   approach that employs multiple worker threads to perform the DEFLATE.  On
+    ///   a multi-cpu or multi-core computer, the performance of this class can be
+    ///   significantly higher than the single-threaded DeflateStream, particularly
+    ///   for larger streams.  How large?  Anything over 10mb is a good candidate
+    ///   for parallel compression.
     /// </para>
     ///
     /// <para>
@@ -84,10 +89,11 @@ namespace Ionic.Zlib
     ///   large files the size of the compressed data stream can be less than 1%
     ///   larger than the size of a compressed data stream from the vanialla
     ///   DeflateStream.  For smaller files the difference can be larger.  The
-    ///   difference will also be larger if you set the BufferSize to be lower
-    ///   than the default value.  Your mileage may vary. Finally, for small
-    ///   files, the ParallelDeflateOutputStream can be much slower than the vanilla
-    ///   DeflateStream, because of the overhead of using the thread pool.
+    ///   difference will also be larger if you set the BufferSize to be lower than
+    ///   the default value.  Your mileage may vary. Finally, for small files, the
+    ///   ParallelDeflateOutputStream can be much slower than the vanilla
+    ///   DeflateStream, because of the overhead associated to using the thread
+    ///   pool.
     /// </para>
     ///
     /// </remarks>
