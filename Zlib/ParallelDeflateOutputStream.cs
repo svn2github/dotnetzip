@@ -7,7 +7,7 @@
 // divide-and-conquer approach with multiple threads to exploit multiple
 // CPUs for the DEFLATE computation.
 //
-// last saved: <2011-July-25 09:28:29>
+// last saved: <2011-July-25 15:11:46>
 //
 // ------------------------------------------------------------------
 //
@@ -304,7 +304,7 @@ namespace Ionic.Zlib
             _compressLevel= level;
             Strategy = strategy;
             _leaveOpen = leaveOpen;
-            MaxBufferPairs = 16; // default
+            this.MaxBufferPairs = 16; // default
         }
 
 
@@ -480,6 +480,7 @@ namespace Ionic.Zlib
             _toFill = new Queue<int>();
             _pool = new System.Collections.Generic.List<WorkItem>();
             int nTasks = BufferPairsPerCore * Environment.ProcessorCount;
+            nTasks = Math.Min(nTasks, _maxBufferPairs);
             for(int i=0; i < nTasks; i++)
             {
                 _pool.Add(new WorkItem(_bufferSize, _compressLevel, Strategy, i));
@@ -547,7 +548,7 @@ namespace Ionic.Zlib
             if (!_firstWriteDone)
             {
                 // Want to do this on first Write, first session, and not in the
-                // constructor.  We want to allow the BufferSize and BuffersPerCore to
+                // constructor.  We want to allow MaxBufferPairs to
                 // change after construction, but before first Write.
                 _InitializePoolOfWorkItems();
                 _firstWriteDone = true;
@@ -606,11 +607,11 @@ namespace Ionic.Zlib
 
                 // copy from the provided buffer to our workitem, starting at
                 // the tail end of whatever data we might have in there currently.
-                Array.Copy(buffer,
-                           offset,
-                           workitem.buffer,
-                           workitem.inputBytesAvailable,
-                           limit);
+                Buffer.BlockCopy(buffer,
+                                 offset,
+                                 workitem.buffer,
+                                 workitem.inputBytesAvailable,
+                                 limit);
 
                 count -= limit;
                 offset += limit;
