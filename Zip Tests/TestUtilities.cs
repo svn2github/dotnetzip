@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-10 14:26:41>
+// Time-stamp: <2011-July-26 10:21:18>
 //
 // ------------------------------------------------------------------
 //
@@ -425,6 +425,11 @@ namespace Ionic.Zip.Tests.Utilities
             return entries;
         }
 
+
+        internal static string GetCheckSumString(string filename)
+        {
+            return CheckSumToString(ComputeChecksum(filename));
+        }
 
         internal static string CheckSumToString(byte[] checksum)
         {

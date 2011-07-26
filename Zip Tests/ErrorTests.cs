@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-08 18:06:24>
+// Time-stamp: <2011-July-26 10:07:24>
 //
 // ------------------------------------------------------------------
 //
@@ -238,15 +238,7 @@ namespace Ionic.Zip.Tests.Error
         [ExpectedException(typeof(ZipException))]
         public void Error_Read_InvalidZip()
         {
-            string sourceDir = CurrentDir;
-            for (int i = 0; i < 3; i++)
-                sourceDir = Path.GetDirectoryName(sourceDir);
-
-            string filename =
-                Path.Combine(sourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe");
-
-            Assert.IsTrue(File.Exists(filename));
-
+            string filename = zipit;
             // try reading the invalid zipfile - this must fail.
             using (ZipFile zip = ZipFile.Read(filename))
             {
@@ -546,17 +538,10 @@ namespace Ionic.Zip.Tests.Error
         [ExpectedException(typeof(System.IO.IOException))]
         public void Error_AddDirectory_SpecifyingFile()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "AddDirectory_SpecifyingFile.zip");
-            Directory.SetCurrentDirectory(TopLevelDir);
-            string sourceDir = CurrentDir;
-            for (int i = 0; i < 3; i++)
-                sourceDir = Path.GetDirectoryName(sourceDir);
-
-            string filename = Path.Combine(sourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe");
-            File.Copy(filename, "ThisIsAFile");
-
-            string baddirname = Path.Combine(TopLevelDir, "ThisIsAFile");
-
+            string zipFileToCreate = "AddDirectory_SpecifyingFile.zip";
+            string filename = "ThisIsAFile";
+            File.Copy(zipit, filename);
+            string baddirname = Path.Combine(TopLevelDir, filename);
             using (ZipFile zip = new ZipFile())
             {
                 zip.AddDirectory(baddirname); // FAIL
@@ -569,10 +554,9 @@ namespace Ionic.Zip.Tests.Error
         [ExpectedException(typeof(FileNotFoundException))]
         public void Error_AddFile_SpecifyingDirectory()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "AddFile_SpecifyingDirectory.zip");
-            Directory.SetCurrentDirectory(TopLevelDir);
-            Directory.CreateDirectory("ThisIsADirectory.txt");
-            string badfilename = Path.Combine(TopLevelDir, "ThisIsADirectory.txt");
+            string zipFileToCreate = "AddFile_SpecifyingDirectory.zip";
+            string badfilename = "ThisIsADirectory.txt";
+            Directory.CreateDirectory(badfilename);
 
             using (ZipFile zip = new ZipFile())
             {

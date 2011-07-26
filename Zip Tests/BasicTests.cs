@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-09 23:17:48>
+// Time-stamp: <2011-July-26 11:39:21>
 //
 // ------------------------------------------------------------------
 //
@@ -563,7 +563,8 @@ namespace Ionic.Zip.Tests.Basic
                     var t2 = Path.Combine(t1, subdirShort);
                     var key = Path.Combine(t2, filename);
                     key = TestUtilities.TrimVolumeAndSwapSlashes(key);
-                    TestContext.WriteLine("chk[{0}]= {1}", key, TestUtilities.CheckSumToString(chk));
+                    TestContext.WriteLine("chk[{0}]= {1}", key,
+                                          TestUtilities.CheckSumToString(chk));
                     checksums.Add(key, chk);
                     entries++;
                 }
@@ -600,12 +601,15 @@ namespace Ionic.Zip.Tests.Basic
                     {
                         // verify the checksum of the file is correct
                         string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
-                        string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(pathToExtractedFile));
-                        Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", pathToExtractedFile);
+                        string actualCheckString = TestUtilities.GetCheckSumString(pathToExtractedFile);
+                        Assert.AreEqual<String>
+                            (expectedCheckString,
+                             actualCheckString,
+                             "Unexpected checksum on extracted filesystem file ({0}).",
+                             pathToExtractedFile);
                     }
                 }
             }
-
 
             TestContext.WriteLine("\n------------\nCreating some new files ...");
 
@@ -635,7 +639,8 @@ namespace Ionic.Zip.Tests.Basic
                         var key = Path.Combine(t2, filename);
                         key = TestUtilities.TrimVolumeAndSwapSlashes(key);
 
-                        TestContext.WriteLine("chk[{0}]= {1}", key, TestUtilities.CheckSumToString(chk));
+                        TestContext.WriteLine("chk[{0}]= {1}", key,
+                                              TestUtilities.CheckSumToString(chk));
 
                         checksums.Remove(key);
                         checksums.Add(key, chk);
@@ -677,8 +682,12 @@ namespace Ionic.Zip.Tests.Basic
 
                         // verify the checksum of the file is correct
                         string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
-                        string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(pathToExtractedFile));
-                        Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", pathToExtractedFile);
+                        string actualCheckString = TestUtilities.GetCheckSumString(pathToExtractedFile);
+                        Assert.AreEqual<String>
+                            (expectedCheckString,
+                             actualCheckString,
+                             "Unexpected checksum on extracted filesystem file ({0}).",
+                             pathToExtractedFile);
                     }
                 }
             }
@@ -860,8 +869,6 @@ namespace Ionic.Zip.Tests.Basic
                 new TestTrial { arg="AAAA/BBB", re="(?s)^AAAA/BBB/(file(\\d+).ext)?$"}
             };
 
-            Directory.SetCurrentDirectory(TopLevelDir);
-
             for (int k = 0; k < trials.Length; k++)
             {
                 TestContext.WriteLine("\n--------------------------------\n\n\n");
@@ -932,8 +939,6 @@ namespace Ionic.Zip.Tests.Basic
                 new TestTrial { arg="rtdha", re="(?s)^rtdha/(dir(\\d){3}/(file(\\d+).ext)?)?$"},
                 new TestTrial { arg="sdfjk/BBB", re="(?s)^sdfjk/BBB/(dir(\\d){3}/(file(\\d+).ext)?)?$"}
             };
-
-            Directory.SetCurrentDirectory(TopLevelDir);
 
             for (int k = 0; k < trials.Length; k++)
             {
@@ -1246,7 +1251,6 @@ namespace Ionic.Zip.Tests.Basic
             }
 
             // Create the zip file
-            Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 String[] filenames = Directory.GetFiles("A");
@@ -1307,15 +1311,13 @@ namespace Ionic.Zip.Tests.Basic
         {
             // select the name of the zip file
             string zipFileToCreate = Path.Combine(TopLevelDir, "Retrieve_ViaIndexer.zip");
-            Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
-
             string filename = null;
             int entriesAdded = 0;
             string repeatedLine = null;
             int j;
 
             // create the subdirectory
-            string subdir = Path.Combine(TopLevelDir, "A");
+            string subdir = "A";
             Directory.CreateDirectory(subdir);
 
             // create the files
@@ -1330,7 +1332,6 @@ namespace Ionic.Zip.Tests.Basic
             }
 
             // Create the zip file
-            Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip1 = new ZipFile())
             {
                 String[] filenames = Directory.GetFiles("A");
@@ -1383,12 +1384,9 @@ namespace Ionic.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_SetFileComments()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "FileComments.zip");
-            Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
-
+            string zipFileToCreate = "FileComments.zip";
             string FileCommentFormat = "Comment Added By Test to file '{0}'";
             string commentOnArchive = "Comment added by FileComments() method.";
-
 
             int fileCount = _rnd.Next(3) + 3;
             string[] filesToZip = new string[fileCount];
@@ -1397,8 +1395,6 @@ namespace Ionic.Zip.Tests.Basic
                 filesToZip[i] = Path.Combine(TopLevelDir, String.Format("file{0:D3}.bin", i));
                 TestUtilities.CreateAndFillFile(filesToZip[i], _rnd.Next(10000) + 5000);
             }
-
-            Directory.SetCurrentDirectory(TopLevelDir);
 
             using (ZipFile zip = new ZipFile())
             {
@@ -1455,7 +1451,6 @@ namespace Ionic.Zip.Tests.Basic
                     DateTimeKind.Utc,
                 };
 
-            Directory.SetCurrentDirectory(TopLevelDir);
             for (int m = 0; m < timestamp.Length; m++)
             {
                 for (int n = 0; n < 3; n++)
@@ -1524,10 +1519,8 @@ namespace Ionic.Zip.Tests.Basic
 
             try
             {
-                string zipFileToCreate = Path.Combine(TopLevelDir, "CreateAndExtract_VerifyAttributes.zip");
-                Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
-
-                string subdir = Path.Combine(TopLevelDir, "A");
+                string zipFileToCreate = "CreateAndExtract_VerifyAttributes.zip";
+                string subdir = "A";
                 Directory.CreateDirectory(subdir);
 
                 //int fileCount = _rnd.Next(13) + 23;
@@ -1566,7 +1559,6 @@ namespace Ionic.Zip.Tests.Basic
                 }
 
                 TestContext.WriteLine("============\nZipping.");
-                Directory.SetCurrentDirectory(TopLevelDir);
                 using (ZipFile zip = new ZipFile())
                 {
                     for (int i = 0; i < filesToZip.Length; i++)
@@ -1584,18 +1576,24 @@ namespace Ionic.Zip.Tests.Basic
                     foreach (ZipEntry e in z2)
                     {
                         TestContext.WriteLine("Extracting {0}", e.FileName);
-                        Assert.AreEqual<FileAttributes>(attributeCombos[entries], e.Attributes,
-                                                        String.Format("unexpected attributes value in the entry {0} 0x{1:X4}", e.FileName, (int)e.Attributes));
+                        Assert.AreEqual<FileAttributes>
+                            (attributeCombos[entries],
+                             e.Attributes,
+                             "unexpected attribute {0} 0x{1:X4}",
+                             e.FileName,
+                             (int)e.Attributes);
                         entries++;
                         e.Extract("unpack");
-                        // now verify that the attributes are set correctly in the filesystem
-
+                        // now verify that the attributes are set
+                        // correctly in the filesystem
                         var attrs = File.GetAttributes(Path.Combine("unpack", e.FileName));
                         Assert.AreEqual<FileAttributes>(attrs, e.Attributes,
                                                         "Unexpected attributes on the extracted filesystem file {0}.", e.FileName);
                     }
                 }
-                Assert.AreEqual<int>(entries, filesToZip.Length, "Unexpected file count. Expected {0}, got {1}.",
+                Assert.AreEqual<int>(entries,
+                                     filesToZip.Length,
+                                     "Bad file count. Expected {0}, got {1}.",
                                      filesToZip.Length, entries);
             }
             catch (Exception ex1)
@@ -1610,12 +1608,13 @@ namespace Ionic.Zip.Tests.Basic
         [TestMethod]
         public void CreateAndExtract_SetAndVerifyAttributes()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "CreateAndExtract_SetAndVerifyAttributes.zip");
-            Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
+            string zipFileToCreate = "CreateAndExtract_SetAndVerifyAttributes.zip";
 
-            // Here, we build a list of combinations of FileAttributes to try.
-            // We cannot simply do an exhaustic combination because (a) not all combinations are valid, and (b)
-            // if you SetAttributes(file,Compressed) (also with Encrypted, ReparsePoint) it does not "work."  So those attributes
+            // Here, we build a list of combinations of FileAttributes
+            // to try.  We cannot simply do an exhaustive combination
+            // because (a) not all combinations are valid, and (b) if
+            // you SetAttributes(file,Compressed) (also with Encrypted,
+            // ReparsePoint) it does not "work."  So those attributes
             // must be excluded.
             FileAttributes[] attributeCombos = {
                 FileAttributes.ReadOnly,
@@ -1642,7 +1641,6 @@ namespace Ionic.Zip.Tests.Basic
             };
             int fileCount = attributeCombos.Length;
 
-            Directory.SetCurrentDirectory(TopLevelDir);
             TestContext.WriteLine("============\nZipping.");
             using (ZipFile zip = new ZipFile())
             {
@@ -1664,15 +1662,20 @@ namespace Ionic.Zip.Tests.Basic
                 foreach (ZipEntry e in z2)
                 {
                     TestContext.WriteLine("Extracting {0}", e.FileName);
-                    Assert.AreEqual<FileAttributes>(attributeCombos[entries], e.Attributes,
-                                                    String.Format("unexpected attributes value in the entry {0} 0x{1:X4}", e.FileName, (int)e.Attributes));
+                    Assert.AreEqual<FileAttributes>
+                        (attributeCombos[entries], e.Attributes,
+                         "unexpected attributes value in the entry {0} 0x{1:X4}",
+                         e.FileName,
+                         (int)e.Attributes);
                     entries++;
                     e.Extract("unpack");
-                    // now verify that the attributes are set correctly in the filesystem
 
+                    // now verify that the attributes are set correctly in the filesystem
                     var attrs = File.GetAttributes(Path.Combine("unpack", e.FileName));
-                    Assert.AreEqual<FileAttributes>(e.Attributes, attrs,
-                                                    "Unexpected attributes on the extracted filesystem file {0}.", e.FileName);
+                    Assert.AreEqual<FileAttributes>
+                        (e.Attributes, attrs,
+                         "Unexpected attributes on the extracted filesystem file {0}.",
+                         e.FileName);
                 }
             }
             Assert.AreEqual<int>(fileCount, entries, "Unexpected file count.");
@@ -1683,10 +1686,9 @@ namespace Ionic.Zip.Tests.Basic
         [Timeout(1000 * 240)]  // timeout in ms.  240s = 4 mins
         public void CreateZip_VerifyFileLastModified()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_VerifyFileLastModified.zip");
-            Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
-
-            String[] candidateFileNames = Directory.GetFiles(System.Environment.GetEnvironmentVariable("TEMP"));
+            string zipFileToCreate = "CreateZip_VerifyFileLastModified.zip";
+            string envTemp = Environment.GetEnvironmentVariable("TEMP");
+            String[] candidateFileNames = Directory.GetFiles(envTemp);
             var checksums = new Dictionary<string, byte[]>();
             var timestamps = new Dictionary<string, DateTime>();
             var actualFilenames = new List<string>();
@@ -1696,7 +1698,7 @@ namespace Ionic.Zip.Tests.Basic
             maxFiles = Math.Min(maxFiles, 145);
             //maxFiles = Math.Min(maxFiles, 15);
             TestContext.WriteLine("\n-----------------------------\r\n{1}: Finding files in '{0}'...",
-                                  System.Environment.GetEnvironmentVariable("TEMP"),
+                                  envTemp,
                                   DateTime.Now.ToString("HH:mm:ss"));
             do
             {
@@ -1712,10 +1714,12 @@ namespace Ionic.Zip.Tests.Basic
                         || actualFilenames.Contains(filename)
                         || fi.Length > 10000000
                         || Path.GetFileName(filename) == "dd_BITS.log"
-                        // There WERE some weird files on my system that cause this test to fail!
-                        // the GetLastWrite() method returns the "wrong" time - does not agree with
-                        // what is shown in Explorer or in a cmd.exe dir output.  So I exclude those
+                        // There WERE some weird files on my system that cause this
+                        // test to fail!  the GetLastWrite() method returns the
+                        // "wrong" time - does not agree with what is shown in
+                        // Explorer or in a cmd.exe dir output.  So I exclude those
                         // files here.  (This is no longer a problem?)
+
                         //|| filename.EndsWith(".cer")
                         //|| filename.EndsWith(".msrcincident")
                         //|| filename == "MSCERTS.ini"
@@ -1738,12 +1742,14 @@ namespace Ionic.Zip.Tests.Basic
                     var fi = new FileInfo(filename);
 
                     // Rounding to nearest even second was necessary when DotNetZip did
-                    // not process NTFS times in the NTFS Extra field. Since v1.8.0.5, this
-                    // is no longer the case.
+                    // not process NTFS times in the NTFS Extra field. Since v1.8.0.5,
+                    // this is no longer the case.
+                    //
                     // var tm = TestUtilities.RoundToEvenSecond(lastWrite);
 
                     var tm = lastWrite;
-                    // hop out of the try block if the file is from TODAY.  (heuristic to avoid currently open files)
+                    // hop out of the try block if the file is from TODAY.  (heuristic
+                    // to avoid currently open files)
                     if ((tm.Year == DateTime.Now.Year) && (tm.Month == DateTime.Now.Month) && (tm.Day == DateTime.Now.Day))
                         throw new Exception();
                     var chk = TestUtilities.ComputeChecksum(filename);
@@ -1763,8 +1769,6 @@ namespace Ionic.Zip.Tests.Basic
                 }
             } while ((actualFilenames.Count < maxFiles) && (actualFilenames.Count < candidateFileNames.Length) &&
                      actualFilenames.Count + excludedFilenames.Count < candidateFileNames.Length);
-
-            Directory.SetCurrentDirectory(TopLevelDir);
 
             TestContext.WriteLine("{0}: Creating zip...", DateTime.Now.ToString("HH:mm:ss"));
 
@@ -1813,8 +1817,12 @@ namespace Ionic.Zip.Tests.Basic
 
                     // verify the checksum of the file is correct
                     string expectedCheckString = TestUtilities.CheckSumToString(checksums[e.FileName]);
-                    string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(pathToExtractedFile));
-                    Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", pathToExtractedFile);
+                    string actualCheckString = TestUtilities.GetCheckSumString(pathToExtractedFile);
+                    Assert.AreEqual<String>
+                        (expectedCheckString,
+                         actualCheckString,
+                         "Unexpected checksum on extracted filesystem file ({0}).",
+                         pathToExtractedFile);
                 }
             }
             Assert.AreEqual<int>(entries, actualFilenames.Count, "Unexpected file count.");
@@ -1842,12 +1850,9 @@ namespace Ionic.Zip.Tests.Basic
         [TestMethod]
         public void CreateZip_AddDirectory_NoFilesInRoot()
         {
-            string zipFileToCreate = Path.Combine(TopLevelDir, "CreateZip_AddDirectory_NoFilesInRoot.zip");
-
-            Assert.IsFalse(File.Exists(zipFileToCreate), "The temporary zip file '{0}' already exists.", zipFileToCreate);
-
-            string ZipThis = Path.Combine(TopLevelDir, "ZipThis");
-            Directory.CreateDirectory(ZipThis);
+            string zipFileToCreate = "CreateZip_AddDirectory_NoFilesInRoot.zip";
+            string zipThis = "ZipThis";
+            Directory.CreateDirectory(zipThis);
 
             int i, j;
             int entries = 0;
@@ -1855,7 +1860,7 @@ namespace Ionic.Zip.Tests.Basic
             int subdirCount = _rnd.Next(4) + 4;
             for (i = 0; i < subdirCount; i++)
             {
-                string subdir = Path.Combine(ZipThis, "DirectoryToZip.test." + i);
+                string subdir = Path.Combine(zipThis, "DirectoryToZip.test." + i);
                 Directory.CreateDirectory(subdir);
 
                 int fileCount = _rnd.Next(3) + 3;
@@ -1867,10 +1872,9 @@ namespace Ionic.Zip.Tests.Basic
                 }
             }
 
-            Directory.SetCurrentDirectory(TopLevelDir);
             using (ZipFile zip = new ZipFile())
             {
-                zip.AddDirectory("ZipThis");
+                zip.AddDirectory(zipThis);
                 zip.Save(zipFileToCreate);
             }
             Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), entries,
@@ -1928,8 +1932,12 @@ namespace Ionic.Zip.Tests.Basic
 
                         // verify the checksum of the file is correct
                         string expectedCheckString = checksums[e.FileName];
-                        string actualCheckString = TestUtilities.CheckSumToString(TestUtilities.ComputeChecksum(pathToExtractedFile));
-                        Assert.AreEqual<String>(expectedCheckString, actualCheckString, "Unexpected checksum on extracted filesystem file ({0}).", pathToExtractedFile);
+                        string actualCheckString = TestUtilities.GetCheckSumString(pathToExtractedFile);
+                        Assert.AreEqual<String>
+                            (expectedCheckString,
+                             actualCheckString,
+                             "Unexpected checksum on extracted filesystem file ({0}).",
+                             pathToExtractedFile);
                     }
                 }
             }

@@ -7,7 +7,7 @@ using Ionic.BZip2;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 
-namespace Ionic.Zlib.Tests
+namespace Ionic.BZip2.Tests
 {
     /// <summary>
     /// Summary description for UnitTest1
@@ -15,11 +15,11 @@ namespace Ionic.Zlib.Tests
     [TestClass]
     public class UnitTest1
     {
-        private System.Random _rnd;
+        private System.Random rnd;
 
         public UnitTest1()
         {
-            _rnd = new System.Random();
+            this.rnd = new System.Random();
             FilesToRemove = new System.Collections.Generic.List<string>();
         }
 
@@ -286,7 +286,78 @@ namespace Ionic.Zlib.Tests
             return 0;
         }
 
+
+        void CreateAndFillTextFile(string filename, Int64 minimumSize)
+        {
+            // fill the file with text data, selecting one word at a time
+            int L = LoremIpsumWords.Length - 2;
+            Int64 bytesRemaining = minimumSize;
+            using (StreamWriter sw = File.CreateText(filename))
+            {
+                do
+                {
+                    // pick a word at random
+                    int n = this.rnd.Next(L);
+                    int batchLength = LoremIpsumWords[n].Length +
+                        LoremIpsumWords[n+1].Length +
+                        LoremIpsumWords[n+2].Length + 3;
+                    sw.Write(LoremIpsumWords[n]);
+                    sw.Write(" ");
+                    sw.Write(LoremIpsumWords[n+1]);
+                    sw.Write(" ");
+                    sw.Write(LoremIpsumWords[n+2]);
+                    sw.Write(" ");
+                    bytesRemaining -= batchLength;
+                } while (bytesRemaining > 0);
+            }
+        }
+
         #endregion
+
+
+        [TestMethod]
+        [Timeout(15 * 60*1000)] // 60*1000 = 1min
+        public void BZ_LargeParallel()
+        {
+            string filename = "LargeFile.txt";
+            int minSize = 0x6000000 + this.rnd.Next(0x6000000);
+            TestContext.WriteLine("Creating large file, minimum {0} bytes", minSize);
+
+            CreateAndFillTextFile(filename, minSize);
+
+            Func<Stream,Stream>[] getBzStream = {
+                new Func<Stream,Stream>( s0 => {
+                        return new Ionic.BZip2.BZip2OutputStream(s0);
+                    }),
+                new Func<Stream,Stream>( s1 => {
+                        return new Ionic.BZip2.ParallelBZip2OutputStream(s1);
+                    })
+            };
+
+            var ts = new TimeSpan[2];
+            for (int k=0; k < 2; k++)
+            {
+                var stopwatch = new System.Diagnostics.Stopwatch();
+                TestContext.WriteLine("Trial {0}", k);
+                stopwatch.Start();
+                string bzFname = Path.GetFileNameWithoutExtension(filename) +
+                    "." + k + Path.GetExtension(filename) + ".bz2";
+                using (Stream input = File.OpenRead(filename),
+                       output = File.Create(bzFname),
+                       compressor = getBzStream[k](output))
+                {
+                    CopyStream(input, compressor);
+                }
+                stopwatch.Stop();
+                ts[k] = stopwatch.Elapsed;
+                TestContext.WriteLine("Trial complete {0} : {1}", k, ts[k]);
+            }
+
+            Assert.IsTrue(ts[1]<ts[0],
+                          "Parallel compression took MORE time.");
+        }
+
+
 
 
         [TestMethod]
@@ -295,8 +366,8 @@ namespace Ionic.Zlib.Tests
         {
             TestContext.WriteLine("Creating fodder file.");
             // select a random text string
-            var line = TestStrings.ElementAt(_rnd.Next(0, TestStrings.Count)).Value;
-            int n = 4000 + _rnd.Next(1000); // number of iters
+            var line = TestStrings.ElementAt(this.rnd.Next(0, TestStrings.Count)).Value;
+            int n = 4000 + this.rnd.Next(1000); // number of iters
             var fname = "Pippo.txt";
             // emit many many lines into a text file:
             using (var sw = new StreamWriter(File.Create(fname)))
@@ -387,7 +458,7 @@ namespace Ionic.Zlib.Tests
             int n = 0;
             foreach (var key in TestStrings.Keys)
             {
-                int count = _rnd.Next(18) + 4;
+                int count = this.rnd.Next(18) + 4;
                 TestContext.WriteLine("Doing string {0}", key);
                 var s =  TestStrings[key];
                 var fname = String.Format("Pippo-{0}.txt", key);

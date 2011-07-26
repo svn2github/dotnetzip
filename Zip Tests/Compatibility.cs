@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-25 09:55:27>
+// Time-stamp: <2011-July-26 09:57:39>
 //
 // ------------------------------------------------------------------
 //
@@ -2270,7 +2270,7 @@ namespace Ionic.Zip.Tests
             // used for each entry was BZIP2...
             TestContext.WriteLine("Verifying that BZIP2 was the comp method used...");
             Assert.AreEqual<int>(CountOccurrences(wzzipOut, "Compression Method: BZipped"),
-                                 filesToZip.Length);
+                                 filesToZip.Length + additionalFiles.Count);
 
             TestContext.WriteLine("Extracting...");
             // now, extract the zip
@@ -2416,7 +2416,7 @@ namespace Ionic.Zip.Tests
             // eg, wzunzip.exe -d test.zip  <extractdir>
             Directory.CreateDirectory(extractDir);
             Directory.SetCurrentDirectory(extractDir);
-            this.Exec(wzunzip, String.Format("-d -yx {0}", zipFileToCreate));
+            this.Exec(wzunzip, String.Format("-d -yx ..\\{0}", zipFileToCreate));
 
             // check the files in the extract dir
             Directory.SetCurrentDirectory(TopLevelDir);

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-13 12:32:12>
+// Time-stamp: <2011-July-26 10:04:54>
 //
 // ------------------------------------------------------------------
 //
@@ -45,8 +45,10 @@ namespace Ionic.Zip.Tests.Utilities
         private string _wzunzip = null;
         private string _wzzip = null;
         private string _sevenzip = null;
+        private string _zipit = null;
         private string _infozipzip = null;
         private string _infozipunzip = null;
+        private bool? _ZipitIsPresent;
         private bool? _WinZipIsPresent;
         private bool? _SevenZipIsPresent;
         private bool? _InfoZipIsPresent;
@@ -247,46 +249,52 @@ namespace Ionic.Zip.Tests.Utilities
         }
 
 
-
         protected string sevenZip
         {
-            get
-            {
-                return SevenZipIsPresent ? _sevenzip : null;
-            }
+            get { return SevenZipIsPresent ? _sevenzip : null; }
+        }
+
+        protected string zipit
+        {
+            get { return ZipitIsPresent ? _zipit : null; }
         }
 
         protected string infoZip
         {
-            get
-            {
-                return InfoZipIsPresent ? _infozipzip : null;
-            }
+            get { return InfoZipIsPresent ? _infozipzip : null; }
         }
 
         protected string infoZipUnzip
         {
-            get
-            {
-                return InfoZipIsPresent ? _infozipunzip : null;
-            }
+            get { return InfoZipIsPresent ? _infozipunzip : null; }
         }
-
 
         protected string wzzip
         {
-            get
-            {
-                return WinZipIsPresent ? _wzzip : null;
-            }
+            get { return WinZipIsPresent ? _wzzip : null; }
         }
-
 
         protected string wzunzip
         {
+            get { return WinZipIsPresent ? _wzunzip : null; }
+        }
+
+        protected bool ZipitIsPresent
+        {
             get
             {
-                return WinZipIsPresent ? _wzunzip : null;
+                if (_ZipitIsPresent == null)
+                {
+                    string sourceDir = CurrentDir;
+                    for (int i = 0; i < 3; i++)
+                        sourceDir = Path.GetDirectoryName(sourceDir);
+
+                    _zipit =
+                        Path.Combine(sourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe");
+
+                    _ZipitIsPresent = new Nullable<bool>(File.Exists(_zipit));
+                }
+                return _ZipitIsPresent.Value;
             }
         }
 
