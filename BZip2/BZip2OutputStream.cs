@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-25 18:56:13>
+// Last Saved: <2011-July-25 22:13:28>
 //
 // ------------------------------------------------------------------
 //
@@ -493,12 +493,12 @@ namespace Ionic.BZip2
                 //lock(outputLock)
                 {
                     int tid = System.Threading.Thread.CurrentThread.GetHashCode();
-#if !SILVERLIGHT
+#if !SILVERLIGHT && !NETCF
                     Console.ForegroundColor = (ConsoleColor) (tid % 8 + 10);
 #endif
                     Console.Write("{0:000} PBOS ", tid);
                     Console.WriteLine(format, varParams);
-#if !SILVERLIGHT
+#if !SILVERLIGHT && !NETCF
                     Console.ResetColor();
 #endif
                 }

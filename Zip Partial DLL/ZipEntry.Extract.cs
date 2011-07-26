@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-23 19:27:53>
+// Time-stamp: <2011-July-25 21:55:45>
 //
 // ------------------------------------------------------------------
 //
@@ -1056,8 +1056,10 @@ namespace Ionic.Zip
                     return input2;
                 case (short)CompressionMethod.Deflate:
                     return new Ionic.Zlib.DeflateStream(input2, Ionic.Zlib.CompressionMode.Decompress, true);
+#if BZIP
                 case (short)CompressionMethod.BZip2:
                     return new Ionic.BZip2.BZip2InputStream(input2, true);
+#endif
             }
 
             return null;
@@ -1235,6 +1237,9 @@ namespace Ionic.Zip
                     case 9:
                         meth = "Deflate64";
                         break;
+                    case 12:
+                        meth = "BZIP2"; // only if BZIP not compiled in
+                        break;
                     case 14:
                         meth = "LZMA";
                         break;
@@ -1276,8 +1281,11 @@ namespace Ionic.Zip
         private void ValidateCompression()
         {
             if ((_CompressionMethod_FromZipFile != (short)CompressionMethod.None) &&
-                (_CompressionMethod_FromZipFile != (short)CompressionMethod.Deflate) &&
-                (_CompressionMethod_FromZipFile != (short)CompressionMethod.BZip2) )
+                (_CompressionMethod_FromZipFile != (short)CompressionMethod.Deflate)
+#if BZIP
+                && (_CompressionMethod_FromZipFile != (short)CompressionMethod.BZip2)
+#endif
+                )
                 throw new ZipException(String.Format("Entry {0} uses an unsupported compression method (0x{1:X2}, {2})",
                                                           FileName, _CompressionMethod_FromZipFile, UnsupportedCompressionMethod));
         }

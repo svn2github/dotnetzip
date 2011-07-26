@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-23 20:00:33>
+// Time-stamp: <2011-July-25 21:56:59>
 //
 // ------------------------------------------------------------------
 //
@@ -1360,7 +1360,10 @@ namespace Ionic.Zip
                 if (value == (CompressionMethod)_CompressionMethod) return; // nothing to do.
 
                 if (value != CompressionMethod.None && value != CompressionMethod.Deflate
-                    && value != CompressionMethod.BZip2)
+#if BZIP
+                    && value != CompressionMethod.BZip2
+#endif
+                    )
                     throw new InvalidOperationException("Unsupported compression method.");
 
                 // If the source is a zip archive and there was encryption on the
@@ -2869,11 +2872,13 @@ namespace Ionic.Zip
         /// </summary>
         Deflate = 8,
 
+#if BZIP
         /// <summary>
         ///   BZip2 compression, a compression algorithm developed by Julian Seward.
         ///   For COM environments, the value is 12.
         /// </summary>
         BZip2 = 12,
+#endif
     }
 
 

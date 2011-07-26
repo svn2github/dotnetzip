@@ -45,7 +45,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;AESCRYPTO</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;AESCRYPTO;BZIP</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Ionic.Zip.Reduced.XML</DocumentationFile>
@@ -55,7 +55,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;AESCRYPTO</DefineConstants>
+    <DefineConstants>TRACE;AESCRYPTO;BZIP</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -195,8 +195,17 @@
     <Compile Include="..\BZip2\BZip2InputStream.cs">
       <Link>BZip2InputStream.cs</Link>
     </Compile>
+    <Compile Include="..\BZip2\BZip2Compressor.cs">
+      <Link>BZip2Compressor.cs</Link>
+    </Compile>
+    <Compile Include="..\BZip2\BitWriter.cs">
+      <Link>BitWriter.cs</Link>
+    </Compile>
     <Compile Include="..\BZip2\BZip2OutputStream.cs">
       <Link>BZip2OutputStream.cs</Link>
+    </Compile>
+    <Compile Include="..\BZip2\ParallelBZip2OutputStream.cs">
+      <Link>ParallelBZip2OutputStream.cs</Link>
     </Compile>
     <Compile Include="..\BZip2\Rand.cs">
       <Link>Rand.cs</Link>
