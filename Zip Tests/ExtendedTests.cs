@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-21 22:24:54>
+// Time-stamp: <2011-July-26 18:17:32>
 //
 // ------------------------------------------------------------------
 //
@@ -111,6 +111,150 @@ namespace Ionic.Zip.Tests.Extended
             Zip64Option.AsNecessary,
             Zip64Option.Always,
         };
+
+
+
+
+        [TestMethod]
+        [Timeout(22 * 60*1000)]
+        public void Bzip2_Perf()
+        {
+            // Verify that the parallel compress option works properly
+            // with BZip2.
+            TestContext.WriteLine("Creating the fodder files...");
+
+            _txrx = TestUtilities.StartProgressMonitor("BZip2PerfTest",
+                                                       "BZip2 Performance Test",
+                                                       "Creating files");
+            var update = new Action<Int32,Int32,Int64>((op,ix,sz) => {
+                    switch(op)
+                    {
+                        case 0:
+                        _txrx.Send("pb 1 max " + sz);
+                        _txrx.Send("status Creating file " + ix);
+                        break;
+                        case 1:
+                        _txrx.Send("pb 1 value " + sz);
+                        break;
+                        case 2:
+                        _txrx.Send("pb 0 step");
+                        _txrx.Send("pb 1 value 0");
+                        break;
+                    }
+            });
+            _txrx.Send("bars 2");
+            int threshold = 1024 * 1024;
+            int n = _rnd.Next(3) + 3;
+            int minSize = 0x2000000 + this._rnd.Next(0x4000000);
+            int maxSize = 0x2000000 + minSize + this._rnd.Next(0x80000);
+            string dirInZip = "files";
+            string extractDir = "extract";
+            string subdir = dirInZip;
+            _txrx.Send("pb 0 max " + n);
+
+            var filesToZip = TestUtilities.GenerateFilesFlat(subdir, n,
+                                                             minSize, maxSize, update);
+            var fi = new FileInfo(filesToZip[_rnd.Next(filesToZip.Length)]);
+            Assert.IsTrue(fi.Length > threshold,
+                          "For file {1}, length ({0}) does not meet threshold",
+                          fi.Name, fi.Length);
+
+            // Get the unzip.exe tool:
+            string dnzDir = CurrentDir;
+            for (int i = 0; i < 3; i++)
+                dnzDir = Path.GetDirectoryName(dnzDir);
+            string unzip = Path.Combine(dnzDir, "Tools\\Unzip\\bin\\debug\\Unzip.exe");
+            Assert.IsTrue(File.Exists(unzip),
+                          "The unzip.exe tool is not available.");
+
+            _txrx.Send("pb 0 max " + (4*2));
+            _txrx.Send("status done creating files...");
+            // two passes: once for regular, once for parallel compress
+            var ts = new TimeSpan[2];
+            var fileSize = new Int64[2];
+            for (int k=0; k < 2; k++)
+            {
+                System.Threading.Thread.Sleep(1200);
+                var msg = string.Format("test BZip2 perf check, cycle {0}/2",k+1);
+                _txrx.Send(msg);
+                string zipFileToCreate = "BZip2_Perf."+k+".zip";
+                TestContext.WriteLine("pass {0}, Creating the zip...", k);
+                var stopwatch = new System.Diagnostics.Stopwatch();
+                stopwatch.Start();
+
+                // Now, Create the zip archive with DotNetZip
+                _cancelIndex = -1;
+                using (ZipFile zip1 = new ZipFile())
+                {
+                    zip1.ParallelDeflateThreshold = (k==0)
+                        ? -1 : threshold;
+                    zip1.CompressionMethod = CompressionMethod.BZip2;
+                    zip1.AddFiles(filesToZip, dirInZip);
+                    zip1.SaveProgress += SaveProgress;
+                    zip1.Save(zipFileToCreate);
+                }
+                stopwatch.Stop();
+                ts[k] = stopwatch.Elapsed;
+                fi = new FileInfo(zipFileToCreate);
+                fileSize[k] = fi.Length;
+                TestContext.WriteLine("size of resulting zip: {0}k",
+                                      fileSize[k] / 1024);
+
+                _txrx.Send("pb 0 step");
+
+                _txrx.Send("status verifying the number of files");
+                // Verify the number of files in the zip
+                TestContext.WriteLine("Verifying the number of files in the zip...");
+                Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate),
+                                     filesToZip.Length,
+                                     "Incorrect number of entries in the zip file.");
+
+                _txrx.Send("pb 0 step");
+                // examine and unpack the zip archive via DNZ tools.
+                // Get info on the zip file:
+                string unzipOut = this.Exec(unzip, "-i " + zipFileToCreate);
+
+                // Verify that the output states that the compression method
+                // used for each entry was BZIP2...
+                _txrx.Send("status checking for BZIP compression...");
+                TestContext.WriteLine("Verifying that BZIP2 was used...");
+                Assert.AreEqual<int>
+                    (TestUtilities.CountOccurrences(unzipOut, "Compression: BZip2"), n);
+
+                _txrx.Send("pb 0 step");
+
+                _txrx.Send("status Extracting...");
+                // Extract the zip.  eg, unzip.exe test.zip -d  <extractdir>
+                TestContext.WriteLine("Extracting via unzip.exe...");
+                this.Exec(unzip, zipFileToCreate + " -d " + extractDir);
+
+                // Verify the count of extracted files
+                int fileCount = Directory.GetFiles(Path.Combine(extractDir,dirInZip)).Length;
+                Assert.IsTrue(fileCount == n,
+                              "Not all files were extracted? (found {0}, expected {1})",
+                              fileCount, n);
+                Directory.Delete(extractDir, true);
+
+                _txrx.Send("pb 0 step");
+            }
+
+            var delta = (ts[0].TotalSeconds - ts[1].TotalSeconds) /
+                (0.01 * ts[0].TotalSeconds);
+            TestContext.WriteLine("Parallel compression reduced compression time by {0:N1}%",
+                                  delta);
+
+            // verify the time required for parallel compression is lower.
+            Assert.IsTrue(ts[1] < ts[0],
+                          "Parallel compression took MORE time.");
+
+            delta = Math.Abs((int)(fileSize[1]-fileSize[0])) /
+                (0.01 * fileSize[0]);
+
+            Assert.IsTrue(delta < 5.0,
+                          "Parallel compression is not within 5% of normal filesize.");
+            TestContext.WriteLine("A-ok");
+        }
+
 
 
 
@@ -700,13 +844,36 @@ namespace Ionic.Zip.Tests.Extended
 
 
 
-        int _progressEventCalls;
-        int _cancelIndex;
+        int _progressEventCalls, _numSaving, _totalToSave, _cancelIndex, spCycles;
+        bool _pb2Set, _pb1Set;
+
         Int64 maxBytesXferred = 0;
         void SaveProgress(object sender, SaveProgressEventArgs e)
         {
             switch (e.EventType)
             {
+                case ZipProgressEventType.Saving_Started:
+                    if (_txrx != null)
+                    {
+                        _txrx.Send("status saving started...");
+                        _pb1Set = false;
+                        _numSaving= 1;
+                    }
+                    break;
+                case ZipProgressEventType.Saving_BeforeWriteEntry:
+                    if (_txrx != null)
+                    {
+                        _txrx.Send("status Compressing " + e.CurrentEntry.FileName);
+                        spCycles = 0;
+                        if (!_pb1Set)
+                        {
+                            _txrx.Send("pb 1 max " + e.EntriesTotal);
+                            _pb1Set = true;
+                        }
+                        _totalToSave = e.EntriesTotal;
+                        _pb2Set = false;
+                    }
+                    break;
                 case ZipProgressEventType.Saving_AfterWriteEntry:
                     _progressEventCalls++;
                     TestContext.WriteLine("{0}: {1} ({2}/{3})", e.EventType.ToString(), e.CurrentEntry.FileName, e.EntriesSaved, e.EntriesTotal);
@@ -715,6 +882,11 @@ namespace Ionic.Zip.Tests.Extended
                         e.Cancel = true;
                         TestContext.WriteLine("Cancelling...");
                     }
+                    if (_txrx != null)
+                    {
+                        _txrx.Send("pb 1 step");
+                        _numSaving++;
+                    }
                     break;
 
                 case ZipProgressEventType.Saving_EntryBytesRead:
@@ -722,6 +894,31 @@ namespace Ionic.Zip.Tests.Extended
                         "For entry {0}, BytesTransferred is greater than TotalBytesToTransfer: ({1} > {2})",
                         e.CurrentEntry.FileName, e.BytesTransferred, e.TotalBytesToTransfer);
                     maxBytesXferred = e.BytesTransferred;
+                    if (_txrx!=null)
+                    {
+                        spCycles++;
+                        if ((spCycles % 128) == 0)
+                        {
+                            if (!_pb2Set)
+                            {
+                                _txrx.Send("pb 2 max " + e.TotalBytesToTransfer);
+                                _pb2Set = true;
+                            }
+                            _txrx.Send(String.Format("status Saving entry {0}/{1} :: {2} :: {3}/{4}mb {5:N0}%",
+                                                     _numSaving, _totalToSave,
+                                                     e.CurrentEntry.FileName,
+                                                     e.BytesTransferred/(1024*1024), e.TotalBytesToTransfer/(1024*1024),
+                                                     ((double)e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer)));
+                            _txrx.Send("pb 2 value " +  e.BytesTransferred);
+                        }
+                    }
+                    break;
+
+                case ZipProgressEventType.Saving_Completed:
+                    _txrx.Send("status Save completed");
+                    _pb2Set = false;
+                    _txrx.Send("pb 1 max 1");
+                    _txrx.Send("pb 1 value 1");
                     break;
 
                 default:

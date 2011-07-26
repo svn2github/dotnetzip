@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-26 10:21:18>
+// Time-stamp: <2011-July-26 16:19:47>
 //
 // ------------------------------------------------------------------
 //
@@ -150,6 +150,23 @@ namespace Ionic.Zip.Tests.Utilities
             DateTime dtRounded = new DateTime(source.Year, source.Month, source.Day, source.Hour, source.Minute, source.Second);
             //if (source.Millisecond >= 500) dtRounded = dtRounded.AddSeconds(1);
             return dtRounded;
+        }
+
+
+        /// <summary>
+        ///   count occurrences of sample in string s.
+        /// </summary>
+        internal static int CountOccurrences(string s, string sample)
+        {
+            int nFound = 0;
+            int n = 0;
+            do
+            {
+                n = s.IndexOf(sample,n);
+                if (n>0) nFound++;
+                n++;
+            } while (n>0);
+            return nFound;
         }
 
 

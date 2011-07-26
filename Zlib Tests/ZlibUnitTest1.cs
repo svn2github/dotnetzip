@@ -14,16 +14,25 @@ namespace Ionic.Zlib.Tests
     [TestClass]
     public class UnitTest1
     {
-        private System.Random _rnd;
+        System.Random rnd;
+        Dictionary<String,String> TestStrings;
 
         public UnitTest1()
         {
-            _rnd = new System.Random();
+            this.rnd = new System.Random();
+            TestStrings = new Dictionary<String,String> ()
+                {
+                    { "LetMeDoItNow", LetMeDoItNow },
+                    { "GoPlacidly", GoPlacidly },
+                    { "IhaveaDream", IhaveaDream },
+                    { "LoremIpsum", LoremIpsum },
+                };
         }
 
         static UnitTest1()
         {
-            LoremIpsumWords = LoremIpsum.Split(" ".ToCharArray(), System.StringSplitOptions.RemoveEmptyEntries);
+            LoremIpsumWords = LoremIpsum.Split(" ".ToCharArray(),
+                                               StringSplitOptions.RemoveEmptyEntries);
         }
 
 
@@ -101,7 +110,7 @@ namespace Ionic.Zlib.Tests
         /// <summary>
         /// Converts a string to a MemoryStream.
         /// </summary>
-        static System.IO.MemoryStream StringToMemoryStream(string s)
+        static MemoryStream StringToMemoryStream(string s)
         {
             System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
             int byteCount = enc.GetByteCount(s.ToCharArray(), 0, s.Length);
@@ -156,6 +165,87 @@ namespace Ionic.Zlib.Tests
             string path = Path.Combine(testBin, String.Format("Resources\\{0}", fileName));
             Assert.IsTrue(File.Exists(path), "file ({0}) does not exist", path);
             return path;
+        }
+
+        internal string Exec(string program, string args)
+        {
+            return Exec(program, args, true);
+        }
+
+        internal string Exec(string program, string args, bool waitForExit)
+        {
+            return Exec(program, args, waitForExit, true);
+        }
+
+        internal string Exec(string program, string args, bool waitForExit, bool emitOutput)
+        {
+            if (program == null)
+                throw new ArgumentException("program");
+
+            if (args == null)
+                throw new ArgumentException("args");
+
+            // Microsoft.VisualStudio.TestTools.UnitTesting
+            this.TestContext.WriteLine("running command: {0} {1}", program, args);
+
+            string output;
+            int rc = Exec_NoContext(program, args, waitForExit, out output);
+
+            if (rc != 0)
+                throw new Exception(String.Format("Non-zero RC {0}: {1}", program, output));
+
+            if (emitOutput)
+                this.TestContext.WriteLine("output: {0}", output);
+            else
+                this.TestContext.WriteLine("A-OK. (output suppressed)");
+
+            return output;
+        }
+
+        internal static int Exec_NoContext(string program, string args, bool waitForExit, out string output)
+        {
+            System.Diagnostics.Process p = new System.Diagnostics.Process
+                {
+                    StartInfo =
+                    {
+                        FileName = program,
+                        CreateNoWindow = true,
+                        Arguments = args,
+                        WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
+                        UseShellExecute = false,
+                    }
+
+                };
+
+            if (waitForExit)
+            {
+                StringBuilder sb = new StringBuilder();
+                p.StartInfo.RedirectStandardOutput = true;
+                p.StartInfo.RedirectStandardError = true;
+                // must read at least one of the stderr or stdout asynchronously,
+                // to avoid deadlock
+                Action<Object, System.Diagnostics.DataReceivedEventArgs> stdErrorRead = (o, e) =>
+                {
+                    if (!String.IsNullOrEmpty(e.Data))
+                        sb.Append(e.Data);
+                };
+
+                p.ErrorDataReceived += new System.Diagnostics.DataReceivedEventHandler(stdErrorRead);
+                p.Start();
+                p.BeginErrorReadLine();
+                output = p.StandardOutput.ReadToEnd();
+                p.WaitForExit();
+                if (sb.Length > 0)
+                    output += sb.ToString();
+                //output = CleanWzzipOut(output); // just in case
+                return p.ExitCode;
+            }
+            else
+            {
+                p.Start();
+            }
+            output = "";
+            return 0;
         }
 
         #endregion
@@ -281,6 +371,64 @@ namespace Ionic.Zlib.Tests
             TestContext.WriteLine("result of inflate:\n{0}", result);
             return;
         }
+
+
+        [TestMethod]
+        public void GZ_Utility()
+        {
+            var gzbin = GetTestDependentDir(CurrentDir, "Tools\\GZip\\bin\\Debug");
+            var dnzGzipexe = Path.Combine(gzbin, "gzip.exe");
+            Assert.IsTrue(File.Exists(dnzGzipexe), "Gzip.exe is missing {0}",
+                          dnzGzipexe);
+            var unxGzipexe = "\\bin\\gzip.exe";
+            Assert.IsTrue(File.Exists(unxGzipexe), "Gzip.exe is missing {0}",
+                          unxGzipexe);
+
+            int n = 0;
+            foreach (var key in TestStrings.Keys)
+            {
+                int count = this.rnd.Next(81) + 40;
+                TestContext.WriteLine("Doing string {0}", key);
+                var s =  TestStrings[key];
+                var fname = String.Format("Pippo-{0}.txt", key);
+                using (var sw = new StreamWriter(File.Create(fname)))
+                {
+                    for (int k=0; k < count; k++)
+                    {
+                        sw.WriteLine(s);
+                    }
+                }
+
+                int crcOriginal = DoCrc(fname);
+
+                string args = fname + " -keep -v";
+                TestContext.WriteLine("Exec: gzip {0}", args);
+                string gzout = this.Exec(dnzGzipexe, args);
+
+                var gzfile = fname + ".gz";
+                Assert.IsTrue(File.Exists(gzfile), "File is missing. {0}",
+                              gzfile);
+
+                File.Delete(fname);
+                Assert.IsTrue(!File.Exists(fname), "The delete failed. {0}",
+                              fname);
+
+                System.Threading.Thread.Sleep(1200);
+
+                args = "-dfv "+ gzfile;
+                TestContext.WriteLine("Exec: gzip {0}", args);
+                gzout = this.Exec(unxGzipexe, args);
+                Assert.IsTrue(File.Exists(fname), "File is missing. {0}",
+                              fname);
+
+                int crcDecompressed = DoCrc(fname);
+                Assert.AreEqual<int>(crcOriginal, crcDecompressed,
+                                     "CRC mismatch {0:X8}!={1:X8}",
+                                     crcOriginal, crcDecompressed);
+            }
+        }
+
+
 
 
 
@@ -664,7 +812,7 @@ namespace Ionic.Zlib.Tests
         [TestMethod]
         public void Zlib_CodecTest()
         {
-            int sz = _rnd.Next(50000) + 50000;
+            int sz = this.rnd.Next(50000) + 50000;
             string fileName = System.IO.Path.Combine(TopLevelDir, "Zlib_CodecTest.txt");
             CreateAndFillFileText(fileName, sz);
 
@@ -818,7 +966,7 @@ namespace Ionic.Zlib.Tests
             byte[] working = new byte[WORKING_BUFFER_SIZE];
             int n = -1;
 
-            int sz = _rnd.Next(21000) + 15000;
+            int sz = this.rnd.Next(21000) + 15000;
             TestContext.WriteLine("  Creating file: {0} sz({1})", FileToCompress, sz);
             CreateAndFillFileText(FileToCompress, sz);
 
@@ -923,7 +1071,7 @@ namespace Ionic.Zlib.Tests
             byte[] working = new byte[WORKING_BUFFER_SIZE];
             int n = -1;
 
-            int sz = _rnd.Next(21000) + 15000;
+            int sz = this.rnd.Next(21000) + 15000;
             TestContext.WriteLine("  Creating file: {0} sz({1})", FileToCompress, sz);
             CreateAndFillFileText(FileToCompress, sz);
 
@@ -1349,7 +1497,7 @@ namespace Ionic.Zlib.Tests
                 // both binary and text files
                 for (int m = 0; m < 2; m++)
                 {
-                    int sz = _rnd.Next(Sizes[p]) + Sizes[p];
+                    int sz = this.rnd.Next(Sizes[p]) + Sizes[p];
                     string FileToCompress = System.IO.Path.Combine(TopLevelDir, String.Format("Zlib_Streams.{0}.{1}", sz, (m == 0) ? "txt" : "bin"));
                     Assert.IsFalse(System.IO.File.Exists(FileToCompress), "The temporary file '{0}' already exists.", FileToCompress);
                     TestContext.WriteLine("Creating file {0}   {1} bytes", FileToCompress, sz);
@@ -1559,8 +1707,8 @@ namespace Ionic.Zlib.Tests
         private byte[] RandomizeBuffer(int length)
         {
             byte[] buffer = new byte[length];
-            int mod1 = 86 + _rnd.Next(46)/2 + 1;
-            int mod2 = 50 + _rnd.Next(72)/2 + 1;
+            int mod1 = 86 + this.rnd.Next(46)/2 + 1;
+            int mod2 = 50 + this.rnd.Next(72)/2 + 1;
             for (int i=0; i < length; i++)
             {
                 if (i > 200)
@@ -1581,7 +1729,7 @@ namespace Ionic.Zlib.Tests
         {
             for (int j = 0; j < 1000; j++)
             {
-                byte[] buffer = RandomizeBuffer(117+(_rnd.Next(3)*100));
+                byte[] buffer = RandomizeBuffer(117+(this.rnd.Next(3)*100));
                 PerformTrialWi8870(buffer);
             }
         }
@@ -1596,7 +1744,7 @@ namespace Ionic.Zlib.Tests
             sw.Start();
             TestContext.WriteLine("{0}: Zlib_ParallelDeflateStream Start", sw.Elapsed);
 
-            int sz = 256*1024 + _rnd.Next(120000);
+            int sz = 256*1024 + this.rnd.Next(120000);
             string FileToCompress = System.IO.Path.Combine(TopLevelDir, String.Format("Zlib_ParallelDeflateStream.{0}.txt", sz));
 
             CreateAndFillFileText( FileToCompress, sz);
@@ -1684,23 +1832,15 @@ namespace Ionic.Zlib.Tests
 
         private int DoCrc(string filename)
         {
-            byte[] working = new byte[WORKING_BUFFER_SIZE];
-            int n = -1;
-            int result = 0;
-            using (System.IO.Stream a = System.IO.File.OpenRead(filename))
+            using (Stream a = File.OpenRead(filename))
+                using (var crc = new Ionic.Zlib.CrcCalculatorStream(a))
             {
-                using (var b = new Ionic.Zlib.CrcCalculatorStream(a))
-                {
-                    n = -1;
+                    byte[] working = new byte[WORKING_BUFFER_SIZE];
+                    int n = -1;
                     while (n != 0)
-                        n = b.Read(working, 0, working.Length);
-
-                    //TestContext.WriteLine("File:{0}  CRC32:0x{1:X8}", System.IO.Path.GetFileName(filename), b.Crc32);
-                    result = b.Crc;
-                }
+                        n = crc.Read(working, 0, working.Length);
+                    return crc.Crc;
             }
-
-            return result;
         }
 
 

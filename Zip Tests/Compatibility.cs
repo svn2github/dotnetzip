@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-26 09:57:39>
+// Time-stamp: <2011-July-26 16:08:15>
 //
 // ------------------------------------------------------------------
 //
@@ -2213,22 +2213,6 @@ namespace Ionic.Zip.Tests
             VerifyTimesDos(Path.Combine(extractDir, "files"), filesToZip);
         }
 
-        /// <summary>
-        ///   count occurrences of sample in string s.
-        /// </summary>
-        int CountOccurrences(string s, string sample)
-        {
-            int nFound = 0;
-            int n = 0;
-            do
-            {
-                n = s.IndexOf(sample,n);
-                if (n>0) nFound++;
-                n++;
-            } while (n>0);
-            return nFound;
-        }
-
 
         [TestMethod]
         public void Winzip_Unzip_Bzip2()
@@ -2269,7 +2253,7 @@ namespace Ionic.Zip.Tests
             // verify that the output states that the compression method
             // used for each entry was BZIP2...
             TestContext.WriteLine("Verifying that BZIP2 was the comp method used...");
-            Assert.AreEqual<int>(CountOccurrences(wzzipOut, "Compression Method: BZipped"),
+            Assert.AreEqual<int>(TestUtilities.CountOccurrences(wzzipOut, "Compression Method: BZipped"),
                                  filesToZip.Length + additionalFiles.Count);
 
             TestContext.WriteLine("Extracting...");
@@ -2295,12 +2279,14 @@ namespace Ionic.Zip.Tests
         [TestMethod]
         public void Winzip_Unzip_Bzip2_Large()
         {
-            // BZip2 uses blocks of 900k (ish).  When compressing files
-            // that can be Run-length-encoded into a buffer smaller than
-            // 900k, only one block is needed. This test verifies that
-            // larger files, those that require multiple blocks to
-            // compress, are done correctly. (At one point there was a
-            // problem combining CRCs from multiple blocks. )
+            // BZip2 uses work buffers of 900k (ish). When compressing files that
+            // can be Run-length-encoded into a buffer smaller than 900k, only one
+            // "block" is used in the compressed output. Multiple blocks get
+            // emitted with input files that cannot be run-length encoded into
+            // 900k (ish). This test verifies that everything works correctly when
+            // compressing larger files that require multiple blocks in the
+            // compressed output. (At one point there was a problem combining CRCs
+            // from multiple blocks.)
             if (!WinZipIsPresent) throw new Exception("no winzip");
 
             TestContext.WriteLine("Creating the fodder files...");
@@ -2335,7 +2321,7 @@ namespace Ionic.Zip.Tests
             // verify that the output states that the compression method
             // used for each entry was BZIP2...
             TestContext.WriteLine("Verifying that BZIP2 was the comp method used...");
-            Assert.AreEqual<int>(CountOccurrences(wzzipOut, "Compression Method: BZipped"),
+            Assert.AreEqual<int>(TestUtilities.CountOccurrences(wzzipOut, "Compression Method: BZipped"),
                                  filesToZip.Length);
 
             // now, extract the zip

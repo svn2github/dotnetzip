@@ -445,6 +445,31 @@ namespace Ionic.BZip2.Tests
 
 
         [TestMethod]
+        [ExpectedException(typeof(IOException))]
+        public void BZ_Error_1()
+        {
+            var bzbin = GetTestDependentDir(CurrentDir, "Tools\\BZip2\\bin\\Debug");
+            var dnzBzip2exe = Path.Combine(bzbin, "bzip2.exe");
+            string decompressedFname = "ThisWillNotWork.txt";
+            using (Stream input = File.OpenRead(dnzBzip2exe),
+                   decompressor = new Ionic.BZip2.BZip2InputStream(input),
+                   output = File.Create(decompressedFname))
+                CopyStream(decompressor, output);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(IOException))]
+        public void BZ_Error_2()
+        {
+            string decompressedFname = "ThisWillNotWork.txt";
+            using (Stream input = new MemoryStream(), // empty stream
+                   decompressor = new Ionic.BZip2.BZip2InputStream(input),
+                   output = File.Create(decompressedFname))
+                CopyStream(decompressor, output);
+        }
+
+
+        [TestMethod]
         public void BZ_Utility()
         {
             var bzbin = GetTestDependentDir(CurrentDir, "Tools\\BZip2\\bin\\Debug");
@@ -489,8 +514,8 @@ namespace Ionic.BZip2.Tests
                 args = "-dfk "+ bzfile;
                 TestContext.WriteLine("Exec: bzip2 {0}", args);
                 bzout = this.Exec(unxBzip2exe, args);
-                Assert.IsTrue(File.Exists(bzfile), "File is missing. {0}",
-                              bzfile);
+                Assert.IsTrue(File.Exists(fname), "File is missing. {0}",
+                              fname);
 
                 int crcDecompressed = GetCrc(fname);
                 Assert.AreEqual<int>(crcOriginal, crcDecompressed,

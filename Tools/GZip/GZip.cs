@@ -22,11 +22,11 @@
 
 using System;
 using System.IO;
-using Ionic.BZip2;
+using Ionic.Zlib;
 
 namespace Ionic.Zip.Examples
 {
-    public class BZip2
+    public class GZip
     {
         private static void Usage()
         {
@@ -70,7 +70,7 @@ namespace Ionic.Zip.Examples
 
         static string Compress(string fname, bool forceOverwrite)
         {
-            var outFname = fname + ".bz2";
+            var outFname = fname + ".gz";
             if (File.Exists(outFname))
             {
                 if (forceOverwrite)
