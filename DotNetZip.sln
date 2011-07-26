@@ -2,6 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E1C14695-E75F-4317-919A-5341EA1F9C01}"
+	ProjectSection(SolutionItems) = preProject
+		DotNetZip.vsmdi = DotNetZip.vsmdi
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{F7D17942-40ED-4243-BE57-591869948298}"
 EndProject
@@ -14,6 +17,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zlib Tests", "Zlib Tests\Zlib Tests.csproj", "{047A98B2-BC96-41B4-ADD8-2167FB1B6502}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BZip2 DLL", "BZip2\BZip2 DLL.csproj", "{E2CE0D56-7AF8-4404-BD0C-BC562CBD74D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BZip2 Tests", "BZip2 Tests\BZip2 Tests.csproj", "{11DC3AE9-D19F-4426-A7C8-15F17DE815BF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip Tests", "Zip Tests\Zip Tests.csproj", "{549466CE-5CA6-4904-BA44-58141544BE70}"
 EndProject
@@ -41,6 +46,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreateZip", "Examples\C#\Cr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadZip", "Examples\C#\ReadZip\ReadZip.csproj", "{F4024C01-1133-4A5A-B421-22EA8CA89EA5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BZip2", "Tools\BZip2\BZip2.csproj", "{C2241050-F23C-420B-AA67-60E94B34C2B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GZip", "Tools\GZip\GZip.csproj", "{52542D59-25EC-4EE4-8AF2-85DE50C70EA6}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnZip", "Tools\UnZip\UnZip.csproj", "{A22C89E0-B5D4-4881-A61F-4B1FD82F2453}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZipIt", "Tools\ZipIt\ZipIt.csproj", "{98008721-C4DD-4F34-B3AE-A3453E29BB65}"
@@ -57,9 +66,12 @@ Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "WinForms-Unzip", "Examples\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zlib Silverlight 3 DLL", "Zlib Silverlight 3 DLL\Zlib Silverlight 3 DLL.csproj", "{8E580B45-AECD-46BF-9D63-CD8BECE24D29}"
 EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "DotNetZipUtils Setup", "wix\DotNetZipUtils Setup.wixproj", "{18B1CDB1-709D-46D4-A894-9FE0BF929686}"
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "DotNetZipUtils", "wix\DotNetZipUtils.wixproj", "{18B1CDB1-709D-46D4-A894-9FE0BF929686}"
 EndProject
 Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = DotNetZip.vsmdi
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -109,6 +121,16 @@ Global
 		{E2CE0D56-7AF8-4404-BD0C-BC562CBD74D4}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{E2CE0D56-7AF8-4404-BD0C-BC562CBD74D4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E2CE0D56-7AF8-4404-BD0C-BC562CBD74D4}.Release|x86.ActiveCfg = Release|Any CPU
+		{11DC3AE9-D19F-4426-A7C8-15F17DE815BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11DC3AE9-D19F-4426-A7C8-15F17DE815BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11DC3AE9-D19F-4426-A7C8-15F17DE815BF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{11DC3AE9-D19F-4426-A7C8-15F17DE815BF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{11DC3AE9-D19F-4426-A7C8-15F17DE815BF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{11DC3AE9-D19F-4426-A7C8-15F17DE815BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11DC3AE9-D19F-4426-A7C8-15F17DE815BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11DC3AE9-D19F-4426-A7C8-15F17DE815BF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{11DC3AE9-D19F-4426-A7C8-15F17DE815BF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{11DC3AE9-D19F-4426-A7C8-15F17DE815BF}.Release|x86.ActiveCfg = Release|Any CPU
 		{549466CE-5CA6-4904-BA44-58141544BE70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{549466CE-5CA6-4904-BA44-58141544BE70}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{549466CE-5CA6-4904-BA44-58141544BE70}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -241,6 +263,26 @@ Global
 		{F4024C01-1133-4A5A-B421-22EA8CA89EA5}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{F4024C01-1133-4A5A-B421-22EA8CA89EA5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{F4024C01-1133-4A5A-B421-22EA8CA89EA5}.Release|x86.ActiveCfg = Release|Any CPU
+		{C2241050-F23C-420B-AA67-60E94B34C2B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2241050-F23C-420B-AA67-60E94B34C2B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2241050-F23C-420B-AA67-60E94B34C2B2}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C2241050-F23C-420B-AA67-60E94B34C2B2}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C2241050-F23C-420B-AA67-60E94B34C2B2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C2241050-F23C-420B-AA67-60E94B34C2B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2241050-F23C-420B-AA67-60E94B34C2B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2241050-F23C-420B-AA67-60E94B34C2B2}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C2241050-F23C-420B-AA67-60E94B34C2B2}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C2241050-F23C-420B-AA67-60E94B34C2B2}.Release|x86.ActiveCfg = Release|Any CPU
+		{52542D59-25EC-4EE4-8AF2-85DE50C70EA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52542D59-25EC-4EE4-8AF2-85DE50C70EA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52542D59-25EC-4EE4-8AF2-85DE50C70EA6}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{52542D59-25EC-4EE4-8AF2-85DE50C70EA6}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{52542D59-25EC-4EE4-8AF2-85DE50C70EA6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{52542D59-25EC-4EE4-8AF2-85DE50C70EA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52542D59-25EC-4EE4-8AF2-85DE50C70EA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52542D59-25EC-4EE4-8AF2-85DE50C70EA6}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{52542D59-25EC-4EE4-8AF2-85DE50C70EA6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{52542D59-25EC-4EE4-8AF2-85DE50C70EA6}.Release|x86.ActiveCfg = Release|Any CPU
 		{A22C89E0-B5D4-4881-A61F-4B1FD82F2453}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A22C89E0-B5D4-4881-A61F-4B1FD82F2453}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A22C89E0-B5D4-4881-A61F-4B1FD82F2453}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -334,17 +376,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{D2E7C1EA-6FF1-4E26-96FC-24F6FB68B61B} = {F7D17942-40ED-4243-BE57-591869948298}
-		{FB9FC8D7-7897-4802-9694-F379F25C00CB} = {F7D17942-40ED-4243-BE57-591869948298}
-		{95D9690B-3B37-4800-A511-6FB21436638B} = {F7D17942-40ED-4243-BE57-591869948298}
-		{F4024C01-1133-4A5A-B421-22EA8CA89EA5} = {F7D17942-40ED-4243-BE57-591869948298}
-		{9E4C484D-656E-4E19-8741-5701D027AA51} = {F7D17942-40ED-4243-BE57-591869948298}
-		{E04C2A53-3981-44D4-94AF-6AC07D97CDE8} = {F7D17942-40ED-4243-BE57-591869948298}
-		{276B8174-A24E-4257-9969-42D692F8CAC2} = {AAE1BA63-9776-4152-8AAD-801D775E188B}
-		{A22C89E0-B5D4-4881-A61F-4B1FD82F2453} = {AAE1BA63-9776-4152-8AAD-801D775E188B}
-		{6BCCF138-2EFB-464C-B872-E3079F0A4708} = {AAE1BA63-9776-4152-8AAD-801D775E188B}
-		{98008721-C4DD-4F34-B3AE-A3453E29BB65} = {AAE1BA63-9776-4152-8AAD-801D775E188B}
 	EndGlobalSection
 EndGlobal
