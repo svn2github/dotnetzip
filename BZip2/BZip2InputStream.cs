@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-23 21:09:22>
+// Last Saved: <2011-July-25 21:13:37>
 //
 // ------------------------------------------------------------------
 //
@@ -436,10 +436,10 @@ namespace Ionic.BZip2
         void CheckMagicChar(char expected, int position)
         {
             int magic = this.input.ReadByte();
-            if (magic != expected)
+            if (magic != (int)expected)
             {
                 var msg = String.Format("Not a valid BZip2 stream. byte {0}, expected '{1}', got '{2}'",
-                                        position, expected, magic);
+                                        position, (int)expected, magic);
                 throw new IOException(msg);
             }
         }
@@ -467,11 +467,15 @@ namespace Ionic.BZip2
                      magic5 != 0x59)
             {
                 this.currentState = CState.EOF;
-                throw new IOException("bad block header");
+                var msg = String.Format("bad block header at offset 0x{0:X}",
+                                      this.input.Position);
+                throw new IOException(msg);
             }
             else
             {
                 this.storedBlockCRC = bsGetInt();
+                // Console.WriteLine(" stored block CRC     : {0:X8}", this.storedBlockCRC);
+
                 this.blockRandomised = (GetBits(1) == 1);
 
                 // Lazily allocate data
@@ -496,16 +500,22 @@ namespace Ionic.BZip2
             {
                 // make next blocks readable without error
                 // (repair feature, not yet documented, not tested)
-                this.computedCombinedCRC = (this.storedCombinedCRC << 1)
-                    | (this.storedCombinedCRC >> 31);
-                this.computedCombinedCRC ^= this.storedBlockCRC;
+                // this.computedCombinedCRC = (this.storedCombinedCRC << 1)
+                //     | (this.storedCombinedCRC >> 31);
+                // this.computedCombinedCRC ^= this.storedBlockCRC;
 
-                throw new IOException("BZip2 CRC error");
+                var msg = String.Format("BZip2 CRC error (expected {0:X8}, computed {1:X8})",
+                                        this.storedBlockCRC, this.computedBlockCRC);
+                throw new IOException(msg);
             }
 
+            // Console.WriteLine(" combined CRC (before): {0:X8}", this.computedCombinedCRC);
             this.computedCombinedCRC = (this.computedCombinedCRC << 1)
                 | (this.computedCombinedCRC >> 31);
             this.computedCombinedCRC ^= this.computedBlockCRC;
+            // Console.WriteLine(" computed block  CRC  : {0:X8}", this.computedBlockCRC);
+            // Console.WriteLine(" combined CRC (after) : {0:X8}", this.computedCombinedCRC);
+            // Console.WriteLine();
         }
 
 
@@ -517,7 +527,10 @@ namespace Ionic.BZip2
 
             if (this.storedCombinedCRC != this.computedCombinedCRC)
             {
-                throw new IOException("BZip2 CRC error");
+                var msg = String.Format("BZip2 CRC error (expected {0:X8}, computed {1:X8})",
+                                      this.storedCombinedCRC, this.computedCombinedCRC);
+
+                throw new IOException(msg);
             }
         }
 
@@ -568,6 +581,8 @@ namespace Ionic.BZip2
 
                     if (thech < 0)
                         throw new IOException("unexpected end of stream");
+
+                    // Console.WriteLine("R {0:X2}", thech);
 
                     bsBuffShadow = (bsBuffShadow << 8) | thech;
                     bsLiveShadow += 8;

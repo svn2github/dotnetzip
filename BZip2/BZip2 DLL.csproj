@@ -109,7 +109,10 @@
     <Compile Include="BCRC32.cs" />
     <Compile Include="Rand.cs" />
     <Compile Include="BZip2InputStream.cs" />
+    <Compile Include="BZip2Compressor.cs" />
     <Compile Include="BZip2OutputStream.cs" />
+    <Compile Include="ParallelBZip2OutputStream.cs" />
+    <Compile Include="BitWriter.cs" />
     <Compile Include="..\SolutionInfo.cs">
       <Link>SolutionInfo.cs</Link>
     </Compile>
