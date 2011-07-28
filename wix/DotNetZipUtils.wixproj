@@ -106,7 +106,7 @@
       <RefTargetDir>INSTALLLOCATION</RefTargetDir>
     </ProjectReference>
     <ProjectReference Include="..\Tools\GZip\GZip.csproj">
-      <Name>BZip2</Name>
+      <Name>GZip</Name>
       <Project>{52542d59-25ec-4ee4-8af2-85de50c70ea6}</Project>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>

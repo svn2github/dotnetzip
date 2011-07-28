@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-13 14:24:42>
+// Last Saved: <2011-July-28 07:33:02>
 //
 // ------------------------------------------------------------------
 //
@@ -155,7 +155,7 @@ namespace Ionic.Zip.Tests.Streams
 
                     int i = 0;
                     ZipEntry e1 = null;
-                    Func<Ionic.Zlib.CrcCalculatorStream> opener = () => {
+                    Func<Ionic.Crc.CrcCalculatorStream> opener = () => {
                         if (i == 0)
                             return e1.OpenReader();
                         if (i == 1)

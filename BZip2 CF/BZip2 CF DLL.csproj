@@ -77,24 +77,11 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\BZip2\BCRC32.cs">
-      <Link>BCRC32.cs</Link>
+    <Compile Include="..\CommonSrc\CRC32.cs">
+      <Link>CRC32.cs</Link>
     </Compile>
-    <Compile Include="..\BZip2\Rand.cs">
-      <Link>Rand.cs</Link>
-    </Compile>
-    <Compile Include="..\BZip2\BZip2Compressor.cs">
-      <Link>BZip2Compressor.cs</Link>
-    </Compile>
-    <Compile Include="..\BZip2\BitWriter.cs">
-      <Link>BitWriter.cs</Link>
-    </Compile>
-    <Compile Include="..\BZip2\BZip2InputStream.cs">
-      <Link>BZip2InputStream.cs</Link>
-    </Compile>
-    <Compile Include="..\BZip2\BZip2OutputStream.cs">
-      <Link>BZip2OutputStream.cs</Link>
-    </Compile>
+    <Compile Include="..\BZip2\*.cs"
+             Exclude="..\BZip2\ParallelBZip2OutputStream.cs"/>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="..\SolutionInfo.cs">
       <Link>SolutionInfo.cs</Link>

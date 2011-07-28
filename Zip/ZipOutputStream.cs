@@ -16,7 +16,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-23 19:59:47>
+// Time-stamp: <2011-July-28 06:34:30>
 //
 // ------------------------------------------------------------------
 //
@@ -1624,7 +1624,7 @@ namespace Ionic.Zip
         private CountingStream _outputCounter;
         private Stream _encryptor;
         private Stream _deflater;
-        private Ionic.Zlib.CrcCalculatorStream _entryOutputStream;
+        private Ionic.Crc.CrcCalculatorStream _entryOutputStream;
         private bool _needToWriteEntryHeader;
         private string _name;
         private bool _DontIgnoreCase;

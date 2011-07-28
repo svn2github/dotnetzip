@@ -7,7 +7,7 @@
 // divide-and-conquer approach with multiple threads to exploit multiple
 // CPUs for the DEFLATE computation.
 //
-// last saved: <2011-July-25 15:11:46>
+// last saved: <2011-July-28 06:29:49>
 //
 // ------------------------------------------------------------------
 //
@@ -121,7 +121,7 @@ namespace Ionic.Zlib
         private int                         _lastWritten;
         private int                         _latestCompressed;
         private int                         _Crc32;
-        private Ionic.Zlib.CRC32            _runningCrc;
+        private Ionic.Crc.CRC32             _runningCrc;
         private object                      _latestLock = new object();
         private System.Collections.Generic.Queue<int>     _toWrite;
         private System.Collections.Generic.Queue<int>     _toFill;
@@ -488,7 +488,7 @@ namespace Ionic.Zlib
             }
 
             _newlyCompressedBlob = new AutoResetEvent(false);
-            _runningCrc = new Ionic.Zlib.CRC32();
+            _runningCrc = new Ionic.Crc.CRC32();
             _currentlyFilling = -1;
             _lastFilled = -1;
             _lastWritten = -1;
@@ -856,7 +856,7 @@ namespace Ionic.Zlib
 
             _firstWriteDone = false;
             _totalBytesProcessed = 0L;
-            _runningCrc = new Ionic.Zlib.CRC32();
+            _runningCrc = new Ionic.Crc.CRC32();
             _isClosed= false;
             _currentlyFilling = -1;
             _lastFilled = -1;
@@ -1155,7 +1155,7 @@ namespace Ionic.Zlib
             try
             {
                 int myItem = workitem.index;
-                Ionic.Zlib.CRC32 crc = new CRC32();
+                Ionic.Crc.CRC32 crc = new Ionic.Crc.CRC32();
 
                 // calc CRC on the buffer
                 crc.SlurpBlock(workitem.buffer, 0, workitem.inputBytesAvailable);

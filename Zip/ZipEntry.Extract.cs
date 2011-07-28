@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-25 21:55:45>
+// Time-stamp: <2011-July-28 06:38:16>
 //
 // ------------------------------------------------------------------
 //
@@ -437,7 +437,7 @@ namespace Ionic.Zip
         ///
         /// <para>
         ///   The return value is of type <see
-        ///   cref="Ionic.Zlib.CrcCalculatorStream"/>.  Use it as you would any
+        ///   cref="Ionic.Crc.CrcCalculatorStream"/>.  Use it as you would any
         ///   stream for reading.  When an application calls <see
         ///   cref="Stream.Read(byte[], int, int)"/> on that stream, it will
         ///   receive data from the zip entry that is decrypted and decompressed
@@ -448,7 +448,7 @@ namespace Ionic.Zip
         ///   <c>CrcCalculatorStream</c> adds one additional feature: it keeps a
         ///   CRC32 checksum on the bytes of the stream as it is read.  The CRC
         ///   value is available in the <see
-        ///   cref="Ionic.Zlib.CrcCalculatorStream.Crc"/> property on the
+        ///   cref="Ionic.Crc.CrcCalculatorStream.Crc"/> property on the
         ///   <c>CrcCalculatorStream</c>.  When the read is complete, your
         ///   application
         ///   <em>should</em> check this CRC against the <see cref="ZipEntry.Crc"/>
@@ -541,7 +541,7 @@ namespace Ionic.Zip
         /// </example>
         /// <seealso cref="Ionic.Zip.ZipEntry.Extract(System.IO.Stream)"/>
         /// <returns>The Stream for reading.</returns>
-        public Ionic.Zlib.CrcCalculatorStream OpenReader()
+        public Ionic.Crc.CrcCalculatorStream OpenReader()
         {
             // workitem 10923
             if (_container.ZipFile == null)
@@ -567,7 +567,7 @@ namespace Ionic.Zip
         ///
         /// <param name="password">The password to use for decrypting the entry.</param>
         /// <returns>The Stream for reading.</returns>
-        public Ionic.Zlib.CrcCalculatorStream OpenReader(string password)
+        public Ionic.Crc.CrcCalculatorStream OpenReader(string password)
         {
             // workitem 10923
             if (_container.ZipFile == null)
@@ -578,7 +578,7 @@ namespace Ionic.Zip
 
 
 
-        internal Ionic.Zlib.CrcCalculatorStream InternalOpenReader(string password)
+        internal Ionic.Crc.CrcCalculatorStream InternalOpenReader(string password)
         {
             ValidateCompression();
             ValidateEncryption();
@@ -605,7 +605,7 @@ namespace Ionic.Zip
             _inputDecryptorStream = GetExtractDecryptor(input);
             Stream input3 = GetExtractDecompressor(_inputDecryptorStream);
 
-            return new Ionic.Zlib.CrcCalculatorStream(input3, LeftToRead);
+            return new Ionic.Crc.CrcCalculatorStream(input3, LeftToRead);
         }
 
 
@@ -997,7 +997,7 @@ namespace Ionic.Zip
 
                 Int64 bytesWritten = 0;
                 // As we read, we maybe decrypt, and then we maybe decompress. Then we write.
-                using (var s1 = new Ionic.Zlib.CrcCalculatorStream(input3))
+                using (var s1 = new Ionic.Crc.CrcCalculatorStream(input3))
                 {
                     while (LeftToRead > 0)
                     {

@@ -70,15 +70,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\Zip Partial DLL\Resources\FolderBrowserDialogEx.cs">
+    <Compile Include="..\..\Zip\Resources\FolderBrowserDialogEx.cs">
       <Link>FolderBrowserDialogEx.cs</Link>
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="..\..\Zip Partial DLL\Resources\PasswordDialog.cs">
+    <Compile Include="..\..\Zip\Resources\PasswordDialog.cs">
       <Link>PasswordDialog.cs</Link>
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="..\..\Zip Partial DLL\Resources\PasswordDialog.designer.cs">
+    <Compile Include="..\..\Zip\Resources\PasswordDialog.designer.cs">
       <Link>PasswordDialog.designer.cs</Link>
       <DependentUpon>PasswordDialog.cs</DependentUpon>
     </Compile>
@@ -103,7 +103,7 @@
     <Compile Include="..\..\SolutionInfo.cs">
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
-    <EmbeddedResource Include="..\..\Zip Partial DLL\Resources\PasswordDialog.resx">
+    <EmbeddedResource Include="..\..\Zip\Resources\PasswordDialog.resx">
       <Link>PasswordDialog.resx</Link>
       <DependentUpon>PasswordDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -136,9 +136,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Zip Full DLL\Zip Full DLL.csproj">
-      <Project>{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}</Project>
-      <Name>Zip Full DLL</Name>
+    <ProjectReference Include="..\..\Zip\Zip DLL.csproj">
+      <Project>{D3B0AD67-44D8-4B3D-BED9-CE1FD6DE2C5A}</Project>
+      <Name>Zip DLL</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

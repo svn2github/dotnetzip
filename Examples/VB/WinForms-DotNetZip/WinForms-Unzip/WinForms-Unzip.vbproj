@@ -45,7 +45,7 @@
   <ItemGroup>
     <Reference Include="Ionic.Zip">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Zip Full DLL\bin\Debug\Ionic.Zip.dll</HintPath>
+      <HintPath>..\..\..\..\Zip\bin\Debug\Ionic.Zip.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

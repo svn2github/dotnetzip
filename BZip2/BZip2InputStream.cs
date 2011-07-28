@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-25 21:13:37>
+// Last Saved: <2011-July-28 06:17:25>
 //
 // ------------------------------------------------------------------
 //
@@ -81,7 +81,7 @@ namespace Ionic.BZip2
         private bool blockRandomised;
         private int bsBuff;
         private int bsLive;
-        private readonly CRC32 crc = Ionic.BZip2.CRC32.Create();
+        private readonly Ionic.Crc.CRC32 crc = new Ionic.Crc.CRC32(true);
         private int nInUse;
         private Stream input;
         private int currentChar = -1;

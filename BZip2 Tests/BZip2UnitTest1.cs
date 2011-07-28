@@ -200,7 +200,7 @@ namespace Ionic.BZip2.Tests
         {
             using (var fs1 = File.OpenRead(fname))
             {
-                var checker = Ionic.BZip2.CRC32.Create();
+                var checker = new Ionic.Crc.CRC32(true);
                 return checker.GetCrc32(fs1);
             }
         }
@@ -480,7 +480,6 @@ namespace Ionic.BZip2.Tests
             Assert.IsTrue(File.Exists(unxBzip2exe), "Bzip2.exe is missing {0}",
                           unxBzip2exe);
 
-            int n = 0;
             foreach (var key in TestStrings.Keys)
             {
                 int count = this.rnd.Next(18) + 4;

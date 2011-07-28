@@ -135,34 +135,68 @@ What is DotNetZip?  and How is it packaged?
 
 DotNetZip is primarily a managed library for dealing with ZIP files.
 
-The ZIP library exposes classes in the Ionic.Zip namespace; the primary
-classes are ZipFile, ZipOutputStream, and ZipInputStream.  The ZIP
-library depends on a set of classes for doing ZLIB compression and
-decompression; these are exposed in the Ionic.Zlib namespace.
+It is packaged as a DLL that your application must reference:
+Ionic.Zip.dll.  In the "developer's kit" package, there is
+documentation, code examples, and debug versions of the DLL.
+
+The ZIP library depends on a set of supporting classes for doing
+compression and decompression; these are exposed in other namespaces.
+
+The classes in the ZIP library reside in these namespaces:
+
+   namespace     interesting classes
+   ------------------------------------------------------------
+   Ionic.Zip     ZipFile, ZipEntry, ZipOutputStream, and
+                 ZipInputStream.
+
+   Ionic.Zlib    DeflateStream, GZipStream, ZlibStream
+
+   Ionic.BZip2   BZip2InputStream, BZip2OutputStream
+
+   Ionic.Crc     CRC32
+
 
 If you want only ZLIB (raw compression and decompression, RFC 1950,
-1951, and 1952), the zlib classes are packaged independently, in
-Ionic.Zlib.dll.  If you want ZIP, or both ZIP and ZLIB, then your
-application should depend on Ionic.Zip.dll; this assembly includes a
-superset of the classes in Ionic.Zlib.dll .
+1951, and 1952), the ZLIB classes are packaged independently, in
+Ionic.Zlib.dll.  Likewise, if you want to do BZIP2 compression, outside
+the scope of a zip file, you can use the Ionic.BZip2.dll assembly.
+
+If you want ZIP, or both ZIP and ZLIB, then your application should
+depend soly on Ionic.Zip.dll; this assembly includes a superset of the
+classes in Ionic.Zlib.dll and Ionic.BZip2.dll.
 
 For each DLL, there is a version for the regular .NET Framework and
 another for the Compact Framework.
+
+DotNetZip also includes command-line and GUI tools for manipulating zip
+files; these can be helpful to developers when building applications
+that create or manipulate zip files. They also can be helpful as
+end-user tools.
+
+There are other downloads for DotNetZip - the source package, the
+runtime-only package (DLLs and no helpfile or tools), the
+documentation-only package, etc.
+
 
 
 
 Using the Zip Class Library: The Basics
 ----------------------------------------
 
-First, there are examples included in the source package, and in the
-class reference documentation in the .CHM file, and on the web.  These
-examples illustrate how to read and write zip files, with all the
-various features.  The examples here are just the basics.
+The examples here provide just the basics.
+
+There are many other examples available: some are included in the source
+package, some in the class reference documentation in the help file, and
+others on the web.  Those examples provide many illustrate how to read
+and write zip files, taking advantage of all the various features of zip
+files exposed by the library.  For a full set of examples, your best bet
+is to see the documentation. Here's a basic primer:
 
 The main type you will use to fiddle with zip files is the ZipFile
 class. Full name: Ionic.Zip.ZipFile.  You use this to create, read, or
-update zip files.  There is also a ZipOutputStream class, that offers a
-different metaphor.
+update zip files.  There is also a ZipOutputStream class, which offers a
+Stream metaphor, for those who want it. You should choose one or the
+other for your application.
 
 The simplest way to create a ZIP file in C# looks like this:
 
@@ -181,9 +215,12 @@ Or in VB.NET, like this:
      End Using
 
 
+The using clause is important; don't leave it out.
+
 
 The simplest way to Extract all the entries from a zipfile looks
 like this:
+
       using (ZipFile zip = ZipFile.Read(NameOfExistingZipFile))
       {
         zip.ExtractAll(args[1]);
@@ -231,7 +268,6 @@ the Entries collection.  Check the documentation for complete
 information, or use Visual Studio's intellisense to explore some of the
 properties and methods on the ZipFile class.
 
-
 Another type you will use is ZipEntry. This represents a single entry -
 either a file or a directory - within a ZipFile.  To add an entry to a
 zip file, you call one of the AddEntry (or AddFile) methods on the
@@ -254,7 +290,6 @@ called "RenamedFile.txt", regardless of the name of the file originally
 added to the ZipFile.
 
 
-
 As an alternative to using ZipFile type to create a zip file, you can
 use the ZipOutputStream type to create zip files .  To do so, wrap it
 around a stream, and write to it.
@@ -273,8 +308,51 @@ Unlike the ZipFile class, the ZipOutputStream class can only create zip
 files. It cannot read or update zip files.
 
 If you want to read zip files using a streaming metaphor, you can use
-ZipInputStream.  Think of ZipInputStream and ZipOutputStream as an
-alternative to using ZipFile to manipulate zip files.
+ZipInputStream.  Think of ZipInputStream and ZipOutputStream as
+alternatives to using ZipFile to manipulate zip files. The former is for
+reading zip files; the latter is for writing them.
+
+
+
+About Directory Paths
+---------------------------------
+
+One important note: the ZipFile.AddXxx methods add the file or
+directory you specify, including the directory.  In other words,
+logic like this:
+    ZipFile zip = new ZipFile();
+    zip.AddFile("c:\\a\\b\\c\\Hello.doc");
+    zip.Save();
+
+...will produce a zip archive that contains a single entry, or file, and
+that file is stored with the relative directory information.  When you
+extract that file from the zip, either using this Zip library or winzip
+or the built-in zip support in Windows, or some other package, all those
+directories will be created, and the file will be written into that
+directory hierarchy.  At extraction time, if you were to extract that
+file into a directory like c:\documents, then resulting file would be
+named c:\documents\a\b\c\Hello.doc .
+
+This is by design.
+
+If you don't want that directory information in your archive,
+then you need to use the overload of the AddFile() method that
+allows you to explicitly specify the directory used for the entry
+within the archive:
+
+    zip.AddFile("c:\\a\\b\\c\\Hello.doc", "files");
+    zip.Save();
+
+This will create an archive with an entry called "files\Hello.doc",
+which contains the contents of the on-disk file located at
+c:\a\b\c\Hello.doc .
+
+If you extract that file into a directory e:\documents, then the
+resulting file will be called e:\documents\files\Hello.doc .
+
+If you want no directory at all, specify "" (the empty string).
+Specifying null (Nothing in VB) will include all the directory hierarchy
+in the filename, as in the orginal case.
 
 
 
@@ -326,7 +404,7 @@ classes. But they are there if you need them.
 If you want to create or read zip files, the Ionic.Zip.DLL assembly is
 the one you want.
 
-When building apps that do zip stuff, you need to add a reference to
+When building applications that do zip stuff, you need to add a reference to
 the Ionic.Zip.dll in Visual Studio, or specify Ionic.Zip.dll with the
 /R flag on the CSC.exe or VB.exe compiler line.
 
@@ -338,32 +416,61 @@ In more detail: The Zlib Class Library
 
 The Zlib class library is packaged as Ionic.Zlib.DLL for the regular .NET
 Framework and Ionic.Zlib.CF.dll for the Compact Framework.  The ZLIB
-library does compression according to IETF RFC's 1950 and 1951.
+library does compression and decompression according to IETF RFC's 1950 (ZLIB),
+1951 (Deflate), and 1952 (GZIP).
+
 See http://www.ietf.org/rfc/rfc1950.txt
+    http://www.ietf.org/rfc/rfc1951.txt
+ and  http://www.ietf.org/rfc/rfc1952.txt
+
 
 The key classes are:
 
-  ZlibCodec - a class for Zlib (RFC1950/1951) encoding and decoding.
+  ZlibCodec - a class for Zlib (RFC1950/1951/1952) encoding and decoding.
         This low-level class does deflation and inflation on buffers.
 
   DeflateStream - patterned after the DeflateStream in
         System.IO.Compression, this class supports compression
         levels and other options.
 
+  GZipStream - patterned after the GZipStream in
+        System.IO.Compression, this class supports compression
+        levels and other options.
+
+  ZlibStream - similar to the GZipStream in
+        System.IO.Compression, this class generates or consumes raw ZLIB
+        streams.
+
 
 If you want to simply compress (deflate) raw block or stream data, this
 library is the thing you want.
 
-When building apps that do zlib stuff, you need to add a reference to
+When building applications that do zlib things, you need to add a reference to
 the Ionic.Zlib.dll in Visual Studio, or specify Ionic.Zlib.dll with the
 /R flag on the CSC.exe or VB.exe compiler line.
 
-
 NB: If your application does both Zlib and Zip stuff, you need only add
 a reference to Ionic.Zip.dll.  Ionic.Zip.dll includes all the capability
-in Ionic.Zlib.dll.  It's a superset.
+in Ionic.Zlib.dll.  Ionic.Zip.dll is a superset.
 
 
+
+In more detail: The BZip2 Class Library
+-----------------------------------------
+
+The BZip2 class library is packaged as Ionic.BZip2.DLL for the regular .NET
+Framework and Ionic.BZip2.CF.dll for the Compact Framework.  The BZip2
+library does compression according to the bzip2 format created by
+Julian Seward.
+See http://en.wikipedia.org/wiki/Bzip2
+
+NB: If your application does a combination of BZip2, Zlib and Zip stuff,
+you need only add a reference to Ionic.Zip.dll.  Ionic.Zip.dll includes
+all the capability in Ionic.Zlib.dll and Ionic.BZip2.dll.  Ionic.Zip.dll
+is a superset.
+
+If you try to link to more than one of these, you will get compiler
+warnings about "duplicate types".
 
 
 
@@ -400,48 +507,9 @@ for v1.7).  For Zlib, the classes are like this:
 
 (again, check the .chm file for the full list)
 
+For v1.9.1.6, the CRC class moved from the Ionic.Zlib namespace to the
+Ionic.Crc namespace.
 
-
-
-About Directory Paths
----------------------------------
-
-One important note: the ZipFile.AddXxx methods add the file or
-directory you specify, including the directory.  In other words,
-logic like this:
-    ZipFile zip = new ZipFile();
-    zip.AddFile("c:\\a\\b\\c\\Hello.doc");
-    zip.Save();
-
-...will produce a zip archive that contains a single entry, or file, and
-that file is stored with the relative directory information.  When you
-extract that file from the zip, either using this Zip library or winzip
-or the built-in zip support in Windows, or some other package, all those
-directories will be created, and the file will be written into that
-directory hierarchy.  At extraction time, if you were to extract that
-file into a directory like c:\documents, then resulting file would be
-named c:\documents\a\b\c\Hello.doc .
-
-This is by design.
-
-If you don't want that directory information in your archive,
-then you need to use the overload of the AddFile() method that
-allows you to explicitly specify the directory used for the entry
-within the archive:
-
-    zip.AddFile("c:\\a\\b\\c\\Hello.doc", "files");
-    zip.Save();
-
-This will create an archive with an entry called "files\Hello.doc",
-which contains the contents of the on-disk file located at
-c:\a\b\c\Hello.doc .
-
-If you extract that file into a directory e:\documents, then the
-resulting file will be called e:\documents\files\Hello.doc .
-
-If you want no directory at all, specify "" (the empty string).
-Specifying null (Nothing in VB) will include all the directory hierarchy
-in the filename, as in the orginal case.
 
 
 
@@ -469,11 +537,15 @@ As a result, this library depends only on the .NET Framework v2.0, or the
 The Documentation
 --------------------------------------------
 
-There is a single .chm file for all of the DotNetZip library features,
-including Zip and Zlib stuff.  If you only use the Zlib stuff, then you
-should focus on the doc in the Ionic.Zlib namespace.  If you are
-building apps for mobile devices running the Compact Framework, then
-ignore the pieces that deal with SaveSelfExtractor() and AES.
+There is a single set of developer reference documentation for all of
+the DotNetZip library features, including Zip and Zlib stuff.  It is
+packaged in two ways: As a .chm file, and as a Help Viewer 1.0 resource.
+The latter is the new format suitable for viewing within VS2010.
+
+If you only use the Zlib stuff, then you should focus on the doc in the
+Ionic.Zlib namespace.  Likewise BZip2.  If you are building apps for
+mobile devices running the Compact Framework, then ignore the pieces
+that deal with SaveSelfExtractor() and AES.
 
 Consult the help file for more specifics here.
 
@@ -484,7 +556,6 @@ If this happens, it's likely that you've encountered a problem with Windows
 protection of files downloaded from less trusted locations. To work around
 this, within Windows Explorer, right-click on the CHM file, select properties,
 and Unblock it, using the button in lower part of properties window.
-
 
 The help is also packaged in a format that you can integrate into Visual
 Studio 2008, or Visual Studio 2010.  VS2008 requires MS Help 2.0, while
@@ -512,7 +583,7 @@ attributes for each file.  These are things the DeflateStream class -
 either the one included in the .NET Framework Class Library, or the one
 embedded in this library - does not read or write.
 
-
+Managing the metadata in a zip file is most of what DotNetZip does.
 
 
 Which DLL to use?
@@ -535,7 +606,10 @@ Usage scenario                                 Reference this DLL
 ------------------------------------------------------------------
 reading or writing Zip files                   Ionic.Zip.dll
 
-raw block or stream compression                Ionic.Zlib.dll
+raw block or stream compression, ZLIB, GZIP,   Ionic.Zlib.dll
+   or DEFLATE
+
+raw block or stream compression, BZIP2         Ionic.BZip2.dll
 
 both raw compression as well as reading        Ionic.Zip.dll
    or writing Zip files
@@ -544,20 +618,24 @@ reading or writing Zip files on Compact        Ionic.Zip.CF.dll
      Framework
 
 raw compression on Compact Framework           Ionic.Zlib.CF.dll
+                                                   -and/or-
+                                               Ionic.BZip2.CF.dll
 
 both raw compression as well as reading        Ionic.Zip.CF.dll
    or writing Zip files on CF
 
-reading or writing Zip files, but never        Ionic.Zip.Reduced.dll
-  creating a self-extracting archive
+reading or writing Zip files, using desktop    Ionic.Zip.Reduced.dll
+  .NET framework but never creating a
+  self-extracting archive
 
 
-
-Never reference both Ionic.Zlib.dll and Ionic.Zip.dll in the same
-application.  If your application does both Zlib and Zip stuff, you need
-only add a reference to Ionic.Zip.dll.  Ionic.Zip.dll includes all the
-capability in Ionic.Zlib.dll.  You always need to reference only a
-single Ionic DLL, regardless whether you use Zlib or Zip or both.
+Never reference both Ionic.Zlib.dll and Ionic.Zip.dll, or both
+Ionic.BZip2.dll and Ionic.Zip.dll in the same application.  If your
+application does both Zlib and Zip stuff, you need only add a reference
+to Ionic.Zip.dll.  Ionic.Zip.dll includes all the capability in
+Ionic.Zlib.dll and Ionic.BZip2.dll You always need to reference only a
+single Ionic DLL, regardless whether you use Zlib or BZip2 or Zip or
+some combination.
 
 
 
@@ -603,17 +681,14 @@ For size comparisons...
 
 assembly              ~size   comment
 -------------------------------------------------------
-Ionic.Zlib.dll          86k   {Deflate,GZip,Zlib}Stream and ZlibCodec
+Ionic.Zlib.dll         100k   {Deflate,GZip,Zlib}Stream and ZlibCodec
+
+Ionic.BZip2.dll         57k   BZip2{Input,Output}Stream
 
 Ionic.Zip.dll          500k   includes ZLIB and SFX, and selector,
                               ComHelper class
 
-Ionic.Zip.Partial.dll  278k   includes SFX, depends on a separate Ionic.Zlib.dll
-                              You should probably never reference this
-                              DLL directly. It is a interim build output.
-                              Included here for comparison purposes only.
-
-Ionic.Zip.Reduced.dll  170k   includes ZLIB but not SFX
+Ionic.Zip.Reduced.dll  170k   includes ZLIB and BZIP2 but not SFX
 
 Ionic.Zlib.CF.dll       74k   {Deflate,GZip,Zlib}Stream and ZlibCodec
                               (Compact Framework)

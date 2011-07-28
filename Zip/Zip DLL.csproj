@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Ionic.Zip</RootNamespace>
-    <AssemblyName>Ionic.Zip.Partial</AssemblyName>
+    <AssemblyName>Ionic.Zip</AssemblyName>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Ionic.snk</AssemblyOriginatorKeyFile>
     <FileUpgradeFlags>
@@ -101,6 +101,15 @@
     <Compile Include="ZipFile.Selector.cs" />
     <Compile Include="ZipFile.SaveSelfExtractor.cs" />
     <Compile Include="ZipFile.x-IEnumerable.cs" />
+    <Compile Include="..\BZip2\*.cs">
+      <Link>BZip2\%(FileName)</Link>
+    </Compile>
+    <Compile Include="..\Zlib\*.cs">
+      <Link>Zlib\%(FileName)</Link>
+    </Compile>
+    <Compile Include="..\CommonSrc\CRC32.cs">
+      <Link>CRC32.cs</Link>
+    </Compile>
     <Compile Include="..\SolutionInfo.cs">
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
@@ -167,16 +176,6 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Zlib\Zlib DLL.csproj">
-      <Project>{9816BA86-9250-4C00-A912-25F07F8677D1}</Project>
-      <Name>Zlib DLL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\BZip2\BZip2 DLL.csproj">
-      <Project>{e2ce0d56-7af8-4404-bd0c-bc562cbd74d4}</Project>
-      <Name>BZip2 DLL</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

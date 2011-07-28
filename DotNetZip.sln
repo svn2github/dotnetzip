@@ -2,15 +2,12 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E1C14695-E75F-4317-919A-5341EA1F9C01}"
-	ProjectSection(SolutionItems) = preProject
-		DotNetZip.vsmdi = DotNetZip.vsmdi
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{F7D17942-40ED-4243-BE57-591869948298}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{AAE1BA63-9776-4152-8AAD-801D775E188B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip Partial DLL", "Zip Partial DLL\Zip Partial DLL.csproj", "{D3B0AD67-44D8-4B3D-BED9-CE1FD6DE2C5A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip DLL", "Zip\Zip DLL.csproj", "{D3B0AD67-44D8-4B3D-BED9-CE1FD6DE2C5A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zlib DLL", "Zlib\Zlib DLL.csproj", "{9816BA86-9250-4C00-A912-25F07F8677D1}"
 EndProject
@@ -22,15 +19,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BZip2 Tests", "BZip2 Tests\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip Tests", "Zip Tests\Zip Tests.csproj", "{549466CE-5CA6-4904-BA44-58141544BE70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip CF Partial DLL", "Zip CF Partial DLL\Zip CF Partial DLL.csproj", "{051C2B3B-8CDF-42CB-9EA2-027232BFC395}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip CF DLL", "Zip CF\Zip CF DLL.csproj", "{051C2B3B-8CDF-42CB-9EA2-027232BFC395}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zlib CF DLL", "Zlib CF\Zlib CF DLL.csproj", "{E082D395-52BE-41EE-812B-8B09C51025B4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BZip2 CF DLL", "BZip2 CF\BZip2 CF DLL.csproj", "{18A4AED9-D477-4C57-9C7A-C0CBBD5599DE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip Full DLL", "Zip Full DLL\Zip Full DLL.csproj", "{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip CF Full DLL", "Zip CF Full DLL\Zip CF Full DLL.csproj", "{2E4EC7D1-CD92-4CE8-9066-69E3209F6715}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip Reduced", "Zip Reduced\Zip Reduced.csproj", "{49A128D3-C3F2-46B1-8F7A-EECD209EA860}"
 EndProject
@@ -69,9 +62,6 @@ EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "DotNetZipUtils", "wix\DotNetZipUtils.wixproj", "{18B1CDB1-709D-46D4-A894-9FE0BF929686}"
 EndProject
 Global
-	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = DotNetZip.vsmdi
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -171,26 +161,6 @@ Global
 		{18A4AED9-D477-4C57-9C7A-C0CBBD5599DE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{18A4AED9-D477-4C57-9C7A-C0CBBD5599DE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{18A4AED9-D477-4C57-9C7A-C0CBBD5599DE}.Release|x86.ActiveCfg = Release|Any CPU
-		{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}.Release|x86.ActiveCfg = Release|Any CPU
-		{2E4EC7D1-CD92-4CE8-9066-69E3209F6715}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2E4EC7D1-CD92-4CE8-9066-69E3209F6715}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2E4EC7D1-CD92-4CE8-9066-69E3209F6715}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{2E4EC7D1-CD92-4CE8-9066-69E3209F6715}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{2E4EC7D1-CD92-4CE8-9066-69E3209F6715}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2E4EC7D1-CD92-4CE8-9066-69E3209F6715}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2E4EC7D1-CD92-4CE8-9066-69E3209F6715}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2E4EC7D1-CD92-4CE8-9066-69E3209F6715}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{2E4EC7D1-CD92-4CE8-9066-69E3209F6715}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{2E4EC7D1-CD92-4CE8-9066-69E3209F6715}.Release|x86.ActiveCfg = Release|Any CPU
 		{49A128D3-C3F2-46B1-8F7A-EECD209EA860}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{49A128D3-C3F2-46B1-8F7A-EECD209EA860}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49A128D3-C3F2-46B1-8F7A-EECD209EA860}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

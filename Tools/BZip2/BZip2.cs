@@ -62,9 +62,8 @@ namespace Ionic.Zip.Examples
             byte[] buffer = new byte[2048];
             int n;
             while ((n = src.Read(buffer, 0, buffer.Length)) > 0)
-            {
                 dest.Write(buffer, 0, n);
-            }
+
         }
 
 
@@ -79,16 +78,11 @@ namespace Ionic.Zip.Examples
                     return null;
             }
 
-            using (var fs = File.OpenRead(fname))
-            {
-                using (var output = File.Create(outFname))
-                {
-                    using (var compressor = new Ionic.BZip2.BZip2OutputStream(output))
-                    {
-                        Pump(fs, compressor);
-                    }
-                }
-            }
+            using (Stream fs = File.OpenRead(fname),
+                   output = File.Create(outFname),
+                   compressor = new Ionic.BZip2.ParallelBZip2OutputStream(output))
+                Pump(fs, compressor);
+
             return outFname;
         }
 
@@ -104,16 +98,11 @@ namespace Ionic.Zip.Examples
                     return null;
             }
 
-            using (var fs = File.OpenRead(fname))
-            {
-                using (var output = File.Create(outFname))
-                {
-                    using (var decompressor = new Ionic.BZip2.BZip2InputStream(fs))
-                    {
-                        Pump(decompressor, output);
-                    }
-                }
-            }
+            using (Stream fs = File.OpenRead(fname),
+                   output = File.Create(outFname),
+                   decompressor = new Ionic.BZip2.BZip2InputStream(fs))
+                Pump(decompressor, output);
+
             return outFname;
         }
 

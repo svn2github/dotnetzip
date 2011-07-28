@@ -77,43 +77,12 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Zlib\Crc32.cs">
-      <Link>Crc32.cs</Link>
-    </Compile>
-    <Compile Include="..\Zlib\Deflate.cs">
-      <Link>Deflate.cs</Link>
-    </Compile>
-    <Compile Include="..\Zlib\DeflateStream.cs">
-      <Link>DeflateStream.cs</Link>
-    </Compile>
-    <Compile Include="..\Zlib\GZipStream.cs">
-      <Link>GZipStream.cs</Link>
-    </Compile>
-    <Compile Include="..\Zlib\Inflate.cs">
-      <Link>Inflate.cs</Link>
-    </Compile>
-    <Compile Include="..\Zlib\Inftree.cs">
-      <Link>Inftree.cs</Link>
-    </Compile>
-    <Compile Include="..\Zlib\Tree.cs">
-      <Link>Tree.cs</Link>
-    </Compile>
-    <Compile Include="..\Zlib\Zlib.cs">
-      <Link>Zlib.cs</Link>
-    </Compile>
-    <Compile Include="..\Zlib\ZlibBaseStream.cs">
-      <Link>ZlibBaseStream.cs</Link>
-    </Compile>
-    <Compile Include="..\Zlib\ZlibCodec.cs">
-      <Link>ZlibCodec.cs</Link>
-    </Compile>
-    <Compile Include="..\Zlib\ZlibConstants.cs">
-      <Link>ZlibConstants.cs</Link>
-    </Compile>
-    <Compile Include="..\Zlib\ZlibStream.cs">
-      <Link>ZlibStream.cs</Link>
-    </Compile>
+    <Compile Include="..\Zlib\*.cs"
+             Exclude="..\Zlib\ParallelDeflateOutputStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\CommonSrc\CRC32.cs">
+      <Link>CRC32.cs</Link>
+    </Compile>
     <Compile Include="..\SolutionInfo.cs">
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>

@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-25 18:30:30>
+// Last Saved: <2011-July-28 06:17:22>
 //
 // ------------------------------------------------------------------
 //
@@ -99,7 +99,7 @@ namespace Ionic.BZip2
         private int last;  // index into the block of the last char processed
         private int outBlockFillThreshold;
         private CompressionState cstate;
-        private readonly CRC32 crc = Ionic.BZip2.CRC32.Create();
+        private readonly Ionic.Crc.CRC32 crc = new Ionic.Crc.CRC32(true);
         BitWriter bw;
         int runs;
 

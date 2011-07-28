@@ -1,13 +1,12 @@
 
-The following licenses govern use of the accompanying software, the
-DotNetZip library ("the software"). If you use the software, you accept
-these licenses. If you do not accept the license, do not use the software.
-
 The managed BZIP2 code included in Ionic.BZip2.dll and Ionic.Zip.dll is
-modified code, based on the bzip2 code in the Apache commons library.
+modified code, based on the bzip2 code in the Apache commons compress
+library.
 
+The original BZip2 was created by Julian Seward, and is licensed under
+the BSD license.
 
-The following license applies to this code:
+The following license applies to the Apache code:
 -----------------------------------------------------------------------
 
 /*

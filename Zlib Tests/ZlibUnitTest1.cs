@@ -1779,7 +1779,7 @@ namespace Ionic.Zlib.Tests
             TestContext.WriteLine("{0}: Compressed {1} bytes into {2} bytes", sw.Elapsed,
                                   originalLength, ms1.Length);
 
-            var crc = new Ionic.Zlib.CRC32();
+            var crc = new Ionic.Crc.CRC32();
             int crc2= 0;
             byte[] decompressedBytes= null;
             using (MemoryStream ms2 = new MemoryStream())
@@ -1833,7 +1833,7 @@ namespace Ionic.Zlib.Tests
         private int DoCrc(string filename)
         {
             using (Stream a = File.OpenRead(filename))
-                using (var crc = new Ionic.Zlib.CrcCalculatorStream(a))
+                using (var crc = new Ionic.Crc.CrcCalculatorStream(a))
             {
                     byte[] working = new byte[WORKING_BUFFER_SIZE];
                     int n = -1;

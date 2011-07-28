@@ -69,9 +69,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Zip Full DLL\Zip Full DLL.csproj">
-      <Project>{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}</Project>
-      <Name>Zip Full DLL</Name>
+    <ProjectReference Include="..\..\BZip2\BZip2 DLL.csproj">
+      <Project>{e2ce0d56-7af8-4404-bd0c-bc562cbd74d4}</Project>
+      <Name>BZip2 DLL</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

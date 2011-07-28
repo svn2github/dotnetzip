@@ -183,8 +183,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Zip Full DLL\Zip Full DLL.csproj">
-      <Project>{4F7A9BBE-5221-46C5-9E47-1E8B547CF258}</Project>
+    <ProjectReference Include="..\Zip\Zip DLL.csproj">
+      <Project>{D3B0AD67-44D8-4B3D-BED9-CE1FD6DE2C5A}</Project>
       <Name>Zip Full DLL</Name>
     </ProjectReference>
     <ProjectReference Include="..\Tools\Unzip\Unzip.csproj">
