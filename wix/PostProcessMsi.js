@@ -1,11 +1,32 @@
 // PostProcessMSi.js
 //
-// Post-process the generated MSI to move the (optional) checkbox
-// control that is presented on the exit dialog.  WIX produces a
-// checkbox control with a greay background; I don't know how to reset
-// that, but I do know how to move it.  Moving it to the lower part of
-// the form - where the Finish button is presented, allows the grey to
-// match the existing background.
+// Post-process the generated MSI to do these things:
+//
+// - move the (optional) checkbox control that is presented on the exit
+//   dialog.  WIX produces a checkbox control with a greay background; I
+//   don't know why, and that seems like the wrong color to choose as a
+//   default.  I also don't know how to reset the color in a .wxs
+//   file. But, I do know how to move the checkbox and resize it, by
+//   updating the MSI database from a script.  Moving it to the lower
+//   part of the form - where the Finish button is presented, allows the
+//   grey to match the existing background.
+//
+// - Add a second checkbox to allow users to optionally associate the
+//   .zip extension to the GUI Zip tool.  I think this also could be
+//   done in the UI.wxs, but once again, I don't know how to do that
+//   simply. I find WIX to be very hard to use. It's easier for me, to
+//   just uypdate the MSI table, so that's what I will do right here.
+//
+// - Move things around on the progress and the installdir dialog. For
+//   the progress dialog, the default settings emitted by WIX are not
+//   correct - the progress text is too close to the actual progress
+//   bar, and the default height of the progress text is too small so
+//   that the text gets clipped. For the installdir dialog, similar
+//   concerns: the default layout doesn't look very nice. Slight tweaks
+//   make a nice improvement. I'm pretty sure that there's a way to do
+//   this in the .wxs file, but once again, I don't know how to do it,
+//   and I think it will be hard to find out.  Wix is a pain in the
+//   ass. So I'll just do it here.
 //
 //
 // Copyright (c) 2011 Dino Chiesa.
@@ -21,7 +42,7 @@
 // http://dotnetzip.codeplex.com
 //
 // Created: Thu, 14 Jul 2011  17:31
-// Last saved: <2011-July-16 17:48:25>
+// Last saved: <2011-July-28 12:28:42>
 //
 
 // Constant values from Windows Installer
