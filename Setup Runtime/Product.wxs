@@ -1,0 +1,288 @@
+<?xml version='1.0'?>
+<Wix xmlns      = 'http://schemas.microsoft.com/wix/2006/wi'
+     xmlns:netfx= 'http://schemas.microsoft.com/wix/NetFxExtension'
+     xmlns:util = 'http://schemas.microsoft.com/wix/UtilExtension'
+     >
+
+  <!-- Keep the UpgradeCode constant for the lifetime of the product family, -->
+  <!-- if you want to support upgrades.  Change the productId (in MSI parlance, it's -->
+  <!-- the ProductCode) when changing minor versions.  -->
+  <!-- -->
+
+  <!-- http://stackoverflow.com/questions/1838009/platform/1860161#1860161 -->
+
+  <?define prodManufacturer    = "Dino Chiesa" ?>
+  <?define pkgDescription      = "DotNetZip Runtime v1.9" ?>
+  <?define productId           = "562DBD5B-FB3D-4753-97B9-A7163BCFB3E2" ?>
+  <?define productVersion      = "1.9.1.6004" ?>
+  <?define sysfolder           = "[SystemFolder]" ?>
+  <?define programFilesFolder  = "ProgramFilesFolder" ?>
+  <?define appDescription      = "DotNetZip Runtime" ?>
+  <?define appName             = "DotNetZip" ?>
+  <?define guidMain            = "b7097d45-c2bf-4c18-b8de-2d438ecfe1c2" ?>
+  <?define guidTxtFiles        = "b7097d45-c2bf-4c18-b8de-2d438ecfe1c3" ?>
+  <?define guidRegistry        = "b7097d45-c2bf-4c18-b8de-2d438ecfe1c4" ?>
+  <?define guidShortcuts       = "b7097d45-c2bf-4c18-b8de-2d438ecfe1c5" ?>
+  <?define guidComRegistration = "b7097d45-c2bf-4c18-b8de-2d438ecfe1c6" ?>
+
+  <Product Id           ='$(var.productId)'
+           Name         ="DotNetZip Runtime"
+           Language     ='1033'
+           UpgradeCode  ='FFE64B5A-5286-48BC-908A-C04137C29C94'
+           Version      ='$(var.productVersion)'
+           Manufacturer ='$(var.prodManufacturer)'>
+
+    <Package Id               ='*'
+             Description      ='$(var.pkgDescription)'
+             Comments         ='Produced: 28 July 2011'
+             Manufacturer     ='$(var.prodManufacturer)'
+             InstallerVersion ='200'
+             InstallScope     ="perMachine"
+             Compressed       ='yes' />
+
+    <!-- Must specify the Platform attribute here.
+         For an alternative, see the -arch flag on candle.exe .
+         http://www.joyofsetup.com/2010/05/14/working-hard-or-hardly-working/ -->
+
+    <!-- need a Media element to specify the source for installation.
+         EmbedCab='yes' implies that this cab will be stuffed into the
+         MSI file, which is what we want, usually.
+
+The Cabinet name can be anything you want. Not really important.
+
+    -->
+    <Media Id='1' Cabinet='product.cab' EmbedCab='yes' />
+
+    <Property Id="PRIORINSTALL">
+      <RegistrySearch Id   ='DotNetZipRegistry'
+                      Type ='raw'
+                      Root ='HKLM'
+                      Key  ='Software\[Manufacturer]\DotNetZip Runtime 1.9'
+                      />
+    </Property>
+
+    <!-- Icon shown in Add/Remove Programs -->
+    <Icon Id="zippedFile.ico" SourceFile="..\Tools\WinFormsApp\zippedFile.ico" />
+    <Property Id="ARPPRODUCTICON" Value="zippedFile.ico" />
+    <Property Id="ARPHELPLINK" Value="http://dotnetzip.codeplex.com/" />
+
+    <!-- http://wix.sourceforge.net/manual-wix3/check_for_dotnet.htm -->
+    <PropertyRef Id="NETFRAMEWORK35"/>
+    <PropertyRef Id="NETFRAMEWORK35_SP_LEVEL"/>
+
+    <!-- no install on Windows XP or Windows 2000 -->
+    <Condition Message="DotNetZip Runtime cannot be installed on this computer. It is supported on Windows Server 2003, Windows Vista, or later.">
+      <![CDATA[Installed OR (VersionNT >= 502)]]>
+    </Condition>
+
+    <Condition Message="This application requires .NET Framework 3.5 SP1 or later. Install this pre-requisite, then run this installer again.">
+      <![CDATA[Installed OR (NETFRAMEWORK35 AND NETFRAMEWORK35_SP_LEVEL AND NOT (NETFRAMEWORK35_SP_LEVEL = "#0"))]]>
+    </Condition>
+
+    <!-- d/l link for .NET 3.5sp1::   http://go.microsoft.com/fwlink/?LinkId=76617   -->
+
+    <Condition Message="This application requires Windows Installer 3.1 or later. Install this pre-requisite, then run this installer again.">
+      <![CDATA[VersionMsi >= "3.1"]]>
+    </Condition>
+
+
+
+    <InstallUISequence>
+
+      <!--
+          <Custom Action="CA.EnumerateWebSites"           After="CostFinalize" Overridable="yes">NOT Installed</Custom>
+      -->
+
+    </InstallUISequence>
+
+
+    <InstallExecuteSequence>
+
+    </InstallExecuteSequence>
+
+    <!-- http://robmensching.com/blog/posts/2010/1/26/StackOverflow-what-does-NameSourceDir-refer-to -->
+
+<!--
+
+     A Directory element in the .wxs will create a row in the Directory
+     table in the MSI DB. The key for the row is the Id.  The
+     Directory_Parent column in that row is set to the Id of the
+     containing directory element, if any.  The DefaultDir column in the
+     row1 is set to the value of the Name attribute in the Wix file.
+     Sort of.  I think.
+
+     See http://msdn.microsoft.com/en-gb/library/aa372452(v=VS.85).aspx
+
+     The Id refers to a property name that gets referenced at runtime.
+     So, if the user, via the installation dialog, sets the
+     Session("TARGETDIR") to t:\, then... the value of that setting is
+     used in evaluating all the property values, the names of which are
+     specified in Id attributes of the Directory elements that are
+     descendants of the Directory element with Id="TARGETDIR". Huh?
+
+     An example. Suppose you have
+
+       <Directory Id='TARGETDIR' Name='SourceDir'>
+         <Directory Id='ProgramFilesFolder' Name='PFiles'>
+         </Directory>
+       </Directory>
+
+     .... then , the property named "ProgramFilesFolder", at the time
+     you run the MSI, dynamically evaluates to a directory value that is
+     a child directory of the value of the property named "TARGETIDIR".
+     If TARGETDIR works out to be c:\ , then
+     Session("ProgramFilesFolder") evaluates to c:\PFiles .
+
+     Really? Yes!  in some cases.  But usually not.  This is because
+     usually the ProgramFilesFolder property is explicitly set to some
+     non-null value. In that case it overrides whatever implicit setting
+     might be derived from the hierarchy of Directory elements.
+
+     The Directory with Id="TARGETDIR" is a special case. In
+     this case TARGETDIR is a well-known value, and it implies "the root
+     of the install."  A Directory element in a wix file with this value
+     for the Id needs to be a top-level element.  It will get "null" for
+     the Directory_Parent column value, in the MSI Db that gets created.
+
+     The value of the TARGETDIR property is set during installation of
+     the MSI, at the command line or through a user interface. It is
+     usually set, by default, to the root of the system drive with the
+     most available space.  For example c:\ or D:\ .
+
+     Consider the set of Directoty elements below.  All the inheritance
+     algebra I just described is COMPLETELY, UTTERLY irrelevant, because
+     APPLICATIONFOLDER gets explicitly set by the InstallDir dialog,
+     overriding the other session properties.  The user selects c:\x\y\z
+     for an install directory, in the UI via
+
+       <Property Id="WIXUI_INSTALLDIR" Value="APPLICATIONFOLDER"/>
+
+     The Value attribute specifies the ID of a property that gets set
+     with the selected install dir, in this case c:\x\y\z . So the
+     implicit value derivation I just described, doesn't happen because
+     of the explicit set. Although, the "default" value for the
+     installation directory presented in the UI IS derived via that
+     mechanism.
+
+     Simple, right?  (Wix is an IDIOT! )
+
+-->
+
+
+
+    <Directory Id='TARGETDIR' Name='SourceDir'>
+      <Directory Id='$(var.programFilesFolder)' Name='PFiles'>
+        <Directory Id='CompanyDir' Name='$(var.prodManufacturer)'>
+          <Directory Id='APPLICATIONFOLDER' Name='DotNetZip Runtime 1.9'>
+          </Directory>
+        </Directory>
+      </Directory>
+
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="D.FolderForShortcuts" Name="DotNetZip"/>
+        <!-- see below for full defn of this directory -->
+      </Directory>
+    </Directory>
+
+
+    <DirectoryRef Id="APPLICATIONFOLDER">
+      <Component Id='C.Main' Guid="$(var.guidMain)" >
+        <File Id      ='Ionic.Zip.dll'
+              Name    ='Ionic.Zip.dll'
+              DiskId  ='1'
+              KeyPath ='yes'
+              Source  ='..\Zip\bin\$(var.Configuration)\Ionic.Zip.dll'/>
+
+        <File Id      ='Ionic.Zip.CF.dll'
+              Name    ='Ionic.Zip.CF.dll'
+              DiskId  ='1'
+              Source  ='..\Zip CF\bin\$(var.Configuration)\Ionic.Zip.CF.dll'/>
+
+        <File Id      ='Ionic.Zlib.dll'
+              Name    ='Ionic.Zlib.dll'
+              DiskId  ='1'
+              Source  ='..\Zlib\bin\$(var.Configuration)\Ionic.Zlib.dll'/>
+
+        <File Id      ='Ionic.Zlib.CF.dll'
+              Name    ='Ionic.Zlib.CF.dll'
+              DiskId  ='1'
+              Source  ='..\Zlib CF\bin\$(var.Configuration)\Ionic.Zlib.CF.dll'/>
+
+        <File Id      ='Ionic.BZip2.dll'
+              Name    ='Ionic.BZip2.dll'
+              DiskId  ='1'
+              Source  ='..\BZip2\bin\$(var.Configuration)\Ionic.BZip2.dll'/>
+
+        <File Id      ='Ionic.BZip2.CF.dll'
+              Name    ='Ionic.BZip2.CF.dll'
+              DiskId  ='1'
+              Source  ='..\BZip2 CF\bin\$(var.Configuration)\Ionic.BZip2.CF.dll'/>
+      </Component>
+
+
+      <Component Id='C.Textfiles' Guid="$(var.guidTxtFiles)" >
+        <File Id='License.Combined.rtf' Name='License.Combined.rtf'    DiskId='1' Source='..\License.Combined.rtf' />
+      </Component>
+
+      <Component Id='C.Registry' Guid="$(var.guidRegistry)" >
+
+        <!-- DNZ tree in registry -->
+        <RegistryKey Root='HKLM' Key='Software\[Manufacturer]\DotNetZip Runtime'>
+          <RegistryValue Type='string'                Value=''              KeyPath='yes' />
+          <RegistryValue Type='string' Name='Version' Value='1.9'/>
+          <RegistryValue Type="string" Name="Path" Value="[APPLICATIONFOLDER]"/>
+        </RegistryKey>
+
+      </Component>
+
+    </DirectoryRef>
+
+
+
+
+    <DirectoryRef Id="D.FolderForShortcuts">
+      <Component Id="C.Shortcuts" Guid="$(var.guidShortcuts)" >
+
+        <!-- http://wix.sourceforge.net/manual-wix3/create_an_uninstall_shortcut.htm -->
+
+        <!-- see http://robmensching.com/blog/posts/2007/4/27/How-to-create-an-uninstall-shortcut-and-pass-all-the -->
+        <!-- the uninstall shortcut to the installer package -->
+        <Shortcut Id="UninstallProduct"
+                  Name="Uninstall DotNetZip Runtime"
+                  Description="Uninstalls DotNetZip Runtime"
+                  Target="[System64Folder]msiexec.exe"
+                  Arguments="/x [ProductCode]"
+                  Directory="D.FolderForShortcuts"/>
+        <RemoveFolder Id="R.RemoveShortcutsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU"
+                       Key='Software\[Manufacturer]\DotNetZip Runtime'
+                       Name="installed" Type="integer" Value="1"
+                       KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+
+
+
+    <Feature Id='F.Complete'
+             Title='DotNetZip Runtime'
+             Description='The DotNetZip Runtime libraries.'
+             Level='1'
+             AllowAdvertise='no'
+             Display='expand'
+             ConfigurableDirectory='APPLICATIONFOLDER'>
+      <ComponentRef Id='C.Main' />
+      <ComponentRef Id='C.Textfiles' />
+      <ComponentRef Id='C.Shortcuts' />
+      <ComponentRef Id='C.Registry' />
+      <ComponentRef Id='C.ComRegistration' />
+    </Feature>
+
+    <UIRef Id="DnzRtInstallUI" />
+
+    <!-- http://wix.sourceforge.net/manual-wix2/WixUI_dialog_library.htm -->
+    <Property Id="WIXUI_INSTALLDIR" Value="APPLICATIONFOLDER"/>
+
+  </Product>
+</Wix>
+
+

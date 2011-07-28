@@ -14,7 +14,7 @@ goto START
  DotNetZip is licensed under the MS-PL.  See the accompanying
  License.txt file.
 
- Last Updated: <2011-July-28 10:13:53>
+ Last Updated: <2011-July-28 17:35:25>
 
 -------------------------------------------------------
 
@@ -66,7 +66,7 @@ if ERRORLEVEL 1 (
 
  call :MakeUtilsMsi
 
- ::REM call :MakeRuntimeMsi
+ call :MakeRuntimeMsi
 
  %POWERSHELL%  .\clean.ps1
 
@@ -264,14 +264,14 @@ goto :EOF
 
   @REM --------------------------------------------
 
-    %zipit% %rzipfile% -d Tools \
-           -s Readme.txt "These are tools that may be useful as you develop applications that manipulate zip files." \
-           -D Tools\ZipIt\bin\Release            Zipit.exe Ionic.Zip.dll \
-           -D Tools\Unzip\bin\Release            Unzip.exe \
-           -D Tools\ConvertZipToSfx\bin\Release  ConvertZipToSfx.exe \
-           -D Tools\WinFormsApp\bin\Release      DotNetZip-WinFormsTool.exe \
-           -D Tools\BZip2\bin\Release            BZip2.exe Ionic.BZip2.dll \
-           -D Tools\GZip\bin\Release             GZip.exe Ionic.Zlib.dll
+  %zipit% %rzipfile% -d Tools \
+         -s Readme.txt "These are tools that may be useful as you develop applications that manipulate zip files." \
+         -D Tools\ZipIt\bin\Release            Zipit.exe Ionic.Zip.dll \
+         -D Tools\Unzip\bin\Release            Unzip.exe \
+         -D Tools\ConvertZipToSfx\bin\Release  ConvertZipToSfx.exe \
+         -D Tools\WinFormsApp\bin\Release      DotNetZip-WinFormsTool.exe \
+         -D Tools\BZip2\bin\Release            BZip2.exe Ionic.BZip2.dll \
+         -D Tools\GZip\bin\Release             GZip.exe Ionic.Zlib.dll
 
   @REM --------------------------------------------
 
@@ -339,47 +339,25 @@ goto :EOF
   echo Making the Zip Utils zip...
   echo.
 
-    set zipfile=DotNetZipUtils-v%version%.zip
+  set zipfile=DotNetZipUtils-v%version%.zip
 
-    @REM    for %%f in (%releaseDir%\%zipfile%) do set rzipfile=%%~ff
+  @REM    for %%f in (%releaseDir%\%zipfile%) do set rzipfile=%%~ff
 
-    set rzipfile=%releaseDir%\%zipfile%
-    echo zipfile is %rzipfile%
+  set rzipfile=%releaseDir%\%zipfile%
+  echo zipfile is %rzipfile%
 
-    %zipit% %rzipfile%    -s Contents.txt "These are the DotNetZip utilities and tools, for DotNetZip v%version%.  Packed %stamp%."   -s I-Welcome-Donations.txt  "DotNetZip is donationware.  I welcome donations. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   License.txt License.zlib.txt License.bzip2.txt
+  %zipit% %rzipfile%    -s Contents.txt "These are the DotNetZip utilities and tools, for DotNetZip v%version%.  Packed %stamp%."   -s I-Welcome-Donations.txt  "DotNetZip is donationware.  I welcome donations. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   License.txt License.zlib.txt License.bzip2.txt
 
-    %zipit% %rzipfile%  -zc "Zip utilities v%version% packed %stamp%" \
-           -D Tools\ZipIt\bin\Release            Zipit.exe Ionic.Zip.dll \
-           -D Tools\Unzip\bin\Release            Unzip.exe \
-           -D Tools\ConvertZipToSfx\bin\Release  ConvertZipToSfx.exe \
-           -D Tools\WinFormsApp\bin\Release      DotNetZip-WinFormsTool.exe \
-           -D Tools\BZip2\bin\Release            BZip2.exe Ionic.BZip2.dll \
-           -D Tools\GZip\bin\Release             GZip.exe Ionic.Zlib.dll
-
-goto :EOF
---------------------------------------------
-
-
-
---------------------------------------------
-:MakeUtilsMsi
-
-  @REM example output zipfile name:   DotNetZipUtils-v1.8.msi
-
-  echo.
-  echo +++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  echo.
-  echo Making the Utils MSI...
-  echo.
-
-  cd wix
-  %MSBUILD%  /p:Configuration=Release
-  cd ..
-  move wix\bin\Release\en-us\DotNetZipUtils.msi %releaseDir%\DotNetZipUtils-v%version%.msi
+  %zipit% %rzipfile%  -zc "Zip utilities v%version% packed %stamp%" \
+         -D Tools\ZipIt\bin\Release            Zipit.exe Ionic.Zip.dll \
+         -D Tools\Unzip\bin\Release            Unzip.exe \
+         -D Tools\ConvertZipToSfx\bin\Release  ConvertZipToSfx.exe \
+         -D Tools\WinFormsApp\bin\Release      DotNetZip-WinFormsTool.exe \
+         -D Tools\BZip2\bin\Release            BZip2.exe Ionic.BZip2.dll \
+         -D Tools\GZip\bin\Release             GZip.exe Ionic.Zlib.dll
 
 goto :EOF
 --------------------------------------------
-
 
 
 
@@ -404,6 +382,29 @@ goto :EOF
 
 
 
+
+--------------------------------------------
+:MakeUtilsMsi
+
+  @REM example output zipfile name:   DotNetZipUtils-v1.8.msi
+
+  echo.
+  echo +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  echo.
+  echo Making the Utils MSI...
+  echo.
+
+  cd "Setup Utils"
+  %MSBUILD%  /p:Configuration=Release
+  cd ..
+  move "Setup Utils\bin\Release\en-us\DotNetZipUtils.msi"  %releaseDir%\DotNetZipUtils-v%version%.msi
+
+goto :EOF
+--------------------------------------------
+
+
+
+
 --------------------------------------------
 :MakeRuntimeMsi
 
@@ -415,10 +416,10 @@ goto :EOF
   echo Making the Runtime MSI...
   echo.
 
-  c:\vs2008\Common7\ide\devenv.exe DotNetZip.sln /build release /project "RuntimeSetup MSI"
-  echo waiting for RuntimeSetup\release\DotNetZipLib-Runtime.msi
-  c:\dinoch\dev\dotnet\AwaitFile RuntimeSetup\release\DotNetZipLib-Runtime.msi
-  move RuntimeSetup\release\DotNetZipLib-Runtime.msi %releaseDir%\DotNetZipLib-Runtime-v%version%.msi
+  cd "Setup Runtime"
+  %MSBUILD%  /p:Configuration=Release
+  cd ..
+  move "Setup Runtime\bin\Release\en-us\DotNetZip-Runtime.msi"  %releaseDir%\DotNetZip-Runtime-v%version%.msi
 
 goto :EOF
 --------------------------------------------
@@ -435,23 +436,23 @@ goto :EOF
   echo Making the Source Zip...
   echo.
 
-    @REM set zipfile=DotNetZip-src-v%version%.zip
+  @REM set zipfile=DotNetZip-src-v%version%.zip
 
-    cd..
-    @REM Delete any existing src zips
-    for %%f in (DotNetZip-src-v*.zip) do del %%f
+  cd..
+  @REM Delete any existing src zips
+  for %%f in (DotNetZip-src-v*.zip) do del %%f
 
-    %POWERSHELL% DotNetZip\ZipSrc.ps1
+  %POWERSHELL% DotNetZip\ZipSrc.ps1
 
-    @REM edit in place to remove Ionic.pfx and Ionic.snk from the csproj files
+  @REM edit in place to remove Ionic.pfx and Ionic.snk from the csproj files
 
-    @REM glob the filename:
-    for %%f in (DotNetZip-src-v*.zip) do set actualFilename=%%f
+  @REM glob the filename:
+  for %%f in (DotNetZip-src-v*.zip) do set actualFilename=%%f
 
-    DotNetZip\EditCsproj.exe -z %actualFileName%
+  DotNetZip\EditCsproj.exe -z %actualFileName%
 
-    cd %baseDir%
-    move ..\%actualFileName%  %releaseDir%
+  cd %baseDir%
+  move ..\%actualFileName%  %releaseDir%
 
 goto :EOF
 --------------------------------------------

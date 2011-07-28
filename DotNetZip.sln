@@ -2,9 +2,6 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E1C14695-E75F-4317-919A-5341EA1F9C01}"
-	ProjectSection(SolutionItems) = preProject
-		DotNetZip.vsmdi = DotNetZip.vsmdi
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{F7D17942-40ED-4243-BE57-591869948298}"
 EndProject
@@ -34,8 +31,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BZip2 SL DLL", "BZip2 SL DL
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zip Reduced", "Zip Reduced\Zip Reduced.csproj", "{49A128D3-C3F2-46B1-8F7A-EECD209EA860}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "RuntimeSetup MSI", "RuntimeSetup\RuntimeSetup.vdproj", "{48F1D606-29B3-4114-8BC4-246E7242EA68}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CF-Unzipper", "Examples\CompactFramework\CF-Unzipper\CF-Unzipper.csproj", "{D2E7C1EA-6FF1-4E26-96FC-24F6FB68B61B}"
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "QuickUnzip", "Examples\VB\Quick-Unzip\QuickUnzip.vbproj", "{95D9690B-3B37-4800-A511-6FB21436638B}"
@@ -64,12 +59,11 @@ Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "WinForms-TreeViewZip", "Exa
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "WinForms-Unzip", "Examples\VB\WinForms-DotNetZip\WinForms-Unzip\WinForms-Unzip.vbproj", "{9E4C484D-656E-4E19-8741-5701D027AA51}"
 EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "DotNetZipUtils", "wix\DotNetZipUtils.wixproj", "{18B1CDB1-709D-46D4-A894-9FE0BF929686}"
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "DotNetZipUtils", "Setup Utils\DotNetZipUtils.wixproj", "{18B1CDB1-709D-46D4-A894-9FE0BF929686}"
+EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "DotNetZip Runtime", "Setup Runtime\DotNetZip Runtime.wixproj", "{4F44CD70-CC79-46E6-B414-F19F82A1BE65}"
 EndProject
 Global
-	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = DotNetZip.vsmdi
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -199,18 +193,6 @@ Global
 		{49A128D3-C3F2-46B1-8F7A-EECD209EA860}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{49A128D3-C3F2-46B1-8F7A-EECD209EA860}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{49A128D3-C3F2-46B1-8F7A-EECD209EA860}.Release|x86.ActiveCfg = Release|Any CPU
-		{48F1D606-29B3-4114-8BC4-246E7242EA68}.Debug|Any CPU.ActiveCfg = Debug
-		{48F1D606-29B3-4114-8BC4-246E7242EA68}.Debug|Any CPU.Build.0 = Debug
-		{48F1D606-29B3-4114-8BC4-246E7242EA68}.Debug|Mixed Platforms.ActiveCfg = Debug
-		{48F1D606-29B3-4114-8BC4-246E7242EA68}.Debug|Mixed Platforms.Build.0 = Debug
-		{48F1D606-29B3-4114-8BC4-246E7242EA68}.Debug|x86.ActiveCfg = Debug
-		{48F1D606-29B3-4114-8BC4-246E7242EA68}.Debug|x86.Build.0 = Debug
-		{48F1D606-29B3-4114-8BC4-246E7242EA68}.Release|Any CPU.ActiveCfg = Release
-		{48F1D606-29B3-4114-8BC4-246E7242EA68}.Release|Any CPU.Build.0 = Release
-		{48F1D606-29B3-4114-8BC4-246E7242EA68}.Release|Mixed Platforms.ActiveCfg = Release
-		{48F1D606-29B3-4114-8BC4-246E7242EA68}.Release|Mixed Platforms.Build.0 = Release
-		{48F1D606-29B3-4114-8BC4-246E7242EA68}.Release|x86.ActiveCfg = Release
-		{48F1D606-29B3-4114-8BC4-246E7242EA68}.Release|x86.Build.0 = Release
 		{D2E7C1EA-6FF1-4E26-96FC-24F6FB68B61B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D2E7C1EA-6FF1-4E26-96FC-24F6FB68B61B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2E7C1EA-6FF1-4E26-96FC-24F6FB68B61B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
