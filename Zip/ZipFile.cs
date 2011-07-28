@@ -327,12 +327,25 @@ namespace Ionic.Zip
         /// </summary>
         ///
         /// <remarks>
-        ///   Setting this affects the performance and memory efficiency of compression
-        ///   and decompression.  For larger files, setting this to a larger size may
-        ///   improve performance, but the exact numbers vary depending on available
-        ///   memory, and a bunch of other variables. I don't have good firm
-        ///   recommendations on how to set it.  You'll have to test it yourself. Or
-        ///   just leave it alone and accept the default.
+        ///   <para>
+        ///     When doing ZLIB or Deflate compression, the library fills a buffer,
+        ///     then passes it to the compressor for compression. Then the library
+        ///     reads out the compressed bytes. This happens repeatedly until there
+        ///     is no more uncompressed data to compress. This property sets the
+        ///     size of the buffer that will be used for chunk-wise compression. In
+        ///     order for the setting to take effect, your application needs to set
+        ///     this property before calling one of the <c>ZipFile.Save()</c>
+        ///     overloads.
+        ///   </para>
+        ///   <para>
+        ///     Setting this affects the performance and memory efficiency of
+        ///     compression and decompression. For larger files, setting this to a
+        ///     larger size may improve compression performance, but the exact
+        ///     numbers vary depending on available memory, the size of the streams
+        ///     you are compressing, and a bunch of other variables. I don't have
+        ///     good firm recommendations on how to set it.  You'll have to test it
+        ///     yourself. Or just leave it alone and accept the default.
+        ///   </para>
         /// </remarks>
         public int CodecBufferSize
         {
