@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-26 16:08:15>
+// Time-stamp: <2011-July-28 12:57:21>
 //
 // ------------------------------------------------------------------
 //
@@ -78,7 +78,7 @@ namespace Ionic.Zip.Tests
             for (int i = 0; i < 3; i++)
                 SourceDir = Path.GetDirectoryName(SourceDir);
 
-            IonicZipDll = Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.dll");
+            IonicZipDll = Path.Combine(SourceDir, "Zip\\bin\\Debug\\Ionic.Zip.dll");
 
             Assert.IsTrue(File.Exists(IonicZipDll), "DLL ({0}) does not exist", IonicZipDll);
 

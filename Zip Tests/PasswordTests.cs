@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-26 10:23:46>
+// Last Saved: <2011-July-28 13:18:39>
 //
 // ------------------------------------------------------------------
 //
@@ -301,7 +301,7 @@ namespace Ionic.Zip.Tests.Password
             string[] filenames =
             {
                 Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "Zip Partial DLL\\bin\\Debug\\Ionic.Zip.Partial.xml"),
+                Path.Combine(SourceDir, "Zip\\bin\\Debug\\Ionic.Zip.xml"),
             };
 
             string[] checksums =
@@ -359,7 +359,7 @@ namespace Ionic.Zip.Tests.Password
             string[] filenames =
             {
                 Path.Combine(SourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(SourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
+                Path.Combine(SourceDir, "Zip\\bin\\Debug\\Ionic.Zip.xml"),
             };
 
             string[] passwords =
@@ -399,7 +399,7 @@ namespace Ionic.Zip.Tests.Password
             string[] filenames =
             {
                 Path.Combine(dnzDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
-                Path.Combine(dnzDir, "Zip Partial DLL\\bin\\Debug\\Ionic.Zip.Partial.xml"),
+                Path.Combine(dnzDir, "Zip\\bin\\Debug\\Ionic.Zip.xml"),
             };
 
             string[] checksums =

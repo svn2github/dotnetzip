@@ -46,7 +46,7 @@
     <DefineConstants>TRACE;DEBUG;AESCRYPTO;BZIP</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Ionic.Zip.Partial.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\Ionic.Zip.xml</DocumentationFile>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <CodeAnalysisRules>
     </CodeAnalysisRules>
@@ -59,7 +59,7 @@
     <DefineConstants>TRACE;AESCRYPTO;BZIP</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Ionic.Zip.Partial.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\Ionic.Zip.xml</DocumentationFile>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
@@ -115,7 +115,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Migrated rules for Zip Partial DLL.ruleset" />
+    <None Include="Migrated rules for Zip DLL.ruleset" />
     <None Include="Resources\CommandLineSelfExtractorStub.cs" />
     <None Include="Resources\PasswordDialog.cs" />
     <None Include="Resources\PasswordDialog.designer.cs">

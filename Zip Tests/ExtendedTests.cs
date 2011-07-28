@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-26 18:17:32>
+// Time-stamp: <2011-July-28 13:19:36>
 //
 // ------------------------------------------------------------------
 //
@@ -915,10 +915,13 @@ namespace Ionic.Zip.Tests.Extended
                     break;
 
                 case ZipProgressEventType.Saving_Completed:
-                    _txrx.Send("status Save completed");
-                    _pb2Set = false;
-                    _txrx.Send("pb 1 max 1");
-                    _txrx.Send("pb 1 value 1");
+                    if (_txrx != null)
+                    {
+                        _txrx.Send("status Save completed");
+                        _pb2Set = false;
+                        _txrx.Send("pb 1 max 1");
+                        _txrx.Send("pb 1 value 1");
+                    }
                     break;
 
                 default:
@@ -1408,9 +1411,9 @@ namespace Ionic.Zip.Tests.Extended
             string[] filenames =
                 {
                     Path.Combine(sourceDir, "Tools\\Zipit\\bin\\Debug\\Zipit.exe"),
-                    Path.Combine(sourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.dll"),
-                    Path.Combine(sourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.pdb"),
-                    Path.Combine(sourceDir, "Zip Full DLL\\bin\\Debug\\Ionic.Zip.xml"),
+                    Path.Combine(sourceDir, "Zip\\bin\\Debug\\Ionic.Zip.dll"),
+                    Path.Combine(sourceDir, "Zip\\bin\\Debug\\Ionic.Zip.pdb"),
+                    Path.Combine(sourceDir, "Zip\\bin\\Debug\\Ionic.Zip.xml"),
                     //Path.Combine(SourceDir, "AppNote.txt")
                 };
 
