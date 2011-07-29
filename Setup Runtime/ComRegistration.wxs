@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<?xml version='1.0' ?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
 
   <?define guidComRegistration = "b7097d45-c2bf-4c18-b8de-2d438ecfe1c6" ?>
-  <?define productVersion      = "1.9.1.6004" ?>
+  <?define productVersion     = "1.9.1.6005" ?>
 
 
   <Fragment>

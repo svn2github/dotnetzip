@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zlib Tests", "Zlib Tests\Zl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zlib CF DLL", "Zlib CF\Zlib CF DLL.csproj", "{E082D395-52BE-41EE-812B-8B09C51025B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zlib Silverlight 3 DLL", "Zlib Silverlight 3 DLL\Zlib Silverlight 3 DLL.csproj", "{8E580B45-AECD-46BF-9D63-CD8BECE24D29}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zlib SL DLL", "Zlib SL DLL\Zlib SL DLL.csproj", "{8E580B45-AECD-46BF-9D63-CD8BECE24D29}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BZip2 DLL", "BZip2\BZip2 DLL.csproj", "{E2CE0D56-7AF8-4404-BD0C-BC562CBD74D4}"
 EndProject
@@ -61,7 +61,7 @@ Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "WinForms-Unzip", "Examples\
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "DotNetZipUtils", "Setup Utils\DotNetZipUtils.wixproj", "{18B1CDB1-709D-46D4-A894-9FE0BF929686}"
 EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "DotNetZip Runtime", "Setup Runtime\DotNetZip Runtime.wixproj", "{4F44CD70-CC79-46E6-B414-F19F82A1BE65}"
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "DotNetZip Runtime", "Setup Runtime\DotNetZip Runtime.wixproj", "{CC0B949C-4F52-4DC1-9925-64DAA1CDD79F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -343,6 +343,16 @@ Global
 		{18B1CDB1-709D-46D4-A894-9FE0BF929686}.Release|Mixed Platforms.Build.0 = Release|x86
 		{18B1CDB1-709D-46D4-A894-9FE0BF929686}.Release|x86.ActiveCfg = Release|x86
 		{18B1CDB1-709D-46D4-A894-9FE0BF929686}.Release|x86.Build.0 = Release|x86
+		{CC0B949C-4F52-4DC1-9925-64DAA1CDD79F}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{CC0B949C-4F52-4DC1-9925-64DAA1CDD79F}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{CC0B949C-4F52-4DC1-9925-64DAA1CDD79F}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{CC0B949C-4F52-4DC1-9925-64DAA1CDD79F}.Debug|x86.ActiveCfg = Debug|x86
+		{CC0B949C-4F52-4DC1-9925-64DAA1CDD79F}.Debug|x86.Build.0 = Debug|x86
+		{CC0B949C-4F52-4DC1-9925-64DAA1CDD79F}.Release|Any CPU.ActiveCfg = Release|x86
+		{CC0B949C-4F52-4DC1-9925-64DAA1CDD79F}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{CC0B949C-4F52-4DC1-9925-64DAA1CDD79F}.Release|Mixed Platforms.Build.0 = Release|x86
+		{CC0B949C-4F52-4DC1-9925-64DAA1CDD79F}.Release|x86.ActiveCfg = Release|x86
+		{CC0B949C-4F52-4DC1-9925-64DAA1CDD79F}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

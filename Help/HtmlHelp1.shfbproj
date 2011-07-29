@@ -84,6 +84,12 @@ DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Gir
     <Folder Include="Code Examples\" />
     <Folder Include="Tools and Utilities\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Zip\Zip DLL.csproj">
+      <Project>{D3B0AD67-44D8-4B3D-BED9-CE1FD6DE2C5A}</Project>
+      <Name>Zip Full DLL</Name>
+    </ProjectReference>
+  </ItemGroup>
   <!-- Import the SHFB build targets -->
   <Import Project="$(SHFBROOT)\SandcastleHelpFileBuilder.targets" />
 </Project>

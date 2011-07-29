@@ -31,8 +31,8 @@
     <FeedbackEMailAddress>dpchiesa%40hotmail.com</FeedbackEMailAddress>
     <PresentationStyle>Prototype</PresentationStyle>
     <DocumentationSources>
-      <DocumentationSource sourceFile="..\Zip Full DLL\bin\Debug\Ionic.Zip.dll" xmlns="" />
-      <DocumentationSource sourceFile="..\Zip Full DLL\bin\Debug\Ionic.Zip.xml" xmlns="" />
+      <DocumentationSource sourceFile="..\Zip\bin\Debug\Ionic.Zip.dll" xmlns="" />
+      <DocumentationSource sourceFile="..\Zip\bin\Debug\Ionic.Zip.xml" xmlns="" />
     </DocumentationSources>
     <NamespaceSummaries>
       <NamespaceSummaryItem name="(global)" isDocumented="False" xmlns="" />
@@ -71,12 +71,13 @@ DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Gir
     <Content Include="Code Examples\ASPNET-Csharp.htm" />
     <Content Include="Code Examples\ASPNET-VB.htm" />
     <Content Include="Code Examples\CSharp.htm" />
-    <Content Include="Zip Tools\Zip Tools.htm" />
-    <Content Include="Zip Tools\CmdLine.htm" />
-    <Content Include="Zip Tools\GUI.htm" />
-    <Content Include="Zip Tools\ZipTool1.png" />
-    <Content Include="Zip Tools\ZipTool2.png" />
-    <Content Include="Zip Tools\ZipTool3.png" />
+    <Content Include="Tools and Utilities\Tools and Utilities.htm" />
+    <Content Include="Tools and Utilities\CmdLine.htm" />
+    <Content Include="Tools and Utilities\BZip2Gzip.htm" />
+    <Content Include="Tools and Utilities\GUI.htm" />
+    <Content Include="Tools and Utilities\ZipTool1.png" />
+    <Content Include="Tools and Utilities\ZipTool2.png" />
+    <Content Include="Tools and Utilities\ZipTool3.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Introduction\" />

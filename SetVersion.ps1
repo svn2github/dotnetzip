@@ -19,7 +19,7 @@
 # DotNetZip is licensed under the MS-PL.  See the accompanying
 # License.txt file.
 #
-# Last Updated: <2011-July-16 20:24:36>
+# Last Updated: <2011-July-29 00:00:16>
 #
 # -------------------------------------------------------
 
@@ -115,7 +115,7 @@ function Update-AllAssemblyInfoFiles ( $version )
 
 function Update-AllProductWxsFiles ( $version )
 {
-  foreach ($file in "Product.wxs" )
+  foreach ($file in "Product.wxs", "ComRegistration.wxs" )
   {
     get-childitem -recurse |? {$_.Name -eq $file} | Update-SourceWxsVersion $version ;
   }

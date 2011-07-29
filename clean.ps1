@@ -10,18 +10,23 @@
 #  DotNetZip is licensed under the MS-PL.  See the accompanying
 #  License.txt file.
 #
-#  Last Updated: <2011-July-11 18:56:06>
+#  Last Updated: <2011-July-28 18:39:57>
 #
 # -------------------------------------------------------
 
 $msbuild = "c:\.net4.0\msbuild.exe"
-$dirsToClean =  @("Zip Partial DLL", "Zip Full DLL", "Zip Reduced", "Zip Tests",
-                  "Zip CF Partial DLL",
-                  "Zip CF Full DLL",
+$dirsToClean =  @("Zip",
+                  "Zip Reduced",
+                  "Zip CF",
+                  "Zip Tests",
                   "Zlib",
                   "Zlib CF",
-                  "Zlib Silverlight 3 DLL",
+                  "Zlib SL DLL",
                   "Zlib Tests",
+                  "BZip2",
+                  "BZip2 CF",
+                  "BZip2 SL DLL",
+                  "BZip2 Tests",
                   "Examples\C#\CreateZip",
                   "Examples\C#\ReadZip",
                   "Examples\C#\WinForms-QuickZip",
@@ -29,7 +34,10 @@ $dirsToClean =  @("Zip Partial DLL", "Zip Full DLL", "Zip Reduced", "Zip Tests",
                   "Examples\C#\ZipTreeView",
                   "Examples\VB\Quick-Unzip",
                   "Examples\VB\WinForms-DotNetZip",
+                  "Examples\VB\WinForms-TreeViewZip",
                   "Tools\Unzip",
+                  "Tools\BZip2",
+                  "Tools\GZip",
                   "Tools\Zipit",
                   "Tools\ConvertZipToSfx",
                   "Tools\WinFormsApp"

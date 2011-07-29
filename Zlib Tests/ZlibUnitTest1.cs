@@ -384,7 +384,6 @@ namespace Ionic.Zlib.Tests
             Assert.IsTrue(File.Exists(unxGzipexe), "Gzip.exe is missing {0}",
                           unxGzipexe);
 
-            int n = 0;
             foreach (var key in TestStrings.Keys)
             {
                 int count = this.rnd.Next(81) + 40;
