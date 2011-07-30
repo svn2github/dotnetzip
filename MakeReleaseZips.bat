@@ -14,7 +14,7 @@ goto START
  DotNetZip is licensed under the MS-PL.  See the accompanying
  License.txt file.
 
- Last Updated: <2011-July-28 18:54:38>
+ Last Updated: <2011-July-30 15:45:36>
 
 -------------------------------------------------------
 
@@ -28,7 +28,7 @@ set MSBUILD=c:\.net4.0\msbuild.exe
 set POWERSHELL=c:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
 @REM set zipit=c:\users\dino\bin\zipit.exe
 set zipit=%baseDir%tools\Zipit\bin\Debug\zipit.exe
-set ExpectedSignedDlls=30
+set ExpectedSignedDlls=32
 set stamp=%DATE% %TIME%
 set stamp=%stamp:/=-%
 set stamp=%stamp: =-%
@@ -224,6 +224,13 @@ goto :EOF
 
   %zipit% %rzipfile%  -d zip-v%version%-CompactFramework\Debug    -D "Zip CF\bin\Debug"   Ionic.Zip.CF.dll Ionic.Zip.CF.pdb
   %zipit% %rzipfile%  -d zip-v%version%-CompactFramework\Release  -D "Zip CF\bin\Release" Ionic.Zip.CF.dll
+
+  @REM --------------------------------------------
+
+  %zipit% %rzipfile%  -d zip-v%version%-Silverlight  -s Readme.txt  "Ionic.Zip Silverlight v%version% packed %stamp%. This is the Ionic.Zip library packaged for Silverlight 3.0 or later.  Use this library if you want to manipulate ZIP files from within Silverlight applications."
+
+  %zipit% %rzipfile%  -d zip-v%version%-Silverlight\Debug    -D "Zip SL\bin\Debug"    Ionic.Zip.dll Ionic.Zip.pdb Ionic.Zip.XML
+  %zipit% %rzipfile%  -d zip-v%version%-Silverlight\Release  -D "Zip SL\bin\Release"  Ionic.Zip.dll
 
   @REM --------------------------------------------
 

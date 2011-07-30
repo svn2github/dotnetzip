@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-28 06:38:16>
+// Time-stamp: <2011-July-30 14:50:04>
 //
 // ------------------------------------------------------------------
 //
@@ -103,8 +103,7 @@ namespace Ionic.Zip
         ///
         /// <remarks>
         /// <para>
-        ///   The caller can specify any write-able stream, for example <see
-        ///   cref="System.Console.OpenStandardOutput()"/>, a <see
+        ///   The caller can specify any write-able stream, for example a <see
         ///   cref="System.IO.FileStream"/>, a <see
         ///   cref="System.IO.MemoryStream"/>, or ASP.NET's
         ///   <c>Response.OutputStream</c>.  The content will be decrypted and
@@ -394,8 +393,7 @@ namespace Ionic.Zip
         ///
         /// <remarks>
         /// <para>
-        ///   The caller can specify any write-able stream, for example <see
-        ///   cref="System.Console.OpenStandardOutput()"/>, a <see
+        ///   The caller can specify any write-able stream, for example a <see
         ///   cref="System.IO.FileStream"/>, a <see
         ///   cref="System.IO.MemoryStream"/>, or ASP.NET's
         ///   <c>Response.OutputStream</c>.  The content will be decrypted and
@@ -658,6 +656,7 @@ namespace Ionic.Zip
 #if NETCF
             if ( (NetCfFile.GetAttributes(fileName) & (uint)FileAttributes.ReadOnly) == (uint)FileAttributes.ReadOnly)
                 NetCfFile.SetAttributes(fileName, (uint)FileAttributes.Normal);
+#elif SILVERLIGHT
 #else
             if ((File.GetAttributes(fileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
                 File.SetAttributes(fileName, FileAttributes.Normal);
@@ -1090,6 +1089,9 @@ namespace Ionic.Zip
 
         internal void _SetTimes(string fileOrDirectory, bool isFile)
         {
+#if SILVERLIGHT
+                    // punt on setting file times
+#else
             // workitem 8807:
             // Because setting the time is not considered to be a fatal error,
             // and because other applications can interfere with the setting
@@ -1158,6 +1160,7 @@ namespace Ionic.Zip
             {
                 WriteStatus("failed to set time on {0}: {1}", fileOrDirectory, ioexc1.Message);
             }
+#endif
         }
 
 

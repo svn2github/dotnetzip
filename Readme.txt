@@ -7,8 +7,8 @@ Introducing the DotNetZip Library and Tools
 DotNetZip is the name of an open-source project that delivers a .NET
 library for handling ZIP files, and some associated tools.
 
- - The library allows .NET programmers to build applications that read,
-   create and modify ZIP files.
+ - The library allows .NET or Silverlight programmers to build
+   applications that read, create and modify ZIP files.
 
  - The tools are .NET programs that rely on the library, and can be used
    by anyone on any Windows machine to build or extract ZIP files.
@@ -676,24 +676,50 @@ support in order to get a smaller DLL. For that you can rely on the
 Ionic.Zip.Reduced.dll.  It provides everything the normal library does,
 except the SaveSelfExtractor() method on the ZipFile class.
 
-For size comparisons...
+For size comparisons...these approximate figures are for v1.9.1.6 of the
+library:
 
 
-assembly              ~size   comment
--------------------------------------------------------
-Ionic.Zlib.dll         100k   {Deflate,GZip,Zlib}Stream and ZlibCodec
+Desktop Framework:
 
-Ionic.BZip2.dll         57k   BZip2{Input,Output}Stream
+  assembly              ~size   comment
+  -------------------------------------------------------
+  Ionic.Zlib.dll         100k   {Deflate,GZip,Zlib}Stream and ZlibCodec
 
-Ionic.Zip.dll          500k   includes ZLIB and SFX, and selector,
-                              ComHelper class
+  Ionic.BZip2.dll         57k   BZip2{Input,Output}Stream
 
-Ionic.Zip.Reduced.dll  170k   includes ZLIB and BZIP2 but not SFX
+  Ionic.Zip.dll          460k   includes ZLIB and BZIP2 compression,
+                                SFX, selector logic, WinZIP AES encryption,
+                                and the ComHelper class
 
-Ionic.Zlib.CF.dll       74k   {Deflate,GZip,Zlib}Stream and ZlibCodec
-                              (Compact Framework)
+  Ionic.Zip.Reduced.dll  250k   includes everything in the main ZIP
+                                library except SFX. (ability to save
+                                Self-extracting archives)
 
-Ionic.Zip.CF.dll       160k   includes ZLIB but not SFX (Compact Framework)
+
+
+Compact Framework:
+
+  assembly              ~size   comment
+  -------------------------------------------------------
+  Ionic.Zlib.CF.dll       74k   {Deflate,GZip,Zlib}Stream and ZlibCodec
+
+  Ionic.BZip2.CF.dll      36k   BZip2{Input,Output}Stream
+
+  Ionic.Zip.CF.dll       204k   includes ZLIB and BZIP2 compression, but
+                                no SFX.
+
+
+Silverlight:
+
+  assembly              ~size   comment
+  -------------------------------------------------------
+  Ionic.Zlib.dll          80k   {Deflate,GZip,Zlib}Stream and ZlibCodec
+
+  Ionic.BZip2.dll         41k   BZip2{Input,Output}Stream
+
+  Ionic.Zip.dll          226k   includes ZLIB and BZIP2 compression, and
+                                the selector logic.  No SFX, no WinZIP AES.
 
 
 
@@ -706,9 +732,10 @@ Support
 --------------------------------------------
 
 There is no official support for this library.  I try to make a good
-effort to monitor the discussions and work items raised on the project
-portal at:
-http://DotNetZip.codeplex.com.
+effort to answer questions and monitor the work items raised on the
+project portal at:
+
+    http://DotNetZip.codeplex.com.
 
 
 
@@ -718,8 +745,9 @@ About Intellectual Property
 ---------------------------------
 
 I am no lawyer, but before using this library in your app, it
-may be worth contacting PKWare for clarification on rights and
-licensing.  The specification for the zip format includes a
+may be worth reviewing the various licenses.
+
+The specification for the zip format, which PKWARE owns, includes a
 paragraph that reads:
 
   PKWARE is committed to the interoperability and advancement of the
@@ -736,17 +764,16 @@ This library does not do strong encryption as described by PKWare, nor
 does it do patching.  But again... I am no lawyer.
 
 
-This library also uses a CRC utility class, in modified form,
-that was published on the internet without an explicit license.
-You can find the original CRC class at:
-  http://www.vbaccelerator.com/home/net/code/libraries/CRC32/Crc32_zip_CRC32_CRC32_cs.asp
-
-
 This library uses a ZLIB implementation that is based on a conversion of
 the jzlib project http://www.jcraft.com/jzlib/.  The license and
 disclaimer required by the jzlib source license is referenced in the
 relevant source files of DotNetZip, specifically in the sources for the
 Zlib module.
+
+This library uses a BZip2 implementation that is based on a conversion
+of the bzip2 implementation in the Apache Commons compression library.
+The Apache license is referenced in the relevant source files of
+DotNetZip, specifically in the sources for the BZip2 module.
 
 
 
@@ -821,8 +848,8 @@ To build the library using the .NET Framework SDK v3.5,
    requires the v2.0 csc compiler.)
 
 
-3. Modify the .csproj files in "Zip Partial DLL" and ZLIB to eliminate
-   mention of the Ionic.pfx file.
+3. Modify the .csproj files in Zip and ZLIB and BZip2 to eliminate
+   mention of the Ionic.pfx and Ionic.snk files.
 
    The various DLLs (Zip Partial, ZLIB, etc.) are signed with my private
    key.  You will want to remove the mention of the private key in the
@@ -864,7 +891,7 @@ Building DotNetZip with Visual Studio
 
 To build DotNetZip using Visual Studio 2010,
 
-1. Open the DotNetZip.sln file in vS2010.
+1. Open the DotNetZip.sln file in VS2010.
 
 2. If necessary, Remove the dependencies on Ionic.pfx and Ionic.snk.
 
@@ -872,7 +899,7 @@ To build DotNetZip using Visual Studio 2010,
    source distributions, but if you get your source from the TFS server,
    then you will have to remove references to the keyfiles manually)
 
-   The various DLLs (Zip Partial, ZLIB, etc.) are signed with my (Dino
+   The various DLLs (Zip, ZLIB, etc.) are signed with my (Dino
    Chiesa's) private key.  I do not distribute that key for anyone
    else's use.  If you build the DotNetZip library from source, You will
    want to remove the mention of the private key in the project files. I
@@ -884,34 +911,38 @@ To build DotNetZip using Visual Studio 2010,
 
 
 
-The Project Structure and Build approach (ILMERGE)
+The Project Structure and Build approach
 ----------------------------------------------------
 
-There are two distinct projects for building libraries: The ZLIB library
-and the ZIP library.  The latter depends on the former.
+The function here is grouped into three basic sets: Zip,
+ZLIB/Deflate/GZIP, and BZip2.  The Zip group is a superset of the ZLIB
+and BZIP2 groups.
 
-The Ionic.Zip.dll assembly is constructed by combining the
-Ionic.Zlib.dll (From the ZLIB project) with the Ionic.Zip.Partial.dll
-(from the "Zip Partial DLL" project) using the ILMerge tool.
+Each group of functionality is packaged into various assemblies, one
+assembly per "platform".  The platforms supported are: .NET (Desktop),
+Compact Framework 2.0, and Silverlight.
 
-In this way  Ionic.Zip.dll becomes  a strict superset of Ionic.Zlib.dll
-and Ionic.Zip.Partial.dll.
+There is also a special "Zip Reduced" library, available only on the
+Desktop platform; it is a reduced-function version of the regular
+Desktop Framework zip library. It provides an option of using a smaller
+library for those zip-handling applications that don't produce
+Self-extracting archives.
+
+In a previous guise, DotNetZip relied on the ILMerge tool to combine
+distinct DLLs into a single package.  This is no longer the case.
+
+Because the ZIP projects include the ZLIB and BZIP2 function, the
+appropriate source modules for the ZLIB and Bzip2 are "linked" into each
+of the ZIP projects (Desktop, CF, and Silverlight).
 
 
-It works like this:
-  The zlib library is built and signed  (Ionic.Zlib.dll)
-  The "partial" zip library is built and signed (Ionic.Zip.Partial.dll)
-  ILmerge is used to combine those two into a single assembly
-  (Ionic.Zip.dll), which itself is signed.
 
 
-
-
-The missing Ionic.pfx and Ionic.snk files; Signing the assembly yourself.
+Regarding the missing Ionic.pfx and Ionic.snk files
 -------------------------------------------------------------------------
 
-The binary DLL shipped in the codeplex project is signed by me, Ionic
-Shade.  This provides a "strong name" for the assembly, which itself
+The binary DLLs shipped in the codeplex project are signed by me, Dino
+Chiesa.  This provides a "strong name" for the assembly, which itself
 provides some assurance as to the integrity of the library, and also
 allows it to be run within restricted sites, like apps running inside
 web hosters.
@@ -919,8 +950,8 @@ web hosters.
 For more on strong names, see this article:
 http://msdn.microsoft.com/en-gb/magazine/cc163583.aspx
 
-Signing is done automatically at build time in the VS2008 project or in
-the msbuild build. There
+Signing is done automatically at build time in the Visual Studio project or in
+the msbuild build.  There
 is a .pfx file that holds the crypto stuff for signing the assembly, and
 that pfx file is itself protected by a password. There is also an
 Ionic.snk file which is referenced by the project, but which I do not
@@ -931,22 +962,25 @@ file?  Where's the .snk file?
 
 Here's the problem; those files contain my private key. if I give
 everyone the password to the PFX file or the .snk file, then anyone can
-go and build a modified DotNetZip.dll, and sign it with my key, and
-apply the same version number.  This means there could be multiple
+go and build a modified Ionic.Zip.dll, and sign it with my key, and
+apply any version number they like.  This means there could be multiple
 distinct assemblies with the same signature.  This is obviously not
 good.
 
-Since I don't release the ability to sign DLLs with my key,
-the DLL signed with my key is guaranteed to be from me only. If
-anyone wants to modify the project and party on it, they have a couple
-options:
+Since I don't release the ability to sign DLLs with my key, the DLL
+signed with my key is guaranteed to be produced by me only, which is in
+fact the exact intent of code signing in .NET.
+
+If anyone wants to modify the project and re-compile it, they have a
+couple options:
+
   - sign the assembly themselves, using their own key.
   - produce a modified, unsigned assembly
 
 In either case it is not the same as the assembly I am shipping,
 therefore it should not be signed with the same key.
 
-mmkay?
+All clear?
 
 As for those options above, here is some more detail:
 
@@ -957,8 +991,9 @@ As for those options above, here is some more detail:
   2. If you don't need a strong-named assembly, then remove all the
      signing from the various projects.
 
-In either case, You will need to modify the "Zip Full DLL" and "Zip CF Full
-DLL" projects, as well as the "Zlib" and "Zlib CF" projects.
+In either case, you will need to modify the "Zip" and "Zip CF DLL"
+projects, the BZip and BZip CF projects, and the "Zlib" and "Zlib CF"
+projects.
 
 
 
@@ -1017,8 +1052,9 @@ Tests
 --------------------------------------------
 
 There are two source projects in the VS Solution that contain Unit
-Tests: one for the zlib library and another for the Zip library.
-If you develop any new tests for DotNetZip, I'd be glad to look at them.
+Tests: one for the zlib library, one for the bzip2 library, and another
+for the Zip library.  If you develop any new tests for DotNetZip, I'd be
+glad to look at them.
 
 
 
@@ -1050,6 +1086,7 @@ This library is all new code, written by me, with these exceptions:
 
  -  the CRC32 class - see above for credit.
  -  the zlib library - see above for credit.
+ -  the bzip2 compressor - see above for credit.
 
 
 

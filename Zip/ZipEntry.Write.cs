@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-28 06:38:22>
+// Last Saved: <2011-July-30 14:55:47>
 //
 // ------------------------------------------------------------------
 //
@@ -921,7 +921,11 @@ namespace Ionic.Zip
             //                 _BitField |= 0x0020;
 
             // set the UTF8 bit if necessary
+#if SILVERLIGHT
+            if (_actualEncoding.WebName == "utf-8")
+#else
             if (_actualEncoding.CodePage == System.Text.Encoding.UTF8.CodePage)
+#endif
                 _BitField |= 0x0800;
 
             // The PKZIP spec says that if bit 3 is set (0x0008) in the General

@@ -10,7 +10,7 @@
 #  DotNetZip is licensed under the MS-PL.  See the accompanying
 #  License.txt file.
 #
-#  Last Updated: <2011-July-28 18:39:57>
+#  Last Updated: <2011-July-30 15:54:25>
 #
 # -------------------------------------------------------
 
@@ -18,6 +18,7 @@ $msbuild = "c:\.net4.0\msbuild.exe"
 $dirsToClean =  @("Zip",
                   "Zip Reduced",
                   "Zip CF",
+                  "Zip SL",
                   "Zip Tests",
                   "Zlib",
                   "Zlib CF",

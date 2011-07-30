@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-25 21:56:59>
+// Time-stamp: <2011-July-30 14:43:36>
 //
 // ------------------------------------------------------------------
 //
@@ -2410,6 +2410,11 @@ namespace Ionic.Zip
                 if (File.Exists(filename) || Directory.Exists(filename))
                     entry._ExternalFileAttrs = (int)NetCfFile.GetAttributes(filename);
 
+#elif SILVERLIGHT
+                entry._Mtime =
+                entry._Ctime =
+                    entry._Atime = System.DateTime.UtcNow;
+                entry._ExternalFileAttrs = (int)0;
 #else
                 // workitem 6878??
                 entry._Mtime = File.GetLastWriteTime(filename).ToUniversalTime();
