@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-16 13:08:11>
+// Time-stamp: <2011-July-30 15:48:47>
 //
 // ------------------------------------------------------------------
 //
@@ -185,7 +185,7 @@ namespace Ionic.Zip
 
         private void FixTitle()
         {
-            var foo = "@@SFX_EXE_WINDOW_TITLE";
+            string foo = "@@SFX_EXE_WINDOW_TITLE";
             if (foo.StartsWith("@@") && foo.EndsWith("SFX_EXE_WINDOW_TITLE"))
             {
                 this.Text = String.Format("DotNetZip v{0} Self-extractor (www.codeplex.com/DotNetZip)",
