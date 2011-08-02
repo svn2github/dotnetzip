@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-August-02 10:06:39>
+// Time-stamp: <2011-August-02 19:40:17>
 //
 // ------------------------------------------------------------------
 //
@@ -275,13 +275,17 @@ namespace Ionic.Zip
                         // pending) the "other name".
                         //
                         // Ideally this would be transactional. It's possible that the
-                        // delete succeeds and the move fails. Lacking transactions, if 
-                        // this kind of failure happens, we're hosed, and this logic will 
+                        // delete succeeds and the move fails. Lacking transactions, if
+                        // this kind of failure happens, we're hosed, and this logic will
                         // throw on the next File.Move().
                         //
                         //File.Delete(_name);
                         // workitem 10447
+#if NETCF || SILVERLIGHT
+                        tmpName = _name + "." + SharedUtilities.GenerateRandomStringImpl(8,0) + ".tmp";
+#else
                         tmpName = _name + "." + Path.GetRandomFileName();
+#endif
                         if (File.Exists(tmpName))
                             DeleteFileWithRetry(tmpName);
                         File.Move(_name, tmpName);

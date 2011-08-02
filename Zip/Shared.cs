@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-31 14:39:40>
+// Last Saved: <2011-August-02 19:41:01>
 //
 // ------------------------------------------------------------------
 //
@@ -550,7 +550,7 @@ namespace Ionic.Zip
             return "DotNetZip-" + GenerateRandomStringImpl(8,0) + ".tmp";
         }
 
-        private static string GenerateRandomStringImpl(int length, int delta)
+        internal static string GenerateRandomStringImpl(int length, int delta)
         {
             bool WantMixedCase = (delta == 0);
             System.Random rnd = new System.Random();
