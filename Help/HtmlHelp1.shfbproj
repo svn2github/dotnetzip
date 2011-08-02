@@ -35,22 +35,21 @@
       <DocumentationSource sourceFile="..\Zip\bin\Debug\Ionic.Zip.xml" xmlns="" />
     </DocumentationSources>
     <NamespaceSummaries>
-      <NamespaceSummaryItem name="(global)" isDocumented="False" xmlns="" />
-      <NamespaceSummaryItem name="Ionic" isDocumented="True" xmlns="">The Ionic namespace includes supporting classes used in the DotNetZip library.</NamespaceSummaryItem>
-      <NamespaceSummaryItem name="Ionic.Zip" isDocumented="True" xmlns="">Classes in the Ionic.Zip namespace allow applications to read and write zip files according to the format
-described by pkware, at:
-http://www.pkware.com/business_and_developers/developer/popups/appnote.txt.
-
-This implementation utilizes a DeflateStream class implemented in managed code, in the Ionic.Zlib namespace.  It does not use System.IO.Compression.DeflateStream in the .NET Framework
-v2.0 base class library.
-
-DotNetZip is donationware.  Please donate. Proceeds go to the Boys &amp;amp; Girls Club in Pennsylvania, USA.  http://cheeso.members.winisp.net/DotNetZipDonate.aspx</NamespaceSummaryItem>
-      <NamespaceSummaryItem name="Ionic.Zlib" isDocumented="True" xmlns="">Ionic.Zlib namespace includes classes for doing ZLIB, DEFLATE, and GZIP compression and decompression, according to RFC 1950, RFC 1951, and RFC 1952.  It includes stream classes that can directly replace the DeflateStream and GZipStream classes that are included in the Base Class Library of the .NET Framework.</NamespaceSummaryItem>
-    </NamespaceSummaries>
+      <NamespaceSummaryItem name="(global)" isDocumented="False" />
+<NamespaceSummaryItem name="Ionic" isDocumented="True">The Ionic namespace includes supporting classes used in the DotNetZip library.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Ionic.Zip" isDocumented="True">&lt;para&gt;Classes in the Ionic.Zip namespace allow applications to read and write zip files according to
+&lt;see href='http://www.pkware.com/business_and_developers/developer/popups/appnote.txt.'&gt;the format
+described by PKWARE&lt;/see&gt;
+&lt;/para&gt;
+&lt;para&gt;
+DotNetZip is donationware.  &lt;see href='http://cheeso.members.winisp.net/DotNetZipDonate.aspx'&gt;Please donate.&lt;/see&gt;&lt;/para&gt;</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Ionic.Zlib" isDocumented="True">Ionic.Zlib namespace includes classes for doing ZLIB, DEFLATE, and GZIP compression and decompression, according to RFC 1950, RFC 1951, and RFC 1952.  It includes stream classes that can directly replace the DeflateStream and GZipStream classes that are included in the Base Class Library of the .NET Framework.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Ionic.BZip2" isDocumented="True">The Ionic.BZip2 namespace includes classes for doing BZip2 compression and decompression, according to the BZip2 specification provided by Julian Seward.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Ionic.Crc" isDocumented="True">The Ionic.Crc namespace includes a classes that calculate 32-bit Cyclic Redundancy Checks (CRC32) for data.</NamespaceSummaryItem></NamespaceSummaries>
     <CopyrightText>Copyright 2009-2011, Dino Chiesa</CopyrightText>
     <RootNamespaceContainer>True</RootNamespaceContainer>
     <RootNamespaceTitle>Reference</RootNamespaceTitle>
-    <HelpFileFormat>HtmlHelp1</HelpFileFormat>
+    <HelpFileFormat>HtmlHelp1, Website</HelpFileFormat>
   </PropertyGroup>
   <!-- There are no properties for these two groups but they need to appear in
        order for Visual Studio to perform the build. -->

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -185,15 +185,15 @@
   <ItemGroup>
     <ProjectReference Include="..\Zip\Zip DLL.csproj">
       <Project>{D3B0AD67-44D8-4B3D-BED9-CE1FD6DE2C5A}</Project>
-      <Name>Zip Full DLL</Name>
+      <Name>Zip DLL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Tools\Unzip\Unzip.csproj">
+    <ProjectReference Include="..\Tools\UnZip\UnZip.csproj">
       <Project>{A22C89E0-B5D4-4881-A61F-4B1FD82F2453}</Project>
-      <Name>UnZip Tool</Name>
+      <Name>UnZip</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Tools\Zipit\Zipit.csproj">
+    <ProjectReference Include="..\Tools\ZipIt\ZipIt.csproj">
       <Project>{98008721-C4DD-4F34-B3AE-A3453E29BB65}</Project>
-      <Name>Zipit Tool</Name>
+      <Name>ZipIt</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

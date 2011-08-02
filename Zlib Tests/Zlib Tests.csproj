@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -79,7 +79,7 @@
     </ProjectReference>
     <ProjectReference Include="..\Tools\GZip\GZip.csproj">
       <Project>{52542d59-25ec-4ee4-8af2-85de50c70ea6}</Project>
-      <Name>BZip2 Tool</Name>
+      <Name>GZip</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
