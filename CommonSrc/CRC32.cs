@@ -1,4 +1,4 @@
-// BCRC32.cs
+// CRC32.cs
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2011 Dino Chiesa.
@@ -14,14 +14,14 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-31 14:35:38>
+// Last Saved: <2011-August-02 18:25:54>
 //
 // ------------------------------------------------------------------
 //
-// This module defines the BCRC32 class, which is a CRC-32 class that
-// can do the BZip2 CRC32 algorithm, including bit reversal. The bit
-// reversal is what distinguishes this CRC-32 from the CRC-32 that is
-// used in PKZIP files, or GZIP files.
+// This module defines the CRC32 class, which can do the CRC32 algorithm, using
+// arbitrary starting polynomials, and bit reversal. The bit reversal is what
+// distinguishes this CRC-32 used in BZip2 from the CRC-32 that is used in PKZIP
+// files, or GZIP files. This class does both.
 //
 // ------------------------------------------------------------------
 
@@ -36,12 +36,11 @@ namespace Ionic.Crc
     ///   can set the polynomial and enable or disable bit
     ///   reversal. This can be used for GZIP, BZip2, or ZIP.
     /// </summary>
-    /// <summary>
-    /// Calculates a 32bit Cyclic Redundancy Checksum (CRC) using the same polynomial
-    /// used by Zip. This type is used internally by DotNetZip; it is generally not used
-    /// directly by applications wishing to create, read, or manipulate zip archive
-    /// files.
-    /// </summary>
+    /// <remarks>
+    ///   This type is used internally by DotNetZip; it is generally not used
+    ///   directly by applications wishing to create, read, or manipulate zip
+    ///   archive files.
+    /// </remarks>
 
     [Interop.GuidAttribute("ebc25cf6-9120-4283-b972-0e5520d0000C")]
     [Interop.ComVisible(true)]
@@ -409,9 +408,11 @@ namespace Ionic.Crc
         /// </param>
         /// <remarks>
         ///   <para>
-        ///     In the CRC-32 used by BZip2, the bits are reversed (so you should
-        ///     pass true here).  In the CRC-32 used by GZIP and PKZIP, the bits
-        ///     are not reversed - so you should pass false.
+        ///     In the CRC-32 used by BZip2, the bits are reversed. Therefore if you
+        ///     want a CRC32 with compatibility with BZip2, you should pass true
+        ///     here. In the CRC-32 used by GZIP and PKZIP, the bits are not
+        ///     reversed; Therefore if you want a CRC32 with compatibility with
+        ///     those, you should pass false.
         ///   </para>
         /// </remarks>
         public CRC32(bool reverseBits) :
@@ -437,9 +438,12 @@ namespace Ionic.Crc
         ///
         /// <remarks>
         ///   <para>
-        ///     In the CRC-32 used by BZip2, the bits are reversed, so you should
-        ///     pass true here. In the CRC-32 used by GZIP and PKZIP, the bits
-        ///     are not reversed - so you should pass false.
+        ///     In the CRC-32 used by BZip2, the bits are reversed. Therefore if you
+        ///     want a CRC32 with compatibility with BZip2, you should pass true
+        ///     here for the <c>reverseBits</c> parameter. In the CRC-32 used by
+        ///     GZIP and PKZIP, the bits are not reversed; Therefore if you want a
+        ///     CRC32 with compatibility with those, you should pass false for the
+        ///     <c>reverseBits</c> parameter.
         ///   </para>
         /// </remarks>
         public CRC32(int polynomial, bool reverseBits)
@@ -502,72 +506,103 @@ namespace Ionic.Crc
         private bool _leaveOpen;
 
         /// <summary>
-        /// Gets the total number of bytes run through the CRC32 calculator.
-        /// </summary>
-        ///
-        /// <remarks>
-        /// This is either the total number of bytes read, or the total number of bytes
-        /// written, depending on the direction of this stream.
-        /// </remarks>
-        public Int64 TotalBytesSlurped
-        {
-            get { return _Crc32.TotalBytesRead; }
-        }
-
-
-        /// <summary>
         /// The default constructor.
         /// </summary>
         /// <remarks>
-        /// Instances returned from this constructor will leave the underlying stream
-        /// open upon Close().
+        ///   <para>
+        ///     Instances returned from this constructor will leave the underlying
+        ///     stream open upon Close().  The stream uses the default CRC32
+        ///     algorithm, which implies a polynomial of 0xEDB88320.
+        ///   </para>
         /// </remarks>
         /// <param name="stream">The underlying stream</param>
         public CrcCalculatorStream(System.IO.Stream stream)
-            : this(true, CrcCalculatorStream.UnsetLengthLimit, stream)
+            : this(true, CrcCalculatorStream.UnsetLengthLimit, stream, null)
         {
         }
 
-
         /// <summary>
-        /// The constructor allows the caller to specify how to handle the underlying
-        /// stream at close.
-        /// </summary>
-        /// <param name="stream">The underlying stream</param>
-        /// <param name="leaveOpen">true to leave the underlying stream
-        /// open upon close of the CrcCalculatorStream.; false otherwise.</param>
-        public CrcCalculatorStream(System.IO.Stream stream, bool leaveOpen)
-            : this(leaveOpen, CrcCalculatorStream.UnsetLengthLimit, stream)
-        {
-        }
-
-
-        /// <summary>
-        /// A constructor allowing the specification of the length of the stream to read.
+        ///   The constructor allows the caller to specify how to handle the
+        ///   underlying stream at close.
         /// </summary>
         /// <remarks>
-        /// Instances returned from this constructor will leave the underlying stream open
-        /// upon Close().
+        ///   <para>
+        ///     The stream uses the default CRC32 algorithm, which implies a
+        ///     polynomial of 0xEDB88320.
+        ///   </para>
+        /// </remarks>
+        /// <param name="stream">The underlying stream</param>
+        /// <param name="leaveOpen">true to leave the underlying stream
+        /// open upon close of the <c>CrcCalculatorStream</c>; false otherwise.</param>
+        public CrcCalculatorStream(System.IO.Stream stream, bool leaveOpen)
+            : this(leaveOpen, CrcCalculatorStream.UnsetLengthLimit, stream, null)
+        {
+        }
+
+        /// <summary>
+        ///   A constructor allowing the specification of the length of the stream
+        ///   to read.
+        /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     The stream uses the default CRC32 algorithm, which implies a
+        ///     polynomial of 0xEDB88320.
+        ///   </para>
+        ///   <para>
+        ///     Instances returned from this constructor will leave the underlying
+        ///     stream open upon Close().
+        ///   </para>
         /// </remarks>
         /// <param name="stream">The underlying stream</param>
         /// <param name="length">The length of the stream to slurp</param>
         public CrcCalculatorStream(System.IO.Stream stream, Int64 length)
-            : this(true, length, stream)
+            : this(true, length, stream, null)
         {
             if (length < 0)
                 throw new ArgumentException("length");
         }
 
         /// <summary>
-        /// A constructor allowing the specification of the length of the stream to
-        /// read, as well as whether to keep the underlying stream open upon Close().
+        ///   A constructor allowing the specification of the length of the stream
+        ///   to read, as well as whether to keep the underlying stream open upon
+        ///   Close().
         /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     The stream uses the default CRC32 algorithm, which implies a
+        ///     polynomial of 0xEDB88320.
+        ///   </para>
+        /// </remarks>
         /// <param name="stream">The underlying stream</param>
         /// <param name="length">The length of the stream to slurp</param>
         /// <param name="leaveOpen">true to leave the underlying stream
-        /// open upon close of the CrcCalculatorStream.; false otherwise.</param>
+        /// open upon close of the <c>CrcCalculatorStream</c>; false otherwise.</param>
         public CrcCalculatorStream(System.IO.Stream stream, Int64 length, bool leaveOpen)
-            : this(leaveOpen, length, stream)
+            : this(leaveOpen, length, stream, null)
+        {
+            if (length < 0)
+                throw new ArgumentException("length");
+        }
+
+        /// <summary>
+        ///   A constructor allowing the specification of the length of the stream
+        ///   to read, as well as whether to keep the underlying stream open upon
+        ///   Close(), and the CRC32 instance to use.
+        /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     The stream uses the specified CRC32 instance, which allows the
+        ///     application to specify how the CRC gets calculated.
+        ///   </para>
+        /// </remarks>
+        /// <param name="stream">The underlying stream</param>
+        /// <param name="length">The length of the stream to slurp</param>
+        /// <param name="leaveOpen">true to leave the underlying stream
+        /// open upon close of the <c>CrcCalculatorStream</c>; false otherwise.</param>
+        /// <param name="crc32">the CRC32 instance to use to calculate the CRC32</param>
+        public CrcCalculatorStream(System.IO.Stream stream, Int64 length, bool leaveOpen,
+                                   CRC32 crc32)
+            : this(leaveOpen, length, stream, crc32)
         {
             if (length < 0)
                 throw new ArgumentException("length");
@@ -579,27 +614,54 @@ namespace Ionic.Crc
         // is no length set.  So we validate the length limit in those ctors that use an
         // explicit param, otherwise we don't validate, because it could be our special
         // value.
-        private CrcCalculatorStream(bool leaveOpen, Int64 length, System.IO.Stream stream)
+        private CrcCalculatorStream
+            (bool leaveOpen, Int64 length, System.IO.Stream stream, CRC32 crc32)
             : base()
         {
             _innerStream = stream;
-            _Crc32 = new CRC32();
+            _Crc32 = crc32 ?? new CRC32();
             _lengthLimit = length;
             _leaveOpen = leaveOpen;
         }
 
+
         /// <summary>
-        /// Provides the current CRC for all blocks slurped in.
+        ///   Gets the total number of bytes run through the CRC32 calculator.
         /// </summary>
+        ///
+        /// <remarks>
+        ///   This is either the total number of bytes read, or the total number of
+        ///   bytes written, depending on the direction of this stream.
+        /// </remarks>
+        public Int64 TotalBytesSlurped
+        {
+            get { return _Crc32.TotalBytesRead; }
+        }
+
+        /// <summary>
+        ///   Provides the current CRC for all blocks slurped in.
+        /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     The running total of the CRC is kept as data is written or read
+        ///     through the stream.  read this property after all reads or writes to
+        ///     get an accurate CRC for the entire stream.
+        ///   </para>
+        /// </remarks>
         public Int32 Crc
         {
             get { return _Crc32.Crc32Result; }
         }
 
         /// <summary>
-        /// Indicates whether the underlying stream will be left open when the
-        /// CrcCalculatorStream is Closed.
+        ///   Indicates whether the underlying stream will be left open when the
+        ///   <c>CrcCalculatorStream</c> is Closed.
         /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     Set this at any point before calling <see cref="Close()"/>.
+        ///   </para>
+        /// </remarks>
         public bool LeaveOpen
         {
             get { return _leaveOpen; }
@@ -686,7 +748,7 @@ namespace Ionic.Crc
         }
 
         /// <summary>
-        /// Not implemented.
+        ///   Returns the length of the underlying stream.
         /// </summary>
         public override long Length
         {
@@ -699,9 +761,9 @@ namespace Ionic.Crc
         }
 
         /// <summary>
-        /// The getter for this property returns the total bytes read.
-        /// If you use the setter, it will throw
-        /// <see cref="NotSupportedException"/>
+        ///   The getter for this property returns the total bytes read.
+        ///   If you use the setter, it will throw
+        /// <see cref="NotSupportedException"/>.
         /// </summary>
         public override long Position
         {

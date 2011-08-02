@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-30 14:50:04>
+// Time-stamp: <2011-August-02 18:53:04>
 //
 // ------------------------------------------------------------------
 //
@@ -63,9 +63,11 @@ namespace Ionic.Zip
         /// </para>
         ///
         /// <para>
-        ///   See the remarks the <see cref="LastModified"/> property, for some
-        ///   details about how the last modified time of the file is set after
-        ///   extraction.
+        ///   Within the call to <c>Extract()</c>, the content for the entry is
+        ///   written into a filesystem file, and then the last modified time of the
+        ///   file is set according to the <see cref="LastModified"/> property on
+        ///   the entry. See the remarks the <see cref="LastModified"/> property for
+        ///   some details about the last modified time.
         /// </para>
         ///
         /// </remarks>
