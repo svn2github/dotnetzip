@@ -152,43 +152,83 @@ different assembly.
 <td style='color:white;Background:Navy;'><strong>DLL</strong></td>
 </tr>
 
-<tr><td> Basic
-reading or writing Zip files</td><td> Ionic.Zip.dll</td>
+<tr>
+  <td> Basic reading or writing of Zip files</td>
+  <td> Ionic.Zip.dll</td>
 </tr>
 
-<tr><td>raw block or stream compression </td><td>Ionic.Zlib.dll</td></tr>
+<tr>
+  <td>raw block or stream compression using ZLIB, DEFLATE, or
+    GZip </td>
+  <td>Ionic.Zlib.dll</td>
+</tr>
 
-<tr><td>both raw compression as well as reading or writing Zip files </td><td>Ionic.Zip.dll</td></tr>
+<tr>
+  <td>compression using the BZip2 algorithm</td>
+  <td>Ionic.BZip2.dll</td>
+</tr>
+
+<tr>
+  <td>Some combination of ZLIB/DEFLATE/GZIP compression, BZip2
+  compression, and reading or writing Zip
+  files </td>
+  <td>Ionic.Zip.dll</td>
+</tr>
 
 
-<tr><td>reading or writing Zip files on Compact Framework </td><td>Ionic.Zip.CF.dll</td></tr>
+<tr>
+  <td>reading or writing Zip files on .NET Compact Framework </td>
+  <td>Ionic.Zip.CF.dll</td>
+</tr>
 
 
-<tr><td>raw compression on Compact Framework </td><td>Ionic.Zlib.CF.dll</td></tr>
+<tr>
+  <td>ZLIB/DEFLATE/GZIP compression on .NET Compact Framework </td>
+  <td>Ionic.Zlib.CF.dll</td>
+</tr>
 
-<tr><td>both raw compression as well as reading or writing Zip files on CF </td><td>Ionic.Zip.CF.dll</td></tr>
+<tr>
+  <td>compression using the BZip2 algorithm on .NET Compact Framework </td>
+  <td>Ionic.BZip2.CF.dll</td>
+</tr>
 
-<tr><td>reading or writing Zip files, but never creating a self-extracting archive </td><td>Ionic.Zip.Reduced.dll</td></tr>
+
+<tr>
+  <td>Some combination of ZLIB/DEFLATE/GZIP compression, BZip2
+  compression, and reading or writing Zip
+  files on .NET CF</td>
+  <td>Ionic.Zip.CF.dll</td>
+</tr>
+
+<tr>
+  <td>reading or writing Zip files, but never creating a self-extracting
+  archive </td>
+  <td>Ionic.Zip.Reduced.dll</td>
+</tr>
 </table>
 
-
-<p>Never reference both Ionic.Zlib.dll and Ionic.Zip.dll in the same
-application.  If your application does both Zlib and Zip things, you
-need only add a reference to Ionic.Zip.dll.  Ionic.Zip.dll includes all
-the capability in Ionic.Zlib.dll.  You always need to reference only a
-single Ionic DLL, regardless whether you use Zlib or Zip or both.  </p>
+<p>There are also Silverlight versions of the Zlib, BZip2, and Zip
+  libraries. </p>
 
 <p>
-If you use COM, then you want to reference the main DLL,
-Ionic.Zip.dll.  If you install the DotNetZip Runtime
-library via the .MSI installer, the correct DLL will automatically be
-installed in the GAC, and
-registered for use with COM.  If you don&apos;t use the .MSI installer, you
-will have to perform these steps yourself.  Consult the documentation on
-using DotNetZip with COM for more information.
-
+  Never reference both Ionic.Zlib.dll and Ionic.Zip.dll in the same
+  application, or both Ionic.BZip2.dll and Ionic.Zip.dll.  If your
+  application does both Zlib and Zip things, or both BZip2 and Zip
+  things, or all three, you need only add a reference to Ionic.Zip.dll.
+  Ionic.Zip.dll includes all the capability in Ionic.Zlib.dll and
+  Ionic.BZip2.dll.  You always need to reference only a single Ionic
+  DLL, regardless whether you use Zlib or BZip2 or Zip or some
+  combination.
 </p>
 
+<p>
+  If you use COM, then you want to reference the main DLL,
+  Ionic.Zip.dll.  If you install the DotNetZip Runtime library via the
+  .MSI installer, the correct DLL will automatically be installed and
+  registered for use with COM.  If you don&apos;t use the .MSI
+  installer, you will have to perform these steps yourself.  Consult the
+  documentation on using DotNetZip with COM for more information.
+</p>
 
 </body>
 </html>
