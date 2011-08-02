@@ -14,7 +14,7 @@ goto START
  DotNetZip is licensed under the MS-PL.  See the accompanying
  License.txt file.
 
- Last Updated: <2011-July-30 15:45:36>
+ Last Updated: <2011-July-30 19:19:45>
 
 -------------------------------------------------------
 
@@ -61,6 +61,8 @@ if ERRORLEVEL 1 (
  call :MakeDevelopersRedist
 
  call :MakeRuntimeRedist
+
+ call :MakeSilverlightRedist
 
  call :MakeZipUtils
 
@@ -332,6 +334,32 @@ goto :EOF
 
   %zipit% %rzipfile%  -d bzip2-v%version%-CompactFramework -D "BZip2 CF\bin\Release"  -s Readme.txt  "Ionic.BZip2 Library for .NET Compact Framework v%version% packed %stamp%"   Ionic.BZip2.CF.dll
 
+goto :EOF
+--------------------------------------------
+
+
+
+--------------------------------------------
+:MakeSilverlightRedist
+
+  @REM example output zipfile name:  DotNetZipLib-Silverlight-v1.9.zip
+
+  echo.
+  echo +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  echo.
+  echo Making the silverlight redistributable zip...
+  echo.
+
+  set zipfile=DotNetZipLib-Silverlight-v%version%.zip
+  set rzipfile=%releaseDir%\%zipfile%
+
+  echo zipfile is %rzipfile%
+
+  %zipit% %rzipfile%    -s Contents.txt "This is the Silverlight redistributable package for DotNetZip v%version%.  Packed %stamp%.  There is an assembly for BZip2, one for ZLIB/Deflate/GZIP, and one for Zip, in the Release folder, and debug builds of the same in the Debug folder, for a total of 6 DLLs.  You need to reference exactly one of those DLLs; which one depends on your application requirements. If you have any questions, please check the forums on http://dotnetzip.codeplex.com/discussions "   -s DotNetZip-is-DonationWare.txt  "DotNetZip is donationware. Consider donating. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   License.txt License.zlib.txt License.bzip2.txt
+
+  %zipit% %rzipfile%  -d Release  -D "Zip SL\bin\Release"  Ionic.Zip.dll -D "Zlib SL DLL\bin\Release"  Ionic.Zlib.dll -D "BZip2 SL DLL\bin\Release"  Ionic.BZip2.dll
+
+  %zipit% %rzipfile%  -d Debug  -D "Zip SL\bin\Debug"  Ionic.Zip.dll  Ionic.Zip.xml Ionic.Zip.pdb -D "Zlib SL DLL\bin\Debug"  Ionic.Zlib.dll Ionic.Zlib.xml Ionic.Zlib.pdb -D "BZip2 SL DLL\bin\Debug"  Ionic.BZip2.dll  Ionic.BZip2.xml  Ionic.BZip2.pdb
 
 goto :EOF
 --------------------------------------------
