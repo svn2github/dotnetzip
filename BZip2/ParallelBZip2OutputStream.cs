@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-31 12:01:09>
+// Last Saved: <2011-August-02 16:44:24>
 //
 // ------------------------------------------------------------------
 //
@@ -257,7 +257,10 @@ namespace Ionic.BZip2
         ///   Constructs a new <c>ParallelBZip2OutputStream</c> with specified blocksize.
         /// </summary>
         /// <param name = "output">the destination stream.</param>
-        /// <param name = "blockSize">the blockSize in units of 100000 bytes.</param>
+        /// <param name = "blockSize">
+        ///   The blockSize in units of 100000 bytes.
+        ///   The valid range is 1..9.
+        /// </param>
         public ParallelBZip2OutputStream(Stream output, int blockSize)
             : this(output, blockSize, false)
         {
@@ -276,11 +279,15 @@ namespace Ionic.BZip2
         }
 
         /// <summary>
-        ///   Constructs a new <c>ParallelBZip2OutputStream</c> with specified blocksize.
+        ///   Constructs a new <c>ParallelBZip2OutputStream</c> with specified blocksize,
+        ///   and explicitly specifies whether to leave the wrapped stream open.
         /// </summary>
         ///
         /// <param name = "output">the destination stream.</param>
-        /// <param name = "blockSize">the blockSize in units of 100000 bytes.</param>
+        /// <param name = "blockSize">
+        ///   The blockSize in units of 100000 bytes.
+        ///   The valid range is 1..9.
+        /// </param>
         /// <param name = "leaveOpen">
         ///   whether to leave the captive stream open upon closing this stream.
         /// </param>
@@ -288,12 +295,16 @@ namespace Ionic.BZip2
         {
             if (blockSize < BZip2.MinBlockSize || blockSize > BZip2.MaxBlockSize)
             {
-                var msg = String.Format("blockSize must be between {0} and {1}",
+                var msg = String.Format("blockSize={0} is out of range; must be between {1} and {2}",
+                                        blockSize,
                                         BZip2.MinBlockSize, BZip2.MaxBlockSize);
                 throw new ArgumentException(msg, "blockSize");
             }
 
             this.output = output;
+            if (!this.output.CanWrite)
+                throw new ArgumentException("The stream is not writable.", "output");
+
             this.bw = new BitWriter(this.output);
             this.blockSize100k = blockSize;
             this.leaveOpen = leaveOpen;
@@ -852,7 +863,7 @@ namespace Ionic.BZip2
         /// Indicates whether the stream can be read.
         /// </summary>
         /// <remarks>
-        /// The return value depends on whether the captive stream supports reading.
+        /// The return value is always false.
         /// </remarks>
         public override bool CanRead
         {
