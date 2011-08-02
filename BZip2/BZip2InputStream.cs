@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-28 06:17:25>
+// Last Saved: <2011-July-31 11:57:32>
 //
 // ------------------------------------------------------------------
 //
@@ -122,6 +122,12 @@ namespace Ionic.BZip2
         /// <summary>
         ///   Create a BZip2InputStream, wrapping it around the given input Stream.
         /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     The input stream will be closed when the BZip2InputStream is closed.
+        ///   </para>
+        /// </remarks>
+        /// <param name='input'>The stream from which to read compressed data</param>
         public BZip2InputStream(Stream input)
             : this(input, false)
         {}
@@ -129,9 +135,13 @@ namespace Ionic.BZip2
 
         /// <summary>
         ///   Create a BZip2InputStream with the given stream, and
-        ///   specifying whether to leave the captive stream open when
+        ///   specifying whether to leave the wrapped stream open when
         ///   the BZip2InputStream is closed.
         /// </summary>
+        /// <param name='input'>The stream from which to read compressed data</param>
+        /// <param name='leaveOpen'>
+        ///   Whether to leave the input stream open, when the BZip2InputStream closes.
+        /// </param>
         ///
         /// <example>
         ///
@@ -233,6 +243,7 @@ namespace Ionic.BZip2
         /// <summary>
         ///   Read a single byte from the stream.
         /// </summary>
+        /// <returns>the byte read from the stream, or -1 if EOF</returns>
         public override int ReadByte()
         {
             int retChar = this.currentChar;
@@ -376,8 +387,11 @@ namespace Ionic.BZip2
         }
 
         /// <summary>
-        /// Calling this method always throws a <see cref="NotImplementedException"/>.
+        ///   Calling this method always throws a <see cref="NotImplementedException"/>.
         /// </summary>
+        /// <param name='buffer'>this parameter is never used</param>
+        /// <param name='offset'>this parameter is never used</param>
+        /// <param name='count'>this parameter is never used</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
             throw new NotImplementedException();

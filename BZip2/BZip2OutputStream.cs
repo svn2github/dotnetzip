@@ -16,7 +16,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-25 22:13:28>
+// Last Saved: <2011-July-31 12:01:22>
 //
 // ------------------------------------------------------------------
 //
@@ -106,6 +106,10 @@ namespace Ionic.BZip2
         ///   compressed output to the given output stream.
         /// </summary>
         ///
+        /// <param name='output'>
+        ///   The destination stream, to which compressed output will be sent.
+        /// </param>
+        ///
         /// <example>
         ///
         ///   This example reads a file, then compresses it with bzip2 file,
@@ -140,8 +144,8 @@ namespace Ionic.BZip2
         /// <summary>
         ///   Constructs a new <c>BZip2OutputStream</c> with specified blocksize.
         /// </summary>
-        ///   <param name = "output">the destination stream.</param>
-        ///   <param name = "blockSize">the blockSize in units of 100000 bytes.</param>
+        /// <param name = "output">the destination stream.</param>
+        /// <param name = "blockSize">the blockSize in units of 100000 bytes.</param>
         public BZip2OutputStream(Stream output, int blockSize)
             : this(output, blockSize, false)
         {
@@ -466,8 +470,12 @@ namespace Ionic.BZip2
         }
 
         /// <summary>
-        /// Calling this method always throws a <see cref="NotImplementedException"/>.
+        ///   Calling this method always throws a <see cref="NotImplementedException"/>.
         /// </summary>
+        /// <param name='buffer'>this parameter is never used</param>
+        /// <param name='offset'>this parameter is never used</param>
+        /// <param name='count'>this parameter is never used</param>
+        /// <returns>never returns anything; always throws</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
             throw new NotImplementedException();

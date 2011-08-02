@@ -792,10 +792,13 @@ namespace Ionic.Zip
         }
 
 
-
         /// <summary>
-        /// Returns true if an entry by the given name exists in the ZipFile.
+        ///   Returns true if an entry by the given name exists in the ZipFile.
         /// </summary>
+        ///
+        /// <param name='name'>the name of the entry to find</param>
+        /// <returns>true if an entry with the given name exists; otherwise false.
+        /// </returns>
         public bool ContainsEntry(string name)
         {
             // workitem 12534
@@ -1968,9 +1971,10 @@ namespace Ionic.Zip
         ///
         /// <para>
         ///   With this callback, the DotNetZip library allows the application to
-        ///   determine whether compression will be used, at the time of the <c>Save</c>. This
-        ///   may be useful if the application wants to favor speed over size, and wants
-        ///   to defer the decision until the time of <c>Save</c>.
+        ///   determine whether compression will be used, at the time of the
+        ///   <c>Save</c>. This may be useful if the application wants to favor
+        ///   speed over size, and wants to defer the decision until the time of
+        ///   <c>Save</c>.
         /// </para>
         ///
         /// <para>

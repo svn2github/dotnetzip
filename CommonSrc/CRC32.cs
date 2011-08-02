@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-28 06:37:37>
+// Last Saved: <2011-July-31 14:35:38>
 //
 // ------------------------------------------------------------------
 //
@@ -323,12 +323,13 @@ namespace Ionic.Crc
 
 
         /// <summary>
-        /// Combines the given CRC32 value with the current running total.
+        ///   Combines the given CRC32 value with the current running total.
         /// </summary>
         /// <remarks>
-        /// This is useful when using a divide-and-conquer approach to calculating a CRC.
-        /// Multiple threads can each calculate a CRC32 on a segment of the data, and then
-        /// combine the individual CRC32 values at the end.
+        ///   This is useful when using a divide-and-conquer approach to
+        ///   calculating a CRC.  Multiple threads can each calculate a
+        ///   CRC32 on a segment of the data, and then combine the
+        ///   individual CRC32 values at the end.
         /// </remarks>
         /// <param name="crc">the crc value to be combined with this one</param>
         /// <param name="length">the length of data the CRC value was calculated on</param>
@@ -344,7 +345,7 @@ namespace Ionic.Crc
             uint crc2= (uint) crc;
 
             // put operator for one zero bit in odd
-            odd[0] = 0xEDB88320;  // the CRC-32 polynomial
+            odd[0] = this.dwPolynomial;  // the CRC-32 polynomial
             uint row = 1;
             for (int i = 1; i < 32; i++)
             {
@@ -403,6 +404,9 @@ namespace Ionic.Crc
         ///   Create an instance of the CRC32 class, specifying whether to reverse
         ///   data bits or not.
         /// </summary>
+        /// <param name='reverseBits'>
+        ///   specify true if the instance should reverse data bits.
+        /// </param>
         /// <remarks>
         ///   <para>
         ///     In the CRC-32 used by BZip2, the bits are reversed (so you should
@@ -415,18 +419,27 @@ namespace Ionic.Crc
         {
         }
 
+
         /// <summary>
         ///   Create an instance of the CRC32 class, specifying the polynomial and
         ///   whether to reverse data bits or not.
         /// </summary>
+        /// <param name='polynomial'>
+        ///   The polynomial to use for the CRC, expressed in the reversed (LSB)
+        ///   format: the highest ordered bit in the polynomial value is the
+        ///   coefficient of the 0th power; the second-highest order bit is the
+        ///   coefficient of the 1 power, and so on. Expressed this way, the
+        ///   polynomial for the CRC-32C used in IEEE 802.3, is 0xEDB88320.
+        /// </param>
+        /// <param name='reverseBits'>
+        ///   specify true if the instance should reverse data bits.
+        /// </param>
+        ///
         /// <remarks>
         ///   <para>
-        ///     In the CRC-32 used by BZip2, the bits are reversed (so you should
-        ///     pass true here).  In the CRC-32 used by GZIP and PKZIP, the bits
+        ///     In the CRC-32 used by BZip2, the bits are reversed, so you should
+        ///     pass true here. In the CRC-32 used by GZIP and PKZIP, the bits
         ///     are not reversed - so you should pass false.
-        ///   </para>
-        ///   <para>
-        ///     The usual polynomial is 0xEDB88320.
         ///   </para>
         /// </remarks>
         public CRC32(int polynomial, bool reverseBits)
@@ -437,11 +450,11 @@ namespace Ionic.Crc
         }
 
         /// <summary>
-        ///   Reset the CRC-32 class - clear the CRC register.
+        ///   Reset the CRC-32 class - clear the CRC "remainder register."
         /// </summary>
         /// <remarks>
         ///   <para>
-        ///     Use this when employing a single CRC32 instance to compute
+        ///     Use this when employing a single instance of this class to compute
         ///     multiple, distinct CRCs on multiple, distinct data blocks.
         ///   </para>
         /// </remarks>

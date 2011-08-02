@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-06 11:02:11>
+// Last Saved: <2011-July-31 14:50:37>
 //
 // ------------------------------------------------------------------
 //
@@ -234,7 +234,7 @@ namespace Ionic.Zlib
         /// <summary>
         /// This ctor collects a message attached to the exception.
         /// </summary>
-        /// <param name="s"></param>
+        /// <param name="s">the message for the exception.</param>
         public ZlibException(System.String s)
             : base(s)
         {

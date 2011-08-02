@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-08 22:13:17>
+// Time-stamp: <2011-July-31 14:40:50>
 //
 // ------------------------------------------------------------------
 //
@@ -271,6 +271,7 @@ namespace Ionic.Zip
         ///
         /// <param name="password">The password to check.</param>
         ///
+        /// <returns>a bool indicating whether the password matches.</returns>
         public static bool CheckZipPassword(string zipFileName, string password)
         {
             // workitem 13664
@@ -295,8 +296,9 @@ namespace Ionic.Zip
 
 
         /// <summary>
-        /// Provides a human-readable string with information about the ZipFile.
+        ///   Provides a human-readable string with information about the ZipFile.
         /// </summary>
+        ///
         /// <remarks>
         ///   <para>
         ///     The information string contains 10 lines or so, about each ZipEntry,

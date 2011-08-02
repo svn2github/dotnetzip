@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-30 14:41:11>
+// Last Saved: <2011-July-31 14:39:40>
 //
 // ------------------------------------------------------------------
 //
@@ -761,10 +761,20 @@ namespace Ionic.Zip
         }
 
         /// <summary>
-        ///    Subtract delta from the count of bytes written to the stream.
-        ///    This is necessary when seeking back, and writing additional data,
-        ///    as happens in some cases when saving Zip files.
+        ///    Adjust the byte count on the stream.
         /// </summary>
+        ///
+        /// <param name='delta'>
+        ///   the number of bytes to subtract from the count.
+        /// </param>
+        ///
+        /// <remarks>
+        ///   <para>
+        ///     Subtract delta from the count of bytes written to the stream.
+        ///     This is necessary when seeking back, and writing additional data,
+        ///     as happens in some cases when saving Zip files.
+        ///   </para>
+        /// </remarks>
         public void Adjust(Int64 delta)
         {
             _bytesWritten -= delta;
@@ -879,6 +889,8 @@ namespace Ionic.Zip
         /// <summary>
         ///   Set the length of the underlying stream.  Be careful with this!
         /// </summary>
+        ///
+        /// <param name='value'>the length to set on the underlying stream.</param>
         public override void SetLength(long value)
         {
             _s.SetLength(value);

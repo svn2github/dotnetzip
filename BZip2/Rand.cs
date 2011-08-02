@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-23 21:13:49>
+// Last Saved: <2011-July-31 15:09:16>
 //
 // ------------------------------------------------------------------
 //
@@ -26,10 +26,7 @@
 
 namespace Ionic.BZip2
 {
-    /**
-     * Random numbers for both the compress and decompress BZip2 classes.
-     */
-    public static class Rand
+    internal static class Rand
     {
         private static int[] RNUMS =
         {
@@ -87,13 +84,13 @@ namespace Ionic.BZip2
             936, 638
         };
 
-        /**
-         * Return the random number at a specific index.
-         *
-         * @param i the index
-         * @return the random number
-         */
-        public static int Rnums(int i)
+
+        /// <summary>
+        ///   Returns the "random" number at a specific index.
+        /// </summary>
+        /// <param name='i'>the index</param>
+        /// <returns>the random number</returns>
+        internal static int Rnums(int i)
         {
             return RNUMS[i];
         }
