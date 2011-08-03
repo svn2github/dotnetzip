@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-21 19:34:30>
+// Time-stamp: <2011-August-03 16:42:15>
 //
 // ------------------------------------------------------------------
 //
@@ -737,7 +737,8 @@ namespace Ionic.Zip
         {
             string nameOfIconFile = null;
             string stubExe = null;
-            string tempDir = null;
+            string unpackedResourceDir = null;
+            string tmpDir = null;
             try
             {
                 if (File.Exists(exeToGenerate))
@@ -749,21 +750,23 @@ namespace Ionic.Zip
                     if (Verbose) StatusMessageTextWriter.WriteLine("Warning: The generated self-extracting file will not have an .exe extension.");
                 }
 
-                stubExe = GenerateTempPathname("exe");
+                // workitem 10553
+                tmpDir = TempFileFolder ?? Path.GetDirectoryName(exeToGenerate);
+                stubExe = GenerateTempPathname(tmpDir, "exe");
 
                 // get the Ionic.Zip assembly
                 Assembly a1 = typeof(ZipFile).Assembly;
 
                 using (var csharp = new Microsoft.CSharp.CSharpCodeProvider())
                 {
-
-                    // Perfect opportunity for a linq query, but I cannot use it.
-                    // The DotNetZip library can compile into 2.0, but needs to run on .NET 2.0.
-                    // Using LINQ would break that. Here's what it would look like:
+                    // The following is a perfect opportunity for a linq query, but
+                    // I cannot use it.  The generated SFX needs to run on .NET 2.0,
+                    // and using LINQ would break that. Here's what it would look
+                    // like:
                     //
-                    //      var settings = (from x in SettingsList
-                    //                      where x.Flavor == flavor
-                    //                      select x).First();
+                    //   var settings = (from x in SettingsList
+                    //                   where x.Flavor == flavor
+                    //                   select x).First();
 
                     ExtractorSettings settings = null;
                     foreach (var x in SettingsList)
@@ -775,13 +778,15 @@ namespace Ionic.Zip
                         }
                     }
 
+                    // sanity check; should never happen
                     if (settings == null)
                         throw new BadStateException(String.Format("While saving a Self-Extracting Zip, Cannot find that flavor ({0})?", options.Flavor));
 
-                    // This is the list of referenced assemblies.  Ionic.Zip is needed here.
-                    // Also if it is the winforms (gui) extractor, we need other referenced assemblies,
-                    // like System.Windows.Forms.dll, etc.
-                    System.CodeDom.Compiler.CompilerParameters cp = new System.CodeDom.Compiler.CompilerParameters();
+                    // This is the list of referenced assemblies.  Ionic.Zip is
+                    // needed here.  Also if it is the winforms (gui) extractor, we
+                    // need other referenced assemblies, like
+                    // System.Windows.Forms.dll, etc.
+                    var cp = new System.CodeDom.Compiler.CompilerParameters();
                     cp.ReferencedAssemblies.Add(a1.Location);
                     if (settings.ReferencedAssemblies != null)
                         foreach (string ra in settings.ReferencedAssemblies)
@@ -794,13 +799,18 @@ namespace Ionic.Zip
 
                     Assembly a2 = Assembly.GetExecutingAssembly();
 
-                    // Use this to concatenate all the source code resources into a single module
+                    // Use this to concatenate all the source code resources into a
+                    // single module.
                     var sb = new System.Text.StringBuilder();
 
-                    // In case there are compiler errors later, we allocate a
-                    // source file name now.
-                    string sourceFile = GenerateTempPathname("cs");
-
+                    // In case there are compiler errors later, we allocate a source
+                    // file name now. If errors are detected, we'll spool the source
+                    // code as well as the errors (in comments) into that filename,
+                    // and throw an exception with the filename.  Makes it easier to
+                    // diagnose.  This should be rare; most errors happen only
+                    // during devlpmt of DotNetZip itself, but there are rare
+                    // occasions when they occur in other cases.
+                    string sourceFile = GenerateTempPathname(tmpDir, "cs");
 
 
                     // // debugging: enumerate the resources in this assembly
@@ -823,21 +833,23 @@ namespace Ionic.Zip
                         //   }
                         // Console.WriteLine();
 
-                        tempDir = GenerateTempPathname("tmp");
+                        unpackedResourceDir = GenerateTempPathname(tmpDir, "tmp");
 
                         if (String.IsNullOrEmpty(options.IconFile))
                         {
-                            // Use the embedded ico file. But we must unpack it to the
-                            // filesystem, in order to specify it on the cmdline of csc.exe.  We
-                            // will remove this file later.
-                            System.IO.Directory.CreateDirectory(tempDir);
+                            // Use the ico file that is embedded into the Ionic.Zip
+                            // DLL itself.  To do this we must unpack the icon to
+                            // the filesystem, in order to specify it on the cmdline
+                            // of csc.exe.  This method will remove the unpacked
+                            // file later.
+                            System.IO.Directory.CreateDirectory(unpackedResourceDir);
                             ZipEntry e = zip["zippedFile.ico"];
                             // Must not extract a readonly file - it will be impossible to
                             // delete later.
                             if ((e.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
                                 e.Attributes ^= FileAttributes.ReadOnly;
-                            e.Extract(tempDir);
-                            nameOfIconFile = Path.Combine(tempDir, "zippedFile.ico");
+                            e.Extract(unpackedResourceDir);
+                            nameOfIconFile = Path.Combine(unpackedResourceDir, "zippedFile.ico");
                             cp.CompilerOptions += String.Format("/win32icon:\"{0}\"", nameOfIconFile);
                         }
                         else
@@ -856,10 +868,10 @@ namespace Ionic.Zip
 
                         if ((settings.CopyThroughResources != null) && (settings.CopyThroughResources.Count != 0))
                         {
-                            if (!Directory.Exists(tempDir)) System.IO.Directory.CreateDirectory(tempDir);
+                            if (!Directory.Exists(unpackedResourceDir)) System.IO.Directory.CreateDirectory(unpackedResourceDir);
                             foreach (string re in settings.CopyThroughResources)
                             {
-                                string filename = Path.Combine(tempDir, re);
+                                string filename = Path.Combine(unpackedResourceDir, re);
 
                                 ExtractResourceToFile(a2, re, filename);
                                 // add the file into the target assembly as an embedded resource
@@ -969,7 +981,7 @@ namespace Ionic.Zip
 
 #if DEBUGSFX
                     // for debugging only
-                    string sourceModule = GenerateTempPathname("cs");
+                    string sourceModule = GenerateTempPathname(tmpDir, "cs");
                     using (StreamWriter sw = File.CreateText(sourceModule))
                     {
                         sw.Write(LiteralSource);
@@ -1037,12 +1049,12 @@ namespace Ionic.Zip
             {
                 try
                 {
-                    if (Directory.Exists(tempDir))
+                    if (Directory.Exists(unpackedResourceDir))
                     {
-                        try { Directory.Delete(tempDir, true); }
+                        try { Directory.Delete(unpackedResourceDir, true); }
                         catch (System.IO.IOException exc1)
                         {
-                            StatusMessageTextWriter.WriteLine("Warning: Exception: {0}", exc1.ToString());
+                            StatusMessageTextWriter.WriteLine("Warning: Exception: {0}", exc1);
                         }
                     }
                     if (File.Exists(stubExe))
@@ -1050,7 +1062,7 @@ namespace Ionic.Zip
                         try { File.Delete(stubExe); }
                         catch (System.IO.IOException exc1)
                         {
-                            StatusMessageTextWriter.WriteLine("Warning: Exception: {0}", exc1.ToString());
+                            StatusMessageTextWriter.WriteLine("Warning: Exception: {0}", exc1);
                         }
                     }
                 }
@@ -1063,25 +1075,23 @@ namespace Ionic.Zip
 
 
 
-        internal static string GenerateTempPathname(string extension)
+        internal static string GenerateTempPathname(string dir, string extension)
         {
             string candidate = null;
             String AppName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-            string parentDir = System.IO.Path.GetTempPath();
-
-            string uuid;
             do
             {
                 // workitem 13475
-                uuid = System.Guid.NewGuid().ToString();
+                string uuid = System.Guid.NewGuid().ToString();
 
                 string Name = String.Format("{0}-{1}-{2}.{3}",
                         AppName, System.DateTime.Now.ToString("yyyyMMMdd-HHmmss"),
                                             uuid, extension);
-                candidate = System.IO.Path.Combine(parentDir, Name);
+                candidate = System.IO.Path.Combine(dir, Name);
             } while (System.IO.File.Exists(candidate) || System.IO.Directory.Exists(candidate));
 
-            // this file/path does not exist.  It can now be created, as file or directory.
+            // The candidate path does not exist as a file or directory.
+            // It can now be created, as a file or directory.
             return candidate;
         }
 
