@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-August-02 18:53:04>
+// Time-stamp: <2011-August-02 20:22:35>
 //
 // ------------------------------------------------------------------
 //
@@ -1355,8 +1355,13 @@ namespace Ionic.Zip
                 // Rather than unpack to the root of the volume, we're going to
                 // drop the slash and unpack to the specified base directory.
                 string f = this.FileName.Replace("\\","/");
+
+                // workitem 11772: remove drive letter with separator
+                if (f.IndexOf(':') == 1)
+                    f= f.Substring(2);
+
                 if (f.StartsWith("/"))
-                    f= this.FileName.Substring(1);
+                    f= f.Substring(1);
 
                 // String.Contains is not available on .NET CF 2.0
 

@@ -19,7 +19,7 @@
 # DotNetZip is licensed under the MS-PL.  See the accompanying
 # License.txt file.
 #
-# Last Updated: <2011-July-29 00:00:16>
+# Last Updated: <2011-August-02 19:51:41>
 #
 # -------------------------------------------------------
 
@@ -53,9 +53,15 @@ function Update-SourceVersion
             Write-output $o.FullName
             if ($o.Attributes -band [System.IO.FileAttributes]::ReadOnly)
             {
-                # checkout the file for edit, using the tf.exe too, and
-                # passing the CodePlex authn info on cmd line
-                c:\vs2008\common7\IDE\tf  edit $o.FullName $env:cplogin
+                # checkout the file for edit, using the tf.exe tool, and
+                # passing the CodePlex authn info on cmd line.
+                c:\vs2010\common7\IDE\tf.exe edit $o.FullName $env:cplogin
+                if (-not $?)
+                {
+                    Write-output " --> The TF checkout failed. "
+                    # See exit code in $LASTEXITCODE
+                    exit
+                }
             }
             $TmpFile = $o.FullName + ".tmp"
 
@@ -86,9 +92,15 @@ function Update-SourceWxsVersion
             Write-output $o.FullName
             if ($o.Attributes -band [System.IO.FileAttributes]::ReadOnly)
             {
-                # checkout the file for edit, using the tf.exe too, and
+                # checkout the file for edit, using the tf.exe tool, and
                 # passing the CodePlex authn info on cmd line
                 c:\vs2010\common7\IDE\tf  edit $o.FullName $env:cplogin
+                if (-not $?)
+                {
+                    Write-output " --> The TF checkout failed. "
+                    # See exit code in $LASTEXITCODE
+                    exit
+                }
             }
             $TmpFile = $o.FullName + ".tmp"
             $newGuid = 'productId          = "'+ [System.Guid]::NewGuid().ToString() + '"'
