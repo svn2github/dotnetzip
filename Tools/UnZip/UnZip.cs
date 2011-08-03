@@ -38,6 +38,7 @@ namespace Ionic.Zip.Examples
                   "  unzip [options] <zipfile> [<entryname>...]  \n" +
                   "     unzips all files in the archive.\n" +
                   "     options:\n" +
+                  "       -                 emit extracted content to stdout.\n" +
                   "       -o                overwrite existing files if necessary.\n" +
                   "       -f                flatten directory structure when extracting.\n" +
                   "       -p <password>     specify password for extraction.\n" +
