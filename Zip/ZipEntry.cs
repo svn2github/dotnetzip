@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-August-02 18:55:44>
+// Time-stamp: <2011-August-05 13:31:11>
 //
 // ------------------------------------------------------------------
 //
@@ -2545,7 +2545,7 @@ namespace Ionic.Zip
                     if (_container.ZipFile != null)
                     {
                         var zf = _container.ZipFile;
-                        zf.Reset();
+                        zf.Reset(false);
                         _archiveStream = zf.StreamForDiskNumber(_diskNumber);
                     }
                     else

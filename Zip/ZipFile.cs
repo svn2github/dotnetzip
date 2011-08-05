@@ -2343,21 +2343,25 @@ namespace Ionic.Zip
                 //return (this.ReadStream as FileStream);
                 return this.ReadStream;
             }
-            return ZipSegmentedStream.ForReading(this._readName, diskNumber, _diskNumberWithCd);
+            return ZipSegmentedStream.ForReading(this._readName ?? this._name,
+                                                 diskNumber, _diskNumberWithCd);
         }
 
 
 
         // called by ZipEntry in ZipEntry.Extract(), when there is no stream set for the
         // ZipEntry.
-        internal void Reset()
+        internal void Reset(bool whileSaving)
         {
             if (_JustSaved)
             {
                 // read in the just-saved zip archive
                 using (ZipFile x = new ZipFile())
                 {
-                    x._name = this._name;
+                    // workitem 10735
+                    x._readName = x._name = whileSaving
+                        ? (this._readName ?? this._name)
+                        : this._name;
                     x.AlternateEncoding = this.AlternateEncoding;
                     x.AlternateEncodingUsage = this.AlternateEncodingUsage;
                     ReadIntoInstance(x);
@@ -3546,11 +3550,12 @@ namespace Ionic.Zip
             {
                 if (_readstream == null)
                 {
-                    if (_name != null)
+                    if (_readName != null || _name !=null)
                     {
-                        _readstream = File.Open(_name, FileMode.Open, FileAccess.Read,
+                        _readstream = File.Open(_readName ?? _name,
+                                                FileMode.Open,
+                                                FileAccess.Read,
                                                 FileShare.Read | FileShare.Write);
-                        //_readstream = File.OpenRead(_name);
                         _ReadStreamIsOurs = true;
                     }
                 }

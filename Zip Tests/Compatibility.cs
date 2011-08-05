@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-28 12:57:21>
+// Time-stamp: <2011-August-05 18:32:33>
 //
 // ------------------------------------------------------------------
 //
@@ -2246,15 +2246,28 @@ namespace Ionic.Zip.Tests
                                  filesToZip.Length + additionalFiles.Count,
                                  "Incorrect number of entries in the zip file.");
 
-            // examine and unpack the zip archive via WinZip
-            // first, examine the zip entry metadata:
-            string wzzipOut = this.Exec(wzzip, "-vt " + zipFileToCreate);
 
             // verify that the output states that the compression method
             // used for each entry was BZIP2...
             TestContext.WriteLine("Verifying that BZIP2 was the comp method used...");
-            Assert.AreEqual<int>(TestUtilities.CountOccurrences(wzzipOut, "Compression Method: BZipped"),
+
+            // examine and unpack the zip archive via WinZip
+            // first, examine the zip entry metadata:
+            string wzzipOut = this.Exec(wzzip, "-vt " + zipFileToCreate);
+
+            var numBzipped = TestUtilities.CountOccurrences(wzzipOut, "Compression Method: BZipped");
+            TestContext.WriteLine("Found {0} bzipped entries.", numBzipped);
+
+            // Not all of the files will be bzipped. Some of the files
+            // may be "stored" because they are incompressible. This
+            // should be the exception, though.
+            var numStored =  TestUtilities.CountOccurrences(wzzipOut, "Compression Method: Stored");
+            TestContext.WriteLine("Found {0} stored entries.", numStored);
+
+            Assert.AreEqual<int>( numBzipped + numStored,
                                  filesToZip.Length + additionalFiles.Count);
+            Assert.IsTrue( numBzipped > 2*numStored,
+                           "The number of bzipped files is too low.");
 
             TestContext.WriteLine("Extracting...");
             // now, extract the zip

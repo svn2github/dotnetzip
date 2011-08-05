@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-July-28 13:19:36>
+// Time-stamp: <2011-August-05 15:25:59>
 //
 // ------------------------------------------------------------------
 //
@@ -175,7 +175,7 @@ namespace Ionic.Zip.Tests.Extended
             for (int k=0; k < 2; k++)
             {
                 System.Threading.Thread.Sleep(1200);
-                var msg = string.Format("test BZip2 perf check, cycle {0}/2",k+1);
+                var msg = string.Format("test BZip2 perf check, cycle {0}/2 (est. time: 22 mins)",k+1);
                 _txrx.Send(msg);
                 string zipFileToCreate = "BZip2_Perf."+k+".zip";
                 TestContext.WriteLine("pass {0}, Creating the zip...", k);
@@ -223,7 +223,7 @@ namespace Ionic.Zip.Tests.Extended
 
                 _txrx.Send("pb 0 step");
 
-                _txrx.Send("status Extracting...");
+                _txrx.Send("status Extracting via infozip unzip.exe...");
                 // Extract the zip.  eg, unzip.exe test.zip -d  <extractdir>
                 TestContext.WriteLine("Extracting via unzip.exe...");
                 this.Exec(unzip, zipFileToCreate + " -d " + extractDir);
@@ -2219,6 +2219,21 @@ namespace Ionic.Zip.Tests.Extended
             }
         }
 
+        [TestMethod]
+        public void DoubleSave_wi10735()
+        {
+            string zipFileToCreate1 = "DoubleSave.1.zip";
+            string zipFileToCreate2 = "DoubleSave.2.zip";
+            string dirToZip = "dirToZip";
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+
+            using (var zip = new ZipFile())
+            {
+                zip.AddFiles(files);
+                zip.Save(zipFileToCreate1);
+                zip.Save(zipFileToCreate2);
+            }
+        }
 
     }
 

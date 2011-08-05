@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-August-02 19:40:17>
+// Time-stamp: <2011-August-05 13:31:23>
 //
 // ------------------------------------------------------------------
 //
@@ -149,7 +149,7 @@ namespace Ionic.Zip
                     return;
                 }
 
-                Reset();
+                Reset(true);
 
                 if (Verbose) StatusMessageTextWriter.WriteLine("saving....");
 

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-August-02 20:22:35>
+// Time-stamp: <2011-August-05 13:31:09>
 //
 // ------------------------------------------------------------------
 //
@@ -686,7 +686,7 @@ namespace Ionic.Zip
             if (_container.ZipFile == null)
                 throw new InvalidOperationException("Use Extract() only with ZipFile.");
 
-            _container.ZipFile.Reset();
+            _container.ZipFile.Reset(false);
 
             if (this._Source != ZipEntrySource.ZipFile)
                 throw new BadStateException("You must call ZipFile.Save before calling any Extract method");
