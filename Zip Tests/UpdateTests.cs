@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-June-21 20:53:55>
+// Time-stamp: <2011-August-05 16:52:59>
 //
 // ------------------------------------------------------------------
 //
@@ -285,7 +285,7 @@ namespace Ionic.Zip.Tests.Update
             int j;
 
             // select the name of the zip file
-            string zipFileToCreate = Path.Combine(TopLevelDir, "UpdateZip_RemoveEntry_ByFilename_WithPassword.zip");
+            string zipFileToCreate = "ByFilename_WithPassword.zip";
             // create the subdirectory
             string subdir = Path.Combine(TopLevelDir, "A");
             Directory.CreateDirectory(subdir);
@@ -758,7 +758,7 @@ namespace Ionic.Zip.Tests.Update
                     filesToRemove.Add(filename);
 
                     // remove the file from the zip archive
-                    zip2.RemoveEntry(filename) ;
+                    zip2.RemoveEntry(filename);
                 }
 
                 zip2.Comment = "This archive has been modified. Some files have been removed.";
@@ -1998,8 +1998,8 @@ namespace Ionic.Zip.Tests.Update
         [TestMethod]
         public void Update_MultipleSaves_wi10319()
         {
-            // select the name of the zip file
-            string zipFileToCreate = Path.Combine(TopLevelDir, "Update_MultipleSaves_wi10319.zip");
+            string zipFileToCreate = "MultipleSaves_wi10319.zip";
+
             using (ZipFile _zipFile = new ZipFile(zipFileToCreate))
             {
                 using (MemoryStream data = new MemoryStream())
@@ -2009,11 +2009,12 @@ namespace Ionic.Zip.Tests.Update
                         writer.Write("Dit is een test string.");
                         writer.Flush();
 
+                        data.Seek(0, SeekOrigin.Begin);
                         _zipFile.AddEntry("test.txt", data);
                         _zipFile.Save();
-                        _zipFile.AddEntry("test2.txt", data);
+                        _zipFile.AddEntry("test2.txt", "Esta es un string de test");
                         _zipFile.Save();
-                        _zipFile.AddEntry("test3.txt", data);
+                        _zipFile.AddEntry("test3.txt", "this is some content for the entry.");
                         _zipFile.Save();
                     }
                 }
@@ -2028,12 +2029,15 @@ namespace Ionic.Zip.Tests.Update
                         writer.Write("Dit is een andere test string.");
                         writer.Flush();
 
+                        data.Seek(0, SeekOrigin.Begin);
+
                         _zipFile.UpdateEntry("test.txt", data);
                         _zipFile.Save();
-                        _zipFile.UpdateEntry("test2.txt", data);
+                        _zipFile.UpdateEntry("test2.txt", "Esta es un otro string de test");
                         _zipFile.Save();
-                        _zipFile.UpdateEntry("test3.txt", data);
+                        _zipFile.UpdateEntry("test3.txt", "This is another string for content.");
                         _zipFile.Save();
+
                     }
                 }
             }
@@ -2057,7 +2061,7 @@ namespace Ionic.Zip.Tests.Update
                 zip1.Save(zipFileToCreate);
             }
 
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), 2*filesToZip.Length,
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), 2 * filesToZip.Length,
                                  "Incorrect number of entries in the zip file.");
 
             using (var zip2 = ZipFile.Read(zipFileToCreate))
@@ -2075,7 +2079,7 @@ namespace Ionic.Zip.Tests.Update
                 zip2.Save();
             }
 
-            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), 2*filesToZip.Length,
+            Assert.AreEqual<int>(TestUtilities.CountEntries(zipFileToCreate), 2 * filesToZip.Length,
                                  "Incorrect number of entries in the zip file.");
         }
 
@@ -2099,7 +2103,7 @@ namespace Ionic.Zip.Tests.Update
             }
 
             int N = _rnd.Next(34) + 59;
-            for (int i=0; i < N; i++)
+            for (int i = 0; i < N; i++)
             {
                 string tempZipFile = "AppendToEntry.zip.tmp" + i;
 
@@ -2113,12 +2117,12 @@ namespace Ionic.Zip.Tests.Update
                                 var src = zip1[name].OpenReader();
                                 int n;
                                 byte[] b = new byte[2048];
-                                while((n= src.Read(b,0,b.Length)) > 0)
-                                    stream.Write(b,0,n);
+                                while ((n = src.Read(b, 0, b.Length)) > 0)
+                                    stream.Write(b, 0, n);
 
                                 string update = String.Format("Updating zip file {0} at {1}\n", i, DateTime.Now.ToString("G"));
                                 byte[] a = System.Text.Encoding.ASCII.GetBytes(update.ToCharArray());
-                                stream.Write(a,0,a.Length);
+                                stream.Write(a, 0, a.Length);
                             });
 
                         zip.Save(tempZipFile);
