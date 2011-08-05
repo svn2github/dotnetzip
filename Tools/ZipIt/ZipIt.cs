@@ -32,15 +32,6 @@ namespace Ionic.Zip.Examples
             "usage:\n   ZipIt.exe <ZipFileToCreate> [arguments]\n" +
             "\narguments: \n" +
             "  <directory> | <file>  - a directory or file to add to the archive.\n" +
-            "  <selector>            - a file selection expression.  Examples: \n" +
-            "                            *.txt \n" +
-            "                            (name = *.txt) OR (name = *.xml) \n" +
-            "                            (attrs = H) OR (name != *.xml) \n" +
-            "                            (ctime < 2009/02/28-10:20:00) \n" +
-            "                            (size > 1g) AND (mtime < 2009-12-10) \n" +
-            "                            (ctime > 2009-04-29) AND (size < 10kb) \n" +
-            "                          Filenames can include full paths. You must surround a filename \n" +
-            "                          that includes spaces with single quotes.\n" +
             "  -64                   - use ZIP64 extensions, for large files or large numbers of files.\n" +
             "  -aes                  - use WinZip-compatible AES 256-bit encryption for entries\n" +
             "                          subsequently added to the archive. Requires a password.\n" +
@@ -54,6 +45,15 @@ namespace Ionic.Zip.Examples
             "  -D <path>             - find files in the given directory on disk.\n" +
             "  -e[s|r|q|a]           - when there is an error reading a file to be zipped, either skip\n" +
             "                          the file, retry, quit, or ask the user what to do.\n"+
+            "  -E <selector>         - a file selection expression.  Examples: \n" +
+            "                            *.txt \n" +
+            "                            (name = *.txt) OR (name = *.xml) \n" +
+            "                            (attrs = H) OR (name != *.xml) \n" +
+            "                            (ctime < 2009/02/28-10:20:00) \n" +
+            "                            (size > 1g) AND (mtime < 2009-12-10) \n" +
+            "                            (ctime > 2009-04-29) AND (size < 10kb) \n" +
+            "                          Filenames can include full paths. You must surround a filename \n" +
+            "                          that includes spaces with single quotes.\n" +
             "  -j-                   - do not traverse NTFS junctions\n" +
             "  -j+                   - traverse NTFS junctions (default)\n" +
             "  -L <level>            - compression level, 0..9 (Default is 6).\n" +
@@ -205,6 +205,7 @@ namespace Ionic.Zip.Examples
                 string entryDirectoryPathInArchive = "";
                 string directoryOnDisk = null;
                 bool recurseDirectories = false;
+                bool wantRecurse = false;
 
                 // read/update an existing zip, or create a new one.
                 using (ZipFile zip = new ZipFile(args[0]))
@@ -284,6 +285,22 @@ namespace Ionic.Zip.Examples
                                 i++;
                                 if (args.Length <= i) Usage();
                                 directoryOnDisk = args[i];
+                                break;
+
+                            case "-E":
+                                i++;
+                                if (args.Length <= i) Usage();
+                                directoryOnDisk = args[i];
+                                wantRecurse = recurseDirectories || args[i].Contains("\\");
+                                // Console.WriteLine("spec({0})", args[i]);
+                                // Console.WriteLine("dir({0})", directoryOnDisk);
+                                // Console.WriteLine("dirInArc({0})", entryDirectoryPathInArchive);
+                                // Console.WriteLine("recurse({0})", recurseDirectories);
+
+                                zip.UpdateSelectedFiles(args[i],
+                                                        directoryOnDisk,
+                                                        entryDirectoryPathInArchive,
+                                                        wantRecurse);
                                 break;
 
                             case "-j-":
@@ -416,30 +433,9 @@ namespace Ionic.Zip.Examples
                                 break;
 
                             default:
-                                #if OLD
-                                // UpdateItem will add Files or Dirs, recurses subdirectories
-                                e = zip.UpdateItem(args[i], entryDirectoryPathInArchive);
-
-                                // try to add a comment if we have one
-                                if (entryComment != null)
-                                {
-                                    e.Comment = entryComment;
-                                    // reset the comment
-                                    entryComment = null;
-                                }
-                                #else
-                                {
-                                    bool wantRecurse = recurseDirectories || args[i].Contains("\\");
-//                                         Console.WriteLine("spec({0})", args[i]);
-//                                         Console.WriteLine("dir({0})", directoryOnDisk);
-//                                         Console.WriteLine("dirInArc({0})", entryDirectoryPathInArchive);
-//                                         Console.WriteLine("recurse({0})", recurseDirectories);
-
-                                        zip.UpdateSelectedFiles(args[i], directoryOnDisk, entryDirectoryPathInArchive,
-                                                                wantRecurse);
-                                }
-                                #endif
-
+                                // UpdateItem will add Files or Dirs,
+                                // recurses subdirectories
+                                zip.UpdateItem(args[i], entryDirectoryPathInArchive);
                                 break;
                         }
                     }
