@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-August-05 15:25:59>
+// Time-stamp: <2011-August-06 17:04:31>
 //
 // ------------------------------------------------------------------
 //
@@ -2099,14 +2099,14 @@ namespace Ionic.Zip.Tests.Extended
 
 
         [TestMethod]
-        [ExpectedException(typeof(System.IO.PathTooLongException))]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void AddDirectory_ReparsePoint_wi8617_Error1()
         {
             _Internal_AddDirectory_ReparsePoint_wi8617(2);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(System.IO.PathTooLongException))]
+        [ExpectedException(typeof(Ionic.Zip.ZipException))]
         public void AddDirectory_ReparsePoint_wi8617_Error2()
         {
             _Internal_AddDirectory_ReparsePoint_wi8617(0);

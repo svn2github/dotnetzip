@@ -14,7 +14,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last Saved: <2011-July-28 13:18:39>
+// Last Saved: <2011-August-06 11:23:57>
 //
 // ------------------------------------------------------------------
 //
@@ -456,6 +456,72 @@ namespace Ionic.Zip.Tests.Password
                 Assert.AreEqual<string>(checksumX, chk, "Checksums do not match.");
             }
         }
+
+
+
+
+        [TestMethod]
+        public void SilentDeletion_wi10639()
+        {
+            string zipFileToCreate = "SilentDeletion.zip";
+            string dirToZip = "dirToZip";
+            string extractDir = "extracted";
+            string password = TestUtilities.GenerateRandomPassword();
+            string wrongPassword = "passworD";
+            var files = TestUtilities.GenerateFilesFlat(dirToZip);
+
+            TestContext.WriteLine("Creating the zip.");
+            using (var zip = new ZipFile())
+            {
+                zip.Password = password;
+                zip.AddFiles(files, dirToZip);
+                zip.Save(zipFileToCreate);
+            }
+
+            TestContext.WriteLine("Extract one file with wrong password.");
+
+             // pick a random entry to extract
+            int ix = -1;
+            string extractedFile = null;
+            // perform two passes: first with correct password to extract the
+            // file.  2nd with incorrect password to see if the file is
+            // deleted.
+
+            Directory.CreateDirectory(extractDir);
+            for (int i=0; i < 2; i++)
+            {
+                try
+                {
+                    using (var zip = ZipFile.Read(zipFileToCreate))
+                    {
+                        if (i==0)
+                        {
+                            do
+                            {
+                                ix = this._rnd.Next(zip.Entries.Count);
+                            }
+                            while (zip[ix].IsDirectory);
+                            TestContext.WriteLine("Selected entry: {0}", zip[ix].FileName);
+                            extractedFile = Path.Combine(extractDir, zip[ix].FileName.Replace("/","\\"));
+                            TestContext.WriteLine("name for extracted file: {0}", extractedFile);
+                            Assert.IsFalse(File.Exists(extractedFile), "The file exists.");
+                        }
+                        TestContext.WriteLine("Cycle {0}: ExtractWithPassword()", i);
+                        zip[ix].ExtractWithPassword(extractDir,
+                                                    ExtractExistingFileAction.OverwriteSilently,
+                                                    (i==0)? password : wrongPassword);
+                    }
+                }
+                catch (Ionic.Zip.BadPasswordException bpe1)
+                {
+                    // only swallow exceptions on the first go-round
+                    if (i==0) throw;
+                }
+                Assert.IsTrue(File.Exists(extractedFile), "Cycle {0}: The extracted file does not exist.", i);
+            }
+        }
+
+
 
     }
 

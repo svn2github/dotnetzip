@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-August-05 13:31:11>
+// Time-stamp: <2011-August-06 17:25:53>
 //
 // ------------------------------------------------------------------
 //
@@ -2376,42 +2376,55 @@ namespace Ionic.Zip
                 if (String.IsNullOrEmpty(filename))
                     throw new Ionic.Zip.ZipException("The filename must be non-null and non-empty.");
 
-                // The named file may or may not exist at this time.  For example, when
-                // adding a directory by name.  We test existence when necessary:
-                // when saving the ZipFile, or when getting the attributes, and so on.
+                try
+                {
+                    // The named file may or may not exist at this time.  For
+                    // example, when adding a directory by name.  We test existence
+                    // when necessary: when saving the ZipFile, or when getting the
+                    // attributes, and so on.
 
 #if NETCF
-                // workitem 6878
-                // Ionic.Zip.SharedUtilities.AdjustTime_Win32ToDotNet
-                entry._Mtime = File.GetLastWriteTime(filename).ToUniversalTime();
-                entry._Ctime = File.GetCreationTime(filename).ToUniversalTime();
-                entry._Atime = File.GetLastAccessTime(filename).ToUniversalTime();
+                    // workitem 6878
+                    // Ionic.Zip.SharedUtilities.AdjustTime_Win32ToDotNet
+                    entry._Mtime = File.GetLastWriteTime(filename).ToUniversalTime();
+                    entry._Ctime = File.GetCreationTime(filename).ToUniversalTime();
+                    entry._Atime = File.GetLastAccessTime(filename).ToUniversalTime();
 
-                // workitem 7071
-                // can only get attributes of files that exist.
-                if (File.Exists(filename) || Directory.Exists(filename))
-                    entry._ExternalFileAttrs = (int)NetCfFile.GetAttributes(filename);
+                    // workitem 7071
+                    // can only get attributes of files that exist.
+                    if (File.Exists(filename) || Directory.Exists(filename))
+                        entry._ExternalFileAttrs = (int)NetCfFile.GetAttributes(filename);
 
 #elif SILVERLIGHT
-                entry._Mtime =
-                entry._Ctime =
-                    entry._Atime = System.DateTime.UtcNow;
-                entry._ExternalFileAttrs = (int)0;
+                    entry._Mtime =
+                        entry._Ctime =
+                        entry._Atime = System.DateTime.UtcNow;
+                    entry._ExternalFileAttrs = (int)0;
 #else
-                // workitem 6878??
-                entry._Mtime = File.GetLastWriteTime(filename).ToUniversalTime();
-                entry._Ctime = File.GetCreationTime(filename).ToUniversalTime();
-                entry._Atime = File.GetLastAccessTime(filename).ToUniversalTime();
+                    // workitem 6878??
+                    entry._Mtime = File.GetLastWriteTime(filename).ToUniversalTime();
+                    entry._Ctime = File.GetCreationTime(filename).ToUniversalTime();
+                    entry._Atime = File.GetLastAccessTime(filename).ToUniversalTime();
 
-                // workitem 7071
-                // can only get attributes on files that exist.
-                if (File.Exists(filename) || Directory.Exists(filename))
-                    entry._ExternalFileAttrs = (int)File.GetAttributes(filename);
+                    // workitem 7071
+                    // can only get attributes on files that exist.
+                    if (File.Exists(filename) || Directory.Exists(filename))
+                        entry._ExternalFileAttrs = (int)File.GetAttributes(filename);
 
 #endif
-                entry._ntfsTimesAreSet = true;
+                    entry._ntfsTimesAreSet = true;
 
-                entry._LocalFileName = Path.GetFullPath(filename); // workitem 8813
+                    entry._LocalFileName = Path.GetFullPath(filename); // workitem 8813
+
+                }
+                catch (System.IO.PathTooLongException ptle)
+                {
+                    // workitem 14035
+                    var msg = String.Format("The path is too long, filename={0}",
+                                            filename);
+                    throw new ZipException(msg, ptle);
+                }
+
             }
 
             entry._LastModified = entry._Mtime;

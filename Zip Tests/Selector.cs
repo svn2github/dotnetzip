@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // last saved (in emacs):
-// Time-stamp: <2011-August-05 11:15:38>
+// Time-stamp: <2011-August-06 17:57:24>
 //
 // ------------------------------------------------------------------
 //
@@ -48,11 +48,15 @@ namespace Ionic.Zip.Tests
         public static void ClassInit(TestContext a)
         {
             CurrentDir = Directory.GetCurrentDirectory();
-            twentyPlusDaysAgo = DateTime.Now - new TimeSpan(20, 12, 13, 14);
-            today = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
-            tomorrow = today + new TimeSpan(1, 0, 0, 0);
-            threeDaysAgo = today - new TimeSpan(3, 0, 0, 0);
-            yesterday = today - new TimeSpan(1, 0, 0, 0);
+            twentyDaysAgo = DateTime.Now - new TimeSpan(20,0,0,0);
+            todayAtMidnight = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            tomorrow = todayAtMidnight + new TimeSpan(1, 0, 0, 0);
+            threeDaysAgo = todayAtMidnight - new TimeSpan(3, 0, 0, 0);
+            twoDaysAgo = todayAtMidnight - new TimeSpan(2, 0, 0, 0);
+            threeYearsAgo = new DateTime(DateTime.Now.Year - 3, DateTime.Now.Month, DateTime.Now.Day);
+
+            oneDay = new TimeSpan(1,0,0,0);
+            yesterdayAtMidnight = todayAtMidnight - oneDay;
         }
 
         // [ClassCleanup()]
@@ -144,12 +148,14 @@ namespace Ionic.Zip.Tests
         }
 
 
-
-        private static DateTime twentyPlusDaysAgo;
-        private static DateTime today;
+        private static DateTime twentyDaysAgo;
+        private static DateTime todayAtMidnight;
         private static DateTime tomorrow;
         private static DateTime threeDaysAgo;
-        private static DateTime yesterday;
+        private static DateTime threeYearsAgo;
+        private static DateTime twoDaysAgo;
+        private static DateTime yesterdayAtMidnight;
+        private static TimeSpan oneDay;
 
         private string fodderDirectory;
         private Object LOCK = new Object();
@@ -169,6 +175,11 @@ namespace Ionic.Zip.Tests
             if (!Directory.Exists(dir))
                 return false;
 
+            var ctime = File.GetCreationTime(dir).ToUniversalTime();
+            if ((todayAtMidnight - ctime) > oneDay || (ctime - todayAtMidnight) > oneDay)
+                return false;
+
+
             var fodderFiles = Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories);
 
             numFodderFiles = fodderFiles.Length;
@@ -183,7 +194,7 @@ namespace Ionic.Zip.Tests
             numFodderDirs = fodderDirs.Length;
             if (numFodderDirs <= 2)
             {
-                numFodderFiles = 0;
+                numFodderDirs = numFodderFiles = 0;
                 return false;
             }
             return true;
@@ -277,7 +288,7 @@ namespace Ionic.Zip.Tests
                     "file{0:D3}",
                     "{0:D3}",
                     "PrettyLongFileName-{0:D3}",
-                    "Extremely-Long-Filename-{0:D3}-with-a-repeated-segment-{0:D3}-{0:D3}-{0:D3}-{0:D3}",
+                    "Very-Long-Filename-{0:D3}-with-a-repeated-segment-{0:D3}-{0:D3}-{0:D3}-{0:D3}",
 
                 };
 
@@ -318,23 +329,43 @@ namespace Ionic.Zip.Tests
                     TestUtilities.CreateAndFillFileBinary(filename, sz);
                 }
 
-                // select whether to backdate mtime or not
-                if (rnd.Next(2) == 0)
-                    TouchFile(filename, WhichTime.mtime, twentyPlusDaysAgo);
 
-                // select whether to backdate ctime or not
+                // maybe backdate ctime
                 if (rnd.Next(2) == 0)
-                    TouchFile(filename, WhichTime.ctime, threeDaysAgo);
+                {
+                    var span = new TimeSpan(_rnd.Next(12),
+                                            _rnd.Next(24),
+                                            _rnd.Next(59),
+                                            _rnd.Next(59));
+                    TouchFile(filename, WhichTime.ctime, twentyDaysAgo + span);
+                }
 
-                // select whether to backdate atime or not
+                // maybe backdate mtime
                 if (rnd.Next(2) == 0)
-                    TouchFile(filename, WhichTime.atime, yesterday);
+                {
+                    var span = new TimeSpan(_rnd.Next(1),
+                                            _rnd.Next(24),
+                                            _rnd.Next(59),
+                                            _rnd.Next(59));
+                    TouchFile(filename, WhichTime.mtime, threeDaysAgo+span);
+                }
 
-                // set the last mod time to "a long time ago" on 1/14th of the files
+                // maybe backdate atime
+                if (rnd.Next(2) == 0)
+                {
+                    var span = new TimeSpan(_rnd.Next(24),_rnd.Next(59),_rnd.Next(59));
+                    TouchFile(filename, WhichTime.atime, yesterdayAtMidnight+span);
+                }
+
+                // set the creation time to "a long time ago" on 1/14th of the files
                 if (j % 14 == 0)
                 {
-                    DateTime x = new DateTime(1998, 4, 29);
-                    File.SetLastWriteTime(filename, x);
+                    DateTime x = new DateTime(1998, 4, 29); // julianna
+                    var span = new TimeSpan(_rnd.Next(22),
+                                            _rnd.Next(24),
+                                            _rnd.Next(59),
+                                            _rnd.Next(59));
+                    File.SetCreationTime(filename, x+span);
                 }
 
                 // maybe move to a subdir
@@ -409,8 +440,8 @@ namespace Ionic.Zip.Tests
                     new Trial
                     {
                         Label = "mtime",
-                        C1 = String.Format("mtime < {0}", twentyPlusDaysAgo.ToString("yyyy-MM-dd")),
-                        C2 = String.Format("mtime >= {0}", twentyPlusDaysAgo.ToString("yyyy-MM-dd")),
+                        C1 = String.Format("mtime < {0}", twentyDaysAgo.ToString("yyyy-MM-dd")),
+                        C2 = String.Format("mtime >= {0}", twentyDaysAgo.ToString("yyyy-MM-dd")),
                     },
                     new Trial
                     {
@@ -421,8 +452,8 @@ namespace Ionic.Zip.Tests
                     new Trial
                     {
                         Label = "atime",
-                        C1 = String.Format("mtime < {0}", yesterday.ToString("yyyy-MM-dd")),
-                        C2 = String.Format("mtime >= {0}", yesterday.ToString("yyyy-MM-dd")),
+                        C1 = String.Format("mtime < {0}", yesterdayAtMidnight.ToString("yyyy-MM-dd")),
+                        C2 = String.Format("mtime >= {0}", yesterdayAtMidnight.ToString("yyyy-MM-dd")),
                     },
                     new Trial { Label = "size (100k)", C1="size > 100k", C2="size <= 100kb", },
                     new Trial { Label = "size (1mb)", C1="size > 1m", C2="size <= 1mb", },
@@ -904,73 +935,88 @@ namespace Ionic.Zip.Tests
             TestContext.WriteLine("Reading zip, SelectEntries() by date...");
             using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
             {
-                string crit = String.Format("mtime >= {0}", today.ToString("yyyy-MM-dd"));
+                var totalEntries = numFodderFiles+numFodderDirs;
+
+                // all of the files should have been modified either
+                // after midnight today, or before.
+                string crit = String.Format("mtime >= {0}", todayAtMidnight.ToString("yyyy-MM-dd"));
                 var selected1 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Case A({0}) count({1})", crit, selected1.Count);
-
-                crit = String.Format("mtime < {0}", today.ToString("yyyy-MM-dd"));
+                crit = String.Format("mtime < {0}", todayAtMidnight.ToString("yyyy-MM-dd"));
                 var selected2 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Case B({0})  count({1})", crit, selected2.Count);
-                Assert.AreEqual<Int32>(numFodderFiles+numFodderDirs,
+                Assert.AreEqual<Int32>(totalEntries,
                                        selected1.Count + selected2.Count, "B");
 
-                crit = String.Format("ctime >= {0}", threeDaysAgo.ToString("yyyy-MM-dd"));
+
+                // some nonzero (high) number of files should have been
+                // created in the past twenty days.
+                crit = String.Format("ctime >= {0}", twentyDaysAgo.ToString("yyyy-MM-dd"));
                 var selected3 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Case C({0}) count({1})", crit, selected3.Count);
+                Assert.IsTrue(selected3.Count > 0, "C");
 
-                Assert.AreEqual<Int32>(numFodderFiles+numFodderDirs, selected3.Count, "C");
 
-                // none of the files should be stamped as created between those two times
-                crit = String.Format("ctime > {0}  and  ctime < {1}",
-                                     threeDaysAgo.ToString("yyyy-MM-dd"),
-                                     today.ToString("yyyy-MM-dd"));
+                // a nonzero number should be marked as having been
+                // created more than 3 years ago.
+                crit = String.Format("ctime < {0}",
+                                     threeYearsAgo.ToString("yyyy-MM-dd"));
                 var selected4 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Case D({0})  count({1})", crit, selected4.Count);
-                Assert.AreEqual<Int32>(0, selected4.Count, "D");
+                Assert.IsTrue(selected4.Count > 0, "D");
 
-                // those created 3 days ago, plus those created today = all entries
-                crit = String.Format("ctime >= {0}  and  ctime < {1}",
-                                     threeDaysAgo.ToString("yyyy-MM-dd"),
-                                     today.ToString("yyyy-MM-dd"));
+                // None of the files should have been created
+                // more than 20 years ago
+                var twentyYearsAgo = new DateTime(DateTime.Now.Year - 20,
+                                                  DateTime.Now.Month,
+                                                  DateTime.Now.Day);
+                crit = String.Format("ctime < {0}",
+                                     twentyYearsAgo.ToString("yyyy-MM-dd"));
                 var selected5 = zip1.SelectEntries(crit);
-                TestContext.WriteLine("Case E({0})  count({1})", crit, selected5.Count);
-                Assert.IsTrue(selected5.Count > 0, "E");
+                TestContext.WriteLine("Case F({0})  count({1})", crit, selected5.Count);
+                Assert.IsTrue(selected5.Count==0, "F");
 
-                crit = String.Format("ctime >= {0}", today.ToString("yyyy-MM-dd"));
-                var selected6 = zip1.SelectEntries(crit);
-                TestContext.WriteLine("Case F({0})  count({1})", crit, selected6.Count);
-                Assert.AreEqual<Int32>(numFodderFiles+numFodderDirs, selected5.Count + selected6.Count, "F");
-
-                // those accessed yesterday, plus those accessed today = all entries
-                crit = String.Format("atime >= {0}  and  atime < {1}",
-                                     yesterday.ToString("yyyy-MM-dd"),
-                                     today.ToString("yyyy-MM-dd"));
+                // Some number of the files should have been created
+                // more than three days ago
+                crit = String.Format("ctime < {0}",
+                                     threeDaysAgo.ToString("yyyy-MM-dd"));
                 selected5 = zip1.SelectEntries(crit);
-                TestContext.WriteLine("Case G({0})  count({1})", crit, selected5.Count);
-                Assert.IsTrue(selected5.Count > 0, "G");
+                TestContext.WriteLine("Case E({0})  count({1})", crit, selected5.Count);
+                Assert.IsTrue(selected5.Count>0, "E");
 
-                crit = String.Format("atime >= {0}",
-                                     today.ToString("yyyy-MM-dd"));
-                selected6 = zip1.SelectEntries(crit);
-                TestContext.WriteLine("Case H({0})  count({1})", crit, selected6.Count);
-                Assert.AreEqual<Int32>(numFodderFiles+numFodderDirs, selected5.Count + selected6.Count, "H");
+                // summing all those created more than three days ago,
+                // with those created in the last three days, should be all entries.
+                crit = String.Format("ctime >= {0}", threeDaysAgo.ToString("yyyy-MM-dd"));
+                var selected6 = zip1.SelectEntries(crit);
+                TestContext.WriteLine("Case G({0})  count({1})", crit, selected6.Count);
+                Assert.IsTrue(selected6.Count>0, "G");
+                Assert.AreEqual<Int32>(totalEntries, selected5.Count + selected6.Count, "G");
 
-                // those accessed *exactly* at midnight yesterday, plus those NOT = all entries
+
+                // some number should have been accessed in the past 2 days
+                crit = String.Format("atime >= {0}  and  atime < {1}",
+                                     twoDaysAgo.ToString("yyyy-MM-dd"),
+                                     todayAtMidnight.ToString("yyyy-MM-dd"));
+                selected5 = zip1.SelectEntries(crit);
+                TestContext.WriteLine("Case H({0})  count({1})", crit, selected5.Count);
+                Assert.IsTrue(selected5.Count > 0, "H");
+
+                // those accessed *exactly* at midnight yesterday, plus
+                // those NOT = all entries
                 crit = String.Format("atime = {0}",
-                                     yesterday.ToString("yyyy-MM-dd"));
+                                     yesterdayAtMidnight.ToString("yyyy-MM-dd"));
                 selected5 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Case I({0})  count({1})", crit, selected5.Count);
-                Assert.IsTrue(selected5.Count > 0, "I");
 
                 crit = String.Format("atime != {0}",
-                                     yesterday.ToString("yyyy-MM-dd"));
+                                     yesterdayAtMidnight.ToString("yyyy-MM-dd"));
                 selected6 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Case J({0})  count({1})", crit, selected6.Count);
-                Assert.AreEqual<Int32>(numFodderFiles+numFodderDirs, selected5.Count + selected6.Count, "J");
+                Assert.AreEqual<Int32>(totalEntries, selected5.Count + selected6.Count, "J");
 
-                // those accessed three days ago or more == empty set
+                // those marked as last accessed more than 20 days ago == empty set
                 crit = String.Format("atime <= {0}",
-                                     threeDaysAgo.ToString("yyyy-MM-dd"));
+                                     twentyDaysAgo.ToString("yyyy-MM-dd"));
                 selected5 = zip1.SelectEntries(crit);
                 TestContext.WriteLine("Case K({0})  count({1})", crit, selected5.Count);
                 Assert.AreEqual<Int32>(0, selected5.Count, "K");
@@ -1003,7 +1049,7 @@ namespace Ionic.Zip.Tests
             TestContext.WriteLine("Reading zip, ExtractSelectedEntries() by date...");
             using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
             {
-                string crit = String.Format("mtime >= {0}", today.ToString("yyyy-MM-dd"));
+                string crit = String.Format("mtime >= {0}", todayAtMidnight.ToString("yyyy-MM-dd"));
                 TestContext.WriteLine("Criteria({0})", crit);
                 zip1.ExtractSelectedEntries(crit, null, extractDir);
             }
@@ -1012,7 +1058,7 @@ namespace Ionic.Zip.Tests
             TestContext.WriteLine("Reading zip, ExtractSelectedEntries() by date, with overwrite...");
             using (ZipFile zip1 = ZipFile.Read(zipFileToCreate))
             {
-                string crit = String.Format("mtime >= {0}", today.ToString("yyyy-MM-dd"));
+                string crit = String.Format("mtime >= {0}", todayAtMidnight.ToString("yyyy-MM-dd"));
                 TestContext.WriteLine("Criteria({0})", crit);
                 zip1.ExtractSelectedEntries(crit, null, extractDir, ExtractExistingFileAction.OverwriteSilently);
             }
