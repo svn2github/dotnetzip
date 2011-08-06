@@ -14,7 +14,7 @@ goto START
  DotNetZip is licensed under the MS-PL.  See the accompanying
  License.txt file.
 
- Last Updated: <2011-July-30 19:19:45>
+ Last Updated: <2011-August-06 01:37:07>
 
 -------------------------------------------------------
 
@@ -182,7 +182,7 @@ goto :EOF
 
   %zipit% %rzipfile%  -s Readme.txt "This zip contains the documentation for DotNetZip in various help formats. This is for DotNetZip v%version%.  This package was packed %stamp%. "  -s You-can-Donate.txt  "FYI: DotNetZip is donationware.  Consider donating. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"
 
-  %zipit% %rzipfile%  -d .  -D "Help\bin\HtmlHelp1"  *.chm  -d "Help Viewer 1.0"  -D Help\bin\HelpViewer -r+ "(name != *.chm) AND (name != *.log)"
+  %zipit% %rzipfile%  -d .  -D Help\bin\HtmlHelp1 -E *.chm  -d "Help Viewer 1.0"  -D Help\bin\HelpViewer -r+ -E "(name != *.chm) AND (name != *.log)"
 
 goto :EOF
 --------------------------------------------
@@ -210,8 +210,8 @@ goto :EOF
 
   %zipit% %rzipfile%  -d zip-v%version%   -s Readme.txt "DotNetZip Library Developer's Kit package,  v%version% packed %stamp%.  This is the DotNetZip library.  It includes the classes in the Ionic.Zip namespace as well as the classes in the Ionic.Zlib namespace. Use this library if you want to manipulate ZIP files within .NET applications."
 
-  %zipit% %rzipfile%  -d zip-v%version%\Debug   -D "Zip\bin\Debug"    Ionic.Zip.dll Ionic.Zip.XML Ionic.Zip.pdb
-  %zipit% %rzipfile%  -d zip-v%version%\Release -D "Zip\bin\Release"  Ionic.Zip.dll
+  %zipit% %rzipfile%  -d zip-v%version%\Debug    -D Zip\bin\Debug Ionic.Zip.dll Ionic.Zip.xml Ionic.Zip.pdb
+  %zipit% %rzipfile%  -d zip-v%version%\Release  Zip\bin\Release\Ionic.Zip.dll
 
   @REM --------------------------------------------
 
@@ -237,8 +237,8 @@ goto :EOF
   @REM --------------------------------------------
 
   %zipit% %rzipfile%  -d zlib-v%version%  -s Readme.txt  "Ionic.Zlib v%version% packed %stamp%.  This is the Ionic.Zlib assembly; it includes only the classes in the Ionic.Zlib namespace. Use this library if you want to take advantage of ZLIB compression directly, or if you want to use the compressing stream classes like GZipStream, DeflateStream, or ZlibStream."
-  %zipit% %rzipfile%  -d zlib-v%version%\Debug    -D "Zlib\bin\Debug"    Ionic.Zlib.dll Ionic.Zlib.pdb Ionic.Zlib.XML
-  %zipit% %rzipfile%  -d zlib-v%version%\Release  -D "Zlib\bin\Release"  Ionic.Zlib.dll
+  %zipit% %rzipfile%  -d zlib-v%version%\Debug    -D Zlib\bin\Debug    Ionic.Zlib.dll Ionic.Zlib.pdb Ionic.Zlib.XML
+  %zipit% %rzipfile%  -d zlib-v%version%\Release  -D Zlib\bin\Release  Ionic.Zlib.dll
 
   @REM --------------------------------------------
 
@@ -291,9 +291,9 @@ goto :EOF
 
   %zipit% %rzipfile%  -d Examples\WScript -D "Zip Tests\resources"  VbsCreateZip-DotNetZip.vbs  VbsUnZip-DotNetZip.vbs  TestCheckZip.js
 
-  %zipit% %rzipfile%  -d Examples  -D "Examples"  -r+  "name != *.cache and name != *.*~ and name != *.suo and name != *.user and name != #*.*# and name != *.vspscc and name != Examples\*\*\bin\*.* and name != Examples\*\*\obj\*.* and name != Examples\*\bin\*.* and name != Examples\*\obj\*.*"
+  %zipit% %rzipfile%  -d Examples  -D Examples  -r+  -E "name != *.cache and name != *.*~ and name != *.suo and name != *.user and name != #*.*# and name != *.vspscc and name != Examples\*\*\bin\*.* and name != Examples\*\*\obj\*.* and name != Examples\*\bin\*.* and name != Examples\*\obj\*.*"
 
-  %zipit% %rzipfile%  -D %releaseDir%  "name = DotNetZip-Documentation-*.zip"
+  %zipit% %rzipfile%  -D %releaseDir%  -E "name = DotNetZip-Documentation-*.zip"
 
   cd %baseDir%
 
@@ -320,19 +320,19 @@ goto :EOF
 
   %zipit% %rzipfile%    -s Contents.txt "This is the redistributable package for DotNetZip v%version%.  Packed %stamp%. In this zip you will find a separate folder for each separate version of the DLL. In each folder there is a RELEASE build DLL, suitable for redistribution with your app. If you have any questions, please check the forums on http://www.codeplex.com/DotNetZip "   -s DotNetZip-is-DonationWare.txt  "DotNetZip is donationware. Consider donating. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   Readme.txt License.txt License.zlib.txt License.bzip2.txt
 
-  %zipit% %rzipfile%  -d zip-v%version% -D "Zip\bin\Release" -s Readme.txt  "DotNetZip Redistributable Library v%version% packed %stamp%"  Ionic.Zip.dll
+  %zipit% %rzipfile% -d zip-v%version% -s Readme.txt  "DotNetZip Redistributable Library v%version% packed %stamp%"  Zip\bin\Release\Ionic.Zip.dll
 
-  %zipit% %rzipfile%  -d zip-v%version%-Reduced -D "Zip Reduced\bin\Release" -s Readme.txt  "DotNetZip Reduced Redistributable Library v%version% packed %stamp%"  Ionic.Zip.Reduced.dll
+  %zipit% %rzipfile% -d zip-v%version%-Reduced  -s Readme.txt  "DotNetZip Reduced Redistributable Library v%version% packed %stamp%"   "Zip Reduced\bin\Release\Ionic.Zip.Reduced.dll"
 
-  %zipit% %rzipfile%  -d zip-v%version%-CompactFramework -D "Zip CF\bin\Release" -s Readme.txt "DotNetZip Library for .NET Compact Framework v%version% packed %stamp%"  Ionic.Zip.CF.dll
+  %zipit% %rzipfile% -d zip-v%version%-CompactFramework -s Readme.txt "DotNetZip Library for .NET Compact Framework v%version% packed %stamp%"   "Zip CF\bin\Release\Ionic.Zip.CF.dll"
 
-  %zipit% %rzipfile%  -d zlib-v%version% -D "Zlib\bin\Release" -s Readme.txt  "Ionic.Zlib Redistributable Library v%version% packed %stamp%"  Ionic.Zlib.dll
+  %zipit% %rzipfile% -d zlib-v%version% -s Readme.txt  "Ionic.Zlib Redistributable Library v%version% packed %stamp%"  Zlib\bin\Release\Ionic.Zlib.dll
 
-  %zipit% %rzipfile%  -d zlib-v%version%-CompactFramework -D "Zlib CF\bin\Release"  -s Readme.txt  "Ionic.Zlib Library for .NET Compact Framework v%version% packed %stamp%"   Ionic.Zlib.CF.dll
+  %zipit% %rzipfile% -d zlib-v%version%-CompactFramework -s Readme.txt  "Ionic.Zlib Library for .NET Compact Framework v%version% packed %stamp%"  "Zlib CF\bin\Release\Ionic.Zlib.CF.dll"
 
-  %zipit% %rzipfile%  -d bzip2-v%version% -D "BZip2\bin\Release" -s Readme.txt  "Ionic.BZip2 Redistributable Library v%version% packed %stamp%"  Ionic.BZip2.dll
+  %zipit% %rzipfile% -d bzip2-v%version% -s Readme.txt  "Ionic.BZip2 Redistributable Library v%version% packed %stamp%"  BZip2\bin\Release\Ionic.BZip2.dll
 
-  %zipit% %rzipfile%  -d bzip2-v%version%-CompactFramework -D "BZip2 CF\bin\Release"  -s Readme.txt  "Ionic.BZip2 Library for .NET Compact Framework v%version% packed %stamp%"   Ionic.BZip2.CF.dll
+  %zipit% %rzipfile% -d bzip2-v%version%-CompactFramework -s Readme.txt "Ionic.BZip2 Library for .NET Compact Framework v%version% packed %stamp%" "BZip2 CF\bin\Release\Ionic.BZip2.CF.dll"
 
 goto :EOF
 --------------------------------------------
@@ -357,7 +357,7 @@ goto :EOF
 
   %zipit% %rzipfile%    -s Contents.txt "This is the Silverlight redistributable package for DotNetZip v%version%.  Packed %stamp%.  There is an assembly for BZip2, one for ZLIB/Deflate/GZIP, and one for Zip, in the Release folder, and debug builds of the same in the Debug folder, for a total of 6 DLLs.  You need to reference exactly one of those DLLs; which one depends on your application requirements. If you have any questions, please check the forums on http://dotnetzip.codeplex.com/discussions "   -s DotNetZip-is-DonationWare.txt  "DotNetZip is donationware. Consider donating. It's for a good cause. http://cheeso.members.winisp.net/DotNetZipDonate.aspx"   License.txt License.zlib.txt License.bzip2.txt
 
-  %zipit% %rzipfile%  -d Release  -D "Zip SL\bin\Release"  Ionic.Zip.dll -D "Zlib SL DLL\bin\Release"  Ionic.Zlib.dll -D "BZip2 SL DLL\bin\Release"  Ionic.BZip2.dll
+  %zipit% %rzipfile%  -d Release   "Zip SL\bin\Release\Ionic.Zip.dll"  "Zlib SL DLL\bin\Release\Ionic.Zlib.dll"  "BZip2 SL DLL\bin\Release\Ionic.BZip2.dll"
 
   %zipit% %rzipfile%  -d Debug  -D "Zip SL\bin\Debug"  Ionic.Zip.dll  Ionic.Zip.xml Ionic.Zip.pdb -D "Zlib SL DLL\bin\Debug"  Ionic.Zlib.dll Ionic.Zlib.xml Ionic.Zlib.pdb -D "BZip2 SL DLL\bin\Debug"  Ionic.BZip2.dll  Ionic.BZip2.xml  Ionic.BZip2.pdb
 
@@ -535,6 +535,4 @@ echo release zips are in %releaseDir%
 echo.
 
 endlocal
-
-
 

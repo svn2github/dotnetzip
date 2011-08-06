@@ -18,6 +18,7 @@
 //
 
 using System;
+using System.IO;
 using Ionic.Zip;
 
 namespace Ionic.Zip.Examples
@@ -184,7 +185,7 @@ namespace Ionic.Zip.Examples
             {
                 saveToStdout = true;
             }
-            else if (System.IO.File.Exists(args[0]))
+            else if (File.Exists(args[0]))
             {
                 System.Console.WriteLine("That zip file ({0}) already exists.", args[0]);
             }
@@ -206,6 +207,7 @@ namespace Ionic.Zip.Examples
                 string directoryOnDisk = null;
                 bool recurseDirectories = false;
                 bool wantRecurse = false;
+                string actualItem;
 
                 // read/update an existing zip, or create a new one.
                 using (ZipFile zip = new ZipFile(args[0]))
@@ -290,13 +292,11 @@ namespace Ionic.Zip.Examples
                             case "-E":
                                 i++;
                                 if (args.Length <= i) Usage();
-                                directoryOnDisk = args[i];
                                 wantRecurse = recurseDirectories || args[i].Contains("\\");
                                 // Console.WriteLine("spec({0})", args[i]);
                                 // Console.WriteLine("dir({0})", directoryOnDisk);
                                 // Console.WriteLine("dirInArc({0})", entryDirectoryPathInArchive);
                                 // Console.WriteLine("recurse({0})", recurseDirectories);
-
                                 zip.UpdateSelectedFiles(args[i],
                                                         directoryOnDisk,
                                                         entryDirectoryPathInArchive,
@@ -343,7 +343,7 @@ namespace Ionic.Zip.Examples
                                 i++;
                                 if (args.Length <= i) Usage();
                                 string content = args[i];
-                                e = zip.AddEntry(System.IO.Path.Combine(entryDirectoryPathInArchive, entryName), content);
+                                e = zip.AddEntry(Path.Combine(entryDirectoryPathInArchive, entryName), content);
                                 //                                 if (entryComment != null)
                                 //                                 {
                                 //                                     e.Comment = entryComment;
@@ -435,7 +435,8 @@ namespace Ionic.Zip.Examples
                             default:
                                 // UpdateItem will add Files or Dirs,
                                 // recurses subdirectories
-                                zip.UpdateItem(args[i], entryDirectoryPathInArchive);
+                                actualItem = Path.Combine(directoryOnDisk ?? ".", args[i]);
+                                zip.UpdateItem(actualItem, entryDirectoryPathInArchive);
                                 break;
                         }
                     }
